@@ -3,11 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -15,9 +16,11 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class MeasureToolViewModel : Observable
+    public partial class MeasureToolViewModel : PageViewModelBase
     {
-        private ISettingsUtils SettingsUtils { get; set; }
+        protected override string ModuleName => MeasureToolSettings.ModuleName;
+
+        private SettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -27,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private MeasureToolSettings Settings { get; set; }
 
-        public MeasureToolViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<MeasureToolSettings> measureToolSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public MeasureToolViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<MeasureToolSettings> measureToolSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -57,6 +60,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.MeasureTool;
             }
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [ActivationShortcut],
+            };
+
+            return hotkeysDict;
         }
 
         public bool IsEnabled

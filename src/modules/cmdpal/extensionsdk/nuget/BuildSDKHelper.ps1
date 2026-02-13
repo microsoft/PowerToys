@@ -1,10 +1,18 @@
 Param(
   [string]$Configuration = "release",
-  [string]$VersionOfSDK = "0.0.0",
+  [string]$VersionOfSDK = "",
   [string]$BuildStep = "all",
   [switch]$IsAzurePipelineBuild = $false,
   [switch]$Help = $false
 )
+
+If ([String]::IsNullOrEmpty($VersionOfSDK)) {
+  $VersionOfSDK = $Env:XES_PACKAGEVERSIONNUMBER
+}
+
+If ([String]::IsNullOrEmpty($VersionOfSDK)) {
+  $VersionOfSDK = "0.0.0"
+}
 
 $StartTime = Get-Date
 
@@ -46,9 +54,15 @@ if ($IsAzurePipelineBuild) {
 } else {
   $nugetPath = (Join-Path $PSScriptRoot "NugetWrapper.cmd")
 }
+$solutionPath = (Join-Path $PSScriptRoot "..\..\..\..\..\PowerToys.slnx")
 
 if (($BuildStep -ieq "all") -Or ($BuildStep -ieq "build")) {
-  & $nugetPath restore (Join-Path $PSScriptRoot "..\..\..\..\..\PowerToys.sln")
+  $restoreArgs = @(
+    $solutionPath
+    "/t:Restore"
+    "/p:RestorePackagesConfig=true"
+  )
+  & $msbuildPath $restoreArgs
 
   Try {
     foreach ($config in $Configuration.Split(",")) {
@@ -60,6 +74,10 @@ if (($BuildStep -ieq "all") -Or ($BuildStep -ieq "build")) {
           ("/binaryLogger:CmdPal.Extensions.$platform.$config.binlog"),
           ("/p:VersionNumber="+$VersionOfSDK)
           )
+
+        if ($IsAzurePipelineBuild) {
+          $msbuildArgs += "/p:CIBuild=true"
+        }
 
         & $msbuildPath $msbuildArgs
       }

@@ -10,8 +10,13 @@ internal sealed partial class FallbackReloadItem : FallbackCommandItem
 {
     private readonly ReloadExtensionsCommand _reloadCommand;
 
+    private const string _id = "com.microsoft.cmdpal.reload";
+
     public FallbackReloadItem()
-        : base(new ReloadExtensionsCommand(), Properties.Resources.builtin_reload_display_title)
+        : base(
+            new ReloadExtensionsCommand() { Id = _id },
+            Properties.Resources.builtin_reload_display_title,
+            _id)
     {
         _reloadCommand = (ReloadExtensionsCommand)Command!;
         Title = string.Empty;
@@ -20,7 +25,7 @@ internal sealed partial class FallbackReloadItem : FallbackCommandItem
 
     public override void UpdateQuery(string query)
     {
-        _reloadCommand.Name = query.StartsWith('r') ? "Reload" : string.Empty;
+        _reloadCommand.Name = query.StartsWith("r", StringComparison.OrdinalIgnoreCase) ? "Reload" : string.Empty;
         Title = _reloadCommand.Name;
     }
 }

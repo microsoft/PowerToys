@@ -14,9 +14,12 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
 using Peek.Common.Extensions;
+using Peek.Common.Helpers;
 using Peek.FilePreviewer.Models;
+using Peek.FilePreviewer.Previewers;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
+using Peek.UI.Models;
 using Peek.UI.Telemetry.Events;
 using Windows.Foundation;
 using WinUIEx;
@@ -37,6 +40,7 @@ namespace Peek.UI
         /// dialog is open at a time.
         /// </summary>
         private bool _isDeleteInProgress;
+        private bool _exitAfterClose;
 
         public MainWindow()
         {
@@ -115,12 +119,17 @@ namespace Peek.UI
         /// <summary>
         /// Toggling the window visibility and querying files when necessary.
         /// </summary>
-        public void Toggle(bool firstActivation, Windows.Win32.Foundation.HWND foregroundWindowHandle)
+        public void Toggle(bool firstActivation, SelectedItem selectedItem, bool exitAfterClose)
         {
+            if (exitAfterClose)
+            {
+                _exitAfterClose = true;
+            }
+
             if (firstActivation)
             {
                 Activate();
-                Initialize(foregroundWindowHandle);
+                Initialize(selectedItem);
                 return;
             }
 
@@ -131,9 +140,9 @@ namespace Peek.UI
 
             if (AppWindow.IsVisible)
             {
-                if (IsNewSingleSelectedItem(foregroundWindowHandle))
+                if (IsNewSingleSelectedItem(selectedItem))
                 {
-                    Initialize(foregroundWindowHandle);
+                    Initialize(selectedItem);
                     Activate(); // Brings existing window into focus in case it was previously minimized
                 }
                 else
@@ -143,7 +152,7 @@ namespace Peek.UI
             }
             else
             {
-                Initialize(foregroundWindowHandle);
+                Initialize(selectedItem);
             }
         }
 
@@ -181,12 +190,20 @@ namespace Peek.UI
             Uninitialize();
         }
 
-        private void Initialize(Windows.Win32.Foundation.HWND foregroundWindowHandle)
+        private void Initialize(SelectedItem selectedItem)
         {
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
-            ViewModel.Initialize(foregroundWindowHandle);
+            ViewModel.Initialize(selectedItem);
+
+            // If no files were found (e.g., user is typing in rename/search box, or in virtual folders),
+            // don't show anything - just return silently to avoid stealing focus
+            if (ViewModel.CurrentItem == null)
+            {
+                return;
+            }
+
             ViewModel.ScalingFactor = this.GetMonitorScale();
             this.Content.KeyUp += Content_KeyUp;
 
@@ -204,6 +221,13 @@ namespace Peek.UI
             ViewModel.ScalingFactor = 1;
 
             this.Content.KeyUp -= Content_KeyUp;
+
+            ShellPreviewHandlerPreviewer.ReleaseHandlerFactories();
+
+            if (_exitAfterClose)
+            {
+                Environment.Exit(0);
+            }
         }
 
         /// <summary>
@@ -213,7 +237,7 @@ namespace Peek.UI
         /// <param name="e">PreviewSizeChangedArgs</param>
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
-            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+            var foregroundWindowHandle = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
 
             var monitorSize = foregroundWindowHandle.GetMonitorSize();
             var monitorScale = foregroundWindowHandle.GetMonitorScale();
@@ -269,20 +293,11 @@ namespace Peek.UI
             Uninitialize();
         }
 
-        private bool IsNewSingleSelectedItem(Windows.Win32.Foundation.HWND foregroundWindowHandle)
+        private bool IsNewSingleSelectedItem(SelectedItem selectedItem)
         {
             try
             {
-                var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
-                var selectedItemsCount = selectedItems?.GetCount() ?? 0;
-                if (selectedItems == null || selectedItemsCount == 0 || selectedItemsCount > 1)
-                {
-                    return false;
-                }
-
-                var fileExplorerSelectedItemPath = selectedItems.GetItemAt(0).ToIFileSystemItem().Path;
-                var currentItemPath = ViewModel.CurrentItem?.Path;
-                return fileExplorerSelectedItemPath != null && currentItemPath != null && fileExplorerSelectedItemPath != currentItemPath;
+                return selectedItem.Matches(ViewModel.CurrentItem?.Path);
             }
             catch (Exception ex)
             {
@@ -295,6 +310,25 @@ namespace Peek.UI
         public void Dispose()
         {
             themeListener?.Dispose();
+        }
+
+        /// <summary>
+        /// Returns Visibility.Collapsed when error is showing, Visibility.Visible when not.
+        /// </summary>
+        public Visibility ContentVisibility(bool isErrorVisible)
+        {
+            return isErrorVisible ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Handle InfoBar closed - if there's no current item, close the window.
+        /// </summary>
+        private void ErrorInfoBar_Closed(InfoBar sender, InfoBarClosedEventArgs args)
+        {
+            if (ViewModel.CurrentItem == null)
+            {
+                Uninitialize();
+            }
         }
     }
 }

@@ -373,6 +373,7 @@ dlib
 dllhost
 dllmain
 dnceng
+Dmdo
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -10,9 +11,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Input;
-
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -21,7 +22,7 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class PowerLauncherViewModel : Observable
+    public partial class PowerLauncherViewModel : PageViewModelBase, IDisposable
     {
         private int _themeIndex;
         private int _monitorPositionIndex;
@@ -30,12 +31,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private string _searchText;
+        private bool _hotkeyChanged;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private PowerLauncherSettings settings;
 
         public delegate void SendCallback(PowerLauncherSettings settings);
+
+        protected override string ModuleName => PowerLauncherSettings.ModuleName;
 
         private readonly SendCallback callback;
 
@@ -122,6 +126,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [OpenPowerLauncher],
+            };
+
+            return hotkeysDict;
+        }
+
         private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)
         {
             if (
@@ -148,6 +162,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);
+
+            // Since PowerLauncher registers its hotkeys independently within the module process,
+            // the runner is notified to update PowerLauncher’s hotkeys only when changes occur.
+            // This prevents incorrect conflict detection results.
+            settings.Properties.HotkeyChanged = _hotkeyChanged;
+            _hotkeyChanged = false;
 
             callback(settings);
         }
@@ -322,6 +342,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (settings.Properties.OpenPowerLauncher != value)
                 {
                     settings.Properties.OpenPowerLauncher = value ?? settings.Properties.DefaultOpenPowerLauncher;
+                    _hotkeyChanged = true;
                     UpdateSettings();
                 }
             }

@@ -1,9 +1,13 @@
 #include "pch.h"
 #include "Helpers.h"
+#include "MetadataTypes.h"
 #include <regex>
 #include <ShlGuid.h>
 #include <cstring>
 #include <filesystem>
+#include <unordered_map>
+#include <unordered_set>
+#include <algorithm>
 
 namespace fs = std::filesystem;
 
@@ -12,6 +16,50 @@ namespace
     const int MAX_INPUT_STRING_LEN = 1024;
 
     const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\PowerRename";
+
+    // Helper function: Find the longest matching pattern starting at the given position
+    // Returns the matched pattern name, or empty string if no match found
+    std::wstring FindLongestPattern(
+        const std::wstring& input,
+        size_t startPos,
+        size_t maxPatternLength,
+        const std::unordered_set<std::wstring>& validPatterns)
+    {
+        const size_t remaining = input.length() - startPos;
+        const size_t searchLength = std::min(maxPatternLength, remaining);
+
+        // Try to match from longest to shortest to ensure greedy matching
+        // e.g., DATE_TAKEN_YYYY should be matched before DATE_TAKEN_YY
+        for (size_t len = searchLength; len > 0; --len)
+        {
+            std::wstring candidate = input.substr(startPos, len);
+            if (validPatterns.find(candidate) != validPatterns.end())
+            {
+                return candidate;
+            }
+        }
+
+        return L"";
+    }
+
+    // Helper function: Get the replacement value for a pattern
+    // Returns the actual metadata value if available; if not, returns the pattern name with $ prefix
+    std::wstring GetPatternValue(
+        const std::wstring& patternName,
+        const PowerRenameLib::MetadataPatternMap& patterns)
+    {
+        auto it = patterns.find(patternName);
+
+        // Return actual value if found and valid (non-empty)
+        if (it != patterns.end() && !it->second.empty())
+        {
+            return it->second;
+        }
+
+        // Return pattern name with $ prefix if value is unavailable
+        // This provides visual feedback that the field exists but has no data
+        return L"$" + patternName;
+    }
 }
 
 HRESULT GetTrimmedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source)
@@ -248,7 +296,19 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
 bool isFileTimeUsed(_In_ PCWSTR source)
 {
     bool used = false;
-    static const std::array patterns = { std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$Y" }, std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$M" }, std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$D" }, std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$h" }, std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$m" }, std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$s" }, std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$f" } };
+    static const std::array patterns = {
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$Y" }, 
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$M" }, 
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$D" }, 
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$h" }, 
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$m" }, 
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$s" }, 
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$f" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$H" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$T" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$t" }
+    };
+    
     for (size_t i = 0; !used && i < patterns.size(); i++)
     {
         if (std::regex_search(source, patterns[i]))
@@ -257,6 +317,77 @@ bool isFileTimeUsed(_In_ PCWSTR source)
         }
     }
     return used;
+}
+
+bool isMetadataUsed(_In_ PCWSTR source, PowerRenameLib::MetadataType metadataType, _In_opt_ PCWSTR filePath, bool isFolder)
+{
+    if (!source) return false;
+    
+    // Early exit: If file path is provided, check file type first (fastest checks)
+    // This avoids expensive pattern matching for files that don't support metadata
+    if (filePath != nullptr)
+    {
+        // Folders don't support metadata extraction
+        if (isFolder)
+        {
+            return false;
+        }
+
+        // Check if file path is valid
+        if (wcslen(filePath) == 0)
+        {
+            return false;
+        }
+
+        // Get file extension
+        std::wstring extension = fs::path(filePath).extension().wstring();
+        
+        // Convert to lowercase for case-insensitive comparison
+        std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+
+        // According to the metadata support table, only these formats support metadata extraction:
+        // - JPEG (IFD, Exif, XMP, GPS, IPTC) - supports fast metadata encoding
+        // - TIFF (IFD, Exif, XMP, GPS, IPTC) - supports fast metadata encoding
+        // - PNG (text chunks)
+        // - HEIF/HEIC (IFD, Exif, XMP, GPS) - requires HEIF Image Extensions from Microsoft Store
+        // - AVIF (IFD, Exif, XMP, GPS) - requires AV1 Video Extension from Microsoft Store
+        static const std::unordered_set<std::wstring> supportedExtensions = {
+            L".jpg",
+            L".jpeg",
+            L".png",
+            L".tif",
+            L".tiff",
+            L".heic",
+            L".heif",
+            L".avif"
+        };
+
+        // If file type doesn't support metadata, no need to check patterns
+        if (supportedExtensions.find(extension) == supportedExtensions.end())
+        {
+            return false;
+        }
+    }
+    
+    // Now check if any metadata pattern exists in the source string
+    // This is the most expensive check, so we do it last
+    std::wstring str(source);
+    
+    // Get supported patterns for the specified metadata type
+    auto supportedPatterns = PowerRenameLib::MetadataPatternExtractor::GetSupportedPatterns(metadataType);
+    
+    // Check if any metadata pattern exists in the source string
+    for (const auto& pattern : supportedPatterns)
+    {
+        std::wstring searchPattern = L"$" + pattern;
+        if (str.find(searchPattern) != std::wstring::npos)
+        {
+            return true;
+        }
+    }
+    
+    // No metadata pattern found
+    return false;
 }
 
 HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME fileTime)
@@ -275,6 +406,14 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
             StringCchCopy(localeName, LOCALE_NAME_MAX_LENGTH, L"en_US");
         }
 
+        int hour12 = (fileTime.wHour % 12);
+        if (hour12 == 0)
+        {
+            hour12 = 12;
+        }
+
+        // Order matters. Longer patterns are processed before any prefixes.
+        // Years.
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%04d"), L"$01", fileTime.wYear);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YYYY"), replaceTerm);
 
@@ -284,6 +423,7 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", (fileTime.wYear % 10));
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$Y"), replaceTerm);
 
+        // Months.
         GetDateFormatEx(localeName, NULL, &fileTime, L"MMMM", formattedDate, MAX_PATH, NULL);
         formattedDate[0] = towupper(formattedDate[0]);
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
@@ -300,6 +440,7 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", fileTime.wMonth);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$M"), replaceTerm);
 
+        // Days.
         GetDateFormatEx(localeName, NULL, &fileTime, L"dddd", formattedDate, MAX_PATH, NULL);
         formattedDate[0] = towupper(formattedDate[0]);
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", formattedDate);
@@ -314,7 +455,27 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$DD"), replaceTerm);
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", fileTime.wDay);
-        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$D"), replaceTerm);
+        // $D overlaps with metadata patterns like $DATE_TAKEN_YYYY, so we use negative
+        // lookahead to prevent matching those.
+        res = regex_replace(
+            res,
+            std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$D(?!(ATE_TAKEN_|ESCRIPTION|OCUMENT_ID))"), /* #no-spell-check-line */
+            replaceTerm);
+
+        // Time.
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", hour12);
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$HH"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", hour12);
+        // $H overlaps with metadata's $HEIGHT, so we use negative lookahead to prevent
+        // matching that.
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$H(?!(EIGHT))"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", (fileTime.wHour < 12) ? L"AM" : L"PM");
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$TT"), replaceTerm);
+
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", (fileTime.wHour < 12) ? L"am" : L"pm");
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$tt"), replaceTerm);
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%02d"), L"$01", fileTime.wHour);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$hh"), replaceTerm);
@@ -348,6 +509,91 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
 
     return hr;
 }
+
+HRESULT GetMetadataFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, const PowerRenameLib::MetadataPatternMap& patterns)
+{
+    if (!source || wcslen(source) == 0)
+    {
+        return E_INVALIDARG;
+    }
+
+    std::wstring input(source);
+    std::wstring output;
+    output.reserve(input.length() * 2); // Reserve space to avoid frequent reallocations
+
+    // Build pattern lookup table for fast validation
+    // Using all possible patterns to recognize valid pattern names even when metadata is unavailable
+    auto allPatterns = PowerRenameLib::MetadataPatternExtractor::GetAllPossiblePatterns();
+    std::unordered_set<std::wstring> validPatterns;
+    validPatterns.reserve(allPatterns.size());
+    size_t maxPatternLength = 0;
+    for (const auto& pattern : allPatterns)
+    {
+        validPatterns.insert(pattern);
+        maxPatternLength = std::max(maxPatternLength, pattern.length());
+    }
+
+    size_t pos = 0;
+    while (pos < input.length())
+    {
+        // Handle regular characters
+        if (input[pos] != L'$')
+        {
+            output += input[pos];
+            pos++;
+            continue;
+        }
+
+        // Count consecutive dollar signs
+        size_t dollarCount = 0;
+        while (pos < input.length() && input[pos] == L'$')
+        {
+            dollarCount++;
+            pos++;
+        }
+
+        // Even number of dollars: all are escaped (e.g., $$ -> $, $$$$ -> $$)
+        if (dollarCount % 2 == 0)
+        {
+            output.append(dollarCount / 2, L'$');
+            continue;
+        }
+
+        // Odd number of dollars: pairs are escaped, last one might be a pattern prefix
+        // e.g., $ -> might be pattern, $$$ -> $ + might be pattern
+        size_t escapedDollars = dollarCount / 2;
+
+        // If no more characters, output all dollar signs
+        if (pos >= input.length())
+        {
+            output.append(dollarCount, L'$');
+            continue;
+        }
+
+        // Try to match a pattern (greedy matching for longest pattern)
+        std::wstring matchedPattern = FindLongestPattern(input, pos, maxPatternLength, validPatterns);
+
+        if (matchedPattern.empty())
+        {
+            // No pattern matched, output all dollar signs
+            output.append(dollarCount, L'$');
+        }
+        else
+        {
+            // Pattern matched
+            output.append(escapedDollars, L'$'); // Output escaped dollars first
+
+            // Replace pattern with its value or keep pattern name if value unavailable
+            std::wstring replacementValue = GetPatternValue(matchedPattern, patterns);
+            output += replacementValue;
+
+            pos += matchedPattern.length();
+        }
+    }
+
+    return StringCchCopy(result, cchMax, output.c_str());
+}
+
 
 HRESULT GetShellItemArrayFromDataObject(_In_ IUnknown* dataSource, _COM_Outptr_ IShellItemArray** items)
 {
@@ -530,7 +776,7 @@ BOOL GetEnumeratedFileName(__out_ecount(cchMax) PWSTR pszUniqueName, UINT cchMax
 }
 
 // Iterate through the shell items array and checks if at least 1 item has SFGAO_CANRENAME.
-// We do not enumerate child items - only the items the user selected.
+// We do not enumerate child items - only items the user selected.
 bool ShellItemArrayContainsRenamableItem(_In_ IShellItemArray* shellItemArray)
 {
     bool hasRenamable = false;
@@ -555,7 +801,7 @@ bool ShellItemArrayContainsRenamableItem(_In_ IShellItemArray* shellItemArray)
 }
 
 // Iterate through the data source and checks if at least 1 item has SFGAO_CANRENAME.
-// We do not enumerate child items - only the items the user selected.
+// We do not enumerate child items - only items the user selected.
 bool DataObjectContainsRenamableItem(_In_ IUnknown* dataSource)
 {
     bool hasRenamable = false;

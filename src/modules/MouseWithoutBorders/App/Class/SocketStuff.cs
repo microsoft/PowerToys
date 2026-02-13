@@ -29,6 +29,7 @@ using MouseWithoutBorders.Core;
 // </history>
 using MouseWithoutBorders.Exceptions;
 
+using Clipboard = MouseWithoutBorders.Core.Clipboard;
 using Thread = MouseWithoutBorders.Core.Thread;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.SocketStuff.#SendData(System.Byte[])", Justification = "Dotnet port with style preservation")]
@@ -100,7 +101,7 @@ namespace MouseWithoutBorders.Class
             {
                 if (encryptedStream == null && BackingSocket.Connected)
                 {
-                    encryptedStream = Common.GetEncryptedStream(new NetworkStream(BackingSocket));
+                    encryptedStream = Encryption.GetEncryptedStream(new NetworkStream(BackingSocket));
                     Common.SendOrReceiveARandomDataBlockPerInitialIV(encryptedStream);
                 }
 
@@ -114,7 +115,7 @@ namespace MouseWithoutBorders.Class
             {
                 if (decryptedStream == null && BackingSocket.Connected)
                 {
-                    decryptedStream = Common.GetDecryptedStream(new NetworkStream(BackingSocket));
+                    decryptedStream = Encryption.GetDecryptedStream(new NetworkStream(BackingSocket));
                     Common.SendOrReceiveARandomDataBlockPerInitialIV(decryptedStream, false);
                 }
 
@@ -180,7 +181,7 @@ namespace MouseWithoutBorders.Class
             Logger.LogDebug("SocketStuff started.");
 
             bASE_PORT = port;
-            Common.Ran = new Random();
+            Encryption.Ran = new Random();
 
             Logger.LogDebug("Validating session...");
 
@@ -220,11 +221,11 @@ namespace MouseWithoutBorders.Class
 
                 if (Setting.Values.IsMyKeyRandom)
                 {
-                    Setting.Values.MyKey = Common.MyKey;
+                    Setting.Values.MyKey = Encryption.MyKey;
                 }
 
-                Common.MagicNumber = Common.Get24BitHash(Common.MyKey);
-                Common.PackageID = Setting.Values.PackageID;
+                Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
+                Package.PackageID = Setting.Values.PackageID;
 
                 TcpPort = bASE_PORT;
 
@@ -241,7 +242,7 @@ namespace MouseWithoutBorders.Class
                 Logger.TelemetryLogTrace($"{nameof(SocketStuff)}: {e.Message}", SeverityLevel.Warning);
             }
 
-            Common.GetScreenConfig();
+            WinAPI.GetScreenConfig();
 
             if (firstRun && Common.RunOnScrSaverDesktop)
             {
@@ -281,7 +282,7 @@ namespace MouseWithoutBorders.Class
              * */
 
             Common.GetMachineName(); // IPs might have been changed
-            Common.UpdateMachineTimeAndID();
+            InitAndCleanup.UpdateMachineTimeAndID();
 
             Logger.LogDebug("Creating sockets...");
 
@@ -304,11 +305,11 @@ namespace MouseWithoutBorders.Class
                             sleepSecs = 10;
 
                             // It is reasonable to give a try on restarting MwB processes in other sessions.
-                            if (restartCount++ < 5 && Common.IsMyDesktopActive() && !Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
+                            if (restartCount++ < 5 && WinAPI.IsMyDesktopActive() && !Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                             {
                                 Logger.TelemetryLogTrace("Restarting the service dues to WSAEADDRINUSE.", SeverityLevel.Warning);
                                 Program.StartService();
-                                Common.PleaseReopenSocket = Common.REOPEN_WHEN_WSAECONNRESET;
+                                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_WSAECONNRESET;
                             }
 
                             break;
@@ -360,7 +361,7 @@ namespace MouseWithoutBorders.Class
                 {
                     Setting.Values.LastX = Common.LastX;
                     Setting.Values.LastY = Common.LastY;
-                    Setting.Values.PackageID = Common.PackageID;
+                    Setting.Values.PackageID = Package.PackageID;
 
                     // Common.Log("Saving IP: " + Setting.Values.DesMachineID.ToString(CultureInfo.CurrentCulture));
                     Setting.Values.DesMachineID = (uint)Common.DesMachineID;
@@ -504,10 +505,10 @@ namespace MouseWithoutBorders.Class
                 throw new ExpectedSocketException(log);
             }
 
-            bytes[3] = (byte)((Common.MagicNumber >> 24) & 0xFF);
-            bytes[2] = (byte)((Common.MagicNumber >> 16) & 0xFF);
+            bytes[3] = (byte)((Encryption.MagicNumber >> 24) & 0xFF);
+            bytes[2] = (byte)((Encryption.MagicNumber >> 16) & 0xFF);
             bytes[1] = 0;
-            for (int i = 2; i < Common.PACKAGE_SIZE; i++)
+            for (int i = 2; i < Package.PACKAGE_SIZE; i++)
             {
                 bytes[1] = (byte)(bytes[1] + bytes[i]);
             }
@@ -534,13 +535,13 @@ namespace MouseWithoutBorders.Class
 
             magic = (buf[3] << 24) + (buf[2] << 16);
 
-            if (magic != (Common.MagicNumber & 0xFFFF0000))
+            if (magic != (Encryption.MagicNumber & 0xFFFF0000))
             {
                 Logger.Log("Magic number invalid!");
                 buf[0] = (byte)PackageType.Invalid;
             }
 
-            for (int i = 2; i < Common.PACKAGE_SIZE; i++)
+            for (int i = 2; i < Package.PACKAGE_SIZE; i++)
             {
                 checksum = (byte)(checksum + buf[i]);
             }
@@ -556,7 +557,7 @@ namespace MouseWithoutBorders.Class
 
         internal static DATA TcpReceiveData(TcpSk tcp, out int bytesReceived)
         {
-            byte[] buf = new byte[Common.PACKAGE_SIZE_EX];
+            byte[] buf = new byte[Package.PACKAGE_SIZE_EX];
             Stream decryptedStream = tcp.DecryptedStream;
 
             if (tcp.BackingSocket == null || !tcp.BackingSocket.Connected || decryptedStream == null)
@@ -570,9 +571,9 @@ namespace MouseWithoutBorders.Class
 
             try
             {
-                bytesReceived = decryptedStream.ReadEx(buf, 0, Common.PACKAGE_SIZE);
+                bytesReceived = decryptedStream.ReadEx(buf, 0, Package.PACKAGE_SIZE);
 
-                if (bytesReceived != Common.PACKAGE_SIZE)
+                if (bytesReceived != Package.PACKAGE_SIZE)
                 {
                     buf[0] = bytesReceived == 0 ? (byte)PackageType.Error : (byte)PackageType.Invalid;
                 }
@@ -585,9 +586,9 @@ namespace MouseWithoutBorders.Class
 
                 if (package.IsBigPackage)
                 {
-                    bytesReceived = decryptedStream.ReadEx(buf, Common.PACKAGE_SIZE, Common.PACKAGE_SIZE);
+                    bytesReceived = decryptedStream.ReadEx(buf, Package.PACKAGE_SIZE, Package.PACKAGE_SIZE);
 
-                    if (bytesReceived != Common.PACKAGE_SIZE)
+                    if (bytesReceived != Package.PACKAGE_SIZE)
                     {
                         buf[0] = bytesReceived == 0 ? (byte)PackageType.Error : (byte)PackageType.Invalid;
                     }
@@ -613,28 +614,28 @@ namespace MouseWithoutBorders.Class
             switch (type)
             {
                 case PackageType.Keyboard:
-                    Common.PackageSent.Keyboard++;
+                    Package.PackageSent.Keyboard++;
                     break;
 
                 case PackageType.Mouse:
-                    Common.PackageSent.Mouse++;
+                    Package.PackageSent.Mouse++;
                     break;
 
                 case PackageType.Heartbeat:
                 case PackageType.Heartbeat_ex:
-                    Common.PackageSent.Heartbeat++;
+                    Package.PackageSent.Heartbeat++;
                     break;
 
                 case PackageType.Hello:
-                    Common.PackageSent.Hello++;
+                    Package.PackageSent.Hello++;
                     break;
 
                 case PackageType.ByeBye:
-                    Common.PackageSent.ByeBye++;
+                    Package.PackageSent.ByeBye++;
                     break;
 
                 case PackageType.Matrix:
-                    Common.PackageSent.Matrix++;
+                    Package.PackageSent.Matrix++;
                     break;
 
                 default:
@@ -642,11 +643,11 @@ namespace MouseWithoutBorders.Class
                     switch (subtype)
                     {
                         case (byte)PackageType.ClipboardText:
-                            Common.PackageSent.ClipboardText++;
+                            Package.PackageSent.ClipboardText++;
                             break;
 
                         case (byte)PackageType.ClipboardImage:
-                            Common.PackageSent.ClipboardImage++;
+                            Package.PackageSent.ClipboardImage++;
                             break;
 
                         default:
@@ -1248,7 +1249,7 @@ namespace MouseWithoutBorders.Class
             // WSAECONNRESET
             if (e is ExpectedSocketException se && se.ShouldReconnect)
             {
-                Common.PleaseReopenSocket = Common.REOPEN_WHEN_WSAECONNRESET;
+                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_WSAECONNRESET;
                 Logger.Log($"MainTCPRoutine: {nameof(FlagReopenSocketIfNeeded)}");
             }
         }
@@ -1265,7 +1266,7 @@ namespace MouseWithoutBorders.Class
             string strIP = string.Empty;
             ID remoteID = ID.NONE;
 
-            byte[] buf = RandomNumberGenerator.GetBytes(Common.PACKAGE_SIZE_EX);
+            byte[] buf = RandomNumberGenerator.GetBytes(Package.PACKAGE_SIZE_EX);
             d = new DATA(buf);
 
             TcpSk currentTcp = tcp;
@@ -1279,8 +1280,8 @@ namespace MouseWithoutBorders.Class
 
             try
             {
-                currentSocket.SendBufferSize = Common.PACKAGE_SIZE * 10000;
-                currentSocket.ReceiveBufferSize = Common.PACKAGE_SIZE * 10000;
+                currentSocket.SendBufferSize = Package.PACKAGE_SIZE * 10000;
+                currentSocket.ReceiveBufferSize = Package.PACKAGE_SIZE * 10000;
                 currentSocket.NoDelay = true; // This is very interesting to know:(
                 currentSocket.SendTimeout = 500;
                 d.MachineName = Common.MachineName;
@@ -1306,7 +1307,7 @@ namespace MouseWithoutBorders.Class
             }
             catch (ObjectDisposedException e)
             {
-                Common.PleaseReopenSocket = Common.REOPEN_WHEN_WSAECONNRESET;
+                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_WSAECONNRESET;
                 UpdateTcpSockets(currentTcp, SocketStatus.ForceClosed);
                 currentSocket.Close();
                 Logger.Log($"{nameof(MainTCPRoutine)}: The socket could have been closed/disposed by other threads: {e.Message}");
@@ -1353,10 +1354,10 @@ namespace MouseWithoutBorders.Class
                              * In this case, we should give ONE try to reconnect.
                              */
 
-                            if (Common.ReopenSocketDueToReadError)
+                            if (InitAndCleanup.ReopenSocketDueToReadError)
                             {
-                                Common.PleaseReopenSocket = Common.REOPEN_WHEN_WSAECONNRESET;
-                                Common.ReopenSocketDueToReadError = false;
+                                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_WSAECONNRESET;
+                                InitAndCleanup.ReopenSocketDueToReadError = false;
                             }
 
                             break;
@@ -1641,7 +1642,7 @@ namespace MouseWithoutBorders.Class
 
                 bool clientPushData = true;
                 ClipboardPostAction postAction = ClipboardPostAction.Other;
-                bool handShaken = Common.ShakeHand(ref remoteEndPoint, s, out Stream enStream, out Stream deStream, ref clientPushData, ref postAction);
+                bool handShaken = Clipboard.ShakeHand(ref remoteEndPoint, s, out Stream enStream, out Stream deStream, ref clientPushData, ref postAction);
 
                 if (!handShaken)
                 {
@@ -1656,7 +1657,7 @@ namespace MouseWithoutBorders.Class
 
                 if (clientPushData)
                 {
-                    Common.ReceiveAndProcessClipboardData(remoteEndPoint, s, enStream, deStream, $"{postAction}");
+                    Clipboard.ReceiveAndProcessClipboardData(remoteEndPoint, s, enStream, deStream, $"{postAction}");
                 }
                 else
                 {
@@ -1680,23 +1681,23 @@ namespace MouseWithoutBorders.Class
             const int CLOSE_TIMEOUT = 10;
             byte[] header = new byte[1024];
             string headerString = string.Empty;
-            if (Common.LastDragDropFile != null)
+            if (Clipboard.LastDragDropFile != null)
             {
                 string fileName = null;
 
                 if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                 {
-                    if (!File.Exists(Common.LastDragDropFile))
+                    if (!File.Exists(Clipboard.LastDragDropFile))
                     {
-                        headerString = Directory.Exists(Common.LastDragDropFile)
-                            ? $"{0}*{Common.LastDragDropFile} - Folder is not supported, zip it first!"
-                            : Common.LastDragDropFile.Contains("- File too big")
-                                ? $"{0}*{Common.LastDragDropFile}"
-                                : $"{0}*{Common.LastDragDropFile} not found!";
+                        headerString = Directory.Exists(Clipboard.LastDragDropFile)
+                            ? $"{0}*{Clipboard.LastDragDropFile} - Folder is not supported, zip it first!"
+                            : Clipboard.LastDragDropFile.Contains("- File too big")
+                                ? $"{0}*{Clipboard.LastDragDropFile}"
+                                : $"{0}*{Clipboard.LastDragDropFile} not found!";
                     }
                     else
                     {
-                        fileName = Common.LastDragDropFile;
+                        fileName = Clipboard.LastDragDropFile;
                         headerString = $"{new FileInfo(fileName).Length}*{fileName}";
                     }
                 }))
@@ -1739,11 +1740,11 @@ namespace MouseWithoutBorders.Class
                     Logger.Log(log);
                 }
             }
-            else if (!Common.IsClipboardDataImage && Common.LastClipboardData != null)
+            else if (!Clipboard.IsClipboardDataImage && Clipboard.LastClipboardData != null)
             {
                 try
                 {
-                    byte[] data = Common.LastClipboardData;
+                    byte[] data = Clipboard.LastClipboardData;
 
                     headerString = $"{data.Length}*{"text"}";
                     Common.GetBytesU(headerString).CopyTo(header, 0);
@@ -1773,9 +1774,9 @@ namespace MouseWithoutBorders.Class
                     Logger.Log(log);
                 }
             }
-            else if (Common.LastClipboardData != null && Common.LastClipboardData.Length > 0)
+            else if (Clipboard.LastClipboardData != null && Clipboard.LastClipboardData.Length > 0)
             {
-                byte[] data = Common.LastClipboardData;
+                byte[] data = Clipboard.LastClipboardData;
 
                 headerString = $"{data.Length}*{"image"}";
                 Common.GetBytesU(headerString).CopyTo(header, 0);
@@ -1828,7 +1829,7 @@ namespace MouseWithoutBorders.Class
                     }
                     while (rv > 0);
 
-                    if ((rv = Common.PACKAGE_SIZE - (sentCount % Common.PACKAGE_SIZE)) > 0)
+                    if ((rv = Package.PACKAGE_SIZE - (sentCount % Package.PACKAGE_SIZE)) > 0)
                     {
                         Array.Clear(buf, 0, buf.Length);
                         ecStream.Write(buf, 0, rv);
@@ -1899,7 +1900,7 @@ namespace MouseWithoutBorders.Class
                 }
                 while (rv > 0);
 
-                if ((rv = sentCount % Common.PACKAGE_SIZE) > 0)
+                if ((rv = sentCount % Package.PACKAGE_SIZE) > 0)
                 {
                     Array.Clear(buf, 0, buf.Length);
                     ecStream.Write(buf, 0, rv);
@@ -1983,9 +1984,9 @@ namespace MouseWithoutBorders.Class
                             if (tcp.MachineId == Setting.Values.MachineId)
                             {
                                 tcp = null;
-                                Setting.Values.MachineId = Common.Ran.Next();
-                                Common.UpdateMachineTimeAndID();
-                                Common.PleaseReopenSocket = Common.REOPEN_WHEN_HOTKEY;
+                                Setting.Values.MachineId = Encryption.Ran.Next();
+                                InitAndCleanup.UpdateMachineTimeAndID();
+                                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_HOTKEY;
 
                                 Logger.TelemetryLogTrace("MachineID conflict.", SeverityLevel.Information);
                             }

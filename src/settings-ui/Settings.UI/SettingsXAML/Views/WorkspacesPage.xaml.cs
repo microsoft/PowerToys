@@ -9,16 +9,17 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class WorkspacesPage : Page, IRefreshablePage
+    public sealed partial class WorkspacesPage : NavigablePage, IRefreshablePage
     {
         private WorkspacesViewModel ViewModel { get; set; }
 
         public WorkspacesPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new WorkspacesViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<WorkspacesSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         public void RefreshEnabledState()

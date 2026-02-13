@@ -1,0 +1,215 @@
+parameters:
+  - name: versionNumber
+    type: string
+    default: "0.0.1"
+  - name: codeSign
+    type: boolean
+    default: false
+  - name: signingIdentity
+    type: object
+    default: {}
+  - name: additionalBuildOptions
+    type: string
+    default: ''
+
+steps:
+  # Install WiX 5.0.2 tools needed for VNext installer (matching project SDK)
+  - task: DotNetCoreCLI@2
+    displayName: Install WiX 5.0.2 tools
+    inputs:
+      command: 'custom'
+      custom: 'tool'
+      arguments: 'install --global wix --version 5.0.2'
+
+  - pwsh: |-
+      Write-Host "##vso[task.setvariable variable=InstallerMachineRoot]installer\PowerToysSetupVNext\$(BuildPlatform)\$(BuildConfiguration)\MachineSetup"
+      Write-Host "##vso[task.setvariable variable=InstallerUserRoot]installer\PowerToysSetupVNext\$(BuildPlatform)\$(BuildConfiguration)\UserSetup"
+      Write-Host "##vso[task.setvariable variable=InstallerMachineBasename]PowerToysSetup-${{ parameters.versionNumber }}-$(BuildPlatform)"
+      Write-Host "##vso[task.setvariable variable=InstallerUserBasename]PowerToysUserSetup-${{ parameters.versionNumber }}-$(BuildPlatform)"
+    displayName: Prepare Installer variables
+
+  # This dll needs to be built and signed before building the MSI.
+  # The Custom Actions project contains a pre-build event that prepares the .wxs files
+  # by filling them out with all our components. We pass RunBuildEvents=true to force
+  # that logic to run.
+  - task: VSBuild@1
+    displayName: Build Shared Support DLLs
+    inputs:
+      solution: "**/installer/PowerToysSetup.slnx"
+      vsVersion: 18.0
+      msbuildArgs: >-
+        /t:PowerToysSetupCustomActionsVNext;SilentFilesInUseBAFunction
+        /p:RunBuildEvents=true;RestorePackagesConfig=true;CIBuild=true
+        -restore -graph
+        /bl:$(LogOutputDirectory)\installer-actions.binlog
+        ${{ parameters.additionalBuildOptions }}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: true
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-esrp-sign-files-authenticode.yml
+      parameters:
+        displayName: Sign Shared Support DLLs
+        signingIdentity: ${{ parameters.signingIdentity }}
+        folder: 'installer'
+        pattern: |-
+          **/PowerToysSetupCustomActionsVNext.dll
+          **/SilentFilesInUseBAFunction.dll
+
+  ## INSTALLER START
+  #### MSI BUILDING AND SIGNING
+  #
+  # The MSI build contains code that reverts the .wxs files to their in-tree versions.
+  # This is only supposed to happen during local builds. Since this build system is
+  # supposed to run side by side--machine and then user--we do NOT want to destroy
+  # the .wxs files. Therefore, we pass RunBuildEvents=false to suppress all of that
+  # logic.
+  #
+  # We pass BuildProjectReferences=false so that it does not recompile the DLLs we just built.
+  # We only pass -restore on the first one because the second run should already have all
+  # of the dependencies.
+  - task: VSBuild@1
+    displayName: 💻 Build VNext MSI
+    inputs:
+      solution: "**/installer/PowerToysSetup.slnx"
+      vsVersion: 18.0
+      msbuildArgs: >-
+        -restore
+        /t:PowerToysInstallerVNext
+        /p:RunBuildEvents=false;PerUser=false;BuildProjectReferences=false;CIBuild=true
+        /bl:$(LogOutputDirectory)\installer-machine-msi.binlog
+        ${{ parameters.additionalBuildOptions }}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: false # don't undo our hard work above by deleting the CustomActions dll
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: 👤 Build VNext MSI
+    inputs:
+      solution: "**/installer/PowerToysSetup.slnx"
+      vsVersion: 18.0
+      msbuildArgs: >-
+        /t:PowerToysInstallerVNext
+        /p:RunBuildEvents=false;PerUser=true;BuildProjectReferences=false;CIBuild=true
+        /bl:$(LogOutputDirectory)\installer-user-msi.binlog
+        ${{ parameters.additionalBuildOptions }}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: false # don't undo our hard work above by deleting the CustomActions dll
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  - script: |-
+      wix msi decompile $(InstallerMachineRoot)\$(InstallerMachineBasename).msi -x $(build.sourcesdirectory)\extractedMachineMsi
+      wix msi decompile $(InstallerUserRoot)\$(InstallerUserBasename).msi -x $(build.sourcesdirectory)\extractedUserMsi
+      dir $(build.sourcesdirectory)\extractedMachineMsi
+      dir $(build.sourcesdirectory)\extractedUserMsi
+    displayName: "WiX5: Extract and verify MSIs"
+
+  # Check if deps.json files don't reference different dll versions.
+  - pwsh: |-
+      & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\extractedMachineMsi\File'
+      & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\extractedUserMsi\File'
+    displayName: Audit deps.json in MSI extracted files
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - pwsh: |-
+        & .pipelines/versionAndSignCheck.ps1 -targetDir '$(build.sourcesdirectory)\extractedMachineMsi\File'
+        & .pipelines/versionAndSignCheck.ps1 -targetDir '$(build.sourcesdirectory)\extractedMachineMsi\Binary'
+        & .pipelines/versionAndSignCheck.ps1 -targetDir '$(build.sourcesdirectory)\extractedUserMsi\File'
+        & .pipelines/versionAndSignCheck.ps1 -targetDir '$(build.sourcesdirectory)\extractedUserMsi\Binary'
+        git clean -xfd ./extractedMachineMsi ./extractedUserMsi
+      displayName: Verify all binaries are signed and versioned
+
+    - template: steps-esrp-sign-files-authenticode.yml
+      parameters:
+        displayName: Sign VNext MSIs
+        signingIdentity: ${{ parameters.signingIdentity }}
+        folder: 'installer'
+        pattern: '**/PowerToys*Setup-*.msi'
+
+  #### END MSI
+  
+  #### BOOTSTRAP BUILDING AND SIGNING
+  # We pass BuildProjectReferences=false so that it does not recompile the DLLs we just built.
+  # We only pass -restore on the first one because the second run should already have all
+  # of the dependencies.
+  - task: VSBuild@1
+    displayName: 💻 Build VNext Bootstrapper
+    inputs:
+      solution: "**/installer/PowerToysSetup.slnx"
+      vsVersion: 18.0
+      msbuildArgs: >-
+        -restore
+        /t:PowerToysBootstrapperVNext
+        /p:PerUser=false;BuildProjectReferences=false;CIBuild=true
+        /bl:$(LogOutputDirectory)\installer-machine-bootstrapper.binlog
+        ${{ parameters.additionalBuildOptions }}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: false # don't undo our hard work above by deleting the MSI nor SilentFilesInUseBAFunction
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  - task: VSBuild@1
+    displayName: 👤 Build VNext Bootstrapper
+    inputs:
+      solution: "**/installer/PowerToysSetup.slnx"
+      vsVersion: 18.0
+      msbuildArgs: >-
+        /t:PowerToysBootstrapperVNext
+        /p:PerUser=true;BuildProjectReferences=false;CIBuild=true
+        /bl:$(LogOutputDirectory)\installer-user-bootstrapper.binlog
+        ${{ parameters.additionalBuildOptions }}
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      clean: false # don't undo our hard work above by deleting the MSI nor SilentFilesInUseBAFunction
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  # The entirety of bundle unpacking/re-packing is unnecessary if we are not code signing it.
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - script: |-
+        wix burn detach $(InstallerMachineRoot)\$(InstallerMachineBasename).exe -engine installer\machine-engine.exe
+        wix burn detach $(InstallerUserRoot)\$(InstallerUserBasename).exe -engine installer\user-engine.exe
+      displayName: "WiX5: Extract Engines from Bundles"
+
+    - template: steps-esrp-sign-files-authenticode.yml
+      parameters:
+        displayName: Sign WiX Engines
+        signingIdentity: ${{ parameters.signingIdentity }}
+        folder: "installer"
+        pattern: '*-engine.exe'
+
+    - script: |-
+        wix burn reattach $(InstallerMachineRoot)\$(InstallerMachineBasename).exe -engine installer\machine-engine.exe -o $(InstallerMachineRoot)\$(InstallerMachineBasename).exe
+        wix burn reattach $(InstallerUserRoot)\$(InstallerUserBasename).exe -engine installer\user-engine.exe -o $(InstallerUserRoot)\$(InstallerUserBasename).exe
+      displayName: "WiX5: Reattach Engines to Bundles"
+
+    - pwsh: |-
+        & wix burn extract -oba installer\ba\m "$(InstallerMachineRoot)\$(InstallerMachineBasename).exe"
+        & wix burn extract -oba installer\ba\u "$(InstallerUserRoot)\$(InstallerUserBasename).exe"
+        Get-ChildItem installer\ba -Recurse -Include *.exe,*.dll | Get-AuthenticodeSignature | ForEach-Object {
+          If ($_.Status -Ne "Valid") {
+            Write-Error $_.StatusMessage
+          } Else {
+            Write-Host $_.StatusMessage
+          }
+        }
+        & git clean -fdx installer\ba
+      displayName: "WiX5: Verify Bootstrapper content is signed"
+
+    - template: steps-esrp-sign-files-authenticode.yml
+      parameters:
+        displayName: Sign Final Bootstrappers
+        signingIdentity: ${{ parameters.signingIdentity }}
+        folder: 'installer'
+        pattern: '**/PowerToys*Setup-*.exe'
+
+  #### END BOOTSTRAP
+  ## END INSTALLER

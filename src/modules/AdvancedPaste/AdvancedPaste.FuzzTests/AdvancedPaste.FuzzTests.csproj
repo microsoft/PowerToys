@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+	<!-- Look at Directory.Build.props in root for common stuff as well -->
+	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.FuzzTest.props" />
 	<PropertyGroup>
-		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -12,7 +14,7 @@
 	    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --ignore-exit-code 8</TestingPlatformCommandLineArguments>
 	</PropertyGroup>
 	<PropertyGroup>
-		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\AdvancedPaste.FuzzTests\</OutputPath>
+		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\AdvancedPaste.FuzzTests\</OutputPath>
 	</PropertyGroup>
 	<ItemGroup>
 		<Compile Include="..\AdvancedPaste\Helpers\JsonHelper.cs" Link="JsonHelper.cs" />

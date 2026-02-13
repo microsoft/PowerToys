@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly PowerAccentSettings _powerAccentSettings;
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
 
         private const string SpecialGroup = "QuickAccent_Group_Special";
         private const string LanguageGroup = "QuickAccent_Group_Language";
@@ -52,6 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             new PowerAccentLanguageModel("KU", "QuickAccent_SelectedLanguage_Kurdish", LanguageGroup),
             new PowerAccentLanguageModel("LT", "QuickAccent_SelectedLanguage_Lithuanian", LanguageGroup),
             new PowerAccentLanguageModel("MK", "QuickAccent_SelectedLanguage_Macedonian", LanguageGroup),
+            new PowerAccentLanguageModel("MT", "QuickAccent_SelectedLanguage_Maltese", LanguageGroup),
             new PowerAccentLanguageModel("MI", "QuickAccent_SelectedLanguage_Maori", LanguageGroup),
             new PowerAccentLanguageModel("NO", "QuickAccent_SelectedLanguage_Norwegian", LanguageGroup),
             new PowerAccentLanguageModel("PI", "QuickAccent_SelectedLanguage_Pinyin", LanguageGroup),
@@ -67,6 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             new PowerAccentLanguageModel("SR_CYRL", "QuickAccent_SelectedLanguage_Serbian_Cyrillic", LanguageGroup),
             new PowerAccentLanguageModel("SV", "QuickAccent_SelectedLanguage_Swedish", LanguageGroup),
             new PowerAccentLanguageModel("TK", "QuickAccent_SelectedLanguage_Turkish", LanguageGroup),
+            new PowerAccentLanguageModel("VI", "QuickAccent_SelectedLanguage_Vietnamese", LanguageGroup),
             new PowerAccentLanguageModel("CY", "QuickAccent_SelectedLanguage_Welsh", LanguageGroup),
         ];
 
@@ -87,7 +89,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerAccentViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public PowerAccentViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);

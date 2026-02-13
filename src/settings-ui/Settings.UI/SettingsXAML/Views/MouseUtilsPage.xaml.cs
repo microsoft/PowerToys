@@ -12,7 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class MouseUtilsPage : Page, IRefreshablePage
+    public sealed partial class MouseUtilsPage : NavigablePage, IRefreshablePage
     {
         private MouseUtilsViewModel ViewModel { get; set; }
 
@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 // By mistake, the first release of Find My Mouse was saving settings in two places at the same time.
                 // Delete the wrong path for Find My Mouse settings.
-                var tempSettingsUtils = new SettingsUtils();
+                var tempSettingsUtils = SettingsUtils.Default;
                 if (tempSettingsUtils.SettingsExists("Find My Mouse"))
                 {
                     var settingsFilePath = tempSettingsUtils.GetSettingsFilePath("Find My Mouse");
@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
             }
 
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new MouseUtilsViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
@@ -42,12 +42,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsRepository<MouseHighlighterSettings>.GetInstance(settingsUtils),
                 SettingsRepository<MouseJumpSettings>.GetInstance(settingsUtils),
                 SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(settingsUtils),
+                SettingsRepository<CursorWrapSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
 
             DataContext = ViewModel;
             InitializeComponent();
 
             this.MouseUtils_MouseJump_Panel.ViewModel = ViewModel;
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         public void RefreshEnabledState()

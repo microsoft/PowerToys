@@ -122,8 +122,15 @@ namespace MouseWithoutBorders.Class
         [DllImport("user32.dll", SetLastError = false)]
         internal static extern IntPtr GetDesktopWindow();
 
+        [LibraryImport("user32.dll")]
+        internal static partial IntPtr GetShellWindow();
+
         [DllImport("user32.dll")]
         internal static extern IntPtr GetWindowDC(IntPtr hWnd);
+
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool GetWindowRect(IntPtr hWnd, out RECT rect);
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         internal static extern int DrawText(IntPtr hDC, string lpString, int nCount, ref RECT lpRect, uint uFormat);
@@ -291,6 +298,17 @@ namespace MouseWithoutBorders.Class
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
+        [LibraryImport("kernel32.dll",
+            EntryPoint = "QueryFullProcessImageNameW",
+            SetLastError = true,
+            StringMarshalling = StringMarshalling.Utf16)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool QueryFullProcessImageName(
+            IntPtr hProcess, QUERY_FULL_PROCESS_NAME_FLAGS dwFlags, [Out] char[] lpExeName, ref uint lpdwSize);
+
+        [LibraryImport("shell32.dll", SetLastError = true)]
+        internal static partial int SHQueryUserNotificationState(out USER_NOTIFICATION_STATE state);
+
         [StructLayout(LayoutKind.Sequential)]
         internal struct POINT
         {
@@ -333,11 +351,11 @@ namespace MouseWithoutBorders.Class
 
         [DllImport("ntdll.dll")]
         internal static extern int NtQueryInformationProcess(
-           IntPtr hProcess,
-           int processInformationClass /* 0 */,
-           ref PROCESS_BASIC_INFORMATION processBasicInformation,
-           uint processInformationLength,
-           out uint returnLength);
+            IntPtr hProcess,
+            int processInformationClass /* 0 */,
+            ref PROCESS_BASIC_INFORMATION processBasicInformation,
+            uint processInformationLength,
+            out uint returnLength);
 #endif
 
 #if USE_GetSecurityDescriptorSacl
@@ -538,6 +556,7 @@ namespace MouseWithoutBorders.Class
             XDOWN = 0x0080,
             XUP = 0x0100,
             WHEEL = 0x0800,
+            HWHEEL = 0x1000,
             VIRTUALDESK = 0x4000,
             ABSOLUTE = 0x8000,
         }
@@ -632,14 +651,14 @@ namespace MouseWithoutBorders.Class
         {
             internal int LowPart;
             internal int HighPart;
-        }// end struct
+        } // end struct
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct LUID_AND_ATTRIBUTES
         {
             internal LUID Luid;
             internal int Attributes;
-        }// end struct
+        } // end struct
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct TOKEN_PRIVILEGES
@@ -670,23 +689,23 @@ namespace MouseWithoutBorders.Class
         internal const int TOKEN_ADJUST_SESSIONID = 0x0100;
 
         internal const int TOKEN_ALL_ACCESS_P = STANDARD_RIGHTS_REQUIRED |
-                                      TOKEN_ASSIGN_PRIMARY |
-                                      TOKEN_DUPLICATE |
-                                      TOKEN_IMPERSONATE |
-                                      TOKEN_QUERY |
-                                      TOKEN_QUERY_SOURCE |
-                                      TOKEN_ADJUST_PRIVILEGES |
-                                      TOKEN_ADJUST_GROUPS |
-                                      TOKEN_ADJUST_DEFAULT;
+            TOKEN_ASSIGN_PRIMARY |
+            TOKEN_DUPLICATE |
+            TOKEN_IMPERSONATE |
+            TOKEN_QUERY |
+            TOKEN_QUERY_SOURCE |
+            TOKEN_ADJUST_PRIVILEGES |
+            TOKEN_ADJUST_GROUPS |
+            TOKEN_ADJUST_DEFAULT;
 
         internal const int TOKEN_ALL_ACCESS = TOKEN_ALL_ACCESS_P | TOKEN_ADJUST_SESSIONID;
 
         internal const int TOKEN_READ = STANDARD_RIGHTS_READ | TOKEN_QUERY;
 
         internal const int TOKEN_WRITE = STANDARD_RIGHTS_WRITE |
-                                      TOKEN_ADJUST_PRIVILEGES |
-                                      TOKEN_ADJUST_GROUPS |
-                                      TOKEN_ADJUST_DEFAULT;
+            TOKEN_ADJUST_PRIVILEGES |
+            TOKEN_ADJUST_GROUPS |
+            TOKEN_ADJUST_DEFAULT;
 
         internal const int TOKEN_EXECUTE = STANDARD_RIGHTS_EXECUTE;
 
@@ -940,6 +959,30 @@ namespace MouseWithoutBorders.Class
             NameDnsDomain = 12,
         }
 
+        internal enum MONITOR_FROM_WINDOW_FLAGS : uint
+        {
+            DEFAULT_TO_NULL = 0x00000000,
+            DEFAULT_TO_PRIMARY = 0x00000001,
+            DEFAULT_TO_NEAREST = 0x00000002,
+        }
+
+        internal enum QUERY_FULL_PROCESS_NAME_FLAGS : uint
+        {
+            DEFAULT = 0x00000000,
+            PROCESS_NAME_NATIVE = 0x00000001,
+        }
+
+        internal enum USER_NOTIFICATION_STATE
+        {
+            NOT_PRESENT = 1,
+            BUSY = 2,
+            RUNNING_D3D_FULL_SCREEN = 3,
+            PRESENTATION_MODE = 4,
+            ACCEPTS_NOTIFICATIONS = 5,
+            QUIET_TIME = 6,
+            APP = 7,
+        }
+
         [DllImport("secur32.dll", CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.I1)]
         internal static extern bool GetUserNameEx(int nameFormat, StringBuilder userName, ref uint userNameSize);
@@ -970,7 +1013,7 @@ namespace MouseWithoutBorders.Class
         /// <summary>
         /// Use this method to figure out if your code is running on a Microsoft computer.
         /// </summary>
-        /// <returns>True if running on a Microsoft computer, otherwise false.</returns>
+        /// <returns>True if running on a Microsoft computer; otherwise, false.</returns>
         internal static bool IsRunningAtMicrosoft()
         {
             string domain = GetDNSDomain();

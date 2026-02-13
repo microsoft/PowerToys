@@ -9,14 +9,14 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class EnvironmentVariablesPage : Page, IRefreshablePage
+    public sealed partial class EnvironmentVariablesPage : NavigablePage, IRefreshablePage
     {
         private EnvironmentVariablesViewModel ViewModel { get; }
 
         public EnvironmentVariablesPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new EnvironmentVariablesViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<EnvironmentVariablesSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsElevated);
         }
 

@@ -1,103 +1,110 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<Window
+<winuiex:WindowEx
     x:Class="Microsoft.CmdPal.UI.Settings.SettingsWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:text="using:Windows.UI.Text"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:winuiex="using:WinUIEx"
     Title="SettingsWindow"
+    Width="1280"
+    Height="720"
+    MinWidth="480"
+    MinHeight="480"
     Activated="Window_Activated"
     Closed="Window_Closed"
     mc:Ignorable="d">
-    <Window.SystemBackdrop>
+    <winuiex:WindowEx.SystemBackdrop>
         <MicaBackdrop />
-    </Window.SystemBackdrop>
-    <Grid>
+    </winuiex:WindowEx.SystemBackdrop>
+    <Grid x:Name="RootElement">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <!--  TO DO: Replace this with WinUI TitleBar once that ships.  -->
-        <Button
-            x:Name="PaneToggleBtn"
-            Width="48"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Click="PaneToggleBtn_Click"
-            Style="{StaticResource PaneToggleButtonStyle}" />
-        <StackPanel
+        <TitleBar
             x:Name="AppTitleBar"
-            Grid.Row="0"
-            Height="48"
-            Orientation="Horizontal">
-            <Image
-                Width="16"
-                Height="16"
-                Source="ms-appx:///Assets/icon.svg" />
-            <TextBlock
-                Margin="12,0,0,0"
-                VerticalAlignment="Center"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="Command Palette Settings" />
-        </StackPanel>
+            BackRequested="TitleBar_BackRequested"
+            IsBackButtonVisible="{x:Bind NavFrame.CanGoBack, Mode=OneWay}"
+            IsTabStop="False"
+            PaneToggleRequested="AppTitleBar_PaneToggleRequested">
+            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
+            <TitleBar.LeftHeader>
+                <ImageIcon
+                    x:Name="WorkAroundIcon"
+                    Height="16"
+                    Margin="16,0,0,0"
+                    Source="ms-appx:///Assets/icon.svg" />
+            </TitleBar.LeftHeader>
+        </TitleBar>
         <NavigationView
             x:Name="NavView"
             Grid.Row="1"
+            CompactModeThresholdWidth="1007"
             DisplayModeChanged="NavView_DisplayModeChanged"
+            ExpandedModeThresholdWidth="1007"
             IsBackButtonVisible="Collapsed"
+            IsPaneToggleButtonVisible="False"
             IsSettingsVisible="False"
             ItemInvoked="NavView_ItemInvoked"
-            Loaded="NavView_Loaded"
-            OpenPaneLength="200">
+            Loaded="NavView_Loaded">
             <NavigationView.Resources>
                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
                 <Thickness x:Key="NavigationViewHeaderMargin">15,0,0,0</Thickness>
             </NavigationView.Resources>
-
             <NavigationView.MenuItems>
                 <NavigationViewItem
+                    x:Name="GeneralPageNavItem"
                     x:Uid="Settings_GeneralPage_NavigationViewItem_General"
                     Icon="{ui:FontIcon Glyph=&#xE80F;}"
                     Tag="General" />
                 <NavigationViewItem
+                    x:Name="AppearancePageNavItem"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Appearance"
+                    Icon="{ui:FontIcon Glyph=&#xE790;}"
+                    Tag="Appearance" />
+                <NavigationViewItem
+                    x:Name="ExtensionPageNavItem"
                     x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"
                     Icon="{ui:FontIcon Glyph=&#xEA86;}"
                     Tag="Extensions" />
+                <!--  "Internal Tools" page item is added dynamically from code  -->
             </NavigationView.MenuItems>
-
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-
-                <BreadcrumbBar
-                    x:Name="NavigationBreadcrumbBar"
-                    Grid.Row="0"
-                    MaxWidth="1000"
-                    Margin="16,0,0,0"
-                    ItemClicked="NavigationBreadcrumbBar_ItemClicked"
-                    ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
-                    <BreadcrumbBar.ItemTemplate>
-                        <DataTemplate x:DataType="local:Crumb">
-                            <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
-                        </DataTemplate>
-                    </BreadcrumbBar.ItemTemplate>
-                    <BreadcrumbBar.Resources>
-                        <ResourceDictionary>
-                            <x:Double x:Key="BreadcrumbBarItemThemeFontSize">28</x:Double>
-                            <Thickness x:Key="BreadcrumbBarChevronPadding">7,4,8,0</Thickness>
-                            <FontWeight x:Key="BreadcrumbBarItemFontWeight">SemiBold</FontWeight>
-                            <x:Double x:Key="BreadcrumbBarChevronFontSize">16</x:Double>
-                        </ResourceDictionary>
-                    </BreadcrumbBar.Resources>
-                </BreadcrumbBar>
-
-                <Frame x:Name="NavFrame" Grid.Row="1" />
+                <Grid Padding="16,0">
+                    <BreadcrumbBar
+                        x:Name="NavigationBreadcrumbBar"
+                        MaxWidth="1000"
+                        ItemClicked="NavigationBreadcrumbBar_ItemClicked"
+                        ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
+                        <BreadcrumbBar.ItemTemplate>
+                            <DataTemplate x:DataType="local:Crumb">
+                                <TextBlock Text="{x:Bind Label}" />
+                            </DataTemplate>
+                        </BreadcrumbBar.ItemTemplate>
+                        <BreadcrumbBar.Resources>
+                            <ResourceDictionary>
+                                <x:Double x:Key="BreadcrumbBarItemThemeFontSize">28</x:Double>
+                                <Thickness x:Key="BreadcrumbBarChevronPadding">7,4,8,0</Thickness>
+                                <text:FontWeight x:Key="BreadcrumbBarItemFontWeight">SemiBold</text:FontWeight>
+                                <x:Double x:Key="BreadcrumbBarChevronFontSize">16</x:Double>
+                            </ResourceDictionary>
+                        </BreadcrumbBar.Resources>
+                    </BreadcrumbBar>
+                </Grid>
+                <Frame
+                    x:Name="NavFrame"
+                    Grid.Row="1"
+                    Navigated="NavFrame_OnNavigated" />
             </Grid>
         </NavigationView>
     </Grid>
-</Window>
+</winuiex:WindowEx>

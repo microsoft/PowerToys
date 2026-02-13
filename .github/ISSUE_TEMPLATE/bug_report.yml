@@ -1,6 +1,5 @@
 name: "🕷️ Bug report"
 description: Report errors or unexpected behavior
-type: Bug
 labels:
 - Issue-Bug
 - Needs-Triage
@@ -8,18 +7,27 @@ body:
 - type: markdown
   attributes:
     value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
-- type: input
+- type: markdown
+  attributes:
+    value: |
+      We are aware of the following high-volume issues and are actively working on them. Please check if your issue is one of these before filing a new bug report:
+      * **PowerToys Run crash related to "Desktop composition is disabled"**: This may appear as `COMException: 0x80263001`. For more details, see issue [#31226](https://github.com/microsoft/PowerToys/issues/31226).
+      * **PowerToys Run crash with `COMException (0xD0000701)`**: For more details, see issue [#30769](https://github.com/microsoft/PowerToys/issues/30769).
+      * **PowerToys Run crash with a "Cyclic reference" error**: This `System.InvalidOperationException` is detailed in issue [#36451](https://github.com/microsoft/PowerToys/issues/36451).
+- id: version
+  type: input
   attributes:
     label: Microsoft PowerToys version
-    placeholder: 0.70.0
-    description: Hover over system tray icon or look at Settings
+    placeholder: X.XX.X
+    description: Hover over the system tray icon or look at Settings
   validations:
     required: true
 
-- type: dropdown
+- id: installed
+  type: dropdown
   attributes:
     label: Installation method
-    description: How / Where was PowerToys installed from?
+    description: How / where was PowerToys installed from?
     multiple: true
     options:
       - GitHub
@@ -32,14 +40,6 @@ body:
       - Other (please specify in "Steps to Reproduce")
   validations:
     required: true
-
-- type: dropdown
-  attributes:
-    label: Running as admin
-    description: Are you running PowerToys as Admin?
-    options:
-      - "Yes"
-      - "No"
 
 - type: dropdown
   attributes:
@@ -65,9 +65,10 @@ body:
       - Image Resizer
       - Installer
       - Keyboard Manager
+      - Light Switch
       - Mouse Utilities
       - Mouse Without Borders
-      - New+ 
+      - New+
       - Peek
       - PowerRename
       - PowerToys Run
@@ -106,6 +107,19 @@ body:
   validations:
     required: false
 
+- id: additionalInfo
+  type: textarea
+  attributes:
+    label: Additional Information
+    placeholder: |
+      OS version
+      .Net version
+      System Language
+      User or System Installation
+      Running as admin
+  validations:
+    required: false
+    
 - type: textarea
   attributes:
     label: Other Software
@@ -116,3 +130,4 @@ body:
       My Cool Application v0.3 (include a code snippet if it would help!)
   validations:
     required: false
+  

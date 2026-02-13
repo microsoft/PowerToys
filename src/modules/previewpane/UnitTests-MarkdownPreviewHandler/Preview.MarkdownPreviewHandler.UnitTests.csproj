@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <AssemblyTitle>UnitTests-MarkdownPreviewHandler</AssemblyTitle>
+    <AssemblyDescription>PowerToys UnitTests-MarkdownPreviewHandler</AssemblyDescription>
+    <AssemblyTitle>UnitTests-MarkdownPreviewHandler</AssemblyTitle>
+    <Description>PowerToys UnitTests-MarkdownPreviewHandler</Description>
+    <ProjectGuid>{A2B51B8B-8F90-424E-BC97-F9AB7D76CA1A}</ProjectGuid>
+    <RootNamespace>PreviewPaneUnitTests</RootNamespace>
+    <AssemblyName>PreviewPaneUnitTests</AssemblyName>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
+    <ProjectReference Include="..\MarkdownPreviewHandler\MarkdownPreviewHandler.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="HelperFiles\MarkdownWithExternalImage.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="HelperFiles\MarkdownWithHTMLImageTag.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="HelperFiles\MarkdownWithscript.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

@@ -11,13 +11,13 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PowerAccentPage : Page, IRefreshablePage
+    public sealed partial class PowerAccentPage : NavigablePage, IRefreshablePage
     {
         private PowerAccentViewModel ViewModel { get; set; }
 
         public PowerAccentPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new PowerAccentViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             this.InitializeComponent();

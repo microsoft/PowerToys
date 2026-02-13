@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Look at Directory.Build.props in root for common stuff as well -->
+	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+	<PropertyGroup>
+		<ProjectGuid>{2B1505FA-132A-460B-B22B-7CC3FFAB0C5D}</ProjectGuid>
+		<RootNamespace>Microsoft.AdvancedPaste.UITests</RootNamespace>
+		<IsPackable>false</IsPackable>
+		<Nullable>enable</Nullable>
+		<OutputType>Library</OutputType>
+
+		<!-- This is a UI test, so don't run as part of MSBuild -->
+		<RunVSTest>false</RunVSTest>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\UITests-AdvancedPaste\</OutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Appium.WebDriver" />
+		<PackageReference Include="MSTest" />
+		<PackageReference Include="System.Net.Http" />
+		<PackageReference Include="System.Private.Uri" />
+		<PackageReference Include="System.Text.RegularExpressions" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="TestFiles\**\*.*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+</Project>

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -11,9 +12,6 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class OobeRegistryPreview : Page
     {
         public OobePowerToysModule ViewModel { get; set; }
@@ -21,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeRegistryPreview()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.RegistryPreview]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.RegistryPreview);
             DataContext = ViewModel;
         }
 
@@ -32,9 +30,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(RegistryPreviewPage));
+                OobeWindow.OpenMainWindowCallback(typeof(RegistryPreviewPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
@@ -43,6 +41,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
+
+            // Disable the Launch button if the module is disabled
+            var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
+            LaunchButton.IsEnabled = ModuleHelper.GetIsModuleEnabled(generalSettings, ManagedCommon.ModuleType.RegistryPreview);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

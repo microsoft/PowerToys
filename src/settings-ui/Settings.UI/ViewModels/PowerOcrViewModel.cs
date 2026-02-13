@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Timers;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -20,16 +21,18 @@ using Windows.Media.Ocr;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class PowerOcrViewModel : Observable, IDisposable
+    public partial class PowerOcrViewModel : PageViewModelBase
     {
-        private bool disposedValue;
+        protected override string ModuleName => PowerOcrSettings.ModuleName;
 
-        // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it, otherwise we schedule saving it after this interval
+        private bool _disposed;
+
+        // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it; otherwise, we schedule saving it after this interval
         private const int SaveSettingsDelayInMs = 500;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private readonly System.Threading.Lock _delayedActionLock = new System.Threading.Lock();
 
         private readonly PowerOcrSettings _powerOcrSettings;
@@ -69,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         public PowerOcrViewModel(
-            ISettingsUtils settingsUtils,
+            SettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<PowerOcrSettings> powerOcrsettingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
@@ -112,6 +115,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.PowerOcr;
             }
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [ActivationShortcut],
+            };
+
+            return hotkeysDict;
         }
 
         public bool IsEnabled
@@ -246,23 +259,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsEnabled));
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposed)
             {
                 if (disposing)
                 {
-                    _delayedTimer.Dispose();
+                    _delayedTimer?.Dispose();
+                    _delayedTimer = null;
                 }
 
-                disposedValue = true;
+                _disposed = true;
             }
-        }
 
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            base.Dispose(disposing);
         }
 
         public string SnippingToolInfoBarMargin

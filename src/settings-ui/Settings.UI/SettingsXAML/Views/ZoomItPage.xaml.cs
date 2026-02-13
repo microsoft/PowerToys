@@ -12,7 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class ZoomItPage : Page, IRefreshablePage
+    public sealed partial class ZoomItPage : NavigablePage, IRefreshablePage
     {
         private ZoomItViewModel ViewModel { get; set; }
 
@@ -104,7 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public ZoomItPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new ZoomItViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, PickFileDialog, PickFontDialog);
             DataContext = ViewModel;
             InitializeComponent();

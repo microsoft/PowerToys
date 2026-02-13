@@ -9,13 +9,15 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
+using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
+using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
+using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
@@ -26,11 +28,16 @@ using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
     public partial class App : Application
     {
+        public static OobeShellViewModel OobeShellViewModel { get; } = new();
+
+        private OobeWindow oobeWindow;
+
+        private ScoobeWindow scoobeWindow;
+
+        private ShortcutConflictWindow shortcutConflictWindow;
+
         private enum Arguments
         {
             PTPipeName = 1,
@@ -41,16 +48,14 @@ namespace Microsoft.PowerToys.Settings.UI
             IsUserAdmin,
             ShowOobeWindow,
             ShowScoobeWindow,
-            ShowFlyout,
             ContainsSettingsWindow,
-            ContainsFlyoutPosition,
         }
 
         private const int RequiredArgumentsSetSettingQty = 4;
         private const int RequiredArgumentsSetAdditionalSettingsQty = 4;
         private const int RequiredArgumentsGetSettingQty = 3;
 
-        private const int RequiredArgumentsLaunchedFromRunnerQty = 12;
+        private const int RequiredArgumentsLaunchedFromRunnerQty = 10;
 
         // Create an instance of the  IPC wrapper.
         private static TwoWayPipeMessageIPCManaged ipcmanager;
@@ -62,8 +67,6 @@ namespace Microsoft.PowerToys.Settings.UI
         public static int PowerToysPID { get; set; }
 
         public bool ShowOobe { get; set; }
-
-        public bool ShowFlyout { get; set; }
 
         public bool ShowScoobe { get; set; }
 
@@ -133,7 +136,7 @@ namespace Microsoft.PowerToys.Settings.UI
             var settingValue = cmdArgs[3];
             try
             {
-                SetSettingCommandLineCommand.Execute(settingName, settingValue, new SettingsUtils());
+                SetSettingCommandLineCommand.Execute(settingName, settingValue, SettingsUtils.Default);
             }
             catch (Exception ex)
             {
@@ -151,7 +154,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 using (var settings = JsonDocument.Parse(File.ReadAllText(ipcFileName)))
                 {
-                    SetAdditionalSettingsCommandLineCommand.Execute(moduleName, settings, new SettingsUtils());
+                    SetAdditionalSettingsCommandLineCommand.Execute(moduleName, settings, SettingsUtils.Default);
                 }
             }
             catch (Exception ex)
@@ -194,9 +197,7 @@ namespace Microsoft.PowerToys.Settings.UI
             IsUserAnAdmin = cmdArgs[(int)Arguments.IsUserAdmin] == "true";
             ShowOobe = cmdArgs[(int)Arguments.ShowOobeWindow] == "true";
             ShowScoobe = cmdArgs[(int)Arguments.ShowScoobeWindow] == "true";
-            ShowFlyout = cmdArgs[(int)Arguments.ShowFlyout] == "true";
             bool containsSettingsWindow = cmdArgs[(int)Arguments.ContainsSettingsWindow] == "true";
-            bool containsFlyoutPosition = cmdArgs[(int)Arguments.ContainsFlyoutPosition] == "true";
 
             // To keep track of variable arguments
             int currentArgumentIndex = RequiredArgumentsLaunchedFromRunnerQty;
@@ -207,15 +208,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 StartupPage = GetPage(cmdArgs[currentArgumentIndex]);
 
                 currentArgumentIndex++;
-            }
-
-            int flyout_x = 0;
-            int flyout_y = 0;
-            if (containsFlyoutPosition)
-            {
-                // get the flyout position arguments
-                _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_x);
-                _ = int.TryParse(cmdArgs[currentArgumentIndex++], out flyout_y);
             }
 
             RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
@@ -232,20 +224,21 @@ namespace Microsoft.PowerToys.Settings.UI
             });
             ipcmanager.Start();
 
-            if (!ShowOobe && !ShowScoobe && !ShowFlyout)
+            GlobalHotkeyConflictManager.Initialize(message =>
+            {
+                ipcmanager.Send(message);
+                return 0;
+            });
+
+            if (!ShowOobe && !ShowScoobe)
             {
                 settingsWindow = new MainWindow();
                 settingsWindow.Activate();
-                settingsWindow.ExtendsContentIntoTitleBar = true;
                 settingsWindow.NavigateToSection(StartupPage);
 
                 // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
                 // Need to call SetForegroundWindow to actually gain focus.
                 WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
-
-                // https://github.com/microsoft/microsoft-ui-xaml/issues/8948 - A window's top border incorrectly
-                // renders as black on Windows 10.
-                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
             }
             else
             {
@@ -256,31 +249,11 @@ namespace Microsoft.PowerToys.Settings.UI
 
                 if (ShowOobe)
                 {
-                    PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
-                    OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview);
-                    oobeWindow.Activate();
-                    oobeWindow.ExtendsContentIntoTitleBar = true;
-                    WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
-                    SetOobeWindow(oobeWindow);
+                    OpenOobe();
                 }
                 else if (ShowScoobe)
                 {
-                    PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-                    OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
-                    scoobeWindow.Activate();
-                    scoobeWindow.ExtendsContentIntoTitleBar = true;
-                    WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
-                    SetOobeWindow(scoobeWindow);
-                }
-                else if (ShowFlyout)
-                {
-                    POINT? p = null;
-                    if (containsFlyoutPosition)
-                    {
-                        p = new POINT(flyout_x, flyout_y);
-                    }
-
-                    ShellPage.OpenFlyoutCallback(p);
+                    OpenScoobe();
                 }
             }
         }
@@ -290,7 +263,7 @@ namespace Microsoft.PowerToys.Settings.UI
         /// will be used such as when the application is launched to open a specific file.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
 
@@ -316,42 +289,22 @@ namespace Microsoft.PowerToys.Settings.UI
                 // For debugging purposes
                 // Window is also needed to show MessageDialog
                 settingsWindow = new MainWindow();
-                settingsWindow.ExtendsContentIntoTitleBar = true;
-                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                 settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
-                ShowMessageDialog("The application is running in Debug mode.", "DEBUG");
+
+                // In DEBUG mode, we might not have IPC set up, so provide a dummy implementation
+                GlobalHotkeyConflictManager.Initialize(message =>
+                {
+                    // In debug mode, just log or do nothing
+                    Debug.WriteLine($"IPC Message: {message}");
+                    return 0;
+                });
 #else
-                /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
-                Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard, true);
-                Exit();
+        /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
+        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard);
+        Exit();
 #endif
             }
-        }
-
-#if !DEBUG
-        private async void ShowMessageDialogAndExit(string content, string title = null)
-#else
-        private async void ShowMessageDialog(string content, string title = null)
-#endif
-        {
-            await ShowDialogAsync(content, title);
-#if !DEBUG
-            this.Exit();
-#endif
-        }
-
-        public static Task<IUICommand> ShowDialogAsync(string content, string title = null)
-        {
-            var dialog = new MessageDialog(content, title ?? string.Empty);
-            var handle = NativeMethods.GetActiveWindow();
-            if (handle == IntPtr.Zero)
-            {
-                throw new InvalidOperationException();
-            }
-
-            InitializeWithWindow.Initialize(dialog, handle);
-            return dialog.ShowAsync().AsTask<IUICommand>();
         }
 
         public static TwoWayPipeMessageIPCManaged GetTwoWayIPCManager()
@@ -369,14 +322,12 @@ namespace Microsoft.PowerToys.Settings.UI
             return 0;
         }
 
-        private static ISettingsUtils settingsUtils = new SettingsUtils();
+        private static SettingsUtils settingsUtils = SettingsUtils.Default;
         private static ThemeService themeService = new ThemeService(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
 
         public static ThemeService ThemeService => themeService;
 
         private static MainWindow settingsWindow;
-        private static OobeWindow oobeWindow;
-        private static FlyoutWindow flyoutWindow;
 
         public static void ClearSettingsWindow()
         {
@@ -388,34 +339,71 @@ namespace Microsoft.PowerToys.Settings.UI
             return settingsWindow;
         }
 
-        public static OobeWindow GetOobeWindow()
+        public static bool IsSecondaryWindowOpen()
         {
-            return oobeWindow;
+            var app = (App)Current;
+            return app.oobeWindow != null || app.scoobeWindow != null || app.shortcutConflictWindow != null;
         }
 
-        public static FlyoutWindow GetFlyoutWindow()
+        public void OpenScoobe()
         {
-            return flyoutWindow;
+            PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
+
+            if (scoobeWindow == null)
+            {
+                scoobeWindow = new ScoobeWindow();
+
+                scoobeWindow.Closed += (_, _) =>
+                {
+                    scoobeWindow = null;
+                };
+
+                scoobeWindow.Activate();
+            }
+            else
+            {
+                WindowHelpers.BringToForeground(scoobeWindow.GetWindowHandle());
+            }
         }
 
-        public static void SetOobeWindow(OobeWindow window)
+        public void OpenOobe()
         {
-            oobeWindow = window;
+            PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
+
+            if (oobeWindow == null)
+            {
+                oobeWindow = new OobeWindow();
+
+                oobeWindow.Closed += (_, _) =>
+                {
+                    oobeWindow = null;
+                };
+
+                oobeWindow.Activate();
+            }
+            else
+            {
+                WindowHelpers.BringToForeground(oobeWindow.GetWindowHandle());
+            }
         }
 
-        public static void SetFlyoutWindow(FlyoutWindow window)
+        public void OpenShortcutConflictWindow()
         {
-            flyoutWindow = window;
-        }
+            if (shortcutConflictWindow == null)
+            {
+                shortcutConflictWindow = new ShortcutConflictWindow();
 
-        public static void ClearOobeWindow()
-        {
-            oobeWindow = null;
-        }
+                shortcutConflictWindow.Closed += (_, _) =>
+                {
+                    shortcutConflictWindow = null;
+                };
 
-        public static void ClearFlyoutWindow()
-        {
-            flyoutWindow = null;
+                shortcutConflictWindow.Activate();
+            }
+            else
+            {
+                WindowHelpers.BringToForeground(shortcutConflictWindow.GetWindowHandle());
+            }
         }
 
         public static Type GetPage(string settingWindow)
@@ -429,6 +417,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Awake": return typeof(AwakePage);
                 case "CmdNotFound": return typeof(CmdNotFoundPage);
                 case "ColorPicker": return typeof(ColorPickerPage);
+                case "LightSwitch": return typeof(LightSwitchPage);
                 case "FancyZones": return typeof(FancyZonesPage);
                 case "FileLocksmith": return typeof(FileLocksmithPage);
                 case "Run": return typeof(PowerLauncherPage);
@@ -436,6 +425,11 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "KBM": return typeof(KeyboardManagerPage);
                 case "MouseUtils": return typeof(MouseUtilsPage);
                 case "MouseWithoutBorders": return typeof(MouseWithoutBordersPage);
+                case "Peek": return typeof(PeekPage);
+                case "PowerAccent": return typeof(PowerAccentPage);
+                case "PowerDisplay": return typeof(PowerDisplayPage);
+                case "PowerLauncher": return typeof(PowerLauncherPage);
+                case "PowerPreview": return typeof(PowerPreviewPage);
                 case "PowerRename": return typeof(PowerRenamePage);
                 case "QuickAccent": return typeof(PowerAccentPage);
                 case "FileExplorer": return typeof(PowerPreviewPage);
@@ -444,7 +438,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "MeasureTool": return typeof(MeasureToolPage);
                 case "Hosts": return typeof(HostsPage);
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
-                case "Peek": return typeof(PeekPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
                 case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);
                 case "NewPlus": return typeof(NewPlusPage);

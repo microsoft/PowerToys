@@ -76,7 +76,7 @@ public abstract class JsonSettingsManager
                 {
                     foreach (var item in newSettings)
                     {
-                        savedSettings[item.Key] = item.Value != null ? item.Value.DeepClone() : null;
+                        savedSettings[item.Key] = item.Value is not null ? item.Value.DeepClone() : null;
                     }
 
                     var serialized = savedSettings.ToJsonString(_serializerOptions);

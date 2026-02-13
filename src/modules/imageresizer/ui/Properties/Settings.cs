@@ -15,13 +15,27 @@ using System.IO.Abstractions;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Windows.Media.Imaging;
 
 using ImageResizer.Models;
+using ImageResizer.Services;
+using ImageResizer.ViewModels;
+using ManagedCommon;
 
 namespace ImageResizer.Properties
 {
+    /// <summary>
+    /// Represents the availability state of AI Super Resolution feature.
+    /// </summary>
+    public enum AiAvailabilityState
+    {
+        NotSupported,      // System doesn't support AI (architecture issue or policy disabled)
+        ModelNotReady,     // AI supported but model not downloaded
+        Ready,             // AI fully ready to use
+    }
+
     public sealed partial class Settings : IDataErrorInfo, INotifyPropertyChanged
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
@@ -29,6 +43,7 @@ namespace ImageResizer.Properties
         {
             NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
             WriteIndented = true,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
 
         private static readonly CompositeFormat ValueMustBeBetween = System.Text.CompositeFormat.Parse(Properties.Resources.ValueMustBeBetween);
@@ -49,6 +64,7 @@ namespace ImageResizer.Properties
         private bool _keepDateModified;
         private System.Guid _fallbackEncoder;
         private CustomSize _customSize;
+        private AiSize _aiSize;
 
         public Settings()
         {
@@ -63,15 +79,34 @@ namespace ImageResizer.Properties
             FileName = "%1 (%2)";
             Sizes = new ObservableCollection<ResizeSize>
             {
-                new ResizeSize("$small$", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
-                new ResizeSize("$medium$", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
-                new ResizeSize("$large$", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
-                new ResizeSize("$phone$", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
+                new ResizeSize(0, "$small$", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
+                new ResizeSize(1, "$medium$", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
+                new ResizeSize(2, "$large$", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
+                new ResizeSize(3, "$phone$", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
             };
             KeepDateModified = false;
             FallbackEncoder = new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057");
             CustomSize = new CustomSize(ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel);
+            AiSize = new AiSize(2);  // Initialize with default scale of 2
             AllSizes = new AllSizesCollection(this);
+        }
+
+        /// <summary>
+        /// Validates the SelectedSizeIndex to ensure it's within the valid range.
+        /// This handles cross-device migration where settings saved on ARM64 with AI selected
+        /// are loaded on non-ARM64 devices.
+        /// </summary>
+        private void ValidateSelectedSizeIndex()
+        {
+            // Index structure: 0 to Sizes.Count-1 (regular), Sizes.Count (CustomSize), Sizes.Count+1 (AiSize)
+            var maxIndex = ImageResizer.App.AiAvailabilityState == AiAvailabilityState.NotSupported
+                ? Sizes.Count // CustomSize only
+                : Sizes.Count + 1; // CustomSize + AiSize
+
+            if (_selectedSizeIndex > maxIndex)
+            {
+                _selectedSizeIndex = 0; // Reset to first size
+            }
         }
 
         [JsonIgnore]
@@ -93,15 +128,40 @@ namespace ImageResizer.Properties
         [JsonIgnore]
         public ResizeSize SelectedSize
         {
-            get => SelectedSizeIndex >= 0 && SelectedSizeIndex < Sizes.Count
-                    ? Sizes[SelectedSizeIndex]
-                    : CustomSize;
+            get
+            {
+                if (SelectedSizeIndex >= 0 && SelectedSizeIndex < Sizes.Count)
+                {
+                    return Sizes[SelectedSizeIndex];
+                }
+                else if (SelectedSizeIndex == Sizes.Count)
+                {
+                    return CustomSize;
+                }
+                else if (ImageResizer.App.AiAvailabilityState != AiAvailabilityState.NotSupported && SelectedSizeIndex == Sizes.Count + 1)
+                {
+                    return AiSize;
+                }
+                else
+                {
+                    // Fallback to CustomSize when index is out of range or AI is not available
+                    return CustomSize;
+                }
+            }
+
             set
             {
                 var index = Sizes.IndexOf(value);
                 if (index == -1)
                 {
-                    index = Sizes.Count;
+                    if (value is AiSize)
+                    {
+                        index = Sizes.Count + 1;
+                    }
+                    else
+                    {
+                        index = Sizes.Count;
+                    }
                 }
 
                 SelectedSizeIndex = index;
@@ -137,13 +197,17 @@ namespace ImageResizer.Properties
 
         private class AllSizesCollection : IEnumerable<ResizeSize>, INotifyCollectionChanged, INotifyPropertyChanged
         {
+            private readonly Settings _settings;
             private ObservableCollection<ResizeSize> _sizes;
             private CustomSize _customSize;
+            private AiSize _aiSize;
 
             public AllSizesCollection(Settings settings)
             {
+                _settings = settings;
                 _sizes = settings.Sizes;
                 _customSize = settings.CustomSize;
+                _aiSize = settings.AiSize;
 
                 _sizes.CollectionChanged += HandleCollectionChanged;
                 ((INotifyPropertyChanged)_sizes).PropertyChanged += HandlePropertyChanged;
@@ -152,15 +216,15 @@ namespace ImageResizer.Properties
                 {
                     if (e.PropertyName == nameof(Models.CustomSize))
                     {
-                        var oldCustomSize = _customSize;
                         _customSize = settings.CustomSize;
 
-                        OnCollectionChanged(
-                            new NotifyCollectionChangedEventArgs(
-                                NotifyCollectionChangedAction.Replace,
-                                _customSize,
-                                oldCustomSize,
-                                _sizes.Count));
+                        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    }
+                    else if (e.PropertyName == nameof(Models.AiSize))
+                    {
+                        _aiSize = settings.AiSize;
+
+                        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     }
                     else if (e.PropertyName == nameof(Sizes))
                     {
@@ -184,12 +248,30 @@ namespace ImageResizer.Properties
             public event PropertyChangedEventHandler PropertyChanged;
 
             public int Count
-                => _sizes.Count + 1;
+                => _sizes.Count + 1 + (ImageResizer.App.AiAvailabilityState != AiAvailabilityState.NotSupported ? 1 : 0);
 
             public ResizeSize this[int index]
-                => index == _sizes.Count
-                    ? _customSize
-                    : _sizes[index];
+            {
+                get
+                {
+                    if (index < _sizes.Count)
+                    {
+                        return _sizes[index];
+                    }
+                    else if (index == _sizes.Count)
+                    {
+                        return _customSize;
+                    }
+                    else if (ImageResizer.App.AiAvailabilityState != AiAvailabilityState.NotSupported && index == _sizes.Count + 1)
+                    {
+                        return _aiSize;
+                    }
+                    else
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(index), index, $"Index {index} is out of range for AllSizesCollection.");
+                    }
+                }
+            }
 
             public IEnumerator<ResizeSize> GetEnumerator()
                 => new AllSizesEnumerator(this);
@@ -409,6 +491,18 @@ namespace ImageResizer.Properties
             }
         }
 
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_aiSize")]
+        public AiSize AiSize
+        {
+            get => _aiSize;
+            set
+            {
+                _aiSize = value;
+                NotifyPropertyChanged();
+            }
+        }
+
         public static string SettingsPath { get => _settingsPath; set => _settingsPath = value; }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -460,30 +554,47 @@ namespace ImageResizer.Properties
             {
             }
 
-            // Needs to be called on the App UI thread as the properties are bound to the UI.
-            App.Current.Dispatcher.Invoke(() =>
+            if (App.Current?.Dispatcher != null)
             {
-                ShrinkOnly = jsonSettings.ShrinkOnly;
-                Replace = jsonSettings.Replace;
-                IgnoreOrientation = jsonSettings.IgnoreOrientation;
-                RemoveMetadata = jsonSettings.RemoveMetadata;
-                JpegQualityLevel = jsonSettings.JpegQualityLevel;
-                PngInterlaceOption = jsonSettings.PngInterlaceOption;
-                TiffCompressOption = jsonSettings.TiffCompressOption;
-                FileName = jsonSettings.FileName;
-                KeepDateModified = jsonSettings.KeepDateModified;
-                FallbackEncoder = jsonSettings.FallbackEncoder;
-                CustomSize = jsonSettings.CustomSize;
-                SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
-
-                if (jsonSettings.Sizes.Count > 0)
-                {
-                    Sizes.Clear();
-                    Sizes.AddRange(jsonSettings.Sizes);
-                }
-            });
+                // Needs to be called on the App UI thread as the properties are bound to the UI.
+                App.Current.Dispatcher.Invoke(() => ReloadCore(jsonSettings));
+            }
+            else
+            {
+                ReloadCore(jsonSettings);
+            }
 
             _jsonMutex.ReleaseMutex();
+        }
+
+        private void ReloadCore(Settings jsonSettings)
+        {
+            ShrinkOnly = jsonSettings.ShrinkOnly;
+            Replace = jsonSettings.Replace;
+            IgnoreOrientation = jsonSettings.IgnoreOrientation;
+            RemoveMetadata = jsonSettings.RemoveMetadata;
+            JpegQualityLevel = jsonSettings.JpegQualityLevel;
+            PngInterlaceOption = jsonSettings.PngInterlaceOption;
+            TiffCompressOption = jsonSettings.TiffCompressOption;
+            FileName = jsonSettings.FileName;
+            KeepDateModified = jsonSettings.KeepDateModified;
+            FallbackEncoder = jsonSettings.FallbackEncoder;
+            CustomSize = jsonSettings.CustomSize;
+            AiSize = jsonSettings.AiSize ?? new AiSize(InputViewModel.DefaultAiScale);
+            SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
+
+            if (jsonSettings.Sizes.Count > 0)
+            {
+                Sizes.Clear();
+                Sizes.AddRange(jsonSettings.Sizes);
+
+                // Ensure Ids are unique and handle missing Ids
+                IdRecoveryHelper.RecoverInvalidIds(Sizes);
+            }
+
+            // Validate SelectedSizeIndex after Sizes collection has been updated
+            // This handles cross-device migration (e.g., ARM64 -> non-ARM64)
+            ValidateSelectedSizeIndex();
         }
     }
 }

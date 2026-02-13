@@ -35,7 +35,9 @@ stages:
             ${{ else }}:
               name: SHINE-OSS-L
             ${{ if eq(parameters.useVSPreview, true) }}:
-              demands: ImageOverride -equals SHINE-VS17-Preview
+              demands: ImageOverride -equals SHINE-VS18-Preview
+            ${{ else }}:
+              demands: ImageOverride -equals SHINE-VS18-Latest
           buildPlatforms:
             - ${{ parameters.platform }}
           buildConfigurations: [Release]
@@ -43,6 +45,7 @@ stages:
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           runTests: true
           useVSPreview: ${{ parameters.useVSPreview }}
+          timeoutInMinutes: 90
 
   - stage: OneFuzz
     displayName: Fuzz ${{ parameters.platform }}

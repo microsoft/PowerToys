@@ -37,6 +37,12 @@ const CLSID CLSID_SHIMActivateGcodePreviewHandler = { 0x516cb24f, 0x562f, 0x422f
 // ec52dea8-7c9f-4130-a77b-1737d0418507
 const CLSID CLSID_GcodePreviewHandler = { 0xec52dea8, 0x7c9f, 0x4130, { 0xa7, 0x7b, 0x17, 0x37, 0xd0, 0x41, 0x85, 0x07 } };
 
+// 8fae8d5d-6bd1-46b4-a74f-cbebba4c7b62
+const CLSID CLSID_SHIMActivateBgcodePreviewHandler = { 0x8fae8d5d, 0x6bd1, 0x46b4, { 0xa7, 0x4f, 0xcb, 0xeb, 0xba, 0x4c, 0x7b, 0x62 } };
+
+// dd8de316-7b01-48e7-ba21-e92c646704af
+const GUID CLSID_BgcodePreviewHandler = { 0xdd8de316, 0x7b01, 0x48e7, { 0xba, 0x21, 0xe9, 0x2c, 0x64, 0x67, 0x04, 0xaf } };
+
 // F498BE36-5C94-4EC9-A65A-AD1CF4C38271
 const GUID CLSID_SHIMActivateQoiPreviewHandler = { 0xf498be36, 0x5c94, 0x4ec9, { 0xa6, 0x5a, 0xad, 0x1c, 0xf4, 0xc3, 0x82, 0x71 } };
 
@@ -45,6 +51,9 @@ const GUID CLSID_QoiPreviewHandler = { 0x8aa07897, 0xc30b, 0x4543, { 0x86, 0x5b,
 
 // BFEE99B4-B74D-4348-BCA5-E757029647FF
 const GUID CLSID_GcodeThumbnailProvider = { 0xbfee99b4, 0xb74d, 0x4348, { 0xbc, 0xa5, 0xe7, 0x57, 0x02, 0x96, 0x47, 0xff } };
+
+// c28761a0-8420-43ad-bff3-40400543e2d4
+const GUID CLSID_BgcodeThumbnailProvider = {0xc28761a0, 0x8420, 0x43ad, {0xbf, 0xf3, 0x40, 0x40, 0x05, 0x43, 0xe2, 0xd4}};
 
 // 8BC8AFC2-4E7C-4695-818E-8C1FFDCEA2AF
 const GUID CLSID_StlThumbnailProvider = { 0x8bc8afc2, 0x4e7c, 0x4695, { 0x81, 0x8e, 0x8c, 0x1f, 0xfd, 0xce, 0xa2, 0xaf } };
@@ -57,6 +66,7 @@ const std::vector<std::pair<CLSID, CLSID>> NativeToManagedClsid({
     { CLSID_SHIMActivateMdPreviewHandler, CLSID_MdPreviewHandler },
     { CLSID_SHIMActivatePdfPreviewHandler, CLSID_PdfPreviewHandler },
     { CLSID_SHIMActivateGcodePreviewHandler, CLSID_GcodePreviewHandler },
+    { CLSID_SHIMActivateBgcodePreviewHandler, CLSID_BgcodePreviewHandler },
     { CLSID_SHIMActivateQoiPreviewHandler, CLSID_QoiPreviewHandler },
     { CLSID_SHIMActivateSvgPreviewHandler, CLSID_SvgPreviewHandler },
     { CLSID_SHIMActivateSvgThumbnailProvider, CLSID_SvgThumbnailProvider }

@@ -28,6 +28,14 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredCropAndLockEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredLightSwitchEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredLightSwitchEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredPowerDisplayEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredPowerDisplayEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredFancyZonesEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredFancyZonesEnabledValue());
@@ -56,6 +64,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredGcodePreviewEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredBgcodePreviewEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredBgcodePreviewEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredSvgThumbnailsEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredSvgThumbnailsEnabledValue());
@@ -67,6 +79,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     GpoRuleConfigured GPOWrapper::GetConfiguredGcodeThumbnailsEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredGcodeThumbnailsEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredBgcodeThumbnailsEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredBgcodeThumbnailsEnabledValue());
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredStlThumbnailsEnabledValue()
     {
@@ -99,6 +115,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     GpoRuleConfigured GPOWrapper::GetConfiguredMousePointerCrosshairsEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredCursorWrapEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredCursorWrapEnabledValue());
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredPowerRenameEnabledValue()
     {
@@ -179,6 +199,34 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteOnlineAIModelsValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteOnlineAIModelsValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteOpenAIValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteOpenAIValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteAzureOpenAIValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteAzureOpenAIValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteAzureAIInferenceValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteAzureAIInferenceValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteMistralValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteMistralValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteGoogleValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteGoogleValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteOllamaValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteOllamaValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPasteFoundryLocalValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteFoundryLocalValue());
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusEnabledValue()
     {

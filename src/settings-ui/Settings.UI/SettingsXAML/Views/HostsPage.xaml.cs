@@ -9,15 +9,19 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class HostsPage : Page, IRefreshablePage
+    public sealed partial class HostsPage : NavigablePage, IRefreshablePage
     {
         private HostsViewModel ViewModel { get; }
 
         public HostsPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new HostsViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<HostsSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, App.IsElevated);
+            BackupsCountInputSettingsCard.Header = ResourceLoaderInstance.ResourceLoader.GetString("Hosts_Backup_CountInput_Header");
+            BackupsCountInputSettingsCard.Description = ResourceLoaderInstance.ResourceLoader.GetString("Hosts_Backup_CountInput_Description");
+            BackupsCountInputAgeSettingsCard.Header = ResourceLoaderInstance.ResourceLoader.GetString("Hosts_Backup_CountInput_Header");
+            BackupsCountInputAgeSettingsCard.Description = ResourceLoaderInstance.ResourceLoader.GetString("Hosts_Backup_CountInput_Age_Description");
         }
 
         public void RefreshEnabledState()

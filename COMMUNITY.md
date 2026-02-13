@@ -6,9 +6,6 @@ Names are in alphabetical order based on first name.
 
 ## High impact community members
 
-### [@Aaron-Junker](https://github.com/Aaron-Junker) - [Aaron Junker](https://aaron-junker.github.io)
-Aaron has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Aaron was the primary person for helping build the File Explorer preview pane handler for developer files.
-
 ### [@cgaarden](https://github.com/cgaarden) - [Christian Gaarden Gaardmark](https://www.onegreatworld.com) 
 Christian contributed New+ utility
 
@@ -16,12 +13,12 @@ Christian contributed New+ utility
 CleanCodeDeveloper helped do massive amounts of code stability and image resizer work.
 
 ### [@plante-msft](https://github.com/plante-msft) - Connor Plante
-Connor was the creator of Workspaces and helped create PowerToys Run v2
+Connor was the creator of Workspaces and helped create Command Palette (PowerToys Run v2)
 
 ### [@damienleroy](https://github.com/damienleroy) - [Damien Leroy](https://www.linkedin.com/in/Damien-Leroy-b2734416a/)
 Damien has helped out by developing and contributing the Quick Accent utility.
 
-### [@daverayment ](https://github.com/daverayment) - [David Rayment](https://www.linkedin.com/in/david-rayment-168b5251/)
+### [@daverayment](https://github.com/daverayment) - [David Rayment](https://www.linkedin.com/in/david-rayment-168b5251/)
 Dave has helped improve the experience inside of Peek by adding in new features and fixing bugs.
 
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
@@ -42,11 +39,17 @@ Jay has helped triaging, discussing, creating a substantial number of issues and
 ### [@jefflord](https://github.com/Jjefflord) - Jeff Lord
 Jeff added in multiple new features into Keyboard manager, such as key chord support and launching apps. He also contributed multiple features/fixes to PowerToys.
 
+### [@snickler](https://github.com/snickler) - [Jeremy Sinclair](http://sinclairinat0r.com)
+Jeremy has helped drive large sums of the ARM64 support inside PowerToys
+
+### [@jiripolasek](https://github.com/jiripolasek) - [Jiří Polášek](https://github.com/jiripolasek)
+Jiří has contributed a massive number of features and improvements to Command Palette, including drag & drop support, custom themes, Web Search enhancements, Remote Desktop extension fixes, and many UX improvements.
+
 ### [@TheJoeFin](https://github.com/TheJoeFin) - [Joe Finney](https://joefinapps.com)
 Joe has helped triaging, discussing, issues as well as fixing bugs and building features for Text Extractor.
 
 ### [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie
-Jordi helped innovate amazing new features into Advanced Paste and helped create PowerToys Run v2
+Jordi helped innovate amazing new features into Advanced Paste and helped create Command Palette (PowerToys Run v2)
   
 ### [@jsoref](https://github.com/jsoref) - [Josh Soref](https://check-spelling.dev/)
 Helping keep our spelling correct :)
@@ -57,6 +60,12 @@ Color Picker is from Martin.
 ### [@mikeclayton](https://github.com/mikeclayton) - [Michael Clayton](https://michael-clayton.com)
 Michael contributed the [initial version](https://github.com/microsoft/PowerToys/issues/23216) of the Mouse Jump tool and [a number of updates](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+author%3Amikeclayton) based on his FancyMouse utility.
 
+### [@Noraa-Junker](https://github.com/Noraa-Junker) - [Noraa Junker](https://noraajunker.ch)
+Noraa has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Noraa was the primary person for helping build the File Explorer preview pane handler for developer files.
+
+### [@pedrolamas](https://github.com/pedrolamas/) - Pedro Lamas
+Pedro helped create the thumbnail and File Explorer previewers for 3D files like STL and GCode.  If you like 3D printing, these are very helpful.
+
 ### [@PesBandi](https://github.com/PesBandi/) - PesBandi
 PesBandi has helped do massive amounts of Quick Accent and bug fixes.
 
@@ -66,14 +75,11 @@ Rafael has helped do the [upgrade from CppWinRT 1.x to 2.0](https://github.com/m
 ### [@royvou](https://github.com/royvou)
 Roy has helped out contributing multiple features to PowerToys Run
 
-### [@snickler](https://github.com/snickler) - [Jeremy Sinclair](http://sinclairinat0r.com)
-Jeremy has helped drive large sums of the ARM64 support inside PowerToys
+### [@ThiefZero](https://github.com/ThiefZero)
+ThiefZero has helped out contributing a features to PowerToys Run such as the unit converter plugin
 
 ### [@TobiasSekan](https://github.com/TobiasSekan) - Tobias Sekan
 Tobias Sekan has helped out contributing features to PowerToys Run such as Settings plugin, Registry plugin
-
-### [@ThiefZero](https://github.com/ThiefZero)
-ThiefZero has helped out contributing a features to PowerToys Run such as the unit converter plugin
 
 ## Open source projects
 
@@ -114,13 +120,12 @@ PowerRename is from Chris's SmartRename and icon rendering for SVGs in File Expl
 
 PowerToys Awake is a tool to keep your computer awake.
 
-### [@Niels9001](https://github.com/niels9001/) - [Niels Laute](https://nielslaute.com/)
-
-Niels has helped drive large sums of our update toward a new [consistent and modern UX](https://github.com/microsoft/PowerToys/issues/891). This includes the [launcher work](https://github.com/microsoft/PowerToys/issues/44), color picker UX update and [icon design](https://github.com/microsoft/PowerToys/issues/1118).
-
 ### [@randyrants](https://github.com/randyrants) - [Randy Santossio](https://www.randyrants.com)
 
 Randy contributed Registry Preview and some very early conversations about keyboard remapping.
+
+### [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon
+Kayla was a former lead for PowerToys and helped create multiple utilities, maintained the GitHub repo, and collaborated with the community to improve the overall product
 
 ### [@oldnewthing](https://github.com/oldnewthing) - Raymond Chen
 
@@ -181,21 +186,44 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 
 ## PowerToys core team
 
-- [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Lead
-- [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
+- [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
+- [@niels9001](https://github.com/niels9001/) - Niels Laute - Product Manager
+- [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev Lead
+- [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev Lead
+- [@lei9444](https://github.com/lei9444) - Leilei Zhang - Dev
+- [@shuaiyuanxx](https://github.com/shuaiyuanxx) - Shawn Yuan - Dev
+- [@moooyo](https://github.com/moooyo) - Yu Leng - Dev
+- [@haoliuu](https://github.com/haoliuu) - Hao Liu - Dev
+- [@vanzue](https://github.com/vanzue) - Kai Tao - Dev
+- [@zadjii-msft](https://github.com/zadjii-msft) - Mike Griese - Dev
+- [@khmyznikov](https://github.com/khmyznikov) - Gleb Khmyznikov - Dev
+- [@chatasweetie](https://github.com/chatasweetie) - Jessica Earley-Cha - Dev
+- [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
+- [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee) - Jaylyn Barbee - Dev
+- [@zateutsch](https://github.com/zateutsch) - Zach Teutsch - Dev
+- [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Overhead
+
+## Former PowerToys core team members
+
+- [@indierawk2k2](https://github.com/indierawk2k2) - Mike Harsh - Product Manager
+- [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Product Manager
+- [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
+- [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
+- [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
 - [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
-- [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev lead
-- [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
-- [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
-- [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev lead
+- [@enricogior](https://github.com/enricogior) - Enrico Giordani - Dev Lead
+- [@bzoz](https://github.com/bzoz) - Bartosz Sosnowski - Dev
+- [@ivan100sic](https://github.com/ivan100sic) - Ivan Stošić - Dev
+- [@mykhailopylyp](https://github.com/mykhailopylyp) - Mykhailo Pylyp - Dev
+- [@taras-janea](https://github.com/taras-janea) - Taras Sich - Dev
+- [@yuyoyuppe](https://github.com/yuyoyuppe) - Andrey Nekrasov - Dev
+- [@gokcekantarci](https://github.com/gokcekantarci) - Gokce Kantarci - Dev
 - [@drawbyperpetual](https://github.com/drawbyperpetual) - Anirudha Shankar - Dev
 - [@mantaionut](https://github.com/mantaionut) - Ionut Manta - Dev
 - [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
 - [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
 - [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
-- [@lei9444](https://github.com/lei9444) - Leilei Zhang - Dev
-- [@shuaiyuanxx](https://github.com/shuaiyuanxx) - Shawn Yuan - Dev
-- [@moooyo](https://github.com/moooyo) - Yu Leng - Dev
+- [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev Lead
 - [@haoliuu](https://github.com/haoliuu) - Hao Liu - Dev
 - [@chenmy77](https://github.com/chenmy77) - Mengyuan Chen - Dev
 - [@chemwolf6922](https://github.com/chemwolf6922) - Feng Wang - Dev
@@ -204,18 +232,4 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@urnotdfs](https://github.com/urnotdfs) - Xiaofeng Wang - Dev
 - [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
 - [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
-- [@vanzue](https://github.com/vanzue) - Kai Tao - Dev
-
-# Former PowerToys core team members
-
-- [@indierawk2k2](https://github.com/indierawk2k2) - Mike Harsh - Product Manager
-- [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
-- [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
-- [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
-- [@enricogior](https://github.com/enricogior) - Enrico Giordani - Dev Lead
-- [@bzoz](https://github.com/bzoz) - Bartosz Sosnowski - Dev
-- [@ivan100sic](https://github.com/ivan100sic) - Ivan Stošić - Dev
-- [@mykhailopylyp](https://github.com/mykhailopylyp) - Mykhailo Pylyp - Dev
-- [@taras-janea](https://github.com/taras-janea) - Taras Sich - Dev
-- [@yuyoyuppe](https://github.com/yuyoyuppe) - Andrey Nekrasov - Dev
-- [@gokcekantarci](https://github.com/gokcekantarci) - Gokce Kantarci - Dev
+- [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev Lead

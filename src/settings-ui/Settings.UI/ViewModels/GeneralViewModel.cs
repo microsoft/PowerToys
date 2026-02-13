@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -25,11 +26,29 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.Win32;
+using Windows.System.Profile;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class GeneralViewModel : Observable
+    public partial class GeneralViewModel : PageViewModelBase
     {
+        public enum InstallScope
+        {
+            PerMachine = 0,
+            PerUser,
+        }
+
+        protected override string ModuleName => "GeneralSettings";
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            return new Dictionary<string, HotkeySettings[]>
+            {
+                { ModuleName, new HotkeySettings[] { QuickAccessShortcut } },
+            };
+        }
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private UpdatingSettings UpdatingSettingsConfig { get; set; }
@@ -66,11 +85,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private string _settingsConfigFileFolder = string.Empty;
 
+        private ISettingsRepository<GeneralSettings> _settingsRepository;
+        private Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
+
         private IFileSystemWatcher _fileWatcher;
 
         private Func<Task<string>> PickSingleFolderDialog { get; }
 
         private SettingsBackupAndRestoreUtils settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
+
+        private const string InstallScopeRegKey = @"Software\Classes\powertoys\";
 
         public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, Func<Task<string>> pickSingleFolderDialog = null, Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = null)
         {
@@ -88,6 +112,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // To obtain the general settings configuration of PowerToys if it exists, else to create a new file and return the default configurations.
             ArgumentNullException.ThrowIfNull(settingsRepository);
+
+            _settingsRepository = settingsRepository;
+            _settingsRepository.SettingsChanged += OnSettingsChanged;
+            _dispatcherQueue = GetDispatcherQueue();
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             UpdatingSettingsConfig = UpdatingSettings.LoadSettings();
@@ -135,6 +163,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _startup = GeneralSettingsConfig.Startup;
             }
 
+            _showSysTrayIcon = GeneralSettingsConfig.ShowSysTrayIcon;
+            _showThemeAdaptiveSysTrayIcon = GeneralSettingsConfig.ShowThemeAdaptiveTrayIcon;
             _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
@@ -143,6 +173,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _isElevated = isElevated;
             _runElevated = GeneralSettingsConfig.RunElevated;
             _enableWarningsElevatedApps = GeneralSettingsConfig.EnableWarningsElevatedApps;
+            _enableQuickAccess = GeneralSettingsConfig.EnableQuickAccess;
+            _quickAccessShortcut = GeneralSettingsConfig.QuickAccessShortcut;
+            if (_quickAccessShortcut != null)
+            {
+                _quickAccessShortcut.PropertyChanged += QuickAccessShortcut_PropertyChanged;
+            }
 
             RunningAsUserDefaultText = runAsUserText;
             RunningAsAdminDefaultText = runAsAdminText;
@@ -217,12 +253,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static bool _isDevBuild;
         private bool _startup;
+        private bool _showSysTrayIcon;
+        private bool _showThemeAdaptiveSysTrayIcon;
         private GpoRuleConfigured _runAtStartupGpoRuleConfiguration;
         private bool _runAtStartupIsGPOConfigured;
         private bool _isElevated;
         private bool _runElevated;
         private bool _isAdmin;
         private bool _enableWarningsElevatedApps;
+        private bool _enableQuickAccess;
+        private HotkeySettings _quickAccessShortcut;
         private int _themeIndex;
 
         private bool _showNewUpdatesToastNotification;
@@ -247,6 +287,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isNewVersionDownloading;
         private bool _isNewVersionChecked;
         private bool _isNoNetwork;
+        private bool _isBugReportRunning;
 
         private bool _settingsBackupRestoreMessageVisible;
         private string _settingsBackupMessage;
@@ -255,6 +296,73 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _languagesIndex;
         private int _initLanguagesIndex;
         private bool _languageChanged;
+
+        private string reportBugLink;
+
+        // Gets or sets a value indicating whether run powertoys on start-up.
+        public string ReportBugLink
+        {
+            get => reportBugLink;
+            set
+            {
+                reportBugLink = value;
+                OnPropertyChanged(nameof(ReportBugLink));
+            }
+        }
+
+        public void InitializeReportBugLink()
+        {
+            var version = GetPowerToysVersion();
+
+            string isElevatedString = "PowerToys is running " + (IsElevated ? "as admin (elevated)" : "as user (non-elevated)");
+
+            string installScope = GetCurrentInstallScope() == InstallScope.PerMachine ? "per machine (system)" : "per user";
+
+            var info = $"OS Version: {GetOSVersion()} \n.NET Version: {GetDotNetVersion()}\n{isElevatedString}\nInstall scope: {installScope}\nOperating System Language: {CultureInfo.InstalledUICulture.DisplayName}\nSystem locale: {CultureInfo.InstalledUICulture.Name}";
+
+            var gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?template=bug_report.yml&labels=Issue-Bug%2CTriage-Needed" +
+                "&version=" + version + "&additionalInfo=" + System.Web.HttpUtility.UrlEncode(info);
+
+            ReportBugLink = gitHubURL;
+        }
+
+        private string GetPowerToysVersion()
+        {
+            return Helper.GetProductVersion().TrimStart('v');
+        }
+
+        private string GetOSVersion()
+        {
+            return Environment.OSVersion.VersionString;
+        }
+
+        public static string GetDotNetVersion()
+        {
+            return $".NET {Environment.Version}";
+        }
+
+        public static InstallScope GetCurrentInstallScope()
+        {
+            // Check HKLM first
+            if (Registry.LocalMachine.OpenSubKey(InstallScopeRegKey) != null)
+            {
+                return InstallScope.PerMachine;
+            }
+
+            // If not found, check HKCU
+            var userKey = Registry.CurrentUser.OpenSubKey(InstallScopeRegKey);
+            if (userKey != null)
+            {
+                var installScope = userKey.GetValue("InstallScope") as string;
+                userKey.Close();
+                if (!string.IsNullOrEmpty(installScope) && installScope.Contains("perUser"))
+                {
+                    return InstallScope.PerUser;
+                }
+            }
+
+            return InstallScope.PerMachine; // Default if no specific registry key found
+        }
 
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup
@@ -276,6 +384,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _startup = value;
                     GeneralSettingsConfig.Startup = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        // Gets or sets a value indicating whether the PowerToys icon should be shown in the system tray.
+        public bool ShowSysTrayIcon
+        {
+            get
+            {
+                return _showSysTrayIcon;
+            }
+
+            set
+            {
+                if (_showSysTrayIcon != value)
+                {
+                    _showSysTrayIcon = value;
+                    GeneralSettingsConfig.ShowSysTrayIcon = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool ShowThemeAdaptiveTrayIcon
+        {
+            get
+            {
+                return _showThemeAdaptiveSysTrayIcon;
+            }
+
+            set
+            {
+                if (_showThemeAdaptiveSysTrayIcon != value)
+                {
+                    _showThemeAdaptiveSysTrayIcon = value;
+                    GeneralSettingsConfig.ShowThemeAdaptiveTrayIcon = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -378,6 +523,57 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
                 }
             }
+        }
+
+        public bool EnableQuickAccess
+        {
+            get
+            {
+                return _enableQuickAccess;
+            }
+
+            set
+            {
+                if (_enableQuickAccess != value)
+                {
+                    _enableQuickAccess = value;
+                    GeneralSettingsConfig.EnableQuickAccess = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings QuickAccessShortcut
+        {
+            get
+            {
+                return _quickAccessShortcut;
+            }
+
+            set
+            {
+                if (_quickAccessShortcut != value)
+                {
+                    if (_quickAccessShortcut != null)
+                    {
+                        _quickAccessShortcut.PropertyChanged -= QuickAccessShortcut_PropertyChanged;
+                    }
+
+                    _quickAccessShortcut = value;
+                    if (_quickAccessShortcut != null)
+                    {
+                        _quickAccessShortcut.PropertyChanged += QuickAccessShortcut_PropertyChanged;
+                    }
+
+                    GeneralSettingsConfig.QuickAccessShortcut = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        private void QuickAccessShortcut_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            NotifyPropertyChanged(nameof(QuickAccessShortcut));
         }
 
         public bool SomeUpdateSettingsAreGpoManaged
@@ -853,6 +1049,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsBugReportRunning
+        {
+            get
+            {
+                return _isBugReportRunning;
+            }
+
+            set
+            {
+                if (value != _isBugReportRunning)
+                {
+                    _isBugReportRunning = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public bool SettingsBackupRestoreMessageVisible
         {
             get
@@ -1028,7 +1241,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _settingsBackupMessage = GetResourceString(results.Message) + results.OptionalMessage;
 
             // now we do a dry run to get the results for "setting match"
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
             settingsBackupAndRestoreUtils.BackupSettings(appBasePath, settingsBackupAndRestoreDir, true);
 
@@ -1316,6 +1529,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Open etw dir in FileExplorer
                 Process.Start("explorer.exe", etwDirPath);
             }
+        }
+
+        private void OnSettingsChanged(GeneralSettings newSettings)
+        {
+            _dispatcherQueue?.TryEnqueue(() =>
+            {
+                GeneralSettingsConfig = newSettings;
+
+                if (_enableQuickAccess != newSettings.EnableQuickAccess)
+                {
+                    _enableQuickAccess = newSettings.EnableQuickAccess;
+                    OnPropertyChanged(nameof(EnableQuickAccess));
+                }
+            });
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (_settingsRepository != null)
+            {
+                _settingsRepository.SettingsChanged -= OnSettingsChanged;
+            }
+
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual Microsoft.UI.Dispatching.DispatcherQueue GetDispatcherQueue()
+        {
+            return Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
         }
     }
 }

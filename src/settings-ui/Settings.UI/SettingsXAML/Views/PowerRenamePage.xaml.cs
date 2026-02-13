@@ -9,14 +9,14 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PowerRenamePage : Page, IRefreshablePage
+    public sealed partial class PowerRenamePage : NavigablePage, IRefreshablePage
     {
         private PowerRenameViewModel ViewModel { get; set; }
 
         public PowerRenamePage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new PowerRenameViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
 
             DataContext = ViewModel;

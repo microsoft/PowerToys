@@ -4,9 +4,7 @@
 
 using System;
 using System.IO;
-using System.IO.Abstractions;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
@@ -45,18 +43,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                 if (doc.RootElement.TryGetProperty(nameof(Hotkey), out JsonElement hotkeyElement))
                 {
-                    Hotkey = JsonSerializer.Deserialize<HotkeySettings>(hotkeyElement.GetRawText());
-
-                    if (Hotkey == null)
-                    {
-                        Hotkey = DefaultHotkeyValue;
-                    }
+                    Hotkey = JsonSerializer.Deserialize(hotkeyElement.GetRawText(), SettingsSerializationContext.Default.HotkeySettings);
                 }
             }
             catch (Exception)
             {
-                Hotkey = DefaultHotkeyValue;
             }
+
+            Hotkey ??= DefaultHotkeyValue;
         }
     }
 }

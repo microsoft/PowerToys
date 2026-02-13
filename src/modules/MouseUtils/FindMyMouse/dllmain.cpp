@@ -8,6 +8,8 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/color.h>
 #include <common/utils/string_utils.h>
+#include <common/utils/EventWaiter.h>
+#include <common/interop/shared_constants.h>
 
 namespace
 {
@@ -18,7 +20,7 @@ namespace
     const wchar_t JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE[] = L"do_not_activate_on_game_mode";
     const wchar_t JSON_KEY_BACKGROUND_COLOR[] = L"background_color";
     const wchar_t JSON_KEY_SPOTLIGHT_COLOR[] = L"spotlight_color";
-    const wchar_t JSON_KEY_OVERLAY_OPACITY[] = L"overlay_opacity";
+    const wchar_t JSON_KEY_OVERLAY_OPACITY[] = L"overlay_opacity"; // legacy only (migrated into color alpha)
     const wchar_t JSON_KEY_SPOTLIGHT_RADIUS[] = L"spotlight_radius";
     const wchar_t JSON_KEY_ANIMATION_DURATION_MS[] = L"animation_duration_ms";
     const wchar_t JSON_KEY_SPOTLIGHT_INITIAL_ZOOM[] = L"spotlight_initial_zoom";
@@ -69,6 +71,9 @@ private:
     // Find My Mouse specific settings
     FindMyMouseSettings m_findMyMouseSettings;
 
+    // Event-driven trigger support
+    EventWaiter m_triggerEventWaiter;
+
     // Load initial settings from the persisted values.
     void init_settings();
 
@@ -86,6 +91,8 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        // Ensure threads/handles are cleaned up before destruction
+        disable();
         delete this;
     }
 
@@ -150,6 +157,11 @@ public:
         m_enabled = true;
         Trace::EnableFindMyMouse(true);
         std::thread([=]() { FindMyMouseMain(m_hModule, m_findMyMouseSettings); }).detach();
+
+        // Start listening for external trigger event so we can invoke the same logic as the hotkey.
+        m_triggerEventWaiter.start(CommonSharedConstants::FIND_MY_MOUSE_TRIGGER_EVENT, [this](DWORD) {
+            OnHotkeyEx();
+        });
     }
 
     // Disable the powertoy
@@ -158,6 +170,8 @@ public:
         m_enabled = false;
         Trace::EnableFindMyMouse(false);
         FindMyMouseDisable();
+
+        m_triggerEventWaiter.stop();
     }
 
     // Returns if the powertoys is enabled
@@ -204,16 +218,50 @@ void FindMyMouse::init_settings()
     }
 }
 
+inline static uint8_t LegacyOpacityToAlpha(int overlayOpacityPercent)
+{
+    if (overlayOpacityPercent < 0)
+    {
+        return 255; // fallback: fully opaque
+    }
+
+    if (overlayOpacityPercent > 100)
+    {
+        overlayOpacityPercent = 100;
+    }
+
+    // Round to nearest integer (0–255)
+    return static_cast<uint8_t>((overlayOpacityPercent * 255 + 50) / 100);
+}
+
 void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
 {
     auto settingsObject = settings.get_raw_json();
     FindMyMouseSettings findMyMouseSettings;
-    if (settingsObject.GetView().Size())
+
+    if (!settingsObject.GetView().Size())
+    {
+        Logger::info("Find My Mouse settings are empty");
+        m_findMyMouseSettings = findMyMouseSettings;
+        return;
+    }
+
+    // Early exit if no properties object exists
+    if (!settingsObject.HasKey(JSON_KEY_PROPERTIES))
+    {
+        Logger::info("Find My Mouse settings have no properties");
+        m_findMyMouseSettings = findMyMouseSettings;
+        return;
+    }
+
+    auto properties = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+
+    // Parse Activation Method
+    if (properties.HasKey(JSON_KEY_ACTIVATION_METHOD))
     {
         try
         {
-            // Parse Activation Method
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_METHOD);
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_ACTIVATION_METHOD);
             int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
             if (value < static_cast<int>(FindMyMouseActivationMethod::EnumElements) && value >= 0)
             {
@@ -224,97 +272,148 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
                 }
                 else
                 {
-					findMyMouseSettings.activationMethod = static_cast<FindMyMouseActivationMethod>(value);
-				}
+                    findMyMouseSettings.activationMethod = static_cast<FindMyMouseActivationMethod>(value);
+                }
             }
             else
             {
                 throw std::runtime_error("Invalid Activation Method value");
             }
-                
         }
         catch (...)
         {
             Logger::warn("Failed to initialize Activation Method from settings. Will use default value");
         }
+    }
+
+    // Parse Include Win Key
+    if (properties.HasKey(JSON_KEY_INCLUDE_WIN_KEY))
+    {
         try
         {
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_INCLUDE_WIN_KEY);
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_INCLUDE_WIN_KEY);
             findMyMouseSettings.includeWinKey = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
         }
         catch (...)
         {
             Logger::warn("Failed to get 'include windows key with ctrl' setting");
         }
+    }
+
+    // Parse Do Not Activate On Game Mode
+    if (properties.HasKey(JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE))
+    {
         try
         {
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE);
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE);
             findMyMouseSettings.doNotActivateOnGameMode = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
         }
         catch (...)
         {
             Logger::warn("Failed to get 'do not activate on game mode' setting");
         }
+    }
+
+    // Colors + legacy overlay opacity migration
+    // Desired behavior:
+    //  - Old schema: colors stored as RGB (no alpha) + separate overlay_opacity (0-100). We should migrate by applying that opacity as alpha.
+    //  - New schema: colors stored as ARGB (alpha embedded). Ignore overlay_opacity even if still present.
+    int legacyOverlayOpacity = -1;
+    bool backgroundColorHadExplicitAlpha = false;
+    bool spotlightColorHadExplicitAlpha = false;
+
+    // Parse Legacy Overlay Opacity (may not exist in newer settings)
+    if (properties.HasKey(JSON_KEY_OVERLAY_OPACITY))
+    {
         try
         {
-            // Parse background color
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_BACKGROUND_COLOR);
-            auto backgroundColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
-            uint8_t r, g, b;
-            if (!checkValidRGB(backgroundColor, &r, &g, &b))
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_OVERLAY_OPACITY);
+            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+            if (value >= 0 && value <= 100)
             {
-                Logger::error("Background color RGB value is invalid. Will use default value");
+                legacyOverlayOpacity = value;
+            }
+        }
+        catch (...)
+        {
+            // overlay_opacity may have invalid data
+        }
+    }
+
+    // Parse Background Color
+    if (properties.HasKey(JSON_KEY_BACKGROUND_COLOR))
+    {
+        try
+        {
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_BACKGROUND_COLOR);
+            auto backgroundColorStr = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+            uint8_t a = 255, r, g, b;
+            bool parsed = false;
+            if (checkValidARGB(backgroundColorStr, &a, &r, &g, &b))
+            {
+                parsed = true;
+                backgroundColorHadExplicitAlpha = true; // New schema with alpha present
+            }
+            else if (checkValidRGB(backgroundColorStr, &r, &g, &b))
+            {
+                a = LegacyOpacityToAlpha(legacyOverlayOpacity);
+                parsed = true; // Old schema (no alpha component)
+            }
+            if (parsed)
+            {
+                findMyMouseSettings.backgroundColor = winrt::Windows::UI::ColorHelper::FromArgb(a, r, g, b);
             }
             else
             {
-                findMyMouseSettings.backgroundColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
+                Logger::error("Background color value is invalid. Will use default");
             }
         }
         catch (...)
         {
             Logger::warn("Failed to initialize background color from settings. Will use default value");
         }
+    }
+
+    // Parse Spotlight Color
+    if (properties.HasKey(JSON_KEY_SPOTLIGHT_COLOR))
+    {
         try
         {
-            // Parse spotlight color
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_COLOR);
-            auto spotlightColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
-            uint8_t r, g, b;
-            if (!checkValidRGB(spotlightColor, &r, &g, &b))
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_SPOTLIGHT_COLOR);
+            auto spotlightColorStr = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+            uint8_t a = 255, r, g, b;
+            bool parsed = false;
+            if (checkValidARGB(spotlightColorStr, &a, &r, &g, &b))
             {
-                Logger::error("Spotlight color RGB value is invalid. Will use default value");
+                parsed = true;
+                spotlightColorHadExplicitAlpha = true;
+            }
+            else if (checkValidRGB(spotlightColorStr, &r, &g, &b))
+            {
+                a = LegacyOpacityToAlpha(legacyOverlayOpacity);
+                parsed = true;
+            }
+            if (parsed)
+            {
+                findMyMouseSettings.spotlightColor = winrt::Windows::UI::ColorHelper::FromArgb(a, r, g, b);
             }
             else
             {
-                findMyMouseSettings.spotlightColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
+                Logger::error("Spotlight color value is invalid. Will use default");
             }
         }
         catch (...)
         {
             Logger::warn("Failed to initialize spotlight color from settings. Will use default value");
         }
+    }
+
+    // Parse Spotlight Radius
+    if (properties.HasKey(JSON_KEY_SPOTLIGHT_RADIUS))
+    {
         try
         {
-            // Parse Overlay Opacity
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OVERLAY_OPACITY);
-            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
-            if (value >= 0)
-            {
-                findMyMouseSettings.overlayOpacity = value;
-            }
-            else
-            {
-                throw std::runtime_error("Invalid Overlay Opacity value");
-            }
-        }
-        catch (...)
-        {
-            Logger::warn("Failed to initialize Overlay Opacity from settings. Will use default value");
-        }
-        try
-        {
-            // Parse Spotlight Radius
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_RADIUS);
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_SPOTLIGHT_RADIUS);
             int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
             if (value >= 0)
             {
@@ -329,10 +428,14 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             Logger::warn("Failed to initialize Spotlight Radius from settings. Will use default value");
         }
+    }
+
+    // Parse Animation Duration
+    if (properties.HasKey(JSON_KEY_ANIMATION_DURATION_MS))
+    {
         try
         {
-            // Parse Animation Duration
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ANIMATION_DURATION_MS);
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_ANIMATION_DURATION_MS);
             int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
             if (value >= 0)
             {
@@ -347,10 +450,14 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             Logger::warn("Failed to initialize Animation Duration from settings. Will use default value");
         }
+    }
+
+    // Parse Spotlight Initial Zoom
+    if (properties.HasKey(JSON_KEY_SPOTLIGHT_INITIAL_ZOOM))
+    {
         try
         {
-            // Parse Spotlight Initial Zoom
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_INITIAL_ZOOM);
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_SPOTLIGHT_INITIAL_ZOOM);
             int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
             if (value >= 0)
             {
@@ -365,10 +472,14 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             Logger::warn("Failed to initialize Spotlight Initial Zoom from settings. Will use default value");
         }
+    }
+
+    // Parse Excluded Apps
+    if (properties.HasKey(JSON_KEY_EXCLUDED_APPS))
+    {
         try
         {
-            // Parse Excluded Apps
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_EXCLUDED_APPS);
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_EXCLUDED_APPS);
             std::wstring apps = jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE).c_str();
             std::vector<std::wstring> excludedApps;
             auto excludedUppercase = apps;
@@ -390,10 +501,14 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             Logger::warn("Failed to initialize Excluded Apps from settings. Will use default value");
         }
+    }
+
+    // Parse Shaking Minimum Distance
+    if (properties.HasKey(JSON_KEY_SHAKING_MINIMUM_DISTANCE))
+    {
         try
         {
-            // Parse Shaking Minimum Distance
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHAKING_MINIMUM_DISTANCE);
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_SHAKING_MINIMUM_DISTANCE);
             int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
             if (value >= 0)
             {
@@ -408,10 +523,14 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             Logger::warn("Failed to initialize Shaking Minimum Distance from settings. Will use default value");
         }
+    }
+
+    // Parse Shaking Interval Milliseconds
+    if (properties.HasKey(JSON_KEY_SHAKING_INTERVAL_MS))
+    {
         try
         {
-            // Parse Shaking Interval Milliseconds
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHAKING_INTERVAL_MS);
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_SHAKING_INTERVAL_MS);
             int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
             if (value >= 0)
             {
@@ -426,10 +545,14 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             Logger::warn("Failed to initialize Shaking Interval Milliseconds from settings. Will use default value");
         }
+    }
+
+    // Parse Shaking Factor
+    if (properties.HasKey(JSON_KEY_SHAKING_FACTOR))
+    {
         try
         {
-            // Parse Shaking Factor
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHAKING_FACTOR);
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_SHAKING_FACTOR);
             int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
             if (value >= 0)
             {
@@ -444,11 +567,14 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             Logger::warn("Failed to initialize Shaking Factor from settings. Will use default value");
         }
+    }
 
+    // Parse HotKey
+    if (properties.HasKey(JSON_KEY_ACTIVATION_SHORTCUT))
+    {
         try
         {
-            // Parse HotKey
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
+            auto jsonPropertiesObject = properties.GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
             auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonPropertiesObject);
             m_hotkey = HotkeyEx();
             if (hotkey.win_pressed())
@@ -477,21 +603,17 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             Logger::warn("Failed to initialize Activation Shortcut from settings. Will use default value");
         }
+    }
 
-        if (!m_hotkey.modifiersMask)
-        {
-            Logger::info("Using default Activation Shortcut");
-            m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
-            m_hotkey.vkCode = 0x46; // F key
-        }
-    }
-    else
+    if (!m_hotkey.modifiersMask)
     {
-        Logger::info("Find My Mouse settings are empty");
+        Logger::info("Using default Activation Shortcut");
+        m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
+        m_hotkey.vkCode = 0x46; // F key
     }
+
     m_findMyMouseSettings = findMyMouseSettings;
 }
-
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {

@@ -9,16 +9,18 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class AlwaysOnTopPage : Page, IRefreshablePage
+    public sealed partial class AlwaysOnTopPage : NavigablePage, IRefreshablePage
     {
         private AlwaysOnTopViewModel ViewModel { get; set; }
 
         public AlwaysOnTopPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new AlwaysOnTopViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<AlwaysOnTopSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         public void RefreshEnabledState()

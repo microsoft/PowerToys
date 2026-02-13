@@ -1,8 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.props')" />
-  <Import Project="..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props')" />
-  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <PropertyGroup Label="NuGet">
+    <!-- Tell NuGet this is PackageReference style -->
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+
+    <!-- Tell NuGet we're a native project -->
+    <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
+
+    <!-- Tell NuGet we target Windows (use your existing WindowsTargetPlatformVersion) -->
+    <NuGetTargetPlatformIdentifier>Windows</NuGetTargetPlatformIdentifier>
+    <NuGetTargetPlatformVersion>$(WindowsTargetPlatformVersion)</NuGetTargetPlatformVersion>
+  </PropertyGroup>
   <PropertyGroup Label="Globals">
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
@@ -27,12 +35,20 @@
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.PowerRename.pri</ProjectPriFileName>
+    <RuntimeIdentifier>win10-x64;win10-arm64</RuntimeIdentifier>
+    <WindowsAppSDKVerifyTransitiveDependencies>false</WindowsAppSDKVerifyTransitiveDependencies>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Windows.CppWinRT" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Windows.ImplementationLibrary" GeneratePathProperty="true" />
+    <PackageReference Include="boost" GeneratePathProperty="true" />
+    <PackageReference Include="boost_regex-vc143" GeneratePathProperty="true" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="..\..\..\..\deps\spdlog.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    
     <CharacterSet>Unicode</CharacterSet>
     <DesktopCompatible>true</DesktopCompatible>
   </PropertyGroup>
@@ -53,7 +69,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -61,7 +77,7 @@
       <WarningLevel>Level4</WarningLevel>
       <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
       <!-- Need to add $(ProjectDir)\Generated Files\PowerRenameXAML files directly because of https://github.com/microsoft/microsoft-ui-xaml/issues/7652 -->
-      <AdditionalIncludeDirectories>$(ProjectDir)\Generated Files\PowerRenameXAML;$(ProjectDir)..\..\..\common\Telemetry;$(ProjectDir)..\..\..\;$(ProjectDir)..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Generated Files\PowerRenameXAML;$(RepoRoot)src\common\Telemetry;$(RepoRoot)src\;$(ProjectDir)..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -69,7 +85,7 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;dwmapi.lib;Shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;dwmapi.lib;Shcore.lib;windowscodecs.lib;propsys.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -79,7 +95,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>kernel32.lib;user32.lib;dwmapi.lib;Shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;dwmapi.lib;Shcore.lib;windowscodecs.lib;propsys.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -185,13 +201,13 @@
     <_WildCardPRIResource Include="Strings\*\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
       <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
     </ProjectReference>
     <ProjectReference Include="..\lib\PowerRenameLib.vcxproj">
@@ -202,30 +218,7 @@
     <ResourceCompile Include="PowerRenameUI.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="..\..\..\..\packages\boost.1.84.0\build\boost.targets" Condition="Exists('..\..\..\..\packages\boost.1.84.0\build\boost.targets')" />
-    <Import Project="..\..\..\..\packages\boost_regex-vc143.1.84.0\build\boost_regex-vc143.targets" Condition="Exists('..\..\..\..\packages\boost_regex-vc143.1.84.0\build\boost_regex-vc143.targets')" />
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets')" />
-    <Import Project="..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" />
-    <Import Project="..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\boost.1.84.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\boost.1.84.0\build\boost.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\boost_regex-vc143.1.84.0\build\boost_regex-vc143.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\boost_regex-vc143.1.84.0\build\boost_regex-vc143.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.targets'))" />
-  </Target>
+  <Import Project="$(RepoRoot)deps\spdlog.props" />
   <Target Name="AddWildCardItems" AfterTargets="BuildGenerateSources">
     <ItemGroup>
       <PRIResource Include="@(_WildCardPRIResource)" />

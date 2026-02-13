@@ -10,6 +10,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library;
 
 public sealed class AdvancedPasteAdditionalActions
 {
+    private AdvancedPasteAdditionalAction _imageToText = new();
+    private AdvancedPastePasteAsFileAction _pasteAsFile = new();
+    private AdvancedPasteTranscodeAction _transcode = new();
+
     public static class PropertyNames
     {
         public const string ImageToText = "image-to-text";
@@ -18,26 +22,45 @@ public sealed class AdvancedPasteAdditionalActions
     }
 
     [JsonPropertyName(PropertyNames.ImageToText)]
-    public AdvancedPasteAdditionalAction ImageToText { get; init; } = new();
+    public AdvancedPasteAdditionalAction ImageToText
+    {
+        get => _imageToText;
+        init => _imageToText = value ?? new();
+    }
 
     [JsonPropertyName(PropertyNames.PasteAsFile)]
-    public AdvancedPastePasteAsFileAction PasteAsFile { get; init; } = new();
+    public AdvancedPastePasteAsFileAction PasteAsFile
+    {
+        get => _pasteAsFile;
+        init => _pasteAsFile = value ?? new();
+    }
 
     [JsonPropertyName(PropertyNames.Transcode)]
-    public AdvancedPasteTranscodeAction Transcode { get; init; } = new();
+    public AdvancedPasteTranscodeAction Transcode
+    {
+        get => _transcode;
+        init => _transcode = value ?? new();
+    }
 
     public IEnumerable<IAdvancedPasteAction> GetAllActions()
     {
-        Queue<IAdvancedPasteAction> queue = new([ImageToText, PasteAsFile, Transcode]);
+        return GetAllActionsRecursive([ImageToText, PasteAsFile, Transcode]);
+    }
 
-        while (queue.Count != 0)
+    /// <summary>
+    /// Changed to depth-first traversal to ensure ordered output
+    /// </summary>
+    /// <param name="actions">The collection of actions to traverse</param>
+    /// <returns>All actions returned in depth-first order</returns>
+    private static IEnumerable<IAdvancedPasteAction> GetAllActionsRecursive(IEnumerable<IAdvancedPasteAction> actions)
+    {
+        foreach (var action in actions)
         {
-            var action = queue.Dequeue();
             yield return action;
 
-            foreach (var subAction in action.SubActions)
+            foreach (var subAction in GetAllActionsRecursive(action.SubActions))
             {
-                queue.Enqueue(subAction);
+                yield return subAction;
             }
         }
     }

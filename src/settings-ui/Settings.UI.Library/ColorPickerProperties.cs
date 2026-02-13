@@ -32,13 +32,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             VisibleColorFormats.Add("HSI", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HSI")));
             VisibleColorFormats.Add("HWB", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HWB")));
             VisibleColorFormats.Add("NCol", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("NCol")));
-            VisibleColorFormats.Add("CIELAB", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CIELAB")));
             VisibleColorFormats.Add("CIEXYZ", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CIEXYZ")));
+            VisibleColorFormats.Add("CIELAB", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CIELAB")));
+            VisibleColorFormats.Add("Oklab", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("Oklab")));
+            VisibleColorFormats.Add("Oklch", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("Oklch")));
             VisibleColorFormats.Add("VEC4", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("VEC4")));
             VisibleColorFormats.Add("Decimal", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("Decimal")));
             VisibleColorFormats.Add("HEX Int", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HEX Int")));
             ShowColorName = false;
-            ActivationAction = ColorPickerActivationAction.OpenColorPickerAndThenEditor;
+            ActivationAction = ColorPickerActivationAction.OpenColorPicker;
+            PrimaryClickAction = ColorPickerClickAction.PickColorThenEditor;
+            MiddleClickAction = ColorPickerClickAction.PickColorAndClose;
+            SecondaryClickAction = ColorPickerClickAction.Close;
             CopiedColorRepresentation = "HEX";
         }
 
@@ -54,6 +59,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("activationaction")]
         public ColorPickerActivationAction ActivationAction { get; set; }
+
+        [JsonPropertyName("primaryclickaction")]
+        public ColorPickerClickAction PrimaryClickAction { get; set; }
+
+        [JsonPropertyName("middleclickaction")]
+        public ColorPickerClickAction MiddleClickAction { get; set; }
+
+        [JsonPropertyName("secondaryclickaction")]
+        public ColorPickerClickAction SecondaryClickAction { get; set; }
 
         // Property ColorHistory is not used, the color history is saved separately in the colorHistory.json file
         [JsonPropertyName("colorhistory")]
@@ -73,6 +87,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowColorName { get; set; }
 
         public override string ToString()
-            => JsonSerializer.Serialize(this);
+            => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.ColorPickerProperties);
     }
 }

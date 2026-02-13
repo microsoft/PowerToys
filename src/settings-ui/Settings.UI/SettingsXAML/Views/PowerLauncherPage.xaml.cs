@@ -15,7 +15,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PowerLauncherPage : Page, IRefreshablePage
+    public sealed partial class PowerLauncherPage : NavigablePage, IRefreshablePage
     {
         public PowerLauncherViewModel ViewModel { get; set; }
 
@@ -34,12 +34,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public PowerLauncherPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             _lastIPCMessageSentTick = Environment.TickCount;
 
             PowerLauncherSettings settings = SettingsRepository<PowerLauncherSettings>.GetInstance(settingsUtils)?.SettingsConfig;
             ViewModel = new PowerLauncherViewModel(settings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SendDefaultIPCMessageTimed, App.IsDarkTheme);
             DataContext = ViewModel;
+
             _ = Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", () =>
             {
                 if (Environment.TickCount < _lastIPCMessageSentTick + 500)
@@ -79,6 +80,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ApplicationName"), "application_name"));
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_StringInApplication"), "string_in_application"));
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void OpenColorsSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -93,7 +96,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void NavigateCmdPalSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.CmdPal, true);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.CmdPal);
         }
 
         /*

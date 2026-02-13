@@ -11,24 +11,53 @@ parameters:
   - name: useLatestWebView2
     type: boolean
     default: false
+  - name: buildSource
+    type: string
+    default: "latestMainOfficialBuild"
+    displayName: "Build Source"
+  - name: specificBuildId
+    type: string
+    default: "xxxx"
+    displayName: "Build ID (for specific builds)"
+  - name: uiTestModules
+    type: object
+    default: []
+  - name: installMode
+    type: string
+    default: 'machine'
+    values:
+      - 'machine'
+      - 'peruser'
+  - name: jobSuffix
+    type: string
+    default: ''
 
 jobs:
-- job: Test${{ parameters.platform }}${{ parameters.configuration }}
-  displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}
+- job: Test${{ parameters.platform }}${{ parameters.configuration }}${{ parameters.jobSuffix }}
+  displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}${{ parameters.jobSuffix }}
+  timeoutInMinutes: 300
   variables:
-    BuildPlatform: ${{ parameters.platform }}
+    ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
+      BuildPlatform: x64
+    ${{ else }}:
+      BuildPlatform: ${{ parameters.platform }}
+    TestPlatform: ${{ parameters.platform }}
     BuildConfiguration: ${{ parameters.configuration }}
     SrcPath: $(Build.Repository.LocalPath)
-    TestArtifactsName: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
+    TestArtifactsName: build-${{ variables.BuildPlatform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
   pool:
     ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
       ${{ if ne(parameters.platform, 'ARM64') }}:
         name: SHINE-INT-Testing-x64
+        ${{ if eq(parameters.platform, 'x64Win11') }}:
+          demands: ImageOverride -equals SHINE-W11-Testing
       ${{ else }}:
         name: SHINE-INT-Testing-arm64
     ${{ else }}:
       ${{ if ne(parameters.platform, 'ARM64') }}:
         name: SHINE-OSS-Testing-x64
+        ${{ if eq(parameters.platform, 'x64Win11') }}:
+          demands: ImageOverride -equals SHINE-W11-Testing
       ${{ else }}:
         name: SHINE-OSS-Testing-arm64
   steps:
@@ -83,12 +112,44 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
+  - ${{ if ne(parameters.buildSource, 'buildNow') }}:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'specific'
+        project: 'Dart'
+        definition: '76541'
+        ${{ if eq(parameters.buildSource, 'specificBuildId') }}:
+          buildVersionToDownload: 'specific'
+          buildId: '${{ parameters.specificBuildId }}'
+        ${{ else }}:
+          buildVersionToDownload: 'latestFromBranch'
+          branchName: 'refs/heads/main'
+        artifactName: 'build-$(BuildPlatform)-Release'
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+        ${{ if eq(parameters.installMode, 'peruser') }}:
+          patterns: |
+            **/PowerToysUserSetup*.exe
+        ${{ else }}:
+          patterns: |
+            **/PowerToysSetup*.exe
+
+  - ${{ if ne(parameters.buildSource, 'buildNow') }}:
+    - ${{ if eq(parameters.installMode, 'peruser') }}:
+      - pwsh: |-
+          & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "PerUser"
+        displayName: Install PowerToys (Per-User)
+
+    - ${{ if eq(parameters.installMode, 'machine') }}:
+      - pwsh: |-
+          & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "Machine"
+        displayName: Install PowerToys (Machine-Level)
+
   - ${{ if ne(parameters.platform, 'arm64') }}:
     - task: ScreenResolutionUtility@1
       inputs:
         displaySettings: 'optimal'
 
   - script: |
-      dotnet test $(Build.SourcesDirectory)\src\modules\fancyzones\UITests-FancyZones\UITests-FancyZones.csproj --no-build -c $(BuildConfiguration) -p:Platform=$(BuildPlatform)
-      dotnet test $(Build.SourcesDirectory)\src\modules\fancyzones\UITests-FancyZonesEditor\UITests-FancyZonesEditor.csproj --no-build -c $(BuildConfiguration) -p:Platform=$(BuildPlatform)
+      dotnet test $(Build.SourcesDirectory)\src\modules\fancyzones\FancyZones.UITests\FancyZones.UITests.csproj --no-build -c $(BuildConfiguration) -p:Platform=$(BuildPlatform)
+      dotnet test $(Build.SourcesDirectory)\src\modules\fancyzones\FancyZonesEditor.UITests\FancyZonesEditor.UITests.csproj --no-build -c $(BuildConfiguration) -p:Platform=$(BuildPlatform)
     displayName: "Run UI Tests"

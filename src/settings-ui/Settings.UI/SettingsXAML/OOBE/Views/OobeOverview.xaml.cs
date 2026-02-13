@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
@@ -12,7 +13,7 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    public sealed partial class OobeOverview : Page
+    public sealed partial class OobeOverview : Page, INotifyPropertyChanged
     {
         public OobePowerToysModule ViewModel { get; set; }
 
@@ -43,6 +44,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public bool ShowDataDiagnosticsSetting => GetIsDataDiagnosticsInfoBarEnabled();
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         private bool GetIsDataDiagnosticsInfoBarEnabled()
         {
             var isDataDiagnosticsGpoDisallowed = GPOWrapper.GetAllowDataDiagnosticsValue() == GpoRuleConfigured.Disabled;
@@ -56,15 +59,20 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             _enableDataDiagnostics = DataDiagnosticsSettings.GetEnabledValue();
 
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.Overview]);
-            DataContext = ViewModel;
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.Overview);
+            DataContext = this;
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(DashboardPage));
+                OobeWindow.OpenMainWindowCallback(typeof(DashboardPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
@@ -72,9 +80,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void GeneralSettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(GeneralPage));
+                OobeWindow.OpenMainWindowCallback(typeof(GeneralPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

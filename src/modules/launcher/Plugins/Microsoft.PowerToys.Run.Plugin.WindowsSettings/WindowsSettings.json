@@ -295,7 +295,7 @@
       "Areas": [ "AreaEaseOfAccess" ],
       "Type": "AppSettingsApp",
       "AltNames": [ "TouchFeedback" ],
-      "Command": "ms-settings:easeofaccess-MousePointer"
+      "Command": "ms-settings:easeofaccess-mousepointer"
     },
     {
       "Name": "Display",

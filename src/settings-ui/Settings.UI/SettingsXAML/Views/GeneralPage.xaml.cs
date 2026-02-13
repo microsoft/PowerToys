@@ -5,20 +5,20 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Data.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
     /// <summary>
     /// General Settings Page.
     /// </summary>
-    public sealed partial class GeneralPage : Page, IRefreshablePage
+    public sealed partial class GeneralPage : NavigablePage, IRefreshablePage
     {
         private static DateTime OkToHideBackupAndRestoreMessageTime { get; set; }
 
@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // Load string resources
             var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
 
             Action stateUpdatingAction = () =>
             {
@@ -84,7 +84,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             DataContext = ViewModel;
 
+            ViewModel.InitializeReportBugLink();
+
+            // Register IPC handler for bug report status
+            ShellPage.ShellHandler.IPCResponseHandleList.Add(HandleBugReportStatusResponse);            // Register cleanup on unload
+            this.Unloaded += GeneralPage_Unloaded;
+
+            CheckBugReportStatus();
+
             doRefreshBackupRestoreStatus(100);
+
+            this.Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void OpenColorsSettings_Click(object sender, RoutedEventArgs e)
@@ -162,6 +172,63 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async void ViewDiagnosticData_Click(object sender, RoutedEventArgs e)
         {
             await Task.Run(ViewModel.ViewDiagnosticData);
+        }
+
+        private void BugReportToolClicked(object sender, RoutedEventArgs e)
+        {
+            // Start bug report
+            ShellPage.SendDefaultIPCMessage("{\"bugreport\": 0 }");
+
+            ViewModel.IsBugReportRunning = true;
+
+            // No need to start timer - the observer pattern will notify us when it finishes
+        }
+
+        private void CheckBugReportStatus()
+        {
+            // Send one-time request to check current bug report status
+            string ipcMessage = "{ \"bug_report_status\": { } }";
+            ShellPage.SendDefaultIPCMessage(ipcMessage);
+        }
+
+        private void HandleBugReportStatusResponse(JsonObject response)
+        {
+            if (response.ContainsKey("bug_report_running"))
+            {
+                var isRunning = response.GetNamedBoolean("bug_report_running");
+
+                // Update UI on the UI thread
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    ViewModel.IsBugReportRunning = isRunning;
+                });
+            }
+        }
+
+        private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            CleanupBugReportHandlers();
+        }
+
+        private void CleanupBugReportHandlers()
+        {
+            // Remove IPC handler
+            if (ShellPage.ShellHandler?.IPCResponseHandleList != null)
+            {
+                ShellPage.ShellHandler.IPCResponseHandleList.Remove(HandleBugReportStatusResponse);
+            }
+        }
+
+        private void ShowSystemTrayIcon_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                var shellViewModel = ShellPage.ShellHandler?.ViewModel;
+                if (shellViewModel != null)
+                {
+                    shellViewModel.ShowCloseMenu = !toggleSwitch.IsOn;
+                }
+            }
         }
     }
 }

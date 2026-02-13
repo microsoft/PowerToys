@@ -2,11 +2,15 @@
 
 #include <Windows.h>
 
+#include <algorithm>
+#include <appxpackaging.h>
 #include <exception>
 #include <filesystem>
 #include <regex>
 #include <string>
 #include <optional>
+#include <Shlwapi.h>
+#include <wrl/client.h>
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
@@ -15,11 +19,19 @@
 #include "../logger/logger.h"
 #include "../version/version.h"
 
-namespace package {
-
-    using namespace winrt::Windows::Foundation;
-    using namespace winrt::Windows::ApplicationModel;
-    using namespace winrt::Windows::Management::Deployment;
+namespace package
+{
+    using winrt::Windows::ApplicationModel::Package;
+    using winrt::Windows::Foundation::IAsyncOperationWithProgress;
+    using winrt::Windows::Foundation::AsyncStatus;
+    using winrt::Windows::Foundation::Uri;
+    using winrt::Windows::Foundation::Collections::IVector;
+    using winrt::Windows::Management::Deployment::AddPackageOptions;
+    using winrt::Windows::Management::Deployment::DeploymentOptions;
+    using winrt::Windows::Management::Deployment::DeploymentProgress;
+    using winrt::Windows::Management::Deployment::DeploymentResult;
+    using winrt::Windows::Management::Deployment::PackageManager;
+    using Microsoft::WRL::ComPtr;
 
     inline BOOL IsWin11OrGreater()
     {
@@ -44,6 +56,118 @@ namespace package {
             &osvi,
             VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER,
             dwlConditionMask);
+    }
+
+    struct PACKAGE_VERSION
+    {
+        UINT16 Major;
+        UINT16 Minor;
+        UINT16 Build;
+        UINT16 Revision;
+    };
+
+    class ComInitializer
+    {
+    public:
+        explicit ComInitializer(DWORD coInitFlags = COINIT_MULTITHREADED) :
+            _initialized(false)
+        {
+            const HRESULT hr = CoInitializeEx(nullptr, coInitFlags);
+            _initialized = SUCCEEDED(hr);
+        }
+
+        ~ComInitializer()
+        {
+            if (_initialized)
+            {
+                CoUninitialize();
+            }
+        }
+
+        bool Succeeded() const { return _initialized; }
+
+    private:
+        bool _initialized;
+    };
+
+    inline bool GetPackageNameAndVersionFromAppx(
+        const std::wstring& appxPath,
+        std::wstring& outName,
+        PACKAGE_VERSION& outVersion)
+    {
+        try
+        {
+            ComInitializer comInit;
+            if (!comInit.Succeeded())
+            {
+                Logger::error(L"COM initialization failed.");
+                return false;
+            }
+
+            ComPtr<IAppxFactory> factory;
+            ComPtr<IStream> stream;
+            ComPtr<IAppxPackageReader> reader;
+            ComPtr<IAppxManifestReader> manifest;
+            ComPtr<IAppxManifestPackageId> packageId;
+
+            HRESULT hr = CoCreateInstance(__uuidof(AppxFactory), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+            if (FAILED(hr))
+                return false;
+
+            hr = SHCreateStreamOnFileEx(appxPath.c_str(), STGM_READ | STGM_SHARE_DENY_WRITE, FILE_ATTRIBUTE_NORMAL, FALSE, nullptr, &stream);
+            if (FAILED(hr))
+                return false;
+
+            hr = factory->CreatePackageReader(stream.Get(), &reader);
+            if (FAILED(hr))
+                return false;
+
+            hr = reader->GetManifest(&manifest);
+            if (FAILED(hr))
+                return false;
+
+            hr = manifest->GetPackageId(&packageId);
+            if (FAILED(hr))
+                return false;
+
+            LPWSTR name = nullptr;
+            hr = packageId->GetName(&name);
+            if (FAILED(hr))
+                return false;
+
+            UINT64 version = 0;
+            hr = packageId->GetVersion(&version);
+            if (FAILED(hr))
+                return false;
+
+            outName = std::wstring(name);
+            CoTaskMemFree(name);
+
+            outVersion.Major = static_cast<UINT16>((version >> 48) & 0xFFFF);
+            outVersion.Minor = static_cast<UINT16>((version >> 32) & 0xFFFF);
+            outVersion.Build = static_cast<UINT16>((version >> 16) & 0xFFFF);
+            outVersion.Revision = static_cast<UINT16>(version & 0xFFFF);
+
+            Logger::info(L"Package name: {}, version: {}.{}.{}.{}, appxPath: {}",
+                         outName,
+                         outVersion.Major,
+                         outVersion.Minor,
+                         outVersion.Build,
+                         outVersion.Revision,
+                         appxPath);
+
+            return true;
+        }
+        catch (const std::exception& ex)
+        {
+            Logger::error(L"Standard exception: {}", winrt::to_hstring(ex.what()));
+            return false;
+        }
+        catch (...)
+        {
+            Logger::error(L"Unknown or non-standard exception occurred.");
+            return false;
+        }
     }
 
     inline std::optional<Package> GetRegisteredPackage(std::wstring packageDisplayName, bool checkVersion)
@@ -185,6 +309,7 @@ namespace package {
         if (!std::filesystem::exists(directoryPath))
         {
             Logger::error(L"The directory '" + directoryPath + L"' does not exist.");
+            return {};
         }
 
         const std::regex pattern(R"(^.+\.(appx|msix|msixbundle)$)", std::regex_constants::icase);
@@ -220,6 +345,30 @@ namespace package {
                     }
                 }
             }
+
+            // Sort by package version in descending order (newest first)
+            std::sort(matchedFiles.begin(), matchedFiles.end(), [](const std::wstring& a, const std::wstring& b) {
+                std::wstring nameA, nameB;
+                PACKAGE_VERSION versionA{}, versionB{};
+
+                bool gotA = GetPackageNameAndVersionFromAppx(a, nameA, versionA);
+                bool gotB = GetPackageNameAndVersionFromAppx(b, nameB, versionB);
+
+                // Files that failed to parse go to the end
+                if (!gotA)
+                    return false;
+                if (!gotB)
+                    return true;
+
+                // Compare versions: Major, Minor, Build, Revision (descending)
+                if (versionA.Major != versionB.Major)
+                    return versionA.Major > versionB.Major;
+                if (versionA.Minor != versionB.Minor)
+                    return versionA.Minor > versionB.Minor;
+                if (versionA.Build != versionB.Build)
+                    return versionA.Build > versionB.Build;
+                return versionA.Revision > versionB.Revision;
+            });
         }
         catch (const std::exception& ex)
         {
@@ -227,6 +376,59 @@ namespace package {
         }
 
         return matchedFiles;
+    }
+
+    inline bool IsPackageSatisfied(const std::wstring& appxPath)
+    {
+        std::wstring targetName;
+        PACKAGE_VERSION targetVersion{};
+
+        if (!GetPackageNameAndVersionFromAppx(appxPath, targetName, targetVersion))
+        {
+            Logger::error(L"Failed to get package name and version from appx: " + appxPath);
+            return false;
+        }
+
+        PackageManager pm;
+
+        for (const auto& package : pm.FindPackagesForUser({}))
+        {
+            const auto& id = package.Id();
+            if (std::wstring(id.Name()) == targetName)
+            {
+                const auto& version = id.Version();
+
+                if (version.Major > targetVersion.Major ||
+                    (version.Major == targetVersion.Major && version.Minor > targetVersion.Minor) ||
+                    (version.Major == targetVersion.Major && version.Minor == targetVersion.Minor && version.Build > targetVersion.Build) ||
+                    (version.Major == targetVersion.Major && version.Minor == targetVersion.Minor && version.Build == targetVersion.Build && version.Revision >= targetVersion.Revision))
+                {
+                    Logger::info(
+                        L"Package {} is already satisfied with version {}.{}.{}.{}; target version {}.{}.{}.{}; appxPath: {}",
+                        id.Name(),
+                        version.Major,
+                        version.Minor,
+                        version.Build,
+                        version.Revision,
+                        targetVersion.Major,
+                        targetVersion.Minor,
+                        targetVersion.Build,
+                        targetVersion.Revision,
+                        appxPath);
+                    return true;
+                }
+            }
+        }
+
+        Logger::info(
+            L"Package {} is not satisfied. Target version: {}.{}.{}.{}; appxPath: {}",
+            targetName,
+            targetVersion.Major,
+            targetVersion.Minor,
+            targetVersion.Build,
+            targetVersion.Revision,
+            appxPath);
+        return false;
     }
 
     inline bool RegisterPackage(std::wstring pkgPath, std::vector<std::wstring> dependencies)
@@ -238,16 +440,23 @@ namespace package {
             PackageManager packageManager;
 
             // Declare use of an external location
-            DeploymentOptions options = DeploymentOptions::ForceApplicationShutdown;
+            DeploymentOptions options = DeploymentOptions::ForceTargetApplicationShutdown;
 
-            Collections::IVector<Uri> uris = winrt::single_threaded_vector<Uri>();
+            IVector<Uri> uris = winrt::single_threaded_vector<Uri>();
             if (!dependencies.empty())
             {
                 for (const auto& dependency : dependencies)
                 {
                     try
                     {
-                        uris.Append(Uri(dependency));
+                        if (IsPackageSatisfied(dependency))
+                        {
+                            Logger::info(L"Dependency already satisfied: {}", dependency);
+                        }
+                        else
+                        {
+                            uris.Append(Uri(dependency));
+                        }
                     }
                     catch (const winrt::hresult_error& ex)
                     {
@@ -282,7 +491,6 @@ namespace package {
             {
                 Logger::debug(L"Register {} package started.", pkgPath);
             }
-
         }
         catch (std::exception& e)
         {

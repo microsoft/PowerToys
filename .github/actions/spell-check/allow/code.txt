@@ -29,12 +29,16 @@ RUS
 AYUV
 bak
 Bcl
+bgcode
+Deflatealgorithm
 exa
 exabyte
 Gbits
 Gbps
 gcode
+Heatshrink
 Mbits
+Kbits
 MBs
 mkv
 msix
@@ -53,6 +57,8 @@ YVU
 YVYU
 zipfolder
 CODEOWNERS
+VNext
+vnext
 
 # FONTS
 
@@ -89,19 +95,34 @@ onefuzzingestionpreparationtool
 OTP
 Yubi
 Yubico
+Perplexity
+Groq
 svgl
+devhome
 
 # KEYS
 
 altdown
 BUTTONUP
+bafunctions
+Baf
+Bitness
+BUILDARCHSHORT
 CTRLALTDEL
 Ctrls
+CSilent
+CBal
+CREATEBAFUNCTIONS
+CPrereq
+dirutil
+DUtil
+Editbox
 EXSEL
 HOLDENTER
 HOLDESC
 HOLDSPACE
 HOLDBACKSPACE
+IDIGNORE
 KBDLLHOOKSTRUCT
 keyevent
 LAlt
@@ -113,12 +134,16 @@ LCONTROL
 LCtrl
 LEFTDOWN
 LEFTUP
+locutil
+logutil
+msimg
 MBUTTON
 MBUTTONDBLCLK
 MBUTTONDOWN
 MBUTTONUP
 MIDDLEDOWN
 MIDDLEUP
+memutil
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN
 NCRBUTTONUP
@@ -131,8 +156,18 @@ RCONTROL
 RCtrl
 RIGHTDOWN
 RIGHTUP
+Richedit
+rgwz
+resrutil
+srd
+scz
+shelutil
+thmutil
+uriutil
 VKTAB
+wcautil
 winkey
+wininet
 WMKEYDOWN
 WMKEYUP
 WMSYSKEYDOWN
@@ -142,6 +177,7 @@ XBUTTONDBLCLK
 XBUTTONDOWN
 XBUTTONUP
 XDOWN
+xmlutil
 
 # Prefix
 pcs
@@ -271,6 +307,45 @@ mengyuanchen
 
 # DllName
 testhost
+Testably
 
 #Tools
 OIP
+xef
+xes
+PACKAGEVERSIONNUMBER
+APPXMANIFESTVERSION
+
+# MRU lists
+CACHEWRITE
+MRUCMPPROC
+MRUINFO
+REGSTR
+
+# Misc Win32 APIs and PInvokes
+INVOKEIDLIST
+MEMORYSTATUSEX
+
+# PowerRename metadata pattern abbreviations (used in tests and regex patterns)
+DDDD
+FFF
+HHH
+riday
+YYY
+
+# Unicode
+precomposed
+
+# GitHub issue/PR commands
+azp
+feedbackhub
+needinfo
+reportbug
+
+#ffmpeg
+crf
+nostdin
+
+# Performance counter keys
+engtype
+Nonpaged

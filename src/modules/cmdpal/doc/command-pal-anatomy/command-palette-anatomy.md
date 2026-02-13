@@ -152,7 +152,7 @@ We've made it easy to build a new extension. Just follow these steps:
 2. Run the following PowerShell script, replacing "MastodonExtension" with the `Name` of your extension and "Mastodon extension for cmdpal" with the `DisplayName` of the [command that will show up in the root view](#root-view) of the Command Palette:
     
 ```powershell
-.\Exts\NewExtension.ps1 -name MastodonExtension -DisplayName "Mastodon extension for cmdpal"
+.\ext\NewExtension.ps1 -name MastodonExtension -DisplayName "Mastodon extension for cmdpal"
 ```
 
 3. Open the solution in Visual Studio.
@@ -204,7 +204,7 @@ Let's see what this currently looks like in the Command Palette. First, deploy y
 
 ![alt text](image-3.png)
 
-Then, open the Command Palette by pressing `Win+Ctl+.` and search for "Search SSH Keys". You should see the command displayed in the root view of the Command Palette like this: 
+Then, open the Command Palette by pressing `Win+Ctrl+.` and search for "Search SSH Keys". You should see the command displayed in the root view of the Command Palette like this:
 
 ![alt text](image-4.png)
 

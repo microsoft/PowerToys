@@ -122,7 +122,7 @@ namespace Microsoft.CommandPalette.Extensions
     interface ISeparatorFilterItem requires IFilterItem {}
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IFilter requires IFilterItem {
+    interface IFilter requires INotifyPropChanged, IFilterItem {
         String Id { get; };
         String Name { get; };
         IIconInfo Icon { get; };
@@ -131,7 +131,7 @@ namespace Microsoft.CommandPalette.Extensions
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFilters {
         String CurrentFilterId { get; set; };
-        IFilterItem[] Filters();
+        IFilterItem[] GetFilters();
     }
     
     struct Color
@@ -160,6 +160,15 @@ namespace Microsoft.CommandPalette.Extensions
     [uuid("6a6dd345-37a3-4a1e-914d-4f658a4d583d")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsData {}
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    enum ContentSize
+    {
+        Small = 0,
+        Medium = 1,
+        Large = 2,
+    };
+
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsElement {
         String Key { get; };
@@ -182,8 +191,8 @@ namespace Microsoft.CommandPalette.Extensions
         String Text { get; };
     }
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IDetailsCommand requires IDetailsData {
-        ICommand Command { get; };
+    interface IDetailsCommands requires IDetailsData {
+        ICommand[] Commands { get; };
     }
     [uuid("58070392-02bb-4e89-9beb-47ceb8c3d741")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
@@ -273,10 +282,26 @@ namespace Microsoft.CommandPalette.Extensions
         String Section { get; };
         String TextToSuggest { get; };
     }
+
+    [uuid("50C6F080-1CBE-4CE4-B92F-DA2F116ED524")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IGridProperties requires INotifyPropChanged { }
+
+    [uuid("05914D59-6ECB-4992-9CF2-5982B5120A26")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ISmallGridLayout requires IGridProperties { }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IGridProperties  {
-        Windows.Foundation.Size TileSize { get; };
+    interface IMediumGridLayout requires IGridProperties
+    {
+        Boolean ShowTitle { get; };
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IGalleryGridLayout requires IGridProperties
+    {
+        Boolean ShowTitle { get; };
+        Boolean ShowSubtitle { get; };
     }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
@@ -346,6 +371,11 @@ namespace Microsoft.CommandPalette.Extensions
         IFallbackHandler FallbackHandler{ get; };
         String DisplayTitle { get; };
     };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackCommandItem2 requires IFallbackCommandItem {
+        String Id { get; };
+    };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsChanged
@@ -362,6 +392,18 @@ namespace Microsoft.CommandPalette.Extensions
         ICommand GetCommand(String id);
     
         void InitializeWithHost(IExtensionHost host);
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IExtendedAttributesProvider
+    {
+        Windows.Foundation.Collections.IMap<String, Object> GetProperties();
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandProvider2 requires ICommandProvider
+    {
+        Object[] GetApiExtensionStubs();
     };
     
 

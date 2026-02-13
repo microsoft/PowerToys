@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,13 +16,15 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public sealed class CommandProviderWrapper
 {
-    public bool IsExtension => Extension != null;
+    public bool IsExtension => Extension is not null;
 
     private readonly bool isValid;
 
     private readonly ExtensionObject<ICommandProvider> _commandProvider;
 
     private readonly TaskScheduler _taskScheduler;
+
+    private readonly ICommandProviderCache? _commandProviderCache;
 
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
@@ -40,13 +44,9 @@ public sealed class CommandProviderWrapper
 
     public CommandSettingsViewModel? Settings { get; private set; }
 
-    public string ProviderId
-    {
-        get
-        {
-            return string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
-        }
-    }
+    public bool IsActive { get; private set; }
+
+    public string ProviderId => string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
 
     public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
@@ -66,15 +66,19 @@ public sealed class CommandProviderWrapper
         DisplayName = provider.DisplayName;
         Icon = new(provider.Icon);
         Icon.InitializeProperties();
+
+        // Note: explicitly not InitializeProperties()ing the settings here. If
+        // we do that, then we'd regress GH #38321
         Settings = new(provider.Settings, this, _taskScheduler);
-        Settings.InitializeProperties();
 
         Logger.LogDebug($"Initialized command provider {ProviderId}");
     }
 
-    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread)
+    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread, ICommandProviderCache commandProviderCache)
     {
         _taskScheduler = mainThread;
+        _commandProviderCache = commandProviderCache;
+
         Extension = extension;
         ExtensionHost = new CommandPaletteHost(extension);
         if (!Extension.IsRunning())
@@ -122,38 +126,55 @@ public sealed class CommandProviderWrapper
     {
         if (!isValid)
         {
+            IsActive = false;
+            RecallFromCache();
             return;
         }
 
         var settings = serviceProvider.GetService<SettingsModel>()!;
 
-        if (!GetProviderSettings(settings).IsEnabled)
+        var providerSettings = GetProviderSettings(settings);
+        IsActive = providerSettings.IsEnabled;
+        if (!IsActive)
         {
+            RecallFromCache();
             return;
         }
 
-        ICommandItem[]? commands = null;
-        IFallbackCommandItem[]? fallbacks = null;
-
+        var displayInfoInitialized = false;
         try
         {
             var model = _commandProvider.Unsafe!;
 
-            Task<ICommandItem[]> t = new(model.TopLevelCommands);
-            t.Start();
-            commands = await t.ConfigureAwait(false);
+            Task<ICommandItem[]> loadTopLevelCommandsTask = new(model.TopLevelCommands);
+            loadTopLevelCommandsTask.Start();
+            var commands = await loadTopLevelCommandsTask.ConfigureAwait(false);
 
             // On a BG thread here
-            fallbacks = model.FallbackCommands();
+            var fallbacks = model.FallbackCommands();
+
+            if (model is ICommandProvider2 two)
+            {
+                UnsafePreCacheApiAdditions(two);
+            }
 
             Id = model.Id;
             DisplayName = model.DisplayName;
             Icon = new(model.Icon);
             Icon.InitializeProperties();
+            displayInfoInitialized = true;
 
+            // Update cached display name
+            if (_commandProviderCache is not null && Extension?.ExtensionUniqueId is not null)
+            {
+                _commandProviderCache.Memorize(Extension.ExtensionUniqueId, new CommandProviderCacheItem(model.DisplayName));
+            }
+
+            // Note: explicitly not InitializeProperties()ing the settings here. If
+            // we do that, then we'd regress GH #38321
             Settings = new(model.Settings, this, _taskScheduler);
-            Settings.InitializeProperties();
 
+            // We do need to explicitly initialize commands though
             InitializeCommands(commands, fallbacks, serviceProvider, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
@@ -163,30 +184,50 @@ public sealed class CommandProviderWrapper
             Logger.LogError("Failed to load commands from extension");
             Logger.LogError($"Extension was {Extension!.PackageFamilyName}");
             Logger.LogError(e.ToString());
+
+            if (!displayInfoInitialized)
+            {
+                RecallFromCache();
+            }
+        }
+    }
+
+    private void RecallFromCache()
+    {
+        var cached = _commandProviderCache?.Recall(ProviderId);
+        if (cached is not null)
+        {
+            DisplayName = cached.DisplayName;
+        }
+
+        if (string.IsNullOrWhiteSpace(DisplayName))
+        {
+            DisplayName = Extension?.PackageDisplayName ?? Extension?.PackageFamilyName ?? ProviderId;
         }
     }
 
     private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
+        var providerSettings = GetProviderSettings(settings);
 
-        Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
+        var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, serviceProvider);
-
-            topLevelViewModel.ItemViewModel.SlowInitializeProperties();
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider, i);
+            topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
         };
-        if (commands != null)
+
+        if (commands is not null)
         {
             TopLevelItems = commands
                 .Select(c => makeAndAdd(c, false))
                 .ToArray();
         }
 
-        if (fallbacks != null)
+        if (fallbacks is not null)
         {
             FallbackItems = fallbacks
                 .Select(c => makeAndAdd(c, true))
@@ -194,20 +235,18 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    /* This is a View/ExtensionHost piece
-     * public void AllowSetForeground(bool allow)
+    private void UnsafePreCacheApiAdditions(ICommandProvider2 provider)
     {
-        if (!IsExtension)
+        var apiExtensions = provider.GetApiExtensionStubs();
+        Logger.LogDebug($"Provider supports {apiExtensions.Length} extensions");
+        foreach (var a in apiExtensions)
         {
-            return;
+            if (a is IExtendedAttributesProvider command2)
+            {
+                Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
+            }
         }
-
-        var iextn = extensionWrapper?.GetExtensionObject();
-        unsafe
-        {
-            PInvoke.CoAllowSetForegroundWindow(iextn);
-        }
-    }*/
+    }
 
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;
 

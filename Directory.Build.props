@@ -1,5 +1,8 @@
 <Project>
-  <Import Project="src\Version.props" />
+  <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+  </PropertyGroup>
+  <Import Project="$(RepoRoot)src\Version.props" />
   <PropertyGroup>
     <Copyright>Copyright (C) Microsoft Corporation. All rights reserved.</Copyright>
     <AssemblyCopyright>Copyright (C) Microsoft Corporation. All rights reserved.</AssemblyCopyright>
@@ -27,6 +30,39 @@
     <TestingPlatformDisableCustomTestTarget Condition="'$(Platform)' == 'ARM64'">true</TestingPlatformDisableCustomTestTarget>
   </PropertyGroup>
 
+  <!--
+    Completely skip building test projects when BuildTests=false (e.g., Release pipeline).
+    This avoids InternalsVisibleTo/signing issues by not compiling test code at all.
+    Match: projects ending in Test, Tests, UnitTests, UITests, FuzzTests, or in a folder named Tests.
+    Also matches projects starting with UnitTests- (e.g., UnitTests-CommonLib).
+    Also removes all PackageReference/ProjectReference to prevent NuGet restore and dependency builds.
+    Note: Checking both 'false' and 'False' to handle YAML boolean serialization.
+  -->
+  <PropertyGroup Condition="'$(BuildTests)' == 'false' or '$(BuildTests)' == 'False'">
+    <_ProjectName>$(MSBuildProjectName)</_ProjectName>
+    <!-- Match any project ending with "Test" or "Tests" (covers UnitTests, UITests, FuzzTests, etc.) -->
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('Test'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('Tests'))">true</_IsSkippedTestProject>
+    <!-- Match projects starting with UnitTests- or UITest- prefix -->
+    <_IsSkippedTestProject Condition="$(_ProjectName.StartsWith('UnitTests-'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.StartsWith('UITest-'))">true</_IsSkippedTestProject>
+    <!-- Match projects in a Tests folder -->
+    <_IsSkippedTestProject Condition="$(MSBuildProjectDirectory.Contains('\Tests\'))">true</_IsSkippedTestProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateGlobalUsings>false</GenerateGlobalUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Disable all code analysis for skipped test projects -->
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <RunAnalyzers>false</RunAnalyzers>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <Version>$(Version).0</Version>
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
@@ -36,16 +72,17 @@
 
   <PropertyGroup>
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
-    <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>
+    <ForceImportBeforeCppProps>$(RepoRoot)Cpp.Build.props</ForceImportBeforeCppProps>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(_IsSkippedTestProject)' != 'true'">
     <PackageReference Include="StyleCop.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <Compile Include="$(MSBuildThisFileDirectory)\src\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory)\src\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
+    <Compile Include="$(RepoRoot)src\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+    <AdditionalFiles Include="$(RepoRoot)src\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
 
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
@@ -63,7 +100,7 @@
   <!-- Add ability to run tests via "msbuild /t:Test" using the RunVSTest SDK -->
   <!-- This is only needed for C++, as we use Microsoft.Testing.Platform for C# -->
   <!--
-    Workaround an MSBuild bug where Microsoft.Common.Test.targets is missing from the Arm64 installation.
+    Work around an MSBuild bug where Microsoft.Common.Test.targets is missing from the Arm64 installation.
     See: https://github.com/dotnet/msbuild/pull/9984
     NB 1: This means that using "/t:Test" is not supported for Arm64 builds and tests will need to be run in an alternate way,
           eg running tests in VS or invoking vstest.console directly.

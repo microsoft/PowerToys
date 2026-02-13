@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.Helpers;
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -72,7 +72,7 @@ public partial class Tag : Control
 
         if (GetTemplateChild(TagIconBox) is IconBox iconBox)
         {
-            iconBox.SourceRequested += IconCacheProvider.SourceRequested;
+            iconBox.SourceRequested += IconCacheProvider.SourceRequested20;
             iconBox.Visibility = HasIcon ? Visibility.Visible : Visibility.Collapsed;
         }
     }
@@ -84,7 +84,7 @@ public partial class Tag : Control
             return;
         }
 
-        if (tag.ForegroundColor != null &&
+        if (tag.ForegroundColor is not null &&
             OptionalColorBrushCacheProvider.Convert(tag.ForegroundColor.Value) is SolidColorBrush brush)
         {
             tag.Foreground = brush;
@@ -114,7 +114,7 @@ public partial class Tag : Control
             return;
         }
 
-        if (tag.BackgroundColor != null &&
+        if (tag.BackgroundColor is not null &&
             OptionalColorBrushCacheProvider.Convert(tag.BackgroundColor.Value) is SolidColorBrush brush)
         {
             tag.Background = brush;

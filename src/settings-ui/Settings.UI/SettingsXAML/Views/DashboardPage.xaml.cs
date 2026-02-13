@@ -5,11 +5,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -20,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// Dashboard Settings Page.
     /// </summary>
-    public sealed partial class DashboardPage : Page, IRefreshablePage
+    public sealed partial class DashboardPage : NavigablePage, IRefreshablePage
     {
         /// <summary>
         /// Gets or sets view model.
@@ -34,11 +32,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public DashboardPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
 
             ViewModel = new DashboardViewModel(
                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
+            Unloaded += (s, e) => ViewModel?.Dispose();
         }
 
         public void RefreshEnabledState()
@@ -46,14 +47,27 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.ModuleEnabledChangedOnSettingsPage();
         }
 
-        private void SWVersionButtonClicked(object sender, RoutedEventArgs e)
+        private void WhatsNewButton_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.SWVersionButtonClicked();
+            ((App)App.Current)!.OpenScoobe();
         }
 
-        private void DashboardListItemClick(object sender, RoutedEventArgs e)
+        private void SortAlphabetical_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.DashboardListItemClick(sender);
+            ViewModel.DashboardSortOrder = DashboardSortOrder.Alphabetical;
+            if (sender is ToggleMenuFlyoutItem item)
+            {
+                item.IsChecked = true;
+            }
+        }
+
+        private void SortByStatus_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.DashboardSortOrder = DashboardSortOrder.ByStatus;
+            if (sender is ToggleMenuFlyoutItem item)
+            {
+                item.IsChecked = true;
+            }
         }
     }
 }

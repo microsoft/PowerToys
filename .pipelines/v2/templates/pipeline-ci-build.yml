@@ -3,9 +3,6 @@ variables:
     value: false
   - name: EnablePipelineCache
     value: true
-  - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-    - name: EnablePipelineCache
-      value: true
 
 parameters:
   - name: buildPlatforms
@@ -16,6 +13,9 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     default: false
+  - name: msBuildCacheIsReadOnly
+    type: boolean
+    default: true
   - name: runTests
     type: boolean
     default: true
@@ -49,27 +49,39 @@ stages:
               ${{ else }}:
                 name: SHINE-OSS-L
               ${{ if eq(parameters.useVSPreview, true) }}:
-                demands: ImageOverride -equals SHINE-VS17-Preview
+                demands: ImageOverride -equals SHINE-VS18-Preview
+              ${{ else }}:
+                demands: ImageOverride -equals SHINE-VS18-Latest
             buildPlatforms:
               - ${{ platform }}
             buildConfigurations: [Release]
             enablePackageCaching: true
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+            msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}
             runTests: ${{ parameters.runTests }}
+            buildTests: true
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
               winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
               useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+            timeoutInMinutes: 90
 
-    - ${{ if and(eq(parameters.runTests, true), not(and(eq(platform, 'arm64'), eq(variables['System.PullRequest.IsFork'], true)))) }}:
-      - stage: Test_${{ platform }}
-        displayName: Test ${{ platform }}
-        dependsOn:
-          - Build_${{platform}}
-        jobs:
-          - template: job-test-project.yml
-            parameters:
-              platform: ${{ platform }}
-              configuration: Release
-              useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+  - stage: Build_SDK
+    displayName: Build Command Palette Toolkit SDK
+    dependsOn: []
+    jobs:
+      - template: job-build-sdk.yml
+        parameters:
+          pool:
+            ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+              name: SHINE-INT-L
+            ${{ else }}:
+              name: SHINE-OSS-L
+            ${{ if eq(parameters.useVSPreview, true) }}:
+              demands: ImageOverride -equals SHINE-VS18-Preview
+            ${{ else }}:
+              demands: ImageOverride -equals SHINE-VS18-Latest
+          buildConfigurations: [Release]
+          official: false
+          codeSign: false

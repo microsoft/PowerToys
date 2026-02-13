@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: BODGY - Set up Gnome Keyring for future Cert Auth
         run: |-
-          sudo apt-get install -y gnome-keyring
+          sudo apt-get update && sudo apt-get install -y gnome-keyring
           export $(dbus-launch --sh-syntax)
           export $(echo 'anypass_just_to_unlock' | gnome-keyring-daemon --unlock)
           export $(echo 'anypass_just_to_unlock' | gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh)
@@ -38,6 +38,11 @@ jobs:
           powerToysSetup=$(jq -n "$assets" | jq '[.[]|select(.name | contains("PowerToysUserSetup"))]')
           echo powerToysInstallerX64Url=$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("x64"))][0].browser_download_url') >> $GITHUB_OUTPUT
           echo powerToysInstallerArm64Url=$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("arm64"))][0].browser_download_url') >> $GITHUB_OUTPUT
+
+      - name: Setup .NET 9.0
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.0.x'
 
       - uses: microsoft/setup-msstore-cli@v1
 

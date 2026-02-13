@@ -5,17 +5,16 @@
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
-using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class RegistryPreviewPage : Page, IRefreshablePage
+    public sealed partial class RegistryPreviewPage : NavigablePage, IRefreshablePage
     {
         private RegistryPreviewViewModel ViewModel { get; set; }
 
         public RegistryPreviewPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new RegistryPreviewViewModel(
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 SettingsRepository<RegistryPreviewSettings>.GetInstance(settingsUtils),

@@ -161,7 +161,7 @@ public:
         init_settings();
 
         triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT);
-        triggerEventWaiter = EventWaiter(CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT, [this](int) {
+        triggerEventWaiter.start(CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT, [this](DWORD) {
             on_hotkey(0);
         });
     }
@@ -274,7 +274,7 @@ public:
             Trace::EnableRegistryPreview(false);
             Logger::trace(L"Disabling Registry Preview...");
 
-            // Yeet the Registry setting so preview doesn't work anymore
+            // Remove the Registry setting so preview doesn't work anymore
             const std::wstring installationDir = get_module_folderpath();
 
             if (!getRegistryPreviewChangeSet(installationDir, true).unApply())

@@ -5,7 +5,6 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -29,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Name = ModuleName;
         }
 
-        public virtual void Save(ISettingsUtils settingsUtils)
+        public virtual void Save(SettingsUtils settingsUtils)
         {
             // Save settings to file
             var options = _serializerOptions;

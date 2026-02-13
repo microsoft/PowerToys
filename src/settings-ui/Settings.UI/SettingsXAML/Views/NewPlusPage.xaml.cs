@@ -9,14 +9,14 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class NewPlusPage : Page, IRefreshablePage
+    public sealed partial class NewPlusPage : NavigablePage, IRefreshablePage
     {
         private NewPlusViewModel ViewModel { get; set; }
 
         public NewPlusPage()
         {
             InitializeComponent();
-            var settings_utils = new SettingsUtils();
+            var settings_utils = SettingsUtils.Default;
             ViewModel = new NewPlusViewModel(settings_utils, SettingsRepository<GeneralSettings>.GetInstance(settings_utils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }

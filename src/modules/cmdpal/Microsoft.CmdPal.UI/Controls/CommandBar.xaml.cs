@@ -3,21 +3,24 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Input;
+using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class CommandBar : UserControl,
     IRecipient<OpenContextMenuMessage>,
+    IRecipient<CloseContextMenuMessage>,
+    IRecipient<TryCommandKeybindingMessage>,
     ICurrentPageAware
 {
-    public CommandBarViewModel ViewModel { get; set; } = new();
+    public CommandBarViewModel ViewModel { get; } = new();
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -35,58 +38,117 @@ public sealed partial class CommandBar : UserControl,
 
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
+        WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
+        WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
     }
 
     public void Receive(OpenContextMenuMessage message)
+    {
+        if (message.Element is null)
+        {
+            // This is invoked from the "More" button on the command bar
+            if (!ViewModel.ShouldShowContextMenu)
+            {
+                return;
+            }
+
+            _ = DispatcherQueue.TryEnqueue(
+                () =>
+                {
+                    ContextMenuFlyout.ShowAt(
+                        MoreCommandsButton,
+                        new FlyoutShowOptions()
+                        {
+                            ShowMode = FlyoutShowMode.Standard,
+                            Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
+                        });
+                });
+        }
+        else
+        {
+            // This is invoked from a specific element
+            _ = DispatcherQueue.TryEnqueue(
+            () =>
+            {
+                ContextMenuFlyout.ShowAt(
+                    message.Element!,
+                    new FlyoutShowOptions()
+                    {
+                        ShowMode = FlyoutShowMode.Standard,
+                        Placement = (FlyoutPlacementMode)message.FlyoutPlacementMode!,
+                        Position = message.Point,
+                    });
+            });
+        }
+    }
+
+    public void Receive(CloseContextMenuMessage message)
+    {
+        if (ContextMenuFlyout.IsOpen)
+        {
+            ContextMenuFlyout.Hide();
+        }
+    }
+
+    public void Receive(TryCommandKeybindingMessage msg)
     {
         if (!ViewModel.ShouldShowContextMenu)
         {
             return;
         }
 
-        var options = new FlyoutShowOptions
+        var result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);
+
+        if (result == ContextKeybindingResult.Hide)
         {
-            ShowMode = FlyoutShowMode.Standard,
-        };
-        MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
-        CommandsDropdown.SelectedIndex = 0;
-        CommandsDropdown.Focus(FocusState.Programmatic);
+            msg.Handled = true;
+        }
+        else if (result == ContextKeybindingResult.KeepOpen)
+        {
+            WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
+            msg.Handled = true;
+        }
+        else if (result == ContextKeybindingResult.Unhandled)
+        {
+            msg.Handled = false;
+        }
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
-    private void PrimaryButton_Tapped(object sender, TappedRoutedEventArgs e)
+    private void PrimaryButton_Clicked(object sender, RoutedEventArgs e)
     {
         ViewModel.InvokePrimaryCommand();
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
-    private void SecondaryButton_Tapped(object sender, TappedRoutedEventArgs e)
+    private void SecondaryButton_Clicked(object sender, RoutedEventArgs e)
     {
         ViewModel.InvokeSecondaryCommand();
     }
 
-    private void PageIcon_Tapped(object sender, TappedRoutedEventArgs e)
+    private void SettingsIcon_Clicked(object sender, RoutedEventArgs e)
     {
-        if (CurrentPageViewModel?.StatusMessages.Count > 0)
-        {
-            StatusMessagesFlyout.ShowAt(
-                placementTarget: IconRoot,
-                showOptions: new FlyoutShowOptions() { ShowMode = FlyoutShowMode.Standard });
-        }
+        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage());
     }
 
-    private void SettingsIcon_Tapped(object sender, TappedRoutedEventArgs e)
+    private void MoreCommandsButton_Clicked(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
-        e.Handled = true;
+        WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
     }
 
-    private void CommandsDropdown_ItemClick(object sender, ItemClickEventArgs e)
+    /// <summary>
+    /// Sets focus to the "More" button after closing the context menu,
+    /// keeping keyboard navigation intuitive.
+    /// </summary>
+    public void FocusMoreCommandsButton()
     {
-        if (e.ClickedItem is CommandContextItemViewModel item)
-        {
-            ViewModel?.InvokeItemCommand.Execute(item);
-            MoreCommandsButton.Flyout.Hide();
-        }
+        MoreCommandsButton?.Focus(FocusState.Programmatic);
+    }
+
+    private void ContextMenuFlyout_Opened(object sender, object e)
+    {
+        // We need to wait until our flyout is opened to try and toss focus
+        // at its search box. The control isn't in the UI tree before that
+        ContextControl.FocusSearchBox();
     }
 }

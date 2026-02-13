@@ -1,60 +1,82 @@
-﻿<Page
+﻿<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.HostsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
-
+    <Page.Resources>
+        <tkconverters:ResourceNameToResourceStringConverter x:Key="ResourceNameToResourceStringConverter" />
+        <tkconverters:DoubleToVisibilityConverter
+            x:Key="CountBasedVisibilityConverter"
+            FalseValue="Collapsed"
+            GreaterThan="0"
+            LessThan="2"
+            TrueValue="Visible" />
+        <tkconverters:DoubleToVisibilityConverter
+            x:Key="AgeBasedVisibilityConverter"
+            FalseValue="Collapsed"
+            GreaterThan="1"
+            LessThan="3"
+            TrueValue="Visible" />
+    </Page.Resources>
     <controls:SettingsPageControl x:Uid="Hosts" ModuleImageSource="ms-appx:///Assets/Settings/Modules/HostsFileEditor.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <tkcontrols:SettingsCard
-                    x:Uid="Hosts_EnableToggleControl_HeaderText"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}"
-                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
-                <InfoBar
-                    x:Uid="GPO_SettingIsManaged"
-                    IsClosable="False"
-                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                    Severity="Informational">
-                    <InfoBar.IconSource>
-                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                    </InfoBar.IconSource>
-                </InfoBar>
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="HostsEnableToggleControlHeaderText"
+                        x:Uid="Hosts_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="Hosts_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
+                        Name="HostsLaunchButtonControl"
                         x:Uid="Hosts_LaunchButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
                     <tkcontrols:SettingsCard
+                        Name="HostsToggleLaunchAdministrator"
                         x:Uid="Hosts_Toggle_LaunchAdministrator"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                         IsEnabled="{x:Bind ViewModel.LaunchAdministratorEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.LaunchAdministrator, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_ShowStartupWarning" HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
+                    <tkcontrols:SettingsCard
+                        Name="HostsToggleShowStartupWarning"
+                        x:Uid="Hosts_Toggle_ShowStartupWarning"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowStartupWarning, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Hosts_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="Hosts_AdditionalLinesPosition" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
+                    <tkcontrols:SettingsCard
+                        Name="HostsAdditionalLinesPosition"
+                        x:Uid="Hosts_AdditionalLinesPosition"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.AdditionalLinesPosition, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Top" />
                             <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Bottom" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_LoopbackDuplicates" HeaderIcon="{ui:FontIcon Glyph=&#xEC27;}">
+                    <tkcontrols:SettingsCard
+                        Name="HostsToggleLoopbackDuplicates"
+                        x:Uid="Hosts_Toggle_LoopbackDuplicates"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEC27;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.LoopbackDuplicates, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="Hosts_NoLeadingSpaces" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.NoLeadingSpaces, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="Hosts_Encoding">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Encoding, Mode=TwoWay}">
@@ -63,6 +85,91 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="Hosts_Backup_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander
+                        x:Uid="Hosts_Backup"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEA35;}"
+                        IsExpanded="True">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.BackupHosts, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="Hosts_Backup_Location" IsEnabled="{x:Bind ViewModel.BackupHosts, Mode=OneWay}">
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <controls:IsEnabledTextBlock
+                                        x:Name="pathTextBlock"
+                                        Grid.Column="0"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        IsTextSelectionEnabled="True"
+                                        Text="{x:Bind ViewModel.BackupPath, Mode=TwoWay}">
+                                        <ToolTipService.ToolTip>
+                                            <ToolTip IsEnabled="{Binding IsTextTrimmed, ElementName=pathTextBlock, Mode=OneWay}">
+                                                <TextBlock Text="{x:Bind ViewModel.BackupPath, Mode=TwoWay}" />
+                                            </ToolTip>
+                                        </ToolTipService.ToolTip>
+                                    </controls:IsEnabledTextBlock>
+                                    <Button
+                                        Grid.Column="1"
+                                        Command="{x:Bind ViewModel.SelectBackupPathEventHandler}"
+                                        Content="&#xe8da;"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                        <ToolTipService.ToolTip>
+                                            <ToolTip>
+                                                <TextBlock x:Uid="Hosts_ButtonSelectLocation" />
+                                            </ToolTip>
+                                        </ToolTipService.ToolTip>
+                                    </Button>
+                                </Grid>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="Hosts_Delete_Backup" IsEnabled="{x:Bind ViewModel.BackupHosts, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.DeleteBackupsMode, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="Hosts_DeleteBackupMode_Never" />
+                                    <ComboBoxItem x:Uid="Hosts_DeleteBackupMode_CountBased" />
+                                    <ComboBoxItem x:Uid="Hosts_DeleteBackupMode_AgeAndCountBased" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+
+                            <!--  Count  -->
+                            <tkcontrols:SettingsCard
+                                x:Name="BackupsCountInputSettingsCard"
+                                IsEnabled="{x:Bind ViewModel.BackupHosts, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.DeleteBackupsMode, Converter={StaticResource CountBasedVisibilityConverter}, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Minimum="{x:Bind ViewModel.MinimumBackupsCount, Mode=OneWay}"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.DeleteBackupsCount, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+
+                            <!--  Age and count  -->
+                            <tkcontrols:SettingsCard
+                                x:Uid="Hosts_Backup_DaysInput"
+                                IsEnabled="{x:Bind ViewModel.BackupHosts, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.DeleteBackupsMode, Converter={StaticResource AgeBasedVisibilityConverter}, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Minimum="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.DeleteBackupsDays, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                x:Name="BackupsCountInputAgeSettingsCard"
+                                IsEnabled="{x:Bind ViewModel.BackupHosts, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.DeleteBackupsMode, Converter={StaticResource AgeBasedVisibilityConverter}, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Minimum="{x:Bind ViewModel.MinimumBackupsCount, Mode=OneWay}"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.DeleteBackupsCount, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
@@ -70,4 +177,4 @@
             <controls:PageLink x:Uid="LearnMore_Hosts" Link="https://aka.ms/PowerToysOverview_HostsFileEditor" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
-</Page>
+</local:NavigablePage>

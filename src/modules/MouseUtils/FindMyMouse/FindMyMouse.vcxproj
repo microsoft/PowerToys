@@ -1,24 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <PropertyGroup Label="NuGet">
+    <!-- Tell NuGet this is PackageReference style -->
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+
+    <!-- Tell NuGet we're a native project -->
+    <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
+
+    <!-- Tell NuGet we target Windows (use your existing WindowsTargetPlatformVersion) -->
+    <NuGetTargetPlatformIdentifier>Windows</NuGetTargetPlatformIdentifier>
+    <NuGetTargetPlatformVersion>$(WindowsTargetPlatformVersion)</NuGetTargetPlatformVersion>
+  </PropertyGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{e94fd11c-0591-456f-899f-efc0ca548336}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>FindMyMouse</RootNamespace>
     <ProjectName>FindMyMouse</ProjectName>
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTEnableComponentProjection>false</CppWinRTEnableComponentProjection>
+    <CppWinRTGenerateWindowsMetadata>false</CppWinRTGenerateWindowsMetadata>
+    <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+    <WindowsAppSDKVerifyTransitiveDependencies>false</WindowsAppSDKVerifyTransitiveDependencies>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" GeneratePathProperty="true"/>
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" GeneratePathProperty="true"/>
+    <PackageReference Include="Microsoft.Windows.CppWinRT" GeneratePathProperty="true"/>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -30,9 +51,10 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\</OutDir>
     <TargetName>PowerToys.FindMyMouse</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -79,7 +101,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)src\;$(SolutionDir)src\modules;$(SolutionDir)src\common\Telemetry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <!-- Add Generated Files folder so #include <winrt/...> finds projected headers -->
+      <AdditionalIncludeDirectories>$(GeneratedFilesDir);$(RepoRoot)src\;$(RepoRoot)src\modules;$(RepoRoot)src\common\Telemetry;$(MSBuildThisFileDirectory)..\..\..\..\src\;$(MSBuildThisFileDirectory)..\..\..\..\src\modules;$(MSBuildThisFileDirectory)..\..\..\..\src\common\Telemetry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -98,30 +121,37 @@
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
+    <ProjectReference Include="$(RepoRoot)src\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FindMyMouse.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Import Project="..\..\..\..\deps\spdlog.props" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  <!-- Deduplicate WindowsAppRuntimeAutoInitializer.cpp (added twice via transitive imports causing LNK4042). Remove all then add exactly once. -->
+  <Target Name="FixWinAppSDKAutoInitializer" BeforeTargets="ClCompile" AfterTargets="WindowsAppRuntimeAutoInitializer">
+    <ItemGroup>
+      <!-- Remove ALL injected versions of the file -->
+      <ClCompile Remove="@(ClCompile)" Condition="'%(Filename)' == 'WindowsAppRuntimeAutoInitializer'" />
+
+      <!-- Add ONE copy back manually -->
+      <ClCompile Include="$(PkgMicrosoft_WindowsAppSDK_Foundation)\include\WindowsAppRuntimeAutoInitializer.cpp">
+        <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      </ClCompile>
+    </ItemGroup>
   </Target>
+  <Target Name="RemoveManagedWebView2CoreFromNativeOutDir" AfterTargets="Build">
+    <ItemGroup>
+      <_ToDelete Include="$(OutDir)Microsoft.Web.WebView2.Core.dll" />
+    </ItemGroup>
+    <Delete Files="@(_ToDelete)" Condition="Exists('%(Identity)')" />
+  </Target>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(RepoRoot)deps\spdlog.props" />
 </Project>

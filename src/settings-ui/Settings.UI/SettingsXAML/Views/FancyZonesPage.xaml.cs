@@ -9,16 +9,17 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class FancyZonesPage : Page, IRefreshablePage
+    public sealed partial class FancyZonesPage : NavigablePage, IRefreshablePage
     {
         private FancyZonesViewModel ViewModel { get; set; }
 
         public FancyZonesPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new FancyZonesViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<FancyZonesSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void OpenColorsSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

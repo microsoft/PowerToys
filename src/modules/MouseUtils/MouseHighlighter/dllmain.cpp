@@ -4,6 +4,8 @@
 #include "trace.h"
 #include "MouseHighlighter.h"
 #include "common/utils/color.h"
+#include <common/utils/EventWaiter.h>
+#include <common/interop/shared_constants.h>
 
 namespace
 {
@@ -18,6 +20,7 @@ namespace
     const wchar_t JSON_KEY_HIGHLIGHT_FADE_DELAY_MS[] = L"highlight_fade_delay_ms";
     const wchar_t JSON_KEY_HIGHLIGHT_FADE_DURATION_MS[] = L"highlight_fade_duration_ms";
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
+    const wchar_t JSON_KEY_SPOTLIGHT_MODE[] = L"spotlight_mode";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -60,6 +63,9 @@ private:
     // Mouse Highlighter specific settings
     MouseHighlighterSettings m_highlightSettings;
 
+    // Event-driven trigger support
+    EventWaiter m_triggerEventWaiter;
+
 public:
     // Constructor
     MouseHighlighter()
@@ -71,6 +77,8 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        // Tear down threads/handles before deletion to avoid abort() on joinable threads during shutdown
+        disable();
         delete this;
     }
 
@@ -131,6 +139,11 @@ public:
         m_enabled = true;
         Trace::EnableMouseHighlighter(true);
         std::thread([=]() { MouseHighlighterMain(m_hModule, m_highlightSettings); }).detach();
+
+        // Start listening for external trigger event so we can invoke the same logic as the hotkey.
+        m_triggerEventWaiter.start(CommonSharedConstants::MOUSE_HIGHLIGHTER_TRIGGER_EVENT, [this](DWORD) {
+            OnHotkeyEx();
+        });
     }
 
     // Disable the powertoy
@@ -139,6 +152,8 @@ public:
         m_enabled = false;
         Trace::EnableMouseHighlighter(false);
         MouseHighlighterDisable();
+
+        m_triggerEventWaiter.stop();
     }
 
     // Returns if the powertoys is enabled
@@ -366,6 +381,16 @@ public:
             catch (...)
             {
                 Logger::warn("Failed to initialize auto activate from settings. Will use default value");
+            }
+            try
+            {
+                // Parse spotlight mode
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_MODE);
+                highlightSettings.spotlightMode = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize spotlight mode settings. Will use default value");
             }
         }
         else

@@ -3,13 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Text.Json;
-
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -20,9 +21,13 @@ using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PeekViewModel : Observable, IDisposable
+    public class PeekViewModel : PageViewModelBase
     {
+        protected override string ModuleName => PeekSettings.ModuleName;
+
         private bool _isEnabled;
+
+        private bool _disposed;
 
         private bool _settingsUpdating;
 
@@ -30,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly DispatcherQueue _dispatcherQueue;
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private readonly PeekPreviewSettings _peekPreviewSettings;
         private PeekSettings _peekSettings;
 
@@ -42,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private IFileSystemWatcher _watcher;
 
         public PeekViewModel(
-            ISettingsUtils settingsUtils,
+            SettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,
             Func<string, int> ipcMSGCallBackFunc,
             DispatcherQueue dispatcherQueue)
@@ -59,6 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Load the application-specific settings, including preview items.
             _peekSettings = _settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekSettings.ModuleName);
             _peekPreviewSettings = _settingsUtils.GetSettingsOrDefault<PeekPreviewSettings>(PeekSettings.ModuleName, PeekPreviewSettings.FileName);
+
             SetupSettingsFileWatcher();
 
             InitializeEnabledValue();
@@ -118,6 +124,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [ActivationShortcut],
+            };
+
+            return hotkeysDict;
+        }
+
         public bool IsEnabled
         {
             get => _isEnabled;
@@ -154,6 +170,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (_peekSettings.Properties.ActivationShortcut != value)
                 {
+                    // If space mode toggle is on, ignore external attempts to change (UI will be disabled, but defensive).
+                    if (EnableSpaceToActivate)
+                    {
+                        return;
+                    }
+
                     _peekSettings.Properties.ActivationShortcut = value ?? _peekSettings.Properties.DefaultActivationShortcut;
                     OnPropertyChanged(nameof(ActivationShortcut));
                     NotifySettingsChanged();
@@ -198,6 +220,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _peekSettings.Properties.ConfirmFileDelete.Value = value;
                     OnPropertyChanged(nameof(ConfirmFileDelete));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool EnableSpaceToActivate
+        {
+            get => _peekSettings.Properties.EnableSpaceToActivate.Value;
+            set
+            {
+                if (_peekSettings.Properties.EnableSpaceToActivate.Value != value)
+                {
+                    _peekSettings.Properties.EnableSpaceToActivate.Value = value;
+
+                    if (value)
+                    {
+                        // Force single space (0x20) without modifiers.
+                        _peekSettings.Properties.ActivationShortcut = new HotkeySettings(false, false, false, false, 0x20);
+                    }
+                    else
+                    {
+                        // Revert to default (design simplification, not restoring previous custom combo).
+                        _peekSettings.Properties.ActivationShortcut = _peekSettings.Properties.DefaultActivationShortcut;
+                    }
+
+                    OnPropertyChanged(nameof(EnableSpaceToActivate));
+                    OnPropertyChanged(nameof(ActivationShortcut));
                     NotifySettingsChanged();
                 }
             }
@@ -302,11 +351,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsEnabled));
         }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            _watcher?.Dispose();
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _watcher?.Dispose();
+                    _watcher = null;
+                }
 
-            GC.SuppressFinalize(this);
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

@@ -9,13 +9,13 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PowerOcrPage : Page, IRefreshablePage
+    public sealed partial class PowerOcrPage : NavigablePage, IRefreshablePage
     {
         private PowerOcrViewModel ViewModel { get; set; }
 
         public PowerOcrPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new PowerOcrViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void TextExtractor_ComboBox_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

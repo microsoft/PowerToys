@@ -46,6 +46,7 @@ extends:
   template: templates/pipeline-ci-build.yml
   parameters:
     buildPlatforms: ${{ parameters.buildPlatforms }}
-    enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+    ${{ if eq(variables['System.PullRequest.IsFork'], 'False') }}:
+      enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
     runTests: ${{ parameters.runTests }}
     useVSPreview: ${{ parameters.useVSPreview }}

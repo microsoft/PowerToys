@@ -513,6 +513,56 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool cursorWrap; // defaulting to off
+
+        [JsonPropertyName("CursorWrap")]
+        public bool CursorWrap
+        {
+            get => cursorWrap;
+            set
+            {
+                if (cursorWrap != value)
+                {
+                    LogTelemetryEvent(value);
+                    cursorWrap = value;
+                }
+            }
+        }
+
+        private bool lightSwitch;
+
+        [JsonPropertyName("LightSwitch")]
+        public bool LightSwitch
+        {
+            get => lightSwitch;
+            set
+            {
+                if (lightSwitch != value)
+                {
+                    LogTelemetryEvent(value);
+                    lightSwitch = value;
+                    NotifyChange();
+                }
+            }
+        }
+
+        private bool powerDisplay;
+
+        [JsonPropertyName("PowerDisplay")]
+        public bool PowerDisplay
+        {
+            get => powerDisplay;
+            set
+            {
+                if (powerDisplay != value)
+                {
+                    LogTelemetryEvent(value);
+                    powerDisplay = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

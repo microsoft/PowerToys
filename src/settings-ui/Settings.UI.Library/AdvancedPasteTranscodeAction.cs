@@ -32,14 +32,14 @@ public sealed class AdvancedPasteTranscodeAction : Observable, IAdvancedPasteAct
     public AdvancedPasteAdditionalAction TranscodeToMp3
     {
         get => _transcodeToMp3;
-        init => Set(ref _transcodeToMp3, value);
+        init => Set(ref _transcodeToMp3, value ?? new());
     }
 
     [JsonPropertyName(PropertyNames.TranscodeToMp4)]
     public AdvancedPasteAdditionalAction TranscodeToMp4
     {
         get => _transcodeToMp4;
-        init => Set(ref _transcodeToMp4, value);
+        init => Set(ref _transcodeToMp4, value ?? new());
     }
 
     [JsonIgnore]

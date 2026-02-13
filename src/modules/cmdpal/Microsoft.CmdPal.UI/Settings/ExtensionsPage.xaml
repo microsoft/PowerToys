@@ -11,24 +11,215 @@
     xmlns:local="using:Microsoft.CmdPal.UI.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <!--  ControlFillColorQuarternaryBrush does not exist (yet) in WinUI, only in Windows Visual Library (Figma)  -->
+                <ResourceDictionary x:Key="Default">
+                    <LinearGradientBrush x:Key="CardGradient2Brush" StartPoint="0,0" EndPoint="0.5, 1">
+                        <GradientStop Offset="0" Color="#38C8AEC4" />
+                        <GradientStop Offset="1" Color="#383286EE" />
+                    </LinearGradientBrush>
+                    <ImageSource x:Key="StoreLogo">ms-appx:///Assets/StoreLogo.dark.svg</ImageSource>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <LinearGradientBrush x:Key="CardGradient2Brush" StartPoint="0,0" EndPoint="1, 1">
+                        <!--<GradientStop Offset="0" Color="#E6F0FC" />
+                <GradientStop Offset="0.4" Color="#E6F0FC" />
+                <GradientStop Offset="1" Color="#F0F0F7" />-->
+                        <GradientStop Offset="0.0" Color="#FFF6F9FF" />
+                        <!--  Light cool white  -->
+                        <GradientStop Offset="0.4" Color="#FFEFF5FF" />
+                        <!--  Hinted lavender/blue  -->
+                        <GradientStop Offset="0.7" Color="#FFF7FAFD" />
+                        <!--  Very soft neutral white  -->
+                        <GradientStop Offset="1.0" Color="#FFF5F8FA" />
+                        <!--  Slight bluish-gray tint  -->
+                        <!--  Faint peach glow  -->
+                        <!--  Soft peach  -->
+                    </LinearGradientBrush>
+                    <ImageSource x:Key="StoreLogo">ms-appx:///Assets/StoreLogo.light.svg</ImageSource>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <SolidColorBrush x:Key="CardGradient2Brush" Color="Transparent" />
+                    <SolidColorBrush x:Key="CardGradient1Brush" Color="Transparent" />
+                    <ImageSource x:Key="StoreLogo">ms-appx:///Assets/StoreLogo.dark.svg</ImageSource>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+            <converters:BoolNegationConverter x:Key="InvertedBoolConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        </ResourceDictionary>
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ScrollViewer Grid.Row="1">
+
+        <ScrollViewer x:Name="RootScrollViewer" Grid.Row="1">
             <Grid Padding="16">
                 <StackPanel
                     MaxWidth="1000"
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
+                    <!--  Banner  -->
+                    <Grid
+                        Padding="16"
+                        Background="{ThemeResource CardGradient2Brush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel x:Name="BannerDescriptionPanel" Orientation="Vertical">
+                            <TextBlock x:Uid="Settings_ExtensionsPage_Banner_Header" FontWeight="SemiBold" />
+                            <TextBlock
+                                x:Uid="Settings_ExtensionsPage_Banner_Description"
+                                Grid.Row="1"
+                                MaxWidth="520"
+                                HorizontalAlignment="Left"
+                                TextWrapping="Wrap" />
+                            <HyperlinkButton
+                                x:Uid="Settings_ExtensionsPage_Banner_Hyperlink"
+                                Padding="0"
+                                Content="Learn how to create your own extensions"
+                                NavigateUri="https://learn.microsoft.com/windows/powertoys/command-palette/overview" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="ButtonPanel"
+                            Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button x:Uid="Settings_ExtensionsPage_FindExtensions_MicrosoftStore" Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Viewbox Width="16">
+                                        <Image AutomationProperties.AccessibilityView="Raw" Source="{ThemeResource StoreLogo}" />
+                                    </Viewbox>
+                                    <TextBlock Text="Microsoft Store" />
+                                </StackPanel>
+                            </Button>
+                            <!--<Button x:Uid="Settings_ExtensionsPage_FindExtensions_WinGet" Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Viewbox Width="16">
+                                        <Image AutomationProperties.AccessibilityView="Raw" Source="ms-appx:///Assets/WinGet.svg" />
+                                    </Viewbox>
+                                    <TextBlock Text="WinGet" />
+                                </StackPanel>
+                            </Button>-->
+                        </StackPanel>
+                    </Grid>
 
-                    <ItemsRepeater ItemsSource="{x:Bind viewModel.CommandProviders, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
+                    <!--  Search  -->
+                    <Grid Padding="0,24,0,8" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" MaxWidth="320" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <AutoSuggestBox
+                            x:Name="SearchBox"
+                            x:Uid="Settings_ExtensionsPage_SearchBox_Placeholder"
+                            HorizontalAlignment="Stretch"
+                            Text="{x:Bind viewModel.Extensions.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <AutoSuggestBox.QueryIcon>
+                                <SymbolIcon Symbol="Find" />
+                            </AutoSuggestBox.QueryIcon>
+                            <AutoSuggestBox.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Key="F"
+                                    Invoked="OnFindInvoked"
+                                    Modifiers="Control" />
+                            </AutoSuggestBox.KeyboardAccelerators>
+                        </AutoSuggestBox>
+
+                        <StackPanel
+                            Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <TextBlock
+                                x:Name="ItemCounterTextBlock"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource BodyTextBlockStyle}"
+                                Text="{x:Bind viewModel.Extensions.ItemCounterText, Mode=OneWay}" />
+                            <StackPanel
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="8"
+                                Visibility="{x:Bind viewModel.Extensions.ShowManualReloadOverlay, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ProgressRing
+                                    Width="16"
+                                    Height="16"
+                                    IsActive="True" />
+                                <TextBlock
+                                    x:Uid="Settings_ExtensionsPage_Reloading_Text"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource BodyTextBlockStyle}" />
+                            </StackPanel>
+                            <Button
+                                x:Name="MoreButton"
+                                x:Uid="Settings_ExtensionsPage_More_Button"
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <Button.Flyout>
+                                    <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                        <MenuFlyoutItem x:Uid="Settings_ExtensionsPage_More_Reload_MenuFlyoutItem" Command="{x:Bind viewModel.Extensions.ReloadExtensionsCommand}">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE777;" />
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutSeparator />
+                                        <MenuFlyoutItem x:Uid="Settings_ExtensionsPage_More_ReorderFallbacks_MenuFlyoutItem" Click="MenuFlyoutItem_OnClick">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE8CB;" />
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                                <FontIcon
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    FontSize="16"
+                                    Glyph="&#xE712;" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!--  Empty state when no results match the current search  -->
+                    <Grid
+                        x:Name="NoResultsPanel"
+                        Padding="48"
+                        x:Load="{x:Bind viewModel.Extensions.ShowNoResultsPanel, Mode=OneWay}"
+                        CornerRadius="4">
+                        <StackPanel
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Spacing="8">
+                            <TextBlock
+                                x:Uid="Settings_ExtensionsPage_NoResults_Primary"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                TextAlignment="Center" />
+                            <TextBlock
+                                x:Uid="Settings_ExtensionsPage_NoResults_Secondary"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextAlignment="Center" />
+                        </StackPanel>
+                    </Grid>
+                    <ItemsRepeater
+                        x:Name="ProvidersRepeater"
+                        x:Load="{x:Bind viewModel.Extensions.HasResults, Mode=OneWay}"
+                        ItemsSource="{x:Bind viewModel.Extensions.FilteredProviders, Mode=OneWay}"
+                        Layout="{StaticResource VerticalStackLayout}">
                         <ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="viewmodels:ProviderSettingsViewModel">
+                            <DataTemplate x:DataType="viewModels:ProviderSettingsViewModel">
                                 <controls:SettingsCard
                                     Click="SettingsCard_Click"
                                     DataContext="{x:Bind}"
@@ -38,18 +229,30 @@
                                     <controls:SettingsCard.HeaderIcon>
                                         <cpcontrols:ContentIcon>
                                             <cpcontrols:ContentIcon.Content>
-                                                <cpcontrols:IconBox
-                                                    Width="20"
-                                                    Height="20"
+                                                <controls:SwitchPresenter
                                                     AutomationProperties.AccessibilityView="Raw"
-                                                    SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                    SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                    TargetType="x:Boolean"
+                                                    Value="{x:Bind Icon.IsSet, FallbackValue=x:False, Mode=OneWay}">
+                                                    <controls:Case Value="True">
+                                                        <cpcontrols:IconBox
+                                                            Width="20"
+                                                            Height="20"
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                                            SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
+                                                    </controls:Case>
+                                                    <controls:Case Value="False">
+                                                        <Image
+                                                            Width="20"
+                                                            Height="20"
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            Source="ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png" />
+                                                    </controls:Case>
+                                                </controls:SwitchPresenter>
                                             </cpcontrols:ContentIcon.Content>
                                         </cpcontrols:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>
-
                                     <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
-
                                 </controls:SettingsCard>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
@@ -57,5 +260,26 @@
                 </StackPanel>
             </Grid>
         </ScrollViewer>
+        <cpcontrols:FallbackRankerDialog x:Name="FallbackRankerDialog" />
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="720" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="NarrowLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ButtonPanel.(Grid.Row)" Value="1" />
+                        <Setter Target="BannerDescriptionPanel.(Grid.ColumnSpan)" Value="2" />
+                        <Setter Target="ButtonPanel.(Grid.Column)" Value="0" />
+                        <Setter Target="ButtonPanel.Margin" Value="0,12,0,0" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>

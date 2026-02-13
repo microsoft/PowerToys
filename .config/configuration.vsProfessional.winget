@@ -1,19 +1,23 @@
 # yaml-language-server: $schema=https://aka.ms/configuration-dsc-schema/0.2
-# Reference: https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/readme.md#compiling-powertoys
+# Reference: https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/readme.md#getting-started
 properties:
   resources:
-    - resource: Microsoft.Windows.Developer/DeveloperMode
+    - resource: Microsoft.Windows.Settings/WindowsSettings
       directives:
         description: Enable Developer Mode
         allowPrerelease: true
+        # Requires elevation for the set operation
+        securityContext: elevated
       settings:
-        Ensure: Present
+        DeveloperMode: true
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: vsPackage
       directives:
-        description: Install Visual Studio 2022 Professional (Any edition will work)
+        description: Install Visual Studio 2026 Professional (Any edition will work)
+        # Requires elevation for the set operation
+        securityContext: elevated
       settings:
-        id: Microsoft.VisualStudio.2022.Professional
+        id: Microsoft.VisualStudio.Professional
         source: winget
     - resource: Microsoft.VisualStudio.DSC/VSComponents
       dependsOn:
@@ -21,9 +25,11 @@ properties:
       directives:
         description: Install required VS workloads
         allowPrerelease: true
+        # Requires elevation for the get and set operations
+        securityContext: elevated
       settings:
         productId: Microsoft.VisualStudio.Product.Professional
-        channelId: VisualStudio.17.Release
+        channelId: VisualStudio.18.Release
         vsConfigFile: '${WinGetConfigRoot}\..\.vsconfig'
   configurationVersion: 0.2.0
 

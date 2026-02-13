@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Some items may be set in Directory.Build.props in root -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project=".\Common.Dotnet.PrepareGeneratedFolder.targets" />
+
   <PropertyGroup>
-    <WindowsSdkPackageVersion>10.0.22621.57</WindowsSdkPackageVersion>
-    <TargetFramework>net9.0-windows10.0.22621.0</TargetFramework>
+    <WindowsSdkPackageVersion>10.0.26100.68-preview</WindowsSdkPackageVersion>
+    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
@@ -14,13 +16,13 @@
     <WarningLevel>4</WarningLevel>
     <NoWarn></NoWarn>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CA1720;CA1859;CA2263;CA2022;MVVMTK0045;MVVMTK0049</WarningsNotAsErrors>
+    <WarningsNotAsErrors>CA1824;CA1416;CA1720;CA1859;CA2263;CA2022;MVVMTK0045;MVVMTK0049</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugSymbols>true</DebugSymbols>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <Optimize>false</Optimize>
   </PropertyGroup>
 

@@ -5,19 +5,17 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml.Controls;
 using PowerToys.GPOWrapper;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class AwakePage : Page, IRefreshablePage
+    public sealed partial class AwakePage : NavigablePage, IRefreshablePage
     {
         private readonly string _appName = "Awake";
         private readonly SettingsUtils _settingsUtils;
@@ -38,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             _fileSystem = new FileSystem();
-            _settingsUtils = new SettingsUtils();
+            _settingsUtils = SettingsUtils.Default;
             _sendConfigMsg = ShellPage.SendDefaultIPCMessage;
 
             ViewModel = new AwakeViewModel();

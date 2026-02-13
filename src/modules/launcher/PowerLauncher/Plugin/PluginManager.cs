@@ -185,9 +185,10 @@ namespace PowerLauncher.Plugin
 
             if (!failedPlugins.IsEmpty)
             {
-                var failed = string.Join(", ", failedPlugins.Select(x => x.Metadata.Name));
+                string title = Resources.FailedToInitializePluginsTitle.ToString().Replace("{0}", Constant.Version);
+                var failed = string.Join(", ", failedPlugins.Select(x => $"{x.Metadata.Name} ({x.Metadata.ExecuteFileVersion})"));
                 var description = $"{string.Format(CultureInfo.CurrentCulture, FailedToInitializePluginsDescription, failed)}\n\n{Resources.FailedToInitializePluginsDescriptionPartTwo}";
-                Application.Current.Dispatcher.InvokeAsync(() => API.ShowMsg(Resources.FailedToInitializePluginsTitle, description, string.Empty, false));
+                Application.Current.Dispatcher.InvokeAsync(() => API.ShowMsg(title, description, string.Empty, false));
             }
         }
 

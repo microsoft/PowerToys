@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
 using ManagedCommon;
-using WorkspacesEditor.Data;
+using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Utils;
 
 namespace WorkspacesEditor.Models
@@ -226,7 +226,7 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public Project(ProjectData.ProjectWrapper project)
+        public Project(ProjectWrapper project)
         {
             Id = project.Id;
             Name = project.Name;
@@ -237,7 +237,7 @@ namespace WorkspacesEditor.Models
             Monitors = [];
             Applications = [];
 
-            foreach (ProjectData.ApplicationWrapper app in project.Applications)
+            foreach (ApplicationWrapper app in project.Applications)
             {
                 Models.Application newApp = new()
                 {
@@ -246,6 +246,7 @@ namespace WorkspacesEditor.Models
                     AppPath = app.ApplicationPath,
                     AppTitle = app.Title,
                     PwaAppId = string.IsNullOrEmpty(app.PwaAppId) ? string.Empty : app.PwaAppId,
+                    Version = string.IsNullOrEmpty(app.Version) ? string.Empty : app.Version,
                     PackageFullName = app.PackageFullName,
                     AppUserModelId = app.AppUserModelId,
                     Parent = this,
@@ -268,7 +269,7 @@ namespace WorkspacesEditor.Models
                 Applications.Add(newApp);
             }
 
-            foreach (ProjectData.MonitorConfigurationWrapper monitor in project.MonitorConfiguration)
+            foreach (MonitorConfigurationWrapper monitor in project.MonitorConfiguration)
             {
                 System.Windows.Rect dpiAware = new(monitor.MonitorRectDpiAware.Left, monitor.MonitorRectDpiAware.Top, monitor.MonitorRectDpiAware.Width, monitor.MonitorRectDpiAware.Height);
                 System.Windows.Rect dpiUnaware = new(monitor.MonitorRectDpiUnaware.Left, monitor.MonitorRectDpiUnaware.Top, monitor.MonitorRectDpiUnaware.Width, monitor.MonitorRectDpiUnaware.Height);
