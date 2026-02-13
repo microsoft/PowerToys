@@ -72,7 +72,10 @@
 
             <DataTemplate x:Key="PlainTextContentTemplate" x:DataType="viewModels:ContentPlainTextViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
-                    <extViews:PlainTextContentViewer DataContext="{x:Bind}" />
+                    <extViews:PlainTextContentViewer
+                        Text="{x:Bind Text, Mode=OneWay}"
+                        WordWrapEnabled="{x:Bind WordWrapEnabled, Mode=OneWay}"
+                        UseMonospace="{x:Bind UseMonospace, Mode=OneWay}" />
                 </Grid>
             </DataTemplate>
 

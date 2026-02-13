@@ -10,19 +10,27 @@ public partial class PlainTextContent : BaseObservable, IPlainTextContent
 {
     public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
 
+    public FontFamily FontFamily
+    {
+        get;
+        set => SetProperty(ref field, value);
+    }
+
+    public bool WrapWords
+    {
+        get;
+        set => SetProperty(ref field, value);
+    }
+
     public string? Text
     {
         get;
         set
         {
-            if (field == value)
+            if (SetProperty(ref field, value))
             {
-                return;
+                ItemsChanged?.Invoke(this, new ItemsChangedEventArgs());
             }
-
-            field = value;
-            OnPropertyChanged(nameof(Text));
-            ItemsChanged?.Invoke(this, new ItemsChangedEventArgs());
         }
     }
 

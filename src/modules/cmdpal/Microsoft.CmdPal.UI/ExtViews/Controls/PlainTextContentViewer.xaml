@@ -8,7 +8,7 @@
     mc:Ignorable="d">
 
     <Border Padding="12,8,8,8">
-        <ScrollViewer x:Name="Scroller" 
+        <ScrollViewer x:Name="Scroller"
                       HorizontalScrollMode="Auto"
                       IsHorizontalScrollChainingEnabled="False"
                       HorizontalScrollBarVisibility="Auto" 
@@ -16,7 +16,7 @@
             <TextBlock
                 x:Name="ContentTextBlock"
                 IsTextSelectionEnabled="True"
-                Text="{Binding Text, Mode=OneWay}">
+                PointerWheelChanged="ContentTextBlock_PointerWheelChanged">
                 <TextBlock.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem x:Name="CopySelectionItem" x:Uid="PlainTextContentViewer_Copy" Text="Copy" Icon="Copy" Click="CopySelection_Click">
@@ -32,6 +32,25 @@
                         <MenuFlyoutSeparator />
                         <ToggleMenuFlyoutItem x:Uid="PlainTextContentViewer_WordWrap" Text="Word Wrap" IsChecked="{x:Bind WordWrapEnabled, Mode=TwoWay}" />
                         <ToggleMenuFlyoutItem x:Uid="PlainTextContentViewer_MonospaceFont" Text="Monospace Font" IsChecked="{x:Bind UseMonospace, Mode=TwoWay}" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem x:Uid="PlainTextContentViewer_ZoomIn" Text="Zoom In" Icon="ZoomIn" Click="ZoomIn_Click">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="Add" Modifiers="Control" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="PlainTextContentViewer_ZoomOut" Text="Zoom Out" Icon="ZoomOut" Click="ZoomOut_Click">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="Subtract" Modifiers="Control" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="PlainTextContentViewer_ResetZoom" Text="Reset Zoom" Click="ResetZoom_Click">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE9A6;" />
+                            </MenuFlyoutItem.Icon>
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="Number0" Modifiers="Control" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
                     </MenuFlyout>
                 </TextBlock.ContextFlyout>
             </TextBlock>

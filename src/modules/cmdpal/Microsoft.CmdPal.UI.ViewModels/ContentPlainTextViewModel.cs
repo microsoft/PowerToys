@@ -10,9 +10,13 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ContentPlainTextViewModel : ContentViewModel
 {
-    public ExtensionObject<IPlainTextContent> Model { get; }
+    private ExtensionObject<IPlainTextContent> Model { get; }
 
     public string? Text { get; protected set; }
+
+    public bool WordWrapEnabled { get; protected set; }
+
+    public bool UseMonospace { get; protected set; }
 
     public ContentPlainTextViewModel(IPlainTextContent content, WeakReference<IPageContext> context)
         : base(context)
@@ -29,7 +33,9 @@ public partial class ContentPlainTextViewModel : ContentViewModel
         }
 
         Text = model.Text;
-        UpdateProperty(nameof(Text));
+        WordWrapEnabled = model.WrapWords;
+        UseMonospace = model.FontFamily == FontFamily.Monospace;
+        UpdateProperty(nameof(Text), nameof(WordWrapEnabled), nameof(UseMonospace));
         model.PropChanged += Model_PropChanged;
     }
 
@@ -54,13 +60,47 @@ public partial class ContentPlainTextViewModel : ContentViewModel
             return; // throw?
         }
 
-        Text = propertyName switch
+        switch (propertyName)
         {
-            nameof(Text) => model.Text,
-            _ => Text,
-        };
+            case nameof(IPlainTextContent.FontFamily):
+                // RPC:
+                var incomingUseMonospace = model.FontFamily == FontFamily.Monospace;
 
-        UpdateProperty(propertyName);
+                // local:
+                if (incomingUseMonospace != UseMonospace)
+                {
+                    UseMonospace = incomingUseMonospace;
+                    UpdateProperty(nameof(UseMonospace));
+                }
+
+                break;
+
+            case nameof(IPlainTextContent.WrapWords):
+                // RPC:
+                var incomingWrap = model.WrapWords;
+
+                // local:
+                if (WordWrapEnabled != incomingWrap)
+                {
+                    WordWrapEnabled = model.WrapWords;
+                    UpdateProperty(nameof(WordWrapEnabled));
+                }
+
+                break;
+
+            case nameof(IPlainTextContent.Text):
+                // RPC:
+                var incomingText = model.Text;
+
+                // local:
+                if (incomingText != Text)
+                {
+                    Text = incomingText;
+                    UpdateProperty(nameof(Text));
+                }
+
+                break;
+        }
     }
 
     protected override void UnsafeCleanup()

@@ -349,9 +349,17 @@ namespace Microsoft.CommandPalette.Extensions
         IContent[] GetChildren();
     }
 
+    enum FontFamily
+    {
+        UserInterface,
+        Monospace,
+    };
+
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IPlainTextContent requires IContent {
         String Text { get; };
+        FontFamily FontFamily { get; };
+        Boolean WrapWords { get; };
     }
 
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
