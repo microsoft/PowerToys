@@ -10,12 +10,11 @@
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
-namespace MouseWithoutBorders.Class
+namespace MouseWithoutBorders.Core;
+
+internal enum SeverityLevel
 {
-    internal class SeverityLevel
-    {
-        internal static readonly SeverityLevel Information = new SeverityLevel();
-        internal static readonly SeverityLevel Error = new SeverityLevel();
-        internal static readonly SeverityLevel Warning = new SeverityLevel();
-    }
+    Information,
+    Warning,
+    Error,
 }
