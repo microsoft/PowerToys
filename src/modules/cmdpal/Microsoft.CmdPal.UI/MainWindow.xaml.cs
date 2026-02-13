@@ -275,13 +275,22 @@ public sealed partial class MainWindow : WindowEx,
     /// </summary>
     private void MoveAndResizeDpiAware(RectInt32 rect)
     {
+        var originalMinHeight = MinHeight;
+        var originalMinWidth = MinWidth;
+
         _suppressDpiChange = true;
+
         try
         {
+            // WindowEx is uses current DPI to calculate the minimum window size
+            MinHeight = 0;
+            MinWidth = 0;
             AppWindow.MoveAndResize(rect);
         }
         finally
         {
+            MinHeight = originalMinHeight;
+            MinWidth = originalMinWidth;
             _suppressDpiChange = false;
         }
     }
