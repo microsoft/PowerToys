@@ -8,7 +8,7 @@
 [Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Mouse%20Utilities%22)<br>
 [Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Mouse+Utilities%22)
 
-Mouse Utilities is a collection of tools designed to enhance mouse and cursor functionality on Windows. The module contains four sub-utilities that provide different mouse-related features.
+Mouse Utilities is a collection of tools designed to enhance mouse and cursor functionality on Windows. The module contains five sub-utilities that provide different mouse-related features.
 
 ## Overview
 
@@ -18,10 +18,11 @@ Mouse Utilities includes the following sub-modules:
 - **[Mouse Highlighter](mousehighlighter.md)**: Visualizes mouse clicks with customizable highlights
 - **[Mouse Jump](mousejump.md)**: Allows quick cursor movement to specific screen locations
 - **[Mouse Pointer Crosshairs](mousepointer.md)**: Displays crosshair lines that follow the mouse cursor
+- **Mouse Scroll Remap**: Remaps Shift+MouseWheel to Shift+Ctrl+MouseWheel for consistent horizontal scrolling across all applications
 
 ## Architecture
 
-Most of the sub-modules (Find My Mouse, Mouse Highlighter, and Mouse Pointer Crosshairs) run within the PowerToys Runner process as separate threads. Mouse Jump is more complex and runs as a separate process that communicates with the Runner via events.
+Most of the sub-modules (Find My Mouse, Mouse Highlighter, Mouse Pointer Crosshairs, and Mouse Scroll Remap) run within the PowerToys Runner process as separate threads. Mouse Jump is more complex and runs as a separate process that communicates with the Runner via events.
 
 ### Code Structure
 
@@ -36,6 +37,7 @@ Most of the sub-modules (Find My Mouse, Mouse Highlighter, and Mouse Pointer Cro
 - [FindMyMouse](/src/modules/MouseUtils/FindMyMouse)
 - [MouseHighlighter](/src/modules/MouseUtils/MouseHighlighter)
 - [MousePointerCrosshairs](/src/modules/MouseUtils/MousePointerCrosshairs)
+- [MouseScrollRemap](/src/modules/MouseUtils/MouseScrollRemap)
 - [MouseJump](/src/modules/MouseUtils/MouseJump)
 - [MouseJumpUI](/src/modules/MouseUtils/MouseJumpUI)
 - [MouseJump.Common](/src/modules/MouseUtils/MouseJump.Common)
@@ -111,11 +113,35 @@ Allows quick mouse cursor repositioning to any screen location through a grid-ba
 4. Mouse cursor is moved to the selected position
 5. The UI process can be terminated via the `TERMINATE_MOUSE_JUMP_SHARED_EVENT`
 
+### Mouse Scroll Remap
+
+Remaps Shift+MouseWheel to Shift+Ctrl+MouseWheel for horizontal scrolling consistency across applications.
+
+#### Key Components
+- Implemented as a DLL loaded by the Runner process
+- Uses a low-level mouse hook (WH_MOUSE_LL) to intercept mouse wheel events
+- Main implementation in `dllmain.cpp`
+
+#### How It Works
+1. When enabled, installs a low-level mouse hook via SetWindowsHookEx
+2. Monitors WM_MOUSEWHEEL events
+3. Uses GetAsyncKeyState to detect if Shift is pressed (but not Ctrl)
+4. If Shift+MouseWheel is detected:
+   - Blocks the original event
+   - Injects Ctrl key down event
+   - Injects mouse wheel event
+   - Injects Ctrl key up event
+5. Result: Applications receive Shift+Ctrl+MouseWheel instead of Shift+MouseWheel
+
+#### Use Case
+- Provides consistent horizontal scrolling behavior across all applications
+- Particularly useful for Microsoft Office apps which use Ctrl+Shift+MouseWheel instead of the more common Shift+MouseWheel pattern used by browsers and other applications
+
 ## Debugging
 
-### Find My Mouse, Mouse Highlighter, and Mouse Pointer Crosshairs
+### Find My Mouse, Mouse Highlighter, Mouse Pointer Crosshairs, and Mouse Scroll Remap
 - Debug by attaching to the Runner process directly
-- Set breakpoints in the respective utility code files (e.g., `FindMyMouse.cpp`, `MouseHighlighter.cpp`, `InclusiveCrosshairs.cpp`)
+- Set breakpoints in the respective utility code files (e.g., `FindMyMouse.cpp`, `MouseHighlighter.cpp`, `InclusiveCrosshairs.cpp`, `dllmain.cpp` in MouseScrollRemap)
 - Call the respective utility by using the activation shortcut (e.g., double Ctrl press for Find My Mouse)
 - During debugging, visual effects may appear glitchy due to the debugger's overhead
 
