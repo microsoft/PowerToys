@@ -11,13 +11,13 @@
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:extViews="using:Microsoft.CmdPal.UI.ExtViews.Controls"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
-    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
-    xmlns:extViews="using:Microsoft.CmdPal.UI.ExtViews.Controls"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -41,18 +41,18 @@
             <cmdpalUI:ContentTemplateSelector
                 x:Key="ContentTemplateSelector"
                 FormTemplate="{StaticResource FormContentTemplate}"
+                ImageTemplate="{StaticResource ImageContentTemplate}"
                 MarkdownTemplate="{StaticResource MarkdownContentTemplate}"
-                TreeTemplate="{StaticResource TreeContentTemplate}"
                 PlainTextTemplate="{StaticResource PlainTextContentTemplate}"
-                ImageTemplate="{StaticResource ImageContentTemplate}" />
+                TreeTemplate="{StaticResource TreeContentTemplate}" />
 
             <cmdpalUI:ContentTemplateSelector
                 x:Key="NestedContentTemplateSelector"
                 FormTemplate="{StaticResource NestedFormContentTemplate}"
+                ImageTemplate="{StaticResource ImageContentTemplate}"
                 MarkdownTemplate="{StaticResource NestedMarkdownContentTemplate}"
-                TreeTemplate="{StaticResource TreeContentTemplate}"
                 PlainTextTemplate="{StaticResource PlainTextContentTemplate}"
-                ImageTemplate="{StaticResource ImageContentTemplate}" />
+                TreeTemplate="{StaticResource TreeContentTemplate}" />
 
             <DataTemplate x:Key="FormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
@@ -74,8 +74,8 @@
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
                     <extViews:PlainTextContentViewer
                         Text="{x:Bind Text, Mode=OneWay}"
-                        WordWrapEnabled="{x:Bind WordWrapEnabled, Mode=OneWay}"
-                        UseMonospace="{x:Bind UseMonospace, Mode=OneWay}" />
+                        UseMonospace="{x:Bind UseMonospace, Mode=OneWay}"
+                        WordWrapEnabled="{x:Bind WordWrapEnabled, Mode=OneWay}" />
                 </Grid>
             </DataTemplate>
 
