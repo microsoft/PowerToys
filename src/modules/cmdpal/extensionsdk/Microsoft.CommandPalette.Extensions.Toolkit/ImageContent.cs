@@ -6,48 +6,13 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class ImageContent : BaseObservable, IImageContent
 {
-    public IIconInfo? Image
-    {
-        get;
-        set
-        {
-            if (!ReferenceEquals(value, field))
-            {
-                field = value;
-                OnPropertyChanged(nameof(Image));
-            }
-        }
-    }
+    public const int Unlimited = -1;
 
-    public int MaxHeight
-    {
-        get;
-        set
-        {
-            if (value != field)
-            {
-                field = value;
-                OnPropertyChanged(nameof(MaxHeight));
-            }
-        }
-    }
+    public IIconInfo? Image { get; set => SetProperty(ref field, value); }
 
-        = -1;
+    public int MaxHeight { get; set => SetProperty(ref field, value); } = Unlimited;
 
-    public int MaxWidth
-    {
-        get;
-        set
-        {
-            if (value != field)
-            {
-                field = value;
-                OnPropertyChanged(nameof(MaxWidth));
-            }
-        }
-    }
-
-        = -1;
+    public int MaxWidth { get; set => SetProperty(ref field, value); } = Unlimited;
 
     public ImageContent()
     {
