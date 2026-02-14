@@ -196,12 +196,10 @@ public sealed partial class SettingsWindow : WindowEx,
         if (args.DisplayMode is NavigationViewDisplayMode.Compact or NavigationViewDisplayMode.Minimal)
         {
             AppTitleBar.IsPaneToggleButtonVisible = true;
-            WorkAroundIcon.Margin = new Thickness(8, 0, 16, 0); // Required for workaround, see XAML comment
         }
         else
         {
             AppTitleBar.IsPaneToggleButtonVisible = false;
-            WorkAroundIcon.Margin = new Thickness(16, 0, 8, 0); // Required for workaround, see XAML comment
         }
     }
 
