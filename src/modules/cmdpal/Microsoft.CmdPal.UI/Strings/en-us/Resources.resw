@@ -795,4 +795,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>K</value>
     <comment>Keyboard key</comment>
   </data>
+  <data name="ConfigureShortcut" xml:space="preserve">
+    <value>Configure shortcut</value>
+  </data>
+  <data name="ConfigureShortcutText.Text" xml:space="preserve">
+    <value>Assign shortcut</value>
+  </data>
 </root>
