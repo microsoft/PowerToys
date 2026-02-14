@@ -13,6 +13,7 @@
 #include <common/utils/resources.h>
 #include <Settings.h>
 #include <trace.h>
+#include <ImageResizerConstants.h>
 
 #include <wil/win32_helpers.h>
 #include <wrl/module.h>
@@ -118,6 +119,16 @@ public:
             CoTaskMemFree(pszPath);
             // Avoid crashes in the following code.
             return E_FAIL;
+        }
+
+        // Check if the extension is actually supported by Image Resizer
+        // This prevents showing the menu for file types like .psd that Windows
+        // perceives as images but Image Resizer cannot process
+        if (!ImageResizerConstants::IsSupportedImageExtension(pszExt))
+        {
+            CoTaskMemFree(pszPath);
+            *cmdState = ECS_HIDDEN;
+            return S_OK;
         }
 
         // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
