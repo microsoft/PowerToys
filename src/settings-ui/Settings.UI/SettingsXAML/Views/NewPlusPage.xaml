@@ -69,8 +69,8 @@
                                 IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
-                    <tkcontrols:SettingsCard Name="NewPlusHideStartingDigitsToggle" x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
 
+                    <tkcontrols:SettingsCard Name="NewPlusHideStartingDigitsToggle" x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
                         <ToggleSwitch
                             x:Uid="HideStartingDigitsToggle"
                             AutomationProperties.Name="{Binding ElementName=NewPlusHideStartingDigitsToggle, Path=Header}"
@@ -79,6 +79,15 @@
                             <TextBlock x:Uid="NewPlus_Hide_Starting_Digits_Description" />
                         </tkcontrols:SettingsCard.Description>
                     </tkcontrols:SettingsCard>
+
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsNewPlusHideBuiltInNewToggleSettingGPOConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="NewPlusHideBuiltInNewToggle" IsEnabled="{x:Bind ViewModel.IsDisableBuiltInNewSettingsCardEnabled, Mode=OneWay}">
+                            <ToggleSwitch 
+                                x:Uid="HideBuiltInNewToggle" 
+                                AutomationProperties.Name="{Binding ElementName=NewPlusHideBuiltInNewToggle, Path=Header}"
+                                IsOn="{x:Bind ViewModel.HideBuiltInNew, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="NewPlus_behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
