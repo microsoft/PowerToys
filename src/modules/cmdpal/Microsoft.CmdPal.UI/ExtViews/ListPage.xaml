@@ -300,7 +300,7 @@
                     AutomationProperties.AccessibilityView="Raw"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
+                    SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
 
                 <StackPanel
                     Grid.Column="1"
@@ -396,7 +396,7 @@
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorPrimary}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested32}" />
+                    SourceRequested="{x:Bind help:IconProvider.SourceRequested32}" />
             </StackPanel>
         </DataTemplate>
 
@@ -423,7 +423,7 @@
                     FontSize="14"
                     Foreground="{ThemeResource TextFillColorPrimary}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested64}" />
+                    SourceRequested="{x:Bind help:IconProvider.SourceRequested64}" />
                 <TextBlock
                     x:Name="TitleTextBlock"
                     Grid.Row="1"
@@ -468,7 +468,7 @@
                             CornerRadius="4"
                             Foreground="{ThemeResource TextFillColorPrimary}"
                             SourceKey="{x:Bind Icon, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested256}" />
+                            SourceRequested="{x:Bind help:IconProvider.SourceRequested256}" />
                     </Viewbox>
                 </Grid>
 
@@ -594,7 +594,7 @@
                         Margin="8"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         SourceKey="{x:Bind ViewModel.EmptyContent.Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested64}" />
+                        SourceRequested="{x:Bind help:IconProvider.SourceRequested64}" />
                     <TextBlock
                         Margin="0,4,0,0"
                         HorizontalAlignment="Center"

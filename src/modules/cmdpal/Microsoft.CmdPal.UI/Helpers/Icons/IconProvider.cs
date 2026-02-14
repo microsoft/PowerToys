@@ -11,7 +11,7 @@ namespace Microsoft.CmdPal.UI.Helpers;
 /// <summary>
 /// Common async event handler provides the cache lookup function for the <see cref="IconBox.SourceRequested"/> deferred event.
 /// </summary>
-public static partial class IconCacheProvider
+public static partial class IconProvider
 {
     /*
       Memory Usage Considerations (raw estimates):
@@ -28,6 +28,7 @@ public static partial class IconCacheProvider
     private static IIconSourceProvider _provider32 = null!;
     private static IIconSourceProvider _provider64 = null!;
     private static IIconSourceProvider _provider256 = null!;
+    private static IIconSourceProvider _providerUnbound = null!;
 
     public static void Initialize(IServiceProvider serviceProvider)
     {
@@ -35,6 +36,7 @@ public static partial class IconCacheProvider
         _provider32 = serviceProvider.GetRequiredKeyedService<IIconSourceProvider>(WellKnownIconSize.Size32);
         _provider64 = serviceProvider.GetRequiredKeyedService<IIconSourceProvider>(WellKnownIconSize.Size64);
         _provider256 = serviceProvider.GetRequiredKeyedService<IIconSourceProvider>(WellKnownIconSize.Size256);
+        _providerUnbound = serviceProvider.GetRequiredKeyedService<IIconSourceProvider>(WellKnownIconSize.Unbound);
     }
 
     private static async void SourceRequestedCore(IIconSourceProvider service, SourceRequestedEventArgs args)
@@ -75,5 +77,8 @@ public static partial class IconCacheProvider
 
     public static void SourceRequested256(IconBox sender, SourceRequestedEventArgs args)
         => SourceRequestedCore(_provider256, args);
+
+    public static void SourceRequestedOriginal(IconBox sender, SourceRequestedEventArgs args)
+        => SourceRequestedCore(_providerUnbound, args);
 #pragma warning restore IDE0060 // Remove unused parameter
 }

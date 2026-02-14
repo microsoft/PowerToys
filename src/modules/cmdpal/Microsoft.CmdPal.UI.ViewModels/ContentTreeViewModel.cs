@@ -58,6 +58,8 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
             IFormContent form => new ContentFormViewModel(form, context),
             IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
             ITreeContent tree => new ContentTreeViewModel(tree, context),
+            IPlainTextContent plainText => new ContentPlainTextViewModel(plainText, context),
+            IImageContent image => new ContentImageViewModel(image, context),
             _ => null,
         };
         return viewModel;

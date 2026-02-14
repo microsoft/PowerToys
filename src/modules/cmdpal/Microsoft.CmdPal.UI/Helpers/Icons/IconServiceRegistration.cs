@@ -32,6 +32,10 @@ internal static class IconServiceRegistration
             WellKnownIconSize.Size256,
             (_, _) => new CachedIconSourceProvider(loader, 256, 64));
 
+        services.AddKeyedSingleton<IIconSourceProvider>(
+            WellKnownIconSize.Unbound,
+            (_, _) => new IconSourceProvider(loader, IconLoaderService.NoResize, isPriority: true));
+
         return services;
     }
 }

@@ -10,4 +10,5 @@ internal enum WellKnownIconSize
     Size32 = 32,
     Size64 = 64,
     Size256 = 256,
+    Unbound = -1,
 }
