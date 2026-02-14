@@ -1166,6 +1166,18 @@ opera.exe</value>
     <value>Image Resizer</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
   </data>
+  <data name="ImageResizer_ShellIntegration.Header" xml:space="preserve">
+    <value>Shell integration</value>
+  </data>
+  <data name="ImageResizer_Toggle_ContextMenu.Header" xml:space="preserve">
+    <value>Show Image Resizer in</value>
+  </data>
+  <data name="ImageResizer_Toggle_StandardContextMenu.Content" xml:space="preserve">
+    <value>Default and extended context menu</value>
+  </data>
+  <data name="ImageResizer_Toggle_ExtendedContextMenu.Content" xml:space="preserve">
+    <value>Extended context menu only</value>
+  </data>
   <data name="ImagesSizesListView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Image Size</value>
   </data>

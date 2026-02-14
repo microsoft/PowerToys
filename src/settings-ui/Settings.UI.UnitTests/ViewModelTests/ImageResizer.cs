@@ -205,6 +205,23 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void ExtendedContextMenuOnlyShouldUpdateValueWhenSuccessful()
+        {
+            // arrange
+            var fileSystemMock = new MockFileSystem();
+            var mockSettingsUtils = new SettingsUtils(fileSystemMock);
+            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
+
+            // act
+            viewModel.ExtendedContextMenuOnly = true;
+
+            // Assert
+            viewModel = new ImageResizerViewModel(mockSettingsUtils, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
+            Assert.IsTrue(viewModel.ExtendedContextMenuOnly);
+        }
+
+        [TestMethod]
         public void AddImageSizeShouldAddNewImageSizeWhenSuccessful()
         {
             // arrange

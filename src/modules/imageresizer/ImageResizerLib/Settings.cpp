@@ -12,6 +12,7 @@ namespace
     const wchar_t c_imageResizerDataFilePath[] = L"\\image-resizer-settings.json";
     const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\ImageResizer";
     const wchar_t c_enabled[] = L"enabled";
+    const wchar_t c_extendedContextMenuOnly[] = L"ExtendedContextMenuOnly";
     const wchar_t c_ImageResizer[] = L"Image Resizer";
 
     unsigned int RegReadInteger(const std::wstring& valueName, unsigned int defaultValue)
@@ -63,6 +64,8 @@ CSettings::CSettings()
 void CSettings::Save()
 {
     json::JsonObject jsonData;
+
+    jsonData.SetNamedValue(c_extendedContextMenuOnly, json::value(settings.extendedContextMenuOnly));
 
     json::to_file(jsonFilePath, jsonData);
     GetSystemTimeAsFileTime(&lastLoadedTime);
@@ -122,6 +125,7 @@ void CSettings::Reload()
 void CSettings::MigrateFromRegistry()
 {
     settings.enabled = RegReadBoolean(c_enabled, true);
+    settings.extendedContextMenuOnly = RegReadBoolean(c_extendedContextMenuOnly, false); // Disabled by default.
 }
 
 void CSettings::ParseJson()
@@ -132,7 +136,10 @@ void CSettings::ParseJson()
         const json::JsonObject& jsonSettings = json.value();
         try
         {
-            // NB: add any new settings here
+            if (json::has(jsonSettings, c_extendedContextMenuOnly, json::JsonValueType::Boolean))
+            {
+                settings.extendedContextMenuOnly = jsonSettings.GetNamedBoolean(c_extendedContextMenuOnly);
+            }
         }
         catch (const winrt::hresult_error&)
         {
