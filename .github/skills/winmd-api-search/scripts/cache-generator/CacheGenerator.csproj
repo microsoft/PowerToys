@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Default fallback; Update-WinMdCache.ps1 overrides via -p:TargetFramework=net{X}.0 -->
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <!-- System.Reflection.Metadata is inbox in net9.0+, only needed for net8.0 -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="System.Reflection.Metadata" Version="9.*" />
+  </ItemGroup>
+
+  <!--
+    Baseline WinAppSDK packages: downloaded during restore so the cache generator
+    can always index WinAppSDK APIs, even if the target project hasn't been restored.
+    ExcludeAssets="all" means they're downloaded but don't affect this tool's build.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="*" ExcludeAssets="all" />
+  </ItemGroup>
+</Project>
