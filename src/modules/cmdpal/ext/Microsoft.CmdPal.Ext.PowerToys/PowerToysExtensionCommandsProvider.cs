@@ -17,7 +17,7 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
     public PowerToysExtensionCommandsProvider()
     {
         DisplayName = Resources.PowerToys_DisplayName;
-        Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png");
+        Icon = PowerToysResourcesHelper.ProviderIcon();
         _commands = [
             new CommandItem(new Pages.PowerToysListPage())
             {

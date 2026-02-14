@@ -174,6 +174,10 @@ namespace CommonSharedConstants
     const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";
     const wchar_t CMDPAL_EXIT_EVENT[] = L"Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd";
 
+    // Path to the events used by MouseWithoutBorders
+    const wchar_t MWB_TOGGLE_EASY_MOUSE_EVENT[] = L"Local\\PowerToysMWB-ToggleEasyMouseEvent-a9c8d7b6-e5f4-3c2a-1b0d-9e8f7a6b5c4d";
+    const wchar_t MWB_RECONNECT_EVENT[] = L"Local\\PowerToysMWB-ReconnectEvent-b8d7c6a5-f4e3-2b1c-0a9d-8e7f6a5b4c3d";
+
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
 }
