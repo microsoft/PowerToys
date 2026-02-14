@@ -27,7 +27,10 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     public partial string ErrorMessage { get; protected set; } = string.Empty;
 
     [ObservableProperty]
-    public partial bool IsNested { get; set; } = true;
+    public partial bool IsRootPage { get; set; } = true;
+
+    [ObservableProperty]
+    public partial bool HasBackButton { get; set; } = true;
 
     // This is set from the SearchBar
     [ObservableProperty]

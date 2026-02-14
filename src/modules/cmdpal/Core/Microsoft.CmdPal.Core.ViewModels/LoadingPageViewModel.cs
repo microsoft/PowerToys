@@ -12,6 +12,7 @@ public partial class LoadingPageViewModel : PageViewModel
         : base(model, scheduler, host)
     {
         ModelIsLoading = true;
+        HasBackButton = false;
         IsInitialized = false;
     }
 }

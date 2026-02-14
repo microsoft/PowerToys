@@ -1,13 +1,15 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
+using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 
 using Windows.Foundation;
@@ -29,6 +31,8 @@ public sealed class CommandProviderWrapper
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
     public TopLevelViewModel[] FallbackItems { get; private set; } = [];
+
+    public TopLevelViewModel[] DockBandItems { get; private set; } = [];
 
     public string DisplayName { get; private set; } = string.Empty;
 
@@ -141,21 +145,35 @@ public sealed class CommandProviderWrapper
             return;
         }
 
+        ICommandItem[]? commands = null;
+        IFallbackCommandItem[]? fallbacks = null;
+        ICommandItem[] dockBands = []; // do not initialize me to null
         var displayInfoInitialized = false;
+
         try
         {
             var model = _commandProvider.Unsafe!;
 
             Task<ICommandItem[]> loadTopLevelCommandsTask = new(model.TopLevelCommands);
             loadTopLevelCommandsTask.Start();
-            var commands = await loadTopLevelCommandsTask.ConfigureAwait(false);
+            commands = await loadTopLevelCommandsTask.ConfigureAwait(false);
 
             // On a BG thread here
-            var fallbacks = model.FallbackCommands();
+            fallbacks = model.FallbackCommands();
 
             if (model is ICommandProvider2 two)
             {
                 UnsafePreCacheApiAdditions(two);
+            }
+
+            if (model is ICommandProvider3 supportsDockBands)
+            {
+                var bands = supportsDockBands.GetDockBands();
+                if (bands is not null)
+                {
+                    CoreLogger.LogDebug($"Found {bands.Length} bands on {DisplayName} ({ProviderId}) ");
+                    dockBands = bands;
+                }
             }
 
             Id = model.Id;
@@ -175,7 +193,8 @@ public sealed class CommandProviderWrapper
             Settings = new(model.Settings, this, _taskScheduler);
 
             // We do need to explicitly initialize commands though
-            InitializeCommands(commands, fallbacks, serviceProvider, pageContext);
+            var objects = new TopLevelObjects(commands, fallbacks, dockBands);
+            InitializeCommands(objects, serviceProvider, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -206,32 +225,67 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    private record TopLevelObjects(
+        ICommandItem[]? Commands,
+        IFallbackCommandItem[]? Fallbacks,
+        ICommandItem[]? DockBands);
+
+    private void InitializeCommands(
+        TopLevelObjects objects,
+        IServiceProvider serviceProvider,
+        WeakReference<IPageContext> pageContext)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
+        var state = serviceProvider.GetService<AppStateModel>()!;
         var providerSettings = GetProviderSettings(settings);
 
-        var makeAndAdd = (ICommandItem? i, bool fallback) =>
+        Func<ICommandItem?, TopLevelType, TopLevelViewModel> make = (ICommandItem? i, TopLevelType t) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider, i);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider, i);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
         };
 
-        if (commands is not null)
+        if (objects.Commands is not null)
         {
-            TopLevelItems = commands
-                .Select(c => makeAndAdd(c, false))
+            TopLevelItems = objects.Commands
+                .Select(c => make(c, TopLevelType.Normal))
                 .ToArray();
         }
 
-        if (fallbacks is not null)
+        if (objects.Fallbacks is not null)
         {
-            FallbackItems = fallbacks
-                .Select(c => makeAndAdd(c, true))
+            FallbackItems = objects.Fallbacks
+                .Select(c => make(c, TopLevelType.Fallback))
                 .ToArray();
+        }
+
+        if (objects.DockBands is not null)
+        {
+            List<TopLevelViewModel> bands = new();
+            foreach (var b in objects.DockBands)
+            {
+                var bandVm = make(b, TopLevelType.DockBand);
+                bands.Add(bandVm);
+            }
+
+            foreach (var c in TopLevelItems)
+            {
+                foreach (var pinnedId in settings.DockSettings.PinnedCommands)
+                {
+                    if (pinnedId == c.Id)
+                    {
+                        var bandModel = c.ToPinnedDockBandItem();
+                        var bandVm = make(bandModel, TopLevelType.DockBand);
+                        bands.Add(bandVm);
+                        break;
+                    }
+                }
+            }
+
+            DockBandItems = bands.ToArray();
         }
     }
 
@@ -244,6 +298,10 @@ public sealed class CommandProviderWrapper
             if (a is IExtendedAttributesProvider command2)
             {
                 Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
+            }
+            else if (a is ICommandItem[] commands)
+            {
+                Logger.LogDebug($"{ProviderId}: Found an ICommandItem[]");
             }
         }
     }
@@ -261,4 +319,14 @@ public sealed class CommandProviderWrapper
         // In handling this, a call will be made to `LoadTopLevelCommands` to
         // retrieve the new items.
         this.CommandsChanged?.Invoke(this, args);
+
+    internal void PinDockBand(TopLevelViewModel bandVm)
+    {
+        Logger.LogDebug($"CommandProviderWrapper.PinDockBand: {ProviderId} - {bandVm.Id}");
+
+        var bands = this.DockBandItems.ToList();
+        bands.Add(bandVm);
+        this.DockBandItems = bands.ToArray();
+        this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs());
+    }
 }

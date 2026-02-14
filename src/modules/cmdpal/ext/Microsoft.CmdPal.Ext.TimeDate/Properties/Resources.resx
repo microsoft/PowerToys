@@ -432,4 +432,8 @@
   <data name="Microsoft_plugin_timedate_SettingEnableFallbackItems_Description" xml:space="preserve">
     <value>Show time and date results when typing keywords like "week", "year", "now", "time", or "date"</value>
   </data>
+  <data name="Microsoft_plugin_timedate_dock_band_title" xml:space="preserve">
+    <value>Clock</value>
+    <comment>Title for the time and date dock band</comment>
+  </data>
 </root>

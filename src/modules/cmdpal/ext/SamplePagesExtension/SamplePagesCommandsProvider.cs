@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -26,5 +27,16 @@ public partial class SamplePagesCommandsProvider : CommandProvider
     public override ICommandItem[] TopLevelCommands()
     {
         return _commands;
+    }
+
+    public override ICommandItem[] GetDockBands()
+    {
+        List<ICommandItem> bands = new()
+        {
+            new SampleDockBand(),
+            new SampleButtonsDockBand(),
+        };
+
+        return bands.ToArray();
     }
 }

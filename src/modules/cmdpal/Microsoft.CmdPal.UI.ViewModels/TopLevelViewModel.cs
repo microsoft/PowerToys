@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -10,6 +10,7 @@ using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.Common.Text;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -26,6 +27,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
+    private readonly DockViewModel? _dockViewModel;
 
     private readonly string _commandProviderId;
 
@@ -53,39 +55,28 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public CommandPaletteHost ExtensionHost { get; private set; }
 
+    public string ExtensionName => ExtensionHost.GetExtensionDisplayName() ?? string.Empty;
+
     public CommandViewModel CommandViewModel => _commandItemViewModel.Command;
 
     public CommandItemViewModel ItemViewModel => _commandItemViewModel;
 
     public string CommandProviderId => _commandProviderId;
 
+    public IconInfoViewModel IconViewModel => _commandItemViewModel.Icon;
+
     ////// ICommandItem
     public string Title => _commandItemViewModel.Title;
 
     public string Subtitle => _commandItemViewModel.Subtitle;
 
-    public IIconInfo Icon => _commandItemViewModel.Icon;
+    public IIconInfo Icon => (IIconInfo)IconViewModel;
 
     public IIconInfo InitialIcon => _initialIcon ?? _commandItemViewModel.Icon;
 
     ICommand? ICommandItem.Command => _commandItemViewModel.Command.Model.Unsafe;
 
-    IContextItem?[] ICommandItem.MoreCommands => _commandItemViewModel.MoreCommands
-                                                    .Select(item =>
-                                                    {
-                                                        if (item is ISeparatorContextItem)
-                                                        {
-                                                            return item as IContextItem;
-                                                        }
-                                                        else if (item is CommandContextItemViewModel commandItem)
-                                                        {
-                                                            return commandItem.Model.Unsafe;
-                                                        }
-                                                        else
-                                                        {
-                                                            return null;
-                                                        }
-                                                    }).ToArray();
+    IContextItem?[] ICommandItem.MoreCommands => BuildContextMenu();
 
     ////// IListItem
     ITag[] IListItem.Tags => Tags.ToArray();
@@ -184,11 +175,37 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
     }
 
-    public string ExtensionName => ExtensionHost.GetExtensionDisplayName() ?? string.Empty;
+    // Dock properties
+    public bool IsDockBand { get; private set; }
+
+    public DockBandSettings? DockBandSettings
+    {
+        get
+        {
+            if (!IsDockBand)
+            {
+                return null;
+            }
+
+            var bandSettings = _settings.DockSettings.StartBands
+                .Concat(_settings.DockSettings.EndBands)
+                .FirstOrDefault(band => band.Id == this.Id);
+            if (bandSettings is null)
+            {
+                return new DockBandSettings()
+                {
+                    Id = this.Id,
+                    ShowLabels = true,
+                };
+            }
+
+            return bandSettings;
+        }
+    }
 
     public TopLevelViewModel(
         CommandItemViewModel item,
-        bool isFallback,
+        TopLevelType topLevelType,
         CommandPaletteHost extensionHost,
         string commandProviderId,
         SettingsModel settings,
@@ -202,23 +219,23 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         _commandProviderId = commandProviderId;
         _commandItemViewModel = item;
 
-        IsFallback = isFallback;
+        IsFallback = topLevelType == TopLevelType.Fallback;
+        IsDockBand = topLevelType == TopLevelType.DockBand;
         ExtensionHost = extensionHost;
-        if (isFallback && commandItem is FallbackCommandItem fallback)
+        if (IsFallback && commandItem is FallbackCommandItem fallback)
         {
             _fallbackId = fallback.Id;
         }
 
         item.PropertyChangedBackground += Item_PropertyChanged;
 
-        // UpdateAlias();
-        // UpdateHotkey();
-        // UpdateTags();
+        _dockViewModel = serviceProvider.GetService<DockViewModel>();
     }
 
     internal void InitializeProperties()
     {
         ItemViewModel.SlowInitializeProperties();
+        GenerateId();
 
         if (IsFallback)
         {
@@ -279,7 +296,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             return;
         }
 
-        _initialIcon = _commandItemViewModel.Icon;
+        _initialIcon = (IIconInfo?)_commandItemViewModel.Icon;
 
         if (raiseNotification)
         {
@@ -453,4 +470,167 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         return ToString();
     }
+
+    private IContextItem?[] BuildContextMenu()
+    {
+        List<IContextItem?> contextItems = new();
+
+        foreach (var item in _commandItemViewModel.MoreCommands)
+        {
+            if (item is ISeparatorContextItem)
+            {
+                contextItems.Add(item as IContextItem);
+            }
+            else if (item is CommandContextItemViewModel commandItem)
+            {
+                contextItems.Add(commandItem.Model.Unsafe);
+            }
+        }
+
+        var dockEnabled = _settings.EnableDock;
+        if (dockEnabled && _dockViewModel is not null)
+        {
+            // Add a separator
+            contextItems.Add(new Separator());
+
+            var inStartBands = _settings.DockSettings.StartBands.Any(band => band.Id == this.Id);
+            var inEndBands = _settings.DockSettings.EndBands.Any(band => band.Id == this.Id);
+            var alreadyPinned = (inStartBands || inEndBands) &&
+                                _settings.DockSettings.PinnedCommands.Contains(this.Id);
+
+            var pinCommand = new PinToDockCommand(
+                this,
+                !alreadyPinned,
+                _dockViewModel,
+                _settings,
+                _serviceProvider.GetService<TopLevelCommandManager>()!);
+
+            var contextItem = new CommandContextItem(pinCommand);
+
+            contextItems.Add(contextItem);
+        }
+
+        return contextItems.ToArray();
+    }
+
+    internal ICommandItem ToPinnedDockBandItem()
+    {
+        var item = new PinnedDockItem(item: this, id: Id);
+
+        return item;
+    }
+
+    internal TopLevelViewModel CloneAsBand()
+    {
+        return new TopLevelViewModel(
+            _commandItemViewModel,
+            TopLevelType.DockBand,
+            ExtensionHost,
+            _commandProviderId,
+            _settings,
+            _providerSettings,
+            _serviceProvider,
+            _commandItemViewModel.Model.Unsafe);
+    }
+
+    private sealed partial class PinToDockCommand : InvokableCommand
+    {
+        private readonly TopLevelViewModel _topLevelViewModel;
+        private readonly DockViewModel _dockViewModel;
+        private readonly SettingsModel _settings;
+        private readonly TopLevelCommandManager _topLevelCommandManager;
+        private readonly bool _pin;
+
+        public override IconInfo Icon => _pin ? Icons.PinIcon : Icons.UnpinIcon;
+
+        public override string Name => _pin ? Properties.Resources.dock_pin_command_name : Properties.Resources.dock_unpin_command_name;
+
+        public PinToDockCommand(
+            TopLevelViewModel topLevelViewModel,
+            bool pin,
+            DockViewModel dockViewModel,
+            SettingsModel settings,
+            TopLevelCommandManager topLevelCommandManager)
+        {
+            _topLevelViewModel = topLevelViewModel;
+            _dockViewModel = dockViewModel;
+            _settings = settings;
+            _topLevelCommandManager = topLevelCommandManager;
+            _pin = pin;
+        }
+
+        public override CommandResult Invoke()
+        {
+            Logger.LogDebug($"PinToDockCommand.Invoke({_pin}): {_topLevelViewModel.Id}");
+            if (_pin)
+            {
+                PinToDock();
+            }
+            else
+            {
+                UnpinFromDock();
+            }
+
+            // Notify that the MoreCommands have changed, so the context menu updates
+            _topLevelViewModel.PropChanged?.Invoke(
+                _topLevelViewModel,
+                new PropChangedEventArgs(nameof(ICommandItem.MoreCommands)));
+            return CommandResult.GoHome();
+        }
+
+        private void PinToDock()
+        {
+            // It's possible that the top-level command shares an ID with a
+            // band. In that case, we don't want to add it to PinnedCommands.
+            // PinnedCommands is just for top-level commands IDs that aren't
+            // otherwise bands.
+            //
+            // Check the top-level command ID against the bands first.
+            if (_topLevelCommandManager.DockBands.Any(band => band.Id == _topLevelViewModel.Id))
+            {
+            }
+            else
+            {
+                // In this case, the ID isn't another band, so add it to PinnedCommands.
+                if (!_settings.DockSettings.PinnedCommands.Contains(_topLevelViewModel.Id))
+                {
+                    _settings.DockSettings.PinnedCommands.Add(_topLevelViewModel.Id);
+                }
+            }
+
+            // TODO! Deal with "the command ID is already pinned in
+            // PinnedCommands but not in one of StartBands/EndBands". I think
+            // we're already avoiding adding it to PinnedCommands above, but I
+            // think that PinDockBand below will create a duplicate VM for it.
+            _settings.DockSettings.StartBands.Add(new DockBandSettings()
+            {
+                Id = _topLevelViewModel.Id,
+                ShowLabels = true,
+            });
+
+            // Create a new band VM from our current TLVM. This will allow us to
+            // update the bands in the CommandProviderWrapper and the TLCM,
+            // without forcing a whole reload
+            var bandVm = _topLevelViewModel.CloneAsBand();
+            _topLevelCommandManager.PinDockBand(bandVm);
+
+            _topLevelViewModel.Save();
+        }
+
+        private void UnpinFromDock()
+        {
+            _settings.DockSettings.PinnedCommands.Remove(_topLevelViewModel.Id);
+            _settings.DockSettings.StartBands.RemoveAll(band => band.Id == _topLevelViewModel.Id);
+            _settings.DockSettings.EndBands.RemoveAll(band => band.Id == _topLevelViewModel.Id);
+
+            _topLevelViewModel.Save();
+        }
+    }
+}
+
+public enum TopLevelType
+{
+    Normal,
+    Fallback,
+    DockBand,
 }

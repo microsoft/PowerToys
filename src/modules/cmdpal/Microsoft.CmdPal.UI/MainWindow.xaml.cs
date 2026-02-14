@@ -12,6 +12,7 @@ using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
 using Microsoft.CmdPal.UI.Controls;
+using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -46,6 +47,7 @@ namespace Microsoft.CmdPal.UI;
 public sealed partial class MainWindow : WindowEx,
     IRecipient<DismissMessage>,
     IRecipient<ShowWindowMessage>,
+    IRecipient<ShowPaletteAtMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
     IRecipient<NavigateToPageMessage>,
@@ -135,6 +137,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<ShowPaletteAtMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
@@ -459,6 +462,78 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
     {
+        var positionWindowForTargetMonitor = (HWND hwnd) =>
+        {
+            if (target == MonitorBehavior.ToLast)
+            {
+                var originalScreen = new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight);
+                var newRect = WindowPositionHelper.AdjustRectForVisibility(_currentWindowPosition.ToPhysicalWindowRectangle(), originalScreen, _currentWindowPosition.Dpi);
+                AppWindow.MoveAndResize(newRect);
+            }
+            else
+            {
+                var display = GetScreen(hwnd, target);
+                PositionCentered(display);
+            }
+        };
+        ShowHwnd(hwndValue, positionWindowForTargetMonitor);
+    }
+
+    private void ShowHwnd(IntPtr hwndValue, Point anchorInPixels, AnchorPoint anchorCorner)
+    {
+        var positionWindowForAnchor = (HWND hwnd) =>
+        {
+            PInvoke.GetWindowRect(hwnd, out var bounds);
+            var swpFlags = SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER;
+            switch (anchorCorner)
+            {
+                case AnchorPoint.TopLeft:
+                    PInvoke.SetWindowPos(
+                        hwnd,
+                        HWND.HWND_TOP,
+                        (int)anchorInPixels.X,
+                        (int)anchorInPixels.Y,
+                        0,
+                        0,
+                        swpFlags);
+                    break;
+                case AnchorPoint.TopRight:
+                    PInvoke.SetWindowPos(
+                        hwnd,
+                        HWND.HWND_TOP,
+                        (int)(anchorInPixels.X - bounds.Width),
+                        (int)anchorInPixels.Y,
+                        0,
+                        0,
+                        swpFlags);
+                    break;
+                case AnchorPoint.BottomLeft:
+                    PInvoke.SetWindowPos(
+                        hwnd,
+                        HWND.HWND_TOP,
+                        (int)anchorInPixels.X,
+                        (int)(anchorInPixels.Y - bounds.Height),
+                        0,
+                        0,
+                        swpFlags);
+                    break;
+                case AnchorPoint.BottomRight:
+                    PInvoke.SetWindowPos(
+                        hwnd,
+                        HWND.HWND_TOP,
+                        (int)(anchorInPixels.X - bounds.Width),
+                        (int)(anchorInPixels.Y - bounds.Height),
+                        0,
+                        0,
+                        swpFlags);
+                    break;
+            }
+        };
+        ShowHwnd(hwndValue, positionWindowForAnchor);
+    }
+
+    private void ShowHwnd(IntPtr hwndValue, Action<HWND>? positionWindow)
+    {
         StopAutoGoHome();
 
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
@@ -476,16 +551,9 @@ public sealed partial class MainWindow : WindowEx,
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
-        if (target == MonitorBehavior.ToLast)
+        if (positionWindow is not null)
         {
-            var originalScreen = new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight);
-            var newRect = WindowPositionHelper.AdjustRectForVisibility(_currentWindowPosition.ToPhysicalWindowRectangle(), originalScreen, _currentWindowPosition.Dpi);
-            AppWindow.MoveAndResize(newRect);
-        }
-        else
-        {
-            var display = GetScreen(hwnd, target);
-            PositionCentered(display);
+            positionWindow(hwnd);
         }
 
         // Check if the debugger is attached. If it is, we don't want to apply the tool window style,
@@ -565,6 +633,11 @@ public sealed partial class MainWindow : WindowEx,
         _sessionPagesVisited = 0;
 
         ShowHwnd(message.Hwnd, settings.SummonOn);
+    }
+
+    internal void Receive(ShowPaletteAtMessage message)
+    {
+        ShowHwnd(HWND.Null, message.PosPixels, message.Anchor);
     }
 
     public void Receive(HideWindowMessage message)
@@ -676,6 +749,8 @@ public sealed partial class MainWindow : WindowEx,
             // If the window was not cloaked, then leave it hidden.
             // Sure, it's not ideal, but at least it's not visible.
         }
+
+        WeakReferenceMessenger.Default.Send(new WindowHiddenMessage());
 
         // Start auto-go-home timer
         RestartAutoGoHome();
@@ -1089,6 +1164,7 @@ public sealed partial class MainWindow : WindowEx,
                 // but that's the price to pay for having the HWND not light-dismiss while we're debugging.
                 Cloak();
                 this.Hide();
+                WeakReferenceMessenger.Default.Send(new WindowHiddenMessage());
 
                 return;
             }
@@ -1138,6 +1214,8 @@ public sealed partial class MainWindow : WindowEx,
         _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();
     }
+
+    void IRecipient<ShowPaletteAtMessage>.Receive(ShowPaletteAtMessage message) => Receive(message);
 
     public void Receive(ToggleDevRibbonMessage message)
     {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -47,6 +47,8 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
 
+    public ObservableCollection<TopLevelViewModel> DockBands { get; set; } = [];
+
     [ObservableProperty]
     public partial bool IsLoading { get; private set; } = true;
 
@@ -82,12 +84,23 @@ public partial class TopLevelCommandManager : ObservableObject,
                 _builtInCommands.Add(wrapper);
             }
 
-            var commands = await LoadTopLevelCommandsFromProvider(wrapper);
+            var objects = await LoadTopLevelCommandsFromProvider(wrapper);
             lock (TopLevelCommands)
             {
-                foreach (var c in commands)
+                if (objects.Commands is IEnumerable<TopLevelViewModel> commands)
                 {
-                    TopLevelCommands.Add(c);
+                    foreach (var c in commands)
+                    {
+                        TopLevelCommands.Add(c);
+                    }
+                }
+
+                if (objects.DockBands is IEnumerable<TopLevelViewModel> bands)
+                {
+                    foreach (var c in bands)
+                    {
+                        DockBands.Add(c);
+                    }
                 }
             }
         }
@@ -100,7 +113,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     }
 
     // May be called from a background thread
-    private async Task<IEnumerable<TopLevelViewModel>> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
+    private async Task<TopLevelObjectSets> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
         WeakReference<IPageContext> weakSelf = new(this);
 
@@ -110,6 +123,7 @@ public partial class TopLevelCommandManager : ObservableObject,
             () =>
             {
                 List<TopLevelViewModel> commands = [];
+                List<TopLevelViewModel> bands = [];
                 foreach (var item in commandProvider.TopLevelItems)
                 {
                     commands.Add(item);
@@ -123,7 +137,15 @@ public partial class TopLevelCommandManager : ObservableObject,
                     }
                 }
 
-                return commands;
+                foreach (var item in commandProvider.DockBandItems)
+                {
+                    bands.Add(item);
+                }
+
+                var commandsCount = commands.Count;
+                var bandsCount = bands.Count;
+                Logger.LogDebug($"{commandProvider.ProviderId}: Loaded {commandsCount} commands, {bandsCount} bands");
+                return new TopLevelObjectSets(commands, bands);
             },
             CancellationToken.None,
             TaskCreationOptions.None,
@@ -163,6 +185,8 @@ public partial class TopLevelCommandManager : ObservableObject,
             }
         }
 
+        List<TopLevelViewModel> newBands = [.. sender.DockBandItems];
+
         // modify the TopLevelCommands under shared lock; event if we clone it, we don't want
         // TopLevelCommands to get modified while we're working on it. Otherwise, we might
         // out clone would be stale at the end of this method.
@@ -179,6 +203,13 @@ public partial class TopLevelCommandManager : ObservableObject,
             clone.InsertRange(startIndex, newItems);
 
             ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+
+            // same idea for DockBands
+            List<TopLevelViewModel> dockClone = [.. DockBands];
+            var dockStartIndex = FindIndexForFirstProviderItem(dockClone, sender.ProviderId);
+            dockClone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
+            dockClone.InsertRange(dockStartIndex, newBands);
+            ListHelpers.InPlaceUpdateList(DockBands, dockClone);
         }
 
         return;
@@ -225,6 +256,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         lock (TopLevelCommands)
         {
             TopLevelCommands.Clear();
+            DockBands.Clear();
         }
 
         await LoadBuiltinsAsync();
@@ -303,17 +335,34 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         lock (TopLevelCommands)
         {
-            foreach (var commands in commandSets)
+            foreach (var providerObjects in commandSets)
             {
-                foreach (var c in commands)
+                var commandsCount = providerObjects.Commands?.Count() ?? 0;
+                var bandsCount = providerObjects.DockBands?.Count() ?? 0;
+                Logger.LogDebug($"(some provider) Loaded {commandsCount} commands and {bandsCount} bands");
+
+                if (providerObjects.Commands is IEnumerable<TopLevelViewModel> commands)
                 {
-                    TopLevelCommands.Add(c);
+                    foreach (var c in commands)
+                    {
+                        TopLevelCommands.Add(c);
+                    }
+                }
+
+                if (providerObjects.DockBands is IEnumerable<TopLevelViewModel> bands)
+                {
+                    foreach (var c in bands)
+                    {
+                        DockBands.Add(c);
+                    }
                 }
             }
         }
 
         timer.Stop();
         Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms");
+
+        WeakReferenceMessenger.Default.Send<CommandsReloadedMessage>();
     }
 
     private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
@@ -331,7 +380,9 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    private async Task<IEnumerable<TopLevelViewModel>?> LoadCommandsWithTimeoutAsync(CommandProviderWrapper wrapper)
+    private record TopLevelObjectSets(IEnumerable<TopLevelViewModel>? Commands, IEnumerable<TopLevelViewModel>? DockBands);
+
+    private async Task<TopLevelObjectSets?> LoadCommandsWithTimeoutAsync(CommandProviderWrapper wrapper)
     {
         try
         {
@@ -411,6 +462,23 @@ public partial class TopLevelCommandManager : ObservableObject,
         return null;
     }
 
+    public TopLevelViewModel? LookupDockBand(string id)
+    {
+        // TODO! bad that we're using TopLevelCommands as the object to lock, even for bands
+        lock (TopLevelCommands)
+        {
+            foreach (var command in DockBands)
+            {
+                if (command.Id == id)
+                {
+                    return command;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public void Receive(ReloadCommandsMessage message) =>
         ReloadAllCommandsAsync().ConfigureAwait(false);
 
@@ -426,6 +494,52 @@ public partial class TopLevelCommandManager : ObservableObject,
         {
             return _builtInCommands.Any(wrapper => wrapper.Id == id && wrapper.IsActive)
                    || _extensionCommandProviders.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
+        }
+    }
+
+    internal void PinDockBand(TopLevelViewModel bandVm)
+    {
+        lock (DockBands)
+        {
+            foreach (var existing in DockBands)
+            {
+                if (existing.Id == bandVm.Id)
+                {
+                    // already pinned
+                    Logger.LogDebug($"Dock band '{bandVm.Id}' is already pinned.");
+                    return;
+                }
+            }
+
+            Logger.LogDebug($"Attempting to pin dock band '{bandVm.Id}' from provider '{bandVm.CommandProviderId}'.");
+            var providerId = bandVm.CommandProviderId;
+            var foundProvider = false;
+            foreach (var provider in CommandProviders)
+            {
+                if (provider.Id == providerId)
+                {
+                    Logger.LogDebug($"Found provider '{providerId}' to pin dock band '{bandVm.Id}'.");
+                    provider.PinDockBand(bandVm);
+                    foundProvider = true;
+                    break;
+                }
+            }
+
+            if (!foundProvider)
+            {
+                Logger.LogWarning($"Could not find provider '{providerId}' to pin dock band '{bandVm.Id}'.");
+            }
+            else
+            {
+                // Add the band to DockBands if not already present
+                if (!DockBands.Any(b => b.Id == bandVm.Id))
+                {
+                    DockBands.Add(bandVm);
+                }
+
+                // Notify DockViewModel to update its collections
+                WeakReferenceMessenger.Default.Send<CommandsReloadedMessage>();
+            }
         }
     }
 

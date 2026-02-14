@@ -61,6 +61,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open Command Palette.
+        /// </summary>
+        public static string builtin_command_palette_title {
+            get {
+                return ResourceManager.GetString("builtin_command_palette_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Create another.
         /// </summary>
         public static string builtin_create_extension_create_another {
@@ -288,6 +297,12 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Built-in.
         /// </summary>
+        public static string builtin_extension_name_fallback {
+            get {
+                return ResourceManager.GetString("builtin_extension_name_fallback", resourceCulture);
+            }
+        }
+
         public static string builtin_extension_name {
             get {
                 return ResourceManager.GetString("builtin_extension_name", resourceCulture);
@@ -462,6 +477,60 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string builtin_settings_extension_n_extensions_installed {
             get {
                 return ResourceManager.GetString("builtin_settings_extension_n_extensions_installed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit dock.
+        /// </summary>
+        public static string dock_edit_dock_name {
+            get {
+                return ResourceManager.GetString("dock_edit_dock_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} items.
+        /// </summary>
+        public static string dock_item_count_plural {
+            get {
+                return ResourceManager.GetString("dock_item_count_plural", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 1 item.
+        /// </summary>
+        public static string dock_item_count_singular {
+            get {
+                return ResourceManager.GetString("dock_item_count_singular", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pin to dock.
+        /// </summary>
+        public static string dock_pin_command_name {
+            get {
+                return ResourceManager.GetString("dock_pin_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dock settings.
+        /// </summary>
+        public static string dock_settings_name {
+            get {
+                return ResourceManager.GetString("dock_settings_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unpin from dock.
+        /// </summary>
+        public static string dock_unpin_command_name {
+            get {
+                return ResourceManager.GetString("dock_unpin_command_name", resourceCulture);
             }
         }
         

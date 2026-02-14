@@ -587,7 +587,7 @@ public sealed partial class ListPage : Page,
             var shouldUpdateSelection = false;
 
             // If it's a top level list update we force the reset to the top useful item
-            if (!sender.IsNested)
+            if (sender.IsRootPage)
             {
                 shouldUpdateSelection = true;
             }

@@ -47,7 +47,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private string _itemTitle = string.Empty;
 
-    public string Title => string.IsNullOrEmpty(_itemTitle) ? Name : _itemTitle;
+    protected string ItemTitle => _itemTitle;
+
+    public virtual string Title => string.IsNullOrEmpty(_itemTitle) ? Name : _itemTitle;
 
     public string Subtitle { get; private set; } = string.Empty;
 
@@ -69,9 +71,29 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public CommandItemViewModel? PrimaryCommand => this;
 
-    public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? ActualCommands[0] : null;
+    public CommandItemViewModel? SecondaryCommand
+    {
+        get
+        {
+            if (HasMoreCommands)
+            {
+                if (MoreCommands[0] is CommandContextItemViewModel command)
+                {
+                    return command;
+                }
+            }
+
+            return null;
+        }
+    }
 
     public bool ShouldBeVisible => !string.IsNullOrEmpty(Name);
+
+    public bool HasTitle => !string.IsNullOrEmpty(Title);
+
+    public bool HasSubtitle => !string.IsNullOrEmpty(Subtitle);
+
+    public virtual bool HasText => HasTitle || HasSubtitle;
 
     public DataPackageView? DataPackage { get; private set; }
 
@@ -342,11 +364,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 UpdateProperty(nameof(Name));
                 UpdateProperty(nameof(Title));
                 UpdateProperty(nameof(Icon));
+                UpdateProperty(nameof(HasText));
                 break;
 
             case nameof(Title):
                 _itemTitle = model.Title;
                 _titleCache.Invalidate();
+                UpdateProperty(nameof(HasText));
                 break;
 
             case nameof(Subtitle):
@@ -354,6 +378,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 this.Subtitle = modelSubtitle;
                 _defaultCommandContextItemViewModel?.Subtitle = modelSubtitle;
                 _subtitleCache.Invalidate();
+                UpdateProperty(nameof(HasText));
                 break;
 
             case nameof(Icon):
@@ -441,11 +466,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
     }
 
-    private void UpdateDefaultContextItemIcon()
-    {
+    private void UpdateDefaultContextItemIcon() =>
+
         // Command icon takes precedence over our icon on the primary command
         _defaultCommandContextItemViewModel?.UpdateIcon(Command.Icon.IsSet ? Command.Icon : _icon);
-    }
 
     private void UpdateTitle(string? title)
     {
