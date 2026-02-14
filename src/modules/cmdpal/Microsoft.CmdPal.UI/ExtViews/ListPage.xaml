@@ -195,6 +195,65 @@
             BasedOn="{StaticResource DefaultListViewItemStyle}"
             TargetType="ListViewItem">
             <Setter Property="MinHeight" Value="{StaticResource ListViewItemMinHeight}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <ListViewItemPresenter
+                            x:Name="Root"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            CheckBoxBorderBrush="{ThemeResource ListViewItemCheckBoxBorderBrush}"
+                            CheckBoxBrush="{ThemeResource ListViewItemCheckBoxBrush}"
+                            CheckBoxCornerRadius="{ThemeResource ListViewItemCheckBoxCornerRadius}"
+                            CheckBoxDisabledBorderBrush="{ThemeResource ListViewItemCheckBoxDisabledBorderBrush}"
+                            CheckBoxDisabledBrush="{ThemeResource ListViewItemCheckBoxDisabledBrush}"
+                            CheckBoxPointerOverBorderBrush="{ThemeResource ListViewItemCheckBoxPointerOverBorderBrush}"
+                            CheckBoxPointerOverBrush="{ThemeResource ListViewItemCheckBoxPointerOverBrush}"
+                            CheckBoxPressedBorderBrush="{ThemeResource ListViewItemCheckBoxPressedBorderBrush}"
+                            CheckBoxPressedBrush="{ThemeResource ListViewItemCheckBoxPressedBrush}"
+                            CheckBoxSelectedBrush="{ThemeResource ListViewItemCheckBoxSelectedBrush}"
+                            CheckBoxSelectedDisabledBrush="{ThemeResource ListViewItemCheckBoxSelectedDisabledBrush}"
+                            CheckBoxSelectedPointerOverBrush="{ThemeResource ListViewItemCheckBoxSelectedPointerOverBrush}"
+                            CheckBoxSelectedPressedBrush="{ThemeResource ListViewItemCheckBoxSelectedPressedBrush}"
+                            CheckBrush="{ThemeResource ListViewItemCheckBrush}"
+                            CheckDisabledBrush="{ThemeResource ListViewItemCheckDisabledBrush}"
+                            CheckMode="{ThemeResource ListViewItemCheckMode}"
+                            CheckPressedBrush="{ThemeResource ListViewItemCheckPressedBrush}"
+                            ContentMargin="{TemplateBinding Padding}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            Control.IsTemplateFocusTarget="True"
+                            CornerRadius="{ThemeResource ListViewItemCornerRadius}"
+                            DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                            DragBackground="{ThemeResource ListViewItemDragBackground}"
+                            DragForeground="{ThemeResource ListViewItemDragForeground}"
+                            DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+                            FocusBorderBrush="{ThemeResource ListViewItemFocusBorderBrush}"
+                            FocusSecondaryBorderBrush="{ThemeResource ListViewItemFocusSecondaryBorderBrush}"
+                            FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                            FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
+                            FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
+                            FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
+                            FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
+                            PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackground}"
+                            PointerOverBackground="{ThemeResource ListViewItemBackgroundPointerOver}"
+                            PointerOverForeground="{ThemeResource ListViewItemForegroundPointerOver}"
+                            PressedBackground="{ThemeResource ListViewItemBackgroundPressed}"
+                            ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}"
+                            SelectedBackground="{ThemeResource ListViewItemBackgroundSelected}"
+                            SelectedDisabledBackground="{ThemeResource ListViewItemBackgroundSelectedDisabled}"
+                            SelectedForeground="{ThemeResource ListViewItemForegroundSelected}"
+                            SelectedPointerOverBackground="{ThemeResource ListViewItemBackgroundSelectedPointerOver}"
+                            SelectedPressedBackground="{ThemeResource ListViewItemBackgroundSelectedPressed}"
+                            SelectionCheckMarkVisualEnabled="{ThemeResource ListViewItemSelectionCheckMarkVisualEnabled}"
+                            SelectionIndicatorBrush="{ThemeResource ListViewItemSelectionIndicatorBrush}"
+                            SelectionIndicatorCornerRadius="{ThemeResource ListViewItemSelectionIndicatorCornerRadius}"
+                            SelectionIndicatorDisabledBrush="{ThemeResource ListViewItemSelectionIndicatorDisabledBrush}"
+                            SelectionIndicatorPointerOverBrush="{ThemeResource ListViewItemSelectionIndicatorPointerOverBrush}"
+                            SelectionIndicatorPressedBrush="{ThemeResource ListViewItemSelectionIndicatorPressedBrush}"
+                            SelectionIndicatorVisualEnabled="False" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style
