@@ -57,12 +57,17 @@ namespace PowerToys
             static String CropAndLockThumbnailEvent();
             static String CropAndLockReparentEvent();
             static String CropAndLockScreenshotEvent();
+            static String CropAndLockExitEvent();
             static String ShowEnvironmentVariablesSharedEvent();
             static String ShowEnvironmentVariablesAdminSharedEvent();
             static String WorkspacesLaunchEditorEvent();
             static String WorkspacesHotkeyEvent();
             static String PowerToysRunnerTerminateSettingsEvent();
             static String ShowCmdPalEvent();
+            static String AlwaysOnTopTerminateEvent();
+            static String ZoomItRefreshSettingsEvent();
+            static String TerminateKBMSharedEvent();
+            static String LightSwitchManualOverrideEvent();
             static String TogglePowerDisplayEvent();
             static String TerminatePowerDisplayEvent();
             static String RefreshPowerDisplayMonitorsEvent();

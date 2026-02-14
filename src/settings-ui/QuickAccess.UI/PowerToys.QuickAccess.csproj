@@ -7,7 +7,7 @@
     <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.QuickAccess</RootNamespace>
     <AssemblyName>PowerToys.QuickAccess</AssemblyName>
-    <ApplicationIcon>..\..\runner\svgs\icon.ico</ApplicationIcon>
+    <ApplicationIcon>..\..\runner\icon.ico</ApplicationIcon>
     <UseWinUI>true</UseWinUI>
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
@@ -20,11 +20,6 @@
       <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <Nullable>enable</Nullable>
     <ProjectPriFileName>PowerToys.QuickAccess.pri</ProjectPriFileName>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
-    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -75,7 +70,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />

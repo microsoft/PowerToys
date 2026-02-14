@@ -12,7 +12,7 @@
 
 #include "../logger/logger.h"
 #include "../utils/winapi_error.h"
-#include "../version/version.h"
+#include "../utils/version.h"
 
 namespace registry
 {

@@ -131,9 +131,7 @@ MakeAppx.exe pack /d . /p $(OutDir)FileLocksmithContextMenuPackage.msix /nv</Com
     <ProjectReference Include="$(RepoRoot)src\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
       <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(RepoRoot)src\common\version\version.vcxproj">
-      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
-    </ProjectReference>
+
     <ProjectReference Include="..\FileLocksmithLib\FileLocksmithLib.vcxproj">
       <Project>{9d52fd25-ef90-4f9a-a015-91efc5daf54f}</Project>
     </ProjectReference>

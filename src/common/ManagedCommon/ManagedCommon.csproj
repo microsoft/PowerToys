@@ -6,6 +6,7 @@
   <PropertyGroup>
     <Description>PowerToys ManagedCommon</Description>
     <AssemblyName>PowerToys.ManagedCommon</AssemblyName>
+		<Nullable>enable</Nullable>
   </PropertyGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
@@ -20,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GPOWrapperProjection\GPOWrapperProjection.csproj" />
     <ProjectReference Include="..\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
   </ItemGroup>

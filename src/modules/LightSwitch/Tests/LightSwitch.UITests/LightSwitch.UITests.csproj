@@ -21,13 +21,9 @@
 	  <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj">
 	    <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
 	  </ProjectReference>
-	  <ProjectReference Include="..\..\LightSwitchModuleInterface\LightSwitchModuleInterface.vcxproj">
-	    <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-	  </ProjectReference>
   </ItemGroup>
 
   <Target Name="CopyNativeDll" AfterTargets="Build">
-    <Copy SourceFiles="$(SolutionDir)$(Platform)\$(Configuration)\PowerToys.LightSwitchModuleInterface.dll" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" Condition="Exists('$(SolutionDir)$(Platform)\$(Configuration)\PowerToys.LightSwitchModuleInterface.dll')" />
     <Copy SourceFiles="$(SolutionDir)$(Platform)\$(Configuration)\LightSwitchLib\LightSwitchLib.lib" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" Condition="Exists('$(SolutionDir)$(Platform)\$(Configuration)\LightSwitchLib\LightSwitchLib.lib')" ContinueOnError="true" />
   </Target>
 </Project>

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <modules/interface/powertoy_module_interface.h>
-
 #include <WorkspacesLib/WorkspacesData.h>
 #include <workspaces-common/InvokePoint.h>
 

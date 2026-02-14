@@ -8,7 +8,6 @@
 
 #include <common/utils/HDropIterator.h>
 #include <common/utils/resources.h>
-#include <common/utils/package.h>
 #include <common/utils/process_path.h>
 
 extern HINSTANCE g_hInst;

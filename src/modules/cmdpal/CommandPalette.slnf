@@ -8,7 +8,6 @@
       "src\\common\\ManagedCsWin32\\ManagedCsWin32.csproj",
       "src\\common\\ManagedTelemetry\\Telemetry\\ManagedTelemetry.csproj",
       "src\\common\\interop\\PowerToys.Interop.vcxproj",
-      "src\\common\\version\\version.vcxproj",
       "src\\modules\\cmdpal\\CmdPalKeyboardService\\CmdPalKeyboardService.vcxproj",
       "src\\modules\\cmdpal\\CmdPalModuleInterface\\CmdPalModuleInterface.vcxproj",
       "src\\modules\\cmdpal\\Core\\Microsoft.CmdPal.Core.Common\\Microsoft.CmdPal.Core.Common.csproj",

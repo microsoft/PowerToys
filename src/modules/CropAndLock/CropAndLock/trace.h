@@ -1,7 +1,6 @@
 #pragma once
 
 #include <common/Telemetry/TraceBase.h>
-#include <modules/interface/powertoy_module_interface.h>
 
 class Trace
 {
@@ -16,6 +15,5 @@ public:
         static void CreateReparentWindow() noexcept;
         static void CreateThumbnailWindow() noexcept;
         static void CreateScreenshotWindow() noexcept;
-        static void SettingsTelemetry(PowertoyModuleIface::Hotkey&, PowertoyModuleIface::Hotkey&, PowertoyModuleIface::Hotkey&) noexcept;
     };
 };

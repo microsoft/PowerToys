@@ -60,6 +60,9 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pi
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::end()
 {
+    if (!input_queue_thread.joinable() || !output_queue_thread.joinable())
+        return;
+
     closed = true;
     input_queue.interrupt();
     input_queue_thread.join();
