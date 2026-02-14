@@ -125,7 +125,17 @@ namespace AdvancedPaste
 
         public void SetFocus()
         {
-            MainPage.CustomFormatTextBox.InputTxtBox.Focus(FocusState.Programmatic);
+            // Set initial focus based on AI enabled state:
+            // - If AI is enabled, focus the prompt textbox
+            // - If AI is disabled, focus the paste options list for keyboard navigation
+            if (_optionsViewModel.IsCustomAIServiceEnabled)
+            {
+                MainPage.CustomFormatTextBox.InputTxtBox.Focus(FocusState.Programmatic);
+            }
+            else
+            {
+                MainPage.SetInitialFocusToPasteOptions();
+            }
         }
 
         public void ClearInputText()
