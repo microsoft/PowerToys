@@ -4,10 +4,10 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using Microsoft.CmdPal.Core.Common.Messages;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Commands;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
-using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.Extensions.DependencyInjection;

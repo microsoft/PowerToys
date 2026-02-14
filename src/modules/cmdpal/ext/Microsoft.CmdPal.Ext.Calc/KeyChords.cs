@@ -10,4 +10,8 @@ namespace Microsoft.CmdPal.Ext.Calc;
 internal static class KeyChords
 {
     internal static KeyChord CopyResultToSearchBox { get; } = new(VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, (int)VirtualKey.Enter, 0);
+
+    internal static KeyChord DeleteItemFromHistory { get; } = new(VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift, (int)VirtualKey.Delete, 0);
+
+    internal static KeyChord ClearHistory { get; } = new(VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift | VirtualKeyModifiers.Menu, (int)VirtualKey.Delete, 0);
 }
