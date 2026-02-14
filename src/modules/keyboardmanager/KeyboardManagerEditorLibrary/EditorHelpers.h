@@ -20,6 +20,6 @@ namespace EditorHelpers
     // Function to return a vector of hstring for each key in the display order
     std::vector<winrt::hstring> GetKeyVector(Shortcut shortcut, LayoutMap& keyboardMap);
 
-    // Function to check if the shortcut is illegal (i.e. Win+L or Ctrl+Alt+Del)
+    // Function to check if the shortcut is illegal (i.e. Ctrl+Alt+Del)
     ShortcutErrorType IsShortcutIllegal(Shortcut shortcut);
 }
