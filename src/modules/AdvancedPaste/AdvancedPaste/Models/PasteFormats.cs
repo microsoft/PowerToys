@@ -20,6 +20,16 @@ public enum PasteFormats
 
     [PasteFormatMetadata(
         IsCoreAction = true,
+        ResourceId = "PasteAsPlainTextTrimmed",
+        IconGlyph = "\uE8E9",
+        RequiresAIService = false,
+        CanPreview = false,
+        SupportedClipboardFormats = ClipboardFormat.Text,
+        KernelFunctionDescription = "Takes clipboard text and returns it trimmed of leading and trailing whitespace.")]
+    PlainTextTrimmed,
+
+    [PasteFormatMetadata(
+        IsCoreAction = true,
         ResourceId = "PasteAsMarkdown",
         IconGlyph = "\ue8a5",
         RequiresAIService = false,
