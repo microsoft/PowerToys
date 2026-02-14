@@ -86,7 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
                 var releaseUrl = string.Format(CultureInfo.InvariantCulture, GitHubReleaseLinkTemplate, release.TagName);
                 releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"# {release.Name}");
-                releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"{release.PublishedDate.ToString("MMMM d, yyyy", CultureInfo.CurrentCulture)} • [View on GitHub]({releaseUrl})");
+                releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"{release.PublishedDate.ToString("D", CultureInfo.CurrentCulture)} â€¢ [View on GitHub]({releaseUrl})");
                 releaseNotesHtmlBuilder.AppendLine();
                 releaseNotesHtmlBuilder.AppendLine("&nbsp;");
                 releaseNotesHtmlBuilder.AppendLine();

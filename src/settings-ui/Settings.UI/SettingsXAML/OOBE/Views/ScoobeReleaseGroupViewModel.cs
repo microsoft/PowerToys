@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 var latestRelease = releases[0];
                 VersionText = GetVersionFromRelease(latestRelease);
-                DateText = latestRelease.PublishedDate.ToString("MMMM yyyy", CultureInfo.CurrentCulture);
+                DateText = latestRelease.PublishedDate.ToString("Y", CultureInfo.CurrentCulture);
             }
             else
             {
