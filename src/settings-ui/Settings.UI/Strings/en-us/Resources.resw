@@ -659,6 +659,18 @@ opera.exe</value>
   <data name="AdvancedPaste_Ollama_PrivacyLabel" xml:space="preserve">
     <value>Ollama Privacy Policy</value>
   </data>
+  <data name="AdvancedPaste_AIPrivacyNotice.Title" xml:space="preserve">
+    <value>Data Handling Notice</value>
+    <comment>InfoBar title for AI privacy notice</comment>
+  </data>
+  <data name="AdvancedPaste_AIPrivacyNotice.Message" xml:space="preserve">
+    <value>When using AI features, your clipboard content is sent to AI services for processing. Per the provider's API privacy policy, this data is typically not used for model training but may be retained for a limited time for abuse detection. Review your provider's privacy policy for details.</value>
+    <comment>InfoBar message explaining AI data handling</comment>
+  </data>
+  <data name="AdvancedPaste_AIPrivacyNotice_LearnMore.Content" xml:space="preserve">
+    <value>Learn more</value>
+    <comment>Link text for AI privacy documentation</comment>
+  </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current key remappings</value>
   </data>
