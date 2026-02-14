@@ -31,7 +31,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private CursorWrapSettings CursorWrapSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        private CursorFocusSettings CursorFocusSettingsConfig { get; set; }
+
+        public MouseUtilsViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, ISettingsRepository<CursorFocusSettings> cursorFocusSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -119,6 +121,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Null-safe access in case property wasn't upgraded yet - default to false
             _cursorWrapDisableOnSingleMonitor = CursorWrapSettingsConfig.Properties.DisableCursorWrapOnSingleMonitor?.Value ?? false;
 
+            ArgumentNullException.ThrowIfNull(cursorFocusSettingsRepository);
+
+            CursorFocusSettingsConfig = cursorFocusSettingsRepository.SettingsConfig;
+            _cursorFocusAutoActivate = CursorFocusSettingsConfig.Properties.AutoActivate.Value;
+            _cursorFocusFocusChangeDelayMs = CursorFocusSettingsConfig.Properties.FocusChangeDelayMs.Value;
+            _cursorFocusTargetPosition = CursorFocusSettingsConfig.Properties.TargetPosition.Value;
+            _cursorFocusDisableOnFullScreen = CursorFocusSettingsConfig.Properties.DisableOnFullScreen.Value;
+            _cursorFocusDisableOnGameMode = CursorFocusSettingsConfig.Properties.DisableOnGameMode.Value;
+
             int isEnabled = 0;
 
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
@@ -179,6 +190,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isCursorWrapEnabled = GeneralSettingsConfig.Enabled.CursorWrap;
             }
+
+            _cursorFocusEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredCursorFocusEnabledValue();
+            if (_cursorFocusEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _cursorFocusEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _cursorFocusEnabledStateIsGPOConfigured = true;
+                _isCursorFocusEnabled = _cursorFocusEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isCursorFocusEnabled = GeneralSettingsConfig.Enabled.CursorFocus;
+            }
         }
 
         public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
@@ -192,6 +215,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     GlidingCursorActivationShortcut],
                 [MouseJumpSettings.ModuleName] = [MouseJumpActivationShortcut],
                 [CursorWrapSettings.ModuleName] = [CursorWrapActivationShortcut],
+                [CursorFocusSettings.ModuleName] = [CursorFocusActivationShortcut],
             };
 
             return hotkeysDict;
@@ -1148,6 +1172,154 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SettingsUtils.SaveSettings(CursorWrapSettingsConfig.ToJsonString(), CursorWrapSettings.ModuleName);
         }
 
+        public bool IsCursorFocusEnabled
+        {
+            get => _isCursorFocusEnabled;
+            set
+            {
+                if (_cursorFocusEnabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
+                if (_isCursorFocusEnabled != value)
+                {
+                    _isCursorFocusEnabled = value;
+
+                    GeneralSettingsConfig.Enabled.CursorFocus = value;
+                    OnPropertyChanged(nameof(IsCursorFocusEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+
+                    NotifyCursorFocusPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsCursorFocusEnabledGpoConfigured
+        {
+            get => _cursorFocusEnabledStateIsGPOConfigured;
+        }
+
+        public HotkeySettings CursorFocusActivationShortcut
+        {
+            get
+            {
+                return CursorFocusSettingsConfig.Properties.ActivationShortcut;
+            }
+
+            set
+            {
+                if (CursorFocusSettingsConfig.Properties.ActivationShortcut != value)
+                {
+                    CursorFocusSettingsConfig.Properties.ActivationShortcut = value ?? CursorFocusSettingsConfig.Properties.DefaultActivationShortcut;
+                    NotifyCursorFocusPropertyChanged();
+                }
+            }
+        }
+
+        public bool CursorFocusAutoActivate
+        {
+            get
+            {
+                return _cursorFocusAutoActivate;
+            }
+
+            set
+            {
+                if (value != _cursorFocusAutoActivate)
+                {
+                    _cursorFocusAutoActivate = value;
+                    CursorFocusSettingsConfig.Properties.AutoActivate.Value = value;
+                    NotifyCursorFocusPropertyChanged();
+                }
+            }
+        }
+
+        public int CursorFocusFocusChangeDelayMs
+        {
+            get
+            {
+                return _cursorFocusFocusChangeDelayMs;
+            }
+
+            set
+            {
+                if (value != _cursorFocusFocusChangeDelayMs)
+                {
+                    _cursorFocusFocusChangeDelayMs = value;
+                    CursorFocusSettingsConfig.Properties.FocusChangeDelayMs.Value = value;
+                    NotifyCursorFocusPropertyChanged();
+                }
+            }
+        }
+
+        public int CursorFocusTargetPosition
+        {
+            get
+            {
+                return _cursorFocusTargetPosition;
+            }
+
+            set
+            {
+                if (value != _cursorFocusTargetPosition)
+                {
+                    _cursorFocusTargetPosition = value;
+                    CursorFocusSettingsConfig.Properties.TargetPosition.Value = value;
+                    NotifyCursorFocusPropertyChanged();
+                }
+            }
+        }
+
+        public bool CursorFocusDisableOnFullScreen
+        {
+            get
+            {
+                return _cursorFocusDisableOnFullScreen;
+            }
+
+            set
+            {
+                if (value != _cursorFocusDisableOnFullScreen)
+                {
+                    _cursorFocusDisableOnFullScreen = value;
+                    CursorFocusSettingsConfig.Properties.DisableOnFullScreen.Value = value;
+                    NotifyCursorFocusPropertyChanged();
+                }
+            }
+        }
+
+        public bool CursorFocusDisableOnGameMode
+        {
+            get
+            {
+                return _cursorFocusDisableOnGameMode;
+            }
+
+            set
+            {
+                if (value != _cursorFocusDisableOnGameMode)
+                {
+                    _cursorFocusDisableOnGameMode = value;
+                    CursorFocusSettingsConfig.Properties.DisableOnGameMode.Value = value;
+                    NotifyCursorFocusPropertyChanged();
+                }
+            }
+        }
+
+        public void NotifyCursorFocusPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+
+            SndCursorFocusSettings outsettings = new SndCursorFocusSettings(CursorFocusSettingsConfig);
+            SndModuleSettings<SndCursorFocusSettings> ipcMessage = new SndModuleSettings<SndCursorFocusSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(CursorFocusSettingsConfig.ToJsonString(), CursorFocusSettings.ModuleName);
+        }
+
         public void RefreshEnabledState()
         {
             InitializeEnabledValues();
@@ -1156,6 +1328,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsMouseJumpEnabled));
             OnPropertyChanged(nameof(IsMousePointerCrosshairsEnabled));
             OnPropertyChanged(nameof(IsCursorWrapEnabled));
+            OnPropertyChanged(nameof(IsCursorFocusEnabled));
         }
 
         private Func<string, int> SendConfigMSG { get; }
@@ -1211,5 +1384,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _cursorWrapDisableWrapDuringDrag; // Will be initialized in constructor from settings
         private int _cursorWrapWrapMode; // 0=Both, 1=VerticalOnly, 2=HorizontalOnly
         private bool _cursorWrapDisableOnSingleMonitor; // Disable cursor wrap when only one monitor is connected
+
+        private GpoRuleConfigured _cursorFocusEnabledGpoRuleConfiguration;
+        private bool _cursorFocusEnabledStateIsGPOConfigured;
+        private bool _isCursorFocusEnabled;
+        private bool _cursorFocusAutoActivate;
+        private int _cursorFocusFocusChangeDelayMs;
+        private int _cursorFocusTargetPosition;
+        private bool _cursorFocusDisableOnFullScreen;
+        private bool _cursorFocusDisableOnGameMode;
     }
 }

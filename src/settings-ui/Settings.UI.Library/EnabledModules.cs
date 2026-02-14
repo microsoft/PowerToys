@@ -529,6 +529,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool cursorFocus; // defaulting to off
+
+        [JsonPropertyName("CursorFocus")]
+        public bool CursorFocus
+        {
+            get => cursorFocus;
+            set
+            {
+                if (cursorFocus != value)
+                {
+                    LogTelemetryEvent(value);
+                    cursorFocus = value;
+                }
+            }
+        }
+
         private bool lightSwitch;
 
         [JsonPropertyName("LightSwitch")]

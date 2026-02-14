@@ -61,6 +61,53 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
+                <controls:SettingsGroup x:Uid="MouseUtils_CursorFocus" AutomationProperties.AutomationId="MouseUtils_CursorFocusTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsCursorFocusEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableCursorFocus"
+                            x:Uid="MouseUtils_Enable_CursorFocus"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CursorFocus.png}"
+                            IsEnabled="{x:Bind ViewModel.IsCursorFocusEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsCursorFocusEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsCursorFocusSettingsExpander"
+                        x:Uid="MouseUtils_CursorFocus_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsEnabled="{x:Bind ViewModel.IsCursorFocusEnabled, Mode=OneWay}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.CursorFocusActivationShortcut, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.CursorFocusAutoActivate, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorFocusFocusChangeDelayMs" x:Uid="MouseUtils_CursorFocus_FocusChangeDelayMs">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="100"
+                                    Maximum="500"
+                                    Minimum="100"
+                                    SmallChange="50"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.CursorFocusFocusChangeDelayMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorFocusTargetPosition" x:Uid="MouseUtils_CursorFocus_TargetPosition">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.CursorFocusTargetPosition, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorFocus_TargetPosition_CenterOfWindow" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorFocus_TargetPosition_CenterOfTitleBar" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_CursorFocus_DisableOnFullScreen" IsChecked="{x:Bind ViewModel.CursorFocusDisableOnFullScreen, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_CursorFocus_DisableOnGameMode" IsChecked="{x:Bind ViewModel.CursorFocusDisableOnGameMode, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse" AutomationProperties.AutomationId="MouseUtils_FindMyMouseTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
