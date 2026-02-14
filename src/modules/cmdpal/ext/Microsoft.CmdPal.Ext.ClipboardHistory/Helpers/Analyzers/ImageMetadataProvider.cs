@@ -6,13 +6,14 @@ using System;
 using System.Collections.Generic;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers.Analyzers;
 
 internal sealed class ImageMetadataProvider : IClipboardMetadataProvider
 {
-    public string SectionTitle => "Image metadata";
+    public string SectionTitle => Resources.metadata_image_section_title;
 
     public bool CanHandle(ClipboardItem item) => item.IsImage;
 
@@ -30,12 +31,12 @@ internal sealed class ImageMetadataProvider : IClipboardMetadataProvider
 
             result.Add(new DetailsElement
             {
-                Key = "Dimensions",
+                Key = Resources.metadata_image_dimensions_key,
                 Data = new DetailsLink($"{metadata.Width} x {metadata.Height}"),
             });
             result.Add(new DetailsElement
             {
-                Key = "DPI",
+                Key = Resources.metadata_image_dpi_key,
                 Data = new DetailsLink($"{metadata.DpiX:0.###} x {metadata.DpiY:0.###}"),
             });
 
@@ -43,7 +44,7 @@ internal sealed class ImageMetadataProvider : IClipboardMetadataProvider
             {
                 result.Add(new DetailsElement
                 {
-                    Key = "Storage size",
+                    Key = Resources.metadata_image_storage_size_key,
                     Data = new DetailsLink(SizeFormatter.FormatSize(metadata.StorageSize.Value)),
                 });
             }

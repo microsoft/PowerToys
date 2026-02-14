@@ -6,12 +6,95 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
+    Width="1100"
+    Height="700"
     MinWidth="480"
     MinHeight="480"
+    Activated="Window_Activated"
     Closed="Window_Closed"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
-    <local:ScoobeShellPage x:Name="shellPage" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TitleBar
+            x:Name="AppTitleBar"
+            x:Uid="ScoobeWindow_TitleTxt"
+            IsBackButtonVisible="False"
+            IsPaneToggleButtonVisible="False"
+            PaneToggleRequested="TitleBar_PaneButtonClick">
+            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
+            <TitleBar.LeftHeader>
+                <ImageIcon
+                    x:Name="TitleBarIcon"
+                    Height="16"
+                    Margin="16,0,0,0"
+                    Source="/Assets/Settings/icon.ico" />
+            </TitleBar.LeftHeader>
+        </TitleBar>
+        <NavigationView
+            x:Name="navigationView"
+            Grid.Row="1"
+            CompactModeThresholdWidth="1007"
+            DisplayModeChanged="NavigationView_DisplayModeChanged"
+            ExpandedModeThresholdWidth="1007"
+            IsBackButtonVisible="Collapsed"
+            IsPaneOpen="True"
+            IsPaneToggleButtonVisible="False"
+            IsSettingsVisible="False"
+            Loaded="NavigationView_Loaded"
+            OpenPaneLength="186"
+            SelectionChanged="NavigationView_SelectionChanged">
+            <NavigationView.MenuItemTemplate>
+                <DataTemplate x:DataType="local:ScoobeReleaseGroupViewModel">
+                    <StackPanel
+                        Margin="0,8,0,8"
+                        AutomationProperties.Name="{x:Bind DateText}"
+                        Orientation="Vertical"
+                        Spacing="4">
+                        <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind DateText}" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind VersionText}" />
+                    </StackPanel>
+                </DataTemplate>
+            </NavigationView.MenuItemTemplate>
+            <NavigationView.Content>
+                <Grid>
+                    <ProgressRing
+                        x:Name="LoadingProgressRing"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsIndeterminate="True"
+                        Visibility="Collapsed" />
+                    <InfoBar
+                        x:Name="ErrorInfoBar"
+                        x:Uid="Oobe_WhatsNew_LoadingError"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsClosable="False"
+                        IsOpen="False"
+                        Severity="Error">
+                        <InfoBar.ActionButton>
+                            <Button
+                                x:Uid="RetryBtn"
+                                HorizontalAlignment="Right"
+                                Click="RetryButton_Click">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                                    <TextBlock x:Uid="RetryLabel" />
+                                </StackPanel>
+                            </Button>
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+                    <Frame x:Name="NavigationFrame" />
+                </Grid>
+            </NavigationView.Content>
+        </NavigationView>
+    </Grid>
 </winuiex:WindowEx>

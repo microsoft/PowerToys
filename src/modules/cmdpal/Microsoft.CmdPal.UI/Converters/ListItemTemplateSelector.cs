@@ -22,34 +22,20 @@ public sealed partial class ListItemTemplateSelector : DataTemplateSelector
 
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
     {
-        DataTemplate? dataTemplate = ListItemViewMode == ListItemViewMode.Singleline ? SingleRowListItem : ListItem;
-
-        if (container is not ListViewItem listItem)
-        {
-            return dataTemplate;
-        }
-
         if (item is not ListItemViewModel element)
         {
-            return dataTemplate;
+            return ListItemViewMode == ListItemViewMode.Singleline ? SingleRowListItem : ListItem;
         }
 
-        if (container is ListViewItem li && element.IsSectionOrSeparator)
+        switch (element.Type)
         {
-            li.IsEnabled = false;
-            li.AllowFocusWhenDisabled = false;
-            li.AllowFocusOnInteraction = false;
-            li.IsHitTestVisible = false;
-            dataTemplate = string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
+            case ListItemType.Separator:
+                return Separator;
+            case ListItemType.SectionHeader:
+                return Section;
+            case ListItemType.Item:
+            default:
+                return ListItemViewMode == ListItemViewMode.Singleline ? SingleRowListItem : ListItem;
         }
-        else
-        {
-            listItem.IsEnabled = true;
-            listItem.AllowFocusWhenDisabled = true;
-            listItem.AllowFocusOnInteraction = true;
-            listItem.IsHitTestVisible = true;
-        }
-
-        return dataTemplate;
     }
 }
