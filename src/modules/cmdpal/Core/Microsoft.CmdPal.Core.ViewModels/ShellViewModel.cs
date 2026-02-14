@@ -258,6 +258,7 @@ public partial class ShellViewModel : ObservableObject,
         }
 
         var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
+        var providerContext = _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
 
         _rootPageService.OnPerformCommand(message.Context, !CurrentPage.IsNested, host);
 
@@ -273,15 +274,15 @@ public partial class ShellViewModel : ObservableObject,
                 // Telemetry: Track extension page navigation for session metrics
                 if (host is not null)
                 {
-                    string extensionId = host.GetExtensionDisplayName() ?? "builtin";
-                    string commandId = command?.Id ?? "unknown";
-                    string commandName = command?.Name ?? "unknown";
+                    var extensionId = host.GetExtensionDisplayName() ?? "builtin";
+                    var commandId = command?.Id ?? "unknown";
+                    var commandName = command?.Name ?? "unknown";
                     WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
                         new(extensionId, commandId, commandName, true, 0));
                 }
 
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host!);
+                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host!, providerContext);
                 if (pageViewModel is null)
                 {
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
@@ -352,10 +353,10 @@ public partial class ShellViewModel : ObservableObject,
         // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var command = message.Command.Unsafe;
-        string extensionId = host?.GetExtensionDisplayName() ?? "builtin";
-        string commandId = command?.Id ?? "unknown";
-        string commandName = command?.Name ?? "unknown";
-        bool success = false;
+        var extensionId = host?.GetExtensionDisplayName() ?? "builtin";
+        var commandId = command?.Id ?? "unknown";
+        var commandName = command?.Name ?? "unknown";
+        var success = false;
 
         try
         {

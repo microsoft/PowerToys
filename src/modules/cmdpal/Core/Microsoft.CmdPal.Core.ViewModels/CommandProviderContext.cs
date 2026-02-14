@@ -4,5 +4,9 @@
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-internal sealed partial class NullPageViewModel(TaskScheduler scheduler, AppExtensionHost extensionHost)
-    : PageViewModel(null, scheduler, extensionHost, CommandProviderContext.Empty);
+public sealed class CommandProviderContext
+{
+    public required string ProviderId { get; init; }
+
+    public static CommandProviderContext Empty { get; } = new() { ProviderId = "<EMPTY>" };
+}
