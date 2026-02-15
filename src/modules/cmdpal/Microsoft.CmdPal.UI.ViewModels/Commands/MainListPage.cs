@@ -36,6 +36,11 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
+    // Stable separator instances so that the VM cache and InPlaceUpdateList
+    // recognise them across successive GetItems() calls
+    private readonly Separator _resultsSeparator = new(Resources.results);
+    private readonly Separator _fallbacksSeparator = new(Resources.fallbacks);
+
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
 
@@ -171,9 +176,40 @@ public sealed partial class MainListPage : DynamicListPage,
             // filtered results.
             if (string.IsNullOrWhiteSpace(SearchText))
             {
-                return _tlcManager.TopLevelCommands
-                    .Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title))
-                    .ToArray();
+                var allCommands = _tlcManager.TopLevelCommands;
+
+                // First pass: count eligible commands
+                var eligibleCount = 0;
+                for (var i = 0; i < allCommands.Count; i++)
+                {
+                    var cmd = allCommands[i];
+                    if (!cmd.IsFallback && !string.IsNullOrEmpty(cmd.Title))
+                    {
+                        eligibleCount++;
+                    }
+                }
+
+                if (eligibleCount == 0)
+                {
+                    return [];
+                }
+
+                // +1 for the separator
+                var result = new IListItem[eligibleCount + 1];
+                result[0] = _resultsSeparator;
+
+                // Second pass: populate
+                var writeIndex = 1;
+                for (var i = 0; i < allCommands.Count; i++)
+                {
+                    var cmd = allCommands[i];
+                    if (!cmd.IsFallback && !string.IsNullOrEmpty(cmd.Title))
+                    {
+                        result[writeIndex++] = cmd;
+                    }
+                }
+
+                return result;
             }
             else
             {
@@ -190,6 +226,8 @@ public sealed partial class MainListPage : DynamicListPage,
                     validScoredFallbacks,
                     _filteredApps,
                     validFallbacks,
+                    _resultsSeparator,
+                    _fallbacksSeparator,
                     AppResultLimit);
             }
         }

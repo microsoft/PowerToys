@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
+
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class ListHelpers
@@ -89,75 +91,100 @@ public partial class ListHelpers
     {
         removedItems = [];
 
-        // we're not changing newContents - stash this so we don't re-evaluate it every time
-        var numberOfNew = newContents.Count();
+        // Materialize once: avoids multi-enumeration and inconsistent iterators
+        var newList = newContents as IList<T> ?? newContents.ToList();
+        var numberOfNew = newList.Count;
 
         // Short circuit - new contents should just be empty
         if (numberOfNew == 0)
         {
-            removedItems.AddRange(original);
-            original.Clear();
+            // Avoid Clear() to reduce UI churn — individual removes let
+            // the ListView recycle containers rather than rebuild everything.
+            while (original.Count > 0)
+            {
+                removedItems.Add(original[^1]);
+                original.RemoveAt(original.Count - 1);
+            }
+
             return;
         }
 
-        var i = 0;
-        foreach (var newItem in newContents)
+        // Build a set of new items for O(1) existence checks.
+        // Uses default comparer (same Equals the merge loop uses).
+        var newSet = new HashSet<T>(numberOfNew);
+        for (var i = 0; i < numberOfNew; i++)
         {
+            newSet.Add(newList[i]);
+        }
+
+        // Pre-remove items that are not in newList. Iterating backwards keeps
+        // earlier indices stable and shrinks the working set for the merge loop.
+        for (var i = original.Count - 1; i >= 0; i--)
+        {
+            if (!newSet.Contains(original[i]))
+            {
+                removedItems.Add(original[i]);
+                original.RemoveAt(i);
+            }
+        }
+
+        // If we can, use Move to preserve containers/selection better
+        var oc = original as ObservableCollection<T>;
+
+        for (var i = 0; i < numberOfNew; i++)
+        {
+            var newItem = newList[i];
+
+            // If we've run out of original items, append the rest
             if (i >= original.Count)
             {
-                break;
+                original.Add(newItem);
+                continue;
             }
 
-            for (var j = i; j < original.Count; j++)
+            // Already correct?
+            if (original[i]?.Equals(newItem) ?? false)
             {
-                var og_2 = original[j];
-                var areEqual_2 = og_2?.Equals(newItem) ?? false;
-                if (areEqual_2)
-                {
-                    for (var k = i; k < j; k++)
-                    {
-                        // This item from the original list was not in the new list. Remove it.
-                        removedItems.Add(original[i]);
-                        original.RemoveAt(i);
-                    }
+                continue;
+            }
 
+            // Find the item later in the original list
+            var foundIndex = -1;
+            for (var j = i + 1; j < original.Count; j++)
+            {
+                if (original[j]?.Equals(newItem) ?? false)
+                {
+                    foundIndex = j;
                     break;
                 }
             }
 
-            var og = original[i];
-            var areEqual = og?.Equals(newItem) ?? false;
-
-            // Is this new item already in the list?
-            if (areEqual)
+            if (foundIndex >= 0)
             {
-                // It is already in the list
-            }
-            else
-            {
-                // it isn't. Add it.
-                original.Insert(i, newItem);
+                // Bring it to position i WITHOUT deleting intervening items
+                if (oc is not null)
+                {
+                    oc.Move(foundIndex, i);
+                }
+                else
+                {
+                    var item = original[foundIndex];
+                    original.RemoveAt(foundIndex);
+                    original.Insert(i, item);
+                }
+
+                continue;
             }
 
-            i++;
+            // Not found: insert new item at i
+            original.Insert(i, newItem);
         }
 
         // Remove any extra trailing items from the destination
         while (original.Count > numberOfNew)
         {
-            // RemoveAtEnd
-            removedItems.Add(original[original.Count - 1]);
+            removedItems.Add(original[^1]);
             original.RemoveAt(original.Count - 1);
-        }
-
-        // Add any extra trailing items from the source
-        if (original.Count < numberOfNew)
-        {
-            var remaining = newContents.Skip(original.Count);
-            foreach (var item in remaining)
-            {
-                original.Add(item);
-            }
         }
     }
 }

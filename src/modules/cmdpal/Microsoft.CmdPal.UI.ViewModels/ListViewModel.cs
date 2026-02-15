@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -18,6 +21,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 {
     // private readonly HashSet<ListItemViewModel> _itemCache = [];
     private readonly TaskFactory filterTaskFactory = new(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
+
+    private readonly Dictionary<IListItem, ListItemViewModel> _vmCache = new(new ProxyReferenceEqualityComparer());
 
     // TODO: Do we want a base "ItemsPageViewModel" for anything that's going to have items?
 
@@ -36,7 +41,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private InterlockedBoolean _isLoading;
     private bool _isFetching;
 
-    public event TypedEventHandler<ListViewModel, object>? ItemsUpdated;
+    public event TypedEventHandler<ListViewModel, ItemsUpdatedEventArgs>? ItemsUpdated;
 
     public bool ShowEmptyContent =>
         IsInitialized &&
@@ -111,10 +116,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
-        //// TODO: Just temp testing, need to think about where we want to filter, as AdvancedCollectionView in View could be done, but then grouping need CollectionViewSource, maybe we do grouping in view
-        //// and manage filtering below, but we should be smarter about this and understand caching and other requirements...
-        //// Investigate if we re-use src\modules\cmdpal\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\ListHelpers.cs InPlaceUpdateList and FilterList?
-
         // Dynamic pages will handler their own filtering. They will tell us if
         // something needs to change, by raising ItemsChanged.
         if (_isDynamic)
@@ -130,24 +131,24 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // concurrently.
             _ = filterTaskFactory.StartNew(
                 () =>
-            {
-                filterCancellationTokenSource.Token.ThrowIfCancellationRequested();
+                {
+                    filterCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
-                try
-                {
-                    if (_model.Unsafe is IDynamicListPage dynamic)
+                    try
                     {
-                        dynamic.SearchText = searchTextBox;
+                        if (_model.Unsafe is IDynamicListPage dynamic)
+                        {
+                            dynamic.SearchText = searchTextBox;
+                        }
                     }
-                }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception ex)
-                {
-                    ShowException(ex, _model?.Unsafe?.Name);
-                }
-            },
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowException(ex, _model?.Unsafe?.Name);
+                    }
+                },
                 filterCancellationTokenSource.Token,
                 TaskCreationOptions.None,
                 filterTaskFactory.Scheduler!);
@@ -160,7 +161,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 ApplyFilterUnderLock();
             }
 
-            ItemsUpdated?.Invoke(this, EventArgs.Empty);
+            ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(true));
             UpdateEmptyContent();
             _isLoading.Clear();
         }
@@ -196,12 +197,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         var cancellationToken = _fetchItemsCancellationTokenSource.Token;
 
-        // TEMPORARY: just plop all the items into a single group
-        // see 9806fe5d8 for the last commit that had this with sections
         _isFetching = true;
 
         // Collect all the items into new viewmodels
-        Collection<ListItemViewModel> newViewModels = [];
+        List<ListItemViewModel> newViewModels = [];
 
         try
         {
@@ -219,11 +218,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 return;
             }
 
-            // TODO we can probably further optimize this by also keeping a
-            // HashSet of every ExtensionObject we currently have, and only
-            // building new viewmodels for the ones we haven't already built.
             var showsTitle = GridProperties?.ShowTitle ?? true;
             var showsSubtitle = GridProperties?.ShowSubtitle ?? true;
+            var created = 0;
+            var reused = 0;
             foreach (var item in newItems)
             {
                 // Check for cancellation during item processing
@@ -232,16 +230,32 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     return;
                 }
 
-                ListItemViewModel viewModel = new(item, new(this));
+                if (_vmCache.TryGetValue(item, out var existing))
+                {
+                    existing.LayoutShowsTitle = showsTitle;
+                    existing.LayoutShowsSubtitle = showsSubtitle;
+                    newViewModels.Add(existing);
+                    reused++;
+                    continue;
+                }
+
+                var viewModel = new ListItemViewModel(item, new(this));
 
                 // If an item fails to load, silently ignore it.
                 if (viewModel.SafeFastInit())
                 {
                     viewModel.LayoutShowsTitle = showsTitle;
                     viewModel.LayoutShowsSubtitle = showsSubtitle;
+
+                    _vmCache[item] = viewModel;
                     newViewModels.Add(viewModel);
+                    created++;
                 }
             }
+
+#if DEBUG
+            CoreLogger.LogInfo($"[ListViewModel] FetchItems: {created} created, {reused} reused, {_vmCache.Count} cached");
+#endif
 
             // Check for cancellation before initializing first twenty items
             if (cancellationToken.IsCancellationRequested)
@@ -269,12 +283,21 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 return;
             }
 
-            List<ListItemViewModel> removedItems = [];
+            List<ListItemViewModel> removedItems;
             lock (_listLock)
             {
                 // Now that we have new ViewModels for everything from the
                 // extension, smartly update our list of VMs
                 ListHelpers.InPlaceUpdateList(Items, newViewModels, out removedItems);
+
+                _vmCache.Clear();
+                foreach (var vm in newViewModels)
+                {
+                    if (vm.Model.Unsafe is { } li)
+                    {
+                        _vmCache[li] = vm;
+                    }
+                }
 
                 // DO NOT ThrowIfCancellationRequested AFTER THIS! If you do,
                 // you'll clean up list items that we've now transferred into
@@ -286,9 +309,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
             {
                 removedItem.SafeCleanup();
             }
-
-            // TODO: Iterate over everything in Items, and prune items from the
-            // cache if we don't need them anymore
         }
         catch (OperationCanceledException)
         {
@@ -340,13 +360,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     {
                         // A dynamic list? Even better! Just stick everything into
                         // FilteredItems. The extension already did any filtering it cared about.
-                        ListHelpers.InPlaceUpdateList(FilteredItems, Items.Where(i => !i.IsInErrorState));
+                        var snapshot = Items.Where(i => !i.IsInErrorState).ToList();
+                        ListHelpers.InPlaceUpdateList(FilteredItems, snapshot);
                     }
 
                     UpdateEmptyContent();
                 }
 
-                ItemsUpdated?.Invoke(this, EventArgs.Empty);
+                ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(!IsNested));
                 _isLoading.Clear();
             });
     }
@@ -798,5 +819,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             model.ItemsChanged -= Model_ItemsChanged;
         }
+    }
+
+    private sealed class ProxyReferenceEqualityComparer : IEqualityComparer<IListItem>
+    {
+        public bool Equals(IListItem? x, IListItem? y) => ReferenceEquals(x, y);
+
+        public int GetHashCode(IListItem obj) => RuntimeHelpers.GetHashCode(obj);
     }
 }
