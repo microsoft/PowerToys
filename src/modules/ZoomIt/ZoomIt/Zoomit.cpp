@@ -114,6 +114,7 @@ COLORREF	g_CustomColors[16];
 #define BREAK_PAGE	  5
 #define RECORD_PAGE	  6
 #define SNIP_PAGE	  7
+#define PANORAMA_PAGE 8
 
 OPTION_TABS g_OptionsTabs[] = {
     { _T("Zoom"), NULL },
@@ -123,7 +124,8 @@ OPTION_TABS g_OptionsTabs[] = {
     { _T("DemoType"), NULL },
     { _T("Break"), NULL },
     { _T("Record"), NULL },
-    { _T("Snip"), NULL }
+    { _T("Snip"), NULL },
+    { _T("Panorama"), NULL }
 };
 
 static const TCHAR* g_RecordingFormats[] = {
@@ -4493,7 +4495,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         if( g_DemoTypeToggleKey ) SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_SETHOTKEY, g_DemoTypeToggleKey, 0 );
         if( g_RecordToggleKey )	SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_SETHOTKEY, g_RecordToggleKey, 0 );
         if( g_SnipToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_SETHOTKEY, g_SnipToggleKey, 0 );
-        if( g_SnipPanoramaToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaToggleKey, 0 );
+        if( g_SnipPanoramaToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaToggleKey, 0 );
         if( g_SnipOcrToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_SETHOTKEY, g_SnipOcrToggleKey, 0 );
         CheckDlgButton( hDlg, IDC_SHOW_TRAY_ICON,
             g_ShowTrayIcon ? BST_CHECKED: BST_UNCHECKED );
@@ -4937,7 +4939,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_GETHOTKEY, 0, 0 ));
             newRecordToggleKey = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_GETHOTKEY, 0, 0));
             newSnipToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
-            newSnipPanoramaToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipPanoramaToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
             newSnipOcrToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
 
             newToggleMod = GetKeyMod( newToggleKey );
@@ -11059,6 +11061,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     MSG					msg;
     HACCEL				hAccel;
 
+#ifdef _DEBUG
     if( lpCmdLine != nullptr && wcsstr( lpCmdLine, L"/panorama-selftest" ) != nullptr )
     {
         const bool selfTestPassed = RunPanoramaStitchSelfTest();
@@ -11084,6 +11087,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             return ok ? 0 : 3;
         }
     }
+#endif // _DEBUG
 
     if( !ShowEula( APPNAME, NULL, NULL )) return 1;
 

@@ -29,6 +29,7 @@ bool RunPanoramaCaptureToFile( HWND hWnd );
 
 // Run a synthetic, non-interactive self-test for panorama frame stitching.
 // Returns true when stitching output matches expected dimensions/content.
+#ifdef _DEBUG
 bool RunPanoramaStitchSelfTest();
 
 // Re-stitch frames from a specific debug dump directory.
@@ -37,3 +38,4 @@ bool RunPanoramaStitchDumpDirectory( const wchar_t* path );
 // Re-stitch accepted panorama frames from the latest debug dump session and
 // save output into that same session directory.
 bool RunPanoramaStitchLatestDebugDump();
+#endif
