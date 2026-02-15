@@ -27,6 +27,9 @@ bool RunPanoramaCaptureToClipboard( HWND hWnd );
 // Returns true when stitching output matches expected dimensions/content.
 bool RunPanoramaStitchSelfTest();
 
+// Re-stitch frames from a specific debug dump directory.
+bool RunPanoramaStitchDumpDirectory( const wchar_t* path );
+
 // Re-stitch accepted panorama frames from the latest debug dump session and
 // save output into that same session directory.
 bool RunPanoramaStitchLatestDebugDump();

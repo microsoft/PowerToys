@@ -1085,6 +1085,26 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
         }
     }
 
+    // Cross-validate shift vs stationary score.  The stationary score measures
+    // how different the frames look at zero offset.  A large scroll means most
+    // of the content is new, so stationaryScore should be proportionally high.
+    // If stationaryScore is low but the detected shift is large AND the fine
+    // score is not a perfect match (fineScore > 0), the match is likely
+    // spurious -- caused by repeating content patterns (e.g. social media
+    // handles, list layouts) that correlate at a wrong offset.  A perfect
+    // fine score (fineScore == 0) indicates the pixel-level alignment is
+    // genuine even when the stationary score is low.
+    const int detectedStep = abs( bestDx ) + abs( bestDy );
+    if( stationaryScore < 15 && detectedStep > frameHeight / 3 && bestFineScore > 0 )
+    {
+        StitchLog( L"[Panorama/Stitch] FindBestFrameShift shift-stationary-mismatch expected=(%d,%d) best=(%d,%d) step=%d fineScore=%llu stationary=%llu\n",
+                     expectedDx, expectedDy, bestDx, bestDy,
+                     detectedStep,
+                     static_cast<unsigned long long>( bestFineScore ),
+                     static_cast<unsigned long long>( stationaryScore ) );
+        return false;
+    }
+
     // Adaptive fine threshold: content with high stationary score (frames are
     // truly different) can tolerate higher fine scores from subpixel rendering
     // artifacts and ClearType.  Near-duplicate frames (low stationary score)
@@ -2104,6 +2124,12 @@ bool RunPanoramaStitchSelfTest()
 
     OutputDebug( L"[Panorama/Test] All scenarios passed\n" );
     return true;
+}
+
+bool RunPanoramaStitchDumpDirectory( const wchar_t* path )
+{
+    std::filesystem::path outputPath;
+    return RunPanoramaStitchFromDumpDirectory( std::filesystem::path( path ), outputPath );
 }
 
 bool RunPanoramaStitchLatestDebugDump()

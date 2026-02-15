@@ -11026,6 +11026,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         return replayStitchPassed ? 0 : 3;
     }
 
+    {
+        const wchar_t* replayArg = lpCmdLine != nullptr ? wcsstr( lpCmdLine, L"/panorama-stitch-replay " ) : nullptr;
+        if( replayArg != nullptr )
+        {
+            const wchar_t* path = replayArg + wcslen( L"/panorama-stitch-replay " );
+            while( *path == L' ' || *path == L'\"' ) ++path;
+            std::wstring replayPath( path );
+            while( !replayPath.empty() && ( replayPath.back() == L'\"' || replayPath.back() == L' ' ) )
+                replayPath.pop_back();
+            const bool ok = RunPanoramaStitchDumpDirectory( replayPath.c_str() );
+            return ok ? 0 : 3;
+        }
+    }
+
     if( !ShowEula( APPNAME, NULL, NULL )) return 1;
 
 #ifdef __ZOOMIT_POWERTOYS__
