@@ -32,9 +32,9 @@
         <x:Double x:Key="MediumGridContainerSize">100</x:Double>
         <x:Double x:Key="GalleryGridSize">160</x:Double>
 
-        <x:Double x:Key="ListViewItemMinHeight">40</x:Double>
-        <x:Double x:Key="ListViewSectionMinHeight">0</x:Double>
-        <x:Double x:Key="ListViewSeparatorMinHeight">0</x:Double>
+        <x:Double x:Key="ListViewItemMinHeight">44</x:Double>
+        <x:Double x:Key="ListViewSectionMinHeight">28</x:Double>
+        <x:Double x:Key="ListViewSeparatorMinHeight">28</x:Double>
 
         <Style x:Key="IconGridViewItemStyle" TargetType="GridViewItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -199,7 +199,8 @@
             x:Key="ListDefaultContainerStyle"
             BasedOn="{StaticResource DefaultListViewItemStyle}"
             TargetType="ListViewItem">
-            <Setter Property="MinHeight" Value="{StaticResource ListViewItemMinHeight}" />
+            <Setter Property="Height" Value="{StaticResource ListViewItemMinHeight}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListViewItem">
@@ -272,10 +273,12 @@
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="IsHoldingEnabled" Value="False" />
             <Setter Property="AllowDrop" Value="False" />
-            <Setter Property="Padding" Value="16,8,12,0" />
+            <Setter Property="Padding" Value="16,0,12,0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Bottom" />
             <Setter Property="MinHeight" Value="{StaticResource ListViewSectionMinHeight}" />
+            <Setter Property="Height" Value="{StaticResource ListViewSectionMinHeight}" />
+            <Setter Property="MaxHeight" Value="{StaticResource ListViewSectionMinHeight}" />
         </Style>
 
         <Style
@@ -293,6 +296,8 @@
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="MinHeight" Value="{StaticResource ListViewSeparatorMinHeight}" />
+            <Setter Property="Height" Value="{StaticResource ListViewSeparatorMinHeight}" />
+            <Setter Property="MaxHeight" Value="{StaticResource ListViewSeparatorMinHeight}" />
         </Style>
 
         <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
@@ -308,7 +313,6 @@
 
         <cmdpalUI:ListItemTemplateSelector
             x:Key="ListItemTemplateSelector"
-            x:DataType="coreViewModels:ListItemViewModel"
             ListItem="{StaticResource ListItemViewModelTemplate}"
             Section="{StaticResource ListSectionViewModelTemplate}"
             Separator="{StaticResource ListSeparatorViewModelTemplate}"
@@ -322,7 +326,6 @@
 
         <cmdpalUI:GridItemTemplateSelector
             x:Key="GridItemTemplateSelector"
-            x:DataType="coreViewModels:ListItemViewModel"
             Gallery="{StaticResource GalleryGridItemViewModelTemplate}"
             GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
             Medium="{StaticResource MediumGridItemViewModelTemplate}"
@@ -670,6 +673,11 @@
                             <ListView.ItemContainerTransitions>
                                 <TransitionCollection />
                             </ListView.ItemContainerTransitions>
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsStackPanel CacheLength="2" />
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
                         </ListView>
                     </controls:Case>
                     <controls:Case Value="True">
@@ -688,7 +696,6 @@
                             ItemContainerStyleSelector="{StaticResource GridItemContainerStyleSelector}"
                             ItemTemplateSelector="{StaticResource GridItemTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
-                            RightTapped="Items_RightTapped"
                             SelectionChanged="Items_SelectionChanged">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
