@@ -6167,7 +6167,7 @@ void StopRecording()
 // suffixes as needed. Uses the folder from lastSavePath if available
 //
 //----------------------------------------------------------------------------
-auto GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId)
+std::wstring GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId)
 {
     // Get the folder where the file will be saved
     std::filesystem::path saveFolder;
