@@ -223,7 +223,8 @@ private:
 
 static PanoramaProgressDialog g_ProgressDialog;
 
-// Temporary file-based trace for stitch debugging
+// Temporary file-based trace for stitch debugging (debug builds only).
+#ifdef _DEBUG
 static FILE* g_StitchLogFile = nullptr;
 static void StitchLog( const wchar_t* format, ... )
 {
@@ -242,6 +243,9 @@ static void StitchLog( const wchar_t* format, ... )
         fflush( g_StitchLogFile );
     }
 }
+#else
+#define StitchLog(...) ((void)0)
+#endif
 
 //----------------------------------------------------------------------------
 //
@@ -308,6 +312,7 @@ static bool ReadBitmapPixels32(HBITMAP hBitmap, std::vector<BYTE>& pixels, int& 
     return copied == height;
 }
 
+#ifdef _DEBUG
 static std::wstring CreatePanoramaDebugDumpDirectory()
 {
     std::error_code errorCode;
@@ -613,6 +618,7 @@ static bool RunPanoramaStitchFromDumpDirectory( const std::filesystem::path& dum
     StitchLog( L"[Panorama/Replay] Saved stitched replay: %s\n", outputPath.c_str() );
     return true;
 }
+#endif // _DEBUG
 
 static bool ComputeAveragePixelDifference( const std::vector<BYTE>& currentPixels,
                                            const std::vector<BYTE>& previousPixels,
@@ -1658,12 +1664,14 @@ bool RunPanoramaCaptureToFile( HWND hWnd )
 
 static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 {
+#ifdef _DEBUG
     const std::wstring debugDumpDirectory = CreatePanoramaDebugDumpDirectory();
     size_t debugGrabbedFrameCount = 0;
     if( !debugDumpDirectory.empty() )
     {
         OutputDebug( L"[Panorama/Debug] Dump directory: %s\n", debugDumpDirectory.c_str() );
     }
+#endif
 
     g_RecordCropping = TRUE;
     const bool started = g_SelectRectangle.Start( hWnd );
@@ -1702,6 +1710,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
                  absoluteRect.right,
                  absoluteRect.bottom );
 
+#ifdef _DEBUG
     if( !debugDumpDirectory.empty() )
     {
         wchar_t infoText[512]{};
@@ -1721,6 +1730,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
                     absoluteRect.bottom );
         DumpPanoramaText( debugDumpDirectory, L"capture_info.txt", infoText );
     }
+#endif
 
     wil::unique_hdc hdcSource( CreateDC( L"DISPLAY", static_cast<PTCHAR>(nullptr), static_cast<PTCHAR>(nullptr), static_cast<CONST DEVMODE*>(nullptr) ) );
     if( hdcSource == nullptr )
@@ -1730,6 +1740,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         return false;
     }
 
+#ifdef _DEBUG
     if( !debugDumpDirectory.empty() )
     {
         RECT desktopRect{};
@@ -1749,6 +1760,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             OutputDebug( L"[Panorama/Debug] Failed to capture desktop snapshot\n" );
         }
     }
+#endif
 
     std::vector<HBITMAP> frames;
     HBITMAP firstFrame = CaptureAbsoluteScreenRectToBitmap( hdcSource.get(), absoluteRect );
@@ -1760,7 +1772,9 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     }
     frames.push_back( firstFrame );
     OutputDebug( L"[Panorama/Capture] Captured frame #1\n" );
+#ifdef _DEBUG
     DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, firstFrame );
+#endif
 
     size_t duplicateFrameCount = 0;
     size_t unstableFrameCount = 0;
@@ -1794,7 +1808,9 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             continue;
         }
 
+#ifdef _DEBUG
         DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, frame );
+#endif
 
         if( AreFramesNearDuplicate( frame, frames.back() ) )
         {
@@ -1828,6 +1844,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
                  unstableFrameCount,
                  captureIteration );
 
+#ifdef _DEBUG
     if( !debugDumpDirectory.empty() )
     {
         wchar_t statsText[256]{};
@@ -1845,6 +1862,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             DumpPanoramaBitmap( debugDumpDirectory, L"accepted", frameIndex + 1, frames[frameIndex] );
         }
     }
+#endif
 
     g_SelectRectangle.Stop();
 
@@ -1878,7 +1896,9 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         return false;
     }
 
+#ifdef _DEBUG
     DumpPanoramaBitmap( debugDumpDirectory, L"stitched", 0, panoramaBitmap );
+#endif
 
     if( saveToFile )
     {
@@ -2032,6 +2052,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     return true;
 }
 
+#ifdef _DEBUG
 bool RunPanoramaStitchSelfTest()
 {
     const std::wstring selfTestDumpDirectory = CreatePanoramaDebugDumpDirectory();
@@ -2535,3 +2556,4 @@ bool RunPanoramaStitchLatestDebugDump()
 
     return ok;
 }
+#endif // _DEBUG
