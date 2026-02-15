@@ -17,8 +17,11 @@
 #include "ZoomItSettings.h"
 #include "GifRecordingSession.h"
 #include "BreakTimer.h"
+#include "PanoramaCapture.h"
 #include <wtsapi32.h>
 #include <tlhelp32.h>
+#include <limits>
+#include <vector>
 
 #ifdef __ZOOMIT_POWERTOYS__
 #include <common/interop/shared_constants.h>
@@ -95,6 +98,7 @@ COLORREF	g_CustomColors[16];
 #define COPY_IMAGE_HOTKEY        16
 #define COPY_CROP_HOTKEY         17
 #define SNIP_OCR_HOTKEY          18
+#define SNIP_PANORAMA_HOTKEY     19
 
 #define ZOOM_PAGE	  0
 #define LIVE_PAGE	  1
@@ -163,6 +167,7 @@ DWORD	g_BreakToggleMod;
 DWORD	g_DemoTypeToggleMod;
 DWORD	g_RecordToggleMod;
 DWORD   g_SnipToggleMod;
+DWORD   g_SnipPanoramaToggleMod;
 DWORD   g_SnipOcrToggleMod;
 
 BOOLEAN	g_ZoomOnLiveZoom = FALSE;
@@ -179,6 +184,8 @@ HWND	g_hWndMain;
 int		g_AlphaBlend = 0x80;
 BOOL	g_fullScreenWorkaround = FALSE;
 bool	g_bSaveInProgress = false;
+bool    g_PanoramaCaptureActive = false;
+bool    g_PanoramaStopRequested = false;
 std::wstring	g_TextBuffer;
 // This is useful in the context of right-justified text only.
 std::list<std::wstring> g_TextBufferPreviousLines;
@@ -371,6 +378,76 @@ void OutputDebug(const TCHAR* format, ...)
     va_end(va);
 
     OutputDebugString(msg);
+#endif
+}
+
+const wchar_t* HotkeyIdToString( WPARAM hotkeyId )
+{
+    switch( hotkeyId )
+    {
+    case ZOOM_HOTKEY: return L"ZOOM_HOTKEY";
+    case DRAW_HOTKEY: return L"DRAW_HOTKEY";
+    case BREAK_HOTKEY: return L"BREAK_HOTKEY";
+    case LIVE_HOTKEY: return L"LIVE_HOTKEY";
+    case LIVE_DRAW_HOTKEY: return L"LIVE_DRAW_HOTKEY";
+    case RECORD_HOTKEY: return L"RECORD_HOTKEY";
+    case RECORD_CROP_HOTKEY: return L"RECORD_CROP_HOTKEY";
+    case RECORD_WINDOW_HOTKEY: return L"RECORD_WINDOW_HOTKEY";
+    case SNIP_HOTKEY: return L"SNIP_HOTKEY";
+    case SNIP_SAVE_HOTKEY: return L"SNIP_SAVE_HOTKEY";
+    case DEMOTYPE_HOTKEY: return L"DEMOTYPE_HOTKEY";
+    case DEMOTYPE_RESET_HOTKEY: return L"DEMOTYPE_RESET_HOTKEY";
+    case RECORD_GIF_HOTKEY: return L"RECORD_GIF_HOTKEY";
+    case RECORD_GIF_WINDOW_HOTKEY: return L"RECORD_GIF_WINDOW_HOTKEY";
+    case SAVE_IMAGE_HOTKEY: return L"SAVE_IMAGE_HOTKEY";
+    case SAVE_CROP_HOTKEY: return L"SAVE_CROP_HOTKEY";
+    case COPY_IMAGE_HOTKEY: return L"COPY_IMAGE_HOTKEY";
+    case COPY_CROP_HOTKEY: return L"COPY_CROP_HOTKEY";
+    case SNIP_OCR_HOTKEY: return L"SNIP_OCR_HOTKEY";
+    case SNIP_PANORAMA_HOTKEY: return L"SNIP_PANORAMA_HOTKEY";
+    default: return L"UNKNOWN_HOTKEY";
+    }
+}
+
+static void LogHotkeyRegistrationResult( const wchar_t* phase, HWND hWnd, int hotkeyId, UINT modifiers, UINT key, BOOL success )
+{
+#if _DEBUG
+    const DWORD lastError = success ? 0 : GetLastError();
+    OutputDebug( L"[Hotkey/%s] hwnd=%p id=%d(%s) mods=0x%X key=0x%X success=%d err=%lu\n",
+                 phase,
+                 hWnd,
+                 hotkeyId,
+                 HotkeyIdToString( hotkeyId ),
+                 modifiers,
+                 key,
+                 success ? 1 : 0,
+                 lastError );
+#else
+    UNREFERENCED_PARAMETER( phase );
+    UNREFERENCED_PARAMETER( hWnd );
+    UNREFERENCED_PARAMETER( hotkeyId );
+    UNREFERENCED_PARAMETER( modifiers );
+    UNREFERENCED_PARAMETER( key );
+    UNREFERENCED_PARAMETER( success );
+#endif
+}
+
+static void LogPanoramaState( const wchar_t* phase, WPARAM hotkeyId = static_cast<WPARAM>(-1) )
+{
+#if _DEBUG
+    const auto mainWindowStyle = ( g_hWndMain != nullptr ) ? static_cast<unsigned long long>( GetWindowLongPtr( g_hWndMain, GWL_EXSTYLE ) ) : 0ULL;
+    OutputDebug( L"[Panorama/State] %s hotkey=%ld(%s) active=%d stop=%d recordCropping=%d selectActive=%d mainExStyle=0x%llX\n",
+                 phase,
+                 static_cast<long>( hotkeyId ),
+                 HotkeyIdToString( hotkeyId ),
+                 g_PanoramaCaptureActive ? 1 : 0,
+                 g_PanoramaStopRequested ? 1 : 0,
+                 g_RecordCropping ? 1 : 0,
+                 g_SelectRectangle.IsActive() ? 1 : 0,
+                 mainWindowStyle );
+#else
+    UNREFERENCED_PARAMETER( phase );
+    UNREFERENCED_PARAMETER( hotkeyId );
 #endif
 }
 
@@ -2894,25 +2971,32 @@ VOID OptionsAddTabs( HWND hOptionsDlg, HWND hTabCtrl )
 //----------------------------------------------------------------------------
 void UnregisterAllHotkeys( HWND hWnd )
 {
-    UnregisterHotKey( hWnd, ZOOM_HOTKEY);
-    UnregisterHotKey( hWnd, LIVE_HOTKEY);
-    UnregisterHotKey( hWnd, LIVE_DRAW_HOTKEY);
-    UnregisterHotKey( hWnd, DRAW_HOTKEY);
-    UnregisterHotKey( hWnd, BREAK_HOTKEY);
-    UnregisterHotKey( hWnd, RECORD_HOTKEY);
-    UnregisterHotKey( hWnd, RECORD_CROP_HOTKEY );
-    UnregisterHotKey( hWnd, RECORD_WINDOW_HOTKEY );
-    UnregisterHotKey( hWnd, SNIP_HOTKEY );
-    UnregisterHotKey( hWnd, SNIP_SAVE_HOTKEY);
-    UnregisterHotKey( hWnd, SNIP_OCR_HOTKEY );
-    UnregisterHotKey( hWnd, DEMOTYPE_HOTKEY );
-    UnregisterHotKey( hWnd, DEMOTYPE_RESET_HOTKEY );
-    UnregisterHotKey( hWnd, RECORD_GIF_HOTKEY );
-    UnregisterHotKey( hWnd, RECORD_GIF_WINDOW_HOTKEY );
-    UnregisterHotKey( hWnd, SAVE_IMAGE_HOTKEY );
-    UnregisterHotKey( hWnd, SAVE_CROP_HOTKEY );
-    UnregisterHotKey( hWnd, COPY_IMAGE_HOTKEY );
-    UnregisterHotKey( hWnd, COPY_CROP_HOTKEY );
+    auto unregisterHotkey = [hWnd]( int id )
+    {
+        const BOOL unregistered = UnregisterHotKey( hWnd, id );
+        LogHotkeyRegistrationResult( L"unregister", hWnd, id, 0, 0, unregistered );
+    };
+
+    unregisterHotkey( ZOOM_HOTKEY );
+    unregisterHotkey( LIVE_HOTKEY );
+    unregisterHotkey( LIVE_DRAW_HOTKEY );
+    unregisterHotkey( DRAW_HOTKEY );
+    unregisterHotkey( BREAK_HOTKEY );
+    unregisterHotkey( RECORD_HOTKEY );
+    unregisterHotkey( RECORD_CROP_HOTKEY );
+    unregisterHotkey( RECORD_WINDOW_HOTKEY );
+    unregisterHotkey( SNIP_HOTKEY );
+    unregisterHotkey( SNIP_SAVE_HOTKEY );
+    unregisterHotkey( SNIP_PANORAMA_HOTKEY );
+    unregisterHotkey( SNIP_OCR_HOTKEY );
+    unregisterHotkey( DEMOTYPE_HOTKEY );
+    unregisterHotkey( DEMOTYPE_RESET_HOTKEY );
+    unregisterHotkey( RECORD_GIF_HOTKEY );
+    unregisterHotkey( RECORD_GIF_WINDOW_HOTKEY );
+    unregisterHotkey( SAVE_IMAGE_HOTKEY );
+    unregisterHotkey( SAVE_CROP_HOTKEY );
+    unregisterHotkey( COPY_IMAGE_HOTKEY );
+    unregisterHotkey( COPY_CROP_HOTKEY );
 }
 
 //----------------------------------------------------------------------------
@@ -2922,32 +3006,42 @@ void UnregisterAllHotkeys( HWND hWnd )
 //----------------------------------------------------------------------------
 void RegisterAllHotkeys(HWND hWnd)
 {
-    if (g_ToggleKey) 			RegisterHotKey(hWnd, ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF);
+    auto registerHotkey = [hWnd]( int id, UINT modifiers, UINT key )
+    {
+        const BOOL registered = RegisterHotKey( hWnd, id, modifiers, key );
+        LogHotkeyRegistrationResult( L"register", hWnd, id, modifiers, key, registered );
+    };
+
+    if (g_ToggleKey) 			registerHotkey( ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF );
     if (g_LiveZoomToggleKey) {
-        RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF);
-        RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF);
+        registerHotkey( LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF );
+        registerHotkey( LIVE_DRAW_HOTKEY, ( g_LiveZoomToggleMod ^ MOD_SHIFT ), g_LiveZoomToggleKey & 0xFF );
     }
-    if (g_DrawToggleKey) 		RegisterHotKey(hWnd, DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF);
-    if (g_BreakToggleKey) 		RegisterHotKey(hWnd, BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF);
+    if (g_DrawToggleKey) 		registerHotkey( DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF );
+    if (g_BreakToggleKey) 		registerHotkey( BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF );
     if (g_DemoTypeToggleKey) {
-        RegisterHotKey(hWnd, DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF);
-        RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, (g_DemoTypeToggleMod ^ MOD_SHIFT), g_DemoTypeToggleKey & 0xFF);
+        registerHotkey( DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF );
+        registerHotkey( DEMOTYPE_RESET_HOTKEY, ( g_DemoTypeToggleMod ^ MOD_SHIFT ), g_DemoTypeToggleKey & 0xFF );
     }
     if (g_SnipToggleKey) {
-        RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF);
-        RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF);
+        registerHotkey( SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF );
+        registerHotkey( SNIP_SAVE_HOTKEY, ( g_SnipToggleMod ^ MOD_SHIFT ), g_SnipToggleKey & 0xFF );
+    }
+    if( g_SnipPanoramaToggleKey &&
+        (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) ) {
+        registerHotkey( SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
     }
     if (g_SnipOcrToggleKey) {
-        RegisterHotKey(hWnd, SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF);
+        registerHotkey( SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF );
     }
     if (g_RecordToggleKey) {
-        RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF);
-        RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF);
-        RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, (g_RecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF);
+        registerHotkey( RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+        registerHotkey( RECORD_CROP_HOTKEY, ( g_RecordToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+        registerHotkey( RECORD_WINDOW_HOTKEY, ( g_RecordToggleMod ^ MOD_ALT ) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
     }
     // Register CTRL+8 for GIF recording and CTRL+ALT+8 for GIF window recording
-    RegisterHotKey(hWnd, RECORD_GIF_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 568 && 0xFF);
-    RegisterHotKey(hWnd, RECORD_GIF_WINDOW_HOTKEY, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 568 && 0xFF);
+    registerHotkey( RECORD_GIF_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 568 && 0xFF );
+    registerHotkey( RECORD_GIF_WINDOW_HOTKEY, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 568 && 0xFF );
 
     // Note: COPY_IMAGE_HOTKEY, COPY_CROP_HOTKEY (Ctrl+C, Ctrl+Shift+C) and
     // SAVE_IMAGE_HOTKEY, SAVE_CROP_HOTKEY (Ctrl+S, Ctrl+Shift+S) are registered
@@ -4159,8 +4253,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     static RECT     stableWindowRect{};
     static bool     stableWindowRectValid = false;
     TCHAR			text[32];
-    DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey, newSnipOcrToggleKey;
-    DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod, newSnipOcrToggleMod;
+    DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey, newSnipPanoramaToggleKey, newSnipOcrToggleKey;
+    DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod, newSnipPanoramaToggleMod, newSnipOcrToggleMod;
     DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
     static std::vector<std::pair<std::wstring, std::wstring>>	microphones;
 
@@ -4395,6 +4489,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         if( g_DemoTypeToggleKey ) SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_SETHOTKEY, g_DemoTypeToggleKey, 0 );
         if( g_RecordToggleKey )	SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_SETHOTKEY, g_RecordToggleKey, 0 );
         if( g_SnipToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_SETHOTKEY, g_SnipToggleKey, 0 );
+        if( g_SnipPanoramaToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaToggleKey, 0 );
         if( g_SnipOcrToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_SETHOTKEY, g_SnipOcrToggleKey, 0 );
         CheckDlgButton( hDlg, IDC_SHOW_TRAY_ICON,
             g_ShowTrayIcon ? BST_CHECKED: BST_UNCHECKED );
@@ -4835,6 +4930,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_GETHOTKEY, 0, 0 ));
             newRecordToggleKey = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_GETHOTKEY, 0, 0));
             newSnipToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipPanoramaToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
             newSnipOcrToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
 
             newToggleMod = GetKeyMod( newToggleKey );
@@ -4844,6 +4940,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleMod = GetKeyMod( newDemoTypeToggleKey );
             newRecordToggleMod = GetKeyMod(newRecordToggleKey);
             newSnipToggleMod = GetKeyMod( newSnipToggleKey );
+            newSnipPanoramaToggleMod = GetKeyMod( newSnipPanoramaToggleKey );
             newSnipOcrToggleMod = GetKeyMod( newSnipOcrToggleKey );
 
             g_SliderZoomLevel = static_cast<int>(SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_GETPOS, 0, 0 ));
@@ -4915,6 +5012,16 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 break;
 
             }
+            else if (newSnipPanoramaToggleKey &&
+                (newSnipPanoramaToggleKey != newSnipToggleKey || newSnipPanoramaToggleMod != newSnipToggleMod) &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_HOTKEY, newSnipPanoramaToggleMod | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
             else if (newSnipOcrToggleKey &&
                 !RegisterHotKey(GetParent(hDlg), SNIP_OCR_HOTKEY, newSnipOcrToggleMod, newSnipOcrToggleKey & 0xFF)) {
 
@@ -4950,6 +5057,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_RecordToggleMod = newRecordToggleMod;
                 g_SnipToggleKey = newSnipToggleKey;
                 g_SnipToggleMod = newSnipToggleMod;
+                g_SnipPanoramaToggleKey = newSnipPanoramaToggleKey;
+                g_SnipPanoramaToggleMod = newSnipPanoramaToggleMod;
                 g_SnipOcrToggleKey = newSnipOcrToggleKey;
                 g_SnipOcrToggleMod = newSnipOcrToggleMod;
                 reg.WriteRegSettings( RegSettings );
@@ -6804,6 +6913,7 @@ LRESULT APIENTRY MainWndProc(
         g_BreakToggleMod = GetKeyMod( g_BreakToggleKey );
         g_DemoTypeToggleMod = GetKeyMod( g_DemoTypeToggleKey );
         g_SnipToggleMod = GetKeyMod( g_SnipToggleKey );
+        g_SnipPanoramaToggleMod = GetKeyMod( g_SnipPanoramaToggleKey );
         g_SnipOcrToggleMod = GetKeyMod( g_SnipOcrToggleKey );
         g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
 
@@ -6862,6 +6972,15 @@ LRESULT APIENTRY MainWndProc(
                 showOptions = TRUE;
 
             }
+            else if (g_SnipPanoramaToggleKey &&
+                (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) &&
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
             else if (g_SnipOcrToggleKey &&
                 !RegisterHotKey(hWnd, SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF)) {
 
@@ -6893,11 +7012,52 @@ LRESULT APIENTRY MainWndProc(
         return 0;
 
     case WM_HOTKEY:
+        OutputDebug( L"[Hotkey] WM_HOTKEY id=%ld(%s) lParam=0x%llX\n",
+                     static_cast<long>( wParam ),
+                     HotkeyIdToString( wParam ),
+                     static_cast<unsigned long long>( lParam ) );
+        LogPanoramaState( L"WM_HOTKEY entry", wParam );
+
+        if( g_PanoramaCaptureActive )
+        {
+            if( wParam == SNIP_PANORAMA_HOTKEY )
+            {
+                OutputDebug( L"[Panorama] Stop hotkey received while capture is active\n" );
+                g_PanoramaStopRequested = true;
+
+                // If we're still selecting the panorama source area, stop selection
+                // immediately so the capture path can unwind cleanly.
+                if( g_RecordCropping == TRUE )
+                {
+                    OutputDebug( L"[Panorama] Stop requested during crop selection; stopping SelectRectangle\n" );
+                    g_SelectRectangle.Stop();
+                    g_RecordCropping = FALSE;
+                }
+            }
+
+            // Do not process any other hotkeys while panorama capture is active.
+            LogPanoramaState( L"WM_HOTKEY consumed while panorama active", wParam );
+            return 0;
+        }
+
+        if( g_RecordCropping == TRUE )
+        {
+            // If the crop overlay has already been torn down, clear stale state.
+            if( !g_SelectRectangle.IsActive() )
+            {
+                OutputDebug( L"[Hotkey] Clearing stale crop state (g_RecordCropping=TRUE but SelectRectangle inactive)\n" );
+                g_RecordCropping = FALSE;
+            }
+        }
+
         if( g_RecordCropping == TRUE )
         {
             if( wParam != RECORD_CROP_HOTKEY )
             {
                 // Cancel cropping on any hotkey.
+                OutputDebug( L"[Hotkey] Cancelling crop due to hotkey id=%ld(%s)\n",
+                             static_cast<long>( wParam ),
+                             HotkeyIdToString( wParam ) );
                 g_SelectRectangle.Stop();
                 g_RecordCropping = FALSE;
 
@@ -6996,12 +7156,79 @@ LRESULT APIENTRY MainWndProc(
             }
             break;
 
+        case SNIP_PANORAMA_HOTKEY:
         case SNIP_SAVE_HOTKEY:
         case SNIP_HOTKEY:
         {
             OutputDebugStringW((L"[Snip] Hotkey received: " + std::to_wstring(LOWORD(wParam)) +
                 L" (SNIP_SAVE=" + std::to_wstring(SNIP_SAVE_HOTKEY) +
                 L" SNIP=" + std::to_wstring(SNIP_HOTKEY) + L")\n").c_str());
+
+            const bool panoramaRequested = (LOWORD(wParam) == SNIP_PANORAMA_HOTKEY);
+
+            if( panoramaRequested )
+            {
+                LogPanoramaState( L"Panorama requested", wParam );
+                // Block liveZoom liveDraw snip due to mirroring bug
+                if( IsWindowVisible( g_hWndLiveZoom )
+                    && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+                {
+                    OutputDebug( L"[Panorama] Request ignored because liveDraw overlay is active\n" );
+                    break;
+                }
+
+#ifdef __ZOOMIT_POWERTOYS__
+                if( g_StartedByPowerToys )
+                {
+                    Trace::ZoomItActivateSnip();
+                }
+#endif // __ZOOMIT_POWERTOYS__
+
+                if( g_Drawing )
+                {
+                    OutputDebug( L"[Panorama] Exiting drawing mode before capture\n" );
+                    SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                    if( g_Drawing )
+                    {
+                        SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                    }
+                }
+
+                if( g_Zoomed )
+                {
+                    OutputDebug( L"[Panorama] Exiting zoom before capture; zoomOnLiveZoom=%d\n", g_ZoomOnLiveZoom ? 1 : 0 );
+                    if( g_ZoomOnLiveZoom )
+                    {
+                        ShowCursor( false );
+                        SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                        ShowCursor( true );
+                    }
+                    else
+                    {
+                        SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_ZOOM );
+                    }
+                }
+
+                g_PanoramaCaptureActive = true;
+                g_PanoramaStopRequested = false;
+                LogPanoramaState( L"Panorama capture armed", wParam );
+                auto panoramaCaptureCleanup = wil::scope_exit( [hWnd] {
+                    LogPanoramaState( L"Panorama cleanup begin" );
+                    g_PanoramaCaptureActive = false;
+                    g_PanoramaStopRequested = false;
+                    g_RecordCropping = FALSE;
+                    g_SelectRectangle.Stop();
+                    UNREFERENCED_PARAMETER( hWnd );
+                    LogPanoramaState( L"Panorama cleanup end" );
+                } );
+                const bool captureSuccess = RunPanoramaCaptureToClipboard( hWnd );
+                OutputDebug( L"[Panorama] RunPanoramaCaptureToClipboard result=%d\n", captureSuccess ? 1 : 0 );
+                if( !captureSuccess )
+                {
+                    OutputDebugStringW( L"[Panorama] Failed to copy capture to clipboard\n" );
+                }
+                break;
+            }
 
             // Block liveZoom liveDraw snip due to mirroring bug
             if( IsWindowVisible( g_hWndLiveZoom )
@@ -7045,7 +7272,6 @@ LRESULT APIENTRY MainWndProc(
             }
             ShowMainWindow(hWnd, monInfo, width, height);
 
-            // Now copy crop or copy+save
             if( LOWORD( wParam ) == SNIP_SAVE_HOTKEY )
             {
                 // IDC_SAVE_CROP handles cursor hiding internally after region selection
@@ -9225,6 +9451,7 @@ LRESULT APIENTRY MainWndProc(
         g_BreakToggleMod = GetKeyMod(g_BreakToggleKey);
         g_DemoTypeToggleMod = GetKeyMod(g_DemoTypeToggleKey);
         g_SnipToggleMod = GetKeyMod(g_SnipToggleKey);
+        g_SnipPanoramaToggleMod = GetKeyMod(g_SnipPanoramaToggleKey);
         g_SnipOcrToggleMod = GetKeyMod(g_SnipOcrToggleKey);
         g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
         BOOL showOptions = FALSE;
@@ -9276,6 +9503,15 @@ LRESULT APIENTRY MainWndProc(
                 !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))
             {
                 MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.", APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipPanoramaToggleKey &&
+            (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod))
+        {
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
+            {
+                MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.", APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
             }
         }
@@ -10777,6 +11013,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 {
     MSG					msg;
     HACCEL				hAccel;
+
+    if( lpCmdLine != nullptr && wcsstr( lpCmdLine, L"/panorama-selftest" ) != nullptr )
+    {
+        const bool selfTestPassed = RunPanoramaStitchSelfTest();
+        return selfTestPassed ? 0 : 2;
+    }
+
+    if( lpCmdLine != nullptr && wcsstr( lpCmdLine, L"/panorama-stitch-latest" ) != nullptr )
+    {
+        const bool replayStitchPassed = RunPanoramaStitchLatestDebugDump();
+        return replayStitchPassed ? 0 : 3;
+    }
 
     if( !ShowEula( APPNAME, NULL, NULL )) return 1;
 

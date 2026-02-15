@@ -20,6 +20,7 @@ public:
     void MinSize( int minSize ) { m_minSize = minSize; }
     int MinSize() const { return m_minSize; }
     RECT SelectedRect() const { return m_selectedRect; }
+    bool IsActive() const { return m_window != nullptr; }
 
     bool Start( HWND ownerWindow = nullptr, bool fullMonitor = false );
     void Stop();
@@ -36,6 +37,7 @@ private:
     RECT m_oldClipRect{};
     bool m_selected{ false };
     bool m_setClip{ false };
+    bool m_stopping{ false };
     POINT m_startPoint{};
     wil::unique_hwnd m_window;
 

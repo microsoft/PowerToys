@@ -17,6 +17,7 @@ DWORD	g_BreakToggleKey = ((HOTKEYF_CONTROL) << 8)| '3';
 DWORD	g_DemoTypeToggleKey = ((HOTKEYF_CONTROL) << 8) | '7';
 DWORD	g_RecordToggleKey = ((HOTKEYF_CONTROL) << 8) | '5';
 DWORD   g_SnipToggleKey = ((HOTKEYF_CONTROL) << 8) | '6';
+DWORD   g_SnipPanoramaToggleKey = ((HOTKEYF_CONTROL) << 8) | '8';
 DWORD   g_SnipOcrToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_ALT) << 8) | '6';
 
 DWORD	g_ShowExpiredTime = 1;
@@ -67,6 +68,7 @@ REG_SETTING RegSettings[] = {
     { L"DrawToggleKey", SETTING_TYPE_DWORD, 0, &g_DrawToggleKey, static_cast<DOUBLE>(g_DrawToggleKey) },
     { L"RecordToggleKey", SETTING_TYPE_DWORD, 0, &g_RecordToggleKey, static_cast<DOUBLE>(g_RecordToggleKey) },
     { L"SnipToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipToggleKey, static_cast<DOUBLE>(g_SnipToggleKey) },
+    { L"SnipPanoramaToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipPanoramaToggleKey, static_cast<DOUBLE>(g_SnipPanoramaToggleKey) },
     { L"SnipOcrToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipOcrToggleKey, static_cast<DOUBLE>(g_SnipOcrToggleKey) },
     { L"PenColor", SETTING_TYPE_DWORD, 0, &g_PenColor, static_cast<DOUBLE>(g_PenColor) },
     { L"PenWidth", SETTING_TYPE_DWORD, 0, &g_RootPenWidth, static_cast<DOUBLE>(g_RootPenWidth) },
