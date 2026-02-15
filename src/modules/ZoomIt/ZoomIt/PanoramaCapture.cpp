@@ -9,6 +9,95 @@
 //
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+//
+//============================================================================
+//
+// Algorithm overview
+// ==================
+//
+// A panorama is produced in two stages: real-time screen capture, then
+// offline frame stitching.
+//
+// 1. Capture
+//    --------
+//    The user selects a rectangular region via the SelectRectangle overlay.
+//    The capture loop runs at ~60 ms intervals, grabbing the absolute screen
+//    rect each iteration.  Consecutive near-duplicate frames (average
+//    per-pixel RGB difference < 6, sampled every 6th pixel with a 2.5%
+//    margin on all edges) are discarded.  Capture stops when the user
+//    presses the stop hotkey or 128 frames have been collected.
+//
+// 2. Stitching (StitchPanoramaFrames)
+//    ---------------------------------
+//    All accepted frames are read into 32-bpp BGRA pixel arrays.  They are
+//    then composed onto a single canvas by computing relative displacements
+//    between each consecutive accepted pair.  Displacement detection uses a
+//    two-phase search in FindBestFrameShift:
+//
+//    Phase 1 – Windowed coarse search on downsampled luma
+//      Each frame is converted to single-channel luma and downsampled by
+//      4x (or 2x for small frames < 240 px).  The downsampled images are
+//      compared at every candidate vertical shift within a search window
+//      determined by the expected scroll direction.  The first frame pair
+//      searches in both directions; subsequent pairs search only in the
+//      established direction across the full feasible range (minStep to
+//      maxStep).  This full-range search handles variable scroll speeds
+//      (e.g. 40 px → 202 px between consecutive frames).
+//
+//      Each candidate computes the mean absolute difference (MAD) of luma
+//      values across the overlapping region (skipping x-margins of ~5%).
+//      Early termination discards candidates whose running average exceeds
+//      the worst score in the current top-12 shortlist.
+//
+//      A stationary score is also computed (zero shift MAD).  If the
+//      stationary score is <= 2, the frames are considered identical and
+//      the pair is rejected.
+//
+//    Phase 2 – Full-resolution refinement
+//      The top-12 coarse candidates (pruned to those within 30 MAD of the
+//      best) are refined at pixel resolution.  For each candidate, a
+//      neighborhood of +/- (downsampleScale+1) pixels vertically and +/-1
+//      pixel horizontally is searched.  Full luma arrays are precomputed
+//      from the BGRA data using integer (77R + 150G + 29B) >> 8.
+//
+//      On x64, the inner comparison loop uses SSE2 _mm_sad_epu8 to
+//      process 16 luma bytes per iteration; a scalar fallback is used on
+//      ARM64.  Early termination again prunes candidates exceeding the
+//      current best fine score.  The candidate with the lowest fine MAD
+//      is selected.
+//
+//    Validation
+//      Cross-validation rejects matches where the stationary score is low
+//      (< 15) but the detected shift is large (> frameHeight/3) and the
+//      fine score is non-zero.  This catches spurious harmonic matches on
+//      repetitive content like social media layouts.
+//
+//      An adaptive fine-score threshold (25 for high-stationary, 10 for
+//      low-stationary content) rejects poor alignments while tolerating
+//      subpixel rendering and ClearType artifacts.
+//
+//    Composition
+//      Accepted frames are placed on a canvas according to cumulative
+//      (stepX, stepY) offsets.  The output is normalized so the first
+//      frame appears at the top.  In overlapping regions, a vertical
+//      feather blend (configurable, ~frameHeight/18 pixels wide,
+//      clamped to 4–28) linearly crossfades between the old and new
+//      frame content using per-pixel alpha weighting.
+//
+//    Output
+//      The stitched pixel array is converted to an HBITMAP via
+//      CreateDIBSection.  The caller either copies it to the clipboard
+//      as CF_DIB or saves it as a PNG file through IFileSaveDialog.
+//
+// Debug support (debug builds only)
+// ----------------------------------
+// In debug builds, every grabbed and accepted frame is saved as a BMP
+// to %TEMP%\ZoomItPanoramaDebug\<session>.  A StitchLog function writes
+// tracing output to OutputDebugString and optionally to a file.
+// Command-line switches /panorama-selftest, /panorama-stitch-latest,
+// and /panorama-stitch-replay allow offline re-stitching and automated
+// regression testing.
+//
 //============================================================================
 #include "pch.h"
 
@@ -34,6 +123,7 @@ extern std::wstring     g_ScreenshotSaveLocation;
 void OutputDebug(const TCHAR* format, ...);
 const wchar_t* HotkeyIdToString( WPARAM hotkeyId );
 DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap );
+std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId );
 
 static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames, std::function<void(int)> progressCallback = nullptr );
 static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile );
@@ -1918,14 +2008,8 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         saveDialog->SetFileTypeIndex( 1 );
         saveDialog->SetDefaultExtension( L"png" );
 
-        // Generate a unique filename suggestion.
-        SYSTEMTIME st{};
-        GetLocalTime( &st );
-        wchar_t suggestedName[64]{};
-        swprintf_s( suggestedName, L"ZoomIt Panorama %04d%02d%02d-%02d%02d%02d.png",
-                    st.wYear, st.wMonth, st.wDay,
-                    st.wHour, st.wMinute, st.wSecond );
-        saveDialog->SetFileName( suggestedName );
+        auto suggestedName = GetUniqueFilename( g_ScreenshotSaveLocation, L"ZoomitPanorama.png", FOLDERID_Pictures );
+        saveDialog->SetFileName( suggestedName.c_str() );
         saveDialog->SetTitle( L"ZoomIt: Save Panorama..." );
 
         if( !g_ScreenshotSaveLocation.empty() )
