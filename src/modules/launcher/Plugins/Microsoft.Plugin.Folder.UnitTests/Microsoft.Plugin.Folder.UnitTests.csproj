@@ -6,6 +6,7 @@
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.Plugin.Folder.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>

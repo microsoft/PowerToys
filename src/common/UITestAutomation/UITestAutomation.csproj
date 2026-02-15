@@ -15,7 +15,8 @@
 
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" />
-    <PackageReference Include="MSTest" />
+    <!-- Test libraries/utilities should not use the metapackage. -->
+    <PackageReference Include="MSTest.TestFramework" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="CoenM.ImageSharp.ImageHash" />
   </ItemGroup>

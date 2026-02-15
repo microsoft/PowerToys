@@ -3,7 +3,7 @@
 	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFramework>$(CoreTargetFramework)</TargetFramework>
 		<OutputType>Exe</OutputType>
 	<RootNamespace>Microsoft.PowerToys.Tools.XamlIndexBuilder</RootNamespace>
 		<AssemblyName>XamlIndexBuilder</AssemblyName>
