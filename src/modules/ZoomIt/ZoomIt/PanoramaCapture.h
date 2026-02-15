@@ -23,6 +23,10 @@ extern bool    g_PanoramaStopRequested;
 // scrolling, stitch them together, and copy the result to the clipboard.
 bool RunPanoramaCaptureToClipboard( HWND hWnd );
 
+// Run the panorama capture flow and save the result to a file via a
+// Save As dialog instead of copying to the clipboard.
+bool RunPanoramaCaptureToFile( HWND hWnd );
+
 // Run a synthetic, non-interactive self-test for panorama frame stitching.
 // Returns true when stitching output matches expected dimensions/content.
 bool RunPanoramaStitchSelfTest();
