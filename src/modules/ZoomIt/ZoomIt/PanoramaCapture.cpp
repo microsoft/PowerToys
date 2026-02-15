@@ -19,6 +19,9 @@
 #include <fstream>
 #include <limits>
 #include <vector>
+#if defined(_M_X64) || defined(_M_IX86)
+#include <emmintrin.h>
+#endif
 
 // Externs from Zoomit.cpp
 extern BOOL             g_RecordCropping;
@@ -855,8 +858,9 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
             const int overlap = dsH - absStep;
             unsigned __int64 totalDiff = 0;
             unsigned __int64 samples = 0;
+            bool earlyExitCoarse = false;
 
-            for( int y = 0; y < overlap; ++y )
+            for( int y = 0; y < overlap && !earlyExitCoarse; y += 2 )
             {
                 const int pY = ( direction < 0 ) ? ( y + absStep ) : y;
                 const int cY = ( direction < 0 ) ? y : ( y + absStep );
@@ -869,21 +873,22 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                              static_cast<int>( currentLuma[currRow + x] ) ) );
                     samples++;
                 }
+
+                // Early termination: if running average already exceeds
+                // the worst kept candidate, this step cannot win.
+                if( candidateCount >= kMaxCandidates && samples >= 100 &&
+                    totalDiff / samples > candidates[candidateCount - 1].score )
+                {
+                    earlyExitCoarse = true;
+                }
             }
 
-            if( samples < 100 )
+            if( earlyExitCoarse || samples < 100 )
             {
                 continue;
             }
 
             unsigned __int64 score = totalDiff / samples;
-
-            if( expectedDyDs == 0 )
-            {
-                // First frame: add a mild step-size penalty so among
-                // ties the smallest step wins.
-                score = score * 4 + static_cast<unsigned __int64>( absStep );
-            }
 
             // Insert into sorted candidates list if good enough
             if( candidateCount < kMaxCandidates || score < candidates[candidateCount - 1].score )
@@ -918,23 +923,57 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
 
     const unsigned __int64 bestCoarseScore = candidates[0].score;
 
+    // Prune candidates whose coarse score is far worse than the best.
+    const unsigned __int64 coarsePruneThreshold = bestCoarseScore + 30;
+    int prunedCount = candidateCount;
+    for( int ci = 0; ci < prunedCount; ++ci )
+    {
+        if( candidates[ci].score > coarsePruneThreshold )
+        {
+            prunedCount = ci;
+            break;
+        }
+    }
+    if( prunedCount < 1 )
+    {
+        prunedCount = 1;
+    }
+
     // ── Phase 2 ── Rank candidates by full-resolution comparison ──────
     // For each coarse candidate, compute a fine score at full resolution.
     // This resolves ambiguity from harmonic matches on repetitive content
     // since the full-resolution comparison sees fine text details that
     // the downsampled comparison misses.
+    //
+    // Pre-compute full-resolution luma arrays so the inner loop uses
+    // cheap byte lookups instead of per-pixel RGB→luma multiplies.
     const int refineRadiusDy = max( 3, downsampleScale + 1 );
     const int refineRadiusDx = 1;
+
+    std::vector<BYTE> previousFullLuma( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) );
+    std::vector<BYTE> currentFullLuma( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) );
+    {
+        const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight );
+        for( size_t p = 0; p < pixelCount; ++p )
+        {
+            const size_t idx = p * 4;
+            previousFullLuma[p] = static_cast<BYTE>( ( previousPixels[idx + 2] * 77 +
+                                                       previousPixels[idx + 1] * 150 +
+                                                       previousPixels[idx + 0] * 29 ) >> 8 );
+            currentFullLuma[p] = static_cast<BYTE>( ( currentPixels[idx + 2] * 77 +
+                                                      currentPixels[idx + 1] * 150 +
+                                                      currentPixels[idx + 0] * 29 ) >> 8 );
+        }
+    }
 
     unsigned __int64 bestFineScore = ( std::numeric_limits<unsigned __int64>::max )();
     bestDx = 0;
     bestDy = candidates[0].dyDs * downsampleScale;
     int bestCoarseDy = candidates[0].dyDs;
 
-    const int stride = frameWidth * 4;
     const int fineMarginX = max( 4, frameWidth / 20 );
 
-    for( int ci = 0; ci < candidateCount; ++ci )
+    for( int ci = 0; ci < prunedCount; ++ci )
     {
         const int coarseDyFull = candidates[ci].dyDs * downsampleScale;
 
@@ -964,8 +1003,9 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
 
                 unsigned __int64 totalDiff = 0;
                 unsigned __int64 samples = 0;
+                bool earlyExit = false;
 
-                for( int y = 0; y < overlap; y += 2 )
+                for( int y = 0; y < overlap && !earlyExit; y += 2 )
                 {
                     int pY, cY;
                     if( dy < 0 )
@@ -979,25 +1019,56 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                         cY = y + absStep;
                     }
 
-                    const int prevRow = pY * stride;
-                    const int currRow = cY * stride;
+                    const int prevRow = pY * frameWidth;
+                    const int currRow = cY * frameWidth;
 
-                    for( int x = xStart; x < xEnd; x += 2 )
+                    const BYTE* pBase = &previousFullLuma[prevRow + xStart];
+                    const BYTE* cBase = &currentFullLuma[currRow + xStart + dx];
+                    const int xSpan = xEnd - xStart;
+                    unsigned __int64 rowDiff = 0;
+
+#if defined(_M_X64) || defined(_M_IX86)
+                    // SSE2 SIMD: process 16 luma pixels at once using
+                    // _mm_sad_epu8 (sum of absolute differences).
+                    __m128i sadAcc = _mm_setzero_si128();
+                    int xi = 0;
+                    for( ; xi + 16 <= xSpan; xi += 16 )
                     {
-                        const int prevIdx = prevRow + x * 4;
-                        const int currIdx = currRow + ( x + dx ) * 4;
-                        const int pLuma = ( previousPixels[prevIdx + 2] * 77 +
-                                            previousPixels[prevIdx + 1] * 150 +
-                                            previousPixels[prevIdx + 0] * 29 ) >> 8;
-                        const int cLuma = ( currentPixels[currIdx + 2] * 77 +
-                                            currentPixels[currIdx + 1] * 150 +
-                                            currentPixels[currIdx + 0] * 29 ) >> 8;
-                        totalDiff += static_cast<unsigned __int64>( abs( pLuma - cLuma ) );
-                        samples++;
+                        const __m128i a = _mm_loadu_si128( reinterpret_cast<const __m128i*>( pBase + xi ) );
+                        const __m128i b = _mm_loadu_si128( reinterpret_cast<const __m128i*>( cBase + xi ) );
+                        sadAcc = _mm_add_epi64( sadAcc, _mm_sad_epu8( a, b ) );
+                    }
+
+                    rowDiff = static_cast<unsigned __int64>( _mm_cvtsi128_si64( sadAcc ) ) +
+                              static_cast<unsigned __int64>( _mm_cvtsi128_si64( _mm_srli_si128( sadAcc, 8 ) ) );
+
+                    for( ; xi < xSpan; ++xi )
+                    {
+                        rowDiff += static_cast<unsigned __int64>(
+                            abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
+                    }
+#else
+                    // Scalar fallback for ARM64.
+                    for( int xi = 0; xi < xSpan; ++xi )
+                    {
+                        rowDiff += static_cast<unsigned __int64>(
+                            abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
+                    }
+#endif
+
+                    totalDiff += rowDiff;
+                    samples += xSpan;
+
+                    // Early termination: if running average already exceeds
+                    // the best fine score, this candidate cannot win.
+                    if( bestFineScore != ( std::numeric_limits<unsigned __int64>::max )() &&
+                        samples >= 200 && totalDiff / samples > bestFineScore )
+                    {
+                        earlyExit = true;
                     }
                 }
 
-                if( samples < 100 )
+                if( earlyExit || samples < 100 )
                 {
                     continue;
                 }
@@ -1014,11 +1085,18 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
         }
     }
 
-    if( bestFineScore == ( std::numeric_limits<unsigned __int64>::max )() || bestFineScore > 10 )
+    // Adaptive fine threshold: content with high stationary score (frames are
+    // truly different) can tolerate higher fine scores from subpixel rendering
+    // artifacts and ClearType.  Near-duplicate frames (low stationary score)
+    // use a strict threshold to avoid accepting spurious matches.
+    const unsigned __int64 fineThreshold = ( stationaryScore > 15 ) ? 25 : 10;
+    if( bestFineScore == ( std::numeric_limits<unsigned __int64>::max )() || bestFineScore > fineThreshold )
     {
-        StitchLog( L"[Panorama/Stitch] FindBestFrameShift poor-fine expected=(%d,%d) best=(%d,%d) fineScore=%llu\n",
+        StitchLog( L"[Panorama/Stitch] FindBestFrameShift poor-fine expected=(%d,%d) best=(%d,%d) fineScore=%llu fineThreshold=%llu stationary=%llu\n",
                      expectedDx, expectedDy, bestDx, bestDy,
-                     static_cast<unsigned long long>( bestFineScore ) );
+                     static_cast<unsigned long long>( bestFineScore ),
+                     static_cast<unsigned long long>( fineThreshold ),
+                     static_cast<unsigned long long>( stationaryScore ) );
         return false;
     }
 
@@ -1560,11 +1638,53 @@ bool RunPanoramaCaptureToClipboard( HWND hWnd )
 
     DumpPanoramaBitmap( debugDumpDirectory, L"stitched", 0, panoramaBitmap );
 
+    // Build a packed CF_DIB (BITMAPINFOHEADER + pixel data) in global
+    // memory.  Using CF_DIB instead of CF_BITMAP avoids compatibility
+    // issues with top-down DIB sections that some apps (e.g. Paint)
+    // cannot paste.
+    BITMAP bm{};
+    GetObject( panoramaBitmap, sizeof( bm ), &bm );
+    const int bmpWidth = bm.bmWidth;
+    const int bmpHeight = bm.bmHeight;
+    const DWORD stride = static_cast<DWORD>( ( bmpWidth * 32 + 31 ) / 32 ) * 4;
+    const DWORD imageSize = stride * static_cast<DWORD>( abs( bmpHeight ) );
+
+    HGLOBAL hDib = GlobalAlloc( GMEM_MOVEABLE, sizeof( BITMAPINFOHEADER ) + imageSize );
+    if( hDib == nullptr )
+    {
+        OutputDebug( L"[Panorama/Capture] GlobalAlloc for DIB failed\n" );
+        DeleteObject( panoramaBitmap );
+        return false;
+    }
+
+    void* dibPtr = GlobalLock( hDib );
+    auto* header = static_cast<BITMAPINFOHEADER*>( dibPtr );
+    ZeroMemory( header, sizeof( BITMAPINFOHEADER ) );
+    header->biSize = sizeof( BITMAPINFOHEADER );
+    header->biWidth = bmpWidth;
+    header->biHeight = abs( bmpHeight );   // bottom-up for maximum compatibility
+    header->biPlanes = 1;
+    header->biBitCount = 32;
+    header->biCompression = BI_RGB;
+    header->biSizeImage = imageSize;
+
+    // Extract pixel data as bottom-up regardless of source orientation.
+    HDC hdcScreen = GetDC( nullptr );
+    BITMAPINFO getBmi{};
+    getBmi.bmiHeader = *header;
+    GetDIBits( hdcScreen, panoramaBitmap, 0, abs( bmpHeight ),
+               static_cast<BYTE*>( dibPtr ) + sizeof( BITMAPINFOHEADER ),
+               &getBmi, DIB_RGB_COLORS );
+    ReleaseDC( nullptr, hdcScreen );
+    GlobalUnlock( hDib );
+
+    DeleteObject( panoramaBitmap );
+
     const bool opened = OpenClipboard( hWnd ) != FALSE;
     if( !opened )
     {
         OutputDebug( L"[Panorama/Capture] OpenClipboard failed err=%lu\n", GetLastError() );
-        DeleteObject( panoramaBitmap );
+        GlobalFree( hDib );
         return false;
     }
 
@@ -1572,20 +1692,20 @@ bool RunPanoramaCaptureToClipboard( HWND hWnd )
     {
         OutputDebug( L"[Panorama/Capture] EmptyClipboard failed err=%lu\n", GetLastError() );
         CloseClipboard();
-        DeleteObject( panoramaBitmap );
+        GlobalFree( hDib );
         return false;
     }
 
-    if( SetClipboardData( CF_BITMAP, panoramaBitmap ) == nullptr )
+    if( SetClipboardData( CF_DIB, hDib ) == nullptr )
     {
-        OutputDebug( L"[Panorama/Capture] SetClipboardData(CF_BITMAP) failed err=%lu\n", GetLastError() );
+        OutputDebug( L"[Panorama/Capture] SetClipboardData(CF_DIB) failed err=%lu\n", GetLastError() );
         CloseClipboard();
-        DeleteObject( panoramaBitmap );
+        GlobalFree( hDib );
         return false;
     }
 
     CloseClipboard();
-    OutputDebug( L"[Panorama/Capture] Success: bitmap copied to clipboard\n" );
+    OutputDebug( L"[Panorama/Capture] Success: DIB copied to clipboard (%dx%d)\n", bmpWidth, abs( bmpHeight ) );
     return true;
 }
 
