@@ -290,6 +290,9 @@ BEGIN
     CONTROL         "",IDC_SNIP_OCR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,67,63,80,12
     LTEXT           "Text Toggle:",IDC_STATIC,7,65,55,8
     LTEXT           "Copy text from the selected region to the clipboard:",IDC_STATIC,7,50,230,10
+    CONTROL         "",IDC_SNIP_PANORAMA_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,67,92,80,12
+    LTEXT           "Panorama Key:",IDC_STATIC,7,94,57,8
+    LTEXT           "Use this hotkey to start panorama snip. Press Ctrl+8 to finish capture.",IDC_STATIC,7,108,245,16
 END
 
 DEMOTYPE DIALOGEX 0, 0, 260, 249
