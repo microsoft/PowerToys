@@ -413,7 +413,6 @@
                 ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="28" />
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
@@ -429,32 +428,42 @@
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
 
-                <TextBlock
+                <Grid
                     Grid.Column="1"
                     VerticalAlignment="Center"
-                    CharacterSpacing="12"
-                    FontSize="14"
-                    MaxLines="1"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{x:Bind Title, Mode=OneWay}"
-                    TextTrimming="CharacterEllipsis"
-                    TextWrapping="NoWrap" />
+                    ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                <TextBlock
-                    Grid.Column="2"
-                    VerticalAlignment="Center"
-                    CharacterSpacing="12"
-                    FontSize="14"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    MaxLines="1"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{x:Bind Subtitle, Mode=OneWay}"
-                    TextTrimming="CharacterEllipsis"
-                    TextWrapping="NoWrap"
-                    Visibility="{x:Bind ShowSubtitle, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        CharacterSpacing="12"
+                        FontSize="14"
+                        MaxLines="1"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind Title, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap" />
+
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        CharacterSpacing="12"
+                        FontSize="14"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        MaxLines="1"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind Subtitle, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap"
+                        Visibility="{x:Bind ShowSubtitle, Mode=OneWay}" />
+                </Grid>
 
                 <ItemsControl
-                    Grid.Column="3"
+                    Grid.Column="2"
                     Margin="0,0,8,0"
                     VerticalAlignment="Center"
                     IsHitTestVisible="False"
