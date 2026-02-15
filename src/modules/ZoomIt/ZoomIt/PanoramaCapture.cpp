@@ -19,6 +19,8 @@
 #include <fstream>
 #include <limits>
 #include <vector>
+#include <functional>
+#include <commctrl.h>
 #if defined(_M_X64) || defined(_M_IX86)
 #include <emmintrin.h>
 #endif
@@ -26,10 +28,200 @@
 // Externs from Zoomit.cpp
 extern BOOL             g_RecordCropping;
 extern SelectRectangle  g_SelectRectangle;
+extern HINSTANCE        g_hInstance;
+extern bool             g_bSaveInProgress;
+extern std::wstring     g_ScreenshotSaveLocation;
 void OutputDebug(const TCHAR* format, ...);
 const wchar_t* HotkeyIdToString( WPARAM hotkeyId );
+DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap );
 
-static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames );
+static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames, std::function<void(int)> progressCallback = nullptr );
+static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile );
+
+//----------------------------------------------------------------------------
+// Progress dialog for panorama stitching.
+//----------------------------------------------------------------------------
+class PanoramaProgressDialog
+{
+public:
+    PanoramaProgressDialog() : m_hWnd( nullptr ), m_hProgress( nullptr ), m_hLabel( nullptr ) {}
+
+    void Create( HWND hWndParent )
+    {
+        EnsureWindowClass();
+
+        // Get DPI for proper sizing
+        const UINT dpi = GetDpiForWindowHelper( hWndParent ? hWndParent : GetDesktopWindow() );
+        const int margin = ScaleForDpi( 14, dpi );
+        const int labelHeight = ScaleForDpi( 20, dpi );
+        const int barHeight = ScaleForDpi( 16, dpi );
+        const int spacing = ScaleForDpi( 10, dpi );
+
+        // Compute desired client area, then inflate to full window size
+        const int clientWidth = ScaleForDpi( 340, dpi );
+        const int clientHeight = margin + labelHeight + spacing + barHeight + margin;
+        const DWORD style = WS_POPUP | WS_CAPTION | WS_VISIBLE | WS_CLIPCHILDREN;
+        const DWORD exStyle = WS_EX_TOOLWINDOW | WS_EX_TOPMOST;
+        RECT rcWindow = { 0, 0, clientWidth, clientHeight };
+        AdjustWindowRectEx( &rcWindow, style, FALSE, exStyle );
+        const int dlgWidth = rcWindow.right - rcWindow.left;
+        const int dlgHeight = rcWindow.bottom - rcWindow.top;
+
+        RECT rcDesktop{};
+        GetWindowRect( GetDesktopWindow(), &rcDesktop );
+        const int x = ( rcDesktop.right - dlgWidth ) / 2;
+        const int y = ( rcDesktop.bottom - dlgHeight ) / 2;
+
+        m_hWnd = CreateWindowExW(
+            exStyle,
+            L"ZoomItProgressDialog",
+            L"ZoomIt",
+            style,
+            x, y, dlgWidth, dlgHeight,
+            hWndParent, nullptr, g_hInstance, nullptr );
+        if( m_hWnd == nullptr )
+            return;
+
+        // Apply dark mode to title bar
+        const bool darkMode = IsDarkModeEnabled();
+        SetDarkModeForWindow( m_hWnd, darkMode );
+
+        m_hLabel = CreateWindowExW(
+            0, L"STATIC", L"Processing panorama...",
+            WS_CHILD | WS_VISIBLE | SS_LEFT,
+            margin, margin, clientWidth - margin * 2, labelHeight,
+            m_hWnd, nullptr, g_hInstance, nullptr );
+
+        m_hProgress = CreateWindowExW(
+            0, PROGRESS_CLASSW, nullptr,
+            WS_CHILD | WS_VISIBLE | PBS_SMOOTH,
+            margin, margin + labelHeight + spacing, clientWidth - margin * 2, barHeight,
+            m_hWnd, nullptr, g_hInstance, nullptr );
+        if( m_hProgress )
+        {
+            SendMessage( m_hProgress, PBM_SETRANGE, 0, MAKELPARAM( 0, 100 ) );
+            SendMessage( m_hProgress, PBM_SETPOS, 0, 0 );
+            // Remove sunken border
+            SetWindowLongPtr( m_hProgress, GWL_EXSTYLE,
+                GetWindowLongPtr( m_hProgress, GWL_EXSTYLE ) & ~WS_EX_STATICEDGE );
+            SetWindowPos( m_hProgress, nullptr, 0, 0, 0, 0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED );
+
+            if( darkMode )
+            {
+                SendMessage( m_hProgress, PBM_SETBARCOLOR, 0, static_cast<LPARAM>( DarkMode::AccentColor ) );
+                SendMessage( m_hProgress, PBM_SETBKCOLOR, 0, static_cast<LPARAM>( DarkMode::SurfaceColor ) );
+            }
+        }
+
+        // Set font scaled for DPI
+        NONCLIENTMETRICSW ncm{};
+        ncm.cbSize = sizeof( ncm );
+        SystemParametersInfoW( SPI_GETNONCLIENTMETRICS, sizeof( ncm ), &ncm, 0 );
+        ncm.lfMessageFont.lfHeight = -ScaleForDpi( 12, dpi );
+        m_hFont = CreateFontIndirectW( &ncm.lfMessageFont );
+        if( m_hFont )
+        {
+            SendMessage( m_hLabel, WM_SETFONT, reinterpret_cast<WPARAM>( m_hFont ), TRUE );
+        }
+
+        HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
+        if( hIcon )
+        {
+            SendMessage( m_hWnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>( hIcon ) );
+        }
+
+        UpdateWindow( m_hWnd );
+    }
+
+    void SetProgress( int percent )
+    {
+        if( m_hProgress )
+        {
+            SendMessage( m_hProgress, PBM_SETPOS, percent, 0 );
+        }
+        PumpMessages();
+    }
+
+    void Destroy()
+    {
+        if( m_hWnd )
+        {
+            DestroyWindow( m_hWnd );
+            m_hWnd = nullptr;
+            m_hLabel = nullptr;
+            m_hProgress = nullptr;
+        }
+        if( m_hFont )
+        {
+            DeleteObject( m_hFont );
+            m_hFont = nullptr;
+        }
+    }
+
+private:
+    void PumpMessages()
+    {
+        MSG msg{};
+        while( PeekMessage( &msg, nullptr, 0, 0, PM_REMOVE ) )
+        {
+            TranslateMessage( &msg );
+            DispatchMessage( &msg );
+        }
+    }
+
+    HWND m_hWnd;
+    HWND m_hProgress;
+    HWND m_hLabel;
+    HFONT m_hFont = nullptr;
+
+    static LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+    {
+        switch( uMsg )
+        {
+        case WM_CTLCOLORSTATIC:
+            if( IsDarkModeEnabled() )
+            {
+                HDC hdc = reinterpret_cast<HDC>( wParam );
+                SetTextColor( hdc, DarkMode::TextColor );
+                SetBkColor( hdc, DarkMode::BackgroundColor );
+                return reinterpret_cast<LRESULT>( GetDarkModeBrush() );
+            }
+            break;
+
+        case WM_ERASEBKGND:
+            if( IsDarkModeEnabled() )
+            {
+                HDC hdc = reinterpret_cast<HDC>( wParam );
+                RECT rc{};
+                GetClientRect( hWnd, &rc );
+                FillRect( hdc, &rc, GetDarkModeBrush() );
+                return 1;
+            }
+            break;
+        }
+        return DefWindowProcW( hWnd, uMsg, wParam, lParam );
+    }
+
+    static void EnsureWindowClass()
+    {
+        static bool registered = false;
+        if( !registered )
+        {
+            WNDCLASSEXW wc{};
+            wc.cbSize = sizeof( wc );
+            wc.lpfnWndProc = WndProc;
+            wc.hInstance = g_hInstance;
+            wc.hCursor = LoadCursor( nullptr, IDC_ARROW );
+            wc.hbrBackground = reinterpret_cast<HBRUSH>( COLOR_WINDOW + 1 );
+            wc.lpszClassName = L"ZoomItProgressDialog";
+            RegisterClassExW( &wc );
+            registered = true;
+        }
+    }
+};
+
+static PanoramaProgressDialog g_ProgressDialog;
 
 // Temporary file-based trace for stitch debugging
 static FILE* g_StitchLogFile = nullptr;
@@ -1130,8 +1322,15 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     return true;
 }
 
-static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames)
+static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, std::function<void(int)> progressCallback)
 {
+    auto reportProgress = [&progressCallback]( int percent )
+    {
+        if( progressCallback )
+        {
+            progressCallback( max( 0, min( 100, percent ) ) );
+        }
+    };
     const ULONGLONG stitchStart = GetTickCount64();
     if( frames.empty() )
     {
@@ -1181,6 +1380,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames)
                          frameHeight );
             return nullptr;
         }
+
+        reportProgress( static_cast<int>( ( i + 1 ) * 5 / frames.size() ) );
     }
 
     std::vector<size_t> composedFrameIndices;
@@ -1204,6 +1405,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames)
 
     for( size_t i = 1; i < frames.size(); i++ )
     {
+        reportProgress( 5 + static_cast<int>( i * 65 / frames.size() ) );
+
         int dx = expectedDx;
         int dy = expectedDy;
         bool foundShift = FindBestFrameShift( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, expectedDx, expectedDy, dx, dy );
@@ -1309,6 +1512,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames)
 
     for( size_t i = 0; i < composedFrameIndices.size(); ++i )
     {
+        reportProgress( 70 + static_cast<int>( ( i + 1 ) * 25 / composedFrameIndices.size() ) );
+
         const size_t frameIndex = composedFrameIndices[i];
         const POINT& currentOrigin = composedFrameOrigins[i];
         const int destinationX = currentOrigin.x - minX;
@@ -1435,12 +1640,24 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames)
 
     const ULONGLONG stitchDurationMs = GetTickCount64() - stitchStart;
     StitchLog( L"[Panorama/Stitch] Stitch complete durationMs=%llu\n", stitchDurationMs );
+    reportProgress( 100 );
     return stitchedBitmap;
 }
 
 bool RunPanoramaCaptureToClipboard( HWND hWnd )
 {
-    OutputDebug( L"[Panorama/Capture] Start\n" );
+    OutputDebug( L"[Panorama/Capture] Start (clipboard)\n" );
+    return RunPanoramaCaptureCommon( hWnd, false );
+}
+
+bool RunPanoramaCaptureToFile( HWND hWnd )
+{
+    OutputDebug( L"[Panorama/Capture] Start (file)\n" );
+    return RunPanoramaCaptureCommon( hWnd, true );
+}
+
+static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
+{
     const std::wstring debugDumpDirectory = CreatePanoramaDebugDumpDirectory();
     size_t debugGrabbedFrameCount = 0;
     if( !debugDumpDirectory.empty() )
@@ -1639,7 +1856,12 @@ bool RunPanoramaCaptureToClipboard( HWND hWnd )
     }
     else
     {
-        panoramaBitmap = StitchPanoramaFrames( frames );
+        g_ProgressDialog.Create( hWnd );
+        panoramaBitmap = StitchPanoramaFrames( frames, [&]( int percent )
+        {
+            g_ProgressDialog.SetProgress( percent );
+        } );
+        g_ProgressDialog.Destroy();
     }
 
     for( HBITMAP frame : frames )
@@ -1657,6 +1879,87 @@ bool RunPanoramaCaptureToClipboard( HWND hWnd )
     }
 
     DumpPanoramaBitmap( debugDumpDirectory, L"stitched", 0, panoramaBitmap );
+
+    if( saveToFile )
+    {
+        // Show file save dialog and save as PNG.
+        g_bSaveInProgress = true;
+
+        auto saveDialog = wil::CoCreateInstance<IFileSaveDialog>( CLSID_FileSaveDialog );
+
+        FILEOPENDIALOGOPTIONS options;
+        if( SUCCEEDED( saveDialog->GetOptions( &options ) ) )
+            saveDialog->SetOptions( options | FOS_FORCEFILESYSTEM | FOS_OVERWRITEPROMPT );
+
+        COMDLG_FILTERSPEC fileTypes[] = {
+            { L"PNG Image", L"*.png" }
+        };
+        saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+        saveDialog->SetFileTypeIndex( 1 );
+        saveDialog->SetDefaultExtension( L"png" );
+
+        // Generate a unique filename suggestion.
+        SYSTEMTIME st{};
+        GetLocalTime( &st );
+        wchar_t suggestedName[64]{};
+        swprintf_s( suggestedName, L"ZoomIt Panorama %04d%02d%02d-%02d%02d%02d.png",
+                    st.wYear, st.wMonth, st.wDay,
+                    st.wHour, st.wMinute, st.wSecond );
+        saveDialog->SetFileName( suggestedName );
+        saveDialog->SetTitle( L"ZoomIt: Save Panorama..." );
+
+        if( !g_ScreenshotSaveLocation.empty() )
+        {
+            std::filesystem::path lastPath( g_ScreenshotSaveLocation );
+            if( lastPath.has_parent_path() )
+            {
+                wil::com_ptr<IShellItem> folderItem;
+                if( SUCCEEDED( SHCreateItemFromParsingName( lastPath.parent_path().c_str(),
+                    nullptr, IID_PPV_ARGS( &folderItem ) ) ) )
+                {
+                    saveDialog->SetFolder( folderItem.get() );
+                }
+            }
+        }
+
+        std::wstring selectedFilePath;
+        if( SUCCEEDED( saveDialog->Show( hWnd ) ) )
+        {
+            wil::com_ptr<IShellItem> resultItem;
+            if( SUCCEEDED( saveDialog->GetResult( &resultItem ) ) )
+            {
+                wil::unique_cotaskmem_string pathStr;
+                if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                {
+                    selectedFilePath = pathStr.get();
+                }
+            }
+        }
+
+        bool success = false;
+        if( !selectedFilePath.empty() )
+        {
+            if( selectedFilePath.find( L'.' ) == std::wstring::npos )
+            {
+                selectedFilePath += L".png";
+            }
+            DWORD saveResult = SavePng( selectedFilePath.c_str(), panoramaBitmap );
+            if( saveResult == ERROR_SUCCESS )
+            {
+                g_ScreenshotSaveLocation = selectedFilePath;
+                OutputDebug( L"[Panorama/Capture] Success: saved to %s\n", selectedFilePath.c_str() );
+                success = true;
+            }
+            else
+            {
+                OutputDebug( L"[Panorama/Capture] SavePng failed err=%lu\n", saveResult );
+            }
+        }
+
+        g_bSaveInProgress = false;
+        DeleteObject( panoramaBitmap );
+        return success;
+    }
 
     // Build a packed CF_DIB (BITMAPINFOHEADER + pixel data) in global
     // memory.  Using CF_DIB instead of CF_BITMAP avoids compatibility

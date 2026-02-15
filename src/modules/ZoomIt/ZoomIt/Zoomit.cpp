@@ -99,6 +99,7 @@ COLORREF	g_CustomColors[16];
 #define COPY_CROP_HOTKEY         17
 #define SNIP_OCR_HOTKEY          18
 #define SNIP_PANORAMA_HOTKEY     19
+#define SNIP_PANORAMA_SAVE_HOTKEY 20
 
 #define ZOOM_PAGE	  0
 #define LIVE_PAGE	  1
@@ -405,6 +406,7 @@ const wchar_t* HotkeyIdToString( WPARAM hotkeyId )
     case COPY_CROP_HOTKEY: return L"COPY_CROP_HOTKEY";
     case SNIP_OCR_HOTKEY: return L"SNIP_OCR_HOTKEY";
     case SNIP_PANORAMA_HOTKEY: return L"SNIP_PANORAMA_HOTKEY";
+    case SNIP_PANORAMA_SAVE_HOTKEY: return L"SNIP_PANORAMA_SAVE_HOTKEY";
     default: return L"UNKNOWN_HOTKEY";
     }
 }
@@ -2988,6 +2990,7 @@ void UnregisterAllHotkeys( HWND hWnd )
     unregisterHotkey( SNIP_HOTKEY );
     unregisterHotkey( SNIP_SAVE_HOTKEY );
     unregisterHotkey( SNIP_PANORAMA_HOTKEY );
+    unregisterHotkey( SNIP_PANORAMA_SAVE_HOTKEY );
     unregisterHotkey( SNIP_OCR_HOTKEY );
     unregisterHotkey( DEMOTYPE_HOTKEY );
     unregisterHotkey( DEMOTYPE_RESET_HOTKEY );
@@ -3030,6 +3033,7 @@ void RegisterAllHotkeys(HWND hWnd)
     if( g_SnipPanoramaToggleKey &&
         (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) ) {
         registerHotkey( SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
+        registerHotkey( SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
     }
     if (g_SnipOcrToggleKey) {
         registerHotkey( SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF );
@@ -5014,7 +5018,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             }
             else if (newSnipPanoramaToggleKey &&
                 (newSnipPanoramaToggleKey != newSnipToggleKey || newSnipPanoramaToggleMod != newSnipToggleMod) &&
-                !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_HOTKEY, newSnipPanoramaToggleMod | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF)) {
+                (!RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_HOTKEY, newSnipPanoramaToggleMod | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF) ||
+                 !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_SAVE_HOTKEY, ( newSnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF))) {
 
                 MessageBox(hDlg, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
                     APPNAME, MB_ICONERROR);
@@ -6974,7 +6979,8 @@ LRESULT APIENTRY MainWndProc(
             }
             else if (g_SnipPanoramaToggleKey &&
                 (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) &&
-                !RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF)) {
+                (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
+                 !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))) {
 
                 MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
                     APPNAME, MB_ICONERROR);
@@ -7020,7 +7026,7 @@ LRESULT APIENTRY MainWndProc(
 
         if( g_PanoramaCaptureActive )
         {
-            if( wParam == SNIP_PANORAMA_HOTKEY )
+            if( wParam == SNIP_PANORAMA_HOTKEY || wParam == SNIP_PANORAMA_SAVE_HOTKEY )
             {
                 OutputDebug( L"[Panorama] Stop hotkey received while capture is active\n" );
                 g_PanoramaStopRequested = true;
@@ -7157,6 +7163,7 @@ LRESULT APIENTRY MainWndProc(
             break;
 
         case SNIP_PANORAMA_HOTKEY:
+        case SNIP_PANORAMA_SAVE_HOTKEY:
         case SNIP_SAVE_HOTKEY:
         case SNIP_HOTKEY:
         {
@@ -7164,7 +7171,8 @@ LRESULT APIENTRY MainWndProc(
                 L" (SNIP_SAVE=" + std::to_wstring(SNIP_SAVE_HOTKEY) +
                 L" SNIP=" + std::to_wstring(SNIP_HOTKEY) + L")\n").c_str());
 
-            const bool panoramaRequested = (LOWORD(wParam) == SNIP_PANORAMA_HOTKEY);
+            const bool panoramaRequested = (LOWORD(wParam) == SNIP_PANORAMA_HOTKEY || LOWORD(wParam) == SNIP_PANORAMA_SAVE_HOTKEY);
+            const bool panoramaSaveToFile = (LOWORD(wParam) == SNIP_PANORAMA_SAVE_HOTKEY);
 
             if( panoramaRequested )
             {
@@ -7221,11 +7229,17 @@ LRESULT APIENTRY MainWndProc(
                     UNREFERENCED_PARAMETER( hWnd );
                     LogPanoramaState( L"Panorama cleanup end" );
                 } );
-                const bool captureSuccess = RunPanoramaCaptureToClipboard( hWnd );
-                OutputDebug( L"[Panorama] RunPanoramaCaptureToClipboard result=%d\n", captureSuccess ? 1 : 0 );
+                const bool captureSuccess = panoramaSaveToFile
+                    ? RunPanoramaCaptureToFile( hWnd )
+                    : RunPanoramaCaptureToClipboard( hWnd );
+                OutputDebug( L"[Panorama] RunPanoramaCapture%s result=%d\n",
+                             panoramaSaveToFile ? L"ToFile" : L"ToClipboard",
+                             captureSuccess ? 1 : 0 );
                 if( !captureSuccess )
                 {
-                    OutputDebugStringW( L"[Panorama] Failed to copy capture to clipboard\n" );
+                    OutputDebugStringW( panoramaSaveToFile
+                        ? L"[Panorama] Failed to save capture to file\n"
+                        : L"[Panorama] Failed to copy capture to clipboard\n" );
                 }
                 break;
             }
@@ -9509,7 +9523,8 @@ LRESULT APIENTRY MainWndProc(
         if (g_SnipPanoramaToggleKey &&
             (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod))
         {
-            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
             {
                 MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.", APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
