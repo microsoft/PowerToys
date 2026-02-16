@@ -108,41 +108,29 @@ LRESULT WINAPI ScreenSaverProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         LoadSettings();
 
-        // Check if this is a resumption after credential provider timeout.
-        // If the config file was modified within the last 60 seconds, we assume
-        // this is a resumption (student triggered login but didn't authenticate).
-        // The config file contains the updated timeout saved by the previous
-        // screensaver instance.
-        TCHAR tempDir[MAX_PATH];
-        GetTempPath( MAX_PATH, tempDir );
-        TCHAR configPath[MAX_PATH];
-        _stprintf( configPath, L"%s%s", tempDir, BREAKSCR_CONFIG_FILE );
-
-        WIN32_FILE_ATTRIBUTE_DATA fad;
-        if( GetFileAttributesEx( configPath, GetFileExInfoStandard, &fad ) )
+        // Check if a previous screensaver instance already ran (resumed == TRUE).
+        // On first launch, ZoomIt sets resumed = FALSE, so we skip the deduction.
+        BreakScrConfig resumeConfig;
+        if( BreakScrConfig_Read( &resumeConfig ) && resumeConfig.resumed )
         {
-            FILETIME ftNow;
-            GetSystemTimeAsFileTime( &ftNow );
+            // Subtract the screensaver idle timeout to compensate for
+            // the time the screensaver wasn't running on the lock screen.
+            UINT scrTimeout = 0;
+            SystemParametersInfo( SPI_GETSCREENSAVETIMEOUT, 0, &scrTimeout, 0 );
+            g_State.timeoutSeconds -= static_cast<int>( scrTimeout );
+            if( g_State.timeoutSeconds < 0 && !g_Settings.showExpiredTime )
+                g_State.timeoutSeconds = 0;
+            DbgPrint( L"[BreakScr] Resumption: subtracted %u sec idle, timeout=%d\n",
+                     scrTimeout, g_State.timeoutSeconds );
+        }
 
-            ULARGE_INTEGER now, modified;
-            now.LowPart = ftNow.dwLowDateTime;
-            now.HighPart = ftNow.dwHighDateTime;
-            modified.LowPart = fad.ftLastWriteTime.dwLowDateTime;
-            modified.HighPart = fad.ftLastWriteTime.dwHighDateTime;
-
-            // If config was modified within last 60 seconds, this is a resumption
-            ULONGLONG diffSeconds = (now.QuadPart - modified.QuadPart) / 10000000ULL;
-            if( diffSeconds < 60 )
+        // Mark as resumed so subsequent screensaver launches know to deduct idle time.
+        {
+            BreakScrConfig markConfig;
+            if( BreakScrConfig_Read( &markConfig ) )
             {
-                // Subtract the screensaver idle timeout to compensate for
-                // the time the screensaver wasn't running on the lock screen.
-                UINT scrTimeout = 0;
-                SystemParametersInfo( SPI_GETSCREENSAVETIMEOUT, 0, &scrTimeout, 0 );
-                g_State.timeoutSeconds -= static_cast<int>( scrTimeout );
-                if( g_State.timeoutSeconds < 0 && !g_Settings.showExpiredTime )
-                    g_State.timeoutSeconds = 0;
-                DbgPrint( L"[BreakScr] Resumption: config age %llu sec, subtracted %u sec idle, timeout=%d\n",
-                         diffSeconds, scrTimeout, g_State.timeoutSeconds );
+                markConfig.resumed = TRUE;
+                BreakScrConfig_Write( &markConfig );
             }
         }
 

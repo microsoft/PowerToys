@@ -128,6 +128,7 @@ struct BreakScrConfig
 {
     DWORD               magic;              // must be BREAKSCR_CONFIG_MAGIC
     int                 timeoutSeconds;
+    BOOL                resumed;            // set TRUE by screensaver on first launch
     BreakTimerSettings  settings;
     TCHAR               screenshotPath[MAX_PATH];
 };
