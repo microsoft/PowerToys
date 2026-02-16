@@ -21,8 +21,6 @@
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(_IsPublishing)'!='true'">
     <Exec Command="dotnet publish &quot;$(ProjectPath)&quot; -c $(Configuration) -r $(RuntimeIdentifier) --self-contained -o &quot;$(OutputPath)&quot;" />
-    <Exec Command="del &quot;$(OutputPath)PowerToys.Update.dll&quot;" />
-    <Exec Command="del &quot;$(OutputPath)PowerToys.Update.pdb&quot;" />
     <Exec Command="del &quot;$(OutputPath)PowerToys.Update.deps.json&quot;" />
   </Target>
 </Project>

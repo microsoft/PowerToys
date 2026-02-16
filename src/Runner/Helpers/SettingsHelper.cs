@@ -20,6 +20,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using PowerToys.Interop;
 using RunnerV2.Models;
+using RunnerV2.properties;
 using Update;
 
 namespace RunnerV2.Helpers
@@ -128,12 +129,15 @@ namespace RunnerV2.Helpers
                                     case "check_for_updates":
                                         var version = Assembly.GetExecutingAssembly().GetName().Version!;
                                         var versionString = "v" + version.Major + "." + version.Minor + "." + version.Build;
-                                        UpdateSettingsHelper.TriggerUpdateCheck((version) => { PowerToys.Interop.Notifications.ShowUpdateAvailableNotification("PowerToys", "An update to PowerToys is available.\n" + versionString + " \u2192 " + version, "PTUpdateNotifyTag", "Update Now", "More info..."); });
+                                        UpdateSettingsHelper.TriggerUpdateCheck((version) => { PowerToys.Interop.Notifications.ShowUpdateAvailableNotification("PowerToys", Resources.UpdateNotification_Content + "\n" + versionString + " \u2192 " + version, "PTUpdateNotifyTag", Resources.UpdateNotification_UpdateNow, Resources.UpdateNotification_MoreInfo); });
                                         break;
                                     case "request_update_state_date":
                                         JsonObject response = [];
                                         response["updateStateDate"] = UpdateSettingsHelper.GetLastCheckedDate();
                                         _ipc?.Send(response.ToJsonString());
+                                        break;
+                                    default:
+                                        Logger.LogWarning($"Received unknown general action from Settings: {moduleName.Value.GetProperty("action_name").GetString()}");
                                         break;
                                 }
 
@@ -271,7 +275,7 @@ namespace RunnerV2.Helpers
                         File.WriteAllText(SettingsUtils.Default.GetSettingsFilePath(fileName: "language.json"), @$"{{""{property.Name}"": ""{property.Value}""}}");
                         break;
                     default:
-                        Console.WriteLine($"Unknown message received from Settings: {property.Name}");
+                        Logger.LogWarning($"Received unknown message from Settings: {property.Name}");
                         break;
                 }
             }

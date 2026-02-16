@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.Interop;
+using RunnerV2.properties;
 using static RunnerV2.NativeMethods;
 
 namespace RunnerV2.Helpers
@@ -114,19 +115,19 @@ namespace RunnerV2.Helpers
             _trayIconMenu = CreatePopupMenu();
             if (SettingsUtils.Default.GetSettings<GeneralSettings>().EnableQuickAccess)
             {
-                AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.QuickAccess), "Quick access\tLeft-click");
-                AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Settings), "Settings\tDouble-click");
+                AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.QuickAccess), Resources.ContextMenu_QuickAccess + "\t" + Resources.ContextMenu_LeftClick);
+                AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Settings), Resources.ContextMenu_Settings + "\t" + Resources.ContextMenu_DoubleClick);
             }
             else
             {
-                AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Settings), "Settings\tLeft-click");
+                AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Settings), Resources.ContextMenu_Settings + "\t" + Resources.ContextMenu_LeftClick);
             }
 
             AppendMenuW(_trayIconMenu, 0x00000800u, UIntPtr.Zero, string.Empty); // separator
-            AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Documentation), "Documentation");
-            AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.ReportBug), "Report a Bug");
+            AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Documentation), Resources.ContextMenu_Documentation);
+            AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.ReportBug), Resources.ContextMenu_ReportBug);
             AppendMenuW(_trayIconMenu, 0x00000800u, UIntPtr.Zero, string.Empty); // separator
-            AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Close), "Close");
+            AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Close), Resources.ContextMenu_Close);
         }
 
         internal static void ProcessTrayIconMessage(long lParam)
