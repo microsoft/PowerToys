@@ -1,22 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <Description>PowerToys Runner</Description>
+    <OutputType>Exe</OutputType>
+    <Description>PowerToys Updater</Description>
     <AssemblyName>PowerToys.Update</AssemblyName>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
     <Nullable>enable</Nullable>
+    <Platforms>x64;ARM64</Platforms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <PublishAot>true</PublishAot>
     <PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
 
+  <!-- This forces the deployment of the project as it must be built as a single file otherwise it won't work, as it is copying itsself around -->
   <PropertyGroup>
     <_IsPublishing Condition="'$(_IsPublishing)'==''">false</_IsPublishing>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(_IsPublishing)'!='true'">
     <Exec Command="dotnet publish &quot;$(ProjectPath)&quot; -c $(Configuration) -r $(RuntimeIdentifier) --self-contained -o &quot;$(OutputPath)&quot;" />
+    <Exec Command="del &quot;$(OutputPath)PowerToys.Update.dll&quot;" />
+    <Exec Command="del &quot;$(OutputPath)PowerToys.Update.pdb&quot;" />
+    <Exec Command="del &quot;$(OutputPath)PowerToys.Update.deps.json&quot;" />
   </Target>
 </Project>
