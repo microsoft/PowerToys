@@ -236,6 +236,28 @@ configuration:
     - if:
       - payloadType: Issue_Comment
       - commentContains:
+          pattern: '\/need-monitor-info'
+          isRegex: True
+      - or:
+        - activitySenderHasAssociation:
+            association: Owner
+        - activitySenderHasAssociation:
+            association: Member
+        - activitySenderHasAssociation:
+            association: Collaborator
+      then:
+      - removeLabel:
+          label: Needs-Triage
+      - removeLabel:
+          label: Needs-Team-Response
+      - addLabel:
+          label: Needs-Author-Feedback
+      - addReply:
+          reply: "To help debug your layout, please run [this script](https://github.com/microsoft/PowerToys/blob/main/src/modules/MouseUtils/CursorWrap/CursorWrapTests/Capture-MonitorLayout.ps1) and attach the generated JSON output to this thread.\n\nThis allows us to better understand the issue and investigate potential fixes."
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - commentContains:
           pattern: "I(( would|'d) (like|love|be happy)| want) (to help|helping|to contribute|contributing|to implement|implementing|to fix|fixing)"
           isRegex: True
       then:
