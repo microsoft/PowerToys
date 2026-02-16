@@ -402,6 +402,43 @@ static bool ReadBitmapPixels32(HBITMAP hBitmap, std::vector<BYTE>& pixels, int& 
     return copied == height;
 }
 
+static HBITMAP CreateBitmapFromPixels32( const std::vector<BYTE>& pixels, int width, int height )
+{
+    if( width <= 0 || height <= 0 || pixels.size() != static_cast<size_t>( width ) * static_cast<size_t>( height ) * 4 )
+    {
+        return nullptr;
+    }
+
+    BITMAPINFO bmi{};
+    bmi.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
+    bmi.bmiHeader.biWidth = width;
+    bmi.bmiHeader.biHeight = -height;
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+
+    HDC hdc = GetDC( nullptr );
+    if( hdc == nullptr )
+    {
+        return nullptr;
+    }
+
+    void* bits = nullptr;
+    HBITMAP bitmap = CreateDIBSection( hdc, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0 );
+    if( bitmap != nullptr && bits != nullptr )
+    {
+        memcpy( bits, pixels.data(), pixels.size() );
+    }
+    else if( bitmap != nullptr )
+    {
+        DeleteObject( bitmap );
+        bitmap = nullptr;
+    }
+
+    ReleaseDC( nullptr, hdc );
+    return bitmap;
+}
+
 #ifdef _DEBUG
 static std::wstring CreatePanoramaDebugDumpDirectory()
 {
@@ -512,43 +549,6 @@ static bool SaveBitmapAsBmp( HBITMAP bitmap, const std::filesystem::path& filePa
     stream.write( reinterpret_cast<const char*>( &infoHeader ), sizeof( infoHeader ) );
     stream.write( reinterpret_cast<const char*>( pixels.data() ), static_cast<std::streamsize>( pixels.size() ) );
     return stream.good();
-}
-
-static HBITMAP CreateBitmapFromPixels32( const std::vector<BYTE>& pixels, int width, int height )
-{
-    if( width <= 0 || height <= 0 || pixels.size() != static_cast<size_t>( width ) * static_cast<size_t>( height ) * 4 )
-    {
-        return nullptr;
-    }
-
-    BITMAPINFO bmi{};
-    bmi.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
-    bmi.bmiHeader.biWidth = width;
-    bmi.bmiHeader.biHeight = -height;
-    bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = 32;
-    bmi.bmiHeader.biCompression = BI_RGB;
-
-    HDC hdc = GetDC( nullptr );
-    if( hdc == nullptr )
-    {
-        return nullptr;
-    }
-
-    void* bits = nullptr;
-    HBITMAP bitmap = CreateDIBSection( hdc, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0 );
-    if( bitmap != nullptr && bits != nullptr )
-    {
-        memcpy( bits, pixels.data(), pixels.size() );
-    }
-    else if( bitmap != nullptr )
-    {
-        DeleteObject( bitmap );
-        bitmap = nullptr;
-    }
-
-    ReleaseDC( nullptr, hdc );
-    return bitmap;
 }
 
 static void DumpPanoramaBitmap( const std::wstring& debugDumpDirectory,
@@ -783,33 +783,6 @@ static bool AreFramesNearDuplicate(HBITMAP currentFrame, HBITMAP previousFrame)
     return avgDiff < 6;
 }
 
-static bool AreFramesVisuallyStable( HBITMAP currentFrame, HBITMAP previousFrame )
-{
-    std::vector<BYTE> currentPixels;
-    std::vector<BYTE> previousPixels;
-    int currentWidth = 0, currentHeight = 0;
-    int previousWidth = 0, previousHeight = 0;
-    if( !ReadBitmapPixels32( currentFrame, currentPixels, currentWidth, currentHeight ) ||
-        !ReadBitmapPixels32( previousFrame, previousPixels, previousWidth, previousHeight ) )
-    {
-        return false;
-    }
-
-    if( currentWidth != previousWidth || currentHeight != previousHeight )
-    {
-        return false;
-    }
-
-    unsigned __int64 avgDiff = 0;
-    if( !ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight, avgDiff ) )
-    {
-        return false;
-    }
-
-    // Looser than duplicate detection: good enough to treat motion as settled.
-    return avgDiff < 12;
-}
-
 static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
                                          const std::vector<BYTE>& previousPixels,
                                          int frameWidth,
@@ -850,176 +823,6 @@ static void BuildDownsampledLumaFrame( const std::vector<BYTE>& pixels,
                 static_cast<BYTE>( l );
         }
     }
-}
-
-static bool EvaluateLumaShiftScore( const std::vector<BYTE>& previousLuma,
-                                    const std::vector<BYTE>& currentLuma,
-                                    int width,
-                                    int height,
-                                    int dx,
-                                    int dy,
-                                    int sampleStep,
-                                    unsigned __int64& score )
-{
-    const int marginX = max( 2, width / 12 );
-    const int marginY = max( 2, height / 12 );
-    const int xStart = max( marginX, marginX - dx );
-    const int yStart = max( marginY, marginY - dy );
-    const int xEnd = min( width - marginX, width - marginX - dx );
-    const int yEnd = min( height - marginY, height - marginY - dy );
-    const int overlapWidth = xEnd - xStart;
-    const int overlapHeight = yEnd - yStart;
-    if( overlapWidth < max( 8, width / 3 ) || overlapHeight < max( 8, height / 3 ) )
-    {
-        return false;
-    }
-
-    unsigned __int64 totalDiff = 0;
-    unsigned __int64 sampleCount = 0;
-    for( int y = yStart; y < yEnd; y += sampleStep )
-    {
-        const int previousRow = y * width;
-        const int currentRow = ( y + dy ) * width;
-        for( int x = xStart; x < xEnd; x += sampleStep )
-        {
-            const int previousValue = previousLuma[previousRow + x];
-            const int currentValue = currentLuma[currentRow + ( x + dx )];
-            totalDiff += static_cast<unsigned __int64>( abs( previousValue - currentValue ) );
-            sampleCount++;
-        }
-    }
-
-    if( sampleCount < 200 )
-    {
-        return false;
-    }
-
-    score = totalDiff / sampleCount;
-    return true;
-}
-
-static bool EvaluateBgraShiftScore( const std::vector<BYTE>& previousPixels,
-                                    const std::vector<BYTE>& currentPixels,
-                                    int frameWidth,
-                                    int frameHeight,
-                                    int dx,
-                                    int dy,
-                                    int sampleStep,
-                                    unsigned __int64& score )
-{
-    const int marginX = max( 4, frameWidth / 16 );
-    const int marginY = max( 4, frameHeight / 16 );
-    const int xStart = max( marginX, marginX - dx );
-    const int yStart = max( marginY, marginY - dy );
-    const int xEnd = min( frameWidth - marginX, frameWidth - marginX - dx );
-    const int yEnd = min( frameHeight - marginY, frameHeight - marginY - dy );
-    const int overlapWidth = xEnd - xStart;
-    const int overlapHeight = yEnd - yStart;
-    if( overlapWidth < max( 24, frameWidth / 3 ) || overlapHeight < max( 24, frameHeight / 3 ) )
-    {
-        return false;
-    }
-
-    const int stride = frameWidth * 4;
-    unsigned __int64 totalDiff = 0;
-    unsigned __int64 sampleCount = 0;
-    for( int y = yStart; y < yEnd; y += sampleStep )
-    {
-        const int previousRow = y * stride;
-        const int currentRow = ( y + dy ) * stride;
-        for( int x = xStart; x < xEnd; x += sampleStep )
-        {
-            const int previousIndex = previousRow + x * 4;
-            const int currentIndex = currentRow + ( x + dx ) * 4;
-            const int previousLuma = ( previousPixels[previousIndex + 2] * 77 +
-                                       previousPixels[previousIndex + 1] * 150 +
-                                       previousPixels[previousIndex + 0] * 29 ) >> 8;
-            const int currentLuma = ( currentPixels[currentIndex + 2] * 77 +
-                                      currentPixels[currentIndex + 1] * 150 +
-                                      currentPixels[currentIndex + 0] * 29 ) >> 8;
-            totalDiff += static_cast<unsigned __int64>( abs( previousLuma - currentLuma ) );
-            sampleCount++;
-        }
-    }
-
-    if( sampleCount < 250 )
-    {
-        return false;
-    }
-
-    score = totalDiff / sampleCount;
-    return true;
-}
-
-static int EstimateVerticalStepFromOverlap( const std::vector<BYTE>& previousPixels,
-                                            const std::vector<BYTE>& currentPixels,
-                                            int frameWidth,
-                                            int frameHeight,
-                                            int predictedStepY )
-{
-    if( previousPixels.size() != currentPixels.size() || frameWidth <= 0 || frameHeight <= 0 || predictedStepY == 0 )
-    {
-        return predictedStepY;
-    }
-
-    const int sign = ( predictedStepY > 0 ) ? 1 : -1;
-    const int predictedAbs = abs( predictedStepY );
-    const int minStep = max( 6, predictedAbs - max( 12, predictedAbs / 3 ) );
-    const int maxStep = min( frameHeight - 6, predictedAbs + max( 12, predictedAbs / 3 ) );
-    if( minStep >= maxStep )
-    {
-        return predictedStepY;
-    }
-
-    const int rowStride = frameWidth * 4;
-    unsigned __int64 bestScore = (std::numeric_limits<unsigned __int64>::max)();
-    int bestAbsStep = predictedAbs;
-
-    for( int stepAbs = minStep; stepAbs <= maxStep; ++stepAbs )
-    {
-        const int overlap = frameHeight - stepAbs;
-        if( overlap < frameHeight / 3 )
-        {
-            continue;
-        }
-
-        unsigned __int64 totalDiff = 0;
-        unsigned __int64 sampleCount = 0;
-        for( int y = 0; y < overlap; y += 2 )
-        {
-            const int previousY = ( sign > 0 ) ? ( y + stepAbs ) : y;
-            const int currentY = ( sign > 0 ) ? y : ( y + stepAbs );
-            const int previousRow = previousY * rowStride;
-            const int currentRow = currentY * rowStride;
-            for( int x = 0; x < frameWidth; x += 8 )
-            {
-                const int previousIndex = previousRow + x * 4;
-                const int currentIndex = currentRow + x * 4;
-                const int previousLuma = ( previousPixels[previousIndex + 2] * 77 +
-                                           previousPixels[previousIndex + 1] * 150 +
-                                           previousPixels[previousIndex + 0] * 29 ) >> 8;
-                const int currentLuma = ( currentPixels[currentIndex + 2] * 77 +
-                                          currentPixels[currentIndex + 1] * 150 +
-                                          currentPixels[currentIndex + 0] * 29 ) >> 8;
-                totalDiff += static_cast<unsigned __int64>( abs( previousLuma - currentLuma ) );
-                sampleCount++;
-            }
-        }
-
-        if( sampleCount == 0 )
-        {
-            continue;
-        }
-
-        const unsigned __int64 score = totalDiff / sampleCount;
-        if( score < bestScore )
-        {
-            bestScore = score;
-            bestAbsStep = stepAbs;
-        }
-    }
-
-    return sign * bestAbsStep;
 }
 
 static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
@@ -1570,6 +1373,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, std::fun
             origin.y = -origin.y;
         }
 
+        for( POINT& step : composedFrameSteps )
+        {
+            step.y = -step.y;
+        }
+
         minX = 0;
         minY = 0;
         maxX = frameWidth;
@@ -1867,7 +1675,6 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 #endif
 
     size_t duplicateFrameCount = 0;
-    size_t unstableFrameCount = 0;
     size_t captureIteration = 0;
 
     while( !g_PanoramaStopRequested )
@@ -1927,11 +1734,10 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         }
     }
 
-    OutputDebug( L"[Panorama/Capture] Loop exited stopRequested=%d frames=%zu duplicates=%zu unstable=%zu iterations=%zu\n",
+    OutputDebug( L"[Panorama/Capture] Loop exited stopRequested=%d frames=%zu duplicates=%zu iterations=%zu\n",
                  g_PanoramaStopRequested ? 1 : 0,
                  frames.size(),
                  duplicateFrameCount,
-                 unstableFrameCount,
                  captureIteration );
 
 #ifdef _DEBUG
@@ -1939,10 +1745,9 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     {
         wchar_t statsText[256]{};
         swprintf_s( statsText,
-                    L"framesAccepted=%zu\nduplicates=%zu\nunstable=%zu\niterations=%zu\nstopRequested=%d\n",
+                    L"framesAccepted=%zu\nduplicates=%zu\niterations=%zu\nstopRequested=%d\n",
                     frames.size(),
                     duplicateFrameCount,
-                    unstableFrameCount,
                     captureIteration,
                     g_PanoramaStopRequested ? 1 : 0 );
         DumpPanoramaText( debugDumpDirectory, L"capture_stats.txt", statsText );
