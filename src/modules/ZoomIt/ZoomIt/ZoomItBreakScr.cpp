@@ -162,6 +162,9 @@ LRESULT WINAPI ScreenSaverProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
         DbgPrint( L"[BreakScr] BreakTimer_Init OK, active=%d\n", g_State.active );
 
+        // Prevent the monitor from blanking due to power management.
+        SetThreadExecutionState( ES_CONTINUOUS | ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED );
+
         // Kick off the first tick and start the 1-second timer.
         SendMessage( hWnd, WM_TIMER, 1, 0 );
         SetTimer( hWnd, 1, 1000, NULL );
@@ -209,6 +212,7 @@ LRESULT WINAPI ScreenSaverProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_DESTROY:
         DbgPrint( L"[BreakScr] WM_DESTROY\n" );
+        SetThreadExecutionState( ES_CONTINUOUS );  // Restore default power behavior
         KillTimer( hWnd, 1 );
         BreakTimer_Cleanup( &g_State, TRUE );
         Gdiplus::GdiplusShutdown( g_GdiplusToken );
