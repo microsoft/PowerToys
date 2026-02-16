@@ -24,7 +24,7 @@ namespace RunnerV2.Helpers
         {
             if (SettingsUtils.Default.GetSettings<GeneralSettings>().ShowThemeAdaptiveTrayIcon)
             {
-                return Icon.ExtractAssociatedIcon(ThemeHelper.GetCurrentSystemTheme() ? "./Assets/PowerToysDark.ico" : "./Assets/PowerToysLight.ico")!.Handle;
+                return Icon.ExtractAssociatedIcon(ThemeHelper.GetCurrentSystemTheme() ? "./Assets/Runner/PowerToysDark.ico" : "./Assets/Runner/PowerToysLight.ico")!.Handle;
             }
             else
             {
