@@ -96,6 +96,10 @@ See [Debugging](development/debugging.md) for detailed debugging techniques, inc
 
 See [Creating a New PowerToy](development/new-powertoy.md) for an end-to-end guide covering module architecture, settings integration, installer packaging, and testing.
 
+### Building Command Palette Extensions
+
+If you want to build your own extensions for Command Palette, check out the [Command Palette extensibility documentation](https://aka.ms/building-cmppal-extensions). It covers how to create, package, and distribute custom extensions that integrate with Command Palette.
+
 ## Development Guidelines
 
 - [Coding Guidelines](development/guidelines.md) - Development guidelines and best practices
