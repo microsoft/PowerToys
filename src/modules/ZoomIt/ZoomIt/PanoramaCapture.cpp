@@ -197,9 +197,11 @@ public:
             SetWindowPos( m_hProgress, nullptr, 0, 0, 0, 0,
                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED );
 
+            // Disable visual styles so PBM_SETBARCOLOR is honored
+            SetWindowTheme( m_hProgress, L"", L"" );
+            SendMessage( m_hProgress, PBM_SETBARCOLOR, 0, static_cast<LPARAM>( RGB( 0x00, 0x78, 0xD4 ) ) );
             if( darkMode )
             {
-                SendMessage( m_hProgress, PBM_SETBARCOLOR, 0, static_cast<LPARAM>( DarkMode::AccentColor ) );
                 SendMessage( m_hProgress, PBM_SETBKCOLOR, 0, static_cast<LPARAM>( DarkMode::SurfaceColor ) );
             }
         }
@@ -1304,7 +1306,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, std::fun
 
     for( size_t i = 1; i < frames.size(); i++ )
     {
-        reportProgress( 5 + static_cast<int>( i * 65 / frames.size() ) );
+        reportProgress( 5 + static_cast<int>( i * 85 / frames.size() ) );
 
         int dx = expectedDx;
         int dy = expectedDy;
@@ -1416,7 +1418,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, std::fun
 
     for( size_t i = 0; i < composedFrameIndices.size(); ++i )
     {
-        reportProgress( 70 + static_cast<int>( ( i + 1 ) * 25 / composedFrameIndices.size() ) );
+        reportProgress( 90 + static_cast<int>( ( i + 1 ) * 9 / composedFrameIndices.size() ) );
 
         const size_t frameIndex = composedFrameIndices[i];
         const POINT& currentOrigin = composedFrameOrigins[i];
