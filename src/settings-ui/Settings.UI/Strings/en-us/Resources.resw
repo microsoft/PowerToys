@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -151,10 +151,6 @@
     <value>Customize the shortcut to bring up the command bar</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
-  <data name="Shell_DebugLabel.Text" xml:space="preserve">
-    <value>Debug</value>
-    <comment>Debug label visible in title bar when debugging</comment>
-  </data>
   <data name="Shell_SearchBox.PlaceholderText" xml:space="preserve">
     <value>Search for settings</value>
     <comment>Placeholder in settings search box</comment>
@@ -162,10 +158,6 @@
   <data name="Shell_Search_NoResults" xml:space="preserve">
     <value>No results for</value>
     <comment>Prefix used in the no-results row; the query is appended in code, e.g., "No results for 'abc'"</comment>
-  </data>
-  <data name="Shell_Search_ShowAll" xml:space="preserve">
-    <value>Show all results</value>
-    <comment>Tail item text to navigate to full results</comment>
   </data>
   <data name="MeasureTool_DefaultMeasureStyle.Header" xml:space="preserve">
     <value>Default mode</value>
@@ -250,7 +242,7 @@
     <value>Security key</value>
   </data>
   <data name="MouseWithoutBorders_SecurityKey.Description" xml:space="preserve">
-    <value>To set up, generate the key on one machine, and enter it manually on other machines.</value>
+    <value>To set up, generate the key on one machine, and enter it manually on other machines</value>
   </data>
   <data name="MouseWithoutBorders_NewKey.Content" xml:space="preserve">
     <value>New key</value>
@@ -262,7 +254,7 @@
     <value>Refresh connections</value>
   </data>
   <data name="MouseWithoutBorders_ReconnectTooltip.Text" xml:space="preserve">
-    <value>Reestablishes connections with other devices if you are experiencing issues.</value>
+    <value>Reestablishes connections with other devices if issues occur</value>
   </data>
   <data name="MouseWithoutBorders_ThisMachineNameLabel.Header" xml:space="preserve">
     <value>Host name of this device</value>
@@ -274,7 +266,7 @@
     <value>Uninstall service</value>
   </data>
   <data name="MouseWithoutBorders_UninstallService.Description" xml:space="preserve">
-    <value>Removes the service from the computer. Needs to run as administrator.</value>
+    <value>Removes the service from the computer; administrator access is required</value>
   </data>
   <data name="MouseWithoutBorders_Settings.Header" xml:space="preserve">
     <value>Behavior</value>
@@ -287,7 +279,7 @@
     <comment>"Mouse Without Borders" is a product name</comment>
   </data>
   <data name="MouseWithoutBorders_AddFirewallRuleButtonControl.Description" xml:space="preserve">
-    <value>Adding a firewall rule might help solve connection issues.</value>
+    <value>Adding a firewall rule might help solve connection issues</value>
   </data>
   <data name="MouseWithoutBorders_RunAsAdminText.Title" xml:space="preserve">
     <value>This setting can only be changed when running as administrator</value>
@@ -317,31 +309,31 @@
     <value>Use Service</value>
   </data>
   <data name="MouseWithoutBorders_UseService.Description" xml:space="preserve">
-    <value>Runs in service mode, that allows MWB to control remote machines when they're locked. Also allows control of system and administrator applications.</value>
+    <value>Runs in service mode, allowing MWB to control locked remote machines and system or administrator applications</value>
   </data>
   <data name="MouseWithoutBorders_MatrixOneRow.Header" xml:space="preserve">
     <value>Devices in a single row</value>
   </data>
   <data name="MouseWithoutBorders_MatrixOneRow.Description" xml:space="preserve">
-    <value>Sets whether the devices are aligned on a single row. A two by two matrix is considered otherwise.</value>
+    <value>Sets whether the devices are aligned on a single row. A two by two matrix is considered otherwise</value>
   </data>
-  <data name="MouseWithoutBorders_WrapMouse.Header" xml:space="preserve">
-    <value>Wrap mouse</value>
-  </data>
-  <data name="MouseWithoutBorders_WrapMouse.Description" xml:space="preserve">
-    <value>Move control back to the first machine when mouse moves past the last one.</value>
+  <data name="MouseWithoutBorders_WrapMouse.Content" xml:space="preserve">
+    <value>Move the mouse back to the first machine when it passes the last one</value>
   </data>
   <data name="MouseWithoutBorders_ShareClipboard.Header" xml:space="preserve">
     <value>Share clipboard</value>
   </data>
-  <data name="MouseWithoutBorders_TransferFile.Header" xml:space="preserve">
-    <value>Transfer file</value>
+  <data name="MouseWithoutBorders_TransferFile.Content" xml:space="preserve">
+    <value>Transfer copied files to the remote machine’s clipboard (up to 100 MB)</value>
   </data>
   <data name="MouseWithoutBorders_HideMouseAtScreenEdge.Header" xml:space="preserve">
     <value>Hide mouse at the screen edge</value>
   </data>
   <data name="MouseWithoutBorders_DrawMouseCursor.Header" xml:space="preserve">
     <value>Draw mouse cursor</value>
+  </data>
+  <data name="MouseWithoutBorders_MouseBehavior.Header" xml:space="preserve">
+    <value>Mouse behavior</value>
   </data>
   <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Header" xml:space="preserve">
     <value>Validate remote machine IP</value>
@@ -355,8 +347,8 @@
   <data name="MouseWithoutBorders_MoveMouseRelatively.Header" xml:space="preserve">
     <value>Move mouse relatively</value>
   </data>
-  <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Header" xml:space="preserve">
-    <value>Block mouse at screen corners</value>
+  <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Content" xml:space="preserve">
+    <value>Block mouse at screen corners to avoid accident machine-switch at screen corners</value>
   </data>
   <data name="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages.Header" xml:space="preserve">
     <value>Show clipboard and network status messages</value>
@@ -365,22 +357,19 @@
     <value>Show the original Mouse Without Borders UI</value>
   </data>
   <data name="MouseWithoutBorders_ShowOriginalUI.Description" xml:space="preserve">
-    <value>This is accessible from the system tray and requires a restart.</value>
+    <value>This is accessible from the system tray and requires a restart</value>
   </data>
   <data name="MouseWithoutBorders_ShareClipboard.Description" xml:space="preserve">
-    <value>If share clipboard stops working, Ctrl+Alt+Del then Esc may solve the problem.</value>
-  </data>
-  <data name="MouseWithoutBorders_TransferFile.Description" xml:space="preserve">
-    <value>If a file (&lt;100MB) is copied, it will be transferred to the remote machine clipboard.</value>
+    <value>If share clipboard stops working, Ctrl+Alt+Del then Esc may solve the problem</value>
   </data>
   <data name="MouseWithoutBorders_HideMouseAtScreenEdge.Description" xml:space="preserve">
-    <value>Hide the mouse cursor at the top edge of the screen when switching to other machine. This option also steals the focus from any full-screen app to ensure the keyboard input is redirected.</value>
+    <value>Hide the cursor at the top edge when switching to another machine, and take focus from full-screen apps to ensure keyboard input is redirected</value>
   </data>
   <data name="MouseWithoutBorders_DrawMouseCursor.Description" xml:space="preserve">
-    <value>The mouse cursor may not appear on Windows 10 and later if no physical mouse is connected.</value>
+    <value>The mouse cursor may not appear on Windows 10 and later if no physical mouse is connected</value>
   </data>
   <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Description" xml:space="preserve">
-    <value>Reverse DNS lookup to validate machine IP Address.</value>
+    <value>Reverse DNS lookup to validate machine IP address</value>
   </data>
   <data name="MouseWithoutBorders_SameSubnetOnly.Description" xml:space="preserve">
     <value>Only connect to machines in the same intranet NNN.NNN.*.* (only works when both machines have IPv4 enabled)</value>
@@ -393,16 +382,13 @@
     <value>IP address mapping</value>
   </data>
   <data name="MouseWithoutBorders_IPAddressMapping.Description" xml:space="preserve">
-    <value>Resolve machine's IP address using manually entered mappings below.</value>
+    <value>Resolve machine's IP address using manually entered mappings below</value>
   </data>
   <data name="MouseWithoutBorders_BlockScreenSaverOnOtherMachines.Description" xml:space="preserve">
-    <value>Prevent screen saver from starting on other machines when user is actively working on this machine.</value>
+    <value>Prevent screen saver from starting on other machines when user is actively working on this machine</value>
   </data>
   <data name="MouseWithoutBorders_MoveMouseRelatively.Description" xml:space="preserve">
-    <value>Use this option when remote machine's monitor settings are different, or remote machine has multiple monitors.</value>
-  </data>
-  <data name="MouseWithoutBorders_BlockMouseAtScreenCorners.Description" xml:space="preserve">
-    <value>To avoid accident machine-switch at screen corners.</value>
+    <value>Use this option when remote machine's monitor settings are different, or remote machine has multiple monitors</value>
   </data>
   <data name="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages.Description" xml:space="preserve">
     <value>Show clipboard activities and network status in system tray notifications</value>
@@ -412,16 +398,16 @@
     <comment>keyboard is the hardware peripheral</comment>
   </data>
   <data name="MouseWithoutBorders_AdvancedSettings_Group.Header" xml:space="preserve">
-    <value>Advanced Settings</value>
+    <value>Advanced settings</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseSettings_Group.Header" xml:space="preserve">
     <value>Easy Mouse</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
-    <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
+    <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Description" xml:space="preserve">
-    <value>Can also be set to move only when pressing Shift or Ctrl.</value>
+    <value>Can also be set to move only when pressing Shift or Ctrl</value>
     <comment>Shift and Ctrl are the keyboard keys</comment>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption_Disabled.Content" xml:space="preserve">
@@ -439,13 +425,13 @@
     <comment>This is the Shift keyboard key</comment>
   </data>
   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Header" xml:space="preserve">
-    <value>Disable Easy Mouse when an application is running in full screen.</value>
+    <value>Disable Easy Mouse when an application is running in full screen</value>
   </data>
   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Description" xml:space="preserve">
-    <value>Prevent Easy Mouse from moving to another machine when an application is in full-screen mode.</value>
+    <value>Prevent Easy Mouse from moving to another machine when an application is in full-screen mode</value>
   </data>
   <data name="MouseWithoutBorders_CanOnlyStopEasyMouseIfMovingFromHostMachine.Title" xml:space="preserve">
-    <value>Disabling Easy Mouse in full-screen mode only affects the host PC. It won’t stop the mouse from moving away from remote machines.</value>
+    <value>Disabling Easy Mouse in full-screen mode only affects the host PC and does not prevent the mouse from moving away from remote machines</value>
   </data>
   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>msedge.exe
@@ -460,27 +446,30 @@ opera.exe</value>
     <value>Allow Easy Mouse to move between machines even if one of these applications is running in full screen, separate each executable with a new line.</value>
   </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
-    <value>Shortcut to lock all machines.</value>
+    <value>Lock all machines</value>
   </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut.Description" xml:space="preserve">
-    <value>Hit this hotkey twice to lock all machines. Note: Only the machines which have the same shortcut configured will be locked.</value>
+    <value>Press this hotkey twice to lock all machines, noting that only machines with the same shortcut configured will be locked</value>
+  </data>
+  <data name="MouseWithoutBorders_Shortcuts.Header" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+  <data name="MouseWithoutBorders_Shortcuts.Description" xml:space="preserve">
+    <value>Configure shortcuts to quickly control features</value>
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Header" xml:space="preserve">
-    <value>Shortcut to toggle Easy Mouse.</value>
+    <value>Turn Easy Mouse on or off</value>
     <comment>Ctrl and Alt are the keyboard keys</comment>
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouseShortcut.Description" xml:space="preserve">
-    <value>Only works if EasyMouse is set to Enabled or Disabled.</value>
-  </data>
-  <data name="MouseWithoutBorders_ToggleEasyMouseShortcut_Disabled.Content" xml:space="preserve">
-    <value>Disabled</value>
+    <value>Only works if EasyMouse is set to Enabled or Disabled</value>
   </data>
   <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut.Header" xml:space="preserve">
-    <value>Shortcut to switch between machines. Ctrl+Alt+:</value>
+    <value>Switching between machines</value>
     <comment>Ctrl and Alt are the keyboard keys</comment>
   </data>
   <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut.Description" xml:space="preserve">
-    <value>Click on Ctrl+Alt+ the chosen option to switch between machines.</value>
+    <value> Ctrl+Alt+:</value>
     <comment>Ctrl and Alt are the keyboard keys</comment>
   </data>
   <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut_F1.Content" xml:space="preserve">
@@ -491,33 +480,11 @@ opera.exe</value>
     <value>1, 2, 3, 4</value>
     <comment>Don't localize. These are keyboard keys</comment>
   </data>
-  <data name="MouseWithoutBorders_SwitchBetweenMachineShortcut_Disabled.Content" xml:space="preserve">
-    <value>Disabled</value>
-  </data>
-  <data name="MouseWithoutBorders_LockMachinesShortcut_Disabled.Content" xml:space="preserve">
-    <value>Disabled</value>
-  </data>
   <data name="MouseWithoutBorders_ReconnectShortcut.Header" xml:space="preserve">
-    <value>Shortcut to try reconnecting</value>
-  </data>
-  <data name="MouseWithoutBorders_ReconnectShortcut.Description" xml:space="preserve">
-    <value>Just in case the connection is lost for any reason.</value>
-  </data>
-  <data name="MouseWithoutBorders_ReconnectShortcut_Disabled.Content" xml:space="preserve">
-    <value>Disabled</value>
+    <value>Try reconnecting when connection is lost</value>
   </data>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut.Header" xml:space="preserve">
-    <value>Shortcut to switch to multiple machine mode.</value>
-  </data>
-  <data name="MouseWithoutBorders_Switch2AllPcShortcut.Description" xml:space="preserve">
-    <value>Allows controlling all computers at once.</value>
-  </data>
-  <data name="MouseWithoutBorders_Switch2AllPcShortcut_Disabled.Content" xml:space="preserve">
-    <value>Disabled</value>
-  </data>
-  <data name="MouseWithoutBorders_Switch2AllPcShortcut_Ctrl3.Content" xml:space="preserve">
-    <value>Ctrl three times</value>
-    <comment>This is the Ctrl keyboard key</comment>
+    <value>Control all computes are once</value>
   </data>
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
@@ -555,6 +522,10 @@ opera.exe</value>
     <value>Color Picker</value>
     <comment>Product name: Navigation view item name for Color Picker</comment>
   </data>
+  <data name="Shell_PowerDisplay.Content" xml:space="preserve">
+    <value>Power Display</value>
+    <comment>Product name: Navigation view item name for Power Display</comment>
+  </data>
   <data name="Shell_KeyboardManager.Content" xml:space="preserve">
     <value>Keyboard Manager</value>
     <comment>Product name: Navigation view item name for Keyboard Manager</comment>
@@ -575,10 +546,6 @@ opera.exe</value>
     <value>Navigation opened</value>
     <comment>Accessibility announcement when the navigation pane opens</comment>
   </data>
-  <data name="KeyboardManager_ConfigHeader.Text" xml:space="preserve">
-    <value>Current configuration</value>
-    <comment>Keyboard Manager current configuration header</comment>
-  </data>
   <data name="KeyboardManager.ModuleDescription" xml:space="preserve">
     <value>Reconfigure your keyboard by remapping keys and shortcuts</value>
     <comment>Keyboard Manager page description</comment>
@@ -586,10 +553,6 @@ opera.exe</value>
   <data name="KeyboardManager_EnableToggle.Header" xml:space="preserve">
     <value>Keyboard Manager</value>
     <comment>Keyboard Manager enable toggle header. Do not loc the Product name. Do you want this feature on / off</comment>
-  </data>
-  <data name="KeyboardManager_ProfileDescription.Text" xml:space="preserve">
-    <value>Select the profile to display the active key remap and shortcuts</value>
-    <comment>Keyboard Manager configuration dropdown description</comment>
   </data>
   <data name="KeyboardManager_RemapKeyboardButton.Header" xml:space="preserve">
     <value>Remap a key</value>
@@ -611,32 +574,11 @@ opera.exe</value>
     <value>All Apps</value>
     <comment>Should be the same as EditShortcuts_AllApps from keyboard manager editor</comment>
   </data>
-  <data name="Shortcuts.Header" xml:space="preserve">
-    <value>Shortcuts</value>
-  </data>
   <data name="Shortcut.Header" xml:space="preserve">
     <value>Shortcut</value>
   </data>
-  <data name="AdvancedPaste_EnableAIButton.Content" xml:space="preserve">
-    <value>Enable</value>
-  </data>
-  <data name="AdvancedPaste_DisableAIButton.Content" xml:space="preserve">
-    <value>Disable</value>
-  </data>
   <data name="AdvancedPaste_EnableAISettingsCard.Header" xml:space="preserve">
     <value>Paste with AI</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialogMarkdown.Text" xml:space="preserve">
-    <value>## Preview Terms
-
-Please review the placeholder content that represents the final terms and usage guidance for Advanced Paste.
-
-1. This is sample information.
-2. Real policy content will be provided later.
-3. Continue only if you are comfortable with the above.</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialogAcceptanceCheckBox.Content" xml:space="preserve">
-    <value>I have read and accept the information above.</value>
   </data>
   <data name="AdvancedPaste_EnablePasteAIModerationToggle.Header" xml:space="preserve">
     <value>OpenAI content moderation</value>
@@ -732,17 +674,6 @@ Please review the placeholder content that represents the final terms and usage 
   </data>
   <data name="KeyboardManager_RemappedTo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remapped to</value>
-  </data>
-  <data name="KeyboardManager_ShortcutRemappedTo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Remapped to</value>
-  </data>
-  <data name="KeyboardManager_TargetApp.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>For target application</value>
-    <comment>What computer application would this be for</comment>
-  </data>
-  <data name="KeyboardManager_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Keyboard Manager</value>
-    <comment>do not loc, product name</comment>
   </data>
   <data name="ColorPicker.ModuleDescription" xml:space="preserve">
     <value>Quick and simple system-wide color picker.</value>
@@ -859,21 +790,6 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="PowerLauncher_SlowSearchInputDelayMs.Description" xml:space="preserve">
     <value>Affects the plugins that execute in the background by this amount. Recommended: 100-150 ms.</value>
   </data>
-  <data name="PowerLauncher_SearchInputDelayMs.Header" xml:space="preserve">
-    <value>Fast plugin throttle (ms)</value>
-    <comment>ms = milliseconds</comment>
-  </data>
-  <data name="KeyboardManager_KeysMappingLayoutRightHeader.Text" xml:space="preserve">
-    <value>To:</value>
-    <comment>Keyboard Manager mapping keys view right header</comment>
-  </data>
-  <data name="Appearance_GroupSettings.Text" xml:space="preserve">
-    <value>Appearance</value>
-  </data>
-  <data name="Fancyzones_ImageHyperlinkToDocs.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>FancyZones windows</value>
-    <comment>{Locked="FancyZones"}</comment>
-  </data>
   <data name="FancyZones.ModuleDescription" xml:space="preserve">
     <value>Create window layouts to help make multi-tasking easy.</value>
     <comment>windows refers to application windows</comment>
@@ -895,10 +811,6 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="FancyZones_HighlightOpacity.Header" xml:space="preserve">
     <value>Opacity (%)</value>
   </data>
-  <data name="FancyZones_HotkeyEditorControl.Header" xml:space="preserve">
-    <value>Open layout editor</value>
-    <comment>Shortcut to launch the FancyZones layout editor application</comment>
-  </data>
   <data name="FancyZones_WindowSwitching_GroupSettings.Header" xml:space="preserve">
     <value>Switch between windows in the current zone</value>
   </data>
@@ -907,12 +819,6 @@ Please review the placeholder content that represents the final terms and usage 
   </data>
   <data name="FancyZones_HotkeyPrevTabControl.Header" xml:space="preserve">
     <value>Previous window</value>
-  </data>
-  <data name="SettingsPage_SetShortcut.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Shortcut setting</value>
-  </data>
-  <data name="SettingsPage_SetShortcut_Glyph.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Information Symbol</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Header" xml:space="preserve">
     <value>Open layout editor</value>
@@ -987,10 +893,6 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="FancyZones_ZoneSetChangeMoveWindows.Content" xml:space="preserve">
     <value>During zone layout changes, windows assigned to a zone will match new size/positions</value>
   </data>
-  <data name="AttributionTitle.Text" xml:space="preserve">
-    <value>Attribution</value>
-    <comment>giving credit to the projects this utility was based on</comment>
-  </data>
   <data name="General.ModuleTitle" xml:space="preserve">
     <value>General</value>
   </data>
@@ -1017,9 +919,6 @@ Please review the placeholder content that represents the final terms and usage 
   </data>
   <data name="General_SettingsBackupAndRestore_ButtonSelectLocation.Text" xml:space="preserve">
     <value>Select folder</value>
-  </data>
-  <data name="GeneralPage_UpdateNow.Content" xml:space="preserve">
-    <value>Update now</value>
   </data>
   <data name="GeneralPage_PrivacyStatement_URL.Text" xml:space="preserve">
     <value>Privacy statement</value>
@@ -1055,9 +954,6 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="PowerRename_Toggle_Enable.Header" xml:space="preserve">
     <value>PowerRename</value>
     <comment>do not loc the Product name.  Do you want this feature on / off</comment>
-  </data>
-  <data name="RadioButtons_Name_Theme.Text" xml:space="preserve">
-    <value>Settings theme</value>
   </data>
   <data name="PowerRename_Toggle_HideIcon.Content" xml:space="preserve">
     <value>Hide icon in context menu</value>
@@ -1273,9 +1169,6 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="ImagesSizesListView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Image Size</value>
   </data>
-  <data name="ImageResizer_Configurations.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Configurations</value>
-  </data>
   <data name="ImageResizer_Name.Header" xml:space="preserve">
     <value>Name</value>
   </data>
@@ -1294,14 +1187,8 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="RemoveItem.Text" xml:space="preserve">
     <value>Delete</value>
   </data>
-  <data name="ImageResizer_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Image Resizer</value>
-  </data>
   <data name="ImageResizer_AddSizeButton.Content" xml:space="preserve">
     <value>Add new size</value>
-  </data>
-  <data name="ImageResizer_SaveSizeButton.Label" xml:space="preserve">
-    <value>Save sizes</value>
   </data>
   <data name="ImageResizer_Encoding.Header" xml:space="preserve">
     <value>JPEG quality level (%)</value>
@@ -1380,10 +1267,6 @@ Please review the placeholder content that represents the final terms and usage 
     <value>Fill</value>
     <comment>Refers to filling an image into a certain size. It could overflow</comment>
   </data>
-  <data name="ImageResizer_Sizes_Fit_Fill_ThirdPersonSingular.Text" xml:space="preserve">
-    <value>Fill</value>
-    <comment>Refers to filling an image into a certain size. It could overflow</comment>
-  </data>
   <data name="ImageResizer_Sizes_Fit_Fit.Content" xml:space="preserve">
     <value>Fit</value>
     <comment>Refers to fitting an image into a certain size. It won't overflow</comment>
@@ -1419,9 +1302,6 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="GeneralPage_AutoDownloadAndInstallUpdates.Description" xml:space="preserve">
     <value>Except on metered connections</value>
   </data>
-  <data name="GeneralPage_ToggleSwitch_RunningAsAdminNote.Text" xml:space="preserve">
-    <value>Currently running as administrator</value>
-  </data>
   <data name="GeneralSettings_AlwaysRunAsAdminText.Header" xml:space="preserve">
     <value>Always run as administrator</value>
   </data>
@@ -1441,10 +1321,6 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="FileExplorerPreview.ModuleTitle" xml:space="preserve">
     <value>File Explorer</value>
   </data>
-  <data name="FileExplorerPreview_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>File Explorer</value>
-    <comment>Use same translation as Windows does for File Explorer</comment>
-  </data>
   <data name="ImageResizer.ModuleTitle" xml:space="preserve">
     <value>Image Resizer</value>
   </data>
@@ -1457,21 +1333,11 @@ Please review the placeholder content that represents the final terms and usage 
   <data name="PowerLauncher.ModuleTitle" xml:space="preserve">
     <value>PowerToys Run</value>
   </data>
-  <data name="PowerToys_Run_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>PowerToys Run</value>
-  </data>
   <data name="PowerRename.ModuleTitle" xml:space="preserve">
     <value>PowerRename</value>
     <comment>do not loc the product name</comment>
   </data>
-  <data name="PowerRename_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>PowerRename</value>
-    <comment>do not loc</comment>
-  </data>
   <data name="ShortcutGuide.ModuleTitle" xml:space="preserve">
-    <value>Shortcut Guide</value>
-  </data>
-  <data name="Shortcut_Guide_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Guide</value>
   </data>
   <data name="General_Repository.Text" xml:space="preserve">
@@ -1497,9 +1363,6 @@ Please review the placeholder content that represents the final terms and usage 
   </data>
   <data name="General_VersionAndUpdate.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Version and updates</value>
-  </data>
-  <data name="Admin_mode.Header" xml:space="preserve">
-    <value>Administrator mode</value>
   </data>
   <data name="FancyZones_RestoreSize.Content" xml:space="preserve">
     <value>Restore the original size of windows when unsnapping</value>
@@ -1563,16 +1426,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ImageResizer_Formatting_Sizename.Text" xml:space="preserve">
     <value>Size name</value>
   </data>
-  <data name="FancyZones_MoveWindowsBasedOnPositionCheckBoxControl.Content" xml:space="preserve">
-    <value>Move windows based on their position</value>
-    <comment>Windows refers to application windows</comment>
-  </data>
-  <data name="GeneralSettings_NewVersionIsAvailable" xml:space="preserve">
-    <value>New update available</value>
-  </data>
-  <data name="GeneralSettings_VersionIsLatest" xml:space="preserve">
-    <value>PowerToys is up to date.</value>
-  </data>
   <data name="FileExplorerPreview_IconThumbnail_GroupSettings.Header" xml:space="preserve">
     <value>Thumbnail icon Preview</value>
   </data>
@@ -1585,9 +1438,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FileExplorerPreview_PreviewPane.Description" xml:space="preserve">
     <value>Select the file types which must be rendered in the Preview Pane. Ensure that Preview Pane is open by toggling the view with Alt + P in File Explorer.</value>
     <comment>Preview Pane and File Explorer are app/feature names in Windows. 'Alt + P' is a shortcut</comment>
-  </data>
-  <data name="FileExplorerPreview_RunAsAdminRequired.Title" xml:space="preserve">
-    <value>This setting can only be changed when running as administrator</value>
   </data>
   <data name="FileExplorerPreview_RebootRequired.Title" xml:space="preserve">
     <value>A reboot may be required for changes to these settings to take effect</value>
@@ -1726,9 +1576,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="PowerRename_AvifExtension_Installed.Text" xml:space="preserve">
     <value>Installed</value>
-  </data>
-  <data name="MadeWithOssLove.Text" xml:space="preserve">
-    <value>Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="ColorPicker_ColorFormats.Header" xml:space="preserve">
     <value>Color formats</value>
@@ -1973,9 +1820,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PowerLauncher_EnablePluginToggle.OffContent" xml:space="preserve">
     <value>Off</value>
   </data>
-  <data name="Run_AdditionalOptions.Text" xml:space="preserve">
-    <value>Additional options</value>
-  </data>
   <data name="Run_NotAccessibleWarning.Title" xml:space="preserve">
     <value>Please define an activation command or allow this plugin to be used in the global results.</value>
   </data>
@@ -2014,12 +1858,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Run_PluginsLoading.Text" xml:space="preserve">
     <value>Plugins are loading...</value>
   </data>
-  <data name="ColorPicker_ButtonDown.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Move the color down</value>
-  </data>
-  <data name="ColorPicker_ButtonUp.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Move the color up</value>
-  </data>
   <data name="FancyZones_FlashZonesOnQuickSwitch.Content" xml:space="preserve">
     <value>Flash zones when switching layout</value>
   </data>
@@ -2032,14 +1870,17 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FancyZones_QuickLayoutSwitch.Description" xml:space="preserve">
     <value>Layout-specific shortcuts can be configured in the editor</value>
   </data>
-  <data name="FancyZones_QuickLayoutSwitch_GroupSettings.Text" xml:space="preserve">
-    <value>Quick layout switch</value>
-  </data>
   <data name="Activation_Shortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
   <data name="Activation_Shortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to activate this module</value>
+  </data>
+  <data name="KeyboardManager_Toggle_Shortcut.Header" xml:space="preserve">
+    <value>Toggle shortcut</value>
+  </data>
+  <data name="KeyboardManager_Toggle_Shortcut.Description" xml:space="preserve">
+    <value>Use a shortcut to toggle this module on or off (note that the Settings UI will not update)</value>
   </data>
   <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
     <value>Paste as plain text directly</value>
@@ -2091,9 +1932,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PasteAsJson_Shortcut.Header" xml:space="preserve">
     <value>Paste as JSON directly</value>
   </data>
-  <data name="PasteAsCustom_Shortcut.Header" xml:space="preserve">
-    <value>Paste as Custom with AI directly</value>
-  </data>
   <data name="ImageToText.Header" xml:space="preserve">
     <value>Image to text</value>
   </data>
@@ -2118,29 +1956,8 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="TranscodeToMp4.Header" xml:space="preserve">
     <value>Transcode to .mp4 (H.264/AAC)</value>
   </data>
-  <data name="EnableAIDialog_SaveBtnText" xml:space="preserve">
-    <value>Save</value>
-  </data>
-  <data name="EnableAIDialog_CancelBtnText" xml:space="preserve">
-    <value>Cancel</value>
-  </data>
-  <data name="Oobe_GetStarted.Text" xml:space="preserve">
-    <value>Let's get started!</value>
-  </data>
-  <data name="Oobe_PowerToysDescription.Text" xml:space="preserve">
-    <value>Welcome to PowerToys! These overviews will help you quickly learn the basics of all our utilities.</value>
-  </data>
-  <data name="Oobe_GettingStarted.Text" xml:space="preserve">
-    <value>Getting started</value>
-  </data>
-  <data name="Oobe_Launch.Text" xml:space="preserve">
-    <value>Launch</value>
-  </data>
   <data name="Launch_ColorPicker.Content" xml:space="preserve">
     <value>Open Color Picker</value>
-  </data>
-  <data name="Oobe_LearnMore.Text" xml:space="preserve">
-    <value>Learn more about</value>
   </data>
   <data name="Oobe_ColorPicker.Description" xml:space="preserve">
     <value>Color Picker is a system-wide color selection tool for Windows that enables you to pick colors from any currently running application and automatically copies it in a configurable format to your clipboard.</value>
@@ -2200,50 +2017,11 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   <data name="Oobe_Overview_Hotkey_Conflict_Title.Text" xml:space="preserve">
     <value>Shortcut conflict detection</value>
   </data>
-  <data name="Oobe_Overview_Hotkey_Conflict_Card.Text" xml:space="preserve">
-    <value>Shortcuts configured by PowerToys are conflicting.</value>
-  </data>
   <data name="Oobe_Overview_Hotkey_Conflict_Card_Description.Header" xml:space="preserve">
     <value>Shortcuts configured by PowerToys are conflicting</value>
   </data>
-  <data name="Oobe_Overview_Hotkey_NoConflict_Card_Header" xml:space="preserve">
-    <value>No conflicts found</value>
-  </data>
-  <data name="Oobe_Overview_Hotkey_NoConflict_Card_Description" xml:space="preserve">
-    <value>All shortcuts function correctly</value>
-  </data>
   <data name="Oobe_Overview_DiagnosticsAndFeedback_Settings_Link.Content" xml:space="preserve">
     <value>View more diagnostic data settings</value>
-  </data>
-  <data name="Oobe_Overview_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
-    <value>Learn more about the information PowerToys logs &amp; how it gets used</value>
-  </data>
-  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar.Header" xml:space="preserve">
-    <value>Turn on diagnostic data to help us improve PowerToys?</value>
-  </data>
-  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar_Desc.Text" xml:space="preserve">
-    <value>PowerToys diagnostic data is completely optional.</value>
-  </data>
-  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar_Button_Enable.Content" xml:space="preserve">
-    <value>Enable</value>
-  </data>
-  <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Title" xml:space="preserve">
-    <value>Thank you for helping to make PowerToys better!</value>
-  </data>
-  <data name="Oobe_WhatsNew_DataDiagnostics_No_Click_InfoBar_Title" xml:space="preserve">
-    <value>Preference updated.</value>
-  </data>
-  <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Desc.Text" xml:space="preserve">
-    <value>You can change this at any time from</value>
-  </data>
-  <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_OpenSettings_Text.Text" xml:space="preserve">
-    <value>settings.</value>
-  </data>
-  <data name="Oobe_WhatsNew_DataDiagnostics_Button_Yes.Content" xml:space="preserve">
-    <value>Yes</value>
-  </data>
-  <data name="Oobe_WhatsNew_DataDiagnostics_Button_No.Content" xml:space="preserve">
-    <value>No</value>
   </data>
   <data name="ReleaseNotes.Content" xml:space="preserve">
     <value>Release notes</value>
@@ -2384,31 +2162,14 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_Overview.Title" xml:space="preserve">
     <value>Welcome</value>
   </data>
-  <data name="Oobe_WhatsNew.Text" xml:space="preserve">
-    <value>What's new</value>
-  </data>
   <data name="Oobe_WhatsNew_LoadingError.Title" xml:space="preserve">
     <value>Couldn't load the release notes.</value>
   </data>
   <data name="Oobe_WhatsNew_LoadingError.Message" xml:space="preserve">
     <value>Please check your internet connection.</value>
   </data>
-  <data name="Oobe_WhatsNew_ProxyAuthenticationWarning.Title" xml:space="preserve">
-    <value>Couldn't load the release notes.</value>
-  </data>
-  <data name="Oobe_WhatsNew_ProxyAuthenticationWarning.Message" xml:space="preserve">
-    <value>Your proxy server requires authentication.</value>
-  </data>
-  <data name="Oobe_WhatsNew_DetailedReleaseNotesLink.Text" xml:space="preserve">
-    <value>See more detailed release notes on GitHub</value>
-    <comment>Don't loc "GitHub", it's the name of a product</comment>
-  </data>
   <data name="OOBE_Settings.Content" xml:space="preserve">
     <value>Open Settings</value>
-  </data>
-  <data name="Oobe_NavViewItem.Content" xml:space="preserve">
-    <value>Welcome to PowerToys</value>
-    <comment>Don't loc "PowerToys"</comment>
   </data>
   <data name="WhatIsNew_NavViewItem.Content" xml:space="preserve">
     <value>What's new</value>
@@ -2503,9 +2264,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="General_InstallNow.Content" xml:space="preserve">
     <value>Install now</value>
-  </data>
-  <data name="General_ReadMore.Text" xml:space="preserve">
-    <value>Read more</value>
   </data>
   <data name="General_NewVersionAvailable.Title" xml:space="preserve">
     <value>An update is available:</value>
@@ -2716,17 +2474,23 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation and behavior</value>
   </data>
-  <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
-    <value>Set shortcut</value>
-  </data>
   <data name="MouseUtils_CursorWrap_DisableWrapDuringDrag.Content" xml:space="preserve">
     <value>Disable wrapping while dragging</value>
   </data>
-  <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
-    <value>Auto-activate on startup</value>
+  <data name="MouseUtils_CursorWrap_DisableOnSingleMonitor.Content" xml:space="preserve">
+    <value>Disable wrapping when using a single monitor</value>
   </data>
-  <data name="MouseUtils_CursorWrap_AutoActivate.Content" xml:space="preserve">
-    <value>Automatically activate on utility startup</value>
+  <data name="MouseUtils_CursorWrap_WrapMode.Header" xml:space="preserve">
+    <value>Wrap mode</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_WrapMode_VerticalOnly.Content" xml:space="preserve">
+    <value>Vertical only</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_WrapMode_HorizontalOnly.Content" xml:space="preserve">
+    <value>Horizontal only</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_WrapMode_Both.Content" xml:space="preserve">
+    <value>Vertical and horizontal</value>
   </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
@@ -2749,9 +2513,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Launch_ShortcutGuide.Content" xml:space="preserve">
     <value>Open Shortcut Guide</value>
-  </data>
-  <data name="ColorPicker_ColorFormat_ToggleSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Show format in editor</value>
   </data>
   <data name="GeneralPage_Documentation.Text" xml:space="preserve">
     <value>Documentation</value>
@@ -2829,9 +2590,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="WarningPotentialShortcutConflict.Message" xml:space="preserve">
     <value>This shortcut has a potential conflict, but the warning is ignored.</value>
   </data>
-  <data name="WarningShortcutConflict.ToolTipService.ToolTip" xml:space="preserve">
-    <value>A conflict has been detected for this shortcut.</value>
-  </data>
   <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors</value>
   </data>
@@ -2897,9 +2655,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MouseUtils_FindMyMouse_SpotlightColor.Header" xml:space="preserve">
     <value>Spotlight color</value>
   </data>
-  <data name="MouseUtils_FindMyMouse_OverlayOpacity.Header" xml:space="preserve">
-    <value>Overlay opacity (%)</value>
-  </data>
   <data name="MouseUtils_FindMyMouse_SpotlightRadius.Header" xml:space="preserve">
     <value>Spotlight radius (px)</value>
     <comment>px = pixels</comment>
@@ -2956,7 +2711,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Activation shortcut</value>
   </data>
   <data name="MouseUtils_MouseHighlighter_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to turn on or off this mode</value>
+    <value>Customize the shortcut used to turn this mode on or off</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_PrimaryButtonClickColor.Header" xml:space="preserve">
@@ -3076,9 +2831,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
     <value>Zone appearance</value>
   </data>
-  <data name="LearnMore.Text" xml:space="preserve">
-    <value>Learn more</value>
-  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Header" xml:space="preserve">
     <value>Geometric Code</value>
     <comment>File type, do not translate</comment>
@@ -3171,11 +2923,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
-    <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="AlwaysOnTop.ModuleTitle" xml:space="preserve">
     <value>Always On Top</value>
-    <comment>{Locked}</comment>
   </data>
   <data name="AlwaysOnTop_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
@@ -3185,7 +2935,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="AlwaysOnTop_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Always On Top</value>
-    <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="AlwaysOnTop_ExcludedApps.Description" xml:space="preserve">
     <value>Excludes an application from pinning on top</value>
@@ -3217,9 +2966,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Do not activate when Game Mode is on</value>
     <comment>Game Mode is a Windows feature</comment>
   </data>
-  <data name="AlwaysOnTop_Behavior.Header" xml:space="preserve">
-    <value>Behavior</value>
-  </data>
   <data name="LearnMore_AlwaysOnTop.Text" xml:space="preserve">
     <value>Learn more about Always On Top</value>
     <comment>{Locked="Always On Top"}</comment>
@@ -3228,7 +2974,19 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Activation shortcut</value>
   </data>
   <data name="AlwaysOnTop_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to pin or unpin an app window</value>
+    <value>Customize the shortcut to pin or unpin an app window and use the same modifier keys with + or − to adjust its transparency</value>
+  </data>
+  <data name="AlwaysOnTop_TransparencyInfo.Header" xml:space="preserve">
+    <value>Window transparency</value>
+  </data>
+  <data name="AlwaysOnTop_TransparencyInfo.Description" xml:space="preserve">
+    <value>Adjust the transparency of the focused window on top</value>
+  </data>
+  <data name="AlwaysOnTop_IncreaseOpacity" xml:space="preserve">
+    <value>Press **{0}** to increase the window opacity</value>
+  </data>
+  <data name="AlwaysOnTop_DecreaseOpacity" xml:space="preserve">
+    <value>Press **{0}** to decrease the window opacity</value>
   </data>
   <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>
@@ -3236,7 +2994,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Oobe_AlwaysOnTop.Description" xml:space="preserve">
     <value>Always On Top improves your multitasking workflow by pinning an application window so it's always in front - even when focus changes to another window after that.</value>
-    <comment>{Locked="Always On Top"}</comment>
   </data>
   <data name="Oobe_AlwaysOnTop_HowToUse.Text" xml:space="preserve">
     <value>to pin or unpin the selected window so it's always on top of all other windows.</value>
@@ -3261,12 +3018,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="FileExplorerPreview_ToggleSwitch_Monaco_Wrap_Text.Content" xml:space="preserve">
     <value>Wrap text</value>
     <comment>Feature on or off</comment>
-  </data>
-  <data name="FancyZones_AllowPopupWindowSnap.Description" xml:space="preserve">
-    <value>This setting can affect all popup windows including notifications</value>
-  </data>
-  <data name="FancyZones_AllowPopupWindowSnap.Header" xml:space="preserve">
-    <value>Allow popup windows snapping</value>
   </data>
   <data name="FancyZones_AllowChildWindowSnap.Content" xml:space="preserve">
     <value>Allow child windows snapping</value>
@@ -3432,9 +3183,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="FancyZones_OpenEditor" xml:space="preserve">
     <value>Open editor</value>
   </data>
-  <data name="FileLocksmith_ShortDescription" xml:space="preserve">
-    <value>Right-click on files or directories to show running processes</value>
-  </data>
   <data name="FindMyMouse_ShortDescription" xml:space="preserve">
     <value>Find the mouse</value>
   </data>
@@ -3447,9 +3195,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MouseCrosshairs_ShortDescription" xml:space="preserve">
     <value>Draw crosshairs centered on the mouse pointer</value>
   </data>
-  <data name="AdvancedPaste_ShortDescription" xml:space="preserve">
-    <value>An AI powered tool to put your clipboard content into any format you need, focused towards developer workflows.</value>
-  </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescription.Text" xml:space="preserve">
     <value>Transform your clipboard content with the power of AI. A cloud or local endpoint is required.</value>
   </data>
@@ -3461,13 +3206,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Run_ShortDescription" xml:space="preserve">
     <value>Open Run</value>
-  </data>
-  <data name="PowerAccent_ShortDescription" xml:space="preserve">
-    <value>An alternative way to type accented characters</value>
-  </data>
-  <data name="RegistryPreview_ShortDescription" xml:space="preserve">
-    <value>Visualize and edit Windows Registry files</value>
-    <comment>{Locked="Windows"}</comment>
   </data>
   <data name="ScreenRuler_ShortDescription" xml:space="preserve">
     <value>Start measurement</value>
@@ -3484,9 +3222,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Activate_Zones" xml:space="preserve">
     <value>Activate zones</value>
-  </data>
-  <data name="DashboardKBMShowMappingsButton.Content" xml:space="preserve">
-    <value>Show remappings</value>
   </data>
   <data name="Oobe_QuickAccent.Description" xml:space="preserve">
     <value>Quick Accent is an easy way to write letters with accents, like on a smartphone.</value>
@@ -3577,9 +3312,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="LearnMore_TextExtractor.Text" xml:space="preserve">
     <value>Learn more about Text Extractor</value>
   </data>
-  <data name="TextExtractor_Cancel" xml:space="preserve">
-    <value>cancel</value>
-  </data>
   <data name="General_SettingsBackupAndRestore_NothingToBackup" xml:space="preserve">
     <value>A new backup was not created because no settings have been changed since last backup.</value>
   </data>
@@ -3613,9 +3345,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="General_SettingsBackupAndRestore_CurrentSettingsUnknown" xml:space="preserve">
     <value>Unknown</value>
-  </data>
-  <data name="General_SettingsBackupAndRestore_NeverRestored" xml:space="preserve">
-    <value>Never restored</value>
   </data>
   <data name="General_SettingsBackupAndRestore_NothingToRestore" xml:space="preserve">
     <value>Nothing to restore.</value>
@@ -3662,9 +3391,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Shell_TextExtractor.Content" xml:space="preserve">
     <value>Text Extractor</value>
   </data>
-  <data name="Launch_TextExtractor.Content" xml:space="preserve">
-    <value>Open Text Extractor</value>
-  </data>
   <data name="Oobe_TextExtractor.Title" xml:space="preserve">
     <value>Text Extractor</value>
   </data>
@@ -3710,9 +3436,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_StartSelectionFromTheLeft_Indicator.Description" xml:space="preserve">
     <value>Start selection from the leftmost character for all activation keys, including left and right arrows</value>
-  </data>
-  <data name="QuickAccent_DisableFullscreen.Header" xml:space="preserve">
-    <value>Disable when Game Mode is On</value>
   </data>
   <data name="QuickAccent_Language.Header" xml:space="preserve">
     <value>Characters</value>
@@ -3894,10 +3617,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Open Hosts File Editor</value>
     <comment>"Hosts File Editor" is a product name</comment>
   </data>
-  <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Open Hosts File Editor</value>
-    <comment>"Hosts File Editor" is a product name</comment>
-  </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
     <value>Placement of additional content</value>
   </data>
@@ -3951,9 +3670,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Manage your environment variables</value>
   </data>
   <data name="EnvironmentVariables_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Open Environment Variables</value>
-  </data>
-  <data name="EnvironmentVariables_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Environment Variables</value>
   </data>
   <data name="Launch_EnvironmentVariables.Content" xml:space="preserve">
@@ -4020,7 +3736,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Alternate_OOBE_AlwaysOnTop_Title.Text" xml:space="preserve">
     <value>Always On Top</value>
-    <comment>{Locked}</comment>
   </data>
   <data name="Alternate_OOBE_ColorPicker_Description.Text" xml:space="preserve">
     <value>To pick a color:</value>
@@ -4075,9 +3790,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste.ModuleTitle" xml:space="preserve">
     <value>Advanced Paste</value>
   </data>
-  <data name="AdvancedPaste_Cancel" xml:space="preserve">
-    <value>cancel</value>
-  </data>
   <data name="AdvancedPaste_EnableToggleControl_HeaderText.Header" xml:space="preserve">
     <value>Advanced Paste</value>
   </data>
@@ -4097,7 +3809,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Advanced AI</value>
   </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
-    <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
+    <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, Markdown, or JSON directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an opt-in AI feature that can use an online or local language model endpoint. Note: this will replace the formatted text in your clipboard with the selected format.</value>
   </data>
   <data name="Oobe_AdvancedPaste.Title" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -4113,9 +3825,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_AdvancedPasteJson_HowToUse.Text" xml:space="preserve">
     <value>to paste your clipboard data as JSON. Note: Clipboard content data has to contain XML or CSV text.</value>
-  </data>
-  <data name="Oobe_AdvancedPasteCustom_HowToUse.Text" xml:space="preserve">
-    <value>to open AI-powered dialog to enter query and convert your data to any format you need.</value>
   </data>
   <data name="Shell_CmdNotFound.Content" xml:space="preserve">
     <value>Command Not Found</value>
@@ -4156,9 +3865,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="CmdNotFound_ModuleInstallationLogs.Text" xml:space="preserve">
     <value>Installation logs</value>
-  </data>
-  <data name="CmdNotFound_CheckPowerShellVersionButtonControl.Description" xml:space="preserve">
-    <value>PowerShell 7 is required to use this module</value>
   </data>
   <data name="CmdNotFound_CheckCompatibility.Content" xml:space="preserve">
     <value>Refresh</value>
@@ -4204,10 +3910,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="DocsTooltip.Text" xml:space="preserve">
     <value>Documentation</value>
   </data>
-  <data name="FZEditorString" xml:space="preserve">
-    <value>FancyZones Editor</value>
-    <comment>Do not localize this string</comment>
-  </data>
   <data name="MoreBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More</value>
   </data>
@@ -4222,9 +3924,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccessTxt.Text" xml:space="preserve">
     <value>Quick access</value>
-  </data>
-  <data name="UpdateAvailable.Text" xml:space="preserve">
-    <value>Update available</value>
   </data>
   <data name="FileExplorerPreview_Toggle_Monaco_Max_File_Size.Header" xml:space="preserve">
     <value>Maximum file size to preview</value>
@@ -4284,7 +3983,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Mouse Jump" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MouseJump_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to turn on or off this mode</value>
+    <value>Customize the shortcut used to turn this mode on or off</value>
   </data>
   <data name="MouseUtils_MouseJump_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -4402,9 +4101,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_Title" xml:space="preserve">
     <value>Copy to Custom preview style</value>
   </data>
-  <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_Text" xml:space="preserve">
-    <value>This will replace the current settings in the Custom preview style.</value>
-  </data>
   <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonText" xml:space="preserve">
     <value>Copy</value>
   </data>
@@ -4417,9 +4113,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="RegistryPreview_Launch_GroupSettings.Header" xml:space="preserve">
     <value>Open</value>
-  </data>
-  <data name="RegistryPreview_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Open Registry Preview</value>
   </data>
   <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
     <value>Open Registry Preview</value>
@@ -4488,7 +4181,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Right control is the physical key on the keyboard.</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to turn on or off this mode</value>
+    <value>Customize the shortcut used to turn this mode on or off</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -4576,9 +4269,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GPO_AdvancedPasteAi_SettingIsManaged.Title" xml:space="preserve">
     <value>AI features are managed by your organization.</value>
   </data>
-  <data name="GPO_SettingIsManaged_ToolTip.Text" xml:space="preserve">
-    <value>This setting is managed by your organization.</value>
-  </data>
   <data name="GPO_SomePreviewPanesAreManaged.Title" xml:space="preserve">
     <value>The enabled state of some preview handlers is managed by your organization.</value>
   </data>
@@ -4594,18 +4284,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="FileExplorerPreview_ToggleSwitch_Monaco_Minimap.Content" xml:space="preserve">
     <value>Show minimap</value>
   </data>
-  <data name="PrivacyLink.Text" xml:space="preserve">
-    <value>OpenAI privacy</value>
-  </data>
-  <data name="TermsLink.Text" xml:space="preserve">
-    <value>OpenAI Terms</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialog_LoginIntoText.Text" xml:space="preserve">
-    <value>• Login into your</value>
-  </data>
-  <data name="AdvancedPaste_EnableAIDialog_CreateNewKeyText.Text" xml:space="preserve">
-    <value>• Create a new secret key and paste it in the field below</value>
-  </data>
   <data name="FileExplorerPreview_Toggle_Monaco_Font_Size.Description" xml:space="preserve">
     <value>Font size of the editor in pt. Recommended: 14pt</value>
     <comment>{Locked="pt"}</comment>
@@ -4620,9 +4298,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Peek_SourceCode_FontSize.Header" xml:space="preserve">
     <value>Font size</value>
   </data>
-  <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
-    <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
-  </data>
   <data name="AdvancedPaste_CloseAfterLosingFocus.Content" xml:space="preserve">
     <value>Automatically close the window after it loses focus</value>
     <comment>Advanced Paste is a product name, do not loc</comment>
@@ -4630,6 +4305,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_EnableClipboardPreview.Header" xml:space="preserve">
     <value>Show clipboard preview</value>
     <comment>Enables display of clipboard contents preview in the Advanced Paste window</comment>
+  </data>
+  <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Header" xml:space="preserve">
+    <value>Auto-copy selection for custom action hotkeys</value>
+    <comment>Advanced Paste is a product name</comment>
+  </data>
+  <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Description" xml:space="preserve">
+    <value>Attempts to copy the current selection before running a custom action shortcut</value>
+    <comment>Advanced Paste is a product name</comment>
   </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
     <value>The Command Not Found module is disabled by your organization.</value>
@@ -4669,10 +4352,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Location</value>
     <comment>Templates Location label</comment>
   </data>
-  <data name="NewPlus_Templates_Location_Path.Text" xml:space="preserve">
-    <value>...</value>
-    <comment>Do not localize</comment>
-  </data>
   <data name="NewPlus_Templates_Location_Learn_More.Content" xml:space="preserve">
     <value>Learn more about template location</value>
     <comment>Read more about templates location</comment>
@@ -4708,10 +4387,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="NewPlus_Behaviour_Replace_Variables_Learn_More.Content" xml:space="preserve">
     <value>Learn more about supported variables and see examples</value>
     <comment>New+ help link to learn more about supported variables and see examples</comment>
-  </data>
-  <data name="NewPlus_Behaviour_Replace_Variables_Info_Card_Title.Text" xml:space="preserve">
-    <value>Commonly used variables</value>
-    <comment>New+ commonly used variables header in the flyout info card</comment>
   </data>
   <data name="NewPlus_Year_YYYY_Variable_Description.Text" xml:space="preserve">
     <value>Year, represented by a full four or five digits, depending on the calendar used.</value>
@@ -4775,9 +4450,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
     <comment>{Locked="ZoomIt"}</comment>
   </data>
-  <data name="ZoomIt_ShortDescription" xml:space="preserve">
-    <value>A screen zoom, annotation, and recording tool for technical presentations and demos.</value>
-  </data>
   <data name="ZoomIt.ModuleTitle" xml:space="preserve">
     <value>ZoomIt</value>
     <comment>{Locked="ZoomIt"}</comment>
@@ -4803,52 +4475,58 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Zoom</value>
   </data>
   <data name="ZoomIt_ZoomGroup.Description" xml:space="preserve">
-    <value>After toggling ZoomIt you can zoom in with the mouse wheel or up and down arrow keys. Exit zoom mode with Escape or by pressing the right mouse button.
-
-Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.</value>
+    <value>Zoom in or out to enlarge content and make details clearer.</value>
+  </data>
+  <data name="ZoomIt_ZoomFAQ.Text" xml:space="preserve">
+    <value>Press **the mouse wheel** or **the Up / Down arrow keys** to zoom in or out.
+Press **Esc** or **the right mouse button** to exit zoom mode.
+Press **Ctrl + C** to capture the zoomed view, or **Ctrl + S** to save it.
+Press **Ctrl + Shift** to crop before copying or saving.</value>
   </data>
   <data name="ZoomIt_Zoom_Shortcut.Header" xml:space="preserve">
-    <value>Zoom hotkey</value>
+    <value>Zoom activation</value>
   </data>
-  <data name="ZoomIt_Toggle_AnimateZoom.Header" xml:space="preserve">
-    <value>Animate zoom in and zoom out</value>
+  <data name="ZoomIt_Toggle_AnimateZoom.Content" xml:space="preserve">
+    <value>Animate zoom in and out</value>
   </data>
-  <data name="ZoomIt_Toggle_SmoothZoomedImage.Header" xml:space="preserve">
-    <value>Smooth zoomed image</value>
+  <data name="ZoomIt_Toggle_SmoothZoomedImage.Content" xml:space="preserve">
+    <value>Smooth the zoomed image</value>
   </data>
   <data name="ZoomIt_Slider_InitialMagnification.Header" xml:space="preserve">
-    <value>Specify the initial level of magnification when zooming in</value>
+    <value>Initial zoom level</value>
   </data>
   <data name="ZoomIt_LiveZoomGroup.Header" xml:space="preserve">
     <value>Live Zoom</value>
   </data>
   <data name="ZoomIt_LiveZoomGroup.Description" xml:space="preserve">
-    <value>LiveZoom mode supports window updates to show while zoomed.
-
-Note that in LiveZoom you must use Ctrl+Up and Ctrl+Down to control the zoom level. To enter drawing mode, use the standard zoom-without-draw hotkey and then escape to go back to LiveZoom.
-
-Use LiveDraw to draw and annotate the live desktop. To activate LiveDraw, enter the hotkey with the Shift key in the opposite mode. You can remove LiveDraw annotations by activating LiveDraw and enter the escape key.
-
-To enter and exit LiveZoom, enter the hotkey specified below.</value>
+    <value>Live Zoom keeps windows updating while zoomed.</value>
   </data>
   <data name="ZoomIt_LiveZoom_Shortcut.Header" xml:space="preserve">
-    <value>Live Zoom hotkey</value>
+    <value>Live Zoom activation</value>
   </data>
   <data name="ZoomIt_DrawGroup.Header" xml:space="preserve">
     <value>Draw</value>
   </data>
-  <data name="ZoomIt_DrawGroup.Description" xml:space="preserve">
-    <value>Once zoomed, toggle drawing mode by pressing the left mouse button. Undo with Ctrl+Z and all drawing by pressing E. Center the cursor with the space bar. Exit drawing mode by pressing the right mouse button.
+  <data name="ZoomIt_DrawFAQ.Text" xml:space="preserve">
+    <value>Press **the left mouse button** to toggle drawing mode when zoomed in, and **the right mouse button** to exit.
+Press **Ctrl + Z** to undo, **E** to clear drawings, and **Space** to center the cursor.
 
-Pen Control - Change the pen width by pressing left Ctrl and using the mouse wheel or the up and down arrow keys.
+**Pen control**
+Press **Ctrl + the mouse wheel** or **Ctrl + Up / Down** to adjust the pen width.
 
-Colors - Change the pen color by pressing R (red), G (green), B (blue), O (orange), Y (yellow) or P (pink).
+**Colors**
+Press **R** (Red), **G** (Green), **B** (Blue), **O** (Orange), **Y** (Yellow), or **P** (Pink) to switch colors.
 
-Highlight and Blur - Hold Shift while pressing a color key for a translucent highlighter color. Press X for blur or Shift+X for a stronger blur.
+**Highlight and blur**
+Press **Shift + a color key** for a translucent highlighter, **X** for blur, or **Shift + X** for a stronger blur.
 
-Shapes - Draw a line by holding down the Shift key, a rectangle with the Ctrl key, an ellipse with the Tab key and an arrow with Shift+Ctrl.
+**Shapes**
+Press **Shift** for a line, **Ctrl** for a rectangle, **Tab** for an ellipse, or **Shift + Ctrl** for an arrow.
 
-Screen - Clear the screen for a sketch pad by pressing W (white) or K (black). Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.</value>
+**Screen**
+Press **W** or **K** for a white or black sketch pad.
+Press **Ctrl + C** to copy or **Ctrl + S** to save, and **Ctrl + Shift** to crop.
+    </value>
   </data>
   <data name="ZoomIt_Draw_Shortcut.Header" xml:space="preserve">
     <value>Draw without zoom hotkey</value>
@@ -4857,9 +4535,7 @@ Screen - Clear the screen for a sketch pad by pressing W (white) or K (black). C
     <value>Type</value>
   </data>
   <data name="ZoomIt_TypeGroup.Description" xml:space="preserve">
-    <value>Once in drawing mode, type 't' to enter typing mode or shift+'t' to enter typing mode with right-aligned input. Exit typing mode by pressing escape or the left mouse button. Use the mouse wheel or up and down arrow keys to change the font size.
-
-The text color is the current drawing color.</value>
+    <value>Type text while drawing</value>
   </data>
   <data name="ZoomIt_Type_TextFont.Header" xml:space="preserve">
     <value>Text font</value>
@@ -4872,18 +4548,25 @@ The text color is the current drawing color.</value>
     <value>DemoType</value>
   </data>
   <data name="ZoomIt_DemoTypeGroup.Description" xml:space="preserve">
-    <value>Use DemoType to have ZoomIt type text specified in the input file when you enter the DemoType toggle. You can also pull input from the clipboard if it is prefixed with the [start] keyword.
+    <value>Insert predefined text snippets with a shortcut using a text file.</value>
+  </data>
+  <data name="ZoomIt_DemoTypeFAQ" xml:space="preserve">
+    <value>Text can be pulled from the clipboard when it starts with **[start]**.
+Use **[end]** to separate snippets, **[pause:n]** to insert pauses (in seconds), and **[paste]** / **[/paste]** to send clipboard text.
+Use **[enter]**, **[up]**, **[down]**, **[left]**, and **[right]** to issue keystrokes.
 
-Separate snippets with the [end] keyword and insert pauses into the text output with the [pause:n] keyword where 'n' is seconds. Send text via the clipboard with [paste] and [/paste]. Send keystrokes with [enter], [up], [down], [left] and [right].
+ZoomIt can send text automatically or run in manual mode. Keyboard input is blocked while text is being sent.
 
-You can have ZoomIt send text automatically, or select the option to drive input with typing. ZoomIt will block keyboard input while sending output.
+In manual mode, press **Space** to unblock keyboard input at the end of a snippet.
+In auto mode, control returns automatically after completion.
 
-When driving input, hit the space bar to unblock keyboard input at the end of a snippet. In auto mode, control will be returned upon completion.
+At the end of the file, ZoomIt reloads the file and restarts from the beginning.
+Press the hotkey with **Shift** in the opposite mode to step back to the previous **[end]** marker.
 
-When you reach the end of the file, ZoomIt will reload the file and start at the beginning. Enter the hotkey with the Shift key in the opposite mode to step back to the last [end].</value>
+Press **{0}** to reset DemoType and start from the beginning.</value>
   </data>
   <data name="ZoomIt_DemoType_Shortcut.Header" xml:space="preserve">
-    <value>DemoType toggle hotkey</value>
+    <value>DemoType activation</value>
   </data>
   <data name="ZoomIt_DemoType_File.Header" xml:space="preserve">
     <value>Input file</value>
@@ -4897,11 +4580,11 @@ When you reach the end of the file, ZoomIt will reload the file and start at the
   <data name="FilePicker_AllFilesFilter" xml:space="preserve">
     <value>All Files</value>
   </data>
-  <data name="ZoomIt_DemoType_Toggle_UserDrivenMode.Header" xml:space="preserve">
+  <data name="ZoomIt_DemoType_Toggle_UserDrivenMode.Content" xml:space="preserve">
     <value>Drive input with typing</value>
   </data>
   <data name="ZoomIt_DemoType_SpeedSlider.Header" xml:space="preserve">
-    <value>DemoType typing speed</value>
+    <value>Typing speed</value>
   </data>
   <data name="ZoomIt_DemoType_SpeedSlider_Thumbnail_Explanation" xml:space="preserve">
     <value>bigger is faster</value>
@@ -4910,20 +4593,27 @@ When you reach the end of the file, ZoomIt will reload the file and start at the
     <value>Break</value>
   </data>
   <data name="ZoomIt_BreakGroup.Description" xml:space="preserve">
-    <value>Enter timer mode by using the ZoomIt tray icon's Break menu item. Increase and decrease time with the arrow keys. If you Alt-Tab away from the timer window, reactivate it by left-clicking on the ZoomIt tray icon. Exit timer mode with Escape.
+    <value>Displays a countdown overlay for timed breaks or presentations.</value>
+  </data>
+  <data name="ZoomIt_BreakFAQ.Text" xml:space="preserve">
+    <value>Enter timer mode from the ZoomIt tray icon’s Break menu.
+Press **the arrow keys** to adjust the time. If the timer window loses focus through **Alt + Tab**, press **the left mouse button** on the ZoomIt tray icon to reactivate it.
 
-Change the break timer color using the same keys that the drawing color. The break timer font is the same as text font.</value>
+Press **Esc** to exit timer mode.
+
+Change the break timer color using the same keys as the drawing colors.
+The break timer font matches the text font.</value>
   </data>
   <data name="ZoomIt_Break_Shortcut.Header" xml:space="preserve">
-    <value>Start break timer hotkey</value>
+    <value>Break timer activation</value>
   </data>
   <data name="ZoomIt_Break_Timeout.Header" xml:space="preserve">
     <value>Timer (minutes)</value>
   </data>
-  <data name="ZoomIt_Break_ShowExpiredTime.Header" xml:space="preserve">
+  <data name="ZoomIt_Break_ShowExpiredTime.Content" xml:space="preserve">
     <value>Show time elapsed after expiration</value>
   </data>
-  <data name="ZoomIt_Break_PlaySoundsFile.Header" xml:space="preserve">
+  <data name="ZoomIt_Break_PlaySoundsFile.Content" xml:space="preserve">
     <value>Play sound on expiration</value>
   </data>
   <data name="ZoomIt_Break_SoundFile.Header" xml:space="preserve">
@@ -4940,36 +4630,6 @@ Change the break timer color using the same keys that the drawing color. The bre
   </data>
   <data name="ZoomIt_Break_TimerOpacity.Header" xml:space="preserve">
     <value>Timer opacity</value>
-  </data>
-  <data name="ZoomIt_Break_TimerOpacity_10Percent.Content" xml:space="preserve">
-    <value>10%</value>
-  </data>
-  <data name="ZoomIt_Break_TimerOpacity_20Percent.Content" xml:space="preserve">
-    <value>20%</value>
-  </data>
-  <data name="ZoomIt_Break_TimerOpacity_30Percent.Content" xml:space="preserve">
-    <value>30%</value>
-  </data>
-  <data name="ZoomIt_Break_TimerOpacity_40Percent.Content" xml:space="preserve">
-    <value>40%</value>
-  </data>
-  <data name="ZoomIt_Break_TimerOpacity_50Percent.Content" xml:space="preserve">
-    <value>50%</value>
-  </data>
-  <data name="ZoomIt_Break_TimerOpacity_60Percent.Content" xml:space="preserve">
-    <value>60%</value>
-  </data>
-  <data name="ZoomIt_Break_TimerOpacity_70Percent.Content" xml:space="preserve">
-    <value>70%</value>
-  </data>
-  <data name="ZoomIt_Break_TimerOpacity_80Percent.Content" xml:space="preserve">
-    <value>80%</value>
-  </data>
-  <data name="ZoomIt_Break_TimerOpacity_90Percent.Content" xml:space="preserve">
-    <value>90%</value>
-  </data>
-  <data name="ZoomIt_Break_TimerOpacity_100Percent.Content" xml:space="preserve">
-    <value>100%</value>
   </data>
   <data name="ZoomIt_Break_TimerPosition.Header" xml:space="preserve">
     <value>Timer position</value>
@@ -5005,7 +4665,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Show background bitmap</value>
   </data>
   <data name="ZoomIt_Break_ShowFadedDesktop.Content" xml:space="preserve">
-    <value>Use faded desktop as background</value>
+    <value>Faded desktop</value>
   </data>
   <data name="ZoomIt_Break_ShowImageFile.Content" xml:space="preserve">
     <value>Use image file as background</value>
@@ -5020,26 +4680,31 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Specify background file...</value>
   </data>
   <data name="FilePicker_ZoomIt_BitmapFilesFilter" xml:space="preserve">
-    <value>Bitmap Files</value>
+    <value>Bitmap files</value>
   </data>
   <data name="FilePicker_ZoomIt_AllPicturesFilter" xml:space="preserve">
-    <value>All Picture Files</value>
+    <value>All picture files</value>
   </data>
-  <data name="ZoomIt_Break_BackgroundStretch.Header" xml:space="preserve">
+  <data name="ZoomIt_Break_BackgroundStretch.Content" xml:space="preserve">
     <value>Scale to screen</value>
   </data>
   <data name="ZoomIt_RecordGroup.Header" xml:space="preserve">
     <value>Record</value>
   </data>
   <data name="ZoomIt_RecordGroup.Description" xml:space="preserve">
-    <value>Record video of the unzoomed live screen or a static zoomed session by entering the recording hotkey and finish the recording by entering it again.
-
-To crop the portion of the screen that will be recorded, enter the hotkey with the Shift key in the opposite mode.
-
-To record a specific window, enter the hotkey with the Alt key in the opposite mode.</value>
+    <value>Record video of the screen.</value>
   </data>
   <data name="ZoomIt_Record_Shortcut.Header" xml:space="preserve">
-    <value>Record hotkey</value>
+    <value>Record activation</value>
+  </data>
+  <data name="ZoomIt_Record_Shortcut_FullScreen" xml:space="preserve">
+    <value>Press **{0}** to start or stop screen or zoom recording</value>
+  </data>
+  <data name="ZoomIt_Record_Shortcut_Crop" xml:space="preserve">
+    <value>Press **{0}** to record a portion of the screen</value>
+  </data>
+  <data name="ZoomIt_Record_Shortcut_Window" xml:space="preserve">
+    <value>Press **{0}** to record a specific window</value>
   </data>
   <data name="ZoomIt_Record_Scaling.Header" xml:space="preserve">
     <value>Scaling</value>
@@ -5047,8 +4712,14 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="ZoomIt_Record_Format.Header" xml:space="preserve">
     <value>Format</value>
   </data>
-  <data name="ZoomIt_Record_CaptureAudio.Header" xml:space="preserve">
+  <data name="ZoomIt_Record_CaptureSystemAudio.Content" xml:space="preserve">
+    <value>Capture system audio</value>
+  </data>
+  <data name="ZoomIt_Record_CaptureAudio.Content" xml:space="preserve">
     <value>Capture audio input</value>
+  </data>
+  <data name="ZoomIt_Record_MicMonoMix.Content" xml:space="preserve">
+    <value>Mono</value>
   </data>
   <data name="ZoomIt_Record_Microphone.Header" xml:space="preserve">
     <value>Microphone</value>
@@ -5060,10 +4731,13 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Snip</value>
   </data>
   <data name="ZoomIt_SnipGroup.Description" xml:space="preserve">
-    <value>Copy a region of the screen to the clipboard or enter the hotkey with the Shift key in the opposite mode to save it to a file.</value>
+    <value>Copy a selected area of the screen to the clipboard or to a file.</value>
   </data>
   <data name="ZoomIt_Snip_Shortcut.Header" xml:space="preserve">
-    <value>Snip hotkey</value>
+    <value>Snip activation</value>
+  </data>
+  <data name="ZoomIt_Snip_Shortcut_Save" xml:space="preserve">
+    <value>Press **{0}** to save the snip to a file instead of the clipboard.</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
@@ -5083,8 +4757,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl.Description" xml:space="preserve">
     <value>You cannot change, remove or disable these enforced rules.</value>
   </data>
-  <data name="OpenSettings.Content" xml:space="preserve">
-    <value>Open settings</value>
+  <data name="OpenAnimationsSettings.Content" xml:space="preserve">
+    <value>Open animation settings</value>
   </data>
   <data name="LanguageHeader.Header" xml:space="preserve">
     <value>Language</value>
@@ -5097,9 +4771,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="LanguageRestartInfoButton.Content" xml:space="preserve">
     <value>Restart</value>
-  </data>
-  <data name="Default_Language" xml:space="preserve">
-    <value>Windows default</value>
   </data>
   <data name="Arabic_Saudi_Arabia_Language" xml:space="preserve">
     <value>Arabic (Saudi Arabia)</value>
@@ -5182,9 +4853,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shell_TopLevelInputOutput.Content" xml:space="preserve">
     <value>Input &amp; Output</value>
   </data>
-  <data name="Shell_TopLevelWindowsAndLayouts.Content" xml:space="preserve">
-    <value>Windowing &amp; Layouts</value>
-  </data>
   <data name="Shell_TopLevelSystemTools.Content" xml:space="preserve">
     <value>System Tools</value>
   </data>
@@ -5219,9 +4887,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Run_NavigateCmdPalSettings.Content" xml:space="preserve">
     <value>Learn more</value>
   </data>
-  <data name="Enable_Module.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Enable module</value>
-  </data>
   <data name="PowerLauncher_PluginVersion.Text" xml:space="preserve">
     <value>Version</value>
   </data>
@@ -5241,12 +4906,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_Settings.Header" xml:space="preserve">
     <value>Settings</value>
   </data>
-  <data name="Help_chromaCIE" xml:space="preserve">
-    <value>chroma (CIE LCh)</value>
-  </data>
-  <data name="Help_hueCIE" xml:space="preserve">
-    <value>hue (CIE LCh)</value>
-  </data>
   <data name="Help_lightnessOklab" xml:space="preserve">
     <value>lightness (Oklab/Oklch)</value>
   </data>
@@ -5262,12 +4921,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Help_hueOklch" xml:space="preserve">
     <value>hue (Oklch)</value>
   </data>
-  <data name="ExitPT_NavViewItem.Content" xml:space="preserve">
-    <value>Exit PowerToys</value>
-  </data>
-  <data name="General_System.Header" xml:space="preserve">
-    <value>System</value>
-  </data>
   <data name="GeneralPage_ReportBugPackage.Header" xml:space="preserve">
     <value>Generate bug report package</value>
   </data>
@@ -5276,9 +4929,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="GeneralPageReportBugPackage.Content" xml:space="preserve">
     <value>Generate package</value>
-  </data>
-  <data name="BugReportUnderConstruction" xml:space="preserve">
-    <value>Bug report package is being created</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_BGCODE.Header" xml:space="preserve">
     <value>Binary Geometric Code</value>
@@ -5334,36 +4984,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="HighlightMode_Spotlight_Mode.Content" xml:space="preserve">
     <value>Spotlight</value>
   </data>
-  <data name="LearnMore.Content" xml:space="preserve">
-    <value>Learn more</value>
-  </data>
-  <data name="Awake_ShortDescription" xml:space="preserve">
-    <value>Keep your PC awake</value>
-  </data>
-  <data name="ImageResizer_ShortDescription" xml:space="preserve">
-    <value>Resize images from right-click context menu</value>
-  </data>
-  <data name="MouseWithoutBorders_ShortDescription" xml:space="preserve">
-    <value>Move your cursor across multiple devices</value>
-  </data>
-  <data name="PowerRename_ShortDescription" xml:space="preserve">
-    <value>Rename files and folders from right-click context menu</value>
-  </data>
   <data name="GeneralPage_EnableDataDiagnosticsText.Text" xml:space="preserve">
     <value>Helps us make PowerToys faster, more stable, and better over time</value>
-  </data>
-  <data name="UpdateAvailable.Title" xml:space="preserve">
-    <value>Update available</value>
-  </data>
-  <data name="DisabledModules.Text" xml:space="preserve">
-    <value>Disabled modules</value>
-  </data>
-  <data name="EnabledModules.Text" xml:space="preserve">
-    <value>Enabled modules</value>
-  </data>
-  <data name="NewPlus_Product_Description.Description" xml:space="preserve">
-    <value>Create files and folders from a personalized set of templates</value>
-    <comment>New+ product description</comment>
   </data>
   <data name="AlwaysOnTop_Sound.Header" xml:space="preserve">
     <value>Play a sound when pinning a window</value>
@@ -5455,6 +5077,27 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LightSwitch_AppsCheckbox.Description" xml:space="preserve">
     <value>Supported applications</value>
   </data>
+  <data name="LightSwitch_PowerDisplayDisabledWarningBar.Title" xml:space="preserve">
+    <value>Enable PowerDisplay module to use automatic monitor profile switching</value>
+  </data>
+  <data name="LightSwitch_PowerDisplayDisabledWarningBar.Message" xml:space="preserve">
+    <value />
+  </data>
+  <data name="LightSwitch_ApplyMonitorSettingsExpander.Header" xml:space="preserve">
+    <value>Apply monitor settings to</value>
+  </data>
+  <data name="LightSwitch_ApplyMonitorSettingsExpander.Description" xml:space="preserve">
+    <value>Automatically switch PowerDisplay profiles when theme changes</value>
+  </data>
+  <data name="LightSwitch_DarkModeProfileCheckbox.Content" xml:space="preserve">
+    <value>Dark mode profile</value>
+  </data>
+  <data name="LightSwitch_LightModeProfileCheckbox.Content" xml:space="preserve">
+    <value>Light mode profile</value>
+  </data>
+  <data name="LightSwitch_NavigatePowerDisplaySettings.Content" xml:space="preserve">
+    <value>Open PowerDisplay settings</value>
+  </data>
   <data name="LightSwitch_LocationDialog.Title" xml:space="preserve">
     <value>Select a location</value>
   </data>
@@ -5508,9 +5151,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CloseDialog.SecondaryButtonText" xml:space="preserve">
     <value>No</value>
   </data>
-  <data name="KeyBack" xml:space="preserve">
-    <value>Back key</value>
-  </data>
   <data name="SearchResults_Title.ModuleTitle" xml:space="preserve">
     <value>Search results</value>
   </data>
@@ -5549,9 +5189,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="ShortcutConflictWindow_SystemShortcutLink.Content" xml:space="preserve">
     <value>See all Windows shortcuts</value>
-  </data>
-  <data name="ShortcutConflictWindow_SystemShortcutTooltip.Content" xml:space="preserve">
-    <value>This shortcut is used by Windows and can't be changed.</value>
   </data>
   <data name="ShortcutConflictWindow_NoConflictsTitle.Text" xml:space="preserve">
     <value>No conflicts detected</value>
@@ -5607,12 +5244,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Use the **keyboard shortcut** to instantly toggle between light and dark modes, or set up **sunrise/sunset automation** for natural theme transitions.</value>
     <comment>Light Switch is a product name, do not localize</comment>
   </data>
-  <data name="DismissConflictBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Dismiss</value>
-  </data>
-  <data name="DismissText.Text" xml:space="preserve">
-    <value>Dismiss</value>
-  </data>
   <data name="Shortcut_ResetBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Reset shortcut</value>
   </data>
@@ -5633,6 +5264,313 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
+  </data>
+  <data name="PowerDisplay.ModuleTitle" xml:space="preserve">
+    <value>Power Display</value>
+  </data>
+  <data name="PowerDisplay.ModuleDescription" xml:space="preserve">
+    <value>A display management utility for brightness and power control</value>
+  </data>
+  <data name="PowerDisplay_Enable_PowerDisplay.Header" xml:space="preserve">
+    <value>Enable Power Display</value>
+  </data>
+  <data name="PowerDisplay_Configuration_GroupSettings.Header" xml:space="preserve">
+    <value>Configuration</value>
+  </data>
+  <data name="PowerDisplay_ToggleWindow" xml:space="preserve">
+    <value>Toggle Power Display</value>
+    <comment>Dashboard: Label for the PowerDisplay activation hotkey</comment>
+  </data>
+  <data name="PowerDisplay_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+    <comment>Header for the PowerDisplay activation shortcut setting</comment>
+  </data>
+  <data name="PowerDisplay_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Open Power Display</value>
+  </data>
+  <data name="PowerDisplay_LaunchButtonControl.Description" xml:space="preserve">
+    <value>Launch the Power Display utility</value>
+  </data>
+  <data name="PowerDisplay_RestoreSettingsOnStartup.Header" xml:space="preserve">
+    <value>Restore settings on startup</value>
+  </data>
+  <data name="PowerDisplay_RestoreSettingsOnStartup.Description" xml:space="preserve">
+    <value>Restore monitor brightness and color temperature when Power Display launches</value>
+  </data>
+  <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_ShowSystemTrayIcon.Header" xml:space="preserve">
+    <value>Show system tray icon</value>
+  </data>
+  <data name="PowerDisplay_ShowSystemTrayIcon.Description" xml:space="preserve">
+    <value>Choose if PowerDisplay is visible in the system tray</value>
+  </data>
+  <data name="PowerDisplay_MonitorRefreshDelay.Header" xml:space="preserve">
+    <value>Monitor refresh delay</value>
+  </data>
+  <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
+    <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
+  </data>
+  <data name="PowerDisplay_Profiles_GroupSettings.Header" xml:space="preserve">
+    <value>Profiles</value>
+  </data>
+  <data name="PowerDisplay_QuickProfiles.Header" xml:space="preserve">
+    <value>Quick apply profiles</value>
+  </data>
+  <data name="PowerDisplay_QuickProfiles.Description" xml:space="preserve">
+    <value>Click a profile button to quickly apply saved monitor settings</value>
+  </data>
+  <data name="PowerDisplay_AddProfile_Text.Text" xml:space="preserve">
+    <value>Add profile</value>
+  </data>
+  <data name="PowerDisplay_Monitors.Header" xml:space="preserve">
+    <value>Monitors</value>
+  </data>
+  <data name="PowerDisplay_NoMonitorsDetected.Text" xml:space="preserve">
+    <value>No monitors detected. Ensure your external monitors are connected and powered on.</value>
+  </data>
+  <data name="LearnMore_PowerDisplay.Text" xml:space="preserve">
+    <value>Learn more about Power Display</value>
+  </data>
+  <data name="Oobe_PowerDisplay.Title" xml:space="preserve">
+    <value>Power Display</value>
+  </data>
+  <data name="Oobe_PowerDisplay.Description" xml:space="preserve">
+    <value>Power Display provides unified control over display settings across multiple monitors. Adjust brightness, contrast, volume, color temperature, and input source for all connected displays from a single overlay. Supports DDC/CI for external monitors and WMI for laptop displays, with profile support for quick configuration switching and LightSwitch integration for automatic theme-based adjustments.</value>
+  </data>
+  <data name="Oobe_PowerDisplay_Activation.Text" xml:space="preserve">
+    <value>to open the Power Display overlay.</value>
+  </data>
+  <data name="Oobe_PowerDisplay_TipsAndTricks.Text" xml:space="preserve">
+    <value>**Create profiles** to save your preferred display settings, then configure them in **LightSwitch** to automatically switch profiles when the system theme changes.</value>
+  </data>
+  <data name="Launch_PowerDisplay.Content" xml:space="preserve">
+    <value>Open Power Display</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableContrast.Content" xml:space="preserve">
+    <value>Display contrast slider</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableVolume.Content" xml:space="preserve">
+    <value>Display volume slider</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableInputSource.Content" xml:space="preserve">
+    <value>Show input source control</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableRotation.Content" xml:space="preserve">
+    <value>Show rotation control</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableColorTemperature.Content" xml:space="preserve">
+    <value>Show color temperature switcher</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnablePowerState.Content" xml:space="preserve">
+    <value>Show power state control</value>
+  </data>
+  <data name="PowerDisplay_Monitor_HideMonitor.Content" xml:space="preserve">
+    <value>Hide monitor</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningTitle" xml:space="preserve">
+    <value>Confirm Color Temperature Change</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningHeader" xml:space="preserve">
+    <value>⚠️ Warning: This is a potentially dangerous operation!</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningDescription" xml:space="preserve">
+    <value>Changing the color temperature setting may cause unpredictable results including:</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningList" xml:space="preserve">
+    <value>• Incorrect display colors
+• Display malfunction
+• Settings that cannot be reverted</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
+    <value>Do you want to enable color temperature control for this monitor?</value>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_EnableButton" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="PowerDisplay_Dialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PowerDisplay_Dialog_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Title" xml:space="preserve">
+    <value>Edit Profile</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_ProfileName.Header" xml:space="preserve">
+    <value>Profile name</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_ProfileName.PlaceholderText" xml:space="preserve">
+    <value>Enter profile name (e.g., 'Gaming Mode', 'Work')</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Description.Text" xml:space="preserve">
+    <value>Select what monitors and settings to include for this profile</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Brightness.Text" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Contrast.Text" xml:space="preserve">
+    <value>Contrast</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_Volume.Text" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_ColorTemperature.Text" xml:space="preserve">
+    <value>Color temperature</value>
+  </data>
+  <data name="PowerDisplay_ProfileEditor_ColorTemperature_ComboBox.PlaceholderText" xml:space="preserve">
+    <value>Select..</value>
+  </data>
+  <data name="PowerDisplay_Profile_DefaultBaseName" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="PowerDisplay_DeleteProfile_Title" xml:space="preserve">
+    <value>Delete Profile</value>
+  </data>
+  <data name="PowerDisplay_DeleteProfile_Content" xml:space="preserve">
+    <value>Are you sure you want to delete '{0}'?</value>
+  </data>
+  <data name="PowerDisplay_DeleteProfile_PrimaryButton" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="PowerDisplay_Profile_ApplyButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Apply profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_MoreButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More profile options</value>
+  </data>
+  <data name="PowerDisplay_Profile_EditMenuItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Edit profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_DeleteMenuItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Delete profile</value>
+  </data>
+  <data name="PowerDisplay_Profile_ApplyButton.Content" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="PowerDisplay_Profile_MoreButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>More settings</value>
+  </data>
+  <data name="PowerDisplay_Profile_EditMenuItem.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PowerDisplay_Profile_DeleteMenuItem.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="PowerDisplay_AddProfileButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Save current settings as new profile</value>
+  </data>
+  <data name="PowerDisplay_Monitor_CapabilitiesWarning.Title" xml:space="preserve">
+    <value>Monitor capabilities unavailable</value>
+  </data>
+  <data name="PowerDisplay_Monitor_CapabilitiesWarning.Message" xml:space="preserve">
+    <value>This monitor did not report DDC/CI capabilities. Advanced controls may be limited.</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCapabilities.Header" xml:space="preserve">
+    <value>VCP capabilities</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCapabilities.Description" xml:space="preserve">
+    <value>DDC/CI VCP codes and supported values (for debugging purposes)</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpDetails_Button.ToolTipService.ToolTip" xml:space="preserve">
+    <value>View VCP details</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpDetails_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>View VCP details</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCodes_Header.Text" xml:space="preserve">
+    <value>Detected VCP Codes</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCodes_CopyButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Copy all VCP codes to clipboard</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCodes_CopyButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Copy VCP codes to clipboard</value>
+  </data>
+  <data name="PowerDisplay_Monitor_VcpCodes_CopyText.Text" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="PowerDisplay_FlyoutOptions_GroupSettings.Header" xml:space="preserve">
+    <value>Flyout options</value>
+  </data>
+  <data name="PowerDisplay_ShowProfileSwitcher.Header" xml:space="preserve">
+    <value>Show profile switcher</value>
+  </data>
+  <data name="PowerDisplay_ShowProfileSwitcher.Description" xml:space="preserve">
+    <value>Show or hide the profile switcher button in the Power Display flyout</value>
+  </data>
+  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Header" xml:space="preserve">
+    <value>Show identify monitors button</value>
+  </data>
+  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Description" xml:space="preserve">
+    <value>Show or hide the identify monitors button in the Power Display flyout</value>
+  </data>
+  <data name="PowerDisplay_CustomVcpMappings_GroupSettings.Header" xml:space="preserve">
+    <value>Custom VCP Name Mappings</value>
+  </data>
+  <data name="PowerDisplay_CustomVcpMappings.Header" xml:space="preserve">
+    <value>Custom name mappings</value>
+  </data>
+  <data name="PowerDisplay_CustomVcpMappings.Description" xml:space="preserve">
+    <value>Define custom display names for color temperature presets and input sources</value>
+  </data>
+  <data name="PowerDisplay_AddCustomMappingButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Add custom mapping</value>
+  </data>
+  <data name="PowerDisplay_AddCustomMapping_Text.Text" xml:space="preserve">
+    <value>Add mapping</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_Title" xml:space="preserve">
+    <value>Custom VCP Name Mapping</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_VcpCode.Header" xml:space="preserve">
+    <value>VCP Code</value>
+  </data>
+  <data name="PowerDisplay_VcpCode_Name_0x14" xml:space="preserve">
+    <value>Color Temperature</value>
+  </data>
+  <data name="PowerDisplay_VcpCode_Name_0x60" xml:space="preserve">
+    <value>Input Source</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomName.Header" xml:space="preserve">
+    <value>Custom Name</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomName.PlaceholderText" xml:space="preserve">
+    <value>Enter custom name</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_ValueComboBox.Header" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomValueOption" xml:space="preserve">
+    <value>Custom value...</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomValueInput.Header" xml:space="preserve">
+    <value>Enter custom value (hex)</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_CustomValueInput.PlaceholderText" xml:space="preserve">
+    <value>e.g., 0x11 or 17</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_ApplyToAll.Header" xml:space="preserve">
+    <value>Apply to all monitors</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_ApplyToAll.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_ApplyToAll.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_CustomMappingEditor_SelectMonitor.Header" xml:space="preserve">
+    <value>Select monitor</value>
+  </data>
+  <data name="PowerDisplay_CustomMapping_Delete_Title" xml:space="preserve">
+    <value>Delete custom mapping?</value>
+  </data>
+  <data name="PowerDisplay_CustomMapping_Delete_Message" xml:space="preserve">
+    <value>This custom name mapping will be permanently removed.</value>
   </data>
   <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
     <value>Backup</value>
@@ -5774,9 +5712,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Open Command Palette</value>
     <comment>Command Palette is a product name, do not loc</comment>
   </data>
-  <data name="CmdPal_ShortDescription" xml:space="preserve">
-    <value>A better quick launcher</value>
-  </data>
   <data name="CmdPal_Description.Text" xml:space="preserve">
     <value>Find files, launch apps, and do so much more with the most extensible quick launcher.</value>
   </data>
@@ -5807,6 +5742,24 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>A modern UI built with Fluent Design</value>
     <comment>Fluent Design is a product name, do not loc</comment>
   </data>
+  <data name="ZoomIt_LiveZoom_Shortcut_Draw" xml:space="preserve">
+    <value>Press **{0}** to activate live drawing and **Esc** to clear annotations or to exit.
+
+Press **Ctrl + Up / Down** to adjust the zoom level.
+	</value>
+  </data>
+  <data name="ZoomIt_TypeFAQ.Text" xml:space="preserve">
+    <value>Press **T** to switch to typing when drawing mode is active, and **Shift** for right-aligned text.
+Press **Esc** or **the left mouse button** to exit typing mode.
+Press **the mouse wheel** or **Up / Down** to adjust the font size.
+Text uses the current drawing color.</value>
+  </data>
+  <data name="ZoomIt_DrawGroup.Description" xml:space="preserve">
+    <value>Annotate the screen.</value>
+  </data>
+  <data name="ZoomIt_Break_BackgroundImage_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
   <data name="ShowThemeAdaptiveTrayIcon.Content" xml:space="preserve">
     <value>Show a monochrome icon that matches the Windows theme</value>
   </data>
@@ -5827,5 +5780,36 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="LightSwitch_FollowNightLightCardMessage.Text" xml:space="preserve">
     <value>Following Night Light settings.</value>
+  </data>
+  <data name="Shell_TopLevelWindowsAndLayouts.Content" xml:space="preserve">
+    <value>Windowing &amp; Layouts</value>
+  </data>
+  <data name="OOBE_NavViewItem.Content" xml:space="preserve">
+    <value>Welcome to PowerToys</value>
+  </data>
+  <data name="ShortcutConflictWindow_IgnoreShortcut.Content" xml:space="preserve">
+    <value>Ignore shortcut</value>
+  </data>
+  <data name="AdvancedPaste_AddModelButton.Content" xml:space="preserve">
+    <value>Add model</value>
+  </data>
+  <data name="AdvancedPaste_EndpointDialog.Title" xml:space="preserve">
+    <value>Paste with AI provider configuration</value>
+  </data>
+  <data name="AdvancedPaste_ModelPath.Header" xml:space="preserve">
+    <value>Model path</value>
+  </data>
+  <data name="CmdPal_HeroTitle.Text" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>Command Palette is a product name and should not be localized</comment>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataButton.Content" xml:space="preserve">
+    <value>View diagnostic data</value>
+  </data>
+  <data name="Shell_Search_ShowAll.Text" xml:space="preserve">
+    <value>Show all results</value>
+  </data>
+  <data name="ZoomIt_Type_DemoSample.Text" xml:space="preserve">
+    <value>Sample</value>
   </data>
 </root>

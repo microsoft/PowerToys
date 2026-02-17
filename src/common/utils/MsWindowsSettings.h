@@ -1,5 +1,8 @@
 #pragma once
 
+#include <Windows.h>
+#include "../logger/logger.h"
+
 inline bool GetAnimationsEnabled()
 {
     BOOL enabled = 0;

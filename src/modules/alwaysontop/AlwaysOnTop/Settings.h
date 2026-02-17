@@ -15,6 +15,9 @@ class SettingsObserver;
 struct Settings
 {
     PowerToysSettings::HotkeyObject hotkey = PowerToysSettings::HotkeyObject::from_settings(true, true, false, false, 84); // win + ctrl + T
+    static constexpr int minTransparencyPercentage = 20; // minimum transparency (can't go below 20%)
+    static constexpr int maxTransparencyPercentage = 100; // maximum (fully opaque)
+    static constexpr int transparencyStep = 10; // step size for +/- adjustment
     bool enableFrame = true;
     bool enableSound = true;
     bool roundCornersEnabled = true;
