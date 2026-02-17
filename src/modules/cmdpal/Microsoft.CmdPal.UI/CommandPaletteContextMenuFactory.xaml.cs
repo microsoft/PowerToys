@@ -126,7 +126,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                 switch (_pinLocation)
                 {
                     case PinLocation.TopLevel:
-                        // UnpinFromTopLevel();
+                        UnpinFromTopLevel();
                         break;
 
                         // case PinLocation.Dock:
@@ -141,6 +141,12 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         private void PinToTopLevel()
         {
             PinCommandItemMessage message = new(_providerId, _commandId);
+            WeakReferenceMessenger.Default.Send(message);
+        }
+
+        private void UnpinFromTopLevel()
+        {
+            UnpinCommandItemMessage message = new(_providerId, _commandId);
             WeakReferenceMessenger.Default.Send(message);
         }
     }

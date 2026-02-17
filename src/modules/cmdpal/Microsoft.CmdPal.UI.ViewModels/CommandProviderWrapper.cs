@@ -312,6 +312,20 @@ public sealed class CommandProviderWrapper
         }
     }
 
+    public void UnpinCommand(string commandId, IServiceProvider serviceProvider)
+    {
+        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var providerSettings = GetProviderSettings(settings);
+
+        if (providerSettings.PinnedCommandIds.Remove(commandId))
+        {
+            SettingsModel.SaveSettings(settings);
+
+            // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
+            this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        }
+    }
+
     public CommandProviderContext GetProviderContext()
     {
         // n.b. If we try to call this before we call LoadTopLevelCommands, then

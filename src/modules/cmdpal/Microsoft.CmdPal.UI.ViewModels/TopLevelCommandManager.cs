@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -23,6 +23,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
     IRecipient<PinCommandItemMessage>,
+    IRecipient<UnpinCommandItemMessage>,
     IPageContext,
     IDisposable
 {
@@ -46,6 +47,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
         WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
     }
 
@@ -422,6 +424,12 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         var wrapper = LookupProvider(message.ProviderId);
         wrapper?.PinCommand(message.CommandId, _serviceProvider);
+    }
+
+    public void Receive(UnpinCommandItemMessage message)
+    {
+        var wrapper = LookupProvider(message.ProviderId);
+        wrapper?.UnpinCommand(message.CommandId, _serviceProvider);
     }
 
     public CommandProviderWrapper? LookupProvider(string providerId)
