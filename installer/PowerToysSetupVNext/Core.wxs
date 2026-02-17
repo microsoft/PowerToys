@@ -66,9 +66,9 @@
           <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
             <RegistryValue Type="string" Name="svgs_icons" Value="" KeyPath="yes" />
           </RegistryKey>
-          <File Id="icon.ico" Source="$(var.BinDir)svgs\icon.ico" />
-          <File Id="PowerToysWhite.ico" Source="$(var.BinDir)svgs\PowerToysWhite.ico" />
-          <File Id="PowerToysDark.ico" Source="$(var.BinDir)svgs\PowerToysDark.ico" />
+          <File Id="icon.ico" Source="$(var.BinDir)icon.ico" />
+          <File Id="PowerToysLight.ico" Source="$(var.BinDir)Assets\Runner\PowerToysLight.ico" />
+          <File Id="PowerToysDark.ico" Source="$(var.BinDir)Assets\Runner\PowerToysDark.ico" />
         </Component>
       </Directory>
     </DirectoryRef>
