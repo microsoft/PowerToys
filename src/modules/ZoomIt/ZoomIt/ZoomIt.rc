@@ -208,23 +208,23 @@ BEGIN
     GROUPBOX        "Sample",IDC_TEXT_FONT,8,61,99,28
 END
 
-BREAK DIALOGEX 0, 0, 260, 149
+BREAK DIALOGEX 0, 0, 260, 159
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_BREAK_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,52,67,80,12
-    EDITTEXT        IDC_TIMER,52,86,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_SPIN_TIMER,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,66,86,11,12
-    LTEXT           "minutes",IDC_STATIC,88,88,25,8
-    PUSHBUTTON      "&Advanced",IDC_ADVANCED_BREAK,213,130,41,14
-    LTEXT           "Enter timer mode by using the ZoomIt tray icon's Break menu item. Increase and decrease time with the arrow keys. If you Alt-Tab away from the timer window, reactivate it by left-clicking on the ZoomIt tray icon. Exit timer mode with Escape. ",IDC_STATIC,7,7,230,33
-    LTEXT           "Start Timer:",IDC_STATIC,7,70,39,8
-    LTEXT           "Timer:",IDC_STATIC,7,88,20,8
-    LTEXT           "Change the break timer color using the same keys that the drawing color. The break timer font is the same as text font.",IDC_STATIC,7,45,230,20
+    CONTROL         "",IDC_BREAK_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,52,74,80,12
+    EDITTEXT        IDC_TIMER,52,93,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_TIMER,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,66,93,11,12
+    LTEXT           "minutes",IDC_STATIC,88,95,25,8
+    PUSHBUTTON      "&Advanced",IDC_ADVANCED_BREAK,213,140,41,14
+    LTEXT           "Enter timer mode by using the ZoomIt tray icon's Break menu item. Increase and decrease time with the arrow keys. If you Alt-Tab away from the timer window, reactivate it by left-clicking on the ZoomIt tray icon. Exit timer mode with Escape. ",IDC_STATIC,7,7,242,33
+    LTEXT           "Start Timer:",IDC_STATIC,7,77,39,8
+    LTEXT           "Timer:",IDC_STATIC,7,95,20,8
+    LTEXT           "Change the break timer color using the same keys that the drawing color, including background color. The break timer font is the same as text font.",IDC_STATIC,7,45,241,26
     CONTROL         "Show Time Elapsed After Expiration:",IDC_CHECK_SHOW_EXPIRED,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,104,130,10
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,111,130,10
     CONTROL         "Lock Workstation During Break:",IDC_CHECK_LOCK_WORKSTATION,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,119,113,10
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,126,113,10
 END
 
 1543 DIALOGEX 100, 50, 216, 131
@@ -390,7 +390,7 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         TOPMARGIN, 7
-        BOTTOMMARGIN, 144
+        BOTTOMMARGIN, 154
     END
 
     1543, DIALOG
@@ -418,7 +418,6 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         TOPMARGIN, 7
-        BOTTOMMARGIN, 104
     END
 
     "PANORAMA", DIALOG

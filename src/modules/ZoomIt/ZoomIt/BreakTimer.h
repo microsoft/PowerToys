@@ -25,6 +25,7 @@
 struct BreakTimerSettings
 {
     DWORD       penColor;
+    DWORD       backgroundColor;        // 0 = white, 1 = black
     DWORD       timerPosition;          // 0–8 (3×3 grid)
     DWORD       opacity;                // 0–100
     DWORD       showExpiredTime;        // 0 or 1
