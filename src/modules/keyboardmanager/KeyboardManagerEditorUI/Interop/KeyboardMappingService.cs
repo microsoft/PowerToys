@@ -251,13 +251,31 @@ namespace KeyboardManagerEditorUI.Interop
                 var mapping = default(MouseButtonMapping);
                 if (KeyboardManagerInterop.GetMouseButtonRemap(_configHandle, i, ref mapping))
                 {
+                    string targetKeysStr = KeyboardManagerInterop.GetStringAndFree(mapping.TargetKeys);
+                    string targetKeyName = string.Empty;
+                    string targetShortcutKeys = string.Empty;
+
+                    if (mapping.TargetType == 0)
+                    {
+                        // Single key - convert code to display name
+                        if (int.TryParse(targetKeysStr, out int keyCode))
+                        {
+                            targetKeyName = GetKeyDisplayName(keyCode);
+                        }
+                    }
+                    else if (mapping.TargetType == 1)
+                    {
+                        // Shortcut - use as-is
+                        targetShortcutKeys = targetKeysStr;
+                    }
+
                     result.Add(new Helpers.MouseMapping
                     {
                         OriginalButtonCode = mapping.OriginalButton,
                         OriginalButton = GetMouseButtonName((MouseButtonCode)mapping.OriginalButton),
                         TargetType = ConvertTargetTypeToString(mapping.TargetType),
-                        TargetKeyName = mapping.TargetType == 0 ? KeyboardManagerInterop.GetStringAndFree(mapping.TargetKeys) : string.Empty,
-                        TargetShortcutKeys = mapping.TargetType == 1 ? KeyboardManagerInterop.GetStringAndFree(mapping.TargetKeys) : string.Empty,
+                        TargetKeyName = targetKeyName,
+                        TargetShortcutKeys = targetShortcutKeys,
                         TargetText = KeyboardManagerInterop.GetStringAndFree(mapping.TargetText),
                         ProgramPath = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramPath),
                         ProgramArgs = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramArgs),
@@ -369,15 +387,22 @@ namespace KeyboardManagerEditorUI.Interop
 
         /// <summary>
         /// Gets the mouse button code from a display name.
+        /// Returns null if the name is not recognized.
         /// </summary>
-        public MouseButtonCode GetMouseButtonFromName(string buttonName)
+        public MouseButtonCode? GetMouseButtonFromName(string buttonName)
         {
             if (string.IsNullOrEmpty(buttonName))
             {
-                return MouseButtonCode.Left;
+                return null;
             }
 
-            return (MouseButtonCode)KeyboardManagerInterop.GetMouseButtonFromName(buttonName);
+            int buttonCode = KeyboardManagerInterop.GetMouseButtonFromName(buttonName);
+            if (buttonCode == -1)
+            {
+                return null;
+            }
+
+            return (MouseButtonCode)buttonCode;
         }
 
         private static string ConvertTargetTypeToString(int targetType)

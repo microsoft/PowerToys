@@ -33,26 +33,29 @@
             Spacing="8">
             <TextBlock
                 x:Uid="UnifiedMappingControlTriggerTextBlock"
-                FontWeight="SemiBold"
-                Text="Trigger" />
+                FontWeight="SemiBold" />
 
             <ComboBox
                 x:Name="TriggerTypeComboBox"
                 HorizontalAlignment="Stretch"
                 SelectionChanged="TriggerTypeComboBox_SelectionChanged">
                 <ComboBoxItem
+                    x:Uid="UnifiedMappingControl_TriggerKeyOrShortcut"
                     AutomationProperties.Name="Key or shortcut"
                     IsSelected="True"
                     Tag="KeyOrShortcut">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xEDA7;" />
-                        <TextBlock Text="Key or shortcut" />
+                        <TextBlock x:Uid="UnifiedMappingControl_TriggerKeyOrShortcutText" />
                     </StackPanel>
                 </ComboBoxItem>
-                <ComboBoxItem AutomationProperties.Name="Mouse button" Tag="Mouse">
+                <ComboBoxItem
+                    x:Uid="UnifiedMappingControl_TriggerMouseButton"
+                    AutomationProperties.Name="Mouse button"
+                    Tag="Mouse">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="16" Glyph="&#xE962;" />
-                        <TextBlock Text="Mouse button" />
+                        <TextBlock x:Uid="UnifiedMappingControl_TriggerMouseButtonText" />
                     </StackPanel>
                 </ComboBoxItem>
             </ComboBox>
@@ -119,13 +122,13 @@
                         HorizontalAlignment="Stretch"
                         VerticalContentAlignment="Center"
                         SelectedIndex="0">
-                        <ComboBoxItem Content="Left Click" Tag="0" />
-                        <ComboBoxItem Content="Right Click" Tag="1" />
-                        <ComboBoxItem Content="Middle Click" Tag="2" />
-                        <ComboBoxItem Content="X1 (Back)" Tag="3" />
-                        <ComboBoxItem Content="X2 (Forward)" Tag="4" />
-                        <ComboBoxItem Content="Scroll Up" Tag="5" />
-                        <ComboBoxItem Content="Scroll Down" Tag="6" />
+                        <ComboBoxItem x:Uid="UnifiedMappingControl_MouseTriggerLeftClick" Tag="0" />
+                        <ComboBoxItem x:Uid="UnifiedMappingControl_MouseTriggerRightClick" Tag="1" />
+                        <ComboBoxItem x:Uid="UnifiedMappingControl_MouseTriggerMiddleClick" Tag="2" />
+                        <ComboBoxItem x:Uid="UnifiedMappingControl_MouseTriggerX1Back" Tag="3" />
+                        <ComboBoxItem x:Uid="UnifiedMappingControl_MouseTriggerX2Forward" Tag="4" />
+                        <ComboBoxItem x:Uid="UnifiedMappingControl_MouseTriggerScrollUp" Tag="5" />
+                        <ComboBoxItem x:Uid="UnifiedMappingControl_MouseTriggerScrollDown" Tag="6" />
                     </ComboBox>
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
@@ -183,8 +186,7 @@
             Spacing="8">
             <TextBlock
                 x:Uid="UnifiedMappingControlActionTextBlock"
-                FontWeight="SemiBold"
-                Text="Action" />
+                FontWeight="SemiBold" />
             <ComboBox
                 x:Name="ActionTypeComboBox"
                 HorizontalAlignment="Stretch"
@@ -216,10 +218,13 @@
                         <TextBlock Text="Open app" />
                     </StackPanel>
                 </ComboBoxItem>
-                <ComboBoxItem AutomationProperties.Name="Remap to mouse click" Tag="MouseClick">
+                <ComboBoxItem
+                    x:Uid="UnifiedMappingControl_ActionMouseClick"
+                    AutomationProperties.Name="Remap to mouse click"
+                    Tag="MouseClick">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xE962;" />
-                        <TextBlock Text="Remap to mouse click" />
+                        <TextBlock x:Uid="UnifiedMappingControl_ActionMouseClickText" />
                     </StackPanel>
                 </ComboBoxItem>
             </ComboBox>
@@ -388,22 +393,21 @@
                 <tkcontrols:Case Value="MouseClick">
                     <StackPanel Orientation="Vertical" Spacing="12">
                         <TextBlock
-                            x:Uid="UnifiedMappingControlMouseActionHeader"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="Select target mouse button" />
+                            x:Uid="UnifiedMappingControl_MouseActionHeader"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <ComboBox
                             x:Name="MouseActionComboBox"
                             MinHeight="48"
                             HorizontalAlignment="Stretch"
                             VerticalContentAlignment="Center"
                             SelectedIndex="0">
-                            <ComboBoxItem Content="Left Click" Tag="0" />
-                            <ComboBoxItem Content="Right Click" Tag="1" />
-                            <ComboBoxItem Content="Middle Click" Tag="2" />
-                            <ComboBoxItem Content="X1 (Back)" Tag="3" />
-                            <ComboBoxItem Content="X2 (Forward)" Tag="4" />
-                            <ComboBoxItem Content="Scroll Up" Tag="5" />
-                            <ComboBoxItem Content="Scroll Down" Tag="6" />
+                            <ComboBoxItem x:Uid="UnifiedMappingControl_MouseActionLeftClick" Tag="0" />
+                            <ComboBoxItem x:Uid="UnifiedMappingControl_MouseActionRightClick" Tag="1" />
+                            <ComboBoxItem x:Uid="UnifiedMappingControl_MouseActionMiddleClick" Tag="2" />
+                            <ComboBoxItem x:Uid="UnifiedMappingControl_MouseActionX1Back" Tag="3" />
+                            <ComboBoxItem x:Uid="UnifiedMappingControl_MouseActionX2Forward" Tag="4" />
+                            <ComboBoxItem x:Uid="UnifiedMappingControl_MouseActionScrollUp" Tag="5" />
+                            <ComboBoxItem x:Uid="UnifiedMappingControl_MouseActionScrollDown" Tag="6" />
                         </ComboBox>
                     </StackPanel>
                 </tkcontrols:Case>

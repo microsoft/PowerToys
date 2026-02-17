@@ -105,8 +105,8 @@ The central class that manages the low-level keyboard hook and coordinates remap
 
 **Key Methods:**
 ```cpp
-void StartHook();
-void StopHook();
+void StartLowlevelKeyboardHook();
+void StopLowlevelKeyboardHook();
 static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
 intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;
 ```

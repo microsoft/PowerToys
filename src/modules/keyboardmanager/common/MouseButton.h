@@ -95,15 +95,15 @@ namespace MouseButtonHelpers
         switch (button)
         {
         case MouseButton::Left:
-            return L"Left Button";
+            return L"Left Mouse Button";
         case MouseButton::Right:
-            return L"Right Button";
+            return L"Right Mouse Button";
         case MouseButton::Middle:
-            return L"Middle Button";
+            return L"Middle Mouse Button";
         case MouseButton::X1:
-            return L"X1 (Back)";
+            return L"Mouse X1 (Back)";
         case MouseButton::X2:
-            return L"X2 (Forward)";
+            return L"Mouse X2 (Forward)";
         case MouseButton::ScrollUp:
             return L"Scroll Up";
         case MouseButton::ScrollDown:

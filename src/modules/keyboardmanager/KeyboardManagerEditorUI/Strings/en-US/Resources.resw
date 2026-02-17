@@ -454,4 +454,68 @@
   <data name="MousePage_TargetAppTextBox.PlaceholderText" xml:space="preserve">
     <value>e.g., notepad.exe</value>
   </data>
+  <!-- UnifiedMappingControl Mouse Strings -->
+  <data name="UnifiedMappingControl_TriggerKeyOrShortcut.AutomationProperties.Name" xml:space="preserve">
+    <value>Key or shortcut</value>
+  </data>
+  <data name="UnifiedMappingControl_TriggerKeyOrShortcutText.Text" xml:space="preserve">
+    <value>Key or shortcut</value>
+  </data>
+  <data name="UnifiedMappingControl_TriggerMouseButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Mouse button</value>
+  </data>
+  <data name="UnifiedMappingControl_TriggerMouseButtonText.Text" xml:space="preserve">
+    <value>Mouse button</value>
+  </data>
+  <data name="UnifiedMappingControl_ActionMouseClick.AutomationProperties.Name" xml:space="preserve">
+    <value>Remap to mouse click</value>
+  </data>
+  <data name="UnifiedMappingControl_ActionMouseClickText.Text" xml:space="preserve">
+    <value>Remap to mouse click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionHeader.Text" xml:space="preserve">
+    <value>Select target mouse button</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerLeftClick.Content" xml:space="preserve">
+    <value>Left Click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerRightClick.Content" xml:space="preserve">
+    <value>Right Click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerMiddleClick.Content" xml:space="preserve">
+    <value>Middle Click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerX1Back.Content" xml:space="preserve">
+    <value>X1 (Back)</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerX2Forward.Content" xml:space="preserve">
+    <value>X2 (Forward)</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerScrollUp.Content" xml:space="preserve">
+    <value>Scroll Up</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerScrollDown.Content" xml:space="preserve">
+    <value>Scroll Down</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionLeftClick.Content" xml:space="preserve">
+    <value>Left Click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionRightClick.Content" xml:space="preserve">
+    <value>Right Click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionMiddleClick.Content" xml:space="preserve">
+    <value>Middle Click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionX1Back.Content" xml:space="preserve">
+    <value>X1 (Back)</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionX2Forward.Content" xml:space="preserve">
+    <value>X2 (Forward)</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionScrollUp.Content" xml:space="preserve">
+    <value>Scroll Up</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionScrollDown.Content" xml:space="preserve">
+    <value>Scroll Down</value>
+  </data>
 </root>

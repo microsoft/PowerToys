@@ -977,12 +977,12 @@ namespace KeyboardManagerEditorUI.Pages
                     if (shortcut.Id != null)
                     {
                         SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(shortcut.Id, out setting);
-                        Logger.LogInfo($"ToggleSwitch_Toggled: Setting lookup result: {(setting != null ? $"Found, OriginalKeys={setting.Shortcut.OriginalKeys}, OpType={setting.Shortcut.OperationType}" : "Not found")}");
+                        Logger.LogDebug($"ToggleSwitch_Toggled: Setting lookup result: {(setting != null ? $"Found, OriginalKeys={setting.Shortcut.OriginalKeys}, OpType={setting.Shortcut.OperationType}" : "Not found")}");
                     }
 
                     // Check if this is a mouse mapping
                     bool isMouseMapping = setting?.Shortcut.OriginalKeys?.StartsWith("mouse_", StringComparison.Ordinal) == true;
-                    Logger.LogInfo($"ToggleSwitch_Toggled: isMouseMapping={isMouseMapping}");
+                    Logger.LogDebug($"ToggleSwitch_Toggled: isMouseMapping={isMouseMapping}");
 
                     if (toggleSwitch.IsOn)
                     {
@@ -993,8 +993,14 @@ namespace KeyboardManagerEditorUI.Pages
                             {
                                 if (int.TryParse(setting.Shortcut.OriginalKeys, out int keyCode))
                                 {
-                                    MouseButtonCode mouseButtonCode = _mappingService.GetMouseButtonFromName(setting.Shortcut.TargetMouseButton);
-                                    _mappingService.AddKeyToMouseMapping(keyCode, mouseButtonCode, setting.Shortcut.TargetApp);
+                                    MouseButtonCode? mouseButtonCode = _mappingService.GetMouseButtonFromName(setting.Shortcut.TargetMouseButton);
+                                    if (mouseButtonCode == null)
+                                    {
+                                        Logger.LogWarning($"Unrecognized mouse button name: {setting.Shortcut.TargetMouseButton}");
+                                        return;
+                                    }
+
+                                    _mappingService.AddKeyToMouseMapping(keyCode, mouseButtonCode.Value, setting.Shortcut.TargetApp);
                                     shortcut.IsActive = true;
                                     if (shortcut.Id != null)
                                     {
@@ -1041,7 +1047,7 @@ namespace KeyboardManagerEditorUI.Pages
                                     _ => setting.Shortcut.TargetKeys?.Contains(';') == true ? 1 : 0, // Default: Shortcut vs Key
                                 };
 
-                                Logger.LogInfo($"ToggleSwitch_Toggled: Adding mouse button mapping, buttonCode={buttonCode}, targetType={targetType}, TargetKeys={setting.Shortcut.TargetKeys}, ProgramPath={setting.Shortcut.ProgramPath}, ProgramArgs={setting.Shortcut.ProgramArgs}, TargetText={setting.Shortcut.TargetText}, UriToOpen={setting.Shortcut.UriToOpen}");
+                                Logger.LogDebug($"ToggleSwitch_Toggled: Adding mouse button mapping, buttonCode={buttonCode}, targetType={targetType}, TargetKeys={setting.Shortcut.TargetKeys}, ProgramPath={setting.Shortcut.ProgramPath}, ProgramArgs={setting.Shortcut.ProgramArgs}, TargetText={setting.Shortcut.TargetText}, UriToOpen={setting.Shortcut.UriToOpen}");
                                 bool saved = _mappingService.AddMouseButtonMapping(
                                     (MouseButtonCode)buttonCode,
                                     setting.Shortcut.TargetKeys ?? string.Empty,
@@ -1051,7 +1057,7 @@ namespace KeyboardManagerEditorUI.Pages
                                     setting.Shortcut.ProgramPath,
                                     setting.Shortcut.ProgramArgs,
                                     setting.Shortcut.UriToOpen);
-                                Logger.LogInfo($"ToggleSwitch_Toggled: AddMouseButtonMapping result={saved}");
+                                Logger.LogDebug($"ToggleSwitch_Toggled: AddMouseButtonMapping result={saved}");
                                 if (saved)
                                 {
                                     shortcut.IsActive = true;
@@ -1061,7 +1067,7 @@ namespace KeyboardManagerEditorUI.Pages
                                     }
 
                                     bool saveResult = _mappingService.SaveSettings();
-                                    Logger.LogInfo($"ToggleSwitch_Toggled: SaveSettings result={saveResult}");
+                                    Logger.LogDebug($"ToggleSwitch_Toggled: SaveSettings result={saveResult}");
                                 }
                             }
 
@@ -1359,7 +1365,7 @@ namespace KeyboardManagerEditorUI.Pages
             foreach (var mapping in mouseButtonMappings)
             {
                 Logger.LogInfo($"LoadMouseMappings: Button={mapping.OriginalButton}, TargetType={mapping.TargetType}, Text={mapping.TargetText}");
-                var triggerDisplay = new List<string> { $"🖱️ {mapping.OriginalButton}" };
+                var triggerDisplay = new List<string> { $"{mapping.OriginalButton}" };
                 var targetDisplay = new List<string>();
 
                 // Look up settings from SettingsManager
@@ -1440,7 +1446,7 @@ namespace KeyboardManagerEditorUI.Pages
             foreach (var mapping in keyToMouseMappings)
             {
                 var triggerDisplay = new List<string> { mapping.OriginalKeyName };
-                var targetDisplay = new List<string> { $"🖱️ {mapping.TargetMouseButton}" };
+                var targetDisplay = new List<string> { $"{mapping.TargetMouseButton}" };
 
                 // Look up settings from SettingsManager
                 string keyOriginalKeys = mapping.OriginalKeyCode.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -1471,7 +1477,7 @@ namespace KeyboardManagerEditorUI.Pages
                 {
                     if (int.TryParse(shortcutSettings.Shortcut.OriginalKeys.AsSpan(6), out int buttonCode))
                     {
-                        var triggerDisplay = new List<string> { $"🖱️ {_mappingService.GetMouseButtonName((MouseButtonCode)buttonCode)}" };
+                        var triggerDisplay = new List<string> { $"{_mappingService.GetMouseButtonName((MouseButtonCode)buttonCode)}" };
 
                         switch (shortcutSettings.Shortcut.OperationType)
                         {
@@ -1540,7 +1546,7 @@ namespace KeyboardManagerEditorUI.Pages
                 if (!shortcutSettings.IsActive && int.TryParse(shortcutSettings.Shortcut.OriginalKeys, out int keyCode))
                 {
                     var triggerDisplay = new List<string> { GetKeyDisplayNameFromCode(keyCode) };
-                    var targetDisplay = new List<string> { $"🖱️ {shortcutSettings.Shortcut.TargetMouseButton}" };
+                    var targetDisplay = new List<string> { $"{shortcutSettings.Shortcut.TargetMouseButton}" };
 
                     RemappingList.Add(new Remapping
                     {

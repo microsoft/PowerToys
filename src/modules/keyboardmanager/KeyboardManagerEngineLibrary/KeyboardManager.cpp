@@ -293,12 +293,12 @@ bool KeyboardManager::HasRegisteredRemappings() const
 
 bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
 {
-    return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.singleKeyToTextReMap.empty() && state.keyToMouseReMap.empty());
+    return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.singleKeyToTextReMap.empty() && state.keyToMouseReMap.empty() && state.appSpecificKeyToMouseReMap.empty());
 }
 
 bool KeyboardManager::HasMouseRemappings() const
 {
-    return !state.mouseButtonReMap.empty() || !state.appSpecificMouseButtonReMap.empty() || !state.appSpecificKeyToMouseReMap.empty();
+    return !state.mouseButtonReMap.empty() || !state.appSpecificMouseButtonReMap.empty() ||;
 }
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
