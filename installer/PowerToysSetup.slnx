@@ -1,0 +1,22 @@
+<Solution>
+  <Configurations>
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="../src/common/logger/logger.vcxproj" Id="d9b8fc84-322a-4f9f-bbb9-20915c47ddfd">
+    <Build Solution="Debug|ARM64" Project="false" />
+  </Project>
+  <Project Path="../src/common/Telemetry/EtwTrace/EtwTrace.vcxproj" Id="8f021b46-362b-485c-bfba-ccf83e820cbd" />
+  <Project Path="../src/common/version/version.vcxproj" Id="cc6e41ac-8174-4e8a-8d22-85dd7f4851df" />
+  <Project Path="../src/logging/logging.vcxproj" Id="7e1e3f13-2bd6-3f75-a6a7-873a2b55c60f">
+    <Build Solution="Debug|ARM64" Project="false" />
+  </Project>
+  <Project Path="PowerToysSetupCustomActionsVNext/PowerToysSetupCustomActionsVNext.vcxproj" Id="b3a354b0-1e54-4b55-a962-fb5af9330c19">
+    <Build Solution="Debug|ARM64" Project="false" />
+  </Project>
+  <Project Path="PowerToysSetupVNext/PowerToysBootstrapperVNext.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0" />
+  <Project Path="PowerToysSetupVNext/PowerToysInstallerVNext.wixproj" Type="b7dd6f7e-def8-4e67-b5b7-07ef123db6f0" />
+  <Project Path="PowerToysSetupVNext/SilentFilesInUseBA/SilentFilesInUseBAFunction.vcxproj" Id="f8b9f842-f5c3-4a2d-8c85-7f8b9e2b4f1d">
+    <Build Solution="Debug|ARM64" Project="false" />
+  </Project>
+</Solution>

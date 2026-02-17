@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -76,7 +77,7 @@
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind ViewModel.ShowOnAllMonitors, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="FancyZonesSpanZonesAcrossMonitors" ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="FancyZones_SpanZonesAcrossMonitors" IsChecked="{x:Bind ViewModel.SpanZonesAcrossMonitors, Mode=TwoWay}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="FancyZones_SpanZonesAcrossMonitors" IsChecked="{x:Bind ViewModel.SpanZonesAcrossMonitors, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="FancyZonesOverlappingZones" x:Uid="FancyZones_OverlappingZones">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.OverlappingZonesAlgorithmIndex, Mode=TwoWay}">
@@ -192,7 +193,10 @@
                         x:Uid="FancyZones_WindowSwitching_GroupSettings"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.WindowSwitching, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="FancyZonesWindowSwitchingToggle"
+                            IsOn="{x:Bind ViewModel.WindowSwitching, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <!--  HACK: For some weird reason, a Shortcut Control is not working correctly if it's the first item in the expander, so we add an invisible card as the first one.  -->
                             <tkcontrols:SettingsCard Name="FancyZonesWindowSwitchingPlaceholder" Visibility="Collapsed" />
@@ -228,7 +232,7 @@
                                     SelectedIndex="{x:Bind ViewModel.MoveWindowsBasedOnPosition, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                                     <ComboBoxItem x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible">
                                         <StackPanel Orientation="Vertical" Spacing="4">
-                                            <controls:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex" />
+                                            <ptcontrols:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex" />
                                             <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
                                                 <Run x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description" />
                                             </TextBlock>
@@ -236,7 +240,7 @@
                                     </ComboBoxItem>
                                     <ComboBoxItem x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Accessible">
                                         <StackPanel Orientation="Vertical" Spacing="4">
-                                            <controls:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowBasedOnRelativePosition" />
+                                            <ptcontrols:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowBasedOnRelativePosition" />
                                             <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
                                                 <Run x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Description" />
                                             </TextBlock>
@@ -259,7 +263,10 @@
                         Name="FancyZonesQuickLayoutSwitch"
                         x:Uid="FancyZones_QuickLayoutSwitch"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.QuickLayoutSwitch, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.Name="FancyZonesQuickLayoutSwitch"
+                            IsOn="{x:Bind ViewModel.QuickLayoutSwitch, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 Name="FancyZonesFlashZonesOnQuickSwitch"

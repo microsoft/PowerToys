@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -89,7 +90,7 @@
                                 <CheckBox x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Wrap_Text" IsChecked="{x:Bind ViewModel.MonacoWrapText, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl
+                                <ptcontrols:CheckBoxWithDescriptionControl
                                     x:Uid="FileExplorerPreview_ToggleSwitch_Monaco_Try_Format"
                                     IsChecked="{x:Bind ViewModel.MonacoPreviewTryFormat, Mode=TwoWay}"
                                     IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}" />

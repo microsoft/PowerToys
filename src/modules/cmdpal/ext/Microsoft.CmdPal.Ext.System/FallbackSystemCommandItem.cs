@@ -12,8 +12,10 @@ namespace Microsoft.CmdPal.Ext.System;
 
 internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
 {
+    private const string _id = "com.microsoft.cmdpal.builtin.system.fallback";
+
     public FallbackSystemCommandItem(ISettingsInterface settings)
-        : base(new NoOpCommand(), Resources.Microsoft_plugin_ext_fallback_display_title)
+        : base(new NoOpCommand(), Resources.Microsoft_plugin_ext_fallback_display_title, _id)
     {
         Title = string.Empty;
         Subtitle = string.Empty;

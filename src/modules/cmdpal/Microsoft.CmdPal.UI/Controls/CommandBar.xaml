@@ -142,9 +142,9 @@
                     FontSize="16"
                     Glyph="&#xE713;" />
                 <TextBlock
+                    x:Uid="SettingsButtonTextBlock"
                     VerticalAlignment="Center"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="Settings" />
+                    Style="{StaticResource CaptionTextBlockStyle}" />
             </StackPanel>
         </Button>
         <TextBlock
@@ -205,7 +205,7 @@
                         TextWrapping="NoWrap" />
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
-                            <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="Ctrl" />
+                            <TextBlock x:Uid="CommandBar_SecondaryButton_HotkeyCtrl" Style="{StaticResource HotkeyTextBlockStyle}" />
                         </Border>
                         <Border Style="{StaticResource HotkeyStyle}">
                             <FontIcon Glyph="&#xE751;" Style="{StaticResource HotkeyFontIconStyle}" />
@@ -220,21 +220,20 @@
                 AutomationProperties.AutomationId="MoreContextMenuButton"
                 Click="MoreCommandsButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
-                ToolTipService.ToolTip="Ctrl+K"
                 Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
+                        x:Uid="MoreCommandsButton_Label"
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="More"
                         TextTrimming="WordEllipsis"
                         TextWrapping="NoWrap" />
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
-                            <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="Ctrl" />
+                            <TextBlock x:Uid="CommandBar_MoreCommandsButtonButton_HotkeyCtrl" Style="{StaticResource HotkeyTextBlockStyle}" />
                         </Border>
                         <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
-                            <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="K" />
+                            <TextBlock x:Uid="CommandBar_MoreCommandsButtonButton_HotkeyCtrl2" Style="{StaticResource HotkeyTextBlockStyle}" />
                         </Border>
                     </StackPanel>
                 </StackPanel>

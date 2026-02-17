@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.PowerToys.UITest;
@@ -16,6 +17,20 @@ namespace LightSwitch.UITests
     internal sealed class TestHelper
     {
         private static readonly string[] ShortcutSeparators = { " + ", "+", " " };
+
+        [DllImport("PowerToys.LightSwitchModuleInterface.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void LightSwitch_SetSystemTheme(bool isLight);
+
+        [DllImport("PowerToys.LightSwitchModuleInterface.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void LightSwitch_SetAppsTheme(bool isLight);
+
+        [DllImport("PowerToys.LightSwitchModuleInterface.dll", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        private static extern bool LightSwitch_GetCurrentSystemTheme();
+
+        [DllImport("PowerToys.LightSwitchModuleInterface.dll", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        private static extern bool LightSwitch_GetCurrentAppsTheme();
 
         /// <summary>
         /// Performs common test initialization: navigate to settings, enable toggle, verify shortcut
@@ -127,8 +142,7 @@ namespace LightSwitch.UITests
         /// <param name="testBase">The test base instance</param>
         public static void CleanupTest(UITestBase testBase)
         {
-            // TODO: Make sure the task kills?
-            // CloseLightSwitch(testBase);
+            CloseLightSwitch(testBase);
 
             // Ensure we're attached to settings after cleanup
             try
@@ -138,6 +152,51 @@ namespace LightSwitch.UITests
             catch
             {
                 // Ignore attachment errors - this is just cleanup
+            }
+        }
+
+        /// <summary>
+        /// Switch to white/light theme for both system and apps
+        /// </summary>
+        /// <param name="testBase">The test base instance</param>
+        public static void CloseLightSwitch(UITestBase testBase)
+        {
+            // Kill LightSwitch process before setting themes
+            KillLightSwitchProcess();
+
+            // Set both themes to light (white)
+            SetSystemTheme(true);
+            SetAppsTheme(true);
+        }
+
+        /// <summary>
+        /// Kill the LightSwitch service process if it's running
+        /// </summary>
+        private static void KillLightSwitchProcess()
+        {
+            try
+            {
+                var processes = System.Diagnostics.Process.GetProcessesByName("PowerToys.LightSwitchService");
+                foreach (var process in processes)
+                {
+                    try
+                    {
+                        process.Kill();
+                        process.WaitForExit(2000);
+                    }
+                    catch
+                    {
+                        // Ignore errors killing individual processes
+                    }
+                    finally
+                    {
+                        process.Dispose();
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore errors enumerating processes
             }
         }
 
@@ -152,16 +211,16 @@ namespace LightSwitch.UITests
 
             var neededTabs = 6;
 
-            if (modeCombobox.Text != "Manual")
+            if (modeCombobox.Text != "Fixed hours")
             {
                 modeCombobox.Click();
                 var manualListItem = testBase.Session.Find<Element>(By.AccessibilityId("ManualCBItem_LightSwitch"), 5000);
-                Assert.IsNotNull(manualListItem, "Manual combobox item not found.");
+                Assert.IsNotNull(manualListItem, "Fixed Hours combobox item not found.");
                 manualListItem.Click();
                 neededTabs = 1;
             }
 
-            Assert.AreEqual("Manual", modeCombobox.Text, "Mode combobox should be set to Manual.");
+            Assert.AreEqual("Fixed hours", modeCombobox.Text, "Mode combobox should be set to Fixed hours.");
 
             var timeline = testBase.Session.Find<Element>(By.AccessibilityId("Timeline_LightSwitch"), 5000);
             Assert.IsNotNull(timeline, "Timeline not found.");
@@ -198,7 +257,7 @@ namespace LightSwitch.UITests
         }
 
         /// <summary>
-        /// Perform a update geolocation test operation
+        /// Perform a update manual location test operation
         /// </summary>
         public static void PerformUserSelectedLocationTest(UITestBase testBase)
         {
@@ -216,19 +275,22 @@ namespace LightSwitch.UITests
 
             Assert.AreEqual("Sunset to sunrise", modeCombobox.Text, "Mode combobox should be set to Sunset to sunrise.");
 
+            // Click the select location button
             var setLocationButton = testBase.Session.Find<Element>(By.AccessibilityId("SetLocationButton_LightSwitch"), 5000);
             Assert.IsNotNull(setLocationButton, "Set location button not found.");
-            setLocationButton.Click();
+            setLocationButton.Click(msPostAction: 1000);
 
-            var autoSuggestTextbox = testBase.Session.Find<Element>(By.AccessibilityId("CitySearchBox_LightSwitch"), 5000);
-            Assert.IsNotNull(autoSuggestTextbox, "City search box not found.");
-            autoSuggestTextbox.Click();
-            autoSuggestTextbox.SendKeys("Seattle");
-            autoSuggestTextbox.SendKeys(OpenQA.Selenium.Keys.Down);
-            autoSuggestTextbox.SendKeys(OpenQA.Selenium.Keys.Enter);
+            var latitudeBox = testBase.Session.Find<Element>(By.AccessibilityId("LatitudeBox_LightSwitch"), 5000);
+            Assert.IsNotNull(latitudeBox, "Latitude text box not found.");
+            latitudeBox.Click();
 
-            var latLong = testBase.Session.Find<Element>(By.AccessibilityId("LocationResultText_LightSwitch"), 5000);
-            Assert.IsFalse(string.IsNullOrWhiteSpace(latLong.Text));
+            testBase.Session.SendKeys(Key.Up);
+
+            var longitudeBox = testBase.Session.Find<Element>(By.AccessibilityId("LongitudeBox_LightSwitch"), 5000);
+            Assert.IsNotNull(longitudeBox, "Longitude text box not found.");
+            longitudeBox.Click();
+
+            testBase.Session.SendKeys(Key.Down);
 
             var sunrise = testBase.Session.Find<Element>(By.AccessibilityId("SunriseText_LightSwitch"), 5000);
             Assert.IsFalse(string.IsNullOrWhiteSpace(sunrise.Text));
@@ -256,13 +318,14 @@ namespace LightSwitch.UITests
 
             Assert.AreEqual("Sunset to sunrise", modeCombobox.Text, "Mode combobox should be set to Sunset to sunrise.");
 
-            // Click the select city button
+            // Click the select location button
             var setLocationButton = testBase.Session.Find<Element>(By.AccessibilityId("SetLocationButton_LightSwitch"), 5000);
             Assert.IsNotNull(setLocationButton, "Set location button not found.");
-            setLocationButton.Click(msPostAction: 8000);
+            setLocationButton.Click(msPostAction: 1000);
 
-            var latLong = testBase.Session.Find<Element>(By.AccessibilityId("LocationResultText_LightSwitch"), 5000);
-            Assert.IsFalse(string.IsNullOrWhiteSpace(latLong.Text));
+            var syncLocationButton = testBase.Session.Find<Element>(By.AccessibilityId("SyncLocationButton_LightSwitch"), 5000);
+            Assert.IsNotNull(syncLocationButton, "Sync location button not found.");
+            syncLocationButton.Click(msPostAction: 8000);
 
             var sunrise = testBase.Session.Find<Element>(By.AccessibilityId("SunriseText_LightSwitch"), 5000);
             Assert.IsFalse(string.IsNullOrWhiteSpace(sunrise.Text));
@@ -363,6 +426,7 @@ namespace LightSwitch.UITests
             var systemBeforeValue = GetSystemTheme();
             var appsBeforeValue = GetAppsTheme();
 
+            Task.Delay(1000).Wait();
             testBase.Session.SendKeys(activationKeys);
             Task.Delay(5000).Wait();
 
@@ -389,6 +453,7 @@ namespace LightSwitch.UITests
             var noneSystemBeforeValue = GetSystemTheme();
             var noneAppsBeforeValue = GetAppsTheme();
 
+            Task.Delay(1000).Wait();
             testBase.Session.SendKeys(activationKeys);
             Task.Delay(5000).Wait();
 
@@ -402,24 +467,22 @@ namespace LightSwitch.UITests
         /* Helpers */
         private static int GetSystemTheme()
         {
-            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-            if (key is null)
-            {
-                return 1;
-            }
-
-            return (int)key.GetValue("SystemUsesLightTheme", 1);
+            return LightSwitch_GetCurrentSystemTheme() ? 1 : 0;
         }
 
         private static int GetAppsTheme()
         {
-            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-            if (key is null)
-            {
-                return 1;
-            }
+            return LightSwitch_GetCurrentAppsTheme() ? 1 : 0;
+        }
 
-            return (int)key.GetValue("AppsUseLightTheme", 1);
+        private static void SetSystemTheme(bool isLight)
+        {
+            LightSwitch_SetSystemTheme(isLight);
+        }
+
+        private static void SetAppsTheme(bool isLight)
+        {
+            LightSwitch_SetAppsTheme(isLight);
         }
 
         private static string GetHelpTextValue(string helpText, string key)

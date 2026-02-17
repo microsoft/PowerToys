@@ -171,9 +171,6 @@
   <data name="Indexer_Settings_FallbackCommand_FilePathExist" xml:space="preserve">
     <value>Only when file path exist</value>
   </data>
-  <data name="Indexer_Subtitle" xml:space="preserve">
-    <value>Search files on this device</value>
-  </data>
   <data name="Indexer_Title" xml:space="preserve">
     <value>Search files</value>
   </data>
@@ -204,5 +201,17 @@ You can try searching all files on this PC or adjust your indexing settings.</va
   </data>
   <data name="Indexer_Filter_Files_Only" xml:space="preserve">
     <value>Files</value>
+  </data>
+  <data name="Indexer_Command_Peek" xml:space="preserve">
+    <value>Peek preview</value>
+  </data>
+  <data name="Indexer_Command_Peek_NotAvailable" xml:space="preserve">
+    <value>PowerToys Peek is not available</value>
+  </data>
+  <data name="Indexer_Command_Peek_Failed" xml:space="preserve">
+    <value>Failed to launch Peek</value>
+  </data>
+  <data name="Indexer_Fallback_MultipleResults_Subtitle" xml:space="preserve">
+    <value>The query matches multiple items</value>
   </data>
 </root>

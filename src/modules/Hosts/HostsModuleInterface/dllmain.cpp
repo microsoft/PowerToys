@@ -155,7 +155,7 @@ public:
             }
         }
 
-        m_showEventWaiter = EventWaiter(CommonSharedConstants::SHOW_HOSTS_EVENT, [&](int err)
+        m_showEventWaiter.start(CommonSharedConstants::SHOW_HOSTS_EVENT, [&](DWORD err)
         {
             if (m_enabled && err == ERROR_SUCCESS)
             {
@@ -174,7 +174,7 @@ public:
             }
         });
 
-        m_showAdminEventWaiter = EventWaiter(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT, [&](int err)
+        m_showAdminEventWaiter.start(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT, [&](DWORD err)
         {
             if (m_enabled && err == ERROR_SUCCESS)
             {

@@ -31,6 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private string _searchText;
+        private bool _hotkeyChanged;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -161,6 +162,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             // Notify UI of property change
             OnPropertyChanged(propertyName);
+
+            // Since PowerLauncher registers its hotkeys independently within the module process,
+            // the runner is notified to update PowerLauncher’s hotkeys only when changes occur.
+            // This prevents incorrect conflict detection results.
+            settings.Properties.HotkeyChanged = _hotkeyChanged;
+            _hotkeyChanged = false;
 
             callback(settings);
         }
@@ -335,6 +342,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (settings.Properties.OpenPowerLauncher != value)
                 {
                     settings.Properties.OpenPowerLauncher = value ?? settings.Properties.DefaultOpenPowerLauncher;
+                    _hotkeyChanged = true;
                     UpdateSettings();
                 }
             }

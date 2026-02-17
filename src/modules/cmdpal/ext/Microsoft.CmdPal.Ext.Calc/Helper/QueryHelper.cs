@@ -12,7 +12,13 @@ namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
 public static partial class QueryHelper
 {
-    public static ListItem Query(string query, ISettingsInterface settings, bool isFallbackSearch, TypedEventHandler<object, object> handleSave = null)
+    public static ListItem Query(
+        string query,
+        ISettingsInterface settings,
+        bool isFallbackSearch,
+        out string displayQuery,
+        TypedEventHandler<object, object> handleSave = null,
+        TypedEventHandler<object, object> handleReplace = null)
     {
         ArgumentNullException.ThrowIfNull(query);
         if (!isFallbackSearch)
@@ -20,24 +26,48 @@ public static partial class QueryHelper
             ArgumentNullException.ThrowIfNull(handleSave);
         }
 
-        CultureInfo inputCulture = settings.InputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
-        CultureInfo outputCulture = settings.OutputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
+        CultureInfo inputCulture =
+            settings.InputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
+        CultureInfo outputCulture =
+            settings.OutputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
 
         // In case the user pastes a query with a leading =
-        query = query.TrimStart('=');
+        query = query.TrimStart('=').TrimStart();
+
+        // Enables better looking characters for multiplication and division (e.g., '×' and '÷')
+        displayQuery = CalculateHelper.NormalizeCharsForDisplayQuery(query);
 
         // Happens if the user has only typed the action key so far
-        if (string.IsNullOrEmpty(query))
+        if (string.IsNullOrEmpty(displayQuery))
         {
             return null;
         }
 
-        NumberTranslator translator = NumberTranslator.Create(inputCulture, new CultureInfo("en-US"));
-        var input = translator.Translate(query.Normalize(NormalizationForm.FormKC));
+        // Normalize query to engine format (e.g., replace '×' with '*', converts superscripts to functions)
+        // This must be done before any further normalization to avoid losing information
+        var engineQuery = CalculateHelper.NormalizeCharsToEngine(displayQuery);
+
+        // Cleanup rest of the Unicode characters, whitespace
+        var queryForEngine2 = engineQuery.Normalize(NormalizationForm.FormKC);
+
+        // Translate numbers from input culture to en-US culture for the calculation engine
+        var translator = NumberTranslator.Create(inputCulture, new CultureInfo("en-US"));
+
+        // Translate the input query
+        var input = translator.Translate(queryForEngine2);
 
         if (string.IsNullOrWhiteSpace(input))
         {
             return ErrorHandler.OnError(isFallbackSearch, query, Properties.Resources.calculator_expression_empty);
+        }
+
+        // normalize again to engine chars after translation
+        input = CalculateHelper.NormalizeCharsToEngine(input);
+
+        // Auto fix incomplete queries (if enabled)
+        if (settings.AutoFixQuery && TryGetIncompleteQuery(input, out var newInput))
+        {
+            input = newInput;
         }
 
         if (!CalculateHelper.InputValid(input))
@@ -60,10 +90,10 @@ public static partial class QueryHelper
             if (isFallbackSearch)
             {
                 // Fallback search
-                return ResultHelper.CreateResult(result.RoundedResult, inputCulture, outputCulture, query);
+                return ResultHelper.CreateResult(result.RoundedResult, inputCulture, outputCulture, displayQuery);
             }
 
-            return ResultHelper.CreateResult(result.RoundedResult, inputCulture, outputCulture, query, settings, handleSave);
+            return ResultHelper.CreateResult(result.RoundedResult, inputCulture, outputCulture, displayQuery, settings, handleSave, handleReplace);
         }
         catch (OverflowException)
         {
@@ -76,5 +106,33 @@ public static partial class QueryHelper
             // We want to keep the process alive if any the mages library throws any exceptions.
             return ErrorHandler.OnError(isFallbackSearch, query, default, e);
         }
+    }
+
+    public static bool TryGetIncompleteQuery(string query, out string newQuery)
+    {
+        newQuery = query;
+
+        var trimmed = query.TrimEnd();
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            return false;
+        }
+
+        // 1. Trim trailing operators
+        var operators = CalculateHelper.GetQueryOperators();
+        while (trimmed.Length > 0 && Array.IndexOf(operators, trimmed[^1]) > -1)
+        {
+            trimmed = trimmed[..^1].TrimEnd();
+        }
+
+        if (trimmed.Length == 0)
+        {
+            return false;
+        }
+
+        // 2. Fix brackets
+        newQuery = BracketHelper.BalanceBrackets(trimmed);
+
+        return true;
     }
 }

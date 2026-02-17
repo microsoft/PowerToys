@@ -38,6 +38,7 @@ Gbps
 gcode
 Heatshrink
 Mbits
+Kbits
 MBs
 mkv
 msix
@@ -95,7 +96,9 @@ OTP
 Yubi
 Yubico
 Perplexity
+Groq
 svgl
+devhome
 
 # KEYS
 
@@ -321,3 +324,28 @@ REGSTR
 
 # Misc Win32 APIs and PInvokes
 INVOKEIDLIST
+MEMORYSTATUSEX
+
+# PowerRename metadata pattern abbreviations (used in tests and regex patterns)
+DDDD
+FFF
+HHH
+riday
+YYY
+
+# Unicode
+precomposed
+
+# GitHub issue/PR commands
+azp
+feedbackhub
+needinfo
+reportbug
+
+#ffmpeg
+crf
+nostdin
+
+# Performance counter keys
+engtype
+Nonpaged

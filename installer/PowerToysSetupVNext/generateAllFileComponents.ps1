@@ -176,6 +176,10 @@ Generate-FileComponents -fileListName "ImageResizerAssetsFiles" -wxsFilePath $PS
 Generate-FileList -fileDepsJson "" -fileListName LightSwitchFiles -wxsFilePath $PSScriptRoot\LightSwitch.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\LightSwitchService"
 Generate-FileComponents -fileListName "LightSwitchFiles" -wxsFilePath $PSScriptRoot\LightSwitch.wxs
 
+#PowerDisplay
+Generate-FileList -fileDepsJson "" -fileListName PowerDisplayAssetsFiles -wxsFilePath $PSScriptRoot\PowerDisplay.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\PowerDisplay"
+Generate-FileComponents -fileListName "PowerDisplayAssetsFiles" -wxsFilePath $PSScriptRoot\PowerDisplay.wxs
+
 #New+
 Generate-FileList -fileDepsJson "" -fileListName NewPlusAssetsFiles -wxsFilePath $PSScriptRoot\NewPlus.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\NewPlus"
 Generate-FileComponents -fileListName "NewPlusAssetsFiles" -wxsFilePath $PSScriptRoot\NewPlus.wxs
@@ -307,11 +311,17 @@ Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsFiles -wxsFileP
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsModulesFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Modules\"
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEAssetsModulesFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Modules\OOBE\"
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEAssetsFluentIconsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Icons\"
+Generate-FileList -fileDepsJson "" -fileListName SettingsV2IconsModelsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Icons\Models\"
 Generate-FileComponents -fileListName "SettingsV2AssetsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2AssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2OOBEAssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2OOBEAssetsFluentIconsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
+Generate-FileComponents -fileListName "SettingsV2IconsModelsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 
 #Workspaces
 Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Workspaces\"
 Generate-FileComponents -fileListName "WorkspacesImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
+
+#DSC Resources - JSON manifest files in DSCModules subfolder
+Generate-FileList -fileDepsJson "" -fileListName DscJsonFiles -wxsFilePath $PSScriptRoot\DscResources.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\DSCModules\"
+Generate-FileComponents -fileListName "DscJsonFiles" -wxsFilePath $PSScriptRoot\DscResources.wxs

@@ -5,33 +5,236 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
-    xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     x:Name="PageRoot"
     Background="Transparent"
     DataContext="{x:Bind ViewModel, Mode=OneWay}"
     mc:Ignorable="d">
 
     <Page.Resources>
-        <!--  TODO: Figure out what we want to do here for filtering/grouping and where  -->
-        <!--  https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.data.collectionviewsource  -->
-        <!--<CollectionViewSource
-            x:Name="ItemsCVS"
-            IsSourceGrouped="True"
-            Source="{x:Bind ViewModel.Items, Mode=OneWay}" />-->
 
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <converters:StringVisibilityConverter
-            x:Key="StringVisibilityConverter"
-            EmptyValue="Collapsed"
-            NotEmptyValue="Visible" />
+        <!--
+            GridViewItemCornerRadius is the corner radius defined in GridView template; make
+            it bigger to match the radii of the gallery
+        -->
+        <CornerRadius x:Key="GalleryGridViewItemContainerCornerRadius">6</CornerRadius>
+        <CornerRadius x:Key="IconGridViewItemContainerCornerRadius">4</CornerRadius>
+        <CornerRadius x:Key="GalleryGridViewItemRadius">4</CornerRadius>
+        <CornerRadius x:Key="SmallGridViewItemCornerRadius">8</CornerRadius>
+        <CornerRadius x:Key="MediumGridViewItemCornerRadius">8</CornerRadius>
+
+        <x:Double x:Key="SmallGridSize">32</x:Double>
+        <x:Double x:Key="MediumGridSize">48</x:Double>
+        <x:Double x:Key="MediumGridContainerSize">100</x:Double>
+        <x:Double x:Key="GalleryGridSize">160</x:Double>
+
+        <x:Double x:Key="ListViewItemMinHeight">40</x:Double>
+        <x:Double x:Key="ListViewSectionMinHeight">0</x:Double>
+        <x:Double x:Key="ListViewSeparatorMinHeight">0</x:Double>
+
+        <Style x:Key="IconGridViewItemStyle" TargetType="GridViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewItem">
+                        <ListViewItemPresenter
+                            x:Name="Root"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            CheckBoxBorderBrush="{ThemeResource GridViewItemCheckBoxBorderBrush}"
+                            CheckBoxBrush="{ThemeResource GridViewItemCheckBoxBrush}"
+                            CheckBoxCornerRadius="{ThemeResource GridViewItemCheckBoxCornerRadius}"
+                            CheckBoxDisabledBorderBrush="{ThemeResource GridViewItemCheckBoxDisabledBorderBrush}"
+                            CheckBoxDisabledBrush="{ThemeResource GridViewItemCheckBoxDisabledBrush}"
+                            CheckBoxPointerOverBorderBrush="{ThemeResource GridViewItemCheckBoxPointerOverBorderBrush}"
+                            CheckBoxPointerOverBrush="{ThemeResource GridViewItemCheckBoxPointerOverBrush}"
+                            CheckBoxPressedBorderBrush="{ThemeResource GridViewItemCheckBoxPressedBorderBrush}"
+                            CheckBoxPressedBrush="{ThemeResource GridViewItemCheckBoxPressedBrush}"
+                            CheckBoxSelectedBrush="{ThemeResource GridViewItemCheckBoxSelectedBrush}"
+                            CheckBoxSelectedDisabledBrush="{ThemeResource GridViewItemCheckBoxSelectedDisabledBrush}"
+                            CheckBoxSelectedPointerOverBrush="{ThemeResource GridViewItemCheckBoxSelectedPointerOverBrush}"
+                            CheckBoxSelectedPressedBrush="{ThemeResource GridViewItemCheckBoxSelectedPressedBrush}"
+                            CheckBrush="{ThemeResource GridViewItemCheckBrush}"
+                            CheckDisabledBrush="{ThemeResource GridViewItemCheckDisabledBrush}"
+                            CheckMode="{ThemeResource GridViewItemCheckMode}"
+                            CheckPressedBrush="{ThemeResource GridViewItemCheckPressedBrush}"
+                            ContentMargin="{TemplateBinding Padding}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            Control.IsTemplateFocusTarget="True"
+                            CornerRadius="{StaticResource IconGridViewItemContainerCornerRadius}"
+                            DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                            DragBackground="{ThemeResource GridViewItemDragBackground}"
+                            DragForeground="{ThemeResource GridViewItemDragForeground}"
+                            DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+                            FocusBorderBrush="{ThemeResource GridViewItemFocusBorderBrush}"
+                            FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                            FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
+                            FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
+                            FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
+                            FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
+                            PlaceholderBackground="{ThemeResource GridViewItemPlaceholderBackground}"
+                            PointerOverBackground="{ThemeResource GridViewItemBackgroundPointerOver}"
+                            PointerOverBorderBrush="{ThemeResource GridViewItemPointerOverBorderBrush}"
+                            PointerOverForeground="{ThemeResource GridViewItemForegroundPointerOver}"
+                            PressedBackground="{ThemeResource GridViewItemBackgroundPressed}"
+                            ReorderHintOffset="{ThemeResource GridViewItemReorderHintThemeOffset}"
+                            SelectedBackground="{ThemeResource GridViewItemBackgroundSelected}"
+                            SelectedBorderBrush="{ThemeResource GridViewItemSelectedBorderBrush}"
+                            SelectedBorderThickness="{ThemeResource GridViewItemSelectedBorderThickness}"
+                            SelectedDisabledBackground="{ThemeResource GridViewItemBackgroundSelectedDisabled}"
+                            SelectedDisabledBorderBrush="{ThemeResource GridViewItemSelectedDisabledBorderBrush}"
+                            SelectedForeground="{ThemeResource GridViewItemForegroundSelected}"
+                            SelectedInnerBorderBrush="{ThemeResource GridViewItemSelectedInnerBorderBrush}"
+                            SelectedPointerOverBackground="{ThemeResource GridViewItemBackgroundSelectedPointerOver}"
+                            SelectedPointerOverBorderBrush="{ThemeResource GridViewItemSelectedPointerOverBorderBrush}"
+                            SelectedPressedBackground="{ThemeResource GridViewItemBackgroundSelectedPressed}"
+                            SelectedPressedBorderBrush="{ThemeResource GridViewItemSelectedPressedBorderBrush}"
+                            SelectionCheckMarkVisualEnabled="{ThemeResource GridViewItemSelectionCheckMarkVisualEnabled}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="GalleryGridViewItemStyle" TargetType="GridViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewItem">
+                        <ListViewItemPresenter
+                            x:Name="Root"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            CheckBoxBorderBrush="{ThemeResource GridViewItemCheckBoxBorderBrush}"
+                            CheckBoxBrush="{ThemeResource GridViewItemCheckBoxBrush}"
+                            CheckBoxCornerRadius="{ThemeResource GridViewItemCheckBoxCornerRadius}"
+                            CheckBoxDisabledBorderBrush="{ThemeResource GridViewItemCheckBoxDisabledBorderBrush}"
+                            CheckBoxDisabledBrush="{ThemeResource GridViewItemCheckBoxDisabledBrush}"
+                            CheckBoxPointerOverBorderBrush="{ThemeResource GridViewItemCheckBoxPointerOverBorderBrush}"
+                            CheckBoxPointerOverBrush="{ThemeResource GridViewItemCheckBoxPointerOverBrush}"
+                            CheckBoxPressedBorderBrush="{ThemeResource GridViewItemCheckBoxPressedBorderBrush}"
+                            CheckBoxPressedBrush="{ThemeResource GridViewItemCheckBoxPressedBrush}"
+                            CheckBoxSelectedBrush="{ThemeResource GridViewItemCheckBoxSelectedBrush}"
+                            CheckBoxSelectedDisabledBrush="{ThemeResource GridViewItemCheckBoxSelectedDisabledBrush}"
+                            CheckBoxSelectedPointerOverBrush="{ThemeResource GridViewItemCheckBoxSelectedPointerOverBrush}"
+                            CheckBoxSelectedPressedBrush="{ThemeResource GridViewItemCheckBoxSelectedPressedBrush}"
+                            CheckBrush="{ThemeResource GridViewItemCheckBrush}"
+                            CheckDisabledBrush="{ThemeResource GridViewItemCheckDisabledBrush}"
+                            CheckMode="{ThemeResource GridViewItemCheckMode}"
+                            CheckPressedBrush="{ThemeResource GridViewItemCheckPressedBrush}"
+                            ContentMargin="{TemplateBinding Padding}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            Control.IsTemplateFocusTarget="True"
+                            CornerRadius="{StaticResource GalleryGridViewItemContainerCornerRadius}"
+                            DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                            DragBackground="{ThemeResource GridViewItemDragBackground}"
+                            DragForeground="{ThemeResource GridViewItemDragForeground}"
+                            DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+                            FocusBorderBrush="{ThemeResource GridViewItemFocusBorderBrush}"
+                            FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                            FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
+                            FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
+                            FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
+                            FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
+                            PlaceholderBackground="{ThemeResource GridViewItemPlaceholderBackground}"
+                            PointerOverBackground="{ThemeResource GridViewItemBackgroundPointerOver}"
+                            PointerOverBorderBrush="{ThemeResource GridViewItemPointerOverBorderBrush}"
+                            PointerOverForeground="{ThemeResource GridViewItemForegroundPointerOver}"
+                            PressedBackground="{ThemeResource GridViewItemBackgroundPressed}"
+                            ReorderHintOffset="{ThemeResource GridViewItemReorderHintThemeOffset}"
+                            SelectedBackground="{ThemeResource GridViewItemBackgroundSelected}"
+                            SelectedBorderBrush="{ThemeResource GridViewItemSelectedBorderBrush}"
+                            SelectedBorderThickness="{ThemeResource GridViewItemSelectedBorderThickness}"
+                            SelectedDisabledBackground="{ThemeResource GridViewItemBackgroundSelectedDisabled}"
+                            SelectedDisabledBorderBrush="{ThemeResource GridViewItemSelectedDisabledBorderBrush}"
+                            SelectedForeground="{ThemeResource GridViewItemForegroundSelected}"
+                            SelectedInnerBorderBrush="{ThemeResource GridViewItemSelectedInnerBorderBrush}"
+                            SelectedPointerOverBackground="{ThemeResource GridViewItemBackgroundSelectedPointerOver}"
+                            SelectedPointerOverBorderBrush="{ThemeResource GridViewItemSelectedPointerOverBorderBrush}"
+                            SelectedPressedBackground="{ThemeResource GridViewItemBackgroundSelectedPressed}"
+                            SelectedPressedBorderBrush="{ThemeResource GridViewItemSelectedPressedBorderBrush}"
+                            SelectionCheckMarkVisualEnabled="{ThemeResource GridViewItemSelectionCheckMarkVisualEnabled}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style
+            x:Key="GridViewSectionItemStyle"
+            BasedOn="{StaticResource DefaultGridViewItemStyle}"
+            TargetType="GridViewItem">
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="IsHoldingEnabled" Value="False" />
+            <Setter Property="Padding" Value="4,8,12,0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Bottom" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSectionMinHeight}" />
+            <Setter Property="cpcontrols:WrapPanel.IsFullLine" Value="True" />
+        </Style>
+
+        <Style
+            x:Key="GridViewSeparatorItemStyle"
+            BasedOn="{StaticResource DefaultGridViewItemStyle}"
+            TargetType="GridViewItem">
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="IsHoldingEnabled" Value="False" />
+            <Setter Property="Padding" Value="4,4,12,4" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSeparatorMinHeight}" />
+            <Setter Property="cpcontrols:WrapPanel.IsFullLine" Value="True" />
+        </Style>
+
+        <Style
+            x:Key="ListDefaultContainerStyle"
+            BasedOn="{StaticResource DefaultListViewItemStyle}"
+            TargetType="ListViewItem">
+            <Setter Property="MinHeight" Value="{StaticResource ListViewItemMinHeight}" />
+        </Style>
+
+        <Style
+            x:Key="ListSectionContainerStyle"
+            BasedOn="{StaticResource DefaultListViewItemStyle}"
+            TargetType="ListViewItem">
+            <Setter Property="IsEnabled" Value="False" />
+            <Setter Property="AllowFocusWhenDisabled" Value="False" />
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="IsHoldingEnabled" Value="False" />
+            <Setter Property="AllowDrop" Value="False" />
+            <Setter Property="Padding" Value="16,8,12,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Bottom" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSectionMinHeight}" />
+        </Style>
+
+        <Style
+            x:Key="ListSeparatorContainerStyle"
+            BasedOn="{StaticResource DefaultListViewItemStyle}"
+            TargetType="ListViewItem">
+            <Setter Property="IsEnabled" Value="False" />
+            <Setter Property="AllowFocusWhenDisabled" Value="False" />
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="IsHoldingEnabled" Value="False" />
+            <Setter Property="AllowDrop" Value="False" />
+            <Setter Property="Padding" Value="16,4,12,4" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSeparatorMinHeight}" />
+        </Style>
 
         <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
             <cpcontrols:Tag
@@ -44,13 +247,37 @@
                 ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
         </DataTemplate>
 
+        <cmdpalUI:ListItemTemplateSelector
+            x:Key="ListItemTemplateSelector"
+            x:DataType="coreViewModels:ListItemViewModel"
+            ListItem="{StaticResource ListItemViewModelTemplate}"
+            Section="{StaticResource ListSectionViewModelTemplate}"
+            Separator="{StaticResource ListSeparatorViewModelTemplate}" />
+
+        <cmdpalUI:ListItemContainerStyleSelector
+            x:Key="ListItemContainerStyleSelector"
+            Default="{StaticResource ListDefaultContainerStyle}"
+            Section="{StaticResource ListSectionContainerStyle}"
+            Separator="{StaticResource ListSeparatorContainerStyle}" />
+
         <cmdpalUI:GridItemTemplateSelector
             x:Key="GridItemTemplateSelector"
             x:DataType="coreViewModels:ListItemViewModel"
             Gallery="{StaticResource GalleryGridItemViewModelTemplate}"
-            GridProperties="{x:Bind ViewModel.GridProperties}"
+            GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
             Medium="{StaticResource MediumGridItemViewModelTemplate}"
+            Section="{StaticResource ListSectionViewModelTemplate}"
+            Separator="{StaticResource GridSeparatorViewModelTemplate}"
             Small="{StaticResource SmallGridItemViewModelTemplate}" />
+
+        <cmdpalUI:GridItemContainerStyleSelector
+            x:Key="GridItemContainerStyleSelector"
+            Gallery="{StaticResource GalleryGridViewItemStyle}"
+            GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
+            Medium="{StaticResource IconGridViewItemStyle}"
+            Section="{StaticResource GridViewSectionItemStyle}"
+            Separator="{StaticResource GridViewSeparatorItemStyle}"
+            Small="{StaticResource IconGridViewItemStyle}" />
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
@@ -73,7 +300,7 @@
                     AutomationProperties.AccessibilityView="Raw"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
 
                 <StackPanel
                     Grid.Column="1"
@@ -94,7 +321,7 @@
                         Text="{x:Bind Subtitle, Mode=OneWay}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="NoWrap"
-                        Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
+                        Visibility="{x:Bind ShowSubtitle, Mode=OneWay}" />
                 </StackPanel>
 
                 <ItemsControl
@@ -116,101 +343,124 @@
             </Grid>
         </DataTemplate>
 
+        <DataTemplate x:Key="ListSeparatorViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="28" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Rectangle
+                    Grid.Column="1"
+                    Height="1"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ListSectionViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+            <Grid
+                Margin="0,8,0,0"
+                VerticalAlignment="Center"
+                cpcontrols:WrapPanel.IsFullLine="True"
+                ColumnSpacing="8"
+                IsTabStop="False"
+                IsTapEnabled="True">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{ThemeResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Section}" />
+            </Grid>
+        </DataTemplate>
+
         <!--  Grid item templates for visual grid representation  -->
         <DataTemplate x:Key="SmallGridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
             <StackPanel
-                Width="60"
-                Height="60"
-                Padding="8,16"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                AutomationProperties.Name="{x:Bind Title}"
+                AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
                 BorderThickness="0"
-                CornerRadius="8"
+                CornerRadius="{StaticResource SmallGridViewItemCornerRadius}"
                 Orientation="Vertical"
-                ToolTipService.ToolTip="{x:Bind Title}">
+                ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
 
                 <cpcontrols:IconBox
                     x:Name="GridIconBorder"
-                    Width="28"
-                    Height="28"
+                    Width="{StaticResource SmallGridSize}"
+                    Height="{StaticResource SmallGridSize}"
                     Margin="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorPrimary}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested32}" />
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate x:Key="MediumGridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
-            <StackPanel
-                Width="100"
-                Height="100"
-                Padding="8,16"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                AutomationProperties.Name="{x:Bind Title}"
-                BorderThickness="0"
-                CornerRadius="8"
-                Orientation="Vertical"
-                ToolTipService.ToolTip="{x:Bind Title}">
-
+            <Grid
+                Width="{StaticResource MediumGridContainerSize}"
+                Height="{StaticResource MediumGridContainerSize}"
+                Padding="8"
+                AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
+                CornerRadius="{StaticResource MediumGridViewItemCornerRadius}"
+                ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <cpcontrols:IconBox
                     x:Name="GridIconBorder"
-                    Width="36"
-                    Height="36"
-                    Margin="0"
+                    Grid.Row="0"
+                    Width="{StaticResource MediumGridSize}"
+                    Height="{StaticResource MediumGridSize}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     CharacterSpacing="12"
                     FontSize="14"
                     Foreground="{ThemeResource TextFillColorPrimary}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested64}" />
                 <TextBlock
                     x:Name="TitleTextBlock"
-                    MaxHeight="40"
-                    Margin="0,8,0,4"
+                    Grid.Row="1"
+                    Height="32"
+                    Margin="0,8,0,0"
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
                     CharacterSpacing="12"
                     FontSize="12"
-                    Text="{x:Bind Title}"
+                    Text="{x:Bind Title, Mode=OneWay}"
                     TextAlignment="Center"
                     TextTrimming="WordEllipsis"
                     TextWrapping="Wrap"
-                    Visibility="{Binding ElementName=PageRoot, Path=DataContext.GridProperties.ShowTitle, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-            </StackPanel>
+                    Visibility="{x:Bind LayoutShowsTitle, Mode=OneWay}" />
+            </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="GalleryGridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
             <StackPanel
-                Width="160"
+                Width="{StaticResource GalleryGridSize}"
                 Margin="4"
                 Padding="0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                AutomationProperties.Name="{x:Bind Title}"
+                AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
                 BorderThickness="0"
-                CornerRadius="4"
+                CornerRadius="{StaticResource GalleryGridViewItemRadius}"
                 Orientation="Vertical"
-                ToolTipService.ToolTip="{x:Bind Title}">
+                ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
 
                 <Grid
-                    Width="160"
-                    Height="160"
+                    Width="{StaticResource GalleryGridSize}"
+                    Height="{StaticResource GalleryGridSize}"
                     Margin="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    CornerRadius="4">
-                    <Grid.RowDefinitions>
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
+                    CornerRadius="{StaticResource GalleryGridViewItemRadius}">
                     <Viewbox
-                        Grid.Row="1"
                         HorizontalAlignment="Center"
                         Stretch="UniformToFill"
                         StretchDirection="Both">
@@ -218,41 +468,49 @@
                             CornerRadius="4"
                             Foreground="{ThemeResource TextFillColorPrimary}"
                             SourceKey="{x:Bind Icon, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested256}" />
                     </Viewbox>
                 </Grid>
 
-                <StackPanel Padding="4" Orientation="Vertical">
+                <StackPanel
+                    Padding="4"
+                    Orientation="Vertical"
+                    Spacing="4"
+                    Visibility="{x:Bind help:BindTransformers.VisibleWhenAny(ShowTitle, ShowSubtitle)}">
                     <TextBlock
                         x:Name="TitleTextBlock"
                         MaxWidth="152"
                         MaxHeight="40"
-                        Margin="0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         CharacterSpacing="12"
                         FontSize="14"
                         Foreground="{ThemeResource TextFillColorPrimary}"
-                        Text="{x:Bind Title}"
+                        Text="{x:Bind Title, Mode=OneWay}"
                         TextAlignment="Center"
                         TextTrimming="WordEllipsis"
-                        TextWrapping="NoWrap" />
+                        TextWrapping="NoWrap"
+                        Visibility="{x:Bind ShowTitle, Mode=OneWay}" />
                     <TextBlock
                         x:Name="SubTitleTextBlock"
                         MaxWidth="152"
                         MaxHeight="40"
-                        Margin="0,4,0,0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         CharacterSpacing="11"
                         FontSize="11"
-                        Foreground="{ThemeResource TextFillColorTertiary}"
-                        Text="{x:Bind Subtitle}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind Subtitle, Mode=OneWay}"
                         TextAlignment="Center"
                         TextTrimming="WordEllipsis"
-                        TextWrapping="NoWrap" />
+                        TextWrapping="NoWrap"
+                        Visibility="{x:Bind ShowSubtitle, Mode=OneWay}" />
                 </StackPanel>
             </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="GridSeparatorViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+            <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
         </DataTemplate>
     </Page.Resources>
 
@@ -270,13 +528,17 @@
                         <ListView
                             x:Name="ItemsList"
                             Padding="0,2,0,0"
+                            CanDragItems="True"
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"
+                            DragItemsCompleted="Items_DragItemsCompleted"
+                            DragItemsStarting="Items_DragItemsStarting"
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
                             ItemClick="Items_ItemClick"
-                            ItemTemplate="{StaticResource ListItemViewModelTemplate}"
+                            ItemContainerStyleSelector="{StaticResource ListItemContainerStyleSelector}"
+                            ItemTemplateSelector="{StaticResource ListItemTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
                             RightTapped="Items_RightTapped"
                             SelectionChanged="Items_SelectionChanged">
@@ -288,17 +550,29 @@
                     <controls:Case Value="True">
                         <GridView
                             x:Name="ItemsGrid"
-                            Padding="8"
+                            Padding="16,16"
+                            CanDragItems="True"
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"
+                            DragItemsCompleted="Items_DragItemsCompleted"
+                            DragItemsStarting="Items_DragItemsStarting"
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
                             ItemClick="Items_ItemClick"
+                            ItemContainerStyleSelector="{StaticResource GridItemContainerStyleSelector}"
                             ItemTemplateSelector="{StaticResource GridItemTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
                             RightTapped="Items_RightTapped"
                             SelectionChanged="Items_SelectionChanged">
+                            <GridView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <cpcontrols:WrapPanel
+                                        HorizontalSpacing="8"
+                                        Orientation="Horizontal"
+                                        VerticalSpacing="8" />
+                                </ItemsPanelTemplate>
+                            </GridView.ItemsPanel>
                             <GridView.ItemContainerTransitions>
                                 <TransitionCollection />
                             </GridView.ItemContainerTransitions>
@@ -320,7 +594,7 @@
                         Margin="8"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         SourceKey="{x:Bind ViewModel.EmptyContent.Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested64}" />
                     <TextBlock
                         Margin="0,4,0,0"
                         HorizontalAlignment="Center"

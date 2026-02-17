@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-
+using ImageResizer.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
@@ -25,20 +25,27 @@ namespace ImageResizer.Models
         [TestMethod]
         public void FromCommandLineWorks()
         {
+            // Use actual test files that exist in the test directory
+            var testDir = Path.GetDirectoryName(typeof(ResizeBatchTests).Assembly.Location);
+            var file1 = Path.Combine(testDir, "Test.jpg");
+            var file2 = Path.Combine(testDir, "Test.png");
+            var file3 = Path.Combine(testDir, "Test.gif");
+
             var standardInput =
-                "Image1.jpg" + EOL +
-                "Image2.jpg";
+                file1 + EOL +
+                file2;
             var args = new[]
             {
                 "/d", "OutputDir",
-                "Image3.jpg",
+                file3,
             };
 
             var result = ResizeBatch.FromCommandLine(
                 new StringReader(standardInput),
                 args);
 
-            CollectionAssert.AreEquivalent(new List<string> { "Image1.jpg", "Image2.jpg", "Image3.jpg" }, result.Files.ToArray());
+            var files = result.Files.Select(Path.GetFileName).ToArray();
+            CollectionAssert.AreEquivalent(new List<string> { "Test.jpg", "Test.png", "Test.gif" }, files);
 
             Assert.AreEqual("OutputDir", result.DestinationDirectory);
         }
@@ -101,7 +108,9 @@ namespace ImageResizer.Models
         private static ResizeBatch CreateBatch(Action<string> executeAction)
         {
             var mock = new Mock<ResizeBatch> { CallBase = true };
-            mock.Protected().Setup("Execute", ItExpr.IsAny<string>()).Callback(executeAction);
+            mock.Protected()
+                .Setup("Execute", ItExpr.IsAny<string>(), ItExpr.IsAny<Settings>())
+                .Callback((string file, Settings settings) => executeAction(file));
 
             return mock.Object;
         }

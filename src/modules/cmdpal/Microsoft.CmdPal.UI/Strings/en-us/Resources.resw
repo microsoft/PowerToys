@@ -344,12 +344,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Description" xml:space="preserve">
     <value>Preventing disruption of the program running in fullscreen by unintentional activation of shortcut</value>
   </data>
-  <data name="Settings_GeneralPage_GoHome_SettingsCard.Header" xml:space="preserve">
-    <value>Go home when activated</value>
-  </data>
-  <data name="Settings_GeneralPage_GoHome_SettingsCard.Description" xml:space="preserve">
-    <value>Automatically opens the home page upon activation</value>
-  </data>
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
     <value>Highlight search on activate</value>
   </data>
@@ -378,7 +372,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Windows Command Palette</value>
   </data>
   <data name="Settings_GeneralPage_About_SettingsExpander.Description" xml:space="preserve">
-    <value>© 2025. All rights reserved.</value>
+    <value>© 2026. All rights reserved.</value>
   </data>
   <data name="Settings_GeneralPage_About_GithubLink_Hyperlink.Content" xml:space="preserve">
     <value>View GitHub repository</value>
@@ -429,10 +423,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>More</value>
   </data>
   <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
-    <value>Last Position</value>
+    <value>Last position</value>
     <comment>Reopen the window where it was last closed</comment>
-  </data> 
-  <data name="TrayMenu_Settings" xml:space="preserve">  
+  </data>
+  <data name="TrayMenu_Settings" xml:space="preserve">
     <value>Settings</value>
   </data>
   <data name="TrayMenu_Close" xml:space="preserve">
@@ -493,28 +487,318 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionsPage_Reloading_Text.Text" xml:space="preserve">
     <value>Reloading extensions..</value>
   </data>
-	<data name="Settings_ExtensionsPage_Banner_Header.Text" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_Banner_Header.Text" xml:space="preserve">
     <value>Discover more extensions</value>
   </data>
-	<data name="Settings_ExtensionsPage_Banner_Description.Text" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_Banner_Description.Text" xml:space="preserve">
     <value>Find more extensions on the Microsoft Store or WinGet.</value>
   </data>
-	<data name="Settings_ExtensionsPage_Banner_Hyperlink.Content" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_Banner_Hyperlink.Content" xml:space="preserve">
     <value>Learn how to create your own extensions</value>
   </data>
-	<data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Find extensions on the Microsoft Store</value>
   </data>
-	<data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Microsoft Store</value>
   </data>
-	<data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Find extensions on WinGet</value>
   </data>
-	<data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Microsoft Store</value>
   </data>
-	<data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
     <value>Search extensions</value>
+  </data>
+  <data name="GlobalErrorHandler_CrashMessageBox_Message" xml:space="preserve">
+    <value>Command Palette has encountered a fatal error and must close.</value>
+  </data>
+  <data name="GlobalErrorHandler_CrashMessageBox_Caption" xml:space="preserve">
+    <value>Command Palette - Fatal error</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_Never.Content" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_Immediately.Content" xml:space="preserve">
+    <value>Immediately</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After10Seconds.Content" xml:space="preserve">
+    <value>10 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After20Seconds.Content" xml:space="preserve">
+    <value>20 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After30Seconds.Content" xml:space="preserve">
+    <value>30 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After60Seconds.Content" xml:space="preserve">
+    <value>60 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After90Seconds.Content" xml:space="preserve">
+    <value>90 seconds</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After120Seconds.Content" xml:space="preserve">
+    <value>2 minutes</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_Item_After180Seconds.Content" xml:space="preserve">
+    <value>3 minutes</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Header" xml:space="preserve">
+    <value>Automatically return home</value>
+  </data>
+  <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Description" xml:space="preserve">
+    <value>Automatically returns to home page after a period of inactivity when Command Palette is closed</value>
+  </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Appearance.Content" xml:space="preserve">
+    <value>Personalization</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_SettingsCard.Header" xml:space="preserve">
+    <value>App theme mode</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_SettingsCard.Description" xml:space="preserve">
+    <value>Select which app theme to display</value>
+  </data>
+  <data name="AppearanceSettingsHeader.Text" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_System.Text" xml:space="preserve">
+    <value>Use system settings</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Light.Text" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Dark.Text" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundTint_SettingsCard.Header" xml:space="preserve">
+    <value>Color tint</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundTintIntensity_SettingsCard.Header" xml:space="preserve">
+    <value>Color intensity</value>
+  </data>
+  <data name="Settings_GeneralPage_ImageTintIntensity_SettingsCard.Header" xml:space="preserve">
+    <value>Color intensity</value>
+  </data>
+  <data name="OptionalColorPickerButton_UnsetTextBlock.Text" xml:space="preserve">
+    <value>Choose color</value>
+  </data>
+  <data name="OptionalColorPickerButton_ResetButton.Content" xml:space="preserve">
+    <value>Use default</value>
+  </data>
+  <data name="OptionalColorPickerButton_TransparentColorButton.Content" xml:space="preserve">
+    <value>Use default color</value>
+  </data>
+  <data name="OptionalColorPickerButton_WindowsColorsSectionHeading.Text" xml:space="preserve">
+    <value>Windows colors</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_SettingsExpander.Header" xml:space="preserve">
+    <value>Background image</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageOpacity_SettingsCard.Header" xml:space="preserve">
+    <value>Background image opacity</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageFit_SettingsCard.Header" xml:space="preserve">
+    <value>Background image fit</value>
+  </data>
+  <data name="BackgroundImageFit_ComboBoxItem_Fill.Content" xml:space="preserve">
+    <value>Fill</value>
+  </data>
+  <data name="BackgroundImageFit_ComboBoxItem_Fit.Content" xml:space="preserve">
+    <value>Fit</value>
+  </data>
+  <data name="BackgroundImageFit_ComboBoxItem_Stretch.Content" xml:space="preserve">
+    <value>Stretch</value>
+  </data>
+  <data name="Settings_PageTitles_GeneralPage" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Settings_PageTitles_AppearancePage" xml:space="preserve">
+    <value>Personalization</value>
+  </data>
+  <data name="Settings_PageTitles_ExtensionsPage" xml:space="preserve">
+    <value>Extensions</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_DismissEmptySearchOrGoBack.Content" xml:space="preserve">
+    <value>Clear search first, then go back</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysGoBack.Content" xml:space="preserve">
+    <value>Go back</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysDismiss.Content" xml:space="preserve">
+    <value>Hide window and go home</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysHide.Content" xml:space="preserve">
+    <value>Hide window</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Header" xml:space="preserve">
+    <value>Escape key behavior</value>
+  </data>
+  <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Description" xml:space="preserve">
+    <value>Choose how Escape key behaves</value>
+  </data>
+  <data name="SettingsButtonTextBlock.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="OptionalColorPickerButton_CustomColorsSectionHeading.Text" xml:space="preserve">
+    <value>Custom colors</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_CustomColor.Content" xml:space="preserve">
+    <value>Custom color</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_WindowsAccent.Content" xml:space="preserve">
+    <value>Accent color</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode_Image.Content" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ChooseImageButton.Content" xml:space="preserve">
+    <value>Browse...</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ResetImageButton.Content" xml:space="preserve">
+    <value>Remove image</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundColor_SettingsExpander.Header" xml:space="preserve">
+    <value>Background color</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundColor_SettingsExpander.Description" xml:space="preserve">
+    <value>Choose a custom background color or use the current accent color</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_SettingsCard.Header" xml:space="preserve">
+    <value>Background image</value>
+  </data>
+  <data name="Settings_GeneralPage_NoBackground_DescriptionTextBlock.Text" xml:space="preserve">
+    <value>No additional settings are available.</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_SettingsExpander.Header" xml:space="preserve">
+    <value>Background</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_SettingsExpander.Description" xml:space="preserve">
+    <value>Choose a custom background color or image</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_NotAvailable.Text" xml:space="preserve">
+    <value>Not available with Mica</value>
+  </data>
+  <data name="Settings_GeneralPage_WindowsAccentColor_SettingsCard.Header" xml:space="preserve">
+    <value>System accent color</value>
+  </data>
+  <data name="Settings_GeneralPage_WindowsAccentColor_OpenWindowsColorsLinkText.Text" xml:space="preserve">
+    <value>Personalization › Colors</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageBlur_SettingsCard.Header" xml:space="preserve">
+    <value>Background image blur</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageBrightness_SettingsCard.Header" xml:space="preserve">
+    <value>Background image brightness</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ResetProperties_SettingsCard.Header" xml:space="preserve">
+    <value>Restore defaults</value>
+  </data>
+  <data name="Settings_GeneralPage_Background_ResetImagePropertiesButton.Content" xml:space="preserve">
+    <value>Reset image settings</value>
+  </data>
+  <data name="Settings_GeneralPage_WindowsAccentColor_SettingsCard_Description1.Text" xml:space="preserve">
+    <value>Change the system accent in Windows Settings:</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Light_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_Dark_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_GeneralPage_AppTheme_Mode_System_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Use system settings</value>
+  </data>
+  <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Header" xml:space="preserve">
+    <value>Include in the Global result</value>
+  </data>
+  <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Description" xml:space="preserve">
+    <value>Show results on queries without direct activation command</value>
+  </data>
+  <data name="ManageFallbackRankAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Manage fallback order</value>
+  </data>
+  <data name="ManageFallbackRank.Text" xml:space="preserve">
+    <value>Manage fallback order</value>
+  </data>
+  <data name="ManageFallbackOrderDialogDescription.Text" xml:space="preserve">
+    <value>Drag items to set which fallback commands run first; commands at the top take priority.</value>
+  </data>
+  <data name="Settings_ExtensionsPage_More_ReorderFallbacks_MenuFlyoutItem.Text" xml:space="preserve">
+    <value>Manage fallback order</value>
+  </data>
+  <data name="Settings_GeneralPage_VersionNo" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropOpacity_SettingsCard.Header" xml:space="preserve">
+    <value>Opacity</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_SettingsCard.Header" xml:space="preserve">
+    <value>Material</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_SettingsCard.Description" xml:space="preserve">
+    <value>Select the visual material used for the window background</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_Acrylic.Content" xml:space="preserve">
+    <value>Acrylic (default)</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_Transparent.Content" xml:space="preserve">
+    <value>Transparent</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_Mica.Content" xml:space="preserve">
+    <value>Mica</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_AcrylicThin.Content" xml:space="preserve">
+    <value>Thin Acrylic</value>
+  </data>
+  <data name="Settings_GeneralPage_BackdropStyle_MicaAlt.Content" xml:space="preserve">
+    <value>Mica Alt</value>
+  </data>
+  <data name="Settings_GeneralPage_MicaBackdrop_DescriptionTextBlock.Text" xml:space="preserve">
+    <value>Mica automatically adapts to your desktop wallpaper. Custom backgrounds and opacity settings are not available for this material.</value>
+  </data>
+  <data name="Settings_AppearancePage_OpenCommandPaletteButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Open Command Palette</value>
+    <comment>Button to open the Command Palette window to preview appearance changes</comment>
+  </data>
+  <data name="Settings_AppearancePage_OpenCommandPaletteButton_Text.Text" xml:space="preserve">
+    <value>Open Command Palette</value>
+  </data>
+  <data name="Settings_AppearancePage_ResetAppearanceButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Reset appearance settings</value>
+    <comment>Button to reset all appearance settings to their default values</comment>
+  </data>
+  <data name="Settings_AppearancePage_ResetAppearanceButton_Text.Text" xml:space="preserve">
+    <value>Reset to defaults</value>
+  </data>
+  <data name="Settings_ExtensionsPage_More_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="MoreCommandsButton_Label.Text" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="CommandBar_SecondaryButton_HotkeyCtrl.Text" xml:space="preserve">
+    <value>Ctrl</value>
+    <comment>Key modifier</comment>
+  </data>
+  <data name="CommandBar_MoreCommandsButtonButton_HotkeyCtrl.Text" xml:space="preserve">
+    <value>Ctrl</value>
+    <comment>Key modifier</comment>
+  </data>
+  <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Ctrl+K</value>
+  </data>
+  <data name="CommandBar_MoreCommandsButtonButton_HotkeyCtrl2.Text" xml:space="preserve">
+    <value>K</value>
+    <comment>Keyboard key</comment>
+  </data>
+  <data name="ConfigureShortcut" xml:space="preserve">
+    <value>Configure shortcut</value>
+  </data>
+  <data name="ConfigureShortcutText.Text" xml:space="preserve">
+    <value>Assign shortcut</value>
   </data>
 </root>
