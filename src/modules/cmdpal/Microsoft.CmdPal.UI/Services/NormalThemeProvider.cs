@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.UI.Xaml;
 using Windows.UI;
@@ -28,16 +29,28 @@ internal sealed class NormalThemeProvider : IThemeProvider
 
     public string ResourcePath => "ms-appx:///Styles/Theme.Normal.xaml";
 
-    public AcrylicBackdropParameters GetAcrylicBackdrop(ThemeContext context)
+    public BackdropParameters GetBackdropParameters(ThemeContext context)
     {
         var isLight = context.Theme == ElementTheme.Light ||
                       (context.Theme == ElementTheme.Default &&
                        _uiSettings.GetColorValue(UIColorType.Background).R > 128);
 
-        return new AcrylicBackdropParameters(
+        var backdropStyle = context.BackdropStyle ?? BackdropStyle.Acrylic;
+        var config = BackdropStyles.Get(backdropStyle);
+
+        // Apply light/dark theme adjustment to luminosity
+        var baseLuminosityOpacity = isLight
+            ? config.BaseLuminosityOpacity
+            : Math.Min(config.BaseLuminosityOpacity + 0.06f, 1.0f);
+
+        var effectiveOpacity = config.ComputeEffectiveOpacity(context.BackdropOpacity);
+        var effectiveLuminosityOpacity = baseLuminosityOpacity * context.BackdropOpacity;
+
+        return new BackdropParameters(
             TintColor: isLight ? LightBaseColor : DarkBaseColor,
             FallbackColor: isLight ? LightBaseColor : DarkBaseColor,
-            TintOpacity: 0.5f,
-            LuminosityOpacity: isLight ? 0.9f : 0.96f);
+            EffectiveOpacity: effectiveOpacity,
+            EffectiveLuminosityOpacity: effectiveLuminosityOpacity,
+            Style: backdropStyle);
     }
 }

@@ -76,7 +76,6 @@
                     x:Uid="Shell_Search_ShowAll"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
-                    Text="Show all results"
                     TextAlignment="Center" />
             </Grid>
         </DataTemplate>
@@ -179,6 +178,9 @@
                     AutomationProperties.AutomationId="SystemToolsNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SystemTools.png}"
                     SelectsOnInvoked="False">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Name="AdvancedPasteNavigationItem"
@@ -210,6 +212,16 @@
                             helpers:NavHelper.NavigateTo="views:LightSwitchPage"
                             AutomationProperties.AutomationId="LightSwitchNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}" />
+                        <NavigationViewItem
+                            x:Name="PowerDisplayNavigationItem"
+                            x:Uid="Shell_PowerDisplay"
+                            helpers:NavHelper.NavigateTo="views:PowerDisplayPage"
+                            AutomationProperties.AutomationId="PowerDisplayNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                         <NavigationViewItem
                             x:Name="PowerLauncherNavigationItem"
                             x:Uid="Shell_PowerLauncher"
@@ -246,7 +258,7 @@
                 <!--  Windowing & Layouts  -->
                 <NavigationViewItem
                     x:Name="WindowingAndLayoutsNavigationItem"
-                    x:Uid="Shell_TopLevelWindowsAndLayouts "
+                    x:Uid="Shell_TopLevelWindowsAndLayouts"
                     AutomationProperties.AutomationId="WindowingAndLayoutsNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}"
                     SelectsOnInvoked="False">

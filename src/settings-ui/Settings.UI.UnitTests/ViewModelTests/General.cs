@@ -126,10 +126,22 @@ namespace ViewModelTests
         public void StartupShouldEnableRunOnStartUpWhenSuccessful()
         {
             // Assert
+            bool sawExpectedIpcPayload = false;
             Func<string, int> sendMockIPCConfigMSG = msg =>
             {
+                if (string.IsNullOrWhiteSpace(msg))
+                {
+                    return 0;
+                }
+
                 OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
+                if (snd?.GeneralSettings is null)
+                {
+                    return 0;
+                }
+
                 Assert.IsTrue(snd.GeneralSettings.Startup);
+                sawExpectedIpcPayload = true;
                 return 0;
             };
 
@@ -150,16 +162,29 @@ namespace ViewModelTests
 
             // act
             viewModel.Startup = true;
+            Assert.IsTrue(sawExpectedIpcPayload);
         }
 
         [TestMethod]
         public void RunElevatedShouldEnableAlwaysRunElevatedWhenSuccessful()
         {
             // Assert
+            bool sawExpectedIpcPayload = false;
             Func<string, int> sendMockIPCConfigMSG = msg =>
             {
+                if (string.IsNullOrWhiteSpace(msg))
+                {
+                    return 0;
+                }
+
                 OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
+                if (snd?.GeneralSettings is null)
+                {
+                    return 0;
+                }
+
                 Assert.IsTrue(snd.GeneralSettings.RunElevated);
+                sawExpectedIpcPayload = true;
                 return 0;
             };
 
@@ -182,6 +207,7 @@ namespace ViewModelTests
 
             // act
             viewModel.RunElevated = true;
+            Assert.IsTrue(sawExpectedIpcPayload);
         }
 
         [TestMethod]
@@ -189,12 +215,24 @@ namespace ViewModelTests
         {
             // Arrange
             GeneralViewModel viewModel = null;
+            bool sawExpectedIpcPayload = false;
 
             // Assert
             Func<string, int> sendMockIPCConfigMSG = msg =>
             {
+                if (string.IsNullOrWhiteSpace(msg))
+                {
+                    return 0;
+                }
+
                 OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
+                if (snd?.GeneralSettings is null)
+                {
+                    return 0;
+                }
+
                 Assert.AreEqual("light", snd.GeneralSettings.Theme);
+                sawExpectedIpcPayload = true;
                 return 0;
             };
 
@@ -214,17 +252,29 @@ namespace ViewModelTests
 
             // act
             viewModel.ThemeIndex = 1;
+            Assert.IsTrue(sawExpectedIpcPayload);
         }
 
         [TestMethod]
         public void IsDarkThemeRadioButtonCheckedShouldThemeToDarkWhenSuccessful()
         {
             // Arrange
-            // Assert
+            bool sawExpectedIpcPayload = false;
             Func<string, int> sendMockIPCConfigMSG = msg =>
             {
+                if (string.IsNullOrWhiteSpace(msg))
+                {
+                    return 0;
+                }
+
                 OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
+                if (snd?.GeneralSettings is null)
+                {
+                    return 0;
+                }
+
                 Assert.AreEqual("dark", snd.GeneralSettings.Theme);
+                sawExpectedIpcPayload = true;
                 return 0;
             };
 
@@ -244,17 +294,29 @@ namespace ViewModelTests
 
             // act
             viewModel.ThemeIndex = 0;
+            Assert.IsTrue(sawExpectedIpcPayload);
         }
 
         [TestMethod]
         public void IsShowSysTrayIconEnabledByDefaultShouldDisableWhenSuccessful()
         {
             // Arrange
-            // Assert
+            bool sawExpectedIpcPayload = false;
             Func<string, int> sendMockIPCConfigMSG = msg =>
             {
+                if (string.IsNullOrWhiteSpace(msg))
+                {
+                    return 0;
+                }
+
                 OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
+                if (snd?.GeneralSettings is null)
+                {
+                    return 0;
+                }
+
                 Assert.IsFalse(snd.GeneralSettings.ShowSysTrayIcon);
+                sawExpectedIpcPayload = true;
                 return 0;
             };
 
@@ -274,6 +336,7 @@ namespace ViewModelTests
 
             // Act
             viewModel.ShowSysTrayIcon = false;
+            Assert.IsTrue(sawExpectedIpcPayload);
         }
 
         [TestMethod]
