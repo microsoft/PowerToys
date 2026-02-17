@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -36,6 +36,8 @@ public partial class TopLevelCommandManager : ObservableObject,
     private readonly SupersedingAsyncGate _reloadCommandsGate;
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
+
+    CommandProviderContext IPageContext.ProviderContext => throw new NotImplementedException("You shouldn't ever be using the provider context of the top-level manager");
 
     public TopLevelCommandManager(IServiceProvider serviceProvider, ICommandProviderCache commandProviderCache)
     {
@@ -422,7 +424,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         wrapper?.PinCommand(message.CommandId, _serviceProvider);
     }
 
-    private CommandProviderWrapper? LookupProvider(string providerId)
+    public CommandProviderWrapper? LookupProvider(string providerId)
     {
         lock (_commandProvidersLock)
         {

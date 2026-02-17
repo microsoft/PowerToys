@@ -49,6 +49,8 @@ public sealed class CommandProviderWrapper
 
     public string ProviderId => string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
 
+    private bool _supportsPinning;
+
     public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
         // This ctor is only used for in-proc builtin commands. So the Unsafe!
@@ -159,8 +161,14 @@ public sealed class CommandProviderWrapper
                 UnsafePreCacheApiAdditions(two);
             }
 
-            // Load pinned commands from saved settings
-            var pinnedCommands = LoadPinnedCommands(model, providerSettings);
+            ICommandItem[] pinnedCommands = [];
+            if (model is ICommandProvider4 four)
+            {
+                _supportsPinning = true;
+
+                // Load pinned commands from saved settings
+                pinnedCommands = LoadPinnedCommands(four, providerSettings);
+            }
 
             Id = model.Id;
             DisplayName = model.DisplayName;
@@ -210,14 +218,21 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, ICommandItem[] pinnedCommands, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    private void InitializeCommands(
+        ICommandItem[] commands,
+        IFallbackCommandItem[] fallbacks,
+        ICommandItem[] pinnedCommands,
+        IServiceProvider serviceProvider,
+        WeakReference<IPageContext> pageContext)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
-            CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
+            // n.b. Mike, you may want to revisit this after the dock stuff merges,
+            // because I think we'll need to pass a contextMenuFactory to dock items
+            CommandItemViewModel commandItemViewModel = new(new(i), pageContext, contextMenuFactory: null);
             TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ourContext, settings, providerSettings, serviceProvider, i);
             topLevelViewModel.InitializeProperties();
 
@@ -246,26 +261,23 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private ICommandItem[] LoadPinnedCommands(ICommandProvider model, ProviderSettings providerSettings)
+    private ICommandItem[] LoadPinnedCommands(ICommandProvider4 model, ProviderSettings providerSettings)
     {
         var pinnedItems = new List<ICommandItem>();
 
-        if (model is ICommandProvider4 provider4)
+        foreach (var pinnedId in providerSettings.PinnedCommandIds)
         {
-            foreach (var pinnedId in providerSettings.PinnedCommandIds)
+            try
             {
-                try
+                var commandItem = model.GetCommandItem(pinnedId);
+                if (commandItem is not null)
                 {
-                    var commandItem = provider4.GetCommandItem(pinnedId);
-                    if (commandItem is not null)
-                    {
-                        pinnedItems.Add(commandItem);
-                    }
+                    pinnedItems.Add(commandItem);
                 }
-                catch (Exception e)
-                {
-                    Logger.LogError($"Failed to load pinned command {pinnedId}: {e.Message}");
-                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Failed to load pinned command {pinnedId}: {e.Message}");
             }
         }
 
@@ -302,7 +314,12 @@ public sealed class CommandProviderWrapper
 
     public CommandProviderContext GetProviderContext()
     {
-        return new() { ProviderId = ProviderId };
+        // n.b. If we try to call this before we call LoadTopLevelCommands, then
+        // we won't know if the provider supports pinning or not. In that case,
+        // we'll just say it doesn't support pinning. That probably shouldn't be
+        // possible - we really should prevent this from being called before
+        // LoadTopLevelCommands
+        return new() { ProviderId = ProviderId, SupportsPinning = _supportsPinning };
     }
 
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;

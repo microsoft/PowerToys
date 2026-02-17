@@ -103,7 +103,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     public CommandItemViewModel(
         ExtensionObject<ICommandItem> item,
         WeakReference<IPageContext> errorContext,
-        IContextMenuFactory? contextMenuFactory = null)
+        IContextMenuFactory? contextMenuFactory)
         : base(errorContext)
     {
         _commandItemModel = item;

@@ -8,5 +8,7 @@ public sealed class CommandProviderContext
 {
     public required string ProviderId { get; init; }
 
+    public bool SupportsPinning { get; set; }
+
     public static CommandProviderContext Empty { get; } = new() { ProviderId = "<EMPTY>" };
 }

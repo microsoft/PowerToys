@@ -5,7 +5,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -23,7 +22,7 @@ public partial class CommandContextItemViewModel : CommandItemViewModel, IContex
     public bool HasRequestedShortcut => RequestedShortcut is not null && (RequestedShortcut.Value != nullKeyChord);
 
     public CommandContextItemViewModel(ICommandContextItem contextItem, WeakReference<IPageContext> context)
-        : base(new(contextItem), context)
+        : base(new(contextItem), context, contextMenuFactory: null)
     {
         Model = new(contextItem);
         IsContextMenuItem = true;

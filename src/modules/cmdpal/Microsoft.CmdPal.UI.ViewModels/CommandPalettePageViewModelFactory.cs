@@ -11,9 +11,9 @@ public class CommandPalettePageViewModelFactory
     : IPageViewModelFactoryService
 {
     private readonly TaskScheduler _scheduler;
-    private readonly IContextMenuFactory? _contextMenuFactory;
+    private readonly IContextMenuFactory _contextMenuFactory;
 
-    public CommandPalettePageViewModelFactory(TaskScheduler scheduler, IContextMenuFactory? contextMenuFactory)
+    public CommandPalettePageViewModelFactory(TaskScheduler scheduler, IContextMenuFactory contextMenuFactory)
     {
         _scheduler = scheduler;
         _contextMenuFactory = contextMenuFactory;

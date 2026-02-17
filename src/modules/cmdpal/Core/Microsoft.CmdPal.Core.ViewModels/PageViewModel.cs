@@ -267,6 +267,8 @@ public interface IPageContext
     void ShowException(Exception ex, string? extensionHint = null);
 
     TaskScheduler Scheduler { get; }
+
+    CommandProviderContext ProviderContext { get; }
 }
 
 public interface IPageViewModelFactoryService
