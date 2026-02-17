@@ -1519,6 +1519,7 @@ tlc
 TPMLEFTALIGN
 TPMRETURNCMD
 TNP
+Toggleable
 Toolhelp
 toolwindow
 TOPDOWNDIB
@@ -2191,6 +2192,7 @@ wft
 wikimedia
 wikipedia
 windowedge
+WINDOWSAPPRUNTIME
 windowsml
 winexe
 winforms

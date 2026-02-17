@@ -527,7 +527,7 @@ namespace KeyboardManagerEditorUI.Pages
                 TargetApp = isAppSpecific ? appName : string.Empty,
             };
 
-            bool saved = _mappingService!.AddShorcutMapping(shortcutKeyMapping);
+            bool saved = _mappingService!.AddShortcutMapping(shortcutKeyMapping);
 
             if (saved)
             {
@@ -571,7 +571,7 @@ namespace KeyboardManagerEditorUI.Pages
                 TargetApp = isAppSpecific ? appName : string.Empty,
             };
 
-            bool saved = _mappingService!.AddShorcutMapping(shortcutKeyMapping);
+            bool saved = _mappingService!.AddShortcutMapping(shortcutKeyMapping);
 
             if (saved)
             {
@@ -688,7 +688,7 @@ namespace KeyboardManagerEditorUI.Pages
                         }
                         else
                         {
-                            saved = shortcutKeyMapping.OperationType == ShortcutOperationType.RemapText ? _mappingService!.AddShortcutMapping(shortcutKeyMapping.OriginalKeys, shortcutKeyMapping.TargetText, operationType: ShortcutOperationType.RemapText) : _mappingService.AddShorcutMapping(shortcutKeyMapping);
+                            saved = shortcutKeyMapping.OperationType == ShortcutOperationType.RemapText ? _mappingService!.AddShortcutMapping(shortcutKeyMapping.OriginalKeys, shortcutKeyMapping.TargetText, operationType: ShortcutOperationType.RemapText) : _mappingService.AddShortcutMapping(shortcutKeyMapping);
                         }
 
                         if (saved)
