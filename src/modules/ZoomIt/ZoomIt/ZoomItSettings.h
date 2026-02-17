@@ -26,6 +26,7 @@ BOOLEAN g_AnimateZoom = TRUE;
 BOOLEAN g_SmoothImage = TRUE;
 DWORD	g_PenColor = COLOR_RED;
 DWORD	g_BreakPenColor = COLOR_RED;
+DWORD	g_BreakBackgroundColor = 0;
 DWORD   g_RootPenWidth = PEN_WIDTH;
 int		g_FontScale = 10;
 DWORD	g_BreakTimeout = 10;
@@ -75,6 +76,7 @@ REG_SETTING RegSettings[] = {
     { L"PenWidth", SETTING_TYPE_DWORD, 0, &g_RootPenWidth, static_cast<DOUBLE>(g_RootPenWidth) },
     { L"OptionsShown", SETTING_TYPE_BOOLEAN, 0, &g_OptionsShown, static_cast<DOUBLE>(g_OptionsShown) },
     { L"BreakPenColor", SETTING_TYPE_DWORD, 0, &g_BreakPenColor, static_cast<DOUBLE>(g_BreakPenColor) },
+    { L"BreakBackgroundColor", SETTING_TYPE_DWORD, 0, &g_BreakBackgroundColor, static_cast<DOUBLE>(g_BreakBackgroundColor) },
     { L"BreakTimerKey", SETTING_TYPE_DWORD, 0, &g_BreakToggleKey, static_cast<DOUBLE>(g_BreakToggleKey) },
     { L"DemoTypeToggleKey", SETTING_TYPE_DWORD, 0, &g_DemoTypeToggleKey, static_cast<DOUBLE>(g_DemoTypeToggleKey) },
     { L"DemoTypeFile", SETTING_TYPE_STRING, sizeof( g_DemoTypeFile ), g_DemoTypeFile, static_cast<DOUBLE>(0) },

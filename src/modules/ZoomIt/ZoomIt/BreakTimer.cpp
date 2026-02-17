@@ -248,11 +248,20 @@ void BreakTimer_Paint(
     TCHAR timerText[16];
     TCHAR negativeTimerText[16];
 
-    // Fill background white.
+    // Fill background (white by default, black if backgroundColor == 1).
     rc.top = rc.left = 0;
     rc.bottom = state->height;
     rc.right  = state->width;
-    FillRect( state->hdcScreenCompat, &rc, GetSysColorBrush( COLOR_WINDOW ) );
+    if( settings->backgroundColor )
+    {
+        HBRUSH hBrush = CreateSolidBrush( RGB( 0, 0, 0 ) );
+        FillRect( state->hdcScreenCompat, &rc, hBrush );
+        DeleteObject( hBrush );
+    }
+    else
+    {
+        FillRect( state->hdcScreenCompat, &rc, GetSysColorBrush( COLOR_WINDOW ) );
+    }
 
     // Draw background bitmap if present.
     if( state->hBackgroundBmp )

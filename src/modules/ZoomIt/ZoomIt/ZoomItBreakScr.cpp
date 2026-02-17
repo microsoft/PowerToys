@@ -230,6 +230,12 @@ LRESULT WINAPI ScreenSaverProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_RBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_KEYDOWN:
+        if( wParam == 'W' || wParam == 'K' )
+        {
+            g_Settings.backgroundColor = ( wParam == 'K' ) ? 1 : 0;
+            InvalidateRect( hWnd, NULL, FALSE );
+        }
+        return 0;
     case WM_KEYUP:
     case WM_SYSKEYDOWN:
         return 0;

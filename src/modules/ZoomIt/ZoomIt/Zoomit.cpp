@@ -2069,6 +2069,7 @@ static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
     config.magic = BREAKSCR_CONFIG_MAGIC;
     config.timeoutSeconds = breakTimeoutSeconds;
     config.settings.penColor         = g_BreakPenColor;
+    config.settings.backgroundColor  = g_BreakBackgroundColor;
     config.settings.timerPosition    = g_BreakTimerPosition;
     config.settings.opacity          = g_BreakOpacity;
     config.settings.showExpiredTime  = g_ShowExpiredTime;
@@ -8577,6 +8578,15 @@ LRESULT APIENTRY MainWndProc(
 
         case 'W':
         case 'K':
+            // Break timer: change background color
+            if( g_TimerActive )
+            {
+                g_BreakBackgroundColor = ( wParam == 'K' ) ? 1 : 0;
+                reg.WriteRegSettings( RegSettings );
+                InvalidateRect( hWnd, NULL, FALSE );
+                break;
+            }
+
             // Block user-driven sketch pad in liveDraw
             if( lParam != LIVE_DRAW_ZOOM
                 && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
@@ -10230,11 +10240,11 @@ LRESULT APIENTRY MainWndProc(
 #endif
         } else if( g_TimerActive ) {
 
-            // Fill bitmap with white
+            // Fill background (white by default, black if saved as 1)
             rc.top = rc.left = 0;
             rc.bottom = height;
             rc.right = width;
-            FillRect( hdcScreenCompat, &rc, GetSysColorBrush( COLOR_WINDOW ));
+            BlankScreenArea( hdcScreenCompat, &rc, g_BreakBackgroundColor ? 'K' : 'W' );
 
             // If there's a background bitmap, draw it in the center
             if( g_hBackgroundBmp ) {
