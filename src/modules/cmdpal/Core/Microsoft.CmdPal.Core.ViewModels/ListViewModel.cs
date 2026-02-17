@@ -84,6 +84,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private ListItemViewModel? _lastSelectedItem;
 
+    // For cancelling a deferred SafeSlowInit when the user navigates rapidly
+    private CancellationTokenSource? _selectedItemCts;
+
     public override bool IsInitialized
     {
         get => base.IsInitialized; protected set
@@ -463,35 +466,62 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void SetSelectedItem(ListItemViewModel item)
     {
-        if (!item.SafeSlowInit())
-        {
-            DoOnUiThread(() =>
-            {
-                WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
-            });
-            return;
-        }
-
-        DoOnUiThread(
-           () =>
-           {
-               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
-
-               if (ShowDetails && item.HasDetails)
-               {
-                   WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
-               }
-               else
-               {
-                   WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
-               }
-
-               TextToSuggest = item.TextToSuggest;
-               WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(item.TextToSuggest));
-           });
-
+        // All callers are UI-thread XAML event handlers (SelectionChanged,
+        // ItemClick, RightTapped, Page_ItemsUpdated) so we can send messages
+        // directly — no DoOnUiThread hop needed.
         _lastSelectedItem = item;
         _lastSelectedItem.PropertyChanged += SelectedItemPropertyChanged;
+
+        // Immediately update the command bar and suggestion text — these use
+        // already-initialized properties and must feel instant.
+        WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
+        TextToSuggest = item.TextToSuggest;
+        WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(item.TextToSuggest));
+
+        // Cancel any in-flight slow init from a previous selection and defer
+        // the expensive work (extension IPC for MoreCommands, details) so
+        // rapid arrow-key navigation skips intermediate items entirely.
+        _selectedItemCts?.Cancel();
+        var cts = _selectedItemCts = new CancellationTokenSource();
+
+        // Capture the token before Task.Run — the CancellationToken struct
+        // remains valid even if the CTS is cancelled/disposed by the next
+        // selection change, avoiding ObjectDisposedException.
+        var ct = cts.Token;
+
+        _ = Task.Run(() =>
+        {
+            if (ct.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (!item.SafeSlowInit())
+            {
+                if (!ct.IsCancellationRequested)
+                {
+                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                }
+
+                return;
+            }
+
+            if (ct.IsCancellationRequested)
+            {
+                return;
+            }
+
+            // SafeSlowInit completed on a background thread — details
+            // messages will be marshalled to the UI thread by the receiver.
+            if (ShowDetails && item.HasDetails)
+            {
+                WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
+            }
+            else
+            {
+                WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+            }
+        });
     }
 
     private void SelectedItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -529,17 +559,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void ClearSelectedItem()
     {
-        DoOnUiThread(
-           () =>
-           {
-               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
+        // All callers are UI-thread paths (UpdateSelectedItem from XAML events).
+        _selectedItemCts?.Cancel();
 
-               WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
-
-               WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(string.Empty));
-
-               TextToSuggest = string.Empty;
-           });
+        WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
+        WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+        WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(string.Empty));
+        TextToSuggest = string.Empty;
     }
 
     public override void InitializeProperties()
@@ -722,6 +748,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _fetchItemsCancellationTokenSource?.Cancel();
         _fetchItemsCancellationTokenSource?.Dispose();
         _fetchItemsCancellationTokenSource = null;
+
+        _selectedItemCts?.Cancel();
+        _selectedItemCts?.Dispose();
+        _selectedItemCts = null;
     }
 
     protected override void UnsafeCleanup()
@@ -734,6 +764,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _cancellationTokenSource?.Cancel();
         filterCancellationTokenSource?.Cancel();
         _fetchItemsCancellationTokenSource?.Cancel();
+        _selectedItemCts?.Cancel();
 
         lock (_listLock)
         {

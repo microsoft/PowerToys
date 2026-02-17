@@ -278,49 +278,55 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowDetailsMessage message)
     {
-        if (ViewModel is not null &&
-            ViewModel.CurrentPage is not null)
+        if (ViewModel is null || ViewModel.CurrentPage is null)
         {
-            if (ViewModel.CurrentPage.PageContext.TryGetTarget(out var pageContext))
-            {
-                Task.Factory.StartNew(
-                    () =>
-                    {
-                        // TERRIBLE HACK TODO GH #245
-                        // There's weird wacky bugs with debounce currently.
-                        if (!ViewModel.IsDetailsVisible)
-                        {
-                            ViewModel.Details = message.Details;
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
-                            ViewModel.IsDetailsVisible = true;
-                            return;
-                        }
-
-                        // GH #322:
-                        // For inexplicable reasons, if you try to change the details too fast,
-                        // we'll explode. This seemingly only happens if you change the details
-                        // while we're also scrolling a new list view item into view.
-                        _debounceTimer.Debounce(
-                            () =>
-                            {
-                                ViewModel.Details = message.Details;
-
-                                // Trigger a re-evaluation of whether we have a hero image based on
-                                // the current theme
-                                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
-                            },
-                            interval: TimeSpan.FromMilliseconds(50),
-                            immediate: ViewModel.IsDetailsVisible == false);
-                        ViewModel.IsDetailsVisible = true;
-                    },
-                    CancellationToken.None,
-                    TaskCreationOptions.None,
-                    pageContext.Scheduler);
-            }
+            return;
         }
+
+        var details = message.Details;
+
+        // Debounce must run on the UI thread (DispatcherQueueTimer affinity).
+        // The message may arrive from a background thread (e.g. property-changed
+        // handlers), so always marshal through the DispatcherQueue.
+        _queue.TryEnqueue(() =>
+        {
+            var wasVisible = ViewModel.IsDetailsVisible;
+
+            // GH #322:
+            // For inexplicable reasons, if you try to change the details too fast,
+            // we'll explode. This seemingly only happens if you change the details
+            // while we're also scrolling a new list view item into view.
+            //
+            // Always debounce through the DispatcherQueue
+            // timer so the UI settles between updates. Use immediate=true for
+            // the first show so the panel appears without delay; subsequent
+            // updates during rapid navigation are coalesced.
+            _debounceTimer.Debounce(
+                () =>
+                {
+                    ViewModel.Details = details;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
+                },
+                interval: TimeSpan.FromMilliseconds(100),
+                immediate: !wasVisible);
+            ViewModel.IsDetailsVisible = true;
+        });
     }
 
-    public void Receive(HideDetailsMessage message) => HideDetails();
+    public void Receive(HideDetailsMessage message)
+    {
+        // Debounce the hide through the same timer used for show. If a
+        // ShowDetailsMessage arrives before this fires, it cancels the
+        // pending hide — preventing the panel from flickering closed and
+        // reopened during rapid item navigation.
+        _queue.TryEnqueue(() =>
+        {
+            _debounceTimer.Debounce(
+                () => HideDetails(),
+                interval: TimeSpan.FromMilliseconds(150),
+                immediate: false);
+        });
+    }
 
     public void Receive(LaunchUriMessage message) => _ = global::Windows.System.Launcher.LaunchUriAsync(message.Uri);
 
