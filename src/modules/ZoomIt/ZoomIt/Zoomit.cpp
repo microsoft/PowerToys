@@ -1862,11 +1862,13 @@ static void SaveScreenSaverSettings( void )
                        reinterpret_cast<const BYTE*>( scrPath ),
                        static_cast<DWORD>( ( _tcslen( scrPath ) + 1 ) * sizeof( TCHAR ) ) );
 
-        BOOL active = FALSE;
-        SystemParametersInfo( SPI_GETSCREENSAVEACTIVE, 0, &active, 0 );
-        DWORD dwActive = active ? 1 : 0;
-        RegSetValueEx( hKey, L"ScreenSaveActive", 0, REG_DWORD,
-                       reinterpret_cast<const BYTE*>( &dwActive ), sizeof( DWORD ) );
+        TCHAR screenSaveActive[8] = {};
+        DWORD cbScreenSaveActive = sizeof( screenSaveActive );
+        RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveActive",
+                     RRF_RT_REG_SZ, NULL, screenSaveActive, &cbScreenSaveActive );
+        RegSetValueEx( hKey, L"ScreenSaveActive", 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>( screenSaveActive ),
+                       static_cast<DWORD>( ( _tcslen( screenSaveActive ) + 1 ) * sizeof( TCHAR ) ) );
 
         TCHAR secure[8] = {};
         DWORD cbSecure = sizeof( secure );
@@ -1903,12 +1905,15 @@ static void RestoreScreenSaverSettings( void )
                             static_cast<DWORD>( ( _tcslen( scrPath ) + 1 ) * sizeof( TCHAR ) ) );
         }
 
-        DWORD dwActive = 0;
-        DWORD cbActive = sizeof( dwActive );
+        TCHAR screenSaveActive[8] = {};
+        DWORD cbScreenSaveActive = sizeof( screenSaveActive );
         if( RegQueryValueEx( hKey, L"ScreenSaveActive", NULL, NULL,
-                             reinterpret_cast<BYTE*>( &dwActive ), &cbActive ) == ERROR_SUCCESS )
+                             reinterpret_cast<BYTE*>( screenSaveActive ), &cbScreenSaveActive ) == ERROR_SUCCESS )
         {
-            SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, dwActive, 0, SPIF_SENDCHANGE );
+            RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                            L"ScreenSaveActive", REG_SZ, screenSaveActive,
+                            static_cast<DWORD>( ( _tcslen( screenSaveActive ) + 1 ) * sizeof( TCHAR ) ) );
+            SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, screenSaveActive[0] == L'1', 0, SPIF_SENDCHANGE );
         }
 
         TCHAR secure[8] = {};
@@ -2153,7 +2158,12 @@ static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
         return FALSE;
     }
 
-    // Activate screensaver (must be enabled for SC_SCREENSAVE to work)
+    // Activate screensaver (must be enabled for SC_SCREENSAVE to work).
+    // Set both the registry value and runtime state — Winlogon reads the
+    // registry directly and ignores the SPI runtime flag.
+    RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                    L"ScreenSaveActive", REG_SZ, L"1",
+                    static_cast<DWORD>( 2 * sizeof( TCHAR ) ) );
     SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, TRUE, 0, SPIF_SENDCHANGE );
 
     // Broadcast and give Windows time to process all registry changes before
