@@ -5511,8 +5511,10 @@ auto GetUniqueRecordingFilename()
 //
 // GetUniqueScreenshotFilename
 //
-// Gets a unique file name for screenshots based on the current date and time.
-// Consistent with the naming scheme used by the Snipping Tool.
+// Gets a unique file name for screenshot saves, using the current date and
+// time as a suffix. This reduces the chance that the user could overwrite an
+// existing file if they are saving multiple captures in the same folder, and
+// also ensures that ordering is correct when sorted by name.
 //
 //----------------------------------------------------------------------------
 auto GetUniqueScreenshotFilename()
