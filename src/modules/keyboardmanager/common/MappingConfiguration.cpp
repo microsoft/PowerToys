@@ -637,7 +637,7 @@ bool MappingConfiguration::LoadKeyToMouseRemaps(const json::JsonObject& jsonData
             }
         }
 
-        Logger::info(L"LoadKeyToMouseRemaps: Found {} remaps", globalRemaps.Size());
+        Logger::debug(L"LoadKeyToMouseRemaps: Found {} remaps", globalRemaps.Size());
         for (const auto& it : globalRemaps)
         {
             try
@@ -645,7 +645,7 @@ bool MappingConfiguration::LoadKeyToMouseRemaps(const json::JsonObject& jsonData
                 auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
                 auto targetMouseButton = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TargetMouseButtonSettingName);
 
-                Logger::info(L"LoadKeyToMouseRemaps: Loading key {} -> {}", originalKey.c_str(), targetMouseButton.c_str());
+                Logger::debug(L"LoadKeyToMouseRemaps: Loading key {} -> {}", originalKey.c_str(), targetMouseButton.c_str());
 
                 DWORD originalKeyCode = std::stoul(originalKey.c_str());
                 auto mouseButton = MouseButtonHelpers::MouseButtonFromString(targetMouseButton.c_str());
@@ -657,7 +657,7 @@ bool MappingConfiguration::LoadKeyToMouseRemaps(const json::JsonObject& jsonData
                 }
 
                 bool added = AddKeyToMouseRemap(originalKeyCode, *mouseButton);
-                Logger::info(L"LoadKeyToMouseRemaps: Added key {} -> mouse button {}: {}", originalKeyCode, static_cast<int>(*mouseButton), added);
+                Logger::debug(L"LoadKeyToMouseRemaps: Added key {} -> mouse button {}: {}", originalKeyCode, static_cast<int>(*mouseButton), added);
             }
             catch (...)
             {

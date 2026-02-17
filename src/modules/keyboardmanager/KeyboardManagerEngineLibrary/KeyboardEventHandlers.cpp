@@ -1803,44 +1803,18 @@ namespace KeyboardEventHandlers
         return 1;
     }
 
-    // Static variables for scroll wheel debouncing
+    // Static variables for scroll wheel debouncing.
+    // Thread-safety note: These are accessed only from the low-level mouse hook callback (WH_MOUSE_LL).
+    // Windows guarantees that low-level hook callbacks are always invoked on the thread that installed
+    // the hook, serializing all access. No synchronization is required.
     static std::chrono::steady_clock::time_point lastScrollUpTime;
     static std::chrono::steady_clock::time_point lastScrollDownTime;
 
-    // Function to handle a mouse button remap
-    intptr_t HandleMouseButtonRemapEvent(KeyboardManagerInput::InputInterface& ii, MouseButton button, bool isButtonDown, State& state) noexcept
+    // Helper function to execute the target action for a mouse button remap.
+    // Handles remapping to key, shortcut (including run program and open URI), or text.
+    // Returns 1 on success, or a special value if an error toast was shown.
+    intptr_t ExecuteMouseButtonRemapTarget(KeyboardManagerInput::InputInterface& ii, const KeyShortcutTextUnion& target, bool isButtonDown) noexcept
     {
-        const auto remapping = state.GetMouseButtonRemap(button);
-        if (!remapping)
-        {
-            return 0;
-        }
-
-        // Scroll wheel events are one-shot (no up/down pairs), so only process on "down"
-        // For regular buttons, we process both down and up events
-        const bool isScrollWheel = MouseButtonHelpers::IsScrollWheelButton(button);
-        if (isScrollWheel && !isButtonDown)
-        {
-            return 0;  // Scroll wheel has no "up" event
-        }
-
-        // Rate limiting for scroll wheel to prevent infinite scroll wheels from aggressive repetition
-        if (isScrollWheel)
-        {
-            auto now = std::chrono::steady_clock::now();
-            auto& lastTime = (button == MouseButton::ScrollUp) ? lastScrollUpTime : lastScrollDownTime;
-            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count();
-            
-            if (elapsed < KeyboardManagerConstants::SCROLL_WHEEL_DEBOUNCE_MS)
-            {
-                return 1;  // Suppress but don't remap (within debounce window)
-            }
-            lastTime = now;
-        }
-
-        auto it = remapping.value();
-        const auto& target = it->second;
-
         // Check target type: index 0 = DWORD (key), index 1 = Shortcut, index 2 = wstring (text)
         const bool remapToKey = target.index() == 0;
         const bool remapToShortcut = target.index() == 1;
@@ -1889,7 +1863,6 @@ namespace KeyboardEventHandlers
                         myThread.detach();
                     }
                 }
-                // Button up does nothing for run program
             }
             else if (isOpenUri)
             {
@@ -1923,7 +1896,6 @@ namespace KeyboardEventHandlers
                         myThread.detach();
                     }
                 }
-                // Button up does nothing for open URI
             }
             else
             {
@@ -1951,10 +1923,45 @@ namespace KeyboardEventHandlers
                 Helpers::SetTextKeyEvents(keyEventList, textToSend);
                 ii.SendVirtualInput(keyEventList);
             }
-            // Button up does nothing for text
         }
 
         return 1;
+    }
+
+    // Function to handle a mouse button remap
+    intptr_t HandleMouseButtonRemapEvent(KeyboardManagerInput::InputInterface& ii, MouseButton button, bool isButtonDown, State& state) noexcept
+    {
+        const auto remapping = state.GetMouseButtonRemap(button);
+        if (!remapping)
+        {
+            return 0;
+        }
+
+        // Scroll wheel events are one-shot (no up/down pairs), so only process on "down"
+        const bool isScrollWheel = MouseButtonHelpers::IsScrollWheelButton(button);
+        if (isScrollWheel && !isButtonDown)
+        {
+            return 0;  // Scroll wheel has no "up" event
+        }
+
+        // Rate limiting for scroll wheel to prevent infinite scroll wheels from aggressive repetition
+        if (isScrollWheel)
+        {
+            auto now = std::chrono::steady_clock::now();
+            auto& lastTime = (button == MouseButton::ScrollUp) ? lastScrollUpTime : lastScrollDownTime;
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count();
+            
+            if (elapsed < KeyboardManagerConstants::SCROLL_WHEEL_DEBOUNCE_MS)
+            {
+                return 1;  // Suppress within debounce window
+            }
+            lastTime = now;
+        }
+
+        auto it = remapping.value();
+        const auto& target = it->second;
+
+        return ExecuteMouseButtonRemapTarget(ii, target, isButtonDown);
     }
 
     // Function to handle a key-to-mouse remap (pressing a key triggers a mouse click)
@@ -2016,7 +2023,7 @@ namespace KeyboardEventHandlers
             break;
         case MouseButton::ScrollDown:
             mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
-            mouseInput.mi.mouseData = static_cast<DWORD>(-WHEEL_DELTA);
+            mouseInput.mi.mouseData = static_cast<DWORD>(static_cast<LONG>(-WHEEL_DELTA));
             break;
         }
 
@@ -2107,114 +2114,7 @@ namespace KeyboardEventHandlers
 
         const auto& target = buttonIt->second;
 
-        // Check target type: index 0 = DWORD (key), index 1 = Shortcut, index 2 = wstring (text)
-        const bool remapToKey = target.index() == 0;
-        const bool remapToShortcut = target.index() == 1;
-        const bool remapToText = target.index() == 2;
-
-        std::vector<INPUT> keyEventList;
-
-        if (remapToKey)
-        {
-            DWORD targetKey = std::get<DWORD>(target);
-
-            // If mapped to VK_DISABLED then the button is disabled
-            if (targetKey == CommonSharedConstants::VK_DISABLED)
-            {
-                return 1;
-            }
-
-            if (isButtonDown)
-            {
-                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
-            }
-            else
-            {
-                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
-            }
-
-            ii.SendVirtualInput(keyEventList);
-        }
-        else if (remapToShortcut)
-        {
-            Shortcut targetShortcut = std::get<Shortcut>(target);
-            const bool isRunProgram = targetShortcut.IsRunProgram();
-            const bool isOpenUri = targetShortcut.IsOpenURI();
-
-            if (isRunProgram)
-            {
-                if (isButtonDown)
-                {
-                    auto threadFunction = [targetShortcut]() {
-                        CreateOrShowProcessForShortcut(targetShortcut);
-                    };
-                    std::thread myThread(threadFunction);
-                    if (myThread.joinable())
-                    {
-                        myThread.detach();
-                    }
-                }
-            }
-            else if (isOpenUri)
-            {
-                if (isButtonDown)
-                {
-                    auto uri = targetShortcut.uriToOpen;
-                    auto newUri = uri;
-
-                    if (!PathIsURL(uri.c_str()))
-                    {
-                        WCHAR url[1024];
-                        DWORD bufferSize = 1024;
-
-                        if (UrlCreateFromPathW(uri.c_str(), url, &bufferSize, 0) == S_OK)
-                        {
-                            newUri = url;
-                        }
-                        else
-                        {
-                            toast(L"Error", L"Could not understand the Path or URI");
-                            return 1;
-                        }
-                    }
-
-                    auto threadFunction = [newUri]() {
-                        ShellExecute(NULL, L"open", newUri.c_str(), NULL, NULL, SW_SHOWNORMAL);
-                    };
-                    std::thread myThread(threadFunction);
-                    if (myThread.joinable())
-                    {
-                        myThread.detach();
-                    }
-                }
-            }
-            else
-            {
-                if (isButtonDown)
-                {
-                    Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
-                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
-                }
-                else
-                {
-                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
-                    Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
-                }
-
-                ii.SendVirtualInput(keyEventList);
-            }
-        }
-        else if (remapToText)
-        {
-            if (isButtonDown)
-            {
-                const auto& textToSend = std::get<std::wstring>(target);
-                Helpers::SetTextKeyEvents(keyEventList, textToSend);
-                ii.SendVirtualInput(keyEventList);
-            }
-        }
-
-        return 1;
+        return ExecuteMouseButtonRemapTarget(ii, target, isButtonDown);
     }
 
     // Function to handle an app-specific key-to-mouse remap
@@ -2291,7 +2191,7 @@ namespace KeyboardEventHandlers
             break;
         case MouseButton::ScrollDown:
             mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
-            mouseInput.mi.mouseData = static_cast<DWORD>(-WHEEL_DELTA);
+            mouseInput.mi.mouseData = static_cast<DWORD>(static_cast<LONG>(-WHEEL_DELTA));
             break;
         }
 

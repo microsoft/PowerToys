@@ -1073,8 +1073,14 @@ namespace KeyboardManagerEditorUI.Pages
                             return;
                         }
 
+                        // ensure that shortcut exists in settings before trying to access it
+                        if (!SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(shortcut.Id, out var shortcutSettings))
+                        {
+                            return;
+                        }
+
                         bool saved2 = false;
-                        ShortcutKeyMapping shortcutKeyMapping = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
+                        ShortcutKeyMapping shortcutKeyMapping = shortcutSettings.Shortcut;
                         if (shortcut.Shortcut.Count == 1)
                         {
                             saved2 = _mappingService.AddSingleKeyToTextMapping(

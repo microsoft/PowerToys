@@ -824,37 +824,48 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         switch (targetType)
         {
         case 0: // Single key
-            if (targetKeys)
+            if (!targetKeys || targetKeys[0] == L'\0')
             {
-                target = static_cast<DWORD>(_wtoi(targetKeys));
+                return false;
             }
+            target = static_cast<DWORD>(_wtoi(targetKeys));
             break;
         case 1: // Shortcut
-            if (targetKeys)
+            if (!targetKeys || targetKeys[0] == L'\0')
             {
-                target = Shortcut(targetKeys);
+                return false;
             }
+            target = Shortcut(targetKeys);
             break;
         case 2: // Text
-            if (targetText)
+            if (!targetText || targetText[0] == L'\0')
             {
-                target = std::wstring(targetText);
+                return false;
             }
+            target = std::wstring(targetText);
             break;
         case 3: // RunProgram
+            if (!programPath || programPath[0] == L'\0')
+            {
+                return false;
+            }
             {
                 Shortcut shortcut;
                 shortcut.operationType = Shortcut::OperationType::RunProgram;
-                shortcut.runProgramFilePath = programPath ? std::wstring(programPath) : L"";
+                shortcut.runProgramFilePath = std::wstring(programPath);
                 shortcut.runProgramArgs = programArgs ? std::wstring(programArgs) : L"";
                 target = shortcut;
             }
             break;
         case 4: // OpenUri
+            if (!uriToOpen || uriToOpen[0] == L'\0')
+            {
+                return false;
+            }
             {
                 Shortcut shortcut;
                 shortcut.operationType = Shortcut::OperationType::OpenURI;
-                shortcut.uriToOpen = uriToOpen ? std::wstring(uriToOpen) : L"";
+                shortcut.uriToOpen = std::wstring(uriToOpen);
                 target = shortcut;
             }
             break;
