@@ -244,16 +244,16 @@ BEGIN
     CTEXT           "AaBbYyZz",1092,16,88,127,31,SS_NOPREFIX | NOT WS_VISIBLE
 END
 
-LIVEZOOM DIALOGEX 0, 0, 260, 134
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_SYSMENU
+LIVEZOOM DIALOGEX 0, 0, 317, 136
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_LIVE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,69,108,80,12
-    LTEXT           "LiveZoom mode is supported on Windows 7 and higher where window updates show while zoomed. ",IDC_STATIC,7,7,230,18
+    LTEXT           "LiveZoom mode is supported on Windows 7 and higher where window updates show while zoomed. ",IDC_STATIC,7,7,255,18
     LTEXT           "LiveZoom Toggle:",IDC_STATIC,7,110,62,8
     LTEXT           "To enter and exit LiveZoom, enter the hotkey specified below.",IDC_STATIC,7,94,230,13
-    LTEXT           "Note that in LiveZoom you must use Ctrl+Up and Ctrl+Down to control the zoom level. To enter drawing mode, use the standard zoom-without-draw hotkey and then escape to go back to LiveZoom.",IDC_STATIC,7,30,230,27
-    LTEXT           "Use LiveDraw to draw and annotate the live desktop. To activate LiveDraw, enter the hotkey with the Shift key in the opposite mode. You can remove LiveDraw annotations by activating LiveDraw and enter the escape key",IDC_STATIC,7,62,230,32
+    LTEXT           "Use LiveDraw to draw and annotate the live desktop. To activate LiveDraw, enter the hotkey with the Shift key in the opposite mode. You can remove LiveDraw annotations by activating LiveDraw and enter the escape key",IDC_STATIC,7,62,249,32
+    LTEXT           "Note that in LiveZoom you must use Ctrl+Up and Ctrl+Down to control the zoom level. To enter drawing mode, use the standard zoom-without-draw hotkey and then escape to go back to LiveZoom.",IDC_STATIC,7,30,255,27
 END
 
 RECORD DIALOGEX 0, 0, 263, 224
@@ -302,7 +302,7 @@ BEGIN
 END
 
 DEMOTYPE DIALOGEX 0, 0, 260, 249
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_DEMOTYPE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,74,154,80,12
@@ -316,11 +316,11 @@ BEGIN
     LTEXT           "Fast",IDC_DEMOTYPE_STATIC2,186,213,17,8
     EDITTEXT        IDC_DEMOTYPE_FILE,44,137,167,12,ES_AUTOHSCROLL | ES_READONLY
     LTEXT           "Input file:",IDC_STATIC,7,139,32,8
-    LTEXT           "When you reach the end of the file, ZoomIt will reload the file and start at the beginning. Enter the hotkey with the Shift key in the opposite mode to step back to the last [end].",IDC_STATIC,7,108,230,24
-    LTEXT           "DemoType has ZoomIt type text specified in the input file when you enter the DemoType toggle. Simply separate snippets with the [end] keyword, or you can insert text from the clipboard if it is prefixed with the [start].",IDC_STATIC,7,7,230,24
+    LTEXT           "When you reach the end of the file, ZoomIt will reload the file and start at the beginning. Enter the hotkey with the Shift key in the opposite mode to step back to the last [end].",IDC_STATIC,7,108,249,24
+    LTEXT           "DemoType has ZoomIt type text specified in the input file when you enter the DemoType toggle. Simply separate snippets with the [end] keyword, or you can insert text from the clipboard if it is prefixed with the [start].",IDC_STATIC,7,7,247,24
     LTEXT           "  - Insert pauses with the [pause:n] keyword where 'n' is seconds. ",IDC_STATIC,19,34,218,11
-    LTEXT           "You can have ZoomIt send text automatically, or select the option to drive input with typing. ZoomIt will block keyboard input while sending output.",IDC_STATIC,7,68,230,16
-    LTEXT           "When driving input, hit the space bar to unblock keyboard input at the end of a snippet. In auto mode, control will be returned upon completion.",IDC_STATIC,7,88,230,16
+    LTEXT           "You can have ZoomIt send text automatically, or select the option to drive input with typing. ZoomIt will block keyboard input while sending output.",IDC_STATIC,7,68,245,16
+    LTEXT           "When driving input, hit the space bar to unblock keyboard input at the end of a snippet. In auto mode, control will be returned upon completion.",IDC_STATIC,7,88,243,16
     LTEXT           "- Send text via the clipboard with [paste] and [/paste]. ",IDC_STATIC,23,45,210,8
     LTEXT           "- Send keystrokes with [enter], [up], [down], [left], and [right].",IDC_STATIC,23,56,210,8
 END
@@ -403,8 +403,9 @@ BEGIN
     "LIVEZOOM", DIALOG
     BEGIN
         LEFTMARGIN, 7
+        RIGHTMARGIN, 181
         TOPMARGIN, 7
-        BOTTOMMARGIN, 127
+        BOTTOMMARGIN, 89
     END
 
     "RECORD", DIALOG
