@@ -54,7 +54,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                     _settingsModel,
                     _topLevelCommandManager);
 
-                var contextItem = new CommandContextItem(pinToTopLevelCommand);
+                var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
                 moreCommands.Add(contextItem);
             }
         }
@@ -75,6 +75,32 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         Dock,
     }
 
+    private sealed partial class PinToContextItem : CommandContextItem, IDisposable
+    {
+        private readonly PinToCommand _command;
+        private readonly CommandItemViewModel _commandItem;
+
+        public PinToContextItem(PinToCommand command, CommandItemViewModel commandItem)
+            : base(command)
+        {
+            _command = command;
+            _commandItem = commandItem;
+            command.PinStateChanged += this.OnPinStateChanged;
+        }
+
+        private void OnPinStateChanged(object? sender, EventArgs e)
+        {
+            // update our MoreCommands
+            _commandItem.RefreshMoreCommands();
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            _command.PinStateChanged -= this.OnPinStateChanged;
+        }
+    }
+
     private sealed partial class PinToCommand : InvokableCommand
     {
         private readonly string _commandId;
@@ -87,6 +113,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         public override IconInfo Icon => _pin ? Icons.PinIcon : Icons.UnpinIcon;
 
         public override string Name => _pin ? RS_.GetString("top_level_pin_command_name") : RS_.GetString("top_level_unpin_command_name");
+
+        internal event EventHandler? PinStateChanged;
 
         public PinToCommand(
             string commandId,
@@ -134,6 +162,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                         //     break;
                 }
             }
+
+            PinStateChanged?.Invoke(this, EventArgs.Empty);
 
             return CommandResult.KeepOpen();
         }
