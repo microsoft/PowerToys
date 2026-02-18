@@ -19,7 +19,7 @@ public class CommandPalettePageViewModelFactory
         _contextMenuFactory = contextMenuFactory;
     }
 
-    public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host, CommandProviderContext providerContext)
+    public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host, ICommandProviderContext providerContext)
     {
         return page switch
         {

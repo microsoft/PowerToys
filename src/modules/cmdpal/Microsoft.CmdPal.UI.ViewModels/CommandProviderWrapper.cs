@@ -15,7 +15,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed class CommandProviderWrapper
+public sealed class CommandProviderWrapper : ICommandProviderContext
 {
     public bool IsExtension => Extension is not null;
 
@@ -49,7 +49,7 @@ public sealed class CommandProviderWrapper
 
     public string ProviderId => string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
 
-    private bool _supportsPinning;
+    public bool SupportsPinning { get; private set; }
 
     public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
@@ -164,7 +164,7 @@ public sealed class CommandProviderWrapper
             ICommandItem[] pinnedCommands = [];
             if (model is ICommandProvider4 four)
             {
-                _supportsPinning = true;
+                SupportsPinning = true;
 
                 // Load pinned commands from saved settings
                 pinnedCommands = LoadPinnedCommands(four, providerSettings);
@@ -327,15 +327,7 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    public CommandProviderContext GetProviderContext()
-    {
-        // n.b. If we try to call this before we call LoadTopLevelCommands, then
-        // we won't know if the provider supports pinning or not. In that case,
-        // we'll just say it doesn't support pinning. That probably shouldn't be
-        // possible - we really should prevent this from being called before
-        // LoadTopLevelCommands
-        return new() { ProviderId = ProviderId, SupportsPinning = _supportsPinning };
-    }
+    public ICommandProviderContext GetProviderContext() => this;
 
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;
 

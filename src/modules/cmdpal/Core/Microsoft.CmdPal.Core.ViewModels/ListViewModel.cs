@@ -89,7 +89,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, CommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
+    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
         : base(model, scheduler, host, providerContext)
     {
         _model = new(model);

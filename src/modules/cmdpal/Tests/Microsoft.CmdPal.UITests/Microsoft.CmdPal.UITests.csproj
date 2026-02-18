@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+eii<Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
 	<PropertyGroup>

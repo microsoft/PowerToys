@@ -11,11 +11,11 @@ internal partial class TopLevelItemPageContext : IPageContext
 {
     public TaskScheduler Scheduler { get; private set; }
 
-    public CommandProviderContext ProviderContext { get; private set; }
+    public ICommandProviderContext ProviderContext { get; private set; }
 
     TaskScheduler IPageContext.Scheduler => Scheduler;
 
-    CommandProviderContext IPageContext.ProviderContext => ProviderContext;
+    ICommandProviderContext IPageContext.ProviderContext => ProviderContext;
 
     internal TopLevelItemPageContext(CommandProviderWrapper provider, TaskScheduler scheduler)
     {
