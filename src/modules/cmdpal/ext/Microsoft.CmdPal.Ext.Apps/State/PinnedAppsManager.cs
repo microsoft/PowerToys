@@ -63,12 +63,12 @@ public sealed class PinnedAppsManager
 
     private void LoadPinnedApps()
     {
-        _pinnedApps = PinnedApps.ReadFromFile(_pinnedAppsFilePath);
+        // _pinnedApps = PinnedApps.ReadFromFile(_pinnedAppsFilePath);
     }
 
     private void SavePinnedApps()
     {
-        PinnedApps.WriteToFile(_pinnedAppsFilePath, _pinnedApps);
+        // PinnedApps.WriteToFile(_pinnedAppsFilePath, _pinnedApps);
     }
 
     private static string GetPinnedAppsFilePath()
