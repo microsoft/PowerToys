@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Core.ViewModels;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-internal partial class TopLevelItemPageContext : IPageContext
+public partial class TopLevelItemPageContext : IPageContext
 {
     public TaskScheduler Scheduler { get; private set; }
 

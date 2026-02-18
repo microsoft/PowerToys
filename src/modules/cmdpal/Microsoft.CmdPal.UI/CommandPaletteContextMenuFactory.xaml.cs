@@ -46,16 +46,27 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
                 var alreadyPinnedToTopLevel = providerSettings.PinnedCommandIds.Contains(itemId);
 
-                var pinToTopLevelCommand = new PinToCommand(
-                    commandId: itemId,
-                    providerId: providerId,
-                    pin: !alreadyPinnedToTopLevel,
-                    PinLocation.TopLevel,
-                    _settingsModel,
-                    _topLevelCommandManager);
+                // Don't add pin/unpin commands for items displayed as
+                // TopLevelViewModels that aren't already pinned.
+                //
+                // We can't look up if this command item is in the top level
+                // items in the manager, because we are being called _before_ we
+                // get added to the manager's list of commands.
+                var isTopLevelItem = page is TopLevelItemPageContext;
 
-                var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
-                moreCommands.Add(contextItem);
+                if (!isTopLevelItem || alreadyPinnedToTopLevel)
+                {
+                    var pinToTopLevelCommand = new PinToCommand(
+                        commandId: itemId,
+                        providerId: providerId,
+                        pin: !alreadyPinnedToTopLevel,
+                        PinLocation.TopLevel,
+                        _settingsModel,
+                        _topLevelCommandManager);
+
+                    var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
+                    moreCommands.Add(contextItem);
+                }
             }
         }
 
