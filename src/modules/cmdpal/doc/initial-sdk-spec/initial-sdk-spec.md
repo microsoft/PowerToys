@@ -2131,8 +2131,8 @@ Users may choose to have:
 
 ### Pinning nested commands to the dock (and top level)
 
-We'll use another command provider method to allow the host to ask exensions for
-items based on their ID.
+We'll use another command provider method to allow the host to ask extensions
+for items based on their ID.
 
 ```csharp
 interface ICommandProvider4 requires ICommandProvider3
