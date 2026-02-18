@@ -362,10 +362,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorUIPath);
                 Logger.LogInfo($"Starting {ModuleName} new editor from {path}");
 
+                System.Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", null);
                 ProcessStartInfo startInfo = new ProcessStartInfo(path);
                 startInfo.UseShellExecute = true; // LOAD BEARING
                 startInfo.Arguments = $"{Environment.ProcessId}";
-                System.Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", null);
                 editor = Process.Start(startInfo);
             }
             catch (Exception e)
