@@ -415,7 +415,21 @@ namespace KeyboardManagerEditorUI.Settings
             {
                 bool foundInService = false;
 
-                if (shortcutSettings.Shortcut.OperationType == ShortcutOperationType.RemapText &&
+                // Check for mouse_ prefix first so mouse→text/program/url mappings
+                // aren't incorrectly handled by the RemapText/RemapShortcut branches
+                if (shortcutSettings.Shortcut.OriginalKeys?.StartsWith("mouse_", StringComparison.Ordinal) == true ||
+                         shortcutSettings.Shortcut.OperationType == ShortcutOperationType.RemapMouseButton)
+                {
+                    // Check mouse button mappings
+                    if (shortcutSettings.Shortcut.OriginalKeys?.StartsWith("mouse_", StringComparison.Ordinal) == true &&
+                        int.TryParse(shortcutSettings.Shortcut.OriginalKeys.AsSpan(6), out int buttonCode))
+                    {
+                        foundInService = mouseButtonMappings.Any(m =>
+                            m.OriginalButtonCode == buttonCode &&
+                            m.TargetApp == shortcutSettings.Shortcut.TargetApp);
+                    }
+                }
+                else if (shortcutSettings.Shortcut.OperationType == ShortcutOperationType.RemapText &&
                          !string.IsNullOrEmpty(shortcutSettings.Shortcut.OriginalKeys) &&
                          shortcutSettings.Shortcut.OriginalKeys.Split(';').Length == 1)
                 {
@@ -435,18 +449,6 @@ namespace KeyboardManagerEditorUI.Settings
                         foundInService = singleKeyMappings.Any(m =>
                             m.OriginalKey == keyCode &&
                             m.TargetKey == shortcutSettings.Shortcut.TargetKeys);
-                    }
-                }
-                else if (shortcutSettings.Shortcut.OperationType == ShortcutOperationType.RemapMouseButton ||
-                         shortcutSettings.Shortcut.OriginalKeys?.StartsWith("mouse_", StringComparison.Ordinal) == true)
-                {
-                    // Check mouse button mappings
-                    if (shortcutSettings.Shortcut.OriginalKeys?.StartsWith("mouse_", StringComparison.Ordinal) == true &&
-                        int.TryParse(shortcutSettings.Shortcut.OriginalKeys.AsSpan(6), out int buttonCode))
-                    {
-                        foundInService = mouseButtonMappings.Any(m =>
-                            m.OriginalButtonCode == buttonCode &&
-                            m.TargetApp == shortcutSettings.Shortcut.TargetApp);
                     }
                 }
                 else if (shortcutSettings.Shortcut.OperationType == ShortcutOperationType.RemapKeyToMouse)

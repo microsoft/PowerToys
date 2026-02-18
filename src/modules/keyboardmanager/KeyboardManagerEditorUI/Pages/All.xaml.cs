@@ -1359,6 +1359,9 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            // Track IDs added from interop so the inactive-settings loop doesn't duplicate them
+            var loadedMouseIds = new HashSet<string>(StringComparer.Ordinal);
+
             // Load mouse button → key/shortcut remappings
             var mouseButtonMappings = _mappingService.GetMouseButtonMappings();
             Logger.LogInfo($"LoadMouseMappings: Got {mouseButtonMappings.Count} mouse mappings from interop");
@@ -1373,8 +1376,10 @@ namespace KeyboardManagerEditorUI.Pages
                 var existingSetting = SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values
                     .FirstOrDefault(s => s.Shortcut.OriginalKeys == originalKeysForLookup &&
                                          s.Shortcut.TargetApp == mapping.TargetApp);
-                string id = existingSetting?.Id ?? $"mouse_{mapping.OriginalButtonCode}_{mapping.TargetApp}";
+                string? id = existingSetting?.Id ?? $"mouse_{mapping.OriginalButtonCode}_{mapping.TargetApp}";
                 bool isActive = existingSetting?.IsActive ?? true;
+
+                loadedMouseIds.Add(id);
 
                 switch (mapping.TargetType)
                 {
@@ -1472,8 +1477,9 @@ namespace KeyboardManagerEditorUI.Pages
             // (active ones were already loaded from interop above)
             foreach (var shortcutSettings in SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values)
             {
-                // Only process inactive mouse mappings
-                if (!shortcutSettings.IsActive && shortcutSettings.Shortcut.OriginalKeys.StartsWith("mouse_", StringComparison.Ordinal))
+                // Only process inactive mouse mappings not already loaded
+                if (!shortcutSettings.IsActive && shortcutSettings.Shortcut.OriginalKeys.StartsWith("mouse_", StringComparison.Ordinal)
+                    && !loadedMouseIds.Contains(shortcutSettings.Id))
                 {
                     if (int.TryParse(shortcutSettings.Shortcut.OriginalKeys.AsSpan(6), out int buttonCode))
                     {
