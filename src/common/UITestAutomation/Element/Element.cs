@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using ABI.Windows.Foundation;
 using Microsoft.PowerToys.UITest;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;

@@ -7,6 +7,12 @@ using Microsoft.CmdPal.Core.ViewModels;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
+/// <summary>
+/// Used as the PageContext for top-level items. Top level items are displayed
+/// on the MainListPage, which _we_ own. We need to have a placeholder page
+/// context for each provider that still connects those top-level items to the
+/// CommandProvider they came from. 
+/// </summary>
 public partial class TopLevelItemPageContext : IPageContext
 {
     public TaskScheduler Scheduler { get; private set; }
