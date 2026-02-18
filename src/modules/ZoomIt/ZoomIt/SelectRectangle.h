@@ -25,6 +25,9 @@ public:
     bool Start( HWND ownerWindow = nullptr, bool fullMonitor = false );
     void Stop();
     void UpdateOwner( HWND window );
+    void Hide() { if( m_window ) ShowWindow( m_window.get(), SW_HIDE ); }
+    void Show() { if( m_window ) ShowWindow( m_window.get(), SW_SHOWNA ); }
+    void SetExcludeFromCapture( bool exclude ) { if( m_window ) SetWindowDisplayAffinity( m_window.get(), exclude ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE ); }
 
 private:
     BYTE m_alpha = 176;

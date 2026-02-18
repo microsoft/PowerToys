@@ -103,6 +103,7 @@
 
 #include "PanoramaCapture.h"
 #include "Utility.h"
+#include "WindowsVersions.h"
 
 #include <filesystem>
 #include <fstream>
@@ -354,7 +355,22 @@ static HBITMAP CaptureAbsoluteScreenRectToBitmap(HDC hdcSource, const RECT& abso
         return nullptr;
     }
 
-    HBITMAP hBitmap = CreateCompatibleBitmap( hdcSource, captureWidth, captureHeight );
+    // Use a DIB section instead of CreateCompatibleBitmap so that pixel
+    // data is stored in system memory.  DDB bitmaps returned by
+    // CreateCompatibleBitmap may reside in video memory, and the driver
+    // can invalidate/repurpose that storage once the bitmap is deselected
+    // from all DCs.  Later GetDIBits calls then read stale data, causing
+    // frames that have actually changed to appear identical.
+    BITMAPINFO bmi{};
+    bmi.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
+    bmi.bmiHeader.biWidth = captureWidth;
+    bmi.bmiHeader.biHeight = -captureHeight;   // top-down
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+
+    void* bits = nullptr;
+    HBITMAP hBitmap = CreateDIBSection( hdcSource, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0 );
     if( hBitmap == nullptr )
     {
         return nullptr;
@@ -370,6 +386,7 @@ static HBITMAP CaptureAbsoluteScreenRectToBitmap(HDC hdcSource, const RECT& abso
     SelectObject( hdcMem, hBitmap );
     BitBlt( hdcMem, 0, 0, captureWidth, captureHeight, hdcSource,
         absoluteRect.left, absoluteRect.top, SRCCOPY | CAPTUREBLT );
+    GdiFlush();
     DeleteDC( hdcMem );
     return hBitmap;
 }
@@ -716,7 +733,8 @@ static bool ComputeAveragePixelDifference( const std::vector<BYTE>& currentPixel
                                            const std::vector<BYTE>& previousPixels,
                                            int frameWidth,
                                            int frameHeight,
-                                           unsigned __int64& avgDiff )
+                                           unsigned __int64& avgDiff,
+                                           double& changedPixelFraction )
 {
     if( currentPixels.size() != previousPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
     {
@@ -738,16 +756,24 @@ static bool ComputeAveragePixelDifference( const std::vector<BYTE>& currentPixel
 
     unsigned __int64 totalDiff = 0;
     unsigned __int64 samples = 0;
+    unsigned __int64 changedPixels = 0;
+    unsigned __int64 pixelSamples = 0;
     for( int y = startY; y < endY; y += 6 )
     {
         const int rowOffset = y * stride;
         for( int x = startX; x < endX; x += 6 )
         {
             const int index = rowOffset + x * 4;
-            totalDiff += static_cast<unsigned __int64>( abs( currentPixels[index + 0] - previousPixels[index + 0] ) );
-            totalDiff += static_cast<unsigned __int64>( abs( currentPixels[index + 1] - previousPixels[index + 1] ) );
-            totalDiff += static_cast<unsigned __int64>( abs( currentPixels[index + 2] - previousPixels[index + 2] ) );
+            const int d0 = abs( currentPixels[index + 0] - previousPixels[index + 0] );
+            const int d1 = abs( currentPixels[index + 1] - previousPixels[index + 1] );
+            const int d2 = abs( currentPixels[index + 2] - previousPixels[index + 2] );
+            totalDiff += static_cast<unsigned __int64>( d0 + d1 + d2 );
             samples += 3;
+            pixelSamples++;
+            if( d0 + d1 + d2 > 30 )
+            {
+                changedPixels++;
+            }
         }
     }
 
@@ -757,6 +783,9 @@ static bool ComputeAveragePixelDifference( const std::vector<BYTE>& currentPixel
     }
 
     avgDiff = totalDiff / samples;
+    changedPixelFraction = pixelSamples > 0
+        ? static_cast<double>( changedPixels ) / static_cast<double>( pixelSamples )
+        : 0.0;
     return true;
 }
 
@@ -778,11 +807,20 @@ static bool AreFramesNearDuplicate(HBITMAP currentFrame, HBITMAP previousFrame)
     }
 
     unsigned __int64 avgDiff = 0;
-    if( !ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight, avgDiff ) )
+    double changedFraction = 0.0;
+    if( !ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight, avgDiff, changedFraction ) )
     {
         return false;
     }
-    return avgDiff < 6;
+    // A frame is a near-duplicate if both the average per-channel difference
+    // is small AND fewer than 0.5% of sampled pixels show a significant
+    // per-pixel difference (sum of channel diffs > 30).  The second check
+    // catches scrolling in mostly-uniform content (e.g. dark background
+    // with sparse text) where the average is diluted below threshold.
+    const bool duplicate = avgDiff < 6 && changedFraction < 0.005;
+    OutputDebug( L"[Panorama/Capture] Frame compare avgDiff=%llu changedPct=%.1f%% size=%dx%d identical=%d\n",
+                 avgDiff, changedFraction * 100.0, currentWidth, currentHeight, duplicate ? 1 : 0 );
+    return duplicate;
 }
 
 static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
@@ -791,12 +829,13 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
                                          int frameHeight )
 {
     unsigned __int64 avgDiff = 0;
-    if( !ComputeAveragePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight, avgDiff ) )
+    double changedFraction = 0.0;
+    if( !ComputeAveragePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight, avgDiff, changedFraction ) )
     {
         return false;
     }
 
-    return avgDiff < 6;
+    return avgDiff < 6 && changedFraction < 0.005;
 }
 
 static void BuildDownsampledLumaFrame( const std::vector<BYTE>& pixels,
@@ -1604,6 +1643,18 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     absoluteRect.top = monitorRect.top + selectedRect.top;
     absoluteRect.right = monitorRect.left + selectedRect.right;
     absoluteRect.bottom = monitorRect.top + selectedRect.bottom;
+
+    // On Windows 11 22H2+, the SelectRectangle border is drawn inside the
+    // selected rectangle.  Inset the capture rect by the border width so
+    // the static yellow border pixels are excluded from captured frames;
+    // they would otherwise confuse the stitcher's alignment algorithm.
+    if( GetWindowsBuild( nullptr ) >= BUILD_WINDOWS_11_22H2 )
+    {
+        const UINT dpi = GetDpiForWindowHelper( GetDesktopWindow() );
+        const int borderWidth = ScaleForDpi( 2, dpi );
+        InflateRect( &absoluteRect, -borderWidth, -borderWidth );
+    }
+
     OutputDebug( L"[Panorama/Capture] Capture rect absolute=(%ld,%ld)-(%ld,%ld)\n",
                  absoluteRect.left,
                  absoluteRect.top,
@@ -1662,6 +1713,15 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     }
 #endif
 
+    // The SelectRectangle border window has WDA_EXCLUDEFROMCAPTURE set,
+    // which tells DWM to replace the window's entire bounding rectangle
+    // (not just the visible region) with a solid fill for screen-capture
+    // APIs.  Because the border window sits on top of the capture area,
+    // every BitBlt returns the exclusion fill rather than the actual
+    // screen content.  Clear the affinity so BitBlt sees through to the
+    // desktop content underneath.
+    g_SelectRectangle.SetExcludeFromCapture( false );
+
     std::vector<HBITMAP> frames;
     HBITMAP firstFrame = CaptureAbsoluteScreenRectToBitmap( hdcSource.get(), absoluteRect );
     if( firstFrame == nullptr )
@@ -1672,6 +1732,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     }
     frames.push_back( firstFrame );
     OutputDebug( L"[Panorama/Capture] Captured frame #1\n" );
+
 #ifdef _DEBUG
     DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, firstFrame );
 #endif
@@ -1700,6 +1761,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         }
 
         Sleep( 60 );
+
         HBITMAP frame = CaptureAbsoluteScreenRectToBitmap( hdcSource.get(), absoluteRect );
         if( frame == nullptr )
         {
