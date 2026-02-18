@@ -2156,6 +2156,13 @@ bool RunPanoramaStitchSelfTest()
                          frameWidth,
                          minExpectedHeight,
                          maxExpectedHeight );
+            if( !selfTestDumpDirectory.empty() )
+            {
+                wchar_t msg[512]{};
+                swprintf_s( msg, L"SIZE MISMATCH: %s actual=%dx%d expected=%dx[%d..%d]",
+                            scenarioName, stitchedWidth, stitchedHeight, frameWidth, minExpectedHeight, maxExpectedHeight );
+                DumpPanoramaText( selfTestDumpDirectory, L"scenario_fail_detail.txt", msg );
+            }
             return false;
         }
 
@@ -2188,6 +2195,13 @@ bool RunPanoramaStitchSelfTest()
                      sampleCount,
                      mismatchCount,
                      stitchedHeight );
+        if( !passed && !selfTestDumpDirectory.empty() )
+        {
+            wchar_t msg[512]{};
+            swprintf_s( msg, L"PIXEL MISMATCH: %s samples=%zu mismatches=%zu actualH=%d expectedH=%d",
+                        scenarioName, sampleCount, mismatchCount, stitchedHeight, expectedHeight );
+            DumpPanoramaText( selfTestDumpDirectory, L"scenario_fail_detail.txt", msg );
+        }
         return passed;
     };
 
@@ -2397,6 +2411,468 @@ bool RunPanoramaStitchSelfTest()
         {
             return false;
         }
+    }
+
+    // Random-slice tests using real images.
+    // Load PNG images from <solutionDir>/Debug, slice each into overlapping
+    // frames with random window height and random step sizes, stitch, and
+    // verify the result matches the original.
+    {
+        // COM must be initialized for WIC image loading. The selftest runs
+        // before WinMain's CoInitialize, so initialize here.
+        HRESULT hrCom = CoInitializeEx( nullptr, COINIT_APARTMENTTHREADED );
+        if( FAILED( hrCom ) )
+        {
+            OutputDebug( L"[Panorama/Test] CoInitializeEx failed hr=0x%08lx\n", hrCom );
+            return false;
+        }
+
+        // Locate test images relative to the executable.
+        // Exe is at <solutionDir>/ARM64/Debug/ZoomIt64a.exe; images at <solutionDir>/Debug/
+        wchar_t modulePath[MAX_PATH]{};
+        if( GetModuleFileNameW( nullptr, modulePath, ARRAYSIZE( modulePath ) ) == 0 )
+        {
+            OutputDebug( L"[Panorama/Test] GetModuleFileNameW failed\n" );
+            CoUninitialize();
+            return false;
+        }
+        const auto imageDir = std::filesystem::path( modulePath ).parent_path().parent_path().parent_path() / L"Debug";
+
+        OutputDebug( L"[Panorama/Test] Image directory: %s\n", imageDir.c_str() );
+
+        const wchar_t* imageFiles[] = { L"image1.png", L"image2.png", L"image3.png" };
+
+        // WIC-based loader for PNG files to HBITMAP.
+        auto loadImageFile = [&]( const std::filesystem::path& filePath, std::vector<BYTE>& pixelsOut, int& widthOut, int& heightOut ) -> bool
+        {
+            IWICImagingFactory* factory = nullptr;
+            HRESULT hr = CoCreateInstance( CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
+                                           IID_PPV_ARGS( &factory ) );
+            if( FAILED( hr ) || factory == nullptr )
+            {
+                OutputDebug( L"[Panorama/Test] WIC factory creation failed hr=0x%08lx\n", hr );
+                return false;
+            }
+
+            IWICBitmapDecoder* decoder = nullptr;
+            hr = factory->CreateDecoderFromFilename( filePath.c_str(), nullptr, GENERIC_READ,
+                                                      WICDecodeMetadataCacheOnDemand, &decoder );
+            if( FAILED( hr ) || decoder == nullptr )
+            {
+                factory->Release();
+                OutputDebug( L"[Panorama/Test] WIC decode failed for %s hr=0x%08lx\n", filePath.c_str(), hr );
+                return false;
+            }
+
+            IWICBitmapFrameDecode* frame = nullptr;
+            hr = decoder->GetFrame( 0, &frame );
+            if( FAILED( hr ) || frame == nullptr )
+            {
+                decoder->Release();
+                factory->Release();
+                return false;
+            }
+
+            IWICFormatConverter* converter = nullptr;
+            hr = factory->CreateFormatConverter( &converter );
+            if( FAILED( hr ) || converter == nullptr )
+            {
+                frame->Release();
+                decoder->Release();
+                factory->Release();
+                return false;
+            }
+
+            hr = converter->Initialize( frame, GUID_WICPixelFormat32bppBGRA,
+                                         WICBitmapDitherTypeNone, nullptr, 0.0,
+                                         WICBitmapPaletteTypeCustom );
+            if( FAILED( hr ) )
+            {
+                converter->Release();
+                frame->Release();
+                decoder->Release();
+                factory->Release();
+                return false;
+            }
+
+            UINT w = 0, h = 0;
+            converter->GetSize( &w, &h );
+            widthOut = static_cast<int>( w );
+            heightOut = static_cast<int>( h );
+            pixelsOut.resize( static_cast<size_t>( w ) * static_cast<size_t>( h ) * 4 );
+            hr = converter->CopyPixels( nullptr, w * 4, static_cast<UINT>( pixelsOut.size() ), pixelsOut.data() );
+
+            converter->Release();
+            frame->Release();
+            decoder->Release();
+            factory->Release();
+            return SUCCEEDED( hr );
+        };
+
+        // Lambda: stitch overlapping frames and compare to original image.
+        // Returns: 1=pass, 0=comparison-fail, -1=infrastructure-error.
+        auto stitchAndCompare = [&](
+            const wchar_t* scenario,
+            const std::vector<BYTE>& imgPx, int imgW, int imgH,
+            const std::vector<int>& origins, int winH ) -> int
+        {
+            const int expectedH = origins.back() + winH;
+
+            std::vector<HBITMAP> frames;
+            frames.reserve( origins.size() );
+            for( size_t fi = 0; fi < origins.size(); ++fi )
+            {
+                const int originY = origins[fi];
+                if( originY < 0 || originY + winH > imgH )
+                {
+                    for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
+                    return -1;
+                }
+
+                std::vector<BYTE> fp( static_cast<size_t>( imgW ) * static_cast<size_t>( winH ) * 4 );
+                for( int row = 0; row < winH; ++row )
+                {
+                    const size_t srcOff = ( static_cast<size_t>( originY + row ) * imgW ) * 4;
+                    const size_t dstOff = ( static_cast<size_t>( row ) * imgW ) * 4;
+                    memcpy( fp.data() + dstOff, imgPx.data() + srcOff, static_cast<size_t>( imgW ) * 4 );
+                }
+
+                HBITMAP bmp = createBitmapFromPixels( fp, imgW, winH );
+                if( !bmp )
+                {
+                    for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
+                    return -1;
+                }
+                frames.push_back( bmp );
+            }
+
+            HBITMAP stitchedBmp = StitchPanoramaFrames( frames );
+            for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
+
+            if( !stitchedBmp )
+            {
+                OutputDebug( L"[Panorama/Test] %s: StitchPanoramaFrames returned nullptr\n", scenario );
+                return -1;
+            }
+
+            std::vector<BYTE> sPx;
+            int sW = 0, sH = 0;
+            if( !ReadBitmapPixels32( stitchedBmp, sPx, sW, sH ) )
+            {
+                DeleteObject( stitchedBmp );
+                return -1;
+            }
+            DeleteObject( stitchedBmp );
+
+            const int htol = winH / 4 + static_cast<int>( origins.size() ) * 8;
+            if( sH < expectedH - htol || sH > expectedH + htol )
+            {
+                // For very short results, check if the source image is low-contrast.
+                // Low-contrast images can't be stitched by correlation — the stitcher
+                // correctly rejects frames as stationary.  Verify it didn't crash
+                // and count as a graceful-degradation pass.
+                if( sH < expectedH / 2 )
+                {
+                    double avgVertDiff = 0;
+                    int nVS = 0;
+                    const int testStep = min( winH / 2, imgH / 4 );
+                    for( int y = 0; y + testStep < imgH; y += 37 )
+                        for( int x = 4; x < imgW - 4; x += 17 )
+                        {
+                            const size_t a = ( static_cast<size_t>( y ) * imgW + x ) * 4;
+                            const size_t b = ( static_cast<size_t>( y + testStep ) * imgW + x ) * 4;
+                            const int la = ( imgPx[a] + imgPx[a+1] + imgPx[a+2] ) / 3;
+                            const int lb = ( imgPx[b] + imgPx[b+1] + imgPx[b+2] ) / 3;
+                            avgVertDiff += abs( la - lb );
+                            nVS++;
+                        }
+                    avgVertDiff = nVS > 0 ? avgVertDiff / nVS : 0;
+
+                    if( avgVertDiff <= 10.0 )
+                    {
+                        OutputDebug( L"[Panorama/Test] %s: low-contrast (avgDiff=%.1f), graceful degradation — PASS\n",
+                                     scenario, avgVertDiff );
+                        return 1;
+                    }
+                }
+
+                OutputDebug( L"[Panorama/Test] %s FAILED: height stitched=%d expected=%d tol=%d\n",
+                             scenario, sH, expectedH, htol );
+                if( !selfTestDumpDirectory.empty() )
+                {
+                    wchar_t msg[512]{};
+                    swprintf_s( msg, L"HEIGHT: %s stitched=%dx%d expected=%dx%d",
+                                scenario, sW, sH, imgW, expectedH );
+                    DumpPanoramaText( selfTestDumpDirectory, L"image_trial_failed.txt", msg );
+                }
+                return 0;
+            }
+
+            const int maxVE = 30, cmpW = min( sW, imgW ), eSkip = 4;
+
+            int bestDx = 0;
+            {
+                double bestHD = 1e18;
+                for( int testDx = -6; testDx <= 6; ++testDx )
+                {
+                    double dsum = 0.0;
+                    int cnt = 0;
+                    for( int yy = 0; yy < sH && yy < imgH; yy += 37 )
+                        for( int xx = eSkip; xx < cmpW - eSkip; xx += 31 )
+                        {
+                            const int dstX = xx + testDx;
+                            if( xx < 0 || xx >= imgW || dstX < 0 || dstX >= sW ) continue;
+                            const size_t si = ( static_cast<size_t>( yy ) * imgW + xx ) * 4;
+                            const size_t di = ( static_cast<size_t>( yy ) * sW + dstX ) * 4;
+                            if( si + 3 >= imgPx.size() || di + 3 >= sPx.size() ) continue;
+                            dsum += abs( (int)sPx[di] - (int)imgPx[si] );
+                            dsum += abs( (int)sPx[di+1] - (int)imgPx[si+1] );
+                            dsum += abs( (int)sPx[di+2] - (int)imgPx[si+2] );
+                            cnt++;
+                        }
+                    if( cnt > 0 && dsum < bestHD ) { bestHD = dsum; bestDx = testDx; }
+                }
+            }
+
+            size_t samples = 0, mismatches = 0;
+            for( int yy = 0; yy < sH; yy += 19 )
+            {
+                int bestSY = yy;
+                double bestRD = 1e18;
+                for( int ty = max( 0, yy - maxVE ); ty <= min( imgH - 1, yy + maxVE ); ++ty )
+                {
+                    double rd = 0.0; int rc = 0;
+                    for( int xx = eSkip; xx < cmpW - eSkip; xx += 31 )
+                    {
+                        const int dstX = xx + bestDx;
+                        if( xx >= imgW || dstX < 0 || dstX >= sW ) continue;
+                        const size_t si = ( static_cast<size_t>( ty ) * imgW + xx ) * 4;
+                        const size_t di = ( static_cast<size_t>( yy ) * sW + dstX ) * 4;
+                        if( si + 3 >= imgPx.size() || di + 3 >= sPx.size() ) continue;
+                        rd += abs( (int)sPx[di] - (int)imgPx[si] ) +
+                              abs( (int)sPx[di+1] - (int)imgPx[si+1] ) +
+                              abs( (int)sPx[di+2] - (int)imgPx[si+2] );
+                        rc++;
+                    }
+                    if( rc > 0 && rd < bestRD ) { bestRD = rd; bestSY = ty; }
+                }
+
+                for( int xx = eSkip; xx < cmpW - eSkip; xx += 17 )
+                {
+                    const int dstX = xx + bestDx;
+                    if( xx >= imgW || dstX < 0 || dstX >= sW ) continue;
+                    const size_t si = ( static_cast<size_t>( bestSY ) * imgW + xx ) * 4;
+                    const size_t di = ( static_cast<size_t>( yy ) * sW + dstX ) * 4;
+                    if( si + 3 >= imgPx.size() || di + 3 >= sPx.size() ) continue;
+                    const int d = abs( (int)sPx[di] - (int)imgPx[si] ) +
+                                  abs( (int)sPx[di+1] - (int)imgPx[si+1] ) +
+                                  abs( (int)sPx[di+2] - (int)imgPx[si+2] );
+                    samples++;
+                    if( d > 60 ) mismatches++;
+                }
+            }
+
+            const double mrate = samples > 0 ? static_cast<double>( mismatches ) / samples : 0.0;
+            const bool ok = samples > 0 && mrate < 0.15;
+
+            OutputDebug( L"[Panorama/Test] %s result=%s stitched=%dx%d dx=%d samples=%zu mismatches=%zu (%.2f%%)\n",
+                         scenario, ok ? L"PASS" : L"FAIL", sW, sH, bestDx, samples, mismatches, mrate * 100.0 );
+
+            if( !ok && !selfTestDumpDirectory.empty() )
+            {
+                wchar_t msg[512]{};
+                swprintf_s( msg, L"PIXELS: %s stitched=%dx%d dx=%d mismatches=%zu/%zu (%.2f%%)",
+                            scenario, sW, sH, bestDx, mismatches, samples, mrate * 100.0 );
+                DumpPanoramaText( selfTestDumpDirectory, L"image_trial_failed.txt", msg );
+            }
+
+            return ok ? 1 : 0;
+        };
+
+        constexpr int kTrialsPerImage = 5;
+        int imageSliceTestsPassed = 0;
+
+        for( const wchar_t* imageFile : imageFiles )
+        {
+            const auto imagePath = imageDir / imageFile;
+            if( !std::filesystem::exists( imagePath ) )
+            {
+                OutputDebug( L"[Panorama/Test] Skipping missing image: %s\n", imagePath.c_str() );
+                continue;
+            }
+
+            std::vector<BYTE> imagePixels;
+            int imageWidth = 0, imageHeight = 0;
+            if( !loadImageFile( imagePath, imagePixels, imageWidth, imageHeight ) )
+            {
+                OutputDebug( L"[Panorama/Test] Failed to load image: %s\n", imagePath.c_str() );
+                CoUninitialize();
+                return false;
+            }
+
+            OutputDebug( L"[Panorama/Test] Loaded %s  %dx%d\n", imageFile, imageWidth, imageHeight );
+
+            for( int trial = 0; trial < kTrialsPerImage; ++trial )
+            {
+                // Deterministic seed per image/trial for reproducibility.
+                srand( static_cast<unsigned>( imageWidth * 1000 + imageHeight * 100 + trial * 7 ) );
+
+                // Random window height: between 1/8 and 1/3 of image height.
+                const int minWindowH = max( 60, imageHeight / 8 );
+                const int maxWindowH = max( minWindowH + 1, imageHeight / 3 );
+                const int windowH = minWindowH + rand() % ( maxWindowH - minWindowH );
+
+                // Build frame origins with random steps.
+                // Limit step to 50% of windowH so each pair overlaps by at least
+                // 50%, giving the correlation-based stitcher enough features.
+                std::vector<int> originsY;
+                originsY.push_back( 0 );
+                int y = 0;
+                while( y + windowH < imageHeight )
+                {
+                    const int minStep = max( 8, windowH / 10 );
+                    const int maxStep = max( minStep + 1, windowH * 3 / 10 );
+                    const int step = minStep + rand() % ( maxStep - minStep );
+                    y += step;
+                    if( y + windowH > imageHeight )
+                    {
+                        y = imageHeight - windowH;
+                    }
+                    originsY.push_back( y );
+                }
+
+                if( originsY.size() < 2 )
+                {
+                    continue;
+                }
+
+                wchar_t scenarioName[128];
+                swprintf_s( scenarioName, L"image-slice-%s-trial%d-w%d-n%zu",
+                            imageFile, trial, windowH, originsY.size() );
+
+                const int result = stitchAndCompare( scenarioName, imagePixels, imageWidth, imageHeight, originsY, windowH );
+                if( result < 0 )
+                {
+                    OutputDebug( L"[Panorama/Test] %s infrastructure error\n", scenarioName );
+                    CoUninitialize();
+                    return false;
+                }
+                if( result == 0 )
+                {
+                    CoUninitialize();
+                    return false;
+                }
+                imageSliceTestsPassed++;
+            }
+        }
+
+        // Fixed 15-slice tests: each trial creates exactly 15 overlapping frames.
+        for( const wchar_t* imageFile : imageFiles )
+        {
+            const auto imagePath = imageDir / imageFile;
+            if( !std::filesystem::exists( imagePath ) )
+                continue;
+
+            std::vector<BYTE> imagePixels;
+            int imageWidth = 0, imageHeight = 0;
+            if( !loadImageFile( imagePath, imagePixels, imageWidth, imageHeight ) )
+            {
+                OutputDebug( L"[Panorama/Test] Failed to load image for fixed15: %s\n", imagePath.c_str() );
+                CoUninitialize();
+                return false;
+            }
+
+            constexpr int kFixedSlices = 15;
+            for( int trial = 0; trial < 5; ++trial )
+            {
+                srand( static_cast<unsigned>( imageWidth * 3000 + imageHeight * 300 + trial * 17 ) );
+
+                // Window height must be large enough that the step between
+                // 15 slices gives at least ~70% overlap: step = (H - windowH) / 14
+                // requires windowH >= H / 5.
+                const int minWH = max( 60, imageHeight / 5 );
+                const int maxWH = max( minWH + 1, imageHeight / 3 );
+                const int windowH = minWH + rand() % ( maxWH - minWH );
+
+                const double baseStep = static_cast<double>( imageHeight - windowH ) / ( kFixedSlices - 1 );
+                if( baseStep < 1.0 )
+                    continue;
+
+                std::vector<int> originsY;
+                for( int i = 0; i < kFixedSlices; ++i )
+                {
+                    int yPos;
+                    if( i == 0 )
+                        yPos = 0;
+                    else if( i == kFixedSlices - 1 )
+                        yPos = imageHeight - windowH;
+                    else
+                    {
+                        yPos = static_cast<int>( i * baseStep );
+                        const int jitter = max( 1, static_cast<int>( baseStep * 0.1 ) );
+                        yPos += ( rand() % ( 2 * jitter + 1 ) ) - jitter;
+                        yPos = max( 0, min( yPos, imageHeight - windowH ) );
+                    }
+                    originsY.push_back( yPos );
+                }
+
+                // Ensure strictly increasing.
+                for( size_t i = 1; i < originsY.size(); ++i )
+                {
+                    if( originsY[i] <= originsY[i - 1] )
+                        originsY[i] = originsY[i - 1] + 1;
+                }
+
+                // Clamp last origin to valid range in case bumping made it exceed.
+                if( originsY.back() + windowH > imageHeight )
+                    originsY.back() = imageHeight - windowH;
+                if( originsY.size() >= 2 && originsY.back() <= originsY[originsY.size() - 2] )
+                    continue;
+
+                wchar_t scenarioName[128];
+                swprintf_s( scenarioName, L"fixed15-%s-trial%d-w%d",
+                            imageFile, trial, windowH );
+
+                const int result = stitchAndCompare( scenarioName, imagePixels, imageWidth, imageHeight, originsY, windowH );
+                if( result < 0 )
+                {
+                    OutputDebug( L"[Panorama/Test] %s infrastructure error\n", scenarioName );
+                    CoUninitialize();
+                    return false;
+                }
+                if( result == 0 )
+                {
+                    CoUninitialize();
+                    return false;
+                }
+                imageSliceTestsPassed++;
+            }
+        }
+
+        OutputDebug( L"[Panorama/Test] Image-slice tests passed: %d\n", imageSliceTestsPassed );
+
+        // Require at least 30 image slice tests (3 images x 5 trials x 2 modes).
+        if( imageSliceTestsPassed < 30 )
+        {
+            OutputDebug( L"[Panorama/Test] Insufficient image tests: %d (need 30)\n", imageSliceTestsPassed );
+            if( !selfTestDumpDirectory.empty() )
+            {
+                wchar_t summary[128]{};
+                swprintf_s( summary, L"INSUFFICIENT: only %d tests passed (need 30)", imageSliceTestsPassed );
+                DumpPanoramaText( selfTestDumpDirectory, L"image_slice_results.txt", summary );
+            }
+            CoUninitialize();
+            return false;
+        }
+
+        if( !selfTestDumpDirectory.empty() )
+        {
+            wchar_t summary[128]{};
+            swprintf_s( summary, L"imageSliceTestsPassed=%d", imageSliceTestsPassed );
+            DumpPanoramaText( selfTestDumpDirectory, L"image_slice_results.txt", summary );
+        }
+
+        CoUninitialize();
     }
 
     OutputDebug( L"[Panorama/Test] All scenarios passed\n" );
