@@ -32,6 +32,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public HotkeySettings ToggleShortcut { get; set; }
 
+        [JsonPropertyName("useNewEditor")]
+        public bool UseNewEditor { get; set; }
+
         public string ToJsonString()
         {
             return JsonSerializer.Serialize(this);
