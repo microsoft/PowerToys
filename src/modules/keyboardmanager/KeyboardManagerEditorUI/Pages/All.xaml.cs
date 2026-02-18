@@ -880,11 +880,11 @@ namespace KeyboardManagerEditorUI.Pages
                                 SettingsManager.RemoveShortcutKeyMappingFromSettings(remapping.Id);
                             }
 
-                            LoadRemappings();
+                            LoadAllMappings();
                         }
                         else if (RemappingHelper.DeleteRemapping(_mappingService, remapping))
                         {
-                            LoadRemappings();
+                            LoadAllMappings();
                         }
                         else
                         {

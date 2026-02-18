@@ -298,7 +298,7 @@ bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
 
 bool KeyboardManager::HasMouseRemappings() const
 {
-    return !state.mouseButtonReMap.empty() || !state.appSpecificMouseButtonReMap.empty() ||;
+    return !state.mouseButtonReMap.empty() || !state.appSpecificMouseButtonReMap.empty();
 }
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
