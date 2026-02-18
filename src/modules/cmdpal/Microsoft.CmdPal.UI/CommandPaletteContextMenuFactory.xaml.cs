@@ -37,8 +37,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             page.ProviderContext.SupportsPinning &&
             !string.IsNullOrEmpty(itemId))
         {
-            // TODO: #45201 Here, we'll want to add pin/unpin commands for pinning
-            // items to the top-level or to the dock.
+            // Add pin/unpin commands for pinning items to the top-level or to
+            // the dock.
             var providerId = page.ProviderContext.ProviderId;
             if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
             {
