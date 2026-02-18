@@ -18,6 +18,7 @@
             "StylesReportTool\\PowerToys.StylesReportTool.exe",
 
             "CalculatorEngineCommon.dll",
+            "PowerToys.Common.UI.Controls.dll",
             "PowerToys.ManagedTelemetry.dll",
             "PowerToys.ManagedCommon.dll",
             "PowerToys.ManagedCsWin32.dll",
