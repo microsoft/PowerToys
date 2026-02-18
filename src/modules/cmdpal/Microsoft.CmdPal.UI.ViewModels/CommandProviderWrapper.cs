@@ -226,13 +226,14 @@ public sealed class CommandProviderWrapper
         WeakReference<IPageContext> pageContext)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
+        var contextMenuFactory = serviceProvider.GetService<IContextMenuFactory>()!;
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             // n.b. Mike, you may want to revisit this after the dock stuff merges,
             // because I think we'll need to pass a contextMenuFactory to dock items
-            CommandItemViewModel commandItemViewModel = new(new(i), pageContext, contextMenuFactory: null);
+            CommandItemViewModel commandItemViewModel = new(new(i), pageContext, contextMenuFactory: contextMenuFactory);
             TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ourContext, settings, providerSettings, serviceProvider, i);
             topLevelViewModel.InitializeProperties();
 
