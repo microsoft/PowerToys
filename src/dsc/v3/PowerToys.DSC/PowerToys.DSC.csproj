@@ -46,6 +46,7 @@
     <Message Text="Generating DSC resource JSON files to DSCModules subfolder..." Importance="high" />
     <MakeDir Directories="$(TargetDir)DSCModules" />
     
-    <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource settings --outputDir &quot;$(TargetDir)DSCModules&quot;" />
+    <Exec Command="&quot;$(TargetDir)$(AssemblyName).exe&quot; manifest --resource settings --outputDir &quot;$(TargetDir)DSCModules&quot;" Condition="'$(SelfContained)' == 'true'" />
+    <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource settings --outputDir &quot;$(TargetDir)DSCModules&quot;" Condition="'$(SelfContained)' != 'true'" />
   </Target>
 </Project>
