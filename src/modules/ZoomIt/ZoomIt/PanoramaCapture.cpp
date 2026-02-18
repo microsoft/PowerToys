@@ -2006,6 +2006,19 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 }
 
 #ifdef _DEBUG
+//
+// Panorama stitch self-test
+// -------------------------
+// How to run:
+//   1. Build the ARM64 Debug configuration.
+//   2. Place test images (image1.png … image5.png) in the Debug\ directory
+//      next to the solution root (i.e. <repo>\Debug\).
+//   3. Run:  ZoomIt64a.exe /panorama-selftest
+//   4. Exit code 0 = all tests passed, exit code 2 = failure.
+//   5. Diagnostic output goes to OutputDebugString (view with DebugView
+//      or a debugger).  On failure, artifacts are written to
+//      %TEMP%\ZoomItPanoramaDebug\panorama_<timestamp>_<pid>\.
+//
 bool RunPanoramaStitchSelfTest()
 {
     const std::wstring selfTestDumpDirectory = CreatePanoramaDebugDumpDirectory();
@@ -2874,7 +2887,7 @@ bool RunPanoramaStitchSelfTest()
         CoUninitialize();
     }
 
-    OutputDebug( L"[Panorama/Test] All scenarios passed\n" );
+    OutputDebug( L"[Panorama/Test] All scenarios passed.  Dump: %s\n", selfTestDumpDirectory.c_str() );
     return true;
 }
 
