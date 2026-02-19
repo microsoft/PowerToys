@@ -8,8 +8,8 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyVisual.xaml" />
-                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyCharPresenter.xaml" />
+                <ResourceDictionary Source="/Controls/KeyVisual/KeyVisual.xaml" />
+                <ResourceDictionary Source="/Controls/KeyVisual/KeyCharPresenter.xaml" />
                 <ResourceDictionary Source="/Controls/IconLabel/IconLabelControl.xaml" />
                 <ResourceDictionary Source="/Styles/Button.xaml" />
                 <ResourceDictionary Source="/Styles/Colors.xaml" />

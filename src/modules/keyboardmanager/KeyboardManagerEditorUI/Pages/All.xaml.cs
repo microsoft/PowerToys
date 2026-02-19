@@ -24,7 +24,7 @@ namespace KeyboardManagerEditorUI.Pages
     /// A consolidated page that displays all mappings from Remappings, Text, Programs, and URLs pages.
     /// </summary>
 #pragma warning disable SA1124 // Do not use regions
-    public sealed partial class MainPage : Page, IDisposable
+    public sealed partial class All : Page, IDisposable
     {
         private KeyboardMappingService? _mappingService;
         private bool _disposed;
@@ -68,7 +68,7 @@ namespace KeyboardManagerEditorUI.Pages
             public bool IsAllApps { get; set; } = true;
         }
 
-        public MainPage()
+        public All()
         {
             this.InitializeComponent();
 
@@ -79,7 +79,7 @@ namespace KeyboardManagerEditorUI.Pages
             }
             catch (Exception ex)
             {
-                Logger.LogError("Failed to initialize KeyboardMappingService in MainPage page: " + ex.Message);
+                Logger.LogError("Failed to initialize KeyboardMappingService in All page: " + ex.Message);
             }
 
             this.Unloaded += All_Unloaded;
