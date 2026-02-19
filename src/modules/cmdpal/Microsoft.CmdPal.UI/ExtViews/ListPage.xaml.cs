@@ -1102,10 +1102,7 @@ public sealed partial class ListPage : Page,
         ItemView.SelectedIndex = newIndex;
     }
 
-    /// <summary>
-    ///  Code stealed from <see cref="Controls.ContextMenu.IsSeparator(object)"/>
-    /// </summary>
-    private bool IsSeparator(object? item) => item is ListItemViewModel li && li.IsSectionOrSeparator;
+    private bool IsSeparator(object? item) => item is ListItemViewModel li && !li.IsInteractive;
 
     private enum InputSource
     {

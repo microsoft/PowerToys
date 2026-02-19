@@ -416,6 +416,11 @@ namespace Microsoft.CommandPalette.Extensions
     {
         Object[] GetApiExtensionStubs();
     };
-    
 
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandProvider3 requires ICommandProvider2
+    {
+        ICommandItem[] GetDockBands();
+    };
+    
 }

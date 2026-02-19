@@ -72,6 +72,7 @@
                             <local:IconBox
                                 x:Name="PART_Icon"
                                 Grid.Column="0"
+                                Width="12"
                                 Height="12"
                                 Margin="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IconMarginConverter}}"
                                 SourceKey="{TemplateBinding Icon}" />

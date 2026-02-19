@@ -3,6 +3,7 @@
     "path": "..\\..\\..\\PowerToys.slnx",
     "projects": [
       "src\\common\\CalculatorEngineCommon\\CalculatorEngineCommon.vcxproj",
+      "src\\common\\Common.UI.Controls\\Common.UI.Controls.csproj",
       "src\\common\\ManagedCommon\\ManagedCommon.csproj",
       "src\\common\\ManagedCsWin32\\ManagedCsWin32.csproj",
       "src\\common\\ManagedTelemetry\\Telemetry\\ManagedTelemetry.csproj",
@@ -15,6 +16,7 @@
       "src\\modules\\cmdpal\\Microsoft.CmdPal.UI.ViewModels\\Microsoft.CmdPal.UI.ViewModels.csproj",
       "src\\modules\\cmdpal\\Microsoft.CmdPal.UI\\Microsoft.CmdPal.UI.csproj",
       "src\\modules\\cmdpal\\Microsoft.Terminal.UI\\Microsoft.Terminal.UI.vcxproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Core.Common.UnitTests\\Microsoft.CmdPal.Core.Common.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Apps.UnitTests\\Microsoft.CmdPal.Ext.Apps.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Calc.UnitTests\\Microsoft.CmdPal.Ext.Calc.UnitTests.csproj",
@@ -29,6 +31,7 @@
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WindowWalker.UnitTests\\Microsoft.CmdPal.Ext.WindowWalker.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UITests\\Microsoft.CmdPal.UITests.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CommandPalette.Extensions.Toolkit.UnitTests\\Microsoft.CommandPalette.Extensions.Toolkit.UnitTests.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Apps\\Microsoft.CmdPal.Ext.Apps.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Bookmark\\Microsoft.CmdPal.Ext.Bookmarks.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Calc\\Microsoft.CmdPal.Ext.Calc.csproj",

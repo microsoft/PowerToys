@@ -181,7 +181,10 @@ void dispatch_json_config_to_modules(const json::JsonObject& powertoys_configs)
             const auto properties = settings.GetNamedObject(L"properties");
 
             // Currently, only PowerToys Run settings use the 'hotkey_changed' property.
-            json::get(properties, L"hotkey_changed", hotkeyUpdated, true);
+            if (properties.HasKey(L"hotkey_changed"))
+            {
+                json::get(properties, L"hotkey_changed", hotkeyUpdated, true);
+            }
         }
         
         send_json_config_to_module(powertoy_element.Key().c_str(), element.c_str(), hotkeyUpdated);
@@ -802,6 +805,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "CmdPal";
     case ESettingsWindowNames::ZoomIt:
         return "ZoomIt";
+    case ESettingsWindowNames::PowerDisplay:
+        return "PowerDisplay";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -940,6 +945,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "ZoomIt")
     {
         return ESettingsWindowNames::ZoomIt;
+    }
+    else if (value == "PowerDisplay")
+    {
+        return ESettingsWindowNames::PowerDisplay;
     }
     else
     {

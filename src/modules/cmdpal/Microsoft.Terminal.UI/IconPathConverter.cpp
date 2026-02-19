@@ -94,39 +94,48 @@ namespace winrt::Microsoft::Terminal::UI::implementation
     // - <TIconSource>: The type of IconSource (MUX, WUX) to generate.
     // Arguments:
     // - path: the full, expanded path to the icon.
+    // - targetSize: the target size for decoding/rasterizing the icon.
     // Return Value:
     // - An IconElement with its IconSource set, if possible.
     template<typename TIconSource>
-    TIconSource _getColoredBitmapIcon(const winrt::hstring& path, bool monochrome)
+    TIconSource _getColoredBitmapIcon(const winrt::hstring& path, int targetSize)
     {
         // FontIcon uses glyphs in the private use area, whereas valid URIs only contain ASCII characters.
         // To skip throwing on Uri construction, we can quickly check if the first character is ASCII.
-        if (!path.empty() && path.front() < 128)
+        if (path.empty() || path.front() >= 128)
         {
-            try
-            {
-                winrt::Windows::Foundation::Uri iconUri{ path };
-
-                if (til::equals_insensitive_ascii(iconUri.Extension(), L".svg"))
-                {
-                    typename ImageIconSource<TIconSource>::type iconSource;
-                    winrt::Microsoft::UI::Xaml::Media::Imaging::SvgImageSource source{ iconUri };
-                    iconSource.ImageSource(source);
-                    return iconSource;
-                }
-                else
-                {
-                    typename BitmapIconSource<TIconSource>::type iconSource;
-                    // Make sure to set this to false, so we keep the RGB data of the
-                    // image. Otherwise, the icon will be white for all the
-                    // non-transparent pixels in the image.
-                    iconSource.ShowAsMonochrome(monochrome);
-                    iconSource.UriSource(iconUri);
-                    return iconSource;
-                }
-            }
-            CATCH_LOG();
+            return nullptr;
         }
+
+        try
+        {
+            winrt::Windows::Foundation::Uri iconUri{ path };
+
+            if (til::equals_insensitive_ascii(iconUri.Extension(), L".svg"))
+            {
+                typename ImageIconSource<TIconSource>::type iconSource;
+                winrt::Microsoft::UI::Xaml::Media::Imaging::SvgImageSource source{ iconUri };
+                source.RasterizePixelWidth(static_cast<double>(targetSize));
+                // Set only single dimension here; the image might not be square and 
+                // this will preserve the aspect ratio (for the price of keeping height unbound).
+                // source.RasterizePixelHeight(static_cast<double>(targetSize));
+                iconSource.ImageSource(source);
+                return iconSource;
+            }
+            else
+            {
+                typename ImageIconSource<TIconSource>::type iconSource;
+                winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage bitmapImage;
+                bitmapImage.DecodePixelWidth(targetSize);
+                // Set only single dimension here; the image might not be square and
+                // this will preserve the aspect ratio (for the price of keeping height unbound).
+                // bitmapImage.DecodePixelHeight(targetSize);
+                bitmapImage.UriSource(iconUri);
+                iconSource.ImageSource(bitmapImage);
+                return iconSource;
+            }
+        }
+        CATCH_LOG();
 
         return nullptr;
     }
@@ -158,14 +167,14 @@ namespace winrt::Microsoft::Terminal::UI::implementation
     // Return Value:
     // - An IconElement with its IconSource set, if possible.
     template<typename TIconSource>
-    TIconSource _getIconSource(const winrt::hstring& iconPath, bool monochrome, const winrt::hstring& fontFamily, const int targetSize)
+    TIconSource _getIconSource(const winrt::hstring& iconPath, const winrt::hstring& fontFamily, const int targetSize)
     {
         TIconSource iconSource{ nullptr };
 
         if (iconPath.size() != 0)
         {
             const auto expandedIconPath{ _expandIconPath(iconPath) };
-            iconSource = _getColoredBitmapIcon<TIconSource>(expandedIconPath, monochrome);
+            iconSource = _getColoredBitmapIcon<TIconSource>(expandedIconPath, targetSize);
 
             // If we fail to set the icon source using the "icon" as a path,
             // let's try it as a symbol/emoji.
@@ -235,9 +244,9 @@ namespace winrt::Microsoft::Terminal::UI::implementation
     //     return _getIconSource<Windows::UI::Xaml::Controls::IconSource>(path, false);
     // }
 
-    static Microsoft::UI::Xaml::Controls::IconSource _IconSourceMUX(const hstring& path, bool monochrome, const winrt::hstring& fontFamily, const int targetSize)
+    static Microsoft::UI::Xaml::Controls::IconSource _IconSourceMUX(const hstring& path, const winrt::hstring& fontFamily, const int targetSize)
     {
-        return _getIconSource<Microsoft::UI::Xaml::Controls::IconSource>(path, monochrome, fontFamily, targetSize);
+        return _getIconSource<Microsoft::UI::Xaml::Controls::IconSource>(path, fontFamily, targetSize);
     }
 
     static SoftwareBitmap _convertToSoftwareBitmap(HICON hicon,
@@ -352,7 +361,6 @@ namespace winrt::Microsoft::Terminal::UI::implementation
     }
 
     MUX::Controls::IconSource IconPathConverter::IconSourceMUX(const winrt::hstring& iconPath,
-                                                               const bool monochrome,
                                                                const winrt::hstring& fontFamily,
                                                                const int targetSize)
     {
@@ -360,7 +368,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         const auto indexOpt = _getIconIndex(iconPath, iconPathWithoutIndex);
         if (!indexOpt.has_value())
         {
-            return _IconSourceMUX(iconPath, monochrome, fontFamily, targetSize);
+            return _IconSourceMUX(iconPath, fontFamily, targetSize);
         }
 
         const auto bitmapSource = _getImageIconSourceForBinary(iconPathWithoutIndex, indexOpt.value(), targetSize);
@@ -374,13 +382,14 @@ namespace winrt::Microsoft::Terminal::UI::implementation
     Microsoft::UI::Xaml::Controls::IconElement IconPathConverter::IconMUX(const winrt::hstring& iconPath) {
         return IconMUX(iconPath, 24);
     }
+
     Microsoft::UI::Xaml::Controls::IconElement IconPathConverter::IconMUX(const winrt::hstring& iconPath, const int targetSize)
     {
         std::wstring_view iconPathWithoutIndex;
         const auto indexOpt = _getIconIndex(iconPath, iconPathWithoutIndex);
         if (!indexOpt.has_value())
         {
-            auto source = IconSourceMUX(iconPath, false, L"", targetSize);
+            auto source = IconSourceMUX(iconPath, L"", targetSize);
             Microsoft::UI::Xaml::Controls::IconSourceElement icon;
             icon.IconSource(source);
             return icon;

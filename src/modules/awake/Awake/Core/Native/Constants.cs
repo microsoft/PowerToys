@@ -15,6 +15,12 @@ namespace Awake.Core.Native
         internal const int WM_DESTROY = 0x0002;
         internal const int WM_LBUTTONDOWN = 0x0201;
         internal const int WM_RBUTTONDOWN = 0x0204;
+        internal const uint WM_POWERBROADCAST = 0x0218;
+
+        // Power Broadcast Event Types
+        internal const int PBT_APMRESUMEAUTOMATIC = 0x0012;
+        internal const int PBT_APMRESUMESUSPEND = 0x0007;
+        internal const int PBT_APMPOWERSTATUSCHANGE = 0x000A;
 
         // Menu Flags
         internal const uint MF_BYPOSITION = 1024;
