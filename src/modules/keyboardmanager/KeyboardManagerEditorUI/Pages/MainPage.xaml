@@ -3,10 +3,10 @@
     x:Class="KeyboardManagerEditorUI.Pages.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.PowerToys.Common.UI.Controls"
+    xmlns:commoncontrols="using:Microsoft.PowerToys.Common.UI.Controls"
+    xmlns:controls="using:KeyboardManagerEditorUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helper="using:KeyboardManagerEditorUI.Helpers"
-    xmlns:kbmcontrols="using:KeyboardManagerEditorUI.Controls"
     xmlns:local="using:KeyboardManagerEditorUI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
@@ -20,7 +20,7 @@
         <Style
             x:Key="OriginalKeyVisualStyle"
             BasedOn="{StaticResource DefaultKeyVisualStyle}"
-            TargetType="controls:KeyVisual">
+            TargetType="commoncontrols:KeyVisual">
             <Setter Property="Padding" Value="6" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Background" Value="{ThemeResource ControlFillColorDefaultBrush}" />
@@ -32,7 +32,7 @@
         <Style
             x:Key="RemappedKeyVisualStyle"
             BasedOn="{StaticResource OriginalKeyVisualStyle}"
-            TargetType="controls:KeyVisual">
+            TargetType="commoncontrols:KeyVisual">
             <Setter Property="Background" Value="{ThemeResource CustomAccentBackgroundBrush}" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
@@ -40,7 +40,7 @@
         <Style
             x:Key="RemappedIconLabelControlStyle"
             BasedOn="{StaticResource DefaultIconLabelControlStyle}"
-            TargetType="kbmcontrols:IconLabelControl">
+            TargetType="controls:IconLabelControl">
             <Setter Property="Background" Value="{ThemeResource CustomAccentBackgroundBrush}" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Padding" Value="6" />
@@ -128,7 +128,7 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <controls:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
+                                                            <commoncontrols:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
@@ -144,7 +144,7 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <controls:KeyVisual Content="{Binding}" Style="{StaticResource RemappedKeyVisualStyle}" />
+                                                            <commoncontrols:KeyVisual Content="{Binding}" Style="{StaticResource RemappedKeyVisualStyle}" />
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
@@ -156,7 +156,7 @@
                                                         VerticalAlignment="Center"
                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                         Text="in" />
-                                                    <kbmcontrols:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                    <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                 </StackPanel>
                                             </StackPanel>
                                             <StackPanel
@@ -224,7 +224,7 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <controls:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
+                                                            <commoncontrols:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
@@ -232,7 +232,7 @@
                                                     VerticalAlignment="Center"
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                     Text="inserts" />
-                                                <kbmcontrols:IconLabelControl
+                                                <controls:IconLabelControl
                                                     ActionType="Text"
                                                     Label="{x:Bind Text}"
                                                     Style="{StaticResource RemappedIconLabelControlStyle}" />
@@ -244,7 +244,7 @@
                                                         VerticalAlignment="Center"
                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                         Text="in" />
-                                                    <kbmcontrols:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                    <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                 </StackPanel>
                                             </StackPanel>
                                             <StackPanel
@@ -312,7 +312,7 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <controls:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
+                                                            <commoncontrols:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
@@ -320,7 +320,7 @@
                                                     VerticalAlignment="Center"
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                     Text="opens" />
-                                                <kbmcontrols:IconLabelControl
+                                                <controls:IconLabelControl
                                                     ActionType="Program"
                                                     Label="{x:Bind AppToRun}"
                                                     Style="{StaticResource RemappedIconLabelControlStyle}" />
@@ -403,7 +403,7 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <controls:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
+                                                            <commoncontrols:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
@@ -411,7 +411,7 @@
                                                     VerticalAlignment="Center"
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                     Text="opens" />
-                                                <kbmcontrols:IconLabelControl
+                                                <controls:IconLabelControl
                                                     ActionType="Url"
                                                     Label="{x:Bind URL}"
                                                     Style="{StaticResource RemappedIconLabelControlStyle}" />
@@ -423,7 +423,7 @@
                                                         VerticalAlignment="Center"
                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                         Text="in" />
-                                                    <kbmcontrols:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                    <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                 </StackPanel>-->
                                             </StackPanel>
                                             <StackPanel
@@ -473,7 +473,7 @@
             DefaultButton="Primary"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
             PrimaryButtonText="Save">
-            <kbmcontrols:UnifiedMappingControl x:Name="UnifiedMappingControl" Margin="0,16,0,0" />
+            <controls:UnifiedMappingControl x:Name="UnifiedMappingControl" Margin="0,16,0,0" />
         </ContentDialog>
 
         <!--  Confirmation Dialog for delete  -->

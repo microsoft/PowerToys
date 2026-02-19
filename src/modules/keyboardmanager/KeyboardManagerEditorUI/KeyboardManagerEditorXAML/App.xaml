@@ -8,11 +8,11 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyVisual.xaml" />
-                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyCharPresenter.xaml" />
                 <ResourceDictionary Source="/Controls/IconLabel/IconLabelControl.xaml" />
                 <ResourceDictionary Source="/Styles/Button.xaml" />
                 <ResourceDictionary Source="/Styles/Colors.xaml" />
+                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyVisual.xaml" />
+                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyCharPresenter.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!--  Other app resources here  -->
 
@@ -20,7 +20,6 @@
 
             <!--  Icons  -->
             <x:String x:Key="ArrowIconData">M12.001 2C17.5238 2 22.001 6.47715 22.001 12C22.001 17.5228 17.5238 22 12.001 22C6.47813 22 2.00098 17.5228 2.00098 12C2.00098 6.47715 6.47813 2 12.001 2ZM12.7813 7.46897L12.6972 7.39635C12.4362 7.2027 12.078 7.20031 11.8146 7.38918L11.7206 7.46897L11.648 7.55308C11.4544 7.81407 11.452 8.17229 11.6409 8.43568L11.7206 8.52963L14.4403 11.2493H7.75027L7.6485 11.2561C7.31571 11.3013 7.05227 11.5647 7.00712 11.8975L7.00027 11.9993L7.00712 12.1011C7.05227 12.4339 7.31571 12.6973 7.6485 12.7424L7.75027 12.7493H14.4403L11.72 15.4697L11.6474 15.5538C11.4295 15.8474 11.4536 16.264 11.7198 16.5303C11.9861 16.7967 12.4027 16.8209 12.6964 16.6032L12.7805 16.5306L16.782 12.5306L16.8547 12.4464C17.0484 12.1854 17.0508 11.8272 16.8619 11.5638L16.7821 11.4698L12.7813 7.46897L12.6972 7.39635L12.7813 7.46897Z</x:String>
-
         </ResourceDictionary>
     </Application.Resources>
 </Application>
