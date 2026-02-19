@@ -46,9 +46,7 @@
                     <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <!--  Dock Position  -->
-                    <controls:SettingsExpander
-                        x:Uid="DockAppearance_DockPosition_SettingsExpander"
-                        IsExpanded="True">
+                    <controls:SettingsExpander x:Uid="DockAppearance_DockPosition_SettingsExpander" IsExpanded="True">
                         <controls:SettingsExpander.HeaderIcon>
                             <SymbolIcon Symbol="MoveToFolder" />
                         </controls:SettingsExpander.HeaderIcon>
@@ -65,9 +63,7 @@
 
                             <!--  Show Labels  -->
                             <controls:SettingsCard ContentAlignment="Left">
-                                <ptcontrols:CheckBoxWithDescriptionControl
-                                    x:Uid="DockAppearance_ShowLabels_CheckBox"
-                                    IsChecked="{x:Bind ShowLabels, Mode=TwoWay}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="DockAppearance_ShowLabels_CheckBox" IsChecked="{x:Bind ShowLabels, Mode=TwoWay}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
@@ -103,9 +99,7 @@
                     </controls:SettingsCard>
 
                     <!--  Backdrop Style  -->
-                    <controls:SettingsCard 
-                        x:Uid="DockAppearance_Backdrop_SettingsCard"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}">
+                    <controls:SettingsCard x:Uid="DockAppearance_Backdrop_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}">
                         <ComboBox
                             x:Name="BackdropComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
