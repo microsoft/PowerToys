@@ -21,7 +21,6 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.Utilities;
-using Microsoft.Win32;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -57,6 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ICommand _remapKeyboardCommand;
         private ICommand _editShortcutCommand;
+        private ICommand _openNewEditorCommand;
         private KeyboardManagerProfile _profile;
 
         private Func<string, int> SendConfigMSG { get; }
@@ -201,6 +201,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool UseNewEditor
+        {
+            get => Settings.Properties.UseNewEditor;
+            set
+            {
+                if (Settings.Properties.UseNewEditor != value)
+                {
+                    Settings.Properties.UseNewEditor = value;
+                    OnPropertyChanged(nameof(UseNewEditor));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             // Using InvariantCulture as this is an IPC message
@@ -262,6 +276,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ICommand EditShortcutCommand => _editShortcutCommand ?? (_editShortcutCommand = new RelayCommand(OnEditShortcut));
 
+        public ICommand OpenNewEditorCommand => _openNewEditorCommand ?? (_openNewEditorCommand = new RelayCommand(OnOpenNewEditor));
+
         public void OnRemapKeyboard()
         {
             OpenEditor((int)KeyboardManagerEditorType.KeyEditor);
@@ -270,6 +286,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void OnEditShortcut()
         {
             OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor);
+        }
+
+        public void OnOpenNewEditor()
+        {
+            OpenNewEditor();
         }
 
         private static void BringProcessToFront(Process process)
@@ -305,32 +326,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                // Launch the new editor if:
-                // 1. the experimentation toggle is enabled in the settings
-                // 2. the new WinUI3 editor is enabled in the registry. The registry value does not exist by default and is only used for development purposes
-                string editorPath = KeyboardManagerEditorPath;
-                try
-                {
-                    // Check if the experimentation toggle is enabled in the settings
-                    var settingsUtils = SettingsUtils.Default;
-                    bool isExperimentationEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
-
-                    // Only read the registry value if the experimentation toggle is enabled
-                    if (isExperimentationEnabled)
-                    {
-                        editorPath = KeyboardManagerEditorUIPath;
-                    }
-                }
-                catch (Exception e)
-                {
-                    // Fall back to the default editor path if any exception occurs
-                    Logger.LogError("Failed to launch the new WinUI3 Editor", e);
-                }
-
-                string path = Path.Combine(Environment.CurrentDirectory, editorPath);
+                string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorPath);
                 Logger.LogInfo($"Starting {ModuleName} editor from {path}");
 
-                // InvariantCulture: type represents the KeyboardManagerEditorType enum va
+                // InvariantCulture: type represents the KeyboardManagerEditorType enum value
                 ProcessStartInfo startInfo = new ProcessStartInfo(path);
                 startInfo.UseShellExecute = true; // LOAD BEARING
                 startInfo.Arguments = $"{type.ToString(CultureInfo.InvariantCulture)} {Environment.ProcessId}";
@@ -340,6 +339,38 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception e)
             {
                 Logger.LogError($"Exception encountered when opening an {ModuleName} editor", e);
+            }
+        }
+
+        private void OpenNewEditor()
+        {
+            try
+            {
+                if (editor != null && editor.HasExited)
+                {
+                    Logger.LogInfo($"Previous instance of {ModuleName} editor exited");
+                    editor = null;
+                }
+
+                if (editor != null)
+                {
+                    Logger.LogInfo($"The {ModuleName} editor instance {editor.Id} exists. Bringing the process to the front");
+                    BringProcessToFront(editor);
+                    return;
+                }
+
+                string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorUIPath);
+                Logger.LogInfo($"Starting {ModuleName} new editor from {path}");
+
+                System.Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", null);
+                ProcessStartInfo startInfo = new ProcessStartInfo(path);
+                startInfo.UseShellExecute = true; // LOAD BEARING
+                startInfo.Arguments = $"{Environment.ProcessId}";
+                editor = Process.Start(startInfo);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Exception encountered when opening the new {ModuleName} editor", e);
             }
         }
 

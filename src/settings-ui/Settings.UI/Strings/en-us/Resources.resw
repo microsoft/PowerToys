@@ -558,6 +558,10 @@ opera.exe</value>
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
+	<data name="KeyboardManager_Editor.Header" xml:space="preserve">
+    <value>Editor</value>
+    <comment>Keyboard Manager new editor header</comment>
+  </data>
   <data name="KeyboardManager_Keys.Header" xml:space="preserve">
     <value>Keys</value>
     <comment>Keyboard Manager remap keyboard header</comment>
@@ -571,8 +575,28 @@ opera.exe</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
   <data name="KeyboardManager_All_Apps_Description" xml:space="preserve">
-    <value>All Apps</value>
+    <value>All apps</value>
     <comment>Should be the same as EditShortcuts_AllApps from keyboard manager editor</comment>
+  </data>
+  <data name="KeyboardManager_TryNewExperience.Header" xml:space="preserve">
+    <value>Try the new editor</value>
+    <comment>Keyboard Manager toggle to switch to the new unified editor</comment>
+  </data>
+  <data name="KeyboardManager_TryNewExperience.Description" xml:space="preserve">
+    <value>Switch to the new editor. You can switch back at any time.</value>
+    <comment>Description for the new experience toggle</comment>
+  </data>
+  <data name="KeyboardManager_OpenNewEditor.Header" xml:space="preserve">
+    <value>Editor</value>
+    <comment>Keyboard Manager button to open the new unified editor</comment>
+  </data>
+  <data name="KeyboardManager_OpenNewEditor.Description" xml:space="preserve">
+    <value>Set and manage your remappings</value>
+    <comment>Description for the new editor button</comment>
+  </data>
+  <data name="KeyboardManager_GoBackClassic.Content" xml:space="preserve">
+    <value>Switch back to the classic editor</value>
+    <comment>Keyboard Manager link to switch back to the classic editor UI</comment>
   </data>
   <data name="Shortcut.Header" xml:space="preserve">
     <value>Shortcut</value>
@@ -1877,12 +1901,18 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Customize the shortcut to activate this module</value>
   </data>
   <data name="KeyboardManager_Toggle_Shortcut.Header" xml:space="preserve">
-    <value>Toggle shortcut</value>
+    <value>Shortcut</value>
   </data>
   <data name="KeyboardManager_Toggle_Shortcut.Description" xml:space="preserve">
-    <value>Use a shortcut to toggle this module on or off (note that the Settings UI will not update)</value>
+    <value>Enable or disable this module (Note: the Settings UI will not update)</value>
   </data>
-  <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
+	<data name="KeyboardManager_Editor_Shortcut.Header" xml:space="preserve">
+    <value>Editor shortcut</value>
+  </data>
+	<data name="KeyboardManager_LaunchEditor_Button.Content" xml:space="preserve">
+    <value>Open editor</value>
+  </data>	
+	<data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
     <value>Paste as plain text directly</value>
   </data>
   <data name="AdvancedPasteUI_Actions.Header" xml:space="preserve">
