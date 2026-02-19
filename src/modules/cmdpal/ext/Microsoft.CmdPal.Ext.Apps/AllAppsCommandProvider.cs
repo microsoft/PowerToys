@@ -184,6 +184,20 @@ public partial class AllAppsCommandProvider : CommandProvider
         return null;
     }
 
+    public override ICommandItem? GetCommandItem(string id)
+    {
+        var items = _page.GetItems();
+        foreach (var item in items)
+        {
+            if (item.Command.Id == id)
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
     private void OnPinStateChanged(object? sender, System.EventArgs e)
     {
         RaiseItemsChanged(0);
