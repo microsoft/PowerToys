@@ -35,7 +35,7 @@
             </TitleBar.LeftHeader>
         </TitleBar>
 
-        <pages:All
+        <pages:MainPage
             Grid.Row="1"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch" />
