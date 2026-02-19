@@ -8,7 +8,6 @@
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI.Dock"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:winuiex="using:WinUIEx"
     Title="PowerDock"

@@ -103,7 +103,9 @@
                     </controls:SettingsCard>
 
                     <!--  Backdrop Style  -->
-                    <controls:SettingsCard x:Uid="DockAppearance_Backdrop_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE81E;}">
+                    <controls:SettingsCard 
+                        x:Uid="DockAppearance_Backdrop_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}">
                         <ComboBox
                             x:Name="BackdropComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -215,9 +217,7 @@
 
                             <!--  Reset background image properties  -->
                             <controls:SettingsCard x:Uid="DockAppearance_BackgroundImage_ResetProperties_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsBackgroundControlsVisible, Mode=OneWay}">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button x:Uid="Settings_GeneralPage_Background_ResetImagePropertiesButton" Command="{x:Bind ViewModel.DockAppearance.ResetBackgroundImagePropertiesCommand}" />
-                                </StackPanel>
+                                <Button x:Uid="Settings_GeneralPage_Background_ResetImagePropertiesButton" Command="{x:Bind ViewModel.DockAppearance.ResetBackgroundImagePropertiesCommand}" />
                             </controls:SettingsCard>
 
                         </controls:SettingsExpander.Items>

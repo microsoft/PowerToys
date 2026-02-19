@@ -767,10 +767,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Select which theme to display for the dock</value>
   </data>
   <data name="DockAppearance_Backdrop_SettingsCard.Header" xml:space="preserve">
-    <value>Backdrop style</value>
+    <value>Material</value>
   </data>
   <data name="DockAppearance_Backdrop_SettingsCard.Description" xml:space="preserve">
-    <value>Choose the background effect for the dock</value>
+    <value>Select the visual material used for the dock</value>
   </data>
   <data name="DockAppearance_Backdrop_Mica.Content" xml:space="preserve">
     <value>Mica</value>
@@ -910,6 +910,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Show labels</value>
   </data>
   <data name="DockAppearance_ShowLabels_CheckBox.Description" xml:space="preserve">
-    <value>Choose whether to show labels for dock items by default</value>
+    <value>Show labels for dock items by default</value>
   </data>
 </root>

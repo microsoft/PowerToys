@@ -58,12 +58,6 @@ public sealed partial class DockViewModel : IDisposable,
         SetupBands(_settings.StartBands, StartItems);
         SetupBands(_settings.CenterBands, CenterItems);
         SetupBands(_settings.EndBands, EndItems);
-
-        // Initialize properties on BG thread
-        Task.Run(() =>
-        {
-            InitializeAllBands();
-        });
     }
 
     private void SetupBands(
@@ -94,13 +88,27 @@ public sealed partial class DockViewModel : IDisposable,
         var beforeCount = target.Count;
         var afterCount = newBands.Count;
 
+        List<DockBandViewModel> removed = new();
         DoOnUiThread(() =>
         {
-            ListHelpers.InPlaceUpdateList(target, newBands, out var removed);
+            ListHelpers.InPlaceUpdateList(target, newBands, out removed);
             var isStartBand = target == StartItems;
             var label = isStartBand ? "Start bands:" : "End bands:";
             Logger.LogDebug($"{label} ({beforeCount}) -> ({afterCount}), Removed {removed?.Count ?? 0} items");
         });
+
+        // Initialize properties on BG thread
+        Task.Run(() =>
+        {
+            foreach (var band in newBands)
+            {
+                band.SafeInitializePropertiesSynchronous();
+            }
+        });
+        foreach (var removedItem in removed)
+        {
+            removedItem.SafeCleanup();
+        }
     }
 
     public void Dispose()
@@ -610,24 +618,6 @@ public sealed partial class DockViewModel : IDisposable,
                 new CommandContextItem(editDockCommand),
                 new CommandContextItem(openSettingsCommand),
             };
-        }
-    }
-
-    private void InitializeAllBands()
-    {
-        foreach (var band in StartItems)
-        {
-            band.SafeInitializePropertiesSynchronous();
-        }
-
-        foreach (var band in CenterItems)
-        {
-            band.SafeInitializePropertiesSynchronous();
-        }
-
-        foreach (var band in EndItems)
-        {
-            band.SafeInitializePropertiesSynchronous();
         }
     }
 }

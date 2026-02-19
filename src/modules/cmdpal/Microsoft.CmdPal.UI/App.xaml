@@ -37,8 +37,6 @@
                 EmptyValue="Collapsed"
                 NotEmptyValue="Visible" />
 
-            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-
         </ResourceDictionary>
     </Application.Resources>
 </Application>
