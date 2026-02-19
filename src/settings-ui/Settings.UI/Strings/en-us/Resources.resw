@@ -583,7 +583,7 @@ opera.exe</value>
     <comment>Keyboard Manager toggle to switch to the new unified editor</comment>
   </data>
   <data name="KeyboardManager_TryNewExperience.Description" xml:space="preserve">
-    <value>Switch to the new editor experience. You can turn this off at any time.</value>
+    <value>Switch to the new editor. You can switch back at any time.</value>
     <comment>Description for the new experience toggle</comment>
   </data>
   <data name="KeyboardManager_OpenNewEditor.Header" xml:space="preserve">
