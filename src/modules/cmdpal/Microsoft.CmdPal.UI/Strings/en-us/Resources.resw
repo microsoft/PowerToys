@@ -888,4 +888,28 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="ConfigureShortcutText.Text" xml:space="preserve">
     <value>Assign shortcut</value>
   </data>
+  <data name="DockAppearance_DockPosition_SettingsExpander.Header" xml:space="preserve">
+    <value>Dock position and appearance</value>
+  </data>
+  <data name="DockAppearance_DockPosition_SettingsExpander.Description" xml:space="preserve">
+    <value>Choose where the dock appears on your screen</value>
+  </data>
+  <data name="DockAppearance_DockPosition_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="DockAppearance_DockPosition_Top.Content" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="DockAppearance_DockPosition_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="DockAppearance_DockPosition_Bottom.Content" xml:space="preserve">
+    <value>Bottom</value>
+  </data>
+  <data name="DockAppearance_ShowLabels_CheckBox.Header" xml:space="preserve">
+    <value>Show labels</value>
+  </data>
+  <data name="DockAppearance_ShowLabels_CheckBox.Description" xml:space="preserve">
+    <value>Choose whether to show labels for dock items by default</value>
+  </data>
 </root>

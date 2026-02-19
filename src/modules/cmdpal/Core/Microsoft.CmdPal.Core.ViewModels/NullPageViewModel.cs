@@ -4,5 +4,11 @@
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-internal sealed partial class NullPageViewModel(TaskScheduler scheduler, AppExtensionHost extensionHost)
-    : PageViewModel(null, scheduler, extensionHost);
+internal sealed partial class NullPageViewModel : PageViewModel
+{
+    internal NullPageViewModel(TaskScheduler scheduler, AppExtensionHost extensionHost)
+        : base(null, scheduler, extensionHost)
+    {
+        HasBackButton = false;
+    }
+}

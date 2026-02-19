@@ -32,6 +32,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     private readonly List<CommandProviderWrapper> _builtInCommands = [];
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
     private readonly Lock _commandProvidersLock = new();
+    private readonly Lock _dockBandsLock = new();
     private readonly SupersedingAsyncGate _reloadCommandsGate;
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
@@ -94,7 +95,10 @@ public partial class TopLevelCommandManager : ObservableObject,
                         TopLevelCommands.Add(c);
                     }
                 }
+            }
 
+            lock (_dockBandsLock)
+            {
                 if (objects.DockBands is IEnumerable<TopLevelViewModel> bands)
                 {
                     foreach (var c in bands)
@@ -203,7 +207,10 @@ public partial class TopLevelCommandManager : ObservableObject,
             clone.InsertRange(startIndex, newItems);
 
             ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+        }
 
+        lock (_dockBandsLock)
+        {
             // same idea for DockBands
             List<TopLevelViewModel> dockClone = [.. DockBands];
             var dockStartIndex = FindIndexForFirstProviderItem(dockClone, sender.ProviderId);
@@ -256,6 +263,10 @@ public partial class TopLevelCommandManager : ObservableObject,
         lock (TopLevelCommands)
         {
             TopLevelCommands.Clear();
+        }
+
+        lock (_dockBandsLock)
+        {
             DockBands.Clear();
         }
 
@@ -333,14 +344,14 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results is not null).Select(r => r!).ToList();
 
-        lock (TopLevelCommands)
+        foreach (var providerObjects in commandSets)
         {
-            foreach (var providerObjects in commandSets)
-            {
-                var commandsCount = providerObjects.Commands?.Count() ?? 0;
-                var bandsCount = providerObjects.DockBands?.Count() ?? 0;
-                Logger.LogDebug($"(some provider) Loaded {commandsCount} commands and {bandsCount} bands");
+            var commandsCount = providerObjects.Commands?.Count() ?? 0;
+            var bandsCount = providerObjects.DockBands?.Count() ?? 0;
+            Logger.LogDebug($"(some provider) Loaded {commandsCount} commands and {bandsCount} bands");
 
+            lock (TopLevelCommands)
+            {
                 if (providerObjects.Commands is IEnumerable<TopLevelViewModel> commands)
                 {
                     foreach (var c in commands)
@@ -348,7 +359,10 @@ public partial class TopLevelCommandManager : ObservableObject,
                         TopLevelCommands.Add(c);
                     }
                 }
+            }
 
+            lock (_dockBandsLock)
+            {
                 if (providerObjects.DockBands is IEnumerable<TopLevelViewModel> bands)
                 {
                     foreach (var c in bands)
@@ -408,6 +422,7 @@ public partial class TopLevelCommandManager : ObservableObject,
             {
                 // Then find all the top-level commands that belonged to that extension
                 List<TopLevelViewModel> commandsToRemove = [];
+                List<TopLevelViewModel> bandsToRemove = [];
                 lock (TopLevelCommands)
                 {
                     foreach (var extension in extensions)
@@ -418,6 +433,15 @@ public partial class TopLevelCommandManager : ObservableObject,
                             if (host?.Extension == extension)
                             {
                                 commandsToRemove.Add(command);
+                            }
+                        }
+
+                        foreach (var band in DockBands)
+                        {
+                            var host = band.ExtensionHost;
+                            if (host?.Extension == extension)
+                            {
+                                bandsToRemove.Add(band);
                             }
                         }
                     }
@@ -436,6 +460,17 @@ public partial class TopLevelCommandManager : ObservableObject,
                             foreach (var deleted in commandsToRemove)
                             {
                                 TopLevelCommands.Remove(deleted);
+                            }
+                        }
+                    }
+
+                    lock (_dockBandsLock)
+                    {
+                        if (bandsToRemove.Count != 0)
+                        {
+                            foreach (var deleted in bandsToRemove)
+                            {
+                                DockBands.Remove(deleted);
                             }
                         }
                     }
@@ -464,8 +499,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     public TopLevelViewModel? LookupDockBand(string id)
     {
-        // TODO! bad that we're using TopLevelCommands as the object to lock, even for bands
-        lock (TopLevelCommands)
+        lock (_dockBandsLock)
         {
             foreach (var command in DockBands)
             {
@@ -499,7 +533,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     internal void PinDockBand(TopLevelViewModel bandVm)
     {
-        lock (DockBands)
+        lock (_dockBandsLock)
         {
             foreach (var existing in DockBands)
             {

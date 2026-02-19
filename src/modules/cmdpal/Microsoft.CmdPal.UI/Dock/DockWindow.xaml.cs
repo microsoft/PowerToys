@@ -108,7 +108,7 @@ public sealed partial class DockWindow : WindowEx,
 
         // TaskbarCreated is the message that's broadcast when explorer.exe
         // restarts. We need to know when that happens to be able to bring our
-        // appbar back
+        // app bar back
         // And this apparently happens on lock screens / hibernates, too
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
@@ -259,7 +259,7 @@ public sealed partial class DockWindow : WindowEx,
             uCallbackMessage = _callbackMessageId,
         };
 
-        // Register this window as an appbar
+        // Register this window as an app bar
         PInvoke.SHAppBarMessage(PInvoke.ABM_NEW, ref _appBarData);
 
         // Stash the last size we created the bar at, so we know when to hot-
@@ -294,12 +294,12 @@ public sealed partial class DockWindow : WindowEx,
         PInvoke.SHAppBarMessage(PInvoke.ABM_QUERYPOS, ref _appBarData);
         PInvoke.SHAppBarMessage(PInvoke.ABM_SETPOS, ref _appBarData);
 
-        // TODO: investigate ABS_AUTOHIDE and autohide bars.
+        // TODO: investigate ABS_AUTOHIDE and auto hide bars.
         // I think it's something like this, but I don't totally know
-        // // _appBarData.lParam = ABS_ALWAYSONTOP;
-        // _appBarData.lParam = (LPARAM)(int)PInvoke.ABS_AUTOHIDE;
-        // PInvoke.SHAppBarMessage(ABM_SETSTATE, ref _appBarData);
-        // PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAR, ref _appBarData);
+        //   _appBarData.lParam = ABS_ALWAYSONTOP;
+        //   _appBarData.lParam = (LPARAM)(int)PInvoke.ABS_AUTOHIDE;
+        //   PInvoke.SHAppBarMessage(ABM_SETSTATE, ref _appBarData);
+        //   PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAR, ref _appBarData);
 
         // Account for system borders when moving the window
         // Adjust position to account for window frame/border
@@ -630,7 +630,7 @@ public sealed partial class DockWindow : WindowEx,
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
         DisposeAcrylic();
 
-        // Remove our appbar registration
+        // Remove our app bar registration
         DestroyAppBar(_hwnd);
 
         // Unhook the window procedure

@@ -56,7 +56,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     {
         var wrappedBand = new WrappedDockItem(
             [_bandItem],
-            "com.microsoft.cmdpal.timedate.dockband",
+            "com.microsoft.cmdpal.timedate.dockBand",
             Resources.Microsoft_plugin_timedate_dock_band_title);
 
         return new ICommandItem[] { wrappedBand };
@@ -66,14 +66,15 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 
 internal sealed partial class NowDockBand : ListItem
 {
+    private static readonly TimeSpan UpdateInterval = TimeSpan.FromSeconds(60);
     private CopyTextCommand _copyTimeCommand;
     private CopyTextCommand _copyDateCommand;
 
     public NowDockBand()
     {
-        Command = new NoOpCommand() { Id = "com.microsoft.cmdpal.timedate.dockband" };
-        _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = "Copy Time" };
-        _copyDateCommand = new CopyTextCommand(string.Empty) { Name = "Copy Date" };
+        Command = new NoOpCommand() { Id = "com.microsoft.cmdpal.timedate.dockBand" };
+        _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_time_command_name };
+        _copyDateCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_date_command_name };
         MoreCommands = [
             new CommandContextItem(_copyTimeCommand),
             new CommandContextItem(_copyDateCommand)
@@ -81,11 +82,11 @@ internal sealed partial class NowDockBand : ListItem
         UpdateText();
 
         // Create a timer to update the time every minute
-        System.Timers.Timer timer = new(60000); // 60000 ms = 1 minute
+        System.Timers.Timer timer = new(UpdateInterval.TotalMilliseconds);
 
         // but we want it to tick on the minute, so calculate the initial delay
         var now = DateTime.Now;
-        timer.Interval = 60000 - ((now.Second * 1000) + now.Millisecond);
+        timer.Interval = UpdateInterval.TotalMilliseconds - ((now.Second * 1000) + now.Millisecond);
 
         // then after the first tick, set it to 60 seconds
         timer.Elapsed += Timer_ElapsedFirst;
@@ -97,7 +98,7 @@ internal sealed partial class NowDockBand : ListItem
         // After the first tick, set the interval to 60 seconds
         if (sender is System.Timers.Timer timer)
         {
-            timer.Interval = 60000;
+            timer.Interval = UpdateInterval.TotalMilliseconds;
             timer.Elapsed -= Timer_ElapsedFirst;
             timer.Elapsed += Timer_Elapsed;
 

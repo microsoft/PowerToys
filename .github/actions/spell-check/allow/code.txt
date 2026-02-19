@@ -325,6 +325,14 @@ REGSTR
 # Misc Win32 APIs and PInvokes
 INVOKEIDLIST
 MEMORYSTATUSEX
+ABE
+HTCAPTION
+POSCHANGED
+QUERYPOS
+SETAUTOHIDEBAR
+WINDOWPOS
+WINEVENTPROC
+WORKERW
 
 # PowerRename metadata pattern abbreviations (used in tests and regex patterns)
 DDDD
@@ -349,3 +357,6 @@ nostdin
 # Performance counter keys
 engtype
 Nonpaged
+
+# XAML
+Untargeted

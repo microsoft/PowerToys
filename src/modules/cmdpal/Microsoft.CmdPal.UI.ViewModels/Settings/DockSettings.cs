@@ -21,7 +21,7 @@ public class DockSettings
 
     public DockSize DockIconsSize { get; set; } = DockSize.Small;
 
-    // Theme settings
+    // <Theme settings>
     public DockBackdrop Backdrop { get; set; } = DockBackdrop.Acrylic;
 
     public UserTheme Theme { get; set; } = UserTheme.Default;
@@ -42,7 +42,7 @@ public class DockSettings
 
     public string? BackgroundImagePath { get; set; }
 
-    // /Theme settings
+    // </Theme settings>
     public List<string> PinnedCommands { get; set; } = [];
 
     public List<DockBandSettings> StartBands { get; set; } = [];
@@ -64,7 +64,7 @@ public class DockSettings
         StartBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.winget", ShowLabels = false });
 
         EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.performanceWidget" });
-        EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.timedate.dockband" });
+        EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.timedate.dockBand" });
     }
 }
 

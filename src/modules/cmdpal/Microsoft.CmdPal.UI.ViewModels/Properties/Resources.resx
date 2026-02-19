@@ -291,5 +291,5 @@
   <data name="dock_settings_name" xml:space="preserve">
     <value>Dock settings</value>
     <comment>Command name for opening dock settings</comment>
-  </data>
+  </data> 
 </root>

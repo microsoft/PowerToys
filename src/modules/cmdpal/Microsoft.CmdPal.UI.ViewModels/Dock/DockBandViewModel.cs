@@ -151,12 +151,16 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
             newViewModels.Add(newItemVm);
         }
 
+        List<DockItemViewModel> removed = new();
         DoOnUiThread(() =>
         {
-            ListHelpers.InPlaceUpdateList(Items, newViewModels, out var removed);
+            ListHelpers.InPlaceUpdateList(Items, newViewModels, out removed);
         });
 
-        // TODO! dispose removed VMs
+        foreach (var removedItem in removed)
+        {
+            removedItem.SafeCleanup();
+        }
     }
 
     public override void InitializeProperties()
@@ -184,6 +188,22 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         if (_rootItem.Command.Model.Unsafe is IListPage p)
         {
             InitializeFromList(p);
+        }
+    }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+
+        var command = _rootItem.Command;
+        if (command.Model.Unsafe is IListPage list)
+        {
+            list.ItemsChanged -= HandleItemsChanged;
+        }
+
+        foreach (var item in Items)
+        {
+            item.SafeCleanup();
         }
     }
 }

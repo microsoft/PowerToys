@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.DockSettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -47,8 +47,7 @@
 
                     <!--  Dock Position  -->
                     <controls:SettingsExpander
-                        Description="Choose where the dock appears on your screen"
-                        Header="Dock position and appearance"
+                        x:Uid="DockAppearance_DockPosition_SettingsExpander"
                         IsExpanded="True">
                         <controls:SettingsExpander.HeaderIcon>
                             <SymbolIcon Symbol="MoveToFolder" />
@@ -57,18 +56,17 @@
                             x:Name="DockPositionComboBox"
                             MinWidth="120"
                             SelectedIndex="{x:Bind SelectedSideIndex, Mode=TwoWay}">
-                            <ComboBoxItem Content="Left" />
-                            <ComboBoxItem Content="Top" />
-                            <ComboBoxItem Content="Right" />
-                            <ComboBoxItem Content="Bottom" />
+                            <ComboBoxItem x:Uid="DockAppearance_DockPosition_Left" />
+                            <ComboBoxItem x:Uid="DockAppearance_DockPosition_Top" />
+                            <ComboBoxItem x:Uid="DockAppearance_DockPosition_Right" />
+                            <ComboBoxItem x:Uid="DockAppearance_DockPosition_Bottom" />
                         </ComboBox>
                         <controls:SettingsExpander.Items>
 
                             <!--  Show Labels  -->
                             <controls:SettingsCard ContentAlignment="Left">
                                 <ptcontrols:CheckBoxWithDescriptionControl
-                                    Description="Choose whether to show labels for dock items by default"
-                                    Header="Show labels"
+                                    x:Uid="DockAppearance_ShowLabels_CheckBox"
                                     IsChecked="{x:Bind ShowLabels, Mode=TwoWay}" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>

@@ -98,7 +98,6 @@ public partial class ShellViewModel : ObservableObject,
         _appHostService = appHostService;
 
         NullPage = new NullPageViewModel(_scheduler, appHostService.GetDefaultHost());
-        NullPage.HasBackButton = false;
         _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
 
         // Register to receive messages
@@ -278,9 +277,9 @@ public partial class ShellViewModel : ObservableObject,
                 // Telemetry: Track extension page navigation for session metrics
                 if (host is not null)
                 {
-                    string extensionId = host.GetExtensionDisplayName() ?? "builtin";
-                    string commandId = command?.Id ?? "unknown";
-                    string commandName = command?.Name ?? "unknown";
+                    var extensionId = host.GetExtensionDisplayName() ?? "builtin";
+                    var commandId = command?.Id ?? "unknown";
+                    var commandName = command?.Name ?? "unknown";
                     WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
                         new(extensionId, commandId, commandName, true, 0));
                 }
@@ -361,10 +360,10 @@ public partial class ShellViewModel : ObservableObject,
         // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var command = message.Command.Unsafe;
-        string extensionId = host?.GetExtensionDisplayName() ?? "builtin";
-        string commandId = command?.Id ?? "unknown";
-        string commandName = command?.Name ?? "unknown";
-        bool success = false;
+        var extensionId = host?.GetExtensionDisplayName() ?? "builtin";
+        var commandId = command?.Id ?? "unknown";
+        var commandName = command?.Name ?? "unknown";
+        var success = false;
 
         try
         {

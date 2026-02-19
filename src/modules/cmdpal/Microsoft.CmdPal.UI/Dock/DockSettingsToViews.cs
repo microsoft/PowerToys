@@ -48,7 +48,7 @@ internal static class DockSettingsToViews
         return backdrop switch
         {
             DockBackdrop.Transparent => new TransparentTintBackdrop(),
-            DockBackdrop.Acrylic => null, // new DesktopAcrylicBackdrop(),
+            DockBackdrop.Acrylic => null,
             _ => throw new NotImplementedException(),
         };
     }
@@ -65,4 +65,3 @@ internal static class DockSettingsToViews
         };
     }
 }
-#pragma warning restore SA1402 // File may only contain a single type

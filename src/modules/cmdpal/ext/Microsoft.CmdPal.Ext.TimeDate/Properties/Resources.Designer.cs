@@ -941,5 +941,23 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_Year", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy date.
+        /// </summary>
+        public static string timedate_copy_date_command_name {
+            get {
+                return ResourceManager.GetString("timedate_copy_date_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy time.
+        /// </summary>
+        public static string timedate_copy_time_command_name {
+            get {
+                return ResourceManager.GetString("timedate_copy_time_command_name", resourceCulture);
+            }
+        }
     }
 }

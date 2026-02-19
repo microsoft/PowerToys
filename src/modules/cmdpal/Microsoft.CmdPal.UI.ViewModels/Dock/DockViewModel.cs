@@ -58,6 +58,12 @@ public sealed partial class DockViewModel : IDisposable,
         SetupBands(_settings.StartBands, StartItems);
         SetupBands(_settings.CenterBands, CenterItems);
         SetupBands(_settings.EndBands, EndItems);
+
+        // Initialize properties on BG thread
+        Task.Run(() =>
+        {
+            InitializeAllBands();
+        });
     }
 
     private void SetupBands(
@@ -77,6 +83,9 @@ public sealed partial class DockViewModel : IDisposable,
 
             if (topLevelCommand is not null)
             {
+                // note: CreateBandItem doesn't actually initialize the band, it
+                // just creates the VM. Callers need to make sure to call
+                // InitializeProperties() on a BG thread elsewhere
                 var bandVm = CreateBandItem(band, topLevelCommand.ItemViewModel);
                 newBands.Add(bandVm);
             }
@@ -96,6 +105,7 @@ public sealed partial class DockViewModel : IDisposable,
 
     public void Dispose()
     {
+        WeakReferenceMessenger.Default.Unregister<CommandsReloadedMessage>(this);
     }
 
     public void Receive(CommandsReloadedMessage message)
@@ -515,6 +525,11 @@ public sealed partial class DockViewModel : IDisposable,
         // Snapshot the new band so it can be removed on discard
         bandVm.SnapshotShowLabels();
 
+        Task.Run(() =>
+        {
+            bandVm.SafeInitializePropertiesSynchronous();
+        });
+
         Logger.LogDebug($"Added band {bandId} to {targetSide} (not saved yet)");
     }
 
@@ -595,6 +610,24 @@ public sealed partial class DockViewModel : IDisposable,
                 new CommandContextItem(editDockCommand),
                 new CommandContextItem(openSettingsCommand),
             };
+        }
+    }
+
+    private void InitializeAllBands()
+    {
+        foreach (var band in StartItems)
+        {
+            band.SafeInitializePropertiesSynchronous();
+        }
+
+        foreach (var band in CenterItems)
+        {
+            band.SafeInitializePropertiesSynchronous();
+        }
+
+        foreach (var band in EndItems)
+        {
+            band.SafeInitializePropertiesSynchronous();
         }
     }
 }
