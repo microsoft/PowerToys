@@ -22,5 +22,13 @@ namespace KeyboardManagerEditorUI.Helpers
         SelfMapping,
         EmptyTargetText,
         OneKeyMapping,
+        DuplicateMouseMapping,
+        EmptyMouseActionKeys,
+        EmptyMouseTargetText,
+        EmptyMouseUrl,
+        EmptyMouseProgramPath,
+        EmptyMouseTargetButton,
+        MouseAppNameMissing,
+        MouseSelfMapping,
     }
 }

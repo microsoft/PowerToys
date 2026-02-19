@@ -552,6 +552,43 @@ namespace KeyboardManagerEditorUI.Controls
         #region Public API - Setters
 
         /// <summary>
+        /// Sets the trigger type (keyboard or mouse).
+        /// </summary>
+        public void SetTriggerType(TriggerType triggerType)
+        {
+            if (TriggerTypeComboBox != null)
+            {
+                TriggerTypeComboBox.SelectedIndex = triggerType switch
+                {
+                    TriggerType.Mouse => 1,
+                    _ => 0,
+                };
+            }
+        }
+
+        /// <summary>
+        /// Sets the selected mouse trigger button by button code (0-6 matching MouseButtonCode enum).
+        /// </summary>
+        public void SetMouseTriggerButton(int buttonCode)
+        {
+            if (MouseTriggerComboBox == null)
+            {
+                return;
+            }
+
+            foreach (var item in MouseTriggerComboBox.Items)
+            {
+                if (item is ComboBoxItem comboItem &&
+                    int.TryParse(comboItem.Tag?.ToString(), out int code) &&
+                    code == buttonCode)
+                {
+                    MouseTriggerComboBox.SelectedItem = comboItem;
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
         /// Sets the trigger keys.
         /// </summary>
         public void SetTriggerKeys(List<string> keys)

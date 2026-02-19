@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using KeyboardManagerEditorUI.Controls;
 using KeyboardManagerEditorUI.Interop;
 using KeyboardManagerEditorUI.Settings;
 
@@ -26,6 +27,14 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.SelfMapping, ("Invalid Remapping", "A key or shortcut cannot be remapped to itself. Please choose a different target.") },
             { ValidationErrorType.EmptyTargetText, ("Missing Target Text", "Please enter the text to be inserted when the shortcut is pressed.") },
             { ValidationErrorType.OneKeyMapping, ("Invalid Remapping", "A single key cannot be remapped to a Program or URL shortcut. Please choose a combination of keys.") },
+            { ValidationErrorType.DuplicateMouseMapping, ("Duplicate Mouse Remapping", "This mouse button is already remapped. Please remove the existing remapping first, or edit it instead.") },
+            { ValidationErrorType.EmptyMouseActionKeys, ("Missing Target Keys", "Please enter at least one target key or shortcut for the mouse button remapping.") },
+            { ValidationErrorType.EmptyMouseTargetText, ("Missing Target Text", "Please enter the text to be inserted when the mouse button is pressed.") },
+            { ValidationErrorType.EmptyMouseUrl, ("Missing URL", "Please enter a URL to open when the mouse button is pressed.") },
+            { ValidationErrorType.EmptyMouseProgramPath, ("Missing Program Path", "Please enter the path to the program to launch when the mouse button is pressed.") },
+            { ValidationErrorType.EmptyMouseTargetButton, ("Missing Target Mouse Button", "Please select a target mouse button for the remapping.") },
+            { ValidationErrorType.MouseAppNameMissing, ("Missing Application Name", "You've selected app-specific remapping but haven't specified an application name. Please enter the application name.") },
+            { ValidationErrorType.MouseSelfMapping, ("Invalid Mouse Remapping", "A mouse button cannot be remapped to itself. Please choose a different target.") },
         };
 
         public static ValidationErrorType ValidateKeyMapping(
@@ -223,6 +232,130 @@ namespace KeyboardManagerEditorUI.Helpers
 
             // All keys are modifier keys
             return true;
+        }
+
+        /// <summary>
+        /// Validates a mouse button remapping before saving. Checks for missing action data,
+        /// duplicate mappings, self-mappings, and missing app names.
+        /// </summary>
+        public static ValidationErrorType ValidateMouseButtonMapping(
+            int mouseButtonCode,
+            UnifiedMappingControl.ActionType actionType,
+            UnifiedMappingControl control,
+            KeyboardMappingService mappingService,
+            bool isEditMode = false)
+        {
+            bool isAppSpecific = control.GetIsAppSpecific();
+            string appName = control.GetAppName();
+
+            // Check if app specific is checked but no app name is provided
+            if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
+            {
+                return ValidationErrorType.MouseAppNameMissing;
+            }
+
+            // Validate action-specific data
+            switch (actionType)
+            {
+                case UnifiedMappingControl.ActionType.KeyOrShortcut:
+                    {
+                        var actionKeys = control.GetActionKeys();
+                        if (actionKeys == null || actionKeys.Count == 0)
+                        {
+                            return ValidationErrorType.EmptyMouseActionKeys;
+                        }
+
+                        break;
+                    }
+
+                case UnifiedMappingControl.ActionType.Text:
+                    {
+                        string textContent = control.GetTextContent();
+                        if (string.IsNullOrEmpty(textContent))
+                        {
+                            return ValidationErrorType.EmptyMouseTargetText;
+                        }
+
+                        break;
+                    }
+
+                case UnifiedMappingControl.ActionType.OpenUrl:
+                    {
+                        string url = control.GetUrl();
+                        if (string.IsNullOrEmpty(url))
+                        {
+                            return ValidationErrorType.EmptyMouseUrl;
+                        }
+
+                        break;
+                    }
+
+                case UnifiedMappingControl.ActionType.OpenApp:
+                    {
+                        string programPath = control.GetProgramPath();
+                        if (string.IsNullOrEmpty(programPath))
+                        {
+                            return ValidationErrorType.EmptyMouseProgramPath;
+                        }
+
+                        break;
+                    }
+
+                case UnifiedMappingControl.ActionType.MouseClick:
+                    {
+                        int? targetMouseButton = control.GetMouseActionButtonCode();
+                        if (targetMouseButton == null)
+                        {
+                            return ValidationErrorType.EmptyMouseTargetButton;
+                        }
+
+                        // Check self-mapping (mouse button to itself)
+                        if (targetMouseButton.Value == mouseButtonCode)
+                        {
+                            return ValidationErrorType.MouseSelfMapping;
+                        }
+
+                        break;
+                    }
+            }
+
+            // Check for duplicate mouse mappings
+            if (IsMouseDuplicateMapping(mouseButtonCode, isAppSpecific ? appName : string.Empty, isEditMode))
+            {
+                return ValidationErrorType.DuplicateMouseMapping;
+            }
+
+            return ValidationErrorType.NoError;
+        }
+
+        /// <summary>
+        /// Checks if a mouse button mapping already exists for the given button and target app.
+        /// </summary>
+        public static bool IsMouseDuplicateMapping(int mouseButtonCode, string targetApp, bool isEditMode)
+        {
+            int upperLimit = isEditMode ? 1 : 0;
+            string mouseOriginalKeys = $"mouse_{mouseButtonCode}";
+
+            ICollection<ShortcutSettings> allMappings = SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values;
+            int matchesCount = allMappings.Count(settings =>
+            {
+                if (!settings.Shortcut.OriginalKeys.StartsWith("mouse_", StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
+                // Match on same mouse button
+                if (settings.Shortcut.OriginalKeys != mouseOriginalKeys)
+                {
+                    return false;
+                }
+
+                // For app-specific mappings, also check app name
+                string existingApp = settings.Shortcut.TargetApp ?? string.Empty;
+                return string.Equals(existingApp, targetApp, StringComparison.OrdinalIgnoreCase);
+            });
+
+            return matchesCount > upperLimit;
         }
 
         public static bool IsKeyOrphaned(int originalKey, KeyboardMappingService mappingService)

@@ -119,7 +119,19 @@ namespace KeyboardManagerEditorUI.Pages
                 };
 
                 UnifiedMappingControl.Reset();
-                UnifiedMappingControl.SetTriggerKeys(remapping.Shortcut.ToList());
+
+                // Detect if this is a mouse-sourced mapping
+                int mouseButtonCode = GetMouseButtonCodeFromSettings(remapping.Id);
+                if (mouseButtonCode >= 0)
+                {
+                    UnifiedMappingControl.SetTriggerType(UnifiedMappingControl.TriggerType.Mouse);
+                    UnifiedMappingControl.SetMouseTriggerButton(mouseButtonCode);
+                }
+                else
+                {
+                    UnifiedMappingControl.SetTriggerKeys(remapping.Shortcut.ToList());
+                }
+
                 UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.KeyOrShortcut);
                 UnifiedMappingControl.SetActionKeys(remapping.RemappedKeys.ToList());
                 UnifiedMappingControl.SetAppSpecific(!remapping.IsAllApps, remapping.AppName);
@@ -144,7 +156,19 @@ namespace KeyboardManagerEditorUI.Pages
                 };
 
                 UnifiedMappingControl.Reset();
-                UnifiedMappingControl.SetTriggerKeys(textMapping.Shortcut.ToList());
+
+                // Detect if this is a mouse-sourced mapping
+                int mouseButtonCode = GetMouseButtonCodeFromSettings(textMapping.Id);
+                if (mouseButtonCode >= 0)
+                {
+                    UnifiedMappingControl.SetTriggerType(UnifiedMappingControl.TriggerType.Mouse);
+                    UnifiedMappingControl.SetMouseTriggerButton(mouseButtonCode);
+                }
+                else
+                {
+                    UnifiedMappingControl.SetTriggerKeys(textMapping.Shortcut.ToList());
+                }
+
                 UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.Text);
                 UnifiedMappingControl.SetTextContent(textMapping.Text);
                 UnifiedMappingControl.SetAppSpecific(!textMapping.IsAllApps, textMapping.AppName);
@@ -167,7 +191,19 @@ namespace KeyboardManagerEditorUI.Pages
                 };
 
                 UnifiedMappingControl.Reset();
-                UnifiedMappingControl.SetTriggerKeys(programShortcut.Shortcut.ToList());
+
+                // Detect if this is a mouse-sourced mapping
+                int mouseButtonCode = GetMouseButtonCodeFromSettings(programShortcut.Id);
+                if (mouseButtonCode >= 0)
+                {
+                    UnifiedMappingControl.SetTriggerType(UnifiedMappingControl.TriggerType.Mouse);
+                    UnifiedMappingControl.SetMouseTriggerButton(mouseButtonCode);
+                }
+                else
+                {
+                    UnifiedMappingControl.SetTriggerKeys(programShortcut.Shortcut.ToList());
+                }
+
                 UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.OpenApp);
                 UnifiedMappingControl.SetProgramPath(programShortcut.AppToRun);
                 UnifiedMappingControl.SetProgramArgs(programShortcut.Args);
@@ -201,7 +237,19 @@ namespace KeyboardManagerEditorUI.Pages
                 };
 
                 UnifiedMappingControl.Reset();
-                UnifiedMappingControl.SetTriggerKeys(urlShortcut.Shortcut.ToList());
+
+                // Detect if this is a mouse-sourced mapping
+                int mouseButtonCode = GetMouseButtonCodeFromSettings(urlShortcut.Id);
+                if (mouseButtonCode >= 0)
+                {
+                    UnifiedMappingControl.SetTriggerType(UnifiedMappingControl.TriggerType.Mouse);
+                    UnifiedMappingControl.SetMouseTriggerButton(mouseButtonCode);
+                }
+                else
+                {
+                    UnifiedMappingControl.SetTriggerKeys(urlShortcut.Shortcut.ToList());
+                }
+
                 UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.OpenUrl);
                 UnifiedMappingControl.SetUrl(urlShortcut.URL);
 
@@ -262,6 +310,21 @@ namespace KeyboardManagerEditorUI.Pages
                         return;
                     }
 
+                    // Validate mouse mapping before saving
+                    ValidationErrorType mouseValidationError = ValidationHelper.ValidateMouseButtonMapping(
+                        mouseButtonCode.Value,
+                        actionType,
+                        UnifiedMappingControl,
+                        _mappingService,
+                        _isEditMode);
+
+                    if (mouseValidationError != ValidationErrorType.NoError)
+                    {
+                        UnifiedMappingControl.ShowValidationErrorFromType(mouseValidationError);
+                        args.Cancel = true;
+                        return;
+                    }
+
                     // If in edit mode, delete the existing mapping first
                     if (_isEditMode && _editingItem != null)
                     {
@@ -276,7 +339,10 @@ namespace KeyboardManagerEditorUI.Pages
                     }
                     else
                     {
-                        UnifiedMappingControl.ShowValidationError("Save Failed", "Failed to save the mouse remapping. Please try again.");
+                        string buttonName = _mappingService.GetMouseButtonName((MouseButtonCode)mouseButtonCode.Value);
+                        UnifiedMappingControl.ShowValidationError(
+                            "Save Failed",
+                            $"Failed to save the remapping for {buttonName}. The mouse button may already be in use by another mapping, or the target configuration is invalid.");
                         args.Cancel = true;
                     }
 
@@ -1572,6 +1638,38 @@ namespace KeyboardManagerEditorUI.Pages
             var keyName = new StringBuilder(64);
             GetKeyDisplayName(keyCode, keyName, keyName.Capacity);
             return keyName.ToString();
+        }
+
+        /// <summary>
+        /// Checks the SettingsManager for a mapping with the given ID and returns the mouse button code
+        /// if it's a mouse-sourced mapping (OriginalKeys starts with "mouse_"). Returns -1 if not a mouse mapping.
+        /// </summary>
+        private static int GetMouseButtonCodeFromSettings(string? id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return -1;
+            }
+
+            // Check the SettingsManager for this ID
+            if (SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(id, out var setting) &&
+                setting.Shortcut.OriginalKeys.StartsWith("mouse_", StringComparison.Ordinal) &&
+                int.TryParse(setting.Shortcut.OriginalKeys.AsSpan(6), out int buttonCode))
+            {
+                return buttonCode;
+            }
+
+            // Fallback: check if the ID itself has a mouse_ prefix (for entries without a settings entry)
+            if (id.StartsWith("mouse_", StringComparison.Ordinal))
+            {
+                var parts = id.Split('_', 3);
+                if (parts.Length >= 2 && int.TryParse(parts[1], out int fallbackCode))
+                {
+                    return fallbackCode;
+                }
+            }
+
+            return -1;
         }
 
         #endregion
