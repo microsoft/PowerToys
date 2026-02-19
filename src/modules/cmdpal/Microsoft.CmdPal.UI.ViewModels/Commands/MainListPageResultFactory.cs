@@ -4,7 +4,7 @@
 
 #pragma warning disable IDE0007 // Use implicit type
 
-using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 

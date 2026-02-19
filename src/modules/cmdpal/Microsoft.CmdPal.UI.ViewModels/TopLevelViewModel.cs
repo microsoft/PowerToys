@@ -6,11 +6,11 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Text;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
+using Microsoft.CmdPal.ViewModels;
+using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -424,7 +424,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public PerformCommandMessage GetPerformCommandMessage()
     {
-        return new PerformCommandMessage(this.CommandViewModel.Model, new Core.ViewModels.Models.ExtensionObject<IListItem>(this));
+        return new PerformCommandMessage(this.CommandViewModel.Model, new CmdPal.ViewModels.Models.ExtensionObject<IListItem>(this));
     }
 
     public override string ToString()
