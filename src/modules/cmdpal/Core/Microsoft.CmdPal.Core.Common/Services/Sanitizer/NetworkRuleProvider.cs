@@ -11,7 +11,9 @@ internal sealed partial class NetworkRuleProvider : ISanitizationRuleProvider
 {
     public IEnumerable<SanitizationRule> GetRules()
     {
-        yield return new(Ipv4Rx(), "[IP4_REDACTED]", "IP addresses");
+        // Disabled for now as these rules can be too aggressive and cause over-sanitization, especially in scenarios like
+        // error report sanitization where we want to preserve as much useful information as possible while still protecting sensitive data.
+        // yield return new(Ipv4Rx(), "[IP4_REDACTED]", "IP addresses");
         yield return new(Ipv6BracketedRx(), "[IP6_REDACTED]", "IPv6 addresses (bracketed/with port)");
         yield return new(Ipv6Rx(), "[IP6_REDACTED]", "IPv6 addresses");
         yield return new(MacAddressRx(), "[MAC_ADDRESS_REDACTED]", "MAC addresses");
