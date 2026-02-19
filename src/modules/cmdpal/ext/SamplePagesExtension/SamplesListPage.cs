@@ -29,15 +29,15 @@ public partial class SamplesListPage : ListPage
             Title = "List Pages With Sections",
             Subtitle = "A list of items, with sections header",
         },
-        new ListItem(new SampleSinglelineListPage())
+        new ListItem(new SampleSingleRowListPage())
         {
             Title = "Single-line list page",
             Subtitle = "A demo of a list page with single-line items",
         },
-        new ListItem(new SampleMultilineListPage())
+        new ListItem(new SampleTwoRowListPage())
         {
-            Title = "Single-line and Multi-line list pages",
-            Subtitle = "Demos of single-line and multi-line list item layouts",
+            Title = "Two-line list page",
+            Subtitle = "A demo of a two-line list item layout",
         },
         new ListItem(new SampleUpdatingItemsPage())
         {

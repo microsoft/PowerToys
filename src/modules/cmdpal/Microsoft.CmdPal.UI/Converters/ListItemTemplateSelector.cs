@@ -12,19 +12,21 @@ public sealed partial class ListItemTemplateSelector : DataTemplateSelector
 {
     public ListItemViewMode ListItemViewMode { get; set; }
 
-    public DataTemplate? ListItem { get; set; }
+    public DataTemplate? TwoRowItem { get; set; }
 
-    public DataTemplate? Separator { get; set; }
+    public DataTemplate? SingleRowItem { get; set; }
 
     public DataTemplate? Section { get; set; }
 
-    public DataTemplate? SingleRowListItem { get; set; }
+    public DataTemplate? Separator { get; set; }
 
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
     {
+        var dataTemplate = ListItemViewMode == ListItemViewMode.SingleRow ? SingleRowItem : TwoRowItem;
+
         if (item is not ListItemViewModel element)
         {
-            return ListItem;
+            return dataTemplate;
         }
 
         switch (element.Type)
@@ -35,7 +37,7 @@ public sealed partial class ListItemTemplateSelector : DataTemplateSelector
                 return Section;
             case ListItemType.Item:
             default:
-                return ListItem;
+                return dataTemplate;
         }
     }
 }

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -11,7 +10,11 @@ namespace Microsoft.CmdPal.UI;
 
 internal sealed partial class ListItemContainerStyleSelector : StyleSelector
 {
-    public Style? Default { get; set; }
+    public ListItemViewMode ListItemViewMode { get; set; }
+
+    public Style? TwoRowItem { get; set; }
+
+    public Style? SingleRowItem { get; set; }
 
     public Style? Section { get; set; }
 
@@ -19,9 +22,11 @@ internal sealed partial class ListItemContainerStyleSelector : StyleSelector
 
     protected override Style? SelectStyleCore(object item, DependencyObject container)
     {
+        var itemContainerStyle = ListItemViewMode == ListItemViewMode.SingleRow ? SingleRowItem : TwoRowItem;
+
         if (item is not ListItemViewModel element)
         {
-            return Default;
+            return itemContainerStyle;
         }
 
         switch (element.Type)
@@ -32,7 +37,7 @@ internal sealed partial class ListItemContainerStyleSelector : StyleSelector
                 return Section;
             case ListItemType.Item:
             default:
-                return Default;
+                return itemContainerStyle;
         }
     }
 }

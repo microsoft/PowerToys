@@ -33,6 +33,9 @@ public sealed partial class ListPage : Page,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
+    private readonly ListItemTemplateSelector _itemTemplateSelector;
+    private readonly ListItemContainerStyleSelector _containerStyleSelector;
+
     private InputSource _lastInputSource;
 
     internal ListViewModel? ViewModel
@@ -62,6 +65,12 @@ public sealed partial class ListPage : Page,
         this.ItemView.Loaded += Items_Loaded;
         this.ItemView.PreviewKeyDown += Items_PreviewKeyDown;
         this.ItemView.PointerPressed += Items_PointerPressed;
+
+        var itemTemplateSelector = Resources["ListItemTemplateSelector"] as ListItemTemplateSelector;
+        _itemTemplateSelector = itemTemplateSelector ?? throw new InvalidOperationException("ListItemTemplateSelector resource is missing or of the wrong type.");
+
+        var containerStyleSelector = Resources["ListItemContainerStyleSelector"] as ListItemContainerStyleSelector;
+        _containerStyleSelector = containerStyleSelector ?? throw new InvalidOperationException("ListItemContainerStyleSelector resource is missing or of the wrong type.");
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -659,32 +668,34 @@ public sealed partial class ListPage : Page,
 
     private void PokeTemplateSelector()
     {
-        if (Resources["ListItemTemplateSelector"] is not ListItemTemplateSelector selector)
-        {
-            return;
-        }
-
         var newMode = ComputeListItemViewMode();
-        if (selector.ListItemViewMode == newMode)
+
+        if (_itemTemplateSelector.ListItemViewMode != newMode)
         {
-            return;
+            _itemTemplateSelector.ListItemViewMode = newMode;
+            ItemsList.ItemTemplateSelector = null;
+            ItemsList.ItemTemplateSelector = _itemTemplateSelector;
         }
 
-        selector.ListItemViewMode = newMode;
-        ItemsList.ItemTemplateSelector = null;
-        ItemsList.ItemTemplateSelector = selector;
+        if (_containerStyleSelector.ListItemViewMode != newMode)
+        {
+            _containerStyleSelector.ListItemViewMode = newMode;
+            ItemsList.ItemContainerStyleSelector = null;
+            ItemsList.ItemContainerStyleSelector = _containerStyleSelector;
+        }
+
         return;
 
         ListItemViewMode ComputeListItemViewMode()
         {
             var useCompact =
-                ViewModel?.GridProperties is SinglelineListPropertiesViewModel p &&
+                ViewModel?.GridProperties is SingleRowListPropertiesViewModel p &&
                 IsCompactFeasible(p, ShellViewModel);
 
-            return useCompact ? ListItemViewMode.Singleline : ListItemViewMode.Multiline;
+            return useCompact ? ListItemViewMode.SingleRow : ListItemViewMode.TwoRow;
         }
 
-        static bool IsCompactFeasible(SinglelineListPropertiesViewModel propertiesViewModel, ShellViewModel shellViewModel)
+        static bool IsCompactFeasible(SingleRowListPropertiesViewModel propertiesViewModel, ShellViewModel shellViewModel)
         {
             if (!shellViewModel.IsDetailsVisible)
             {

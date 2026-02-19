@@ -6,6 +6,6 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public enum ListItemViewMode
 {
-    Multiline,
-    Singleline,
+    TwoRow,
+    SingleRow,
 }

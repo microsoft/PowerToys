@@ -47,7 +47,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public bool IsGridView => GridProperties.IsGrid;
 
-    public IGridPropertiesViewModel GridProperties { get; private set; } = SinglelineListPropertiesViewModel.Default;
+    public IGridPropertiesViewModel GridProperties { get; private set; } = SingleRowListPropertiesViewModel.Default;
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -621,9 +621,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
             IMediumGridLayout mediumGridLayout => new MediumGridPropertiesViewModel(mediumGridLayout),
             IGalleryGridLayout galleryGridLayout => new GalleryGridPropertiesViewModel(galleryGridLayout),
             ISmallGridLayout smallGridLayout => new SmallGridPropertiesViewModel(smallGridLayout),
-            ISinglelineListLayout layout => new SinglelineListPropertiesViewModel(layout),
-            IMultilineListLayout layout => new MultiLineListPropertiesViewModel(layout),
-            _ => SinglelineListPropertiesViewModel.Default,
+            ISingleRowListLayout layout => new SingleRowListPropertiesViewModel(layout),
+            ITwoRowListLayout layout => new TwoRowListPropertiesViewModel(layout),
+            _ => SingleRowListPropertiesViewModel.Default,
         };
     }
 

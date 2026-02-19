@@ -32,9 +32,14 @@
         <x:Double x:Key="MediumGridContainerSize">100</x:Double>
         <x:Double x:Key="GalleryGridSize">160</x:Double>
 
-        <x:Double x:Key="ListViewItemMinHeight">40</x:Double>
-        <x:Double x:Key="ListViewSectionMinHeight">0</x:Double>
-        <x:Double x:Key="ListViewSeparatorMinHeight">0</x:Double>
+        <!--
+            BEAR LOADING: The list view is virtualized and the item container style is set to a fixed height
+            to ensure the virtualization works correctly.
+        -->
+        <x:Double x:Key="SingleRowListViewItemHeight">44</x:Double>
+        <x:Double x:Key="TwoRowListViewItemHeight">56</x:Double>
+        <x:Double x:Key="ListViewSectionHeight">28</x:Double>
+        <x:Double x:Key="ListViewSeparatorHeight">28</x:Double>
 
         <Style x:Key="IconGridViewItemStyle" TargetType="GridViewItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -172,11 +177,12 @@
             <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="IsHoldingEnabled" Value="False" />
-            <Setter Property="Padding" Value="4,8,12,0" />
+            <Setter Property="Padding" Value="4,0,12,0" />
             <Setter Property="Margin" Value="0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Bottom" />
-            <Setter Property="MinHeight" Value="{StaticResource ListViewSectionMinHeight}" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSectionHeight}" />
+            <Setter Property="Height" Value="{StaticResource ListViewSectionHeight}" />
             <Setter Property="cpcontrols:WrapPanel.IsFullLine" Value="True" />
         </Style>
 
@@ -187,19 +193,29 @@
             <Setter Property="IsHitTestVisible" Value="False" />
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="IsHoldingEnabled" Value="False" />
-            <Setter Property="Padding" Value="4,4,12,4" />
+            <Setter Property="Padding" Value="4,0,12,0" />
             <Setter Property="Margin" Value="0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="MinHeight" Value="{StaticResource ListViewSeparatorMinHeight}" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSeparatorHeight}" />
+            <Setter Property="Height" Value="{StaticResource ListViewSeparatorHeight}" />
             <Setter Property="cpcontrols:WrapPanel.IsFullLine" Value="True" />
         </Style>
 
         <Style
-            x:Key="ListDefaultContainerStyle"
+            x:Key="ListTwoRowContainerStyle"
             BasedOn="{StaticResource DefaultListViewItemStyle}"
             TargetType="ListViewItem">
-            <Setter Property="MinHeight" Value="{StaticResource ListViewItemMinHeight}" />
+            <Setter Property="MinHeight" Value="{StaticResource TwoRowListViewItemHeight}" />
+            <Setter Property="Height" Value="{StaticResource TwoRowListViewItemHeight}" />
+        </Style>
+
+        <Style
+            x:Key="ListSingleRowItemContainerStyle"
+            BasedOn="{StaticResource DefaultListViewItemStyle}"
+            TargetType="ListViewItem">
+            <Setter Property="MinHeight" Value="{StaticResource SingleRowListViewItemHeight}" />
+            <Setter Property="Height" Value="{StaticResource SingleRowListViewItemHeight}" />
         </Style>
 
         <Style
@@ -213,10 +229,11 @@
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="IsHoldingEnabled" Value="False" />
             <Setter Property="AllowDrop" Value="False" />
-            <Setter Property="Padding" Value="16,8,12,0" />
+            <Setter Property="Padding" Value="16,0,12,0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Bottom" />
-            <Setter Property="MinHeight" Value="{StaticResource ListViewSectionMinHeight}" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSectionHeight}" />
+            <Setter Property="Height" Value="{StaticResource ListViewSectionHeight}" />
         </Style>
 
         <Style
@@ -230,10 +247,11 @@
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="IsHoldingEnabled" Value="False" />
             <Setter Property="AllowDrop" Value="False" />
-            <Setter Property="Padding" Value="16,4,12,4" />
+            <Setter Property="Padding" Value="16,0,12,0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="MinHeight" Value="{StaticResource ListViewSeparatorMinHeight}" />
+            <Setter Property="MinHeight" Value="{StaticResource ListViewSeparatorHeight}" />
+            <Setter Property="Height" Value="{StaticResource ListViewSeparatorHeight}" />
         </Style>
 
         <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
@@ -250,16 +268,17 @@
         <cmdpalUI:ListItemTemplateSelector
             x:Key="ListItemTemplateSelector"
             x:DataType="coreViewModels:ListItemViewModel"
-            ListItem="{StaticResource ListItemViewModelTemplate}"
             Section="{StaticResource ListSectionViewModelTemplate}"
             Separator="{StaticResource ListSeparatorViewModelTemplate}"
-            SingleRowListItem="{StaticResource ListItemSingleRowViewModelTemplate}" />
+            SingleRowItem="{StaticResource ListItemSingleRowViewModelTemplate}"
+            TwoRowItem="{StaticResource ListItemViewModelTemplate}" />
 
         <cmdpalUI:ListItemContainerStyleSelector
             x:Key="ListItemContainerStyleSelector"
-            Default="{StaticResource ListDefaultContainerStyle}"
             Section="{StaticResource ListSectionContainerStyle}"
-            Separator="{StaticResource ListSeparatorContainerStyle}" />
+            Separator="{StaticResource ListSeparatorContainerStyle}"
+            SingleRowItem="{StaticResource ListSingleRowItemContainerStyle}"
+            TwoRowItem="{StaticResource ListTwoRowContainerStyle}" />
 
         <cmdpalUI:GridItemTemplateSelector
             x:Key="GridItemTemplateSelector"
@@ -345,10 +364,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="ListItemSingleRowViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
-            <Grid
-                Padding="0,12,0,12"
-                AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
-                ColumnSpacing="12">
+            <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="28" />
                     <ColumnDefinition Width="*" />
@@ -360,12 +376,15 @@
                     Grid.Column="0"
                     Width="20"
                     Height="20"
-                    Margin="4,0,4,0"
                     AutomationProperties.AccessibilityView="Raw"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
 
+                <!--
+                    Title and subtitle are intentionally in a nested Grid instead in the outer container,
+                    to avoid pushing the following element (tags) out of bounds.
+                -->
                 <Grid
                     Grid.Column="1"
                     VerticalAlignment="Center"
@@ -400,6 +419,10 @@
                         Visibility="{x:Bind ShowSubtitle, Mode=OneWay}" />
                 </Grid>
 
+                <!--
+                    8px right margin is added to visually match the spacing between then icon,
+                    and the left margin of the list, as there's
+                -->
                 <ItemsControl
                     Grid.Column="2"
                     Margin="0,0,8,0"

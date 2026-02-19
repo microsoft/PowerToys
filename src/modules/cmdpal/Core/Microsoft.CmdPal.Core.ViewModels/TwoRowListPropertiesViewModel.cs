@@ -7,20 +7,20 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public class MultiLineListPropertiesViewModel : IGridPropertiesViewModel
+public class TwoRowListPropertiesViewModel : IGridPropertiesViewModel
 {
-    private readonly ExtensionObject<IMultilineListLayout> _model;
-
-    public MultiLineListPropertiesViewModel(IMultilineListLayout layout)
-    {
-        _model = new ExtensionObject<IMultilineListLayout>(layout);
-    }
+    private readonly ExtensionObject<ITwoRowListLayout> _model;
 
     public bool IsGrid => false;
 
     public bool ShowTitle => true;
 
     public bool ShowSubtitle => true;
+
+    public TwoRowListPropertiesViewModel(ITwoRowListLayout layout)
+    {
+        _model = new ExtensionObject<ITwoRowListLayout>(layout);
+    }
 
     public void InitializeProperties()
     {
