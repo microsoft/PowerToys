@@ -595,7 +595,7 @@ opera.exe</value>
     <comment>Description for the new editor button</comment>
   </data>
   <data name="KeyboardManager_GoBackClassic.Content" xml:space="preserve">
-    <value>Switch back to the classic editor experience</value>
+    <value>Switch back to the classic editor</value>
     <comment>Keyboard Manager link to switch back to the classic editor UI</comment>
   </data>
   <data name="Shortcut.Header" xml:space="preserve">
