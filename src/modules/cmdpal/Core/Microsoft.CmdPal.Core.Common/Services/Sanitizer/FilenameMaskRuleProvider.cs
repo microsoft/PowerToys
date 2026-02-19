@@ -25,6 +25,7 @@ internal sealed class FilenameMaskRuleProvider : ISanitizationRuleProvider
         "env",
         "environment",
         "manifest",
+        "log",
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     public IEnumerable<SanitizationRule> GetRules()
@@ -57,6 +58,11 @@ internal sealed class FilenameMaskRuleProvider : ISanitizationRuleProvider
             var looksLikeFile = (dot > 0 && dot < file.Length - 1) || (file.StartsWith('.') && file.Length > 1);
 
             if (!looksLikeFile)
+            {
+                return full;
+            }
+
+            if (IsVersionSegment(file))
             {
                 return full;
             }
@@ -105,5 +111,31 @@ internal sealed class FilenameMaskRuleProvider : ISanitizationRuleProvider
         var keep = Math.Min(2, stem.Length);
         var maskedCount = Math.Max(1, stem.Length - keep);
         return stem[..keep] + new string('*', maskedCount);
+    }
+
+    private static bool IsVersionSegment(string file)
+    {
+        var dotIndex = file.IndexOf('.');
+        if (dotIndex <= 0 || dotIndex == file.Length - 1)
+        {
+            return false;
+        }
+
+        var hasDot = false;
+        foreach (var ch in file)
+        {
+            if (ch == '.')
+            {
+                hasDot = true;
+                continue;
+            }
+
+            if (!char.IsDigit(ch))
+            {
+                return false;
+            }
+        }
+
+        return hasDot;
     }
 }
