@@ -196,6 +196,10 @@
   <Folder Name="/modules/CommandPalette/">
     <Project Path="src/modules/cmdpal/CmdPalKeyboardService/CmdPalKeyboardService.vcxproj" Id="5f63c743-f6ce-4dba-a200-2b3f8a14e8c2" />
     <Project Path="src/modules/cmdpal/CmdPalModuleInterface/CmdPalModuleInterface.vcxproj" Id="0adeb797-c8c7-4ffa-acd5-2af6cad7ecd8" />
+    <Project Path="src/modules/cmdpal/Microsoft.CmdPal.Common/Microsoft.CmdPal.Common.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/modules/CommandPalette/Built-in Extensions/">
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/Microsoft.CmdPal.Ext.Apps.csproj">
@@ -295,6 +299,10 @@
     </Project>
   </Folder>
   <Folder Name="/modules/CommandPalette/Tests/">
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Common.UnitTests/Microsoft.CmdPal.Common.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Core.Common.UnitTests/Microsoft.CmdPal.Core.Common.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
