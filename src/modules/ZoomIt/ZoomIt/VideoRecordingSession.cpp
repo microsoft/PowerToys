@@ -1215,14 +1215,8 @@ void VideoRecordingSession::OnMediaStreamSourceSampleRequested(
     {
         try
         {
-            if (auto sample = m_audioGenerator->TryGetNextSample())
-            {
-                request.Sample(sample.value());
-            }
-            else
-            {
-                request.Sample(nullptr);
-            }
+            auto sample = m_audioGenerator ? m_audioGenerator->TryGetNextSample() : std::optional<winrt::MediaStreamSample>{};
+            request.Sample(sample.has_value() ? sample.value() : nullptr);
         }
         catch (winrt::hresult_error const& error)
         {
