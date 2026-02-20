@@ -30,6 +30,8 @@ namespace RunnerV2.Helpers
     /// </summary>
     internal static class SettingsHelper
     {
+        public static bool Debugging { get; set; }
+
         private static readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
         private static Process? _process;
         private static TwoWayPipeMessageIPCManaged? _ipc;
@@ -102,6 +104,11 @@ namespace RunnerV2.Helpers
 
         public static void OnSettingsMessageReceived(string message)
         {
+            if (Debugging)
+            {
+                Console.WriteLine("Received message from settings: " + message);
+            }
+
             JsonDocument messageDocument = JsonDocument.Parse(message);
 
             foreach (var property in messageDocument.RootElement.EnumerateObject())
@@ -111,7 +118,6 @@ namespace RunnerV2.Helpers
                     case "action":
                         foreach (var moduleName in property.Value.EnumerateObject())
                         {
-                            _settingsUtils.SaveSettings(moduleName.Value.ToString(), moduleName.Name);
                             if (moduleName.Name == "general")
                             {
                                 switch (moduleName.Value.GetProperty("action_name").GetString())
@@ -250,6 +256,7 @@ namespace RunnerV2.Helpers
                             if (Runner.LoadedModules.Find(m => m.Name == powertoysSettingsPart.Name) is IPowerToysModuleSettingsChangedSubscriber module && module is IPowerToysModule ptModule && ptModule.Enabled)
                             {
                                 Logger.InitializeLogger("\\" + ptModule.Name + "\\ModuleInterface\\Logs");
+                                SettingsUtils.Default.SaveSettings(powertoysSettingsPart.Value.ToString(), powertoysSettingsPart.Name);
                                 module.OnSettingsChanged();
                                 Logger.InitializeLogger("\\RunnerLogs");
                             }

@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using ManagedCommon;
 
@@ -57,7 +58,7 @@ namespace RunnerV2.Helpers
             {
                 try
                 {
-                    return !_process.HasExited;
+                    return _process.StartInfo.FileName == string.Empty ? false : !_process.HasExited;
                 }
                 catch (Exception)
                 {

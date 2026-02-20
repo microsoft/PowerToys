@@ -5,13 +5,16 @@
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using PowerToys.GPOWrapper;
 using PowerToys.Interop;
+using RunnerV2.Models;
 using RunnerV2.properties;
 using static RunnerV2.NativeMethods;
 
@@ -94,6 +97,18 @@ namespace RunnerV2.Helpers
             ReportBug,
             Close,
             QuickAccess,
+            DebugKeyboardShortcuts,
+            DebugSettingsIpc,
+            DebugWriteUncaughtExceptionsToConsole,
+            DebugSendCustomMessage,
+            DebugActivateModule,
+            DebugDeactivateModule,
+            DebugAllEnableModule,
+            DebugAllDisableModule,
+            DebugSendCustomAction,
+            DebugListAllCustomActions,
+            DebugListAllShortcuts,
+            DebugFullModuleReport,
         }
 
         private static bool _doubleClickTimerRunning;
@@ -113,6 +128,29 @@ namespace RunnerV2.Helpers
         public static void RegenerateRightClickMenu()
         {
             _trayIconMenu = CreatePopupMenu();
+#if DEBUG
+            IntPtr ipcMenu = CreateMenu();
+            AppendMenuW(ipcMenu, 0u, new UIntPtr((uint)TrayButton.DebugSettingsIpc), "Toggle logging Settings IPC");
+            AppendMenuW(ipcMenu, 0u, new UIntPtr((uint)TrayButton.DebugSendCustomMessage), "Send Custom Message To Runner");
+
+            IntPtr modulesMenu = CreateMenu();
+            AppendMenuW(modulesMenu, 0u, new UIntPtr((uint)TrayButton.DebugFullModuleReport), "Full report on all modules");
+            AppendMenuW(modulesMenu, 0x00000800u, UIntPtr.Zero, string.Empty); // serator
+            AppendMenuW(modulesMenu, 0u, new UIntPtr((uint)TrayButton.DebugActivateModule), "Activate Module by name");
+            AppendMenuW(modulesMenu, 0u, new UIntPtr((uint)TrayButton.DebugDeactivateModule), "Deactivate Module by name");
+            AppendMenuW(modulesMenu, 0u, new UIntPtr((uint)TrayButton.DebugAllEnableModule), "Run all enable functions of all modules");
+            AppendMenuW(modulesMenu, 0u, new UIntPtr((uint)TrayButton.DebugAllDisableModule), "Run all disable functions of all modules");
+            AppendMenuW(modulesMenu, 0u, new UIntPtr((uint)TrayButton.DebugSendCustomAction), "Send Custom Action");
+            AppendMenuW(modulesMenu, 0u, new UIntPtr((uint)TrayButton.DebugListAllCustomActions), "List all Custom Actions");
+            AppendMenuW(modulesMenu, 0u, new UIntPtr((uint)TrayButton.DebugListAllShortcuts), "List all Shortcuts");
+
+            AppendMenuW(_trayIconMenu, 0x2u, UIntPtr.Zero, "Debug build options:");
+            AppendMenuW(_trayIconMenu, 0x10u, (UIntPtr)ipcMenu, "Settings <-> Runner IPC");
+            AppendMenuW(_trayIconMenu, 0x10u, (UIntPtr)modulesMenu, "Module interfaces");
+            AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.DebugKeyboardShortcuts), "Toggle logging Centralized Keyboard Hook");
+            AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.DebugWriteUncaughtExceptionsToConsole), "Toggle logging Uncaught Exceptions");
+            AppendMenuW(_trayIconMenu, 0x00000800u, UIntPtr.Zero, string.Empty); // separator
+#endif
             if (SettingsUtils.Default.GetSettings<GeneralSettings>().EnableQuickAccess)
             {
                 AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.QuickAccess), Resources.ContextMenu_QuickAccess + "\t" + Resources.ContextMenu_LeftClick);
@@ -123,7 +161,7 @@ namespace RunnerV2.Helpers
                 AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Settings), Resources.ContextMenu_Settings + "\t" + Resources.ContextMenu_LeftClick);
             }
 
-            AppendMenuW(_trayIconMenu, 0x00000800u, UIntPtr.Zero, string.Empty); // separator
+            AppendMenuW(_trayIconMenu, 0x00000800u, UIntPtr.Zero, string.Empty); // serator
             AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.Documentation), Resources.ContextMenu_Documentation);
             AppendMenuW(_trayIconMenu, 0u, new UIntPtr((uint)TrayButton.ReportBug), Resources.ContextMenu_ReportBug);
             AppendMenuW(_trayIconMenu, 0x00000800u, UIntPtr.Zero, string.Empty); // separator
@@ -222,6 +260,207 @@ namespace RunnerV2.Helpers
                 case TrayButton.Close:
                     Runner.Close();
                     break;
+#if DEBUG
+                case TrayButton.DebugKeyboardShortcuts:
+                    AllocConsole();
+                    CentralizedKeyboardHookManager.DebugConsole = !CentralizedKeyboardHookManager.DebugConsole;
+                    break;
+                case TrayButton.DebugSettingsIpc:
+                    AllocConsole();
+                    SettingsHelper.Debugging = !SettingsHelper.Debugging;
+                    break;
+                case TrayButton.DebugWriteUncaughtExceptionsToConsole:
+                    AllocConsole();
+                    Runner.DebbugingLogUncaughtExceptions = !Runner.DebbugingLogUncaughtExceptions;
+                    break;
+                case TrayButton.DebugSendCustomMessage:
+                    AllocConsole();
+                    Console.Write("Enter the message you want to send to the Runner process: ");
+                    string? message = Console.ReadLine();
+                    if (string.IsNullOrEmpty(message))
+                    {
+                        Console.WriteLine("No message entered. Aborting.");
+                        return;
+                    }
+
+                    SettingsHelper.OnSettingsMessageReceived(message);
+                    break;
+                case TrayButton.DebugActivateModule:
+                    AllocConsole();
+                    Console.Write("Enter the name of the module you want to activate: ");
+                    string? moduleToActivate = Console.ReadLine();
+                    if (string.IsNullOrEmpty(moduleToActivate))
+                    {
+                        Console.WriteLine("No module name entered. Aborting.");
+                        return;
+                    }
+
+                    SettingsHelper.OnSettingsMessageReceived("{\"module_status\": {\"" + moduleToActivate + "\": true}}");
+                    break;
+                case TrayButton.DebugDeactivateModule:
+                    AllocConsole();
+                    Console.Write("Enter the name of the module you want to deactivate: ");
+                    string? moduleToDeactivate = Console.ReadLine();
+                    if (string.IsNullOrEmpty(moduleToDeactivate))
+                    {
+                        Console.WriteLine("No module name entered. Aborting.");
+                        return;
+                    }
+
+                    SettingsHelper.OnSettingsMessageReceived("{\"module_status\": {\"" + moduleToDeactivate + "\": false}}");
+                    break;
+
+                case TrayButton.DebugAllEnableModule:
+                    AllocConsole();
+                    foreach (var module in Runner.ModulesToLoad)
+                    {
+                        module.Enable();
+                    }
+
+                    Console.WriteLine("All enabled functions run.");
+                    break;
+                case TrayButton.DebugAllDisableModule:
+                    AllocConsole();
+                    foreach (var module in Runner.ModulesToLoad)
+                    {
+                        module.Disable();
+                    }
+
+                    Console.WriteLine("All disable functions run.");
+                    break;
+                case TrayButton.DebugSendCustomAction:
+                    AllocConsole();
+                    Console.Write("Enter the name of the module you want to send the action to: ");
+                    string? moduleName = Console.ReadLine();
+                    if (string.IsNullOrEmpty(moduleName))
+                    {
+                        Console.WriteLine("No module name entered. Aborting.");
+                        return;
+                    }
+
+                    Console.Write("Enter the name of the action you want to send: ");
+                    string? actionName = Console.ReadLine();
+                    if (string.IsNullOrEmpty(actionName))
+                    {
+                        Console.WriteLine("No action name entered. Aborting.");
+                        return;
+                    }
+
+                    Console.Write("Enter the data you want to send with the action (or leave empty for no data): ");
+                    string? actionData = Console.ReadLine();
+                    if (actionData is null)
+                    {
+                        Console.WriteLine("No action data entered. Aborting.");
+                        return;
+                    }
+
+                    SettingsHelper.OnSettingsMessageReceived("{\"action\": {\"" + moduleName + "\": {\"action_name\": \"" + actionName + "\", \"value\": \"" + actionData + "\"}}}");
+                    break;
+                case TrayButton.DebugListAllCustomActions:
+                    AllocConsole();
+                    Console.Write("Name of the module whose custom actions you want to list: ");
+                    string? moduleNameForCustomActions = Console.ReadLine();
+                    if (string.IsNullOrEmpty(moduleNameForCustomActions))
+                    {
+                        Console.WriteLine("No module name entered. Aborting.");
+                        return;
+                    }
+
+                    var moduleForCustomActions = Runner.ModulesToLoad.FirstOrDefault(m => m.Name.Equals(moduleNameForCustomActions, StringComparison.OrdinalIgnoreCase));
+                    if (moduleForCustomActions == null)
+                    {
+                        Console.WriteLine("No module with that name found. Aborting.");
+                        return;
+                    }
+
+                    if (moduleForCustomActions is not IPowerToysModuleCustomActionsProvider customActionsProvider)
+                    {
+                        Console.WriteLine("Module does not provide custom actions. Aborting.");
+                        return;
+                    }
+
+                    foreach (var customAction in customActionsProvider.CustomActions)
+                    {
+                        Console.WriteLine("Action name: " + customAction.Key);
+                    }
+
+                    break;
+                case TrayButton.DebugListAllShortcuts:
+                    AllocConsole();
+                    Console.Write("Name of the module whose shortcuts you want to list: ");
+                    string? moduleNameForShortcuts = Console.ReadLine();
+                    if (string.IsNullOrEmpty(moduleNameForShortcuts))
+                    {
+                        Console.WriteLine("No module name entered. Aborting.");
+                        return;
+                    }
+
+                    var moduleForShortcuts = Runner.ModulesToLoad.FirstOrDefault(m => m.Name.Equals(moduleNameForShortcuts, StringComparison.OrdinalIgnoreCase));
+
+                    if (moduleForShortcuts == null)
+                    {
+                        Console.WriteLine("No module with that name found. Aborting.");
+                        return;
+                    }
+
+                    if (moduleForShortcuts is not IPowerToysModuleShortcutsProvider shortcutsProvider)
+                    {
+                        Console.WriteLine("Module does not provide shortcuts. Aborting.");
+                        return;
+                    }
+
+                    foreach (var shortcut in shortcutsProvider.Shortcuts)
+                    {
+                        Console.WriteLine("Shortcut: " + shortcut.Hotkey.ToString());
+                    }
+
+                    break;
+                case TrayButton.DebugFullModuleReport:
+                    AllocConsole();
+                    static string GpoRuleToString(GpoRuleConfigured g) => g switch
+                    {
+                        GpoRuleConfigured.WrongValue => "Wrong value",
+                        GpoRuleConfigured.Unavailable => "Unavailable",
+                        GpoRuleConfigured.NotConfigured => "Not configured",
+                        GpoRuleConfigured.Disabled => "Disabled",
+                        GpoRuleConfigured.Enabled => "Enabled",
+                        _ => "Unknown",
+                    };
+
+                    Console.WriteLine("=============================");
+                    Console.WriteLine("=Full report of all modules:=");
+                    Console.WriteLine("=============================");
+                    foreach (var module in Runner.ModulesToLoad)
+                    {
+                        Console.WriteLine("Module name: " + module.Name);
+                        Console.WriteLine("Enabled: " + module.Enabled);
+                        Console.WriteLine("GPO configured: " + GpoRuleToString(module.GpoRuleConfigured));
+                        if (module is ProcessModuleAbstractClass pmac)
+                        {
+                            Console.WriteLine("Process name: " + pmac.ProcessName);
+                            Console.WriteLine("Process path: " + pmac.ProcessPath);
+                            Console.WriteLine("Launch options: " + pmac.LaunchOptions);
+                            Console.WriteLine("Launch arguments: " + pmac.ProcessArguments);
+                            Console.WriteLine("Is running: " + pmac.IsProcessRunning());
+                        }
+
+                        if (module is IPowerToysModuleCustomActionsProvider ptmcap)
+                        {
+                            Console.WriteLine("Custom actions: " + string.Join(", ", ptmcap.CustomActions.Keys));
+                        }
+
+                        if (module is IPowerToysModuleShortcutsProvider ptmscp)
+                        {
+                            Console.WriteLine("Shortcuts: " + string.Join(", ", ptmscp.Shortcuts.Select(s => s.Hotkey.ToString())));
+                        }
+
+                        Console.WriteLine("Is subscribed to settings changes: " + (module is IPowerToysModuleSettingsChangedSubscriber));
+
+                        Console.WriteLine("-----------------------------");
+                    }
+
+                    break;
+#endif
             }
         }
     }

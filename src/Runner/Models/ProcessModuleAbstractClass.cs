@@ -96,6 +96,11 @@ namespace RunnerV2.Models
         /// </summary>
         public abstract ProcessLaunchOptions LaunchOptions { get; }
 
+        public bool IsProcessRunning()
+        {
+            return Process.GetProcessesByName(ProcessName).Length > 0;
+        }
+
         /// <summary>
         /// Ensures that atleast one process is launched. If the process is already running, does nothing.
         /// </summary>

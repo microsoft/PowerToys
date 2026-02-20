@@ -5809,4 +5809,7 @@ Text uses the current drawing color.</value>
   <data name="ZoomIt_Type_DemoSample.Text" xml:space="preserve">
     <value>Sample</value>
   </data>
+  <data name="Default_language" xml:space="preserve">
+    <value>Default</value>
+  </data>
 </root>

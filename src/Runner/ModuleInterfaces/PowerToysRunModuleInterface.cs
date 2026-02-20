@@ -12,7 +12,7 @@ using RunnerV2.Models;
 
 namespace RunnerV2.ModuleInterfaces
 {
-    internal sealed class PowerToysRunModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleShortcutsProvider
+    internal sealed class PowerToysRunModuleInterface : ProcessModuleAbstractClass, IPowerToysModule, IPowerToysModuleShortcutsProvider, IPowerToysModuleSettingsChangedSubscriber
     {
         public string Name => "PowerToys Run";
 
@@ -38,9 +38,15 @@ namespace RunnerV2.ModuleInterfaces
         {
         }
 
+        public void OnSettingsChanged()
+        {
+            using var settingsChangedEvent = new System.Threading.EventWaitHandle(false, System.Threading.EventResetMode.AutoReset, Constants.RunSendSettingsTelemetryEvent());
+            settingsChangedEvent.Set();
+        }
+
         public List<(HotkeySettings Hotkey, Action Action)> Shortcuts =>
         [
-            (
+            /*(
                 SettingsUtils.Default.GetSettings<PowerLauncherSettings>(Name).Properties.OpenPowerLauncher,
                 () =>
                 {
@@ -48,7 +54,7 @@ namespace RunnerV2.ModuleInterfaces
                     using var invokeRunEvent = new System.Threading.EventWaitHandle(false, System.Threading.EventResetMode.AutoReset, Constants.PowerLauncherCentralizedHookSharedEvent());
                     invokeRunEvent.Set();
                 }
-            ),
+            ),*/
         ];
     }
 }

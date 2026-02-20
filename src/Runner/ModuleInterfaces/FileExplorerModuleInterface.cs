@@ -224,7 +224,6 @@ namespace RunnerV2.ModuleInterfaces
                     string kindPath = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\KindMap";
                     changes.Add(new RegistryValueChange
                     {
-                        Scope = Microsoft.Win32.RegistryHive.LocalMachine,
                         KeyPath = kindPath,
                         KeyName = fileType,
                         Value = fileKindType,
@@ -276,7 +275,6 @@ namespace RunnerV2.ModuleInterfaces
 
             changes.Add(new RegistryValueChange
             {
-                Scope = Microsoft.Win32.RegistryHive.LocalMachine,
                 KeyPath = "Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved",
                 KeyName = handlerClsid,
                 Value = displayName,

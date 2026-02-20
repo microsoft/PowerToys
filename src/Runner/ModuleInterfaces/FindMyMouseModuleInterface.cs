@@ -33,14 +33,20 @@ namespace RunnerV2.ModuleInterfaces
 
             var thread = new Thread(() =>
             {
-                uint version = 0x00010008;
-                int hr = MddBootstrapInitialize(version, 0, IntPtr.Zero);
-                if (hr < 0)
+                try
                 {
-                    throw new InvalidOperationException($"Windows app sdk could not be initialized for MouseJump. HR code:{hr}");
-                }
+                    uint version = 0x00010008;
+                    int hr = MddBootstrapInitialize(version, 0, IntPtr.Zero);
+                    if (hr < 0)
+                    {
+                        throw new InvalidOperationException($"Windows app sdk could not be initialized for MouseJump. HR code:{hr}");
+                    }
 
-                FindMyMouseMain();
+                    FindMyMouseMain();
+                }
+                catch
+                {
+                }
             });
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();

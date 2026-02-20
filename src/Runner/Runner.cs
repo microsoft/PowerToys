@@ -30,6 +30,8 @@ namespace RunnerV2
         /// </summary>
         public static nint RunnerHwnd { get; private set; }
 
+        public static bool DebbugingLogUncaughtExceptions { get; set; }
+
         public const string TrayWindowClassName = "pt_tray_icon_window_class";
 
         /// <summary>
@@ -142,6 +144,10 @@ namespace RunnerV2
                 catch (Exception e)
                 {
                     Logger.LogError("Uncaught error in message loop: ", e);
+                    if (DebbugingLogUncaughtExceptions)
+                    {
+                        Console.WriteLine("Uncaught error in message loop: " + e.Message + "\n" + e.StackTrace);
+                    }
                 }
 
                 // Supress duplicate handling of HOTKEY messages
@@ -157,6 +163,10 @@ namespace RunnerV2
                 catch (Exception e)
                 {
                     Logger.LogError("Uncaught error in message handling: ", e);
+                    if (DebbugingLogUncaughtExceptions)
+                    {
+                        Console.WriteLine("Uncaught error in message loop: " + e.Message + "\n" + e.StackTrace);
+                    }
                 }
             }
 
@@ -321,6 +331,8 @@ namespace RunnerV2
             }
         }
 
+        private static bool _trayMenuCommandProcessed;
+
         /// <summary>
         /// Handles Windows messages sent to the tray window.
         /// </summary>
@@ -332,6 +344,13 @@ namespace RunnerV2
                     TrayIconManager.ProcessTrayIconMessage(lParam);
                     break;
                 case (uint)WindowMessages.COMMAND:
+                    if (_trayMenuCommandProcessed)
+                    {
+                        _trayMenuCommandProcessed = false;
+                        break;
+                    }
+
+                    _trayMenuCommandProcessed = true;
                     TrayIconManager.ProcessTrayMenuCommand((nuint)wParam);
                     break;
                 case (uint)WindowMessages.WINDOWPOSCHANGING:

@@ -52,6 +52,9 @@ namespace RunnerV2
         [LibraryImport("user32.dll", SetLastError = true)]
         internal static partial IntPtr CreatePopupMenu();
 
+        [LibraryImport("user32.dll", SetLastError = true)]
+        internal static partial IntPtr CreateMenu();
+
         [LibraryImport("user32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
         internal static partial IntPtr FindWindowW(string lpClassName, string lpWindowName);
 
@@ -342,5 +345,12 @@ namespace RunnerV2
             [MarshalAs(UnmanagedType.LPWStr)]
             public string lpDisplayName;
         }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AllocConsole();
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+        internal static extern IntPtr CallNextHookEx(IntPtr idHook, int nCode, IntPtr wParam, IntPtr lParam);
     }
 }

@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.System;
@@ -12,7 +14,11 @@ namespace RunnerV2.Helpers
 {
     internal static class CentralizedKeyboardHookManager
     {
-        private static readonly UIntPtr _ignoreKeyEventFlag = 0x5555;
+        private static readonly UIntPtr _ignoreKeyEventFlag = 0x5556;
+
+        public static bool DebugConsole { get => _debugConsole; set => _debugConsole = value; }
+
+        private static volatile bool _debugConsole;
 
         public static OrderedDictionary<string, List<(HotkeySettings HotkeySettings, Action Action)>> KeyboardHooks { get; } = [];
 
@@ -20,6 +26,11 @@ namespace RunnerV2.Helpers
 
         private static void OnKeyDown(int key)
         {
+            if (_debugConsole)
+            {
+                Console.WriteLine($"Key down: {(VirtualKey)key}, Ctrl: {_ctrlState}, Alt: {_altState}, Shift: {_shiftState}, Win: {_winState}");
+            }
+
             if ((VirtualKey)key == VirtualKey.RightMenu && _ctrlState)
             {
                 _ctrlAltState = true;
@@ -63,10 +74,19 @@ namespace RunnerV2.Helpers
             }
 
             SendSingleKeyboardInput((short)key, (uint)NativeKeyboardHelper.KeyEventF.KeyDown);
+            if (_debugConsole)
+            {
+                Console.WriteLine($"Key down send: {(VirtualKey)key}, Ctrl: {_ctrlState}, Alt: {_altState}, Shift: {_shiftState}, Win: {_winState}");
+            }
         }
 
         private static void OnKeyUp(int key)
         {
+            if (_debugConsole)
+            {
+                Console.WriteLine($"Key up: {(VirtualKey)key}, Ctrl: {_ctrlState}, Alt: {_altState}, Shift: {_shiftState}, Win: {_winState}");
+            }
+
             switch ((VirtualKey)key)
             {
                 case VirtualKey.Control:
@@ -100,6 +120,10 @@ namespace RunnerV2.Helpers
             }
 
             SendSingleKeyboardInput((short)key, (uint)NativeKeyboardHelper.KeyEventF.KeyUp);
+            if (_debugConsole)
+            {
+                Console.WriteLine($"Key up send: {(VirtualKey)key}, Ctrl: {_ctrlState}, Alt: {_altState}, Shift: {_shiftState}, Win: {_winState}");
+            }
         }
 
         private static bool _ctrlState;
@@ -206,10 +230,6 @@ namespace RunnerV2.Helpers
                 0x24 => true, // VK_HOME
                 0x21 => true, // VK_PRIOR (Page Up)
                 0x22 => true, // VK_NEXT (Page Down)
-                0x25 => true, // VK_LEFT
-                0x26 => true, // VK_UP
-                0x27 => true, // VK_RIGHT
-                0x28 => true, // VK_DOWN
                 0x90 => true, // VK_NUMLOCK
                 _ => false,
             };

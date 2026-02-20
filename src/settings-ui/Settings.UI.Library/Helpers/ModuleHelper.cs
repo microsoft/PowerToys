@@ -188,6 +188,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 MouseWithoutBordersSettings.ModuleName => ModuleType.MouseWithoutBorders,
                 NewPlusSettings.ModuleName => ModuleType.NewPlus,
                 PeekSettings.ModuleName => ModuleType.Peek,
+                PowerDisplaySettings.ModuleName => ModuleType.PowerDisplay,
                 PowerRenameSettings.ModuleName => ModuleType.PowerRename,
                 PowerLauncherSettings.ModuleName => ModuleType.PowerLauncher,
                 PowerAccentSettings.ModuleName => ModuleType.PowerAccent,
