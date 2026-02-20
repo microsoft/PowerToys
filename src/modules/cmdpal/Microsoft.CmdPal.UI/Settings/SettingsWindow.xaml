@@ -34,6 +34,13 @@
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="ms-appx:///Assets/icon.svg" />
             </TitleBar.IconSource>
+            <TitleBar.Content>
+                <!--
+                    Workaround: Provide empty Content to ensure the title bar is tall.
+                    If Content is not set the preferred title bar height is not respected.
+                -->
+                <Border />
+            </TitleBar.Content>
         </TitleBar>
         <NavigationView
             x:Name="NavView"
