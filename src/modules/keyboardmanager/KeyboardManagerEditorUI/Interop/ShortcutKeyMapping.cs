@@ -36,6 +36,8 @@ namespace KeyboardManagerEditorUI.Interop
 
         public string UriToOpen { get; set; } = string.Empty;
 
+        public string TargetMouseButton { get; set; } = string.Empty;
+
         public enum ElevationLevel
         {
             NonElevated = 0,
@@ -79,7 +81,8 @@ namespace KeyboardManagerEditorUI.Interop
                    Elevation == other.Elevation &&
                    IfRunningAction == other.IfRunningAction &&
                    Visibility == other.Visibility &&
-                   UriToOpen == other.UriToOpen;
+                   UriToOpen == other.UriToOpen &&
+                   TargetMouseButton == other.TargetMouseButton;
         }
 
         public override int GetHashCode()
@@ -97,6 +100,7 @@ namespace KeyboardManagerEditorUI.Interop
             hash.Add(IfRunningAction);
             hash.Add(Visibility);
             hash.Add(UriToOpen);
+            hash.Add(TargetMouseButton);
             return hash.ToHashCode();
         }
     }

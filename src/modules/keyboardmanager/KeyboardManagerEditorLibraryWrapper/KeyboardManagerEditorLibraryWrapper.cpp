@@ -709,6 +709,381 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
         return false;
     }
+
+    // Mouse Button Remap Functions
+    int GetMouseButtonRemapCount(void* config)
+    {
+        auto mapping = static_cast<MappingConfiguration*>(config);
+        int count = static_cast<int>(mapping->mouseButtonReMap.size());
+
+        for (const auto& appMap : mapping->appSpecificMouseButtonReMap)
+        {
+            count += static_cast<int>(appMap.second.size());
+        }
+
+        return count;
+    }
+
+    bool GetMouseButtonRemap(void* config, int index, MouseButtonMapping* mapping)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        std::vector<std::tuple<MouseButton, KeyShortcutTextUnion, std::wstring>> allMappings;
+
+        // Collect global mouse button remaps
+        for (const auto& kv : mappingConfig->mouseButtonReMap)
+        {
+            allMappings.push_back(std::make_tuple(kv.first, kv.second, L""));
+        }
+
+        // Collect app-specific mouse button remaps
+        for (const auto& appKv : mappingConfig->appSpecificMouseButtonReMap)
+        {
+            for (const auto& buttonKv : appKv.second)
+            {
+                allMappings.push_back(std::make_tuple(buttonKv.first, buttonKv.second, appKv.first));
+            }
+        }
+
+        if (index < 0 || index >= static_cast<int>(allMappings.size()))
+        {
+            return false;
+        }
+
+        const auto& [origButton, target, app] = allMappings[index];
+
+        mapping->originalButton = static_cast<int>(origButton);
+        mapping->targetApp = AllocateAndCopyString(app);
+
+        // Handle different target types
+        if (target.index() == 0) // Single key (DWORD)
+        {
+            DWORD targetKey = std::get<DWORD>(target);
+            mapping->targetKeys = AllocateAndCopyString(std::to_wstring(targetKey));
+            mapping->targetType = 0; // Key
+            mapping->targetText = AllocateAndCopyString(L"");
+            mapping->programPath = AllocateAndCopyString(L"");
+            mapping->programArgs = AllocateAndCopyString(L"");
+            mapping->uriToOpen = AllocateAndCopyString(L"");
+        }
+        else if (target.index() == 1) // Shortcut
+        {
+            Shortcut targetShortcut = std::get<Shortcut>(target);
+            std::wstring targetKeysStr = targetShortcut.ToHstringVK().c_str();
+
+            if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
+            {
+                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetType = 3; // RunProgram
+                mapping->targetText = AllocateAndCopyString(L"");
+                mapping->programPath = AllocateAndCopyString(targetShortcut.runProgramFilePath);
+                mapping->programArgs = AllocateAndCopyString(targetShortcut.runProgramArgs);
+                mapping->uriToOpen = AllocateAndCopyString(L"");
+            }
+            else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
+            {
+                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetType = 4; // OpenUri
+                mapping->targetText = AllocateAndCopyString(L"");
+                mapping->programPath = AllocateAndCopyString(L"");
+                mapping->programArgs = AllocateAndCopyString(L"");
+                mapping->uriToOpen = AllocateAndCopyString(targetShortcut.uriToOpen);
+            }
+            else
+            {
+                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetType = 1; // Shortcut
+                mapping->targetText = AllocateAndCopyString(L"");
+                mapping->programPath = AllocateAndCopyString(L"");
+                mapping->programArgs = AllocateAndCopyString(L"");
+                mapping->uriToOpen = AllocateAndCopyString(L"");
+            }
+        }
+        else if (target.index() == 2) // Text (std::wstring)
+        {
+            std::wstring text = std::get<std::wstring>(target);
+            mapping->targetKeys = AllocateAndCopyString(L"");
+            mapping->targetType = 2; // Text
+            mapping->targetText = AllocateAndCopyString(text);
+            mapping->programPath = AllocateAndCopyString(L"");
+            mapping->programArgs = AllocateAndCopyString(L"");
+            mapping->uriToOpen = AllocateAndCopyString(L"");
+        }
+
+        return true;
+    }
+
+    bool AddMouseButtonRemap(void* config, int originalButton, const wchar_t* targetKeys, const wchar_t* targetApp, int targetType, const wchar_t* targetText, const wchar_t* programPath, const wchar_t* programArgs, const wchar_t* uriToOpen)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        // Validate mouse button range (0=Left through 6=ScrollDown)
+        if (originalButton < 0 || originalButton > static_cast<int>(MouseButton::ScrollDown))
+        {
+            return false;
+        }
+
+        MouseButton button = static_cast<MouseButton>(originalButton);
+        std::wstring app(targetApp ? targetApp : L"");
+        KeyShortcutTextUnion target;
+
+        switch (targetType)
+        {
+        case 0: // Single key
+            if (!targetKeys || targetKeys[0] == L'\0')
+            {
+                return false;
+            }
+            target = static_cast<DWORD>(_wtoi(targetKeys));
+            break;
+        case 1: // Shortcut
+            if (!targetKeys || targetKeys[0] == L'\0')
+            {
+                return false;
+            }
+            target = Shortcut(targetKeys);
+            break;
+        case 2: // Text
+            if (!targetText || targetText[0] == L'\0')
+            {
+                return false;
+            }
+            target = std::wstring(targetText);
+            break;
+        case 3: // RunProgram
+            if (!programPath || programPath[0] == L'\0')
+            {
+                return false;
+            }
+            {
+                Shortcut shortcut;
+                shortcut.operationType = Shortcut::OperationType::RunProgram;
+                shortcut.runProgramFilePath = std::wstring(programPath);
+                shortcut.runProgramArgs = programArgs ? std::wstring(programArgs) : L"";
+                target = shortcut;
+            }
+            break;
+        case 4: // OpenUri
+            if (!uriToOpen || uriToOpen[0] == L'\0')
+            {
+                return false;
+            }
+            {
+                Shortcut shortcut;
+                shortcut.operationType = Shortcut::OperationType::OpenURI;
+                shortcut.uriToOpen = std::wstring(uriToOpen);
+                target = shortcut;
+            }
+            break;
+        default:
+            return false;
+        }
+
+        if (app.empty())
+        {
+            return mappingConfig->AddMouseButtonRemap(button, target);
+        }
+        else
+        {
+            return mappingConfig->AddAppSpecificMouseButtonRemap(app, button, target);
+        }
+    }
+
+    bool DeleteMouseButtonRemap(void* config, int originalButton, const wchar_t* targetApp)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        // Validate mouse button range (0=Left through 6=ScrollDown)
+        if (originalButton < 0 || originalButton > static_cast<int>(MouseButton::ScrollDown))
+        {
+            return false;
+        }
+
+        MouseButton button = static_cast<MouseButton>(originalButton);
+        std::wstring app(targetApp ? targetApp : L"");
+
+        if (app.empty())
+        {
+            auto it = mappingConfig->mouseButtonReMap.find(button);
+            if (it != mappingConfig->mouseButtonReMap.end())
+            {
+                mappingConfig->mouseButtonReMap.erase(it);
+                return true;
+            }
+        }
+        else
+        {
+            // Convert app name to lower case for lookup
+            std::wstring process_name;
+            process_name.resize(app.length());
+            std::transform(app.begin(), app.end(), process_name.begin(), towlower);
+
+            auto appIt = mappingConfig->appSpecificMouseButtonReMap.find(process_name);
+            if (appIt != mappingConfig->appSpecificMouseButtonReMap.end())
+            {
+                auto buttonIt = appIt->second.find(button);
+                if (buttonIt != appIt->second.end())
+                {
+                    appIt->second.erase(buttonIt);
+                    if (appIt->second.empty())
+                    {
+                        mappingConfig->appSpecificMouseButtonReMap.erase(appIt);
+                    }
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // Key to Mouse Remap Functions
+    int GetKeyToMouseRemapCount(void* config)
+    {
+        auto mapping = static_cast<MappingConfiguration*>(config);
+        int count = static_cast<int>(mapping->keyToMouseReMap.size());
+
+        for (const auto& appMap : mapping->appSpecificKeyToMouseReMap)
+        {
+            count += static_cast<int>(appMap.second.size());
+        }
+
+        return count;
+    }
+
+    bool GetKeyToMouseRemap(void* config, int index, KeyToMouseMapping* mapping)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        std::vector<std::tuple<DWORD, MouseButton, std::wstring>> allMappings;
+
+        // Collect global key to mouse remaps
+        for (const auto& kv : mappingConfig->keyToMouseReMap)
+        {
+            allMappings.push_back(std::make_tuple(kv.first, kv.second, L""));
+        }
+
+        // Collect app-specific key to mouse remaps
+        for (const auto& appKv : mappingConfig->appSpecificKeyToMouseReMap)
+        {
+            for (const auto& keyKv : appKv.second)
+            {
+                allMappings.push_back(std::make_tuple(keyKv.first, keyKv.second, appKv.first));
+            }
+        }
+
+        if (index < 0 || index >= static_cast<int>(allMappings.size()))
+        {
+            return false;
+        }
+
+        const auto& [origKey, targetButton, app] = allMappings[index];
+
+        mapping->originalKey = static_cast<int>(origKey);
+        mapping->targetMouseButton = static_cast<int>(targetButton);
+        mapping->targetApp = AllocateAndCopyString(app);
+
+        return true;
+    }
+
+    bool AddKeyToMouseRemap(void* config, int originalKey, int targetMouseButton, const wchar_t* targetApp)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        // Validate mouse button range (0=Left through 6=ScrollDown)
+        if (targetMouseButton < 0 || targetMouseButton > static_cast<int>(MouseButton::ScrollDown))
+        {
+            return false;
+        }
+
+        DWORD key = static_cast<DWORD>(originalKey);
+        MouseButton button = static_cast<MouseButton>(targetMouseButton);
+        std::wstring app(targetApp ? targetApp : L"");
+
+        if (app.empty())
+        {
+            return mappingConfig->AddKeyToMouseRemap(key, button);
+        }
+        else
+        {
+            return mappingConfig->AddAppSpecificKeyToMouseRemap(app, key, button);
+        }
+    }
+
+    bool DeleteKeyToMouseRemap(void* config, int originalKey, const wchar_t* targetApp)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+        DWORD key = static_cast<DWORD>(originalKey);
+        std::wstring app(targetApp ? targetApp : L"");
+
+        if (app.empty())
+        {
+            auto it = mappingConfig->keyToMouseReMap.find(key);
+            if (it != mappingConfig->keyToMouseReMap.end())
+            {
+                mappingConfig->keyToMouseReMap.erase(it);
+                return true;
+            }
+        }
+        else
+        {
+            // Convert app name to lower case for lookup
+            std::wstring process_name;
+            process_name.resize(app.length());
+            std::transform(app.begin(), app.end(), process_name.begin(), towlower);
+
+            auto appIt = mappingConfig->appSpecificKeyToMouseReMap.find(process_name);
+            if (appIt != mappingConfig->appSpecificKeyToMouseReMap.end())
+            {
+                auto keyIt = appIt->second.find(key);
+                if (keyIt != appIt->second.end())
+                {
+                    appIt->second.erase(keyIt);
+                    if (appIt->second.empty())
+                    {
+                        mappingConfig->appSpecificKeyToMouseReMap.erase(appIt);
+                    }
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // Mouse Button Utility Functions
+    void GetMouseButtonName(int buttonCode, wchar_t* buttonName, int maxCount)
+    {
+        if (buttonName == nullptr || maxCount <= 0)
+        {
+            return;
+        }
+
+        // Validate mouse button range (0=Left through 6=ScrollDown)
+        if (buttonCode < 0 || buttonCode > static_cast<int>(MouseButton::ScrollDown))
+        {
+            wcsncpy_s(buttonName, maxCount, L"Unknown", _TRUNCATE);
+            return;
+        }
+
+        std::wstring name = MouseButtonHelpers::GetMouseButtonName(static_cast<MouseButton>(buttonCode));
+        wcsncpy_s(buttonName, maxCount, name.c_str(), _TRUNCATE);
+    }
+
+    int GetMouseButtonFromName(const wchar_t* buttonName)
+    {
+        if (buttonName == nullptr)
+        {
+            return -1;
+        }
+
+        auto result = MouseButtonHelpers::MouseButtonFromString(buttonName);
+        if (result.has_value())
+        {
+            return static_cast<int>(result.value());
+        }
+        return -1;
+    }
 }
 
 // Get the list of keyboard keys in Editor

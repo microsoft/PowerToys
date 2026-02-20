@@ -96,4 +96,29 @@ namespace KeyboardManagerConstants
 
     // String constant to represent no activated application in app-specific shortcuts
     inline const std::wstring NoActivatedApp = L"";
+
+    // Name of the property used to store mouse button remaps
+    inline const std::wstring RemapMouseButtonsSettingName = L"remapMouseButtons";
+
+    // Name of the property used to store the original mouse button
+    inline const std::wstring OriginalMouseButtonSettingName = L"originalButton";
+
+    // Name of the property used to store key to mouse remaps
+    inline const std::wstring RemapKeysToMouseSettingName = L"remapKeysToMouse";
+
+    // Name of the property used to store the target mouse button
+    inline const std::wstring TargetMouseButtonSettingName = L"targetMouseButton";
+
+    // Name of the property used to store global (all apps) mouse remaps array
+    inline const std::wstring GlobalMouseRemapsSettingName = L"global";
+
+    // Name of the property used to store app-specific mouse remaps array
+    inline const std::wstring AppSpecificMouseRemapsSettingName = L"appSpecific";
+
+    // Flag used for distinguishing mouse events sent by Keyboard Manager
+    inline constexpr ULONG_PTR KEYBOARDMANAGER_MOUSE_FLAG = 0x1011;
+
+    // Scroll wheel rate limiting: minimum milliseconds between scroll remap triggers
+    // This prevents infinite scroll wheels from aggressively repeating remapped actions
+    inline const int SCROLL_WHEEL_DEBOUNCE_MS = 100;
 }

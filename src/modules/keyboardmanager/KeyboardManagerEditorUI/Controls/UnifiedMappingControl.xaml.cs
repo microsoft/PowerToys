@@ -77,17 +77,6 @@ namespace KeyboardManagerEditorUI.Controls
             MouseClick,
         }
 
-        /// <summary>
-        /// Defines the mouse button options.
-        /// </summary>
-        public enum MouseButton
-        {
-            LeftMouse,
-            RightMouse,
-            ScrollUp,
-            ScrollDown,
-        }
-
         #endregion
 
         #region Properties
@@ -191,6 +180,41 @@ namespace KeyboardManagerEditorUI.Controls
                 {
                     CleanupKeyboardHook();
                     UncheckAllToggleButtons();
+
+                    // Hide MouseClick action option - can't map mouse to mouse
+                    SetMouseClickActionVisibility(false);
+                }
+                else
+                {
+                    // Show MouseClick action option for keyboard triggers
+                    SetMouseClickActionVisibility(true);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Shows or hides the MouseClick action option in the ActionTypeComboBox.
+        /// </summary>
+        private void SetMouseClickActionVisibility(bool visible)
+        {
+            if (ActionTypeComboBox == null)
+            {
+                return;
+            }
+
+            foreach (var comboItem in ActionTypeComboBox.Items)
+            {
+                if (comboItem is ComboBoxItem cbi && cbi.Tag?.ToString() == "MouseClick")
+                {
+                    cbi.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+
+                    // If currently selected and hiding, switch to KeyOrShortcut
+                    if (!visible && ActionTypeComboBox.SelectedItem == (object)cbi)
+                    {
+                        ActionTypeComboBox.SelectedIndex = 0;
+                    }
+
+                    break;
                 }
             }
         }
@@ -468,20 +492,28 @@ namespace KeyboardManagerEditorUI.Controls
         public List<string> GetActionKeys() => _actionKeys.ToList();
 
         /// <summary>
-        /// Gets the selected mouse trigger.
+        /// Gets the selected mouse trigger button code.
         /// </summary>
-        public MouseButton? GetMouseTrigger()
+        public int? GetMouseTriggerButtonCode()
         {
-            if (MouseTriggerComboBox?.SelectedItem is ComboBoxItem item)
+            if (MouseTriggerComboBox?.SelectedItem is ComboBoxItem item &&
+                int.TryParse(item.Tag?.ToString(), out int buttonCode))
             {
-                return item.Tag?.ToString() switch
-                {
-                    "LeftMouse" => MouseButton.LeftMouse,
-                    "RightMouse" => MouseButton.RightMouse,
-                    "ScrollUp" => MouseButton.ScrollUp,
-                    "ScrollDown" => MouseButton.ScrollDown,
-                    _ => null,
-                };
+                return buttonCode;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the selected mouse action button code (for MouseClick action type).
+        /// </summary>
+        public int? GetMouseActionButtonCode()
+        {
+            if (MouseActionComboBox?.SelectedItem is ComboBoxItem item &&
+                int.TryParse(item.Tag?.ToString(), out int buttonCode))
+            {
+                return buttonCode;
             }
 
             return null;
@@ -552,10 +584,22 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public bool IsInputComplete()
         {
-            // Trigger keys are always required
-            if (_triggerKeys.Count == 0)
+            // Trigger validation depends on trigger type
+            if (CurrentTriggerType == TriggerType.Mouse)
             {
-                return false;
+                // Mouse triggers use a ComboBox, not _triggerKeys
+                if (GetMouseTriggerButtonCode() == null)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // Keyboard triggers require at least one key
+                if (_triggerKeys.Count == 0)
+                {
+                    return false;
+                }
             }
 
             return CurrentActionType switch
@@ -564,6 +608,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.Text => !string.IsNullOrWhiteSpace(TextContentBox?.Text),
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
+                ActionType.MouseClick => GetMouseActionButtonCode() != null,
                 _ => false,
             };
         }
@@ -571,6 +616,43 @@ namespace KeyboardManagerEditorUI.Controls
         #endregion
 
         #region Public API - Setters
+
+        /// <summary>
+        /// Sets the trigger type (keyboard or mouse).
+        /// </summary>
+        public void SetTriggerType(TriggerType triggerType)
+        {
+            if (TriggerTypeComboBox != null)
+            {
+                TriggerTypeComboBox.SelectedIndex = triggerType switch
+                {
+                    TriggerType.Mouse => 1,
+                    _ => 0,
+                };
+            }
+        }
+
+        /// <summary>
+        /// Sets the selected mouse trigger button by button code (0-6 matching MouseButtonCode enum).
+        /// </summary>
+        public void SetMouseTriggerButton(int buttonCode)
+        {
+            if (MouseTriggerComboBox == null)
+            {
+                return;
+            }
+
+            foreach (var item in MouseTriggerComboBox.Items)
+            {
+                if (item is ComboBoxItem comboItem &&
+                    int.TryParse(comboItem.Tag?.ToString(), out int code) &&
+                    code == buttonCode)
+                {
+                    MouseTriggerComboBox.SelectedItem = comboItem;
+                    return;
+                }
+            }
+        }
 
         /// <summary>
         /// Sets the trigger keys.

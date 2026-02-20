@@ -117,4 +117,405 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="RemappingsPageApplicableAppsTextBlock.Text" xml:space="preserve">
+    <value>Applicable apps</value>
+  </data>
+  <data name="RemappingsPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete app shortcut</value>
+  </data>
+  <data name="RemappingsPageKeyDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="RemappingsPageKeyDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="RemappingsPageKeyDialog.Title" xml:space="preserve">
+    <value>Remappings</value>
+  </data>
+  <data name="RemappingsPageInstructionTextBlock.Text" xml:space="preserve">
+    <value>Remappings allow you to reconfigure a single key or shortcut to a new key or shortcut</value>
+  </data>
+  <data name="RemappingsPageNewTextBlock.Text" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="RemappingsPageOriginalKeysTextBlock.Text" xml:space="preserve">
+    <value>Original key(s)</value>
+  </data>
+  <data name="RemappingsPageOrphanedKeysTeachingTip.ActionButtonContent" xml:space="preserve">
+    <value>Continue anyway</value>
+  </data>
+  <data name="RemappingsPageOrphanedKeysTeachingTip.CloseButtonContent" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="RemappingsPageOrphanedKeysTeachingTip.Title" xml:space="preserve">
+    <value>Orphaned Keys Warning</value>
+  </data>
+  <data name="RemappingsPageValidationTeachingTip.CloseButtonContent" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="RemappingsPageNewKeysTextBlock.Text" xml:space="preserve">
+    <value>New key(s)</value>
+  </data>
+  <data name="TextPageInstructionTextBlock.Text" xml:space="preserve">
+    <value>Text shortcuts allow you to insert text in any input field when you use the configured keyboard shortcut</value>
+  </data>
+  <data name="TextPageNewTextBlock.Text" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="TextPageOriginalKeysTextBlock.Text" xml:space="preserve">
+    <value>Original key(s)</value>
+  </data>
+  <data name="TextPageApplicableAppsTextBlock.Text" xml:space="preserve">
+    <value>Applicable apps</value>
+  </data>
+  <data name="TextPageTextTextBlock.Text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="TextPageKeyDialog.Title" xml:space="preserve">
+    <value>Text shortcut</value>
+  </data>
+  <data name="TextPageKeyDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="TextPageKeyDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TextPageValidationTip.CloseButtonContent" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ProgramsPageInstructionTextBlock.Text" xml:space="preserve">
+    <value>Program shortcuts allow you to open specific applications when you use the configured shortcut</value>
+  </data>
+  <data name="ProgramsPageKeyDialog.Title" xml:space="preserve">
+    <value>New program shortcut</value>
+  </data>
+  <data name="AppPageInputControlExampleTextBox.Header" xml:space="preserve">
+    <value>Program</value>
+  </data>
+  <data name="ProgramsPageNewTextBlock.Text" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="ProgramsPageShortcutTextBlock.Text" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="ProgramsPageProgramsTextBlock.Text" xml:space="preserve">
+    <value>Program</value>
+  </data>
+  <data name="ProgramsPageArgumentsRun.Text" xml:space="preserve">
+    <value>Arguments</value>
+  </data>
+  <data name="ProgramsPageKeyDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ProgramsPageKeyDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="UrlPageInstructionTextBlock.Text" xml:space="preserve">
+    <value>URL shortcuts allow you to open a URL when you use the configured shortcut</value>
+  </data>
+  <data name="UrlPageNewTextBlock.Text" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="UrlPageUrlTextBlock.Text" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="UrlPageShortcutTextBlock.Text" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="UrlPageKeyDialog.Title" xml:space="preserve">
+    <value>New URL shortcut</value>
+  </data>
+  <data name="UrlPageKeyDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="UrlPageKeyDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="InputControlOriginalKeysTextBlock.Text" xml:space="preserve">
+    <value>Original key(s)</value>
+  </data>
+  <data name="InputControlNewKeysTextBlock.Text" xml:space="preserve">
+    <value>New key(s)</value>
+  </data>
+  <data name="InputControlAllAppsCheckBox.Content" xml:space="preserve">
+    <value>Only apply this remapping to a specific application</value>
+  </data>
+  <data name="InputControlAllAppsTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g.: outlook.exe</value>
+  </data>
+  <data name="InputControlAllAppsTextBox.Header" xml:space="preserve">
+    <value>Application name</value>
+  </data>
+  <data name="TextPageInputControlShortcutKeysTextBlock.Text" xml:space="preserve">
+    <value>Shortcut key(s)</value>
+  </data>
+  <data name="TextPageInputControlTextContentTextBox.PlaceholderText" xml:space="preserve">
+    <value>Enter text that will be inserted when the shortcut is pressed</value>
+  </data>
+  <data name="TextPageInputControlTextContentTextBox.Header" xml:space="preserve">
+    <value>Text to insert</value>
+  </data>
+  <data name="TextPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="TextPageInputControlAllAppsCheckBox.Content" xml:space="preserve">
+    <value>Only apply this remapping to a specific application</value>
+  </data>
+  <data name="TextPageInputControlAllAppsTextBox.Header" xml:space="preserve">
+    <value>Application name</value>
+  </data>
+  <data name="TextPageInputControlAllAppsTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g.: outlook.exe</value>
+  </data>
+  <data name="ProgramsPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete remapping</value>
+  </data>
+  <data name="AppPageInputControlShortcutTextBlock.Text" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="AppPageInputControlPathSelectButton.Content" xml:space="preserve">
+    <value>Select Program</value>
+  </data>
+  <data name="AppPageInputControlArgumentsTextBox.Header" xml:space="preserve">
+    <value>Arguments</value>
+  </data>
+  <data name="AppPageInputControlStartInTextBox.Header" xml:space="preserve">
+    <value>Start in</value>
+  </data>
+  <data name="AppPageInputControlStartInSelectButton.Content" xml:space="preserve">
+    <value>Select directory</value>
+  </data>
+  <data name="AppPageInputControlElevationComboBox.Header" xml:space="preserve">
+    <value>Elevation</value>
+  </data>
+  <data name="AppPageInputControlIfRunningComboBox.Header" xml:space="preserve">
+    <value>If running action</value>
+  </data>
+  <data name="AppPageInputControlVisibilityComboBox.Header" xml:space="preserve">
+    <value>Visibility</value>
+  </data>
+  <data name="UrlPageDeleteButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete URL remapping</value>
+  </data>
+  <data name="UrlPageInputControlShortcutTextBlock.Text" xml:space="preserve">
+    <value>Shortcut key(s)</value>
+  </data>
+  <data name="UrlPageInputControlToOpenTextBox.Header" xml:space="preserve">
+    <value>URL to open</value>
+  </data>
+  <data name="UrlPageInputControlToOpenTextBox.PlaceholderText" xml:space="preserve">
+    <value>https://github.com/microsoft/PowerToys</value>
+  </data>
+  <data name="AppPageInputControlExtraOptionsTextBlock.Text" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <!-- Mouse Page Strings -->
+  <data name="MousePage_MouseToKeyPivot.Header" xml:space="preserve">
+    <value>Mouse → Key</value>
+  </data>
+  <data name="MousePage_KeyToMousePivot.Header" xml:space="preserve">
+    <value>Key → Mouse</value>
+  </data>
+  <data name="MousePage_MouseToKeyDescription.Text" xml:space="preserve">
+    <value>Remap mouse buttons to keyboard keys, shortcuts, text, programs, or URLs.</value>
+  </data>
+  <data name="MousePage_KeyToMouseDescription.Text" xml:space="preserve">
+    <value>Remap keyboard keys to simulate mouse button clicks.</value>
+  </data>
+  <data name="MousePage_AddRemappingButton.Text" xml:space="preserve">
+    <value>Add remapping</value>
+  </data>
+  <data name="MousePage_MouseButtonHeader.Text" xml:space="preserve">
+    <value>Mouse Button</value>
+  </data>
+  <data name="MousePage_ActionHeader.Text" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="MousePage_KeyHeader.Text" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="MousePage_DeleteMouseRemapping.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete mouse remapping</value>
+  </data>
+  <data name="MousePage_DeleteKeyToMouseRemapping.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete key to mouse remapping</value>
+  </data>
+  <data name="MousePage_MouseToKeyDialog.Title" xml:space="preserve">
+    <value>Mouse to Key Remapping</value>
+  </data>
+  <data name="MousePage_MouseToKeyDialog.PrimaryButtonText" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="MousePage_MouseToKeyDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="MousePage_MouseButtonComboBox.Header" xml:space="preserve">
+    <value>Mouse Button</value>
+  </data>
+  <data name="MousePage_TargetTypeComboBox.Header" xml:space="preserve">
+    <value>Target Type</value>
+  </data>
+  <data name="MousePage_TargetType_Key.Content" xml:space="preserve">
+    <value>Key</value>
+  </data>
+  <data name="MousePage_TargetType_Shortcut.Content" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="MousePage_TargetType_Text.Content" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="MousePage_TargetType_RunProgram.Content" xml:space="preserve">
+    <value>Run Program</value>
+  </data>
+  <data name="MousePage_TargetType_OpenUrl.Content" xml:space="preserve">
+    <value>Open URL</value>
+  </data>
+  <data name="MousePage_PressKeyToCapture.Text" xml:space="preserve">
+    <value>Press a key to capture:</value>
+  </data>
+  <data name="MousePage_KeyInputTextBox.PlaceholderText" xml:space="preserve">
+    <value>Click and press a key</value>
+  </data>
+  <data name="MousePage_ShortcutCodesLabel.Text" xml:space="preserve">
+    <value>Enter shortcut key codes (semicolon-separated):</value>
+  </data>
+  <data name="MousePage_ShortcutInputTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g., 162;67 for Ctrl+C</value>
+  </data>
+  <data name="MousePage_TextToTypeLabel.Text" xml:space="preserve">
+    <value>Text to type:</value>
+  </data>
+  <data name="MousePage_TextInputTextBox.PlaceholderText" xml:space="preserve">
+    <value>Enter text to type</value>
+  </data>
+  <data name="MousePage_ProgramPathLabel.Text" xml:space="preserve">
+    <value>Program path:</value>
+  </data>
+  <data name="MousePage_ProgramPathTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g., notepad.exe</value>
+  </data>
+  <data name="MousePage_ProgramArgsLabel.Text" xml:space="preserve">
+    <value>Arguments (optional):</value>
+  </data>
+  <data name="MousePage_ProgramArgsTextBox.PlaceholderText" xml:space="preserve">
+    <value>Command line arguments</value>
+  </data>
+  <data name="MousePage_UrlToOpenLabel.Text" xml:space="preserve">
+    <value>URL to open:</value>
+  </data>
+  <data name="MousePage_UrlInputTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g., https://github.com</value>
+  </data>
+  <data name="MousePage_KeyToMouseDialog.Title" xml:space="preserve">
+    <value>Key to Mouse Remapping</value>
+  </data>
+  <data name="MousePage_KeyToMouseDialog.PrimaryButtonText" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="MousePage_KeyToMouseDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="MousePage_TargetMouseButtonComboBox.Header" xml:space="preserve">
+    <value>Target Mouse Button</value>
+  </data>
+  <data name="MousePage_MouseButton_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="MousePage_MouseButton_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="MousePage_MouseButton_Middle.Content" xml:space="preserve">
+    <value>Middle</value>
+  </data>
+  <data name="MousePage_MouseButton_X1.Content" xml:space="preserve">
+    <value>X1 (Back)</value>
+  </data>
+  <data name="MousePage_MouseButton_X2.Content" xml:space="preserve">
+    <value>X2 (Forward)</value>
+  </data>
+  <data name="MousePage_MouseButton_ScrollUp.Content" xml:space="preserve">
+    <value>Scroll Up</value>
+  </data>
+  <data name="MousePage_MouseButton_ScrollDown.Content" xml:space="preserve">
+    <value>Scroll Down</value>
+  </data>
+  <data name="MousePage_ValidationError.Title" xml:space="preserve">
+    <value>Validation Error</value>
+  </data>
+  <data name="MousePage_ValidationError.CloseButtonText" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="MousePage_AllAppsCheckBox.Content" xml:space="preserve">
+    <value>All apps</value>
+  </data>
+  <data name="MousePage_TargetAppTextBox.Header" xml:space="preserve">
+    <value>Target application</value>
+  </data>
+  <data name="MousePage_TargetAppTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g., notepad.exe</value>
+  </data>
+  <!-- UnifiedMappingControl Mouse Strings -->
+  <data name="UnifiedMappingControl_TriggerKeyOrShortcut.AutomationProperties.Name" xml:space="preserve">
+    <value>Key or shortcut</value>
+  </data>
+  <data name="UnifiedMappingControl_TriggerKeyOrShortcutText.Text" xml:space="preserve">
+    <value>Key or shortcut</value>
+  </data>
+  <data name="UnifiedMappingControl_TriggerMouseButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Mouse button</value>
+  </data>
+  <data name="UnifiedMappingControl_TriggerMouseButtonText.Text" xml:space="preserve">
+    <value>Mouse button</value>
+  </data>
+  <data name="UnifiedMappingControl_ActionMouseClick.AutomationProperties.Name" xml:space="preserve">
+    <value>Remap to mouse click</value>
+  </data>
+  <data name="UnifiedMappingControl_ActionMouseClickText.Text" xml:space="preserve">
+    <value>Remap to mouse click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionHeader.Text" xml:space="preserve">
+    <value>Select target mouse button</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerLeftClick.Content" xml:space="preserve">
+    <value>Left Click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerRightClick.Content" xml:space="preserve">
+    <value>Right Click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerMiddleClick.Content" xml:space="preserve">
+    <value>Middle Click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerX1Back.Content" xml:space="preserve">
+    <value>X1 (Back)</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerX2Forward.Content" xml:space="preserve">
+    <value>X2 (Forward)</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerScrollUp.Content" xml:space="preserve">
+    <value>Scroll Up</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseTriggerScrollDown.Content" xml:space="preserve">
+    <value>Scroll Down</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionLeftClick.Content" xml:space="preserve">
+    <value>Left Click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionRightClick.Content" xml:space="preserve">
+    <value>Right Click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionMiddleClick.Content" xml:space="preserve">
+    <value>Middle Click</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionX1Back.Content" xml:space="preserve">
+    <value>X1 (Back)</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionX2Forward.Content" xml:space="preserve">
+    <value>X2 (Forward)</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionScrollUp.Content" xml:space="preserve">
+    <value>Scroll Up</value>
+  </data>
+  <data name="UnifiedMappingControl_MouseActionScrollDown.Content" xml:space="preserve">
+    <value>Scroll Down</value>
+  </data>
 </root>

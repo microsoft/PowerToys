@@ -7,6 +7,8 @@
 
 #include <keyboardmanager/common/InputInterface.h>
 #include <keyboardmanager/common/Helpers.h>
+#include <keyboardmanager/common/Modifiers.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
 
 #include <TlHelp32.h>
@@ -404,8 +406,9 @@ namespace KeyboardEventHandlers
 
                     if (isRunProgram)
                     {
-                        auto threadFunction = [it]() {
-                            CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
+                        auto targetShortcut = std::get<Shortcut>(it->second.targetShortcut);
+                        auto threadFunction = [targetShortcut]() {
+                            CreateOrShowProcessForShortcut(targetShortcut);
                         };
 
                         std::thread myThread(threadFunction);
@@ -1796,6 +1799,380 @@ namespace KeyboardEventHandlers
         std::vector<INPUT> keyEventList;
         Helpers::SetTextKeyEvents(keyEventList, *remapping);
         ii.SendVirtualInput(keyEventList);
+
+        return 1;
+    }
+
+    // Static variables for scroll wheel debouncing.
+    // Thread-safety note: These are accessed only from the low-level mouse hook callback (WH_MOUSE_LL).
+    // Windows guarantees that low-level hook callbacks are always invoked on the thread that installed
+    // the hook, serializing all access. No synchronization is required.
+    static std::chrono::steady_clock::time_point lastScrollUpTime;
+    static std::chrono::steady_clock::time_point lastScrollDownTime;
+
+    // Helper: Prepares a mouse INPUT struct for the given button and key state.
+    // Used by key-to-mouse remap handlers to convert a keyboard event into a mouse event.
+    constexpr INPUT PrepareMouseInputForButton(MouseButton button, bool isKeyDown) noexcept
+    {
+        INPUT mouseInput = {};
+        mouseInput.type = INPUT_MOUSE;
+        mouseInput.mi.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG;
+
+        switch (button)
+        {
+        case MouseButton::Left:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
+            break;
+        case MouseButton::Right:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
+            break;
+        case MouseButton::Middle:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
+            break;
+        case MouseButton::X1:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
+            mouseInput.mi.mouseData = XBUTTON1;
+            break;
+        case MouseButton::X2:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
+            mouseInput.mi.mouseData = XBUTTON2;
+            break;
+        case MouseButton::ScrollUp:
+            mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
+            mouseInput.mi.mouseData = WHEEL_DELTA;
+            break;
+        case MouseButton::ScrollDown:
+            mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
+            mouseInput.mi.mouseData = static_cast<DWORD>(static_cast<LONG>(-WHEEL_DELTA));
+            break;
+        }
+
+        return mouseInput;
+    }
+
+    // Helper: Returns true if the scroll wheel event should be throttled (within debounce window).
+    // Only call this for scroll wheel buttons.
+    bool ShouldThrottleScrollWheel(MouseButton button) noexcept
+    {
+        auto now = std::chrono::steady_clock::now();
+        auto& lastTime = (button == MouseButton::ScrollUp) ? lastScrollUpTime : lastScrollDownTime;
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count();
+
+        if (elapsed < KeyboardManagerConstants::SCROLL_WHEEL_DEBOUNCE_MS)
+        {
+            return true;
+        }
+
+        lastTime = now;
+        return false;
+    }
+
+    // Helper function to execute the target action for a mouse button remap.
+    // Handles remapping to key, shortcut (including run program and open URI), or text.
+    // Returns 1 on success, or a special value if an error toast was shown.
+    intptr_t ExecuteMouseButtonRemapTarget(KeyboardManagerInput::InputInterface& ii, const KeyShortcutTextUnion& target, bool isButtonDown) noexcept
+    {
+        // Check target type: index 0 = DWORD (key), index 1 = Shortcut, index 2 = wstring (text)
+        const bool remapToKey = target.index() == 0;
+        const bool remapToShortcut = target.index() == 1;
+        const bool remapToText = target.index() == 2;
+
+        std::vector<INPUT> keyEventList;
+
+        if (remapToKey)
+        {
+            DWORD targetKey = std::get<DWORD>(target);
+
+            // If mapped to VK_DISABLED then the button is disabled
+            if (targetKey == CommonSharedConstants::VK_DISABLED)
+            {
+                return 1;
+            }
+
+            if (isButtonDown)
+            {
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+            }
+            else
+            {
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+            }
+
+            ii.SendVirtualInput(keyEventList);
+        }
+        else if (remapToShortcut)
+        {
+            Shortcut targetShortcut = std::get<Shortcut>(target);
+            const bool isRunProgram = targetShortcut.IsRunProgram();
+            const bool isOpenUri = targetShortcut.IsOpenURI();
+
+            // Run program and open URI only trigger on button down
+            if (isRunProgram)
+            {
+                if (isButtonDown)
+                {
+                    auto threadFunction = [targetShortcut]() {
+                        CreateOrShowProcessForShortcut(targetShortcut);
+                    };
+                    std::thread myThread(threadFunction);
+                    if (myThread.joinable())
+                    {
+                        myThread.detach();
+                    }
+                }
+            }
+            else if (isOpenUri)
+            {
+                if (isButtonDown)
+                {
+                    auto uri = targetShortcut.uriToOpen;
+                    auto newUri = uri;
+
+                    if (!PathIsURL(uri.c_str()))
+                    {
+                        WCHAR url[1024];
+                        DWORD bufferSize = 1024;
+
+                        if (UrlCreateFromPathW(uri.c_str(), url, &bufferSize, 0) == S_OK)
+                        {
+                            newUri = url;
+                        }
+                        else
+                        {
+                            toast(L"Error", L"Could not understand the Path or URI");
+                            return 1;
+                        }
+                    }
+
+                    auto threadFunction = [newUri]() {
+                        ShellExecute(NULL, L"open", newUri.c_str(), NULL, NULL, SW_SHOWNORMAL);
+                    };
+                    std::thread myThread(threadFunction);
+                    if (myThread.joinable())
+                    {
+                        myThread.detach();
+                    }
+                }
+            }
+            else
+            {
+                // Regular shortcut - send modifier keys + action key
+                if (isButtonDown)
+                {
+                    Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                }
+                else
+                {
+                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                    Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG);
+                }
+
+                ii.SendVirtualInput(keyEventList);
+            }
+        }
+        else if (remapToText)
+        {
+            // Text only fires on button down (no repeat since mouse doesn't auto-repeat)
+            if (isButtonDown)
+            {
+                const auto& textToSend = std::get<std::wstring>(target);
+                Helpers::SetTextKeyEvents(keyEventList, textToSend);
+                ii.SendVirtualInput(keyEventList);
+            }
+        }
+
+        return 1;
+    }
+
+    // Function to handle a mouse button remap
+    intptr_t HandleMouseButtonRemapEvent(KeyboardManagerInput::InputInterface& ii, MouseButton button, bool isButtonDown, State& state) noexcept
+    {
+        const auto remapping = state.GetMouseButtonRemap(button);
+        if (!remapping)
+        {
+            return 0;
+        }
+
+        // Scroll wheel events are one-shot (no up/down pairs), so only process on "down"
+        const bool isScrollWheel = MouseButtonHelpers::IsScrollWheelButton(button);
+        if (isScrollWheel && !isButtonDown)
+        {
+            return 0;  // Scroll wheel has no "up" event
+        }
+
+        // Rate limiting for scroll wheel
+        if (isScrollWheel && ShouldThrottleScrollWheel(button))
+        {
+            return 1;  // Suppress within debounce window
+        }
+
+        auto it = remapping.value();
+        const auto& target = it->second;
+
+        return ExecuteMouseButtonRemapTarget(ii, target, isButtonDown);
+    }
+
+    // Function to handle a key-to-mouse remap (pressing a key triggers a mouse click)
+    intptr_t HandleKeyToMouseRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        const DWORD keyCode = static_cast<DWORD>(data->lParam->vkCode);
+        const auto remapping = state.GetKeyToMouseRemap(keyCode);
+        if (!remapping)
+        {
+            return 0;
+        }
+
+        // Ignore key if it was generated by KeyboardManager itself
+        if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG ||
+            data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG ||
+            data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG)
+        {
+            return 0;
+        }
+
+        MouseButton targetButton = remapping.value();
+        bool isKeyDown = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
+
+        // Scroll wheel events are one-shot, only trigger on key down
+        const bool isScrollWheel = MouseButtonHelpers::IsScrollWheelButton(targetButton);
+        if (isScrollWheel && !isKeyDown)
+        {
+            return 1;  // Suppress key up but don't send scroll
+        }
+        
+        INPUT mouseInput = PrepareMouseInputForButton(targetButton, isKeyDown);
+        UINT result = SendInput(1, &mouseInput, sizeof(INPUT));
+        if (result != 1)
+        {
+            Logger::warn(L"HandleKeyToMouseRemapEvent: SendInput failed for mouse button {}", static_cast<int>(targetButton));
+        }
+
+        return 1;
+    }
+
+    // Helper function to get the foreground process name (lowercase, without extension)
+    std::wstring GetForegroundProcessName(KeyboardManagerInput::InputInterface& ii)
+    {
+        std::wstring process_name;
+        process_name.resize(MAX_PATH);
+        ii.GetForegroundProcess(process_name);
+        process_name.erase(std::find(process_name.begin(), process_name.end(), L'\0'), process_name.end());
+        std::transform(process_name.begin(), process_name.end(), process_name.begin(), towlower);
+        return process_name;
+    }
+
+    // Helper function to find app-specific remap table by process name (tries with and without extension)
+    template<typename MapType>
+    typename MapType::iterator FindAppSpecificTable(MapType& appSpecificMap, const std::wstring& processName)
+    {
+        auto it = appSpecificMap.find(processName);
+        if (it != appSpecificMap.end())
+        {
+            return it;
+        }
+
+        // Try without file extension
+        size_t extensionIndex = processName.find_last_of(L".");
+        if (extensionIndex != std::wstring::npos)
+        {
+            std::wstring processNameNoExt = processName.substr(0, extensionIndex);
+            it = appSpecificMap.find(processNameNoExt);
+        }
+
+        return it;
+    }
+
+    // Function to handle an app-specific mouse button remap
+    intptr_t HandleAppSpecificMouseButtonRemapEvent(KeyboardManagerInput::InputInterface& ii, MouseButton button, bool isButtonDown, State& state) noexcept
+    {
+        std::wstring process_name = GetForegroundProcessName(ii);
+        if (process_name.empty())
+        {
+            return 0;
+        }
+
+        // Find the app-specific remap table
+        auto appIt = FindAppSpecificTable(state.appSpecificMouseButtonReMap, process_name);
+        if (appIt == state.appSpecificMouseButtonReMap.end())
+        {
+            return 0;
+        }
+
+        // Look up the button remap in the app-specific table
+        auto buttonIt = appIt->second.find(button);
+        if (buttonIt == appIt->second.end())
+        {
+            return 0;
+        }
+
+        // Scroll wheel events are one-shot (no up/down pairs), so only process on "down"
+        const bool isScrollWheel = MouseButtonHelpers::IsScrollWheelButton(button);
+        if (isScrollWheel && !isButtonDown)
+        {
+            return 0;  // Scroll wheel has no "up" event
+        }
+
+        // Rate limiting for scroll wheel
+        if (isScrollWheel && ShouldThrottleScrollWheel(button))
+        {
+            return 1;  // Suppress within debounce window
+        }
+
+        const auto& target = buttonIt->second;
+
+        return ExecuteMouseButtonRemapTarget(ii, target, isButtonDown);
+    }
+
+    // Function to handle an app-specific key-to-mouse remap
+    intptr_t HandleAppSpecificKeyToMouseRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        const DWORD keyCode = static_cast<DWORD>(data->lParam->vkCode);
+
+        // Ignore key if it was generated by KeyboardManager itself
+        if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG ||
+            data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG ||
+            data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG)
+        {
+            return 0;
+        }
+
+        std::wstring process_name = GetForegroundProcessName(ii);
+        if (process_name.empty())
+        {
+            return 0;
+        }
+
+        // Find the app-specific remap table
+        auto appIt = FindAppSpecificTable(state.appSpecificKeyToMouseReMap, process_name);
+        if (appIt == state.appSpecificKeyToMouseReMap.end())
+        {
+            return 0;
+        }
+
+        // Look up the key remap in the app-specific table
+        auto keyIt = appIt->second.find(keyCode);
+        if (keyIt == appIt->second.end())
+        {
+            return 0;
+        }
+
+        MouseButton targetButton = keyIt->second;
+        bool isKeyDown = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
+
+        // Scroll wheel events are one-shot, only trigger on key down
+        const bool isScrollWheel = MouseButtonHelpers::IsScrollWheelButton(targetButton);
+        if (isScrollWheel && !isKeyDown)
+        {
+            return 1;  // Suppress key up but don't send scroll
+        }
+        
+        INPUT mouseInput = PrepareMouseInputForButton(targetButton, isKeyDown);
+        UINT result = SendInput(1, &mouseInput, sizeof(INPUT));
+        if (result != 1)
+        {
+            Logger::warn(L"HandleAppSpecificKeyToMouseRemapEvent: SendInput failed for mouse button {}", static_cast<int>(targetButton));
+        }
 
         return 1;
     }

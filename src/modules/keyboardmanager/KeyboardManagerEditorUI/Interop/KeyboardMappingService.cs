@@ -236,6 +236,188 @@ namespace KeyboardManagerEditorUI.Interop
                 (int)shortcutKeyMapping.OperationType);
         }
 
+        // Mouse Button Remapping
+
+        /// <summary>
+        /// Gets all mouse button to key/shortcut/text/program/url remappings.
+        /// </summary>
+        public List<Helpers.MouseMapping> GetMouseButtonMappings()
+        {
+            var result = new List<Helpers.MouseMapping>();
+            int count = KeyboardManagerInterop.GetMouseButtonRemapCount(_configHandle);
+
+            for (int i = 0; i < count; i++)
+            {
+                var mapping = default(MouseButtonMapping);
+                if (KeyboardManagerInterop.GetMouseButtonRemap(_configHandle, i, ref mapping))
+                {
+                    string targetKeysStr = KeyboardManagerInterop.GetStringAndFree(mapping.TargetKeys);
+                    string targetKeyName = string.Empty;
+                    string targetShortcutKeys = string.Empty;
+
+                    if (mapping.TargetType == 0)
+                    {
+                        // Single key - convert code to display name
+                        if (int.TryParse(targetKeysStr, out int keyCode))
+                        {
+                            targetKeyName = GetKeyDisplayName(keyCode);
+                        }
+                    }
+                    else if (mapping.TargetType == 1)
+                    {
+                        // Shortcut - use as-is
+                        targetShortcutKeys = targetKeysStr;
+                    }
+
+                    result.Add(new Helpers.MouseMapping
+                    {
+                        OriginalButtonCode = mapping.OriginalButton,
+                        OriginalButton = GetMouseButtonName((MouseButtonCode)mapping.OriginalButton),
+                        TargetType = ConvertTargetTypeToString(mapping.TargetType),
+                        TargetKeyName = targetKeyName,
+                        TargetShortcutKeys = targetShortcutKeys,
+                        TargetText = KeyboardManagerInterop.GetStringAndFree(mapping.TargetText),
+                        ProgramPath = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramPath),
+                        ProgramArgs = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramArgs),
+                        UriToOpen = KeyboardManagerInterop.GetStringAndFree(mapping.UriToOpen),
+                        TargetApp = KeyboardManagerInterop.GetStringAndFree(mapping.TargetApp),
+                    });
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Adds a mouse button remapping.
+        /// </summary>
+        /// <param name="originalButton">The original mouse button.</param>
+        /// <param name="targetKeys">Target key/shortcut string.</param>
+        /// <param name="targetApp">Target app (empty for global).</param>
+        /// <param name="targetType">0=Key, 1=Shortcut, 2=Text, 3=RunProgram, 4=OpenUri.</param>
+        /// <param name="targetText">Text for text mappings.</param>
+        /// <param name="programPath">Program path for RunProgram.</param>
+        /// <param name="programArgs">Program arguments for RunProgram.</param>
+        /// <param name="uriToOpen">URI for OpenUri.</param>
+        public bool AddMouseButtonMapping(
+            MouseButtonCode originalButton,
+            string targetKeys,
+            string targetApp = "",
+            MouseRemapTargetType targetType = MouseRemapTargetType.Key,
+            string? targetText = null,
+            string? programPath = null,
+            string? programArgs = null,
+            string? uriToOpen = null)
+        {
+            return KeyboardManagerInterop.AddMouseButtonRemap(
+                _configHandle,
+                (int)originalButton,
+                targetKeys ?? string.Empty,
+                targetApp ?? string.Empty,
+                (int)targetType,
+                targetText ?? string.Empty,
+                programPath ?? string.Empty,
+                programArgs ?? string.Empty,
+                uriToOpen ?? string.Empty);
+        }
+
+        /// <summary>
+        /// Deletes a mouse button remapping.
+        /// </summary>
+        public bool DeleteMouseButtonMapping(MouseButtonCode originalButton, string targetApp = "")
+        {
+            return KeyboardManagerInterop.DeleteMouseButtonRemap(_configHandle, (int)originalButton, targetApp ?? string.Empty);
+        }
+
+        // Key to Mouse Remapping
+
+        /// <summary>
+        /// Gets all key to mouse button remappings.
+        /// </summary>
+        public List<Helpers.KeyToMouseMapping> GetKeyToMouseMappings()
+        {
+            var result = new List<Helpers.KeyToMouseMapping>();
+            int count = KeyboardManagerInterop.GetKeyToMouseRemapCount(_configHandle);
+
+            for (int i = 0; i < count; i++)
+            {
+                var mapping = default(KeyToMouseMappingInterop);
+                if (KeyboardManagerInterop.GetKeyToMouseRemap(_configHandle, i, ref mapping))
+                {
+                    result.Add(new Helpers.KeyToMouseMapping
+                    {
+                        OriginalKeyCode = mapping.OriginalKey,
+                        OriginalKeyName = GetKeyDisplayName(mapping.OriginalKey),
+                        TargetMouseButton = GetMouseButtonName((MouseButtonCode)mapping.TargetMouseButton),
+                        TargetApp = KeyboardManagerInterop.GetStringAndFree(mapping.TargetApp),
+                    });
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Adds a key to mouse button remapping.
+        /// </summary>
+        public bool AddKeyToMouseMapping(int originalKey, MouseButtonCode targetMouseButton, string targetApp = "")
+        {
+            return KeyboardManagerInterop.AddKeyToMouseRemap(_configHandle, originalKey, (int)targetMouseButton, targetApp ?? string.Empty);
+        }
+
+        /// <summary>
+        /// Deletes a key to mouse button remapping.
+        /// </summary>
+        public bool DeleteKeyToMouseMapping(int originalKey, string targetApp = "")
+        {
+            return KeyboardManagerInterop.DeleteKeyToMouseRemap(_configHandle, originalKey, targetApp ?? string.Empty);
+        }
+
+        // Mouse Utility Methods
+
+        /// <summary>
+        /// Gets the display name for a mouse button.
+        /// </summary>
+        public string GetMouseButtonName(MouseButtonCode buttonCode)
+        {
+            var buttonName = new System.Text.StringBuilder(64);
+            KeyboardManagerInterop.GetMouseButtonName((int)buttonCode, buttonName, buttonName.Capacity);
+            return buttonName.ToString();
+        }
+
+        /// <summary>
+        /// Gets the mouse button code from a display name.
+        /// Returns null if the name is not recognized.
+        /// </summary>
+        public MouseButtonCode? GetMouseButtonFromName(string buttonName)
+        {
+            if (string.IsNullOrEmpty(buttonName))
+            {
+                return null;
+            }
+
+            int buttonCode = KeyboardManagerInterop.GetMouseButtonFromName(buttonName);
+            if (buttonCode == -1)
+            {
+                return null;
+            }
+
+            return (MouseButtonCode)buttonCode;
+        }
+
+        private static string ConvertTargetTypeToString(int targetType)
+        {
+            return targetType switch
+            {
+                0 => "Key",
+                1 => "Shortcut",
+                2 => "Text",
+                3 => "RunProgram",
+                4 => "OpenUri",
+                _ => "Key",
+            };
+        }
+
         public bool SaveSettings()
         {
             return KeyboardManagerInterop.SaveMappingSettings(_configHandle);
