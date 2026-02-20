@@ -60,7 +60,7 @@ namespace Microsoft.CommandPalette.Extensions
         String Id{ get; };
         IIconInfo Icon{ get; };
     }
-
+    
     enum CommandResultKind {
         Dismiss,    // Reset the palette to the main page and dismiss
         GoHome,     // Go back to the main page, but keep it open
@@ -71,13 +71,13 @@ namespace Microsoft.CommandPalette.Extensions
         ShowToast,  // Display a transient message to the user
         Confirm,    // Display a confirmation dialog
     };
-
+    
     enum NavigationMode {
         Push,   // Push the target page onto the navigation stack
         GoBack, // Go back one page before navigating to the target page
         GoHome, // Go back to the home page before navigating to the target page
     };
-
+    
     [uuid("f9d6423b-bd5e-44bb-a204-2f5c77a72396")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandResultArgs{};
@@ -103,7 +103,7 @@ namespace Microsoft.CommandPalette.Extensions
         ICommand PrimaryCommand { get; };
         Boolean IsPrimaryCommandCritical { get; };
     }
-
+    
     // This is a "leaf" of the UI. This is something that can be "done" by the user.
     // * A ListPage
     // * the MoreCommands flyout of for a ListItem or a MarkdownPage
@@ -111,29 +111,29 @@ namespace Microsoft.CommandPalette.Extensions
     interface IInvokableCommand requires ICommand {
         ICommandResult Invoke(Object sender);
     }
-
-
+    
+    
     [uuid("ef5db50c-d26b-4aee-9343-9f98739ab411")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFilterItem {}
-
+    
     [uuid("0a923c7f-5b7b-431d-9898-3c8c841d02ed")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ISeparatorFilterItem requires IFilterItem {}
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFilter requires INotifyPropChanged, IFilterItem {
         String Id { get; };
         String Name { get; };
         IIconInfo Icon { get; };
     }
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFilters {
         String CurrentFilterId { get; set; };
         IFilterItem[] GetFilters();
     }
-
+    
     struct Color
     {
         UInt8 R;
@@ -141,13 +141,13 @@ namespace Microsoft.CommandPalette.Extensions
         UInt8 B;
         UInt8 A;
     };
-
+    
     struct OptionalColor
     {
         Boolean HasValue;
         Microsoft.CommandPalette.Extensions.Color Color;
     };
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ITag {
         IIconInfo Icon { get; };
@@ -156,7 +156,7 @@ namespace Microsoft.CommandPalette.Extensions
         OptionalColor Background { get; };
         String ToolTip { get; };
     };
-
+    
     [uuid("6a6dd345-37a3-4a1e-914d-4f658a4d583d")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsData {}
@@ -197,7 +197,7 @@ namespace Microsoft.CommandPalette.Extensions
     [uuid("58070392-02bb-4e89-9beb-47ceb8c3d741")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsSeparator requires IDetailsData {}
-
+    
     enum MessageState
     {
         Info = 0,
@@ -205,20 +205,20 @@ namespace Microsoft.CommandPalette.Extensions
         Warning,
         Error,
     };
-
+    
     enum StatusContext
     {
         Page,
         Extension
     };
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IProgressState requires INotifyPropChanged
     {
         Boolean IsIndeterminate { get; };
         UInt32 ProgressPercent { get; };
     };
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IStatusMessage requires INotifyPropChanged
     {
@@ -227,35 +227,35 @@ namespace Microsoft.CommandPalette.Extensions
         String Message { get; };
         // TODO! Icon maybe? Work with design on this
     };
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ILogMessage
     {
         MessageState State { get; };
         String Message { get; };
     };
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IExtensionHost
     {
         Windows.Foundation.IAsyncAction ShowStatus(IStatusMessage message, StatusContext context);
         Windows.Foundation.IAsyncAction HideStatus(IStatusMessage message);
-
+    
         Windows.Foundation.IAsyncAction LogMessage(ILogMessage message);
     };
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IPage requires ICommand {
         String Title { get; };
         Boolean IsLoading { get; };
-
+    
         OptionalColor AccentColor { get; };
     }
-
+    
     [uuid("c78b9851-e76b-43ee-8f76-da5ba14e69a4")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IContextItem {}
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandItem requires INotifyPropChanged {
         ICommand Command{ get; };
@@ -264,17 +264,17 @@ namespace Microsoft.CommandPalette.Extensions
         String Title{ get; };
         String Subtitle{ get; };
     }
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandContextItem requires ICommandItem, IContextItem {
         Boolean IsCritical { get; }; // READ: "make this red"
         KeyChord RequestedShortcut { get; };
     }
-
+    
     [uuid("924a87fc-32fe-4471-9156-84b3b30275a6")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ISeparatorContextItem requires IContextItem {}
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IListItem requires ICommandItem {
         ITag[] Tags{ get; };
@@ -290,20 +290,20 @@ namespace Microsoft.CommandPalette.Extensions
     [uuid("05914D59-6ECB-4992-9CF2-5982B5120A26")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ISmallGridLayout requires IGridProperties { }
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IMediumGridLayout requires IGridProperties
     {
         Boolean ShowTitle { get; };
     }
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IGalleryGridLayout requires IGridProperties
     {
         Boolean ShowTitle { get; };
         Boolean ShowSubtitle { get; };
     }
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ISmallListLayout requires IGridProperties
     {
@@ -326,21 +326,21 @@ namespace Microsoft.CommandPalette.Extensions
         IGridProperties GridProperties { get; };
         Boolean HasMoreItems { get; };
         ICommandItem EmptyContent { get; };
-
+    
         IListItem[] GetItems();
         void LoadMore();
     }
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDynamicListPage requires IListPage {
         String SearchText { set; };
     }
-
+    
     [uuid("b64def0f-8911-4afa-8f8f-042bd778d088")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IContent requires INotifyPropChanged {
     }
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFormContent requires IContent {
         String TemplateJson { get; };
@@ -348,35 +348,35 @@ namespace Microsoft.CommandPalette.Extensions
         String StateJson { get; };
         ICommandResult SubmitForm(String inputs, String data);
     }
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IMarkdownContent requires IContent {
         String Body { get; };
     }
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ITreeContent requires IContent, INotifyItemsChanged {
         IContent RootContent { get; };
         IContent[] GetChildren();
     }
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IContentPage requires IPage, INotifyItemsChanged {
         IContent[] GetContent();
         IDetails Details { get; };
         IContextItem[] Commands { get; };
     }
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandSettings {
         IContentPage SettingsPage { get; };
     };
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFallbackHandler {
         void UpdateQuery(String query);
     };
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFallbackCommandItem requires ICommandItem {
         IFallbackHandler FallbackHandler{ get; };
@@ -387,7 +387,7 @@ namespace Microsoft.CommandPalette.Extensions
     interface IFallbackCommandItem2 requires IFallbackCommandItem {
         String Id { get; };
     };
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsChanged
     {
@@ -396,21 +396,21 @@ namespace Microsoft.CommandPalette.Extensions
         IIconInfo Icon { get; };
         ICommandSettings Settings { get; };
         Boolean Frozen { get; };
-
+    
         ICommandItem[] TopLevelCommands();
         IFallbackCommandItem[] FallbackCommands();
-
+    
         ICommand GetCommand(String id);
-
+    
         void InitializeWithHost(IExtensionHost host);
     };
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IExtendedAttributesProvider
     {
         Windows.Foundation.Collections.IMap<String, Object> GetProperties();
     };
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandProvider2 requires ICommandProvider
     {
@@ -421,6 +421,12 @@ namespace Microsoft.CommandPalette.Extensions
     interface ICommandProvider3 requires ICommandProvider2
     {
         ICommandItem[] GetDockBands();
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandProvider4 requires ICommandProvider3
+    {
+        ICommandItem GetCommandItem(String id);
     };
 
 }
