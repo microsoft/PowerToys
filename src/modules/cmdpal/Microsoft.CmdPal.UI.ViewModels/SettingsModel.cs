@@ -66,7 +66,7 @@ public partial class SettingsModel : ObservableObject
 
     public EscapeKeyBehavior EscapeKeyBehaviorSetting { get; set; } = EscapeKeyBehavior.ClearSearchFirstThenGoBack;
 
-    public bool ClearSearchOnGoHome { get; set; } = true;
+    public bool ClearSearchOnGoHome { get; set; } = false;
 
     public UserTheme Theme { get; set; } = UserTheme.Default;
 
