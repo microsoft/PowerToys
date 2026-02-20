@@ -22,6 +22,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
+    IRecipient<PinCommandItemMessage>,
     IPageContext,
     IDisposable
 {
@@ -42,6 +43,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         _commandProviderCache = commandProviderCache;
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
+        WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
     }
 
@@ -413,6 +415,21 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     public void Receive(ReloadCommandsMessage message) =>
         ReloadAllCommandsAsync().ConfigureAwait(false);
+
+    public void Receive(PinCommandItemMessage message)
+    {
+        var wrapper = LookupProvider(message.ProviderId);
+        wrapper?.PinCommand(message.CommandId, _serviceProvider);
+    }
+
+    private CommandProviderWrapper? LookupProvider(string providerId)
+    {
+        lock (_commandProvidersLock)
+        {
+            return _builtInCommands.FirstOrDefault(w => w.ProviderId == providerId)
+                   ?? _extensionCommandProviders.FirstOrDefault(w => w.ProviderId == providerId);
+        }
+    }
 
     void IPageContext.ShowException(Exception ex, string? extensionHint)
     {
