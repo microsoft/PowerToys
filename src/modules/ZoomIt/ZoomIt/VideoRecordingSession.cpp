@@ -940,10 +940,12 @@ VideoRecordingSession::VideoRecordingSession(
     video.PixelAspectRatio().Denominator(1);
     m_encodingProfile.Video(video);
 
-    // Always set up audio profile for loopback capture (stereo AAC)
-    auto audio = m_encodingProfile.Audio();
-    audio = winrt::AudioEncodingProperties::CreateAac(48000, 2, 192000);
-    m_encodingProfile.Audio(audio);
+    if (captureAudio || captureSystemAudio)
+    {
+        auto audio = m_encodingProfile.Audio();
+        audio = winrt::AudioEncodingProperties::CreateAac(48000, 2, 192000);
+        m_encodingProfile.Audio(audio);
+    }
 
     // Describe our input: uncompressed BGRA8 buffers
     auto properties = winrt::VideoEncodingProperties::CreateUncompressed(
@@ -964,8 +966,14 @@ VideoRecordingSession::VideoRecordingSession(
     winrt::check_hresult(m_previewSwapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
     winrt::check_hresult(m_d3dDevice->CreateRenderTargetView(backBuffer.get(), nullptr, m_renderTargetView.put()));
 
-    // Always create audio generator for loopback capture; captureAudio controls microphone
-    m_audioGenerator = std::make_unique<AudioSampleGenerator>(captureAudio, captureSystemAudio, micMonoMix);
+    if (captureAudio || captureSystemAudio)
+    {
+        m_audioGenerator = std::make_unique<AudioSampleGenerator>(captureAudio, captureSystemAudio, micMonoMix);
+    }
+    else
+    {
+        m_audioGenerator = nullptr;
+    }
 }
 
 
