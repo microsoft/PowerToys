@@ -411,5 +411,11 @@ namespace Microsoft.CommandPalette.Extensions
     {
         ICommandItem[] GetDockBands();
     };
-    
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandProvider4 requires ICommandProvider3
+    {
+        ICommandItem GetCommandItem(String id);
+    };
+
 }

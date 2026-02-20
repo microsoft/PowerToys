@@ -5,4 +5,4 @@
 namespace Microsoft.CmdPal.ViewModels;
 
 internal sealed partial class NullPageViewModel(TaskScheduler scheduler, AppExtensionHost extensionHost)
-    : PageViewModel(null, scheduler, extensionHost);
+    : PageViewModel(null, scheduler, extensionHost, CommandProviderContext.Empty);

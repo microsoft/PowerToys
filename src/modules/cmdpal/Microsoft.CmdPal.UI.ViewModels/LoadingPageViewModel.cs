@@ -9,7 +9,7 @@ namespace Microsoft.CmdPal.ViewModels;
 public partial class LoadingPageViewModel : PageViewModel
 {
     public LoadingPageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost host)
-        : base(model, scheduler, host)
+        : base(model, scheduler, host, CommandProviderContext.Empty)
     {
         ModelIsLoading = true;
         IsInitialized = false;

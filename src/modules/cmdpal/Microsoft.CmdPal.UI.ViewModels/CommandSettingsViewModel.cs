@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -31,7 +31,7 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
 
         if (model.SettingsPage is not null)
         {
-            SettingsPage = new CommandPaletteContentPageViewModel(model.SettingsPage, mainThread, provider.ExtensionHost);
+            SettingsPage = new CommandPaletteContentPageViewModel(model.SettingsPage, mainThread, provider.ExtensionHost, provider.GetProviderContext());
             SettingsPage.InitializeProperties();
         }
     }
