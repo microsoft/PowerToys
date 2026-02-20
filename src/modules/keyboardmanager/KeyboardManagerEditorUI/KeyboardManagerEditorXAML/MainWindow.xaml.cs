@@ -33,9 +33,6 @@ namespace KeyboardManagerEditorUI
             SetTitleBar();
             this.Activated += MainWindow_Activated;
             this.Closed += MainWindow_Closed;
-
-            // Set the default page
-            // RootView.SelectedItem = RootView.MenuItems[0];
         }
 
         private void SetTitleBar()

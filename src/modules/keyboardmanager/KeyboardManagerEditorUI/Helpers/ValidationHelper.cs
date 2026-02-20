@@ -25,6 +25,8 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.DuplicateMapping, ("Duplicate Remapping", "This key or shortcut is already remapped.") },
             { ValidationErrorType.SelfMapping, ("Invalid Remapping", "A key or shortcut cannot be remapped to itself. Please choose a different target.") },
             { ValidationErrorType.EmptyTargetText, ("Missing Target Text", "Please enter the text to be inserted when the shortcut is pressed.") },
+            { ValidationErrorType.EmptyUrl, ("Missing URL", "Please enter the URL to open when the shortcut is pressed.") },
+            { ValidationErrorType.EmptyProgramPath, ("Missing Program Path", "Please enter the program path to launch when the shortcut is pressed.") },
             { ValidationErrorType.OneKeyMapping, ("Invalid Remapping", "A single key cannot be remapped to a Program or URL shortcut. Please choose a combination of keys.") },
         };
 
@@ -161,6 +163,40 @@ namespace KeyboardManagerEditorUI.Helpers
             }
 
             return error;
+        }
+
+        public static ValidationErrorType ValidateUrlMapping(
+            List<string> originalKeys,
+            string url,
+            bool isAppSpecific,
+            string appName,
+            KeyboardMappingService mappingService,
+            bool isEditMode = false,
+            Remapping? editingRemapping = null)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return ValidationErrorType.EmptyUrl;
+            }
+
+            return ValidateProgramOrUrlMapping(originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingRemapping);
+        }
+
+        public static ValidationErrorType ValidateAppMapping(
+            List<string> originalKeys,
+            string programPath,
+            bool isAppSpecific,
+            string appName,
+            KeyboardMappingService mappingService,
+            bool isEditMode = false,
+            Remapping? editingRemapping = null)
+        {
+            if (string.IsNullOrWhiteSpace(programPath))
+            {
+                return ValidationErrorType.EmptyProgramPath;
+            }
+
+            return ValidateProgramOrUrlMapping(originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingRemapping);
         }
 
         public static bool IsDuplicateMapping(List<string> keys, bool isEditMode, KeyboardMappingService mappingService)

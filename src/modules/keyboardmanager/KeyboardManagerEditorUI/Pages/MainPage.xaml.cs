@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -24,7 +25,7 @@ namespace KeyboardManagerEditorUI.Pages
     /// A consolidated page that displays all mappings from Remappings, Text, Programs, and URLs pages.
     /// </summary>
 #pragma warning disable SA1124 // Do not use regions
-    public sealed partial class All : Page, IDisposable
+    public sealed partial class MainPage : Page, IDisposable, INotifyPropertyChanged
     {
         private KeyboardMappingService? _mappingService;
         private bool _disposed;
@@ -32,6 +33,26 @@ namespace KeyboardManagerEditorUI.Pages
         // Edit mode tracking
         private bool _isEditMode;
         private EditingItem? _editingItem;
+
+        private string _mappingState = "Empty";
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        /// <summary>
+        /// Gets the current mapping state for the SwitchPresenter: "HasMappings" or "Empty".
+        /// </summary>
+        public string MappingState
+        {
+            get => _mappingState;
+            private set
+            {
+                if (_mappingState != value)
+                {
+                    _mappingState = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MappingState)));
+                }
+            }
+        }
 
         public ObservableCollection<Remapping> RemappingList { get; } = new ObservableCollection<Remapping>();
 
@@ -68,7 +89,7 @@ namespace KeyboardManagerEditorUI.Pages
             public bool IsAllApps { get; set; } = true;
         }
 
-        public All()
+        public MainPage()
         {
             this.InitializeComponent();
 
@@ -79,7 +100,7 @@ namespace KeyboardManagerEditorUI.Pages
             }
             catch (Exception ex)
             {
-                Logger.LogError("Failed to initialize KeyboardMappingService in All page: " + ex.Message);
+                Logger.LogError("Failed to initialize KeyboardMappingService in MainPage page: " + ex.Message);
             }
 
             this.Unloaded += All_Unloaded;
@@ -215,11 +236,16 @@ namespace KeyboardManagerEditorUI.Pages
             // Hook up the primary button click handler
             RemappingDialog.PrimaryButtonClick += RemappingDialog_PrimaryButtonClick;
 
+            // Hook up real-time validation
+            UnifiedMappingControl.ValidationStateChanged += UnifiedMappingControl_ValidationStateChanged;
+            RemappingDialog.IsPrimaryButtonEnabled = UnifiedMappingControl.IsInputComplete();
+
             // Show the dialog
             await RemappingDialog.ShowAsync();
 
-            // Unhook the handler
+            // Unhook the handlers
             RemappingDialog.PrimaryButtonClick -= RemappingDialog_PrimaryButtonClick;
+            UnifiedMappingControl.ValidationStateChanged -= UnifiedMappingControl_ValidationStateChanged;
 
             // Reset edit mode
             _isEditMode = false;
@@ -227,6 +253,36 @@ namespace KeyboardManagerEditorUI.Pages
 
             // Cleanup keyboard hook after dialog closes
             KeyboardHookHelper.Instance.CleanupHook();
+        }
+
+        private void UnifiedMappingControl_ValidationStateChanged(object? sender, EventArgs e)
+        {
+            if (!UnifiedMappingControl.IsInputComplete())
+            {
+                RemappingDialog.IsPrimaryButtonEnabled = false;
+                return;
+            }
+
+            // Run full validation (self-mapping, illegal shortcuts, etc.) when inputs are complete
+            if (_mappingService != null)
+            {
+                var actionType = UnifiedMappingControl.CurrentActionType;
+                List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
+
+                if (triggerKeys != null && triggerKeys.Count > 0)
+                {
+                    ValidationErrorType error = ValidateMapping(actionType, triggerKeys);
+                    if (error != ValidationErrorType.NoError)
+                    {
+                        UnifiedMappingControl.ShowValidationErrorFromType(error);
+                        RemappingDialog.IsPrimaryButtonEnabled = false;
+                        return;
+                    }
+                }
+            }
+
+            UnifiedMappingControl.HideValidationMessage();
+            RemappingDialog.IsPrimaryButtonEnabled = true;
         }
 
         #endregion
@@ -348,9 +404,20 @@ namespace KeyboardManagerEditorUI.Pages
                         _isEditMode);
 
                 case UnifiedMappingControl.ActionType.OpenUrl:
-                case UnifiedMappingControl.ActionType.OpenApp:
-                    return ValidationHelper.ValidateProgramOrUrlMapping(
+                    string urlContent = UnifiedMappingControl.GetUrl();
+                    return ValidationHelper.ValidateUrlMapping(
                         triggerKeys,
+                        urlContent,
+                        isAppSpecific,
+                        appName,
+                        _mappingService!,
+                        _isEditMode);
+
+                case UnifiedMappingControl.ActionType.OpenApp:
+                    string programPath = UnifiedMappingControl.GetProgramPath();
+                    return ValidationHelper.ValidateAppMapping(
+                        triggerKeys,
+                        programPath,
                         isAppSpecific,
                         appName,
                         _mappingService!,
@@ -620,6 +687,7 @@ namespace KeyboardManagerEditorUI.Pages
                             Logger.LogWarning($"Failed to delete remapping: {string.Join("+", remapping.Shortcut)}");
                         }
 
+                        UpdateHasAnyMappings();
                         break;
 
                     default:
@@ -748,6 +816,16 @@ namespace KeyboardManagerEditorUI.Pages
             LoadTextMappings();
             LoadProgramShortcuts();
             LoadUrlShortcuts();
+            UpdateHasAnyMappings();
+        }
+
+        private void UpdateHasAnyMappings()
+        {
+            bool hasAny = RemappingList.Count > 0
+                || TextMappings.Count > 0
+                || ProgramShortcuts.Count > 0
+                || UrlShortcuts.Count > 0;
+            MappingState = hasAny ? "HasMappings" : "Empty";
         }
 
         private void LoadRemappings()
