@@ -102,10 +102,14 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Spacing="8">
+                        <FontIcon
+                            HorizontalAlignment="Center"
+                            FontSize="24"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xEDA7;" />
                         <TextBlock
                             VerticalAlignment="Center"
                             CharacterSpacing="12"
-                            FontSize="14"
                             Text="Nothing mapped yet"
                             TextAlignment="Center"
                             TextTrimming="CharacterEllipsis"
