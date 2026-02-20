@@ -7,6 +7,7 @@ using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
@@ -89,16 +90,20 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         List<IContextItem> moreCommands,
         CommandItemViewModel commandItem)
     {
-        if (!_settingsModel.IsDockEnabled)
+        if (!_settingsModel.EnableDock)
         {
             return;
         }
 
-        var inStartBands = _settingsModel.DockSettings.StartBands.Any(band => band.CommandId == this.Id);
-        var inCenterBands = _settingsModel.DockSettings.CenterBands.Any(band => band.CommandId == this.Id);
-        var inEndBands = _settingsModel.DockSettings.EndBands.Any(band => band.CommandId == this.Id);
-        var alreadyPinned = (inStartBands || inCenterBands || inEndBands)/** &&
-                            _settingsModel.DockSettings.PinnedCommands.Contains(this.Id)**/;
+        Func<DockBandSettings, bool> matches = (bandSettings) =>
+            bandSettings.CommandId == itemId &&
+            bandSettings.ProviderId == providerId;
+
+        var inStartBands = _settingsModel.DockSettings.StartBands.Any(band => matches(band));
+        var inCenterBands = _settingsModel.DockSettings.CenterBands.Any(band => matches(band));
+        var inEndBands = _settingsModel.DockSettings.EndBands.Any(band => matches(band));
+        var alreadyPinned = inStartBands || inCenterBands || inEndBands; /** &&
+                            _settingsModel.DockSettings.PinnedCommands.Contains(this.Id)**/
         var pinToTopLevelCommand = new PinToCommand(
             commandId: itemId,
             providerId: providerId,
@@ -151,12 +156,13 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         private readonly TopLevelCommandManager _topLevelCommandManager;
         private readonly bool _pin;
         private readonly PinLocation _pinLocation;
+
         private bool IsPinToDock => _pinLocation == PinLocation.Dock;
 
         public override IconInfo Icon => _pin ? Icons.PinIcon : Icons.UnpinIcon;
 
-        public override string Name => _pin ? 
-            (IsPinToDock ? RS_.GetString("dock_pin_command_name") : RS_.GetString("top_level_pin_command_name")) : 
+        public override string Name => _pin ?
+            (IsPinToDock ? RS_.GetString("dock_pin_command_name") : RS_.GetString("top_level_pin_command_name")) :
             (IsPinToDock ? RS_.GetString("dock_pin_command_name") : RS_.GetString("top_level_unpin_command_name"));
 
         internal event EventHandler? PinStateChanged;
@@ -188,10 +194,9 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                         PinToTopLevel();
                         break;
 
-                        // TODO: After dock is added:
-                        // case PinLocation.Dock:
-                        //     PinToDock();
-                        //     break;
+                    case PinLocation.Dock:
+                        PinToDock();
+                        break;
                 }
             }
             else
@@ -202,9 +207,9 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                         UnpinFromTopLevel();
                         break;
 
-                        // case PinLocation.Dock:
-                        //     UnpinFromDock();
-                        //     break;
+                    case PinLocation.Dock:
+                        UnpinFromDock();
+                        break;
                 }
             }
 
@@ -223,6 +228,16 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         {
             UnpinCommandItemMessage message = new(_providerId, _commandId);
             WeakReferenceMessenger.Default.Send(message);
+        }
+
+        private void PinToDock()
+        {
+            // TODO! implement
+        }
+
+        private void UnpinFromDock()
+        {
+            // TODO! implement
         }
     }
 }

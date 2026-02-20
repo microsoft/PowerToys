@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -194,6 +194,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             {
                 return new DockBandSettings()
                 {
+                    ProviderId = this.CommandProviderId,
                     CommandId = this.Id,
                     ShowLabels = true,
                 };
@@ -490,12 +491,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         return contextItems.ToArray();
     }
 
-    // internal ICommandItem ToPinnedDockBandItem()
-    // {
-    //     var item = new PinnedDockItem(item: this, id: Id);
+    internal ICommandItem ToPinnedDockBandItem()
+    {
+        var item = new PinnedDockItem(item: this, id: Id);
 
-    // return item;
-    // }
+        return item;
+    }
 
     // internal TopLevelViewModel CloneAsBand()
     // {
@@ -556,6 +557,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
         private void PinToDock()
         {
+            /**
             // It's possible that the top-level command shares an ID with a
             // band. In that case, we don't want to add it to PinnedCommands.
             // PinnedCommands is just for top-level commands IDs that aren't
@@ -591,16 +593,19 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             _topLevelCommandManager.PinDockBand(bandVm);
 
             _topLevelViewModel.Save();
+            **/
         }
 
         private void UnpinFromDock()
         {
+            /**
             _settings.DockSettings.PinnedCommands.Remove(_topLevelViewModel.Id);
             _settings.DockSettings.StartBands.RemoveAll(band => band.CommandId == _topLevelViewModel.Id);
             _settings.DockSettings.CenterBands.RemoveAll(band => band.CommandId == _topLevelViewModel.Id);
             _settings.DockSettings.EndBands.RemoveAll(band => band.CommandId == _topLevelViewModel.Id);
 
             _topLevelViewModel.Save();
+            **/
         }
     }
 }

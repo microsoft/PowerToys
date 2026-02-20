@@ -296,7 +296,6 @@ public sealed partial class DockViewModel : IDisposable,
         _snapshotStartBands = null;
         _snapshotCenterBands = null;
         _snapshotEndBands = null;
-        _snapshotPinnedCommands = null;
         _snapshotBandViewModels = null;
         SettingsModel.SaveSettings(_settingsModel);
         Logger.LogDebug("Saved band order to settings");
@@ -305,7 +304,6 @@ public sealed partial class DockViewModel : IDisposable,
     private List<DockBandSettings>? _snapshotStartBands;
     private List<DockBandSettings>? _snapshotCenterBands;
     private List<DockBandSettings>? _snapshotEndBands;
-    private List<string>? _snapshotPinnedCommands;
     private Dictionary<string, DockBandViewModel>? _snapshotBandViewModels;
 
     /// <summary>
@@ -315,10 +313,9 @@ public sealed partial class DockViewModel : IDisposable,
     public void SnapshotBandOrder()
     {
         var dockSettings = _settingsModel.DockSettings;
-        _snapshotStartBands = dockSettings.StartBands.Select(b => new DockBandSettings { CommandId = b.CommandId, ShowLabels = b.ShowLabels }).ToList();
-        _snapshotCenterBands = dockSettings.CenterBands.Select(b => new DockBandSettings { CommandId = b.CommandId, ShowLabels = b.ShowLabels }).ToList();
-        _snapshotEndBands = dockSettings.EndBands.Select(b => new DockBandSettings { CommandId = b.CommandId, ShowLabels = b.ShowLabels }).ToList();
-        _snapshotPinnedCommands = dockSettings.PinnedCommands.ToList();
+        _snapshotStartBands = dockSettings.StartBands.Select(b => b.Clone()).ToList();
+        _snapshotCenterBands = dockSettings.CenterBands.Select(b => b.Clone()).ToList();
+        _snapshotEndBands = dockSettings.EndBands.Select(b => b.Clone()).ToList();
 
         // Snapshot band ViewModels so we can restore unpinned bands
         // Use a dictionary but handle potential duplicates gracefully
@@ -343,7 +340,9 @@ public sealed partial class DockViewModel : IDisposable,
     /// </summary>
     public void RestoreBandOrder()
     {
-        if (_snapshotStartBands == null || _snapshotCenterBands == null || _snapshotEndBands == null || _snapshotBandViewModels == null || _snapshotPinnedCommands == null)
+        if (_snapshotStartBands == null ||
+            _snapshotCenterBands == null ||
+            _snapshotEndBands == null || _snapshotBandViewModels == null)
         {
             Logger.LogWarning("No snapshot to restore from");
             return;
@@ -357,10 +356,6 @@ public sealed partial class DockViewModel : IDisposable,
 
         var dockSettings = _settingsModel.DockSettings;
 
-        // Restore PinnedCommands from snapshot
-        dockSettings.PinnedCommands.Clear();
-        dockSettings.PinnedCommands.AddRange(_snapshotPinnedCommands);
-
         // Restore settings from snapshot
         dockSettings.StartBands.Clear();
         dockSettings.CenterBands.Clear();
@@ -368,19 +363,19 @@ public sealed partial class DockViewModel : IDisposable,
 
         foreach (var bandSnapshot in _snapshotStartBands)
         {
-            var bandSettings = new DockBandSettings { CommandId = bandSnapshot.CommandId, ShowLabels = bandSnapshot.ShowLabels };
+            var bandSettings = bandSnapshot.Clone();
             dockSettings.StartBands.Add(bandSettings);
         }
 
         foreach (var bandSnapshot in _snapshotCenterBands)
         {
-            var bandSettings = new DockBandSettings { CommandId = bandSnapshot.CommandId, ShowLabels = bandSnapshot.ShowLabels };
+            var bandSettings = bandSnapshot.Clone();
             dockSettings.CenterBands.Add(bandSettings);
         }
 
         foreach (var bandSnapshot in _snapshotEndBands)
         {
-            var bandSettings = new DockBandSettings { CommandId = bandSnapshot.CommandId, ShowLabels = bandSnapshot.ShowLabels };
+            var bandSettings = bandSnapshot.Clone();
             dockSettings.EndBands.Add(bandSettings);
         }
 
@@ -390,7 +385,6 @@ public sealed partial class DockViewModel : IDisposable,
         _snapshotStartBands = null;
         _snapshotCenterBands = null;
         _snapshotEndBands = null;
-        _snapshotPinnedCommands = null;
         _snapshotBandViewModels = null;
         Logger.LogDebug("Restored band order from snapshot");
     }
@@ -511,15 +505,8 @@ public sealed partial class DockViewModel : IDisposable,
         }
 
         // Create settings for the new band
-        var bandSettings = new DockBandSettings { CommandId = bandId, ShowLabels = null };
+        var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId, ShowLabels = null };
         var dockSettings = _settingsModel.DockSettings;
-
-        // If this is not an explicit dock band (i.e., it's from TopLevelCommands),
-        // add it to PinnedCommands so it gets loaded as a dock band on restart
-        if (!topLevel.IsDockBand && !dockSettings.PinnedCommands.Contains(bandId))
-        {
-            dockSettings.PinnedCommands.Add(bandId);
-        }
 
         // Create the band view model
         var bandVm = CreateBandItem(bandSettings, topLevel.ItemViewModel);
@@ -565,9 +552,6 @@ public sealed partial class DockViewModel : IDisposable,
         dockSettings.StartBands.RemoveAll(b => b.CommandId == bandId);
         dockSettings.CenterBands.RemoveAll(b => b.CommandId == bandId);
         dockSettings.EndBands.RemoveAll(b => b.CommandId == bandId);
-
-        // Also remove from PinnedCommands if it was pinned from TopLevelCommands
-        dockSettings.PinnedCommands.Remove(bandId);
 
         // Remove from UI collections
         StartItems.Remove(band);

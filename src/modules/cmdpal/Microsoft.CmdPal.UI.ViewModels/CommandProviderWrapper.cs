@@ -183,8 +183,10 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             }
 
             ICommandItem[] pinnedCommands = [];
-            if (model is ICommandProvider4 four)
+            ICommandProvider4? four = null;
+            if (model is ICommandProvider4 defintelyFour)
             {
+                four = defintelyFour; // stash this away so we don't need to QI again
                 SupportsPinning = true;
 
                 // Load pinned commands from saved settings
@@ -209,7 +211,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
             // We do need to explicitly initialize commands though
             var objects = new TopLevelObjects(commands, fallbacks, pinnedCommands, dockBands);
-            InitializeCommands(objects, serviceProvider, pageContext);
+            InitializeCommands(objects, serviceProvider, four, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -249,6 +251,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
     private void InitializeCommands(
         TopLevelObjects objects,
         IServiceProvider serviceProvider,
+        ICommandProvider4? four,
         WeakReference<IPageContext> pageContext)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
@@ -290,28 +293,103 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         if (objects.DockBands is not null)
         {
             List<TopLevelViewModel> bands = new();
+
+            // Start by adding TopLevelViewModels for all the dock bands which
+            // are explicitly provided by the provider through the GetDockBands
+            // API.
             foreach (var b in objects.DockBands)
             {
                 var bandVm = make(b, TopLevelType.DockBand);
                 bands.Add(bandVm);
             }
 
-            foreach (var c in TopLevelItems)
+            var dockSettings = settings.DockSettings;
+            var allPinnedCommands = dockSettings.AllPinnedCommands;
+            var pinnedBandsForThisProvider = allPinnedCommands.Where(c => c.ProviderId == ProviderId);
+            foreach (var (providerId, commandId) in pinnedBandsForThisProvider)
             {
-                foreach (var pinnedId in settings.DockSettings.PinnedCommands)
+                CoreLogger.LogDebug($"Looking for pinned dock band command {commandId} for provider {providerId}");
+
+                // First, try to lookup the command as one of this provider's
+                // top-level commands. If it's there, then we can skip a lot of
+                // work and just clone it as a band.
+                if (LookupTopLevelCommand(commandId) is TopLevelViewModel topLevelCommand)
                 {
-                    if (pinnedId == c.Id)
+                    CoreLogger.LogDebug($"Found pinned dock band command {commandId} for provider {providerId} as a top-level command");
+                    var bandModel = topLevelCommand.ToPinnedDockBandItem();
+                    var bandVm = make(bandModel, TopLevelType.DockBand);
+                    bands.Add(bandVm);
+                    continue;
+                }
+
+                // If we didn't find it as a top-level command, then we need to
+                // try to get it directly from the provider and hope it supports
+                // being a dock band. This is the fallback for providers that
+                // don't explicitly support dock bands through GetDockBands, but
+                // do support pinning commands (ICommandProvider4)
+                if (four is not null)
+                {
+                    try
                     {
-                        var bandModel = c.ToPinnedDockBandItem();
-                        var bandVm = make(bandModel, TopLevelType.DockBand);
-                        bands.Add(bandVm);
-                        break;
+                        var commandItem = four.GetCommandItem(commandId);
+                        if (commandItem is not null)
+                        {
+                            CoreLogger.LogDebug($"Found pinned dock band command {commandId} for provider {providerId} through ICommandProvider4 API");
+                            var bandVm = make(commandItem, TopLevelType.DockBand);
+                            bands.Add(bandVm);
+                        }
+                        else
+                        {
+                            CoreLogger.LogWarning($"Couldn't find pinned dock band command {commandId} for provider {providerId} through ICommandProvider4 API. This command won't be shown as a dock band.");
+                        }
                     }
+                    catch (Exception e)
+                    {
+                        CoreLogger.LogError($"Failed to load pinned dock band command {commandId} for provider {providerId}: {e.Message}");
+                    }
+                }
+                else
+                {
+                    CoreLogger.LogWarning($"Couldn't find pinned dock band command {commandId} for provider {providerId} as a top-level command, and provider doesn't support ICommandProvider4 API to get it directly. This command won't be shown as a dock band.");
                 }
             }
 
+            // // Here's where we want to be tricky. Here we want to iterate over
+            // // all of the pinned doc commands. Check if their provider ID
+            // // matches this provider. And then if it does try to get that
+            // // command item from this provider and turn it into a doc band item.
+            // //
+            // // Instead of iterating over pinned commands like we used to, we
+            // // need to manually iterate over all of the doc band settings in the
+            // // start center and end bands.
+            // foreach (var c in TopLevelItems)
+            // {
+            //     foreach (var pinnedId in settings.DockSettings.PinnedCommands)
+            //     {
+            //         if (pinnedId == c.Id)
+            //         {
+            //             var bandModel = c.ToPinnedDockBandItem();
+            //             var bandVm = make(bandModel, TopLevelType.DockBand);
+            //             bands.Add(bandVm);
+            //             break;
+            //         }
+            //     }
+            // }
             DockBandItems = bands.ToArray();
         }
+    }
+
+    private TopLevelViewModel? LookupTopLevelCommand(string commandId)
+    {
+        foreach (var c in TopLevelItems)
+        {
+            if (c.Id == commandId)
+            {
+                return c;
+            }
+        }
+
+        return null;
     }
 
     private ICommandItem[] LoadPinnedCommands(ICommandProvider4 model, ProviderSettings providerSettings)
