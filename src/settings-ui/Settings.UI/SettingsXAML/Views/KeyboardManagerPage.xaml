@@ -74,7 +74,7 @@
                         </tkcontrols:SettingsExpander.Description>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ToggleShortcut" x:Uid="KeyboardManager_Toggle_Shortcut">
-                                <controls:ShortcutControl MinWidth="" HotkeySettings="{x:Bind Path=ViewModel.ToggleShortcut, Mode=TwoWay}" />
+                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ToggleShortcut, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
