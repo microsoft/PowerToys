@@ -3,11 +3,12 @@
     x:Class="KeyboardManagerEditorUI.Controls.UnifiedMappingControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:commoncontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:commoncontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
@@ -289,6 +290,7 @@
                         GotFocus="TextContentBox_GotFocus"
                         Header="Text to type"
                         PlaceholderText="Enter the text to type when triggered"
+                        TextChanged="TextContentBox_TextChanged"
                         TextWrapping="Wrap" />
                 </tkcontrols:Case>
 
@@ -302,27 +304,37 @@
                         FontSize="13"
                         GotFocus="UrlPathInput_GotFocus"
                         Header="URL to open"
-                        PlaceholderText="https://example.com" />
+                        PlaceholderText="https://example.com"
+                        TextChanged="UrlPathInput_TextChanged" />
                 </tkcontrols:Case>
 
                 <!--  Open App Action  -->
                 <tkcontrols:Case Value="OpenApp">
                     <StackPanel Orientation="Vertical" Spacing="16">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
                             <TextBox
                                 x:Name="ProgramPathInput"
                                 x:Uid="UnifiedMappingControlProgramPathTextBox"
-                                Width="240"
+                                HorizontalAlignment="Stretch"
                                 GotFocus="ProgramPathInput_GotFocus"
                                 Header="Program path"
-                                PlaceholderText="C:\Program Files\..." />
+                                PlaceholderText="C:\Program Files\..."
+                                TextChanged="ProgramPathInput_TextChanged" />
                             <Button
                                 x:Name="ProgramPathSelectButton"
                                 x:Uid="UnifiedMappingControlPathSelectButton"
+                                Grid.Column="1"
                                 VerticalAlignment="Bottom"
+                                AutomationProperties.Name="Select program path"
                                 Click="ProgramPathSelectButton_Click"
-                                Content="Browse..." />
-                        </StackPanel>
+                                Content="{ui:FontIcon Glyph=&#xE8DA;,
+                                                      FontSize=16}"
+                                Style="{StaticResource SubtleButtonStyle}" />
+                        </Grid>
 
                         <TextBox
                             x:Name="ProgramArgsInput"
@@ -331,21 +343,29 @@
                             Header="Arguments (optional)"
                             PlaceholderText="--arg1 value1" />
 
-                        <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
                             <TextBox
                                 x:Name="StartInPathInput"
                                 x:Uid="UnifiedMappingControlStartInTextBox"
-                                Width="240"
+                                HorizontalAlignment="Stretch"
                                 GotFocus="StartInPathInput_GotFocus"
                                 Header="Start in directory (optional)"
                                 PlaceholderText="C:\Users\..." />
                             <Button
                                 x:Name="StartInSelectButton"
                                 x:Uid="UnifiedMappingControlStartInSelectButton"
+                                Grid.Column="1"
                                 VerticalAlignment="Bottom"
+                                AutomationProperties.Name="Select start directory"
                                 Click="StartInSelectButton_Click"
-                                Content="Browse..." />
-                        </StackPanel>
+                                Content="{ui:FontIcon Glyph=&#xE8DA;,
+                                                      FontSize=16}"
+                                Style="{StaticResource SubtleButtonStyle}" />
+                        </Grid>
 
                         <ComboBox
                             x:Name="ElevationComboBox"
@@ -353,9 +373,9 @@
                             HorizontalAlignment="Stretch"
                             Header="Run as"
                             SelectedIndex="0">
-                            <x:String>Normal</x:String>
-                            <x:String>Elevated</x:String>
-                            <x:String>Different user</x:String>
+                            <ComboBoxItem Content="Normal" />
+                            <ComboBoxItem Content="Elevated" />
+                            <ComboBoxItem Content="Different user" />
                         </ComboBox>
 
                         <ComboBox
@@ -364,11 +384,11 @@
                             HorizontalAlignment="Stretch"
                             Header="If already running"
                             SelectedIndex="0">
-                            <x:String>Show window</x:String>
-                            <x:String>Start another</x:String>
-                            <x:String>Do nothing</x:String>
-                            <x:String>Close</x:String>
-                            <x:String>End task</x:String>
+                            <ComboBoxItem Content="Show window" />
+                            <ComboBoxItem Content="Start another" />
+                            <ComboBoxItem Content="Do nothing" />
+                            <ComboBoxItem Content="Close" />
+                            <ComboBoxItem Content="End task" />
                         </ComboBox>
 
                         <ComboBox
@@ -377,10 +397,10 @@
                             HorizontalAlignment="Stretch"
                             Header="Window visibility"
                             SelectedIndex="0">
-                            <x:String>Normal</x:String>
-                            <x:String>Hidden</x:String>
-                            <x:String>Minimized</x:String>
-                            <x:String>Maximized</x:String>
+                            <ComboBoxItem Content="Normal" />
+                            <ComboBoxItem Content="Hidden" />
+                            <ComboBoxItem Content="Minimized" />
+                            <ComboBoxItem Content="Maximized" />
                         </ComboBox>
                     </StackPanel>
                 </tkcontrols:Case>
@@ -401,7 +421,7 @@
             Grid.Row="1"
             Grid.ColumnSpan="3"
             Margin="0,16,0,0"
-            IsClosable="True"
+            IsClosable="False"
             IsOpen="False"
             Severity="Warning" />
     </Grid>

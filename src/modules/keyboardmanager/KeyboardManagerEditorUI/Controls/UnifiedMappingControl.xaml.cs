@@ -38,6 +38,20 @@ namespace KeyboardManagerEditorUI.Controls
 
         private KeyInputMode _currentInputMode = KeyInputMode.OriginalKeys;
 
+        // Dirty tracking: marks fields that have had content then were cleared
+        private bool _textContentDirty;
+        private bool _urlPathDirty;
+        private bool _programPathDirty;
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Raised whenever the validation state of the control changes (inputs filled/cleared).
+        /// </summary>
+        public event EventHandler? ValidationStateChanged;
+
         #endregion
 
         #region Enums
@@ -131,6 +145,9 @@ namespace KeyboardManagerEditorUI.Controls
 
             TriggerKeys.ItemsSource = _triggerKeys;
             ActionKeys.ItemsSource = _actionKeys;
+
+            _triggerKeys.CollectionChanged += (_, _) => RaiseValidationStateChanged();
+            _actionKeys.CollectionChanged += (_, _) => RaiseValidationStateChanged();
 
             this.Unloaded += UnifiedMappingControl_Unloaded;
         }
@@ -226,6 +243,9 @@ namespace KeyboardManagerEditorUI.Controls
                     }
                 }
             }
+
+            HideValidationMessage();
+            RaiseValidationStateChanged();
         }
 
         private void ActionKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -309,16 +329,34 @@ namespace KeyboardManagerEditorUI.Controls
             UncheckAllToggleButtons();
         }
 
+        private void TextContentBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _textContentDirty = true;
+            RaiseValidationStateChanged();
+        }
+
         private void UrlPathInput_GotFocus(object sender, RoutedEventArgs e)
         {
             CleanupKeyboardHook();
             UncheckAllToggleButtons();
         }
 
+        private void UrlPathInput_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _urlPathDirty = true;
+            RaiseValidationStateChanged();
+        }
+
         private void ProgramPathInput_GotFocus(object sender, RoutedEventArgs e)
         {
             CleanupKeyboardHook();
             UncheckAllToggleButtons();
+        }
+
+        private void ProgramPathInput_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _programPathDirty = true;
+            RaiseValidationStateChanged();
         }
 
         private void ProgramArgsInput_GotFocus(object sender, RoutedEventArgs e)
@@ -351,6 +389,7 @@ namespace KeyboardManagerEditorUI.Controls
             if (file != null)
             {
                 ProgramPathInput.Text = file.Path;
+                RaiseValidationStateChanged();
             }
         }
 
@@ -503,6 +542,31 @@ namespace KeyboardManagerEditorUI.Controls
         /// Gets the if-running action (for OpenApp action type).
         /// </summary>
         public ProgramAlreadyRunningAction GetIfRunningAction() => (ProgramAlreadyRunningAction)(IfRunningComboBox?.SelectedIndex ?? 0);
+
+        #endregion
+
+        #region Public API - Validation
+
+        /// <summary>
+        /// Returns true when all required fields for the current action type are filled.
+        /// </summary>
+        public bool IsInputComplete()
+        {
+            // Trigger keys are always required
+            if (_triggerKeys.Count == 0)
+            {
+                return false;
+            }
+
+            return CurrentActionType switch
+            {
+                ActionType.KeyOrShortcut => _actionKeys.Count > 0,
+                ActionType.Text => !string.IsNullOrWhiteSpace(TextContentBox?.Text),
+                ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
+                ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
+                _ => false,
+            };
+        }
 
         #endregion
 
@@ -686,6 +750,52 @@ namespace KeyboardManagerEditorUI.Controls
             KeyboardHookHelper.Instance.CleanupHook();
         }
 
+        private void RaiseValidationStateChanged()
+        {
+            UpdateInlineValidation();
+            ValidationStateChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Shows or hides the inline validation InfoBar based on the current state.
+        /// Only shows errors for output fields that have been interacted with (had content then cleared).
+        /// </summary>
+        private void UpdateInlineValidation()
+        {
+            // Only validate the active action type's output field
+            switch (CurrentActionType)
+            {
+                case ActionType.Text:
+                    if (TextContentBox != null && _textContentDirty && string.IsNullOrWhiteSpace(TextContentBox.Text))
+                    {
+                        ShowValidationErrorFromType(ValidationErrorType.EmptyTargetText);
+                        return;
+                    }
+
+                    break;
+
+                case ActionType.OpenUrl:
+                    if (UrlPathInput != null && _urlPathDirty && string.IsNullOrWhiteSpace(UrlPathInput.Text))
+                    {
+                        ShowValidationErrorFromType(ValidationErrorType.EmptyUrl);
+                        return;
+                    }
+
+                    break;
+
+                case ActionType.OpenApp:
+                    if (ProgramPathInput != null && _programPathDirty && string.IsNullOrWhiteSpace(ProgramPathInput.Text))
+                    {
+                        ShowValidationErrorFromType(ValidationErrorType.EmptyProgramPath);
+                        return;
+                    }
+
+                    break;
+            }
+
+            HideValidationMessage();
+        }
+
         /// <summary>
         /// Resets all inputs to their default state.
         /// </summary>
@@ -697,6 +807,11 @@ namespace KeyboardManagerEditorUI.Controls
             UncheckAllToggleButtons();
 
             _currentInputMode = KeyInputMode.OriginalKeys;
+
+            // Reset dirty tracking
+            _textContentDirty = false;
+            _urlPathDirty = false;
+            _programPathDirty = false;
 
             // Hide any validation messages
             HideValidationMessage();
