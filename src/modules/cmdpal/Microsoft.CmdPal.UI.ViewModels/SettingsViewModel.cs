@@ -144,6 +144,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool ClearSearchOnGoHome
+    {
+        get => _settings.ClearSearchOnGoHome;
+        set
+        {
+            _settings.ClearSearchOnGoHome = value;
+            Save();
+        }
+    }
+
     public int AutoGoBackIntervalIndex
     {
         get

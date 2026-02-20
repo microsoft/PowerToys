@@ -290,6 +290,10 @@
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.DisableAnimations, Mode=TwoWay}" />
                     </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ClearSearchOnGoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8BB;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ClearSearchOnGoHome, Mode=TwoWay}" />
+                    </controls:SettingsCard>
                 </StackPanel>
             </Grid>
         </ScrollViewer>

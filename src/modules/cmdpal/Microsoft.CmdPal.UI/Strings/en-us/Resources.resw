@@ -413,6 +413,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Description" xml:space="preserve">
     <value>Disable animations when switching between pages</value>
   </data>
+  <data name="Settings_GeneralPage_ClearSearchOnGoHome_SettingsCard.Header" xml:space="preserve">
+    <value>Clear search on go home</value>
+  </data>
+  <data name="Settings_GeneralPage_ClearSearchOnGoHome_SettingsCard.Description" xml:space="preserve">
+    <value>Clear the search box when navigating back to the home page</value>
+  </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
   </data>
