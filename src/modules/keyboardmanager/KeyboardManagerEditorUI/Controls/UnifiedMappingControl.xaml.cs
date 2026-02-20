@@ -63,17 +63,6 @@ namespace KeyboardManagerEditorUI.Controls
             MouseClick,
         }
 
-        /// <summary>
-        /// Defines the mouse button options.
-        /// </summary>
-        public enum MouseButton
-        {
-            LeftMouse,
-            RightMouse,
-            ScrollUp,
-            ScrollDown,
-        }
-
         #endregion
 
         #region Properties

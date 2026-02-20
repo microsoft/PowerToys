@@ -245,4 +245,17 @@ namespace KeyboardManagerEditorUI.Interop
         ScrollUp = 5,
         ScrollDown = 6,
     }
+
+    /// <summary>
+    /// Target type for mouse button remappings, matching the native C++ targetType values
+    /// used in AddMouseButtonRemap.
+    /// </summary>
+    public enum MouseRemapTargetType
+    {
+        Key = 0,
+        Shortcut = 1,
+        Text = 2,
+        RunProgram = 3,
+        OpenUri = 4,
+    }
 }

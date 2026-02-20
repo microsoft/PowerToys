@@ -116,7 +116,7 @@ namespace KeyboardManagerConstants
     inline const std::wstring AppSpecificMouseRemapsSettingName = L"appSpecific";
 
     // Flag used for distinguishing mouse events sent by Keyboard Manager
-    inline const ULONG_PTR KEYBOARDMANAGER_MOUSE_FLAG = 0x1011;
+    inline constexpr ULONG_PTR KEYBOARDMANAGER_MOUSE_FLAG = 0x1011;
 
     // Scroll wheel rate limiting: minimum milliseconds between scroll remap triggers
     // This prevents infinite scroll wheels from aggressively repeating remapped actions

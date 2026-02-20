@@ -817,6 +817,12 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
+        // Validate mouse button range (0=Left through 6=ScrollDown)
+        if (originalButton < 0 || originalButton > static_cast<int>(MouseButton::ScrollDown))
+        {
+            return false;
+        }
+
         MouseButton button = static_cast<MouseButton>(originalButton);
         std::wstring app(targetApp ? targetApp : L"");
         KeyShortcutTextUnion target;
@@ -886,6 +892,13 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
     bool DeleteMouseButtonRemap(void* config, int originalButton, const wchar_t* targetApp)
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        // Validate mouse button range (0=Left through 6=ScrollDown)
+        if (originalButton < 0 || originalButton > static_cast<int>(MouseButton::ScrollDown))
+        {
+            return false;
+        }
+
         MouseButton button = static_cast<MouseButton>(originalButton);
         std::wstring app(targetApp ? targetApp : L"");
 
@@ -977,6 +990,12 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
+        // Validate mouse button range (0=Left through 6=ScrollDown)
+        if (targetMouseButton < 0 || targetMouseButton > static_cast<int>(MouseButton::ScrollDown))
+        {
+            return false;
+        }
+
         DWORD key = static_cast<DWORD>(originalKey);
         MouseButton button = static_cast<MouseButton>(targetMouseButton);
         std::wstring app(targetApp ? targetApp : L"");
@@ -1037,6 +1056,13 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
     {
         if (buttonName == nullptr || maxCount <= 0)
         {
+            return;
+        }
+
+        // Validate mouse button range (0=Left through 6=ScrollDown)
+        if (buttonCode < 0 || buttonCode > static_cast<int>(MouseButton::ScrollDown))
+        {
+            wcsncpy_s(buttonName, maxCount, L"Unknown", _TRUNCATE);
             return;
         }
 

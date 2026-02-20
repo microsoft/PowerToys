@@ -1810,6 +1810,63 @@ namespace KeyboardEventHandlers
     static std::chrono::steady_clock::time_point lastScrollUpTime;
     static std::chrono::steady_clock::time_point lastScrollDownTime;
 
+    // Helper: Prepares a mouse INPUT struct for the given button and key state.
+    // Used by key-to-mouse remap handlers to convert a keyboard event into a mouse event.
+    constexpr INPUT PrepareMouseInputForButton(MouseButton button, bool isKeyDown) noexcept
+    {
+        INPUT mouseInput = {};
+        mouseInput.type = INPUT_MOUSE;
+        mouseInput.mi.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG;
+
+        switch (button)
+        {
+        case MouseButton::Left:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
+            break;
+        case MouseButton::Right:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
+            break;
+        case MouseButton::Middle:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
+            break;
+        case MouseButton::X1:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
+            mouseInput.mi.mouseData = XBUTTON1;
+            break;
+        case MouseButton::X2:
+            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
+            mouseInput.mi.mouseData = XBUTTON2;
+            break;
+        case MouseButton::ScrollUp:
+            mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
+            mouseInput.mi.mouseData = WHEEL_DELTA;
+            break;
+        case MouseButton::ScrollDown:
+            mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
+            mouseInput.mi.mouseData = static_cast<DWORD>(static_cast<LONG>(-WHEEL_DELTA));
+            break;
+        }
+
+        return mouseInput;
+    }
+
+    // Helper: Returns true if the scroll wheel event should be throttled (within debounce window).
+    // Only call this for scroll wheel buttons.
+    bool ShouldThrottleScrollWheel(MouseButton button) noexcept
+    {
+        auto now = std::chrono::steady_clock::now();
+        auto& lastTime = (button == MouseButton::ScrollUp) ? lastScrollUpTime : lastScrollDownTime;
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count();
+
+        if (elapsed < KeyboardManagerConstants::SCROLL_WHEEL_DEBOUNCE_MS)
+        {
+            return true;
+        }
+
+        lastTime = now;
+        return false;
+    }
+
     // Helper function to execute the target action for a mouse button remap.
     // Handles remapping to key, shortcut (including run program and open URI), or text.
     // Returns 1 on success, or a special value if an error toast was shown.
@@ -1944,18 +2001,10 @@ namespace KeyboardEventHandlers
             return 0;  // Scroll wheel has no "up" event
         }
 
-        // Rate limiting for scroll wheel to prevent infinite scroll wheels from aggressive repetition
-        if (isScrollWheel)
+        // Rate limiting for scroll wheel
+        if (isScrollWheel && ShouldThrottleScrollWheel(button))
         {
-            auto now = std::chrono::steady_clock::now();
-            auto& lastTime = (button == MouseButton::ScrollUp) ? lastScrollUpTime : lastScrollDownTime;
-            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count();
-            
-            if (elapsed < KeyboardManagerConstants::SCROLL_WHEEL_DEBOUNCE_MS)
-            {
-                return 1;  // Suppress within debounce window
-            }
-            lastTime = now;
+            return 1;  // Suppress within debounce window
         }
 
         auto it = remapping.value();
@@ -1992,41 +2041,7 @@ namespace KeyboardEventHandlers
             return 1;  // Suppress key up but don't send scroll
         }
         
-        // Prepare mouse input
-        INPUT mouseInput = {};
-        mouseInput.type = INPUT_MOUSE;
-        mouseInput.mi.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG;
-
-        // Set the appropriate mouse event flags based on button and key state
-        switch (targetButton)
-        {
-        case MouseButton::Left:
-            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
-            break;
-        case MouseButton::Right:
-            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
-            break;
-        case MouseButton::Middle:
-            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
-            break;
-        case MouseButton::X1:
-            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
-            mouseInput.mi.mouseData = XBUTTON1;
-            break;
-        case MouseButton::X2:
-            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
-            mouseInput.mi.mouseData = XBUTTON2;
-            break;
-        case MouseButton::ScrollUp:
-            mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
-            mouseInput.mi.mouseData = WHEEL_DELTA;
-            break;
-        case MouseButton::ScrollDown:
-            mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
-            mouseInput.mi.mouseData = static_cast<DWORD>(static_cast<LONG>(-WHEEL_DELTA));
-            break;
-        }
-
+        INPUT mouseInput = PrepareMouseInputForButton(targetButton, isKeyDown);
         UINT result = SendInput(1, &mouseInput, sizeof(INPUT));
         if (result != 1)
         {
@@ -2098,18 +2113,10 @@ namespace KeyboardEventHandlers
             return 0;  // Scroll wheel has no "up" event
         }
 
-        // Rate limiting for scroll wheel to prevent infinite scroll wheels from aggressive repetition
-        if (isScrollWheel)
+        // Rate limiting for scroll wheel
+        if (isScrollWheel && ShouldThrottleScrollWheel(button))
         {
-            auto now = std::chrono::steady_clock::now();
-            auto& lastTime = (button == MouseButton::ScrollUp) ? lastScrollUpTime : lastScrollDownTime;
-            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count();
-            
-            if (elapsed < KeyboardManagerConstants::SCROLL_WHEEL_DEBOUNCE_MS)
-            {
-                return 1;  // Suppress but don't remap (within debounce window)
-            }
-            lastTime = now;
+            return 1;  // Suppress within debounce window
         }
 
         const auto& target = buttonIt->second;
@@ -2160,41 +2167,7 @@ namespace KeyboardEventHandlers
             return 1;  // Suppress key up but don't send scroll
         }
         
-        // Prepare mouse input
-        INPUT mouseInput = {};
-        mouseInput.type = INPUT_MOUSE;
-        mouseInput.mi.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_MOUSE_FLAG;
-
-        // Set the appropriate mouse event flags based on button and key state
-        switch (targetButton)
-        {
-        case MouseButton::Left:
-            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
-            break;
-        case MouseButton::Right:
-            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
-            break;
-        case MouseButton::Middle:
-            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
-            break;
-        case MouseButton::X1:
-            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
-            mouseInput.mi.mouseData = XBUTTON1;
-            break;
-        case MouseButton::X2:
-            mouseInput.mi.dwFlags = isKeyDown ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
-            mouseInput.mi.mouseData = XBUTTON2;
-            break;
-        case MouseButton::ScrollUp:
-            mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
-            mouseInput.mi.mouseData = WHEEL_DELTA;
-            break;
-        case MouseButton::ScrollDown:
-            mouseInput.mi.dwFlags = MOUSEEVENTF_WHEEL;
-            mouseInput.mi.mouseData = static_cast<DWORD>(static_cast<LONG>(-WHEEL_DELTA));
-            break;
-        }
-
+        INPUT mouseInput = PrepareMouseInputForButton(targetButton, isKeyDown);
         UINT result = SendInput(1, &mouseInput, sizeof(INPUT));
         if (result != 1)
         {

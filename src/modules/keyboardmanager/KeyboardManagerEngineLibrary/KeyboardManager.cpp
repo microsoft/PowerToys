@@ -291,6 +291,9 @@ bool KeyboardManager::HasRegisteredRemappings() const
     return HasRegisteredRemappingsUnchecked();
 }
 
+// Checks whether any keyboard-hook remappings are registered.
+// Note: mouseButtonReMap and appSpecificMouseButtonReMap are intentionally excluded
+// because they are handled by a separate mouse hook (see HasMouseRemappings).
 bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
 {
     return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.singleKeyToTextReMap.empty() && state.keyToMouseReMap.empty() && state.appSpecificKeyToMouseReMap.empty());
