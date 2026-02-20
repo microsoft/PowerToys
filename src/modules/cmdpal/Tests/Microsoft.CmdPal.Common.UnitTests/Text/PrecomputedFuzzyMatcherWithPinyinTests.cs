@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
-using Microsoft.CmdPal.Core.Common.Text;
+using Microsoft.CmdPal.Common.Text;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Text;
 
