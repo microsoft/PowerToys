@@ -233,7 +233,25 @@ public sealed partial class ListPage : Page,
         if (_scrollOnNextSelectionChange)
         {
             _scrollOnNextSelectionChange = false;
-            ItemView.ScrollIntoView(li);
+
+            var scrollTarget = li;
+
+            // If the previous item is a separator, also scroll it into view to provide
+            // better context for the user
+            var index = ItemView.Items.IndexOf(li);
+            if (index > 0)
+            {
+                var prevItem = ItemView.Items[index - 1] as ListItemViewModel;
+                if (prevItem?.Type == ListItemType.SectionHeader)
+                {
+                    scrollTarget = prevItem;
+                }
+            }
+
+            if (scrollTarget is not null)
+            {
+                ItemView.ScrollIntoView(scrollTarget);
+            }
         }
 
         // Automation notification for screen readers
@@ -1127,6 +1145,8 @@ public sealed partial class ListPage : Page,
     }
 
     private bool IsSeparator(object? item) => item is ListItemViewModel li && !li.IsInteractive;
+
+    private bool IsSectionHeader(object? item) => item is ListItemViewModel li && li.Type == ListItemType.SectionHeader;
 
     private void ResetScrollToTop()
     {
