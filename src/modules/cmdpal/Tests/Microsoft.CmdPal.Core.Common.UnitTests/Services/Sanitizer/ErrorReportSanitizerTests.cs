@@ -22,4 +22,18 @@ public partial class ErrorReportSanitizerTests
         // Assert
         Assert.AreEqual(TestData.Expected, result);
     }
+
+    [TestMethod]
+    public void Sanitize_ShouldNotMaskTooMuchPiiInErrorReport()
+    {
+        // Arrange
+        var reportSanitizer = new ErrorReportSanitizer();
+        var input = TestData.Input2;
+
+        // Act
+        var result = reportSanitizer.Sanitize(input);
+
+        // Assert
+        Assert.AreEqual(TestData.Expected2, result);
+    }
 }

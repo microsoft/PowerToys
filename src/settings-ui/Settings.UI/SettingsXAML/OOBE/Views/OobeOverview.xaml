@@ -52,24 +52,6 @@
                         </tkcontrols:SettingsCard.Description>
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind EnableDataDiagnostics, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-
-                    <!--  Show title and description only when there are conflicts  -->
-                    <TextBlock
-                        x:Uid="Oobe_Overview_Hotkey_Conflict_Title"
-                        Margin="0,24,0,8"
-                        Style="{StaticResource BodyStrongTextBlockStyle}" />
-
-                    <!--  Always show shortcut status card  -->
-                    <tkcontrols:SettingsCard Description="{x:Bind ConflictDescription, Mode=OneWay}" Header="{x:Bind ConflictText, Mode=OneWay}">
-                        <tkcontrols:SettingsCard.HeaderIcon>
-                            <FontIcon Foreground="{x:Bind IconForeground, Mode=OneWay}" Glyph="{x:Bind IconGlyph, Mode=OneWay}" />
-                        </tkcontrols:SettingsCard.HeaderIcon>
-                        <!--  Only show button when there are conflicts  -->
-                        <Button
-                            x:Uid="ResolveConflicts_Button"
-                            Click="ShortcutConflictBtn_Click"
-                            Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    </tkcontrols:SettingsCard>
                 </StackPanel>
             </StackPanel>
         </controls:OOBEPageControl.PageContent>

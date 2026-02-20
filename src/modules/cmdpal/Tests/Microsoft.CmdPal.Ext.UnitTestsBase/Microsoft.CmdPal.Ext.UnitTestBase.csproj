@@ -6,6 +6,8 @@
 		<IsPackable>false</IsPackable>
 		<RootNamespace>Microsoft.CmdPal.Ext.UnitTestsBase</RootNamespace>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<!-- Shared test helper assembly; it contains no tests and should never be executed directly. -->
+		<TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
 	</PropertyGroup>
 
 	<ItemGroup>

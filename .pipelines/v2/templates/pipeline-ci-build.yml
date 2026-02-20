@@ -34,6 +34,25 @@ parameters:
   - name: useExperimentalVersion
     type: boolean
     default: false
+  # Artifact mode parameters
+  - name: useArtifactSource
+    type: boolean
+    default: false
+  - name: azureDevOpsOrg
+    type: string
+    default: 'https://dev.azure.com/microsoft'
+  - name: azureDevOpsProject
+    type: string
+    default: 'ProjectReunion'
+  - name: buildId
+    type: string
+    default: ''
+  - name: artifactName
+    type: string
+    default: 'WindowsAppSDK_Nuget_And_MSIX'
+  - name: metaPackageName
+    type: string
+    default: 'Microsoft.WindowsAppSDK'
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
@@ -65,6 +84,12 @@ stages:
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
               winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
               useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+              useArtifactSource: ${{ parameters.useArtifactSource }}
+              azureDevOpsOrg: ${{ parameters.azureDevOpsOrg }}
+              azureDevOpsProject: ${{ parameters.azureDevOpsProject }}
+              buildId: ${{ parameters.buildId }}
+              artifactName: ${{ parameters.artifactName }}
+              metaPackageName: ${{ parameters.metaPackageName }}
             timeoutInMinutes: 90
 
   - stage: Build_SDK

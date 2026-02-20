@@ -11,9 +11,6 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class OobeMeasureTool : Page
     {
         public OobePowerToysModule ViewModel { get; set; }
@@ -21,15 +18,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeMeasureTool()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.MeasureTool]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.MeasureTool);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(MeasureToolPage));
+                OobeWindow.OpenMainWindowCallback(typeof(MeasureToolPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

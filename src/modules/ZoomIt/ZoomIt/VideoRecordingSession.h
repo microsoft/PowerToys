@@ -28,6 +28,7 @@ public:
         uint32_t frameRate,
         bool captureAudio,
         bool captureSystemAudio,
+        bool micMonoMix,
         winrt::Streams::IRandomAccessStream const& stream);
     ~VideoRecordingSession();
 
@@ -188,6 +189,7 @@ private:
         uint32_t frameRate,
         bool captureAudio,
         bool captureSystemAudio,
+        bool micMonoMix,
         winrt::Streams::IRandomAccessStream const& stream);
     void CloseInternal();
 

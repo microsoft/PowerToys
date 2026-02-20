@@ -18,6 +18,8 @@ public class ProviderSettings
 
     public Dictionary<string, FallbackSettings> FallbackCommands { get; set; } = new();
 
+    public List<string> PinnedCommandIds { get; set; } = [];
+
     [JsonIgnore]
     public string ProviderDisplayName { get; set; } = string.Empty;
 

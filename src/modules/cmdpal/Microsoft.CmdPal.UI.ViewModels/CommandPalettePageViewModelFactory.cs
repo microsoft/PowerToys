@@ -17,12 +17,12 @@ public class CommandPalettePageViewModelFactory
         _scheduler = scheduler;
     }
 
-    public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host)
+    public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host, CommandProviderContext providerContext)
     {
         return page switch
         {
-            IListPage listPage => new ListViewModel(listPage, _scheduler, host) { IsNested = nested },
-            IContentPage contentPage => new CommandPaletteContentPageViewModel(contentPage, _scheduler, host),
+            IListPage listPage => new ListViewModel(listPage, _scheduler, host, providerContext) { IsNested = nested },
+            IContentPage contentPage => new CommandPaletteContentPageViewModel(contentPage, _scheduler, host, providerContext),
             _ => null,
         };
     }
