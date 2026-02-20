@@ -22,7 +22,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
-    IPageContext,
+    IRecipient<PinCommandItemMessage>,
+    IRecipient<UnpinCommandItemMessage>,
     IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
@@ -35,14 +36,14 @@ public partial class TopLevelCommandManager : ObservableObject,
     private readonly Lock _dockBandsLock = new();
     private readonly SupersedingAsyncGate _reloadCommandsGate;
 
-    TaskScheduler IPageContext.Scheduler => _taskScheduler;
-
     public TopLevelCommandManager(IServiceProvider serviceProvider, ICommandProviderCache commandProviderCache)
     {
         _serviceProvider = serviceProvider;
         _commandProviderCache = commandProviderCache;
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
+        WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
     }
 
@@ -119,9 +120,9 @@ public partial class TopLevelCommandManager : ObservableObject,
     // May be called from a background thread
     private async Task<TopLevelObjectSets> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
-        WeakReference<IPageContext> weakSelf = new(this);
+        WeakReference<IPageContext> weak = new(commandProvider.TopLevelPageContext);
 
-        await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
+        await commandProvider.LoadTopLevelCommands(_serviceProvider, weak);
 
         var commands = await Task.Factory.StartNew(
             () =>
@@ -177,8 +178,9 @@ public partial class TopLevelCommandManager : ObservableObject,
     /// <returns>an awaitable task</returns>
     private async Task UpdateCommandsForProvider(CommandProviderWrapper sender, IItemsChangedEventArgs args)
     {
-        WeakReference<IPageContext> weakSelf = new(this);
-        await sender.LoadTopLevelCommands(_serviceProvider, weakSelf);
+        TopLevelItemPageContext pageContext = new(sender, _taskScheduler);
+        WeakReference<IPageContext> weak = new(pageContext);
+        await sender.LoadTopLevelCommands(_serviceProvider, weak);
 
         List<TopLevelViewModel> newItems = [.. sender.TopLevelItems];
         foreach (var i in sender.FallbackItems)
@@ -516,10 +518,25 @@ public partial class TopLevelCommandManager : ObservableObject,
     public void Receive(ReloadCommandsMessage message) =>
         ReloadAllCommandsAsync().ConfigureAwait(false);
 
-    void IPageContext.ShowException(Exception ex, string? extensionHint)
+    public void Receive(PinCommandItemMessage message)
     {
-        var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint ?? "TopLevelCommandManager");
-        CommandPaletteHost.Instance.Log(message);
+        var wrapper = LookupProvider(message.ProviderId);
+        wrapper?.PinCommand(message.CommandId, _serviceProvider);
+    }
+
+    public void Receive(UnpinCommandItemMessage message)
+    {
+        var wrapper = LookupProvider(message.ProviderId);
+        wrapper?.UnpinCommand(message.CommandId, _serviceProvider);
+    }
+
+    public CommandProviderWrapper? LookupProvider(string providerId)
+    {
+        lock (_commandProvidersLock)
+        {
+            return _builtInCommands.FirstOrDefault(w => w.ProviderId == providerId)
+                   ?? _extensionCommandProviders.FirstOrDefault(w => w.ProviderId == providerId);
+        }
     }
 
     internal bool IsProviderActive(string id)

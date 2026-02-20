@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -42,37 +42,61 @@ internal static class Commands
         var results = new List<IListItem>();
         results.AddRange(new[]
         {
-            new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_shutdown, confirmCommands, Resources.Microsoft_plugin_sys_shutdown_computer_confirmation, () => OpenInShellHelper.OpenInShell("shutdown", "/s /hybrid /t 0", runWithHiddenWindow: true)))
+            new ListItem(
+                new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_shutdown, confirmCommands, Resources.Microsoft_plugin_sys_shutdown_computer_confirmation, () => OpenInShellHelper.OpenInShell("shutdown", "/s /hybrid /t 0", runWithHiddenWindow: true))
+                {
+                    Id = "com.microsoft.cmdpal.builtin.system.shutdown",
+                })
             {
                 Title = Resources.Microsoft_plugin_sys_shutdown_computer,
                 Subtitle = Resources.Microsoft_plugin_sys_shutdown_computer_description,
                 Icon = Icons.ShutdownIcon,
             },
-            new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_restart, confirmCommands, Resources.Microsoft_plugin_sys_restart_computer_confirmation, () => OpenInShellHelper.OpenInShell("shutdown", "/g /t 0", runWithHiddenWindow: true)))
+            new ListItem(
+                new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_restart, confirmCommands, Resources.Microsoft_plugin_sys_restart_computer_confirmation, () => OpenInShellHelper.OpenInShell("shutdown", "/g /t 0", runWithHiddenWindow: true))
+                {
+                    Id = "com.microsoft.cmdpal.builtin.system.restart",
+                })
             {
                 Title = Resources.Microsoft_plugin_sys_restart_computer,
                 Subtitle = Resources.Microsoft_plugin_sys_restart_computer_description,
                 Icon = Icons.RestartIcon,
             },
-            new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_signout, confirmCommands, Resources.Microsoft_plugin_sys_sign_out_confirmation, () => NativeMethods.ExitWindowsEx(EWXLOGOFF, 0)))
+            new ListItem(
+                new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_signout, confirmCommands, Resources.Microsoft_plugin_sys_sign_out_confirmation, () => NativeMethods.ExitWindowsEx(EWXLOGOFF, 0))
+                {
+                    Id = "com.microsoft.cmdpal.builtin.system.signout",
+                })
             {
                 Title = Resources.Microsoft_plugin_sys_sign_out,
                 Subtitle = Resources.Microsoft_plugin_sys_sign_out_description,
                 Icon = Icons.LogoffIcon,
             },
-            new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_lock, confirmCommands, Resources.Microsoft_plugin_sys_lock_confirmation, () => NativeMethods.LockWorkStation()))
+            new ListItem(
+                new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_lock, confirmCommands, Resources.Microsoft_plugin_sys_lock_confirmation, () => NativeMethods.LockWorkStation())
+                {
+                    Id = "com.microsoft.cmdpal.builtin.system.lock",
+                })
             {
                 Title = Resources.Microsoft_plugin_sys_lock,
                 Subtitle = Resources.Microsoft_plugin_sys_lock_description,
                 Icon = Icons.LockIcon,
             },
-            new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_sleep, confirmCommands, Resources.Microsoft_plugin_sys_sleep_confirmation, () => NativeMethods.SetSuspendState(false, true, true)))
+            new ListItem(
+                new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_sleep, confirmCommands, Resources.Microsoft_plugin_sys_sleep_confirmation, () => NativeMethods.SetSuspendState(false, true, true))
+                {
+                    Id = "com.microsoft.cmdpal.builtin.system.sleep",
+                })
             {
                 Title = Resources.Microsoft_plugin_sys_sleep,
                 Subtitle = Resources.Microsoft_plugin_sys_sleep_description,
                 Icon = Icons.SleepIcon,
             },
-            new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_hibernate, confirmCommands, Resources.Microsoft_plugin_sys_hibernate_confirmation, () => NativeMethods.SetSuspendState(true, true, true)))
+            new ListItem(
+                new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_hibernate, confirmCommands, Resources.Microsoft_plugin_sys_hibernate_confirmation, () => NativeMethods.SetSuspendState(true, true, true))
+                {
+                    Id = "com.microsoft.cmdpal.builtin.system.hibernate",
+                })
             {
                 Title = Resources.Microsoft_plugin_sys_hibernate,
                 Subtitle = Resources.Microsoft_plugin_sys_hibernate_description,
@@ -85,13 +109,19 @@ internal static class Commands
         {
             results.AddRange(new[]
             {
-                new ListItem(new OpenInShellCommand(Resources.Microsoft_plugin_command_name_open, "explorer.exe", "shell:RecycleBinFolder"))
+                new ListItem(new OpenInShellCommand(Resources.Microsoft_plugin_command_name_open, "explorer.exe", "shell:RecycleBinFolder")
+                {
+                    Id = "com.microsoft.cmdpal.builtin.system.recycle_bin",
+                })
                 {
                     Title = Resources.Microsoft_plugin_sys_RecycleBinOpen,
                     Subtitle = Resources.Microsoft_plugin_sys_RecycleBin_description,
                     Icon = Icons.RecycleBinIcon,
                 },
-                new ListItem(new EmptyRecycleBinConfirmation(emptyRBSuccessMessage))
+                new ListItem(new EmptyRecycleBinConfirmation(emptyRBSuccessMessage)
+                {
+                    Id = "com.microsoft.cmdpal.builtin.system.empty_recycle_bin",
+                })
                 {
                     Title = Resources.Microsoft_plugin_sys_RecycleBinEmptyResult,
                     Subtitle = Resources.Microsoft_plugin_sys_RecycleBinEmpty_description,
@@ -102,7 +132,10 @@ internal static class Commands
         else
         {
             results.Add(
-                new ListItem(new OpenInShellCommand(Resources.Microsoft_plugin_command_name_open, "explorer.exe", "shell:RecycleBinFolder"))
+                new ListItem(new OpenInShellCommand(Resources.Microsoft_plugin_command_name_open, "explorer.exe", "shell:RecycleBinFolder")
+                {
+                    Id = "com.microsoft.cmdpal.builtin.system.recycle_bin",
+                })
                 {
                     Title = Resources.Microsoft_plugin_sys_RecycleBin,
                     Subtitle = Resources.Microsoft_plugin_sys_RecycleBin_description,
@@ -110,7 +143,15 @@ internal static class Commands
                 });
         }
 
-        results.Add(new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_sys_RestartShell_name!, confirmCommands, Resources.Microsoft_plugin_sys_RestartShell_confirmation!, static () => OpenInShellHelper.OpenInShell("cmd", "/C tskill explorer && start explorer", runWithHiddenWindow: true)))
+        results.Add(new ListItem(
+            new ExecuteCommandConfirmation(
+                    Resources.Microsoft_plugin_sys_RestartShell_name!,
+                    confirmCommands,
+                    Resources.Microsoft_plugin_sys_RestartShell_confirmation!,
+                    static () => OpenInShellHelper.OpenInShell("cmd", "/C tskill explorer && start explorer", runWithHiddenWindow: true))
+            {
+                Id = "com.microsoft.cmdpal.builtin.system.restart_shell",
+            })
         {
             Title = Resources.Microsoft_plugin_sys_RestartShell!,
             Subtitle = Resources.Microsoft_plugin_sys_RestartShell_description!,
@@ -141,19 +182,19 @@ internal static class Commands
         var results = new List<IListItem>();
 
         // We update the cache only if the last query is older than 'updateCacheIntervalSeconds' seconds
-        DateTime timeOfLastNetworkQueryBefore = timeOfLastNetworkQuery;
+        var timeOfLastNetworkQueryBefore = timeOfLastNetworkQuery;
         timeOfLastNetworkQuery = DateTime.Now;             // Set time of last query to this query
         if ((timeOfLastNetworkQuery - timeOfLastNetworkQueryBefore).TotalSeconds >= UpdateCacheIntervalSeconds)
         {
             networkPropertiesCache = NetworkConnectionProperties.GetList();
         }
 
-        CompositeFormat sysIpv4DescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_ip4_description);
-        CompositeFormat sysIpv6DescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_ip6_description);
-        CompositeFormat sysMacDescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_mac_description);
+        var sysIpv4DescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_ip4_description);
+        var sysIpv6DescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_ip6_description);
+        var sysMacDescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_mac_description);
         var hideDisconnectedNetworkInfo = manager.HideDisconnectedNetworkInfo();
 
-        foreach (NetworkConnectionProperties intInfo in networkPropertiesCache)
+        foreach (var intInfo in networkPropertiesCache)
         {
             if (hideDisconnectedNetworkInfo)
             {

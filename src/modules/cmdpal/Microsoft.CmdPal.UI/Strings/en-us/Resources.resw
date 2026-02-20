@@ -882,7 +882,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>K</value>
     <comment>Keyboard key</comment>
   </data>
-  <data name="ConfigureShortcut" xml:space="preserve">
+    <data name="ConfigureShortcut" xml:space="preserve">
     <value>Configure shortcut</value>
   </data>
   <data name="ConfigureShortcutText.Text" xml:space="preserve">
@@ -911,5 +911,21 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="DockAppearance_ShowLabels_CheckBox.Description" xml:space="preserve">
     <value>Show labels for dock items by default</value>
+  </data>
+  <data name="top_level_pin_command_name" xml:space="preserve">
+    <value>Pin command</value>
+    <comment>Command name for pinning an item to the top level list of commands</comment>
+  </data>
+  <data name="top_level_unpin_command_name" xml:space="preserve">
+    <value>Unpin command</value>
+    <comment>Command name for unpinning an item from the top level list of commands</comment>
+  </data>
+  <data name="dock_pin_command_name" xml:space="preserve">
+    <value>Pin to dock</value>
+    <comment>Command name for pinning an item to the dock</comment>
+  </data>
+  <data name="dock_unpin_command_name" xml:space="preserve">
+    <value>Unpin from dock</value>
+    <comment>Command name for unpinning an item from the dock</comment>
   </data>
 </root>

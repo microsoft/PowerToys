@@ -7,7 +7,7 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 internal sealed partial class NullPageViewModel : PageViewModel
 {
     internal NullPageViewModel(TaskScheduler scheduler, AppExtensionHost extensionHost)
-        : base(null, scheduler, extensionHost)
+        : base(null, scheduler, extensionHost, CommandProviderContext.Empty)
     {
         HasBackButton = false;
     }

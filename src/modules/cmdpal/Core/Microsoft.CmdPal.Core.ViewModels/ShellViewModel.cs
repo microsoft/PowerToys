@@ -261,6 +261,7 @@ public partial class ShellViewModel : ObservableObject,
         }
 
         var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
+        var providerContext = _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
 
         _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
 
@@ -285,7 +286,7 @@ public partial class ShellViewModel : ObservableObject,
                 }
 
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host!);
+                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host!, providerContext);
                 if (pageViewModel is null)
                 {
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");

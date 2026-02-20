@@ -15,11 +15,12 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 
 public sealed partial class DockViewModel : IDisposable,
-    IRecipient<CommandsReloadedMessage>,
-    IPageContext
+    IRecipient<CommandsReloadedMessage>
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly SettingsModel _settingsModel;
+    private readonly DockPageContext _pageContext;
+    private readonly IContextMenuFactory _contextMenuFactory;
 
     private DockSettings _settings;
 
@@ -35,13 +36,16 @@ public sealed partial class DockViewModel : IDisposable,
 
     public DockViewModel(
         TopLevelCommandManager tlcManager,
+        IContextMenuFactory contextMenuFactory,
         SettingsModel settings,
         TaskScheduler scheduler)
     {
         _topLevelCommandManager = tlcManager;
+        _contextMenuFactory = contextMenuFactory;
         _settingsModel = settings;
         _settings = settings.DockSettings;
         Scheduler = scheduler;
+        _pageContext = new(this);
         WeakReferenceMessenger.Default.Register<CommandsReloadedMessage>(this);
     }
 
@@ -122,12 +126,19 @@ public sealed partial class DockViewModel : IDisposable,
         CoreLogger.LogDebug("Bands reloaded");
     }
 
+    /// <summary>
+    /// Instantiate a new band view model for this CommandItem, given the
+    /// settings. The DockBandViewModel will _not_ be initialized - callers
+    /// will need to make sure to initialize it somewhere else (off the UI
+    /// thread)
+    /// </summary>
     private DockBandViewModel CreateBandItem(
         DockBandSettings bandSettings,
         CommandItemViewModel commandItem)
     {
-        DockBandViewModel band = new(commandItem, new(this), bandSettings, _settings, SaveSettings);
-        band.InitializeProperties(); // TODO! make async
+        DockBandViewModel band = new(commandItem, commandItem.PageContext, bandSettings, _settings, SaveSettings, _contextMenuFactory);
+
+        // the band is NOT initialized here!
         return band;
     }
 
@@ -566,12 +577,6 @@ public sealed partial class DockViewModel : IDisposable,
         Logger.LogDebug($"Unpinned band {bandId} (not saved yet)");
     }
 
-    public void ShowException(Exception ex, string? extensionHint = null)
-    {
-        var extensionText = extensionHint ?? "<unknown>";
-        CoreLogger.LogError($"Error in extension {extensionText}", ex);
-    }
-
     private void DoOnUiThread(Action action)
     {
         Task.Factory.StartNew(
@@ -584,7 +589,7 @@ public sealed partial class DockViewModel : IDisposable,
     public CommandItemViewModel GetContextMenuForDock()
     {
         var model = new DockContextMenuItem();
-        var vm = new CommandItemViewModel(new(model), new(this));
+        var vm = new CommandItemViewModel(new(model), new(_pageContext), contextMenuFactory: null);
         vm.SlowInitializeProperties();
         return vm;
     }
@@ -618,6 +623,25 @@ public sealed partial class DockViewModel : IDisposable,
                 new CommandContextItem(editDockCommand),
                 new CommandContextItem(openSettingsCommand),
             };
+        }
+    }
+
+    /// <summary>
+    /// Provides an empty page context, for the dock's own context menu. We're
+    /// building the context menu for the dock using literally our own cmdpal
+    /// types, but that means we need a page context for the VM we will
+    /// generate.
+    /// </summary>
+    private sealed partial class DockPageContext(DockViewModel dockViewModel) : IPageContext
+    {
+        public TaskScheduler Scheduler => dockViewModel.Scheduler;
+
+        public ICommandProviderContext ProviderContext => CommandProviderContext.Empty;
+
+        public void ShowException(Exception ex, string? extensionHint)
+        {
+            var extensionText = extensionHint ?? "<unknown>";
+            CoreLogger.LogError($"Error in dock context {extensionText}", ex);
         }
     }
 }

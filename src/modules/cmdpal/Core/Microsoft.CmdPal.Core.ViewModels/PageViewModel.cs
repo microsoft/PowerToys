@@ -79,13 +79,16 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public IconInfoViewModel Icon { get; protected set; }
 
-    public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost)
+    public ICommandProviderContext ProviderContext { get; protected set; }
+
+    public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost, ICommandProviderContext providerContext)
         : base(scheduler)
     {
         InitializeSelfAsPageContext();
         _pageModel = new(model);
         Scheduler = scheduler;
         ExtensionHost = extensionHost;
+        ProviderContext = providerContext;
         Icon = new(null);
 
         ExtensionHost.StatusMessages.CollectionChanged += StatusMessages_CollectionChanged;
@@ -267,6 +270,8 @@ public interface IPageContext
     void ShowException(Exception ex, string? extensionHint = null);
 
     TaskScheduler Scheduler { get; }
+
+    ICommandProviderContext ProviderContext { get; }
 }
 
 public interface IPageViewModelFactoryService
@@ -278,5 +283,5 @@ public interface IPageViewModelFactoryService
     /// <param name="nested">Indicates whether the page is not the top-level page.</param>
     /// <param name="host">The command palette host that will host the page (for status messages)</param>
     /// <returns>A new instance of the page view model.</returns>
-    PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host);
+    PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host, ICommandProviderContext providerContext);
 }

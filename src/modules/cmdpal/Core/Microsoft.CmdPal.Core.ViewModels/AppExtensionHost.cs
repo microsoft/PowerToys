@@ -165,4 +165,6 @@ public interface IAppHostService
     AppExtensionHost GetDefaultHost();
 
     AppExtensionHost GetHostForCommand(object? context, AppExtensionHost? currentHost);
+
+    ICommandProviderContext GetProviderContextForCommand(object? command, ICommandProviderContext? currentContext);
 }

@@ -6,13 +6,13 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-internal sealed class Icons
+public sealed class Icons
 {
-    internal static IconInfo PinIcon => new("\uE718"); // Pin icon
+    public static IconInfo PinIcon => new("\uE718"); // Pin icon
 
-    internal static IconInfo UnpinIcon => new("\uE77A"); // Unpin icon
+    public static IconInfo UnpinIcon => new("\uE77A"); // Unpin icon
 
-    internal static IconInfo SettingsIcon => new("\uE713"); // Settings icon
+    public static IconInfo SettingsIcon => new("\uE713"); // Settings icon
 
-    internal static IconInfo EditIcon => new("\uE70F"); // Edit icon
+    public static IconInfo EditIcon => new("\uE70F"); // Edit icon
 }

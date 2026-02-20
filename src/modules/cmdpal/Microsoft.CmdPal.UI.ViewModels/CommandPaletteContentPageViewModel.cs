@@ -9,8 +9,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class CommandPaletteContentPageViewModel : ContentPageViewModel
 {
-    public CommandPaletteContentPageViewModel(IContentPage model, TaskScheduler scheduler, AppExtensionHost host)
-        : base(model, scheduler, host)
+    public CommandPaletteContentPageViewModel(IContentPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext)
+        : base(model, scheduler, host, providerContext)
     {
     }
 

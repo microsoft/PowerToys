@@ -19,6 +19,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
     private readonly DockBandSettings _bandSettings;
     private readonly DockSettings _dockSettings;
     private readonly Action _saveSettings;
+    private readonly IContextMenuFactory _contextMenuFactory;
 
     public ObservableCollection<DockItemViewModel> Items { get; } = new();
 
@@ -128,13 +129,15 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         WeakReference<IPageContext> errorContext,
         DockBandSettings settings,
         DockSettings dockSettings,
-        Action saveSettings)
+        Action saveSettings,
+        IContextMenuFactory contextMenuFactory)
         : base(errorContext)
     {
         _rootItem = commandItemViewModel;
         _bandSettings = settings;
         _dockSettings = dockSettings;
         _saveSettings = saveSettings;
+        _contextMenuFactory = contextMenuFactory;
 
         _showTitles = settings.ResolveShowTitles(dockSettings.ShowLabels);
         _showSubtitles = settings.ResolveShowSubtitles(dockSettings.ShowLabels);
@@ -146,7 +149,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         var newViewModels = new List<DockItemViewModel>();
         foreach (var item in items)
         {
-            var newItemVm = new DockItemViewModel(new(item), this.PageContext, _showTitles, _showSubtitles);
+            var newItemVm = new DockItemViewModel(new(item), this.PageContext, _showTitles, _showSubtitles, _contextMenuFactory);
             newItemVm.SlowInitializeProperties();
             newViewModels.Add(newItemVm);
         }
@@ -176,7 +179,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         {
             DoOnUiThread(() =>
             {
-                var dockItem = new DockItemViewModel(_rootItem, _showTitles, _showSubtitles);
+                var dockItem = new DockItemViewModel(_rootItem, _showTitles, _showSubtitles, _contextMenuFactory);
                 dockItem.SlowInitializeProperties();
                 Items.Add(dockItem);
             });
@@ -277,13 +280,13 @@ public partial class DockItemViewModel : CommandItemViewModel
             $"{ItemTitle}\n{base.Subtitle}" :
             ItemTitle + base.Subtitle;
 
-    public DockItemViewModel(CommandItemViewModel root, bool showTitle, bool showSubtitle)
-        : this(root.Model, root.PageContext, showTitle, showSubtitle)
+    public DockItemViewModel(CommandItemViewModel root, bool showTitle, bool showSubtitle, IContextMenuFactory contextMenuFactory)
+        : this(root.Model, root.PageContext, showTitle, showSubtitle, contextMenuFactory)
     {
     }
 
-    public DockItemViewModel(ExtensionObject<ICommandItem> item, WeakReference<IPageContext> errorContext, bool showTitle, bool showSubtitle)
-        : base(item, errorContext)
+    public DockItemViewModel(ExtensionObject<ICommandItem> item, WeakReference<IPageContext> errorContext, bool showTitle, bool showSubtitle, IContextMenuFactory contextMenuFactory)
+        : base(item, errorContext, contextMenuFactory)
     {
         _showTitle = showTitle;
         _showSubtitle = showSubtitle;
