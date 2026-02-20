@@ -67,6 +67,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                     var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
                     moreCommands.Add(contextItem);
                 }
+
+                TryAddPinToDockCommand(providerSettings, itemId, providerId, moreCommands, commandItem);
             }
         }
 
@@ -78,6 +80,35 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         }
 
         return results;
+    }
+
+    private void TryAddPinToDockCommand(
+        ProviderSettings providerSettings,
+        string itemId,
+        string providerId,
+        List<IContextItem> moreCommands,
+        CommandItemViewModel commandItem)
+    {
+        if (!_settingsModel.IsDockEnabled)
+        {
+            return;
+        }
+
+        var inStartBands = _settingsModel.DockSettings.StartBands.Any(band => band.Id == this.Id);
+        var inCenterBands = _settingsModel.DockSettings.CenterBands.Any(band => band.Id == this.Id);
+        var inEndBands = _settingsModel.DockSettings.EndBands.Any(band => band.Id == this.Id);
+        var alreadyPinned = (inStartBands || inCenterBands || inEndBands)/** &&
+                            _settingsModel.DockSettings.PinnedCommands.Contains(this.Id)**/;
+        var pinToTopLevelCommand = new PinToCommand(
+            commandId: itemId,
+            providerId: providerId,
+            pin: !alreadyPinned,
+            PinLocation.Dock,
+            _settingsModel,
+            _topLevelCommandManager);
+
+        var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
+        moreCommands.Add(contextItem);
     }
 
     internal enum PinLocation
@@ -120,10 +151,13 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         private readonly TopLevelCommandManager _topLevelCommandManager;
         private readonly bool _pin;
         private readonly PinLocation _pinLocation;
+        private bool IsPinToDock => _pinLocation == PinLocation.Dock;
 
         public override IconInfo Icon => _pin ? Icons.PinIcon : Icons.UnpinIcon;
 
-        public override string Name => _pin ? RS_.GetString("top_level_pin_command_name") : RS_.GetString("top_level_unpin_command_name");
+        public override string Name => _pin ? 
+            (IsPinToDock ? RS_.GetString("dock_pin_command_name") : RS_.GetString("top_level_pin_command_name")) : 
+            (IsPinToDock ? RS_.GetString("dock_pin_command_name") : RS_.GetString("top_level_unpin_command_name"));
 
         internal event EventHandler? PinStateChanged;
 

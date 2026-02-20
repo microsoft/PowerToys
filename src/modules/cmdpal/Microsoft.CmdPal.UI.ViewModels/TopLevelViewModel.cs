@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -487,52 +487,28 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             }
         }
 
-        var dockEnabled = _settings.EnableDock;
-        if (dockEnabled && _dockViewModel is not null)
-        {
-            // Add a separator
-            contextItems.Add(new Separator());
-
-            var inStartBands = _settings.DockSettings.StartBands.Any(band => band.Id == this.Id);
-            var inCenterBands = _settings.DockSettings.CenterBands.Any(band => band.Id == this.Id);
-            var inEndBands = _settings.DockSettings.EndBands.Any(band => band.Id == this.Id);
-            var alreadyPinned = (inStartBands || inCenterBands || inEndBands) &&
-                                _settings.DockSettings.PinnedCommands.Contains(this.Id);
-
-            var pinCommand = new PinToDockCommand(
-                this,
-                !alreadyPinned,
-                _dockViewModel,
-                _settings,
-                _serviceProvider.GetService<TopLevelCommandManager>()!);
-
-            var contextItem = new CommandContextItem(pinCommand);
-
-            contextItems.Add(contextItem);
-        }
-
         return contextItems.ToArray();
     }
 
-    internal ICommandItem ToPinnedDockBandItem()
-    {
-        var item = new PinnedDockItem(item: this, id: Id);
+    // internal ICommandItem ToPinnedDockBandItem()
+    // {
+    //     var item = new PinnedDockItem(item: this, id: Id);
 
-        return item;
-    }
+    //     return item;
+    // }
 
-    internal TopLevelViewModel CloneAsBand()
-    {
-        return new TopLevelViewModel(
-            _commandItemViewModel,
-            TopLevelType.DockBand,
-            ExtensionHost,
-            ProviderContext,
-            _settings,
-            _providerSettings,
-            _serviceProvider,
-            _commandItemViewModel.Model.Unsafe);
-    }
+    // internal TopLevelViewModel CloneAsBand()
+    // {
+    //     return new TopLevelViewModel(
+    //         _commandItemViewModel,
+    //         TopLevelType.DockBand,
+    //         ExtensionHost,
+    //         ProviderContext,
+    //         _settings,
+    //         _providerSettings,
+    //         _serviceProvider,
+    //         _commandItemViewModel.Model.Unsafe);
+    // }
 
     private sealed partial class PinToDockCommand : InvokableCommand
     {
