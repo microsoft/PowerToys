@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -189,12 +189,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
             var bandSettings = _settings.DockSettings.StartBands
                 .Concat(_settings.DockSettings.EndBands)
-                .FirstOrDefault(band => band.Id == this.Id);
+                .FirstOrDefault(band => band.CommandId == this.Id);
             if (bandSettings is null)
             {
                 return new DockBandSettings()
                 {
-                    Id = this.Id,
+                    CommandId = this.Id,
                     ShowLabels = true,
                 };
             }
@@ -494,7 +494,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     // {
     //     var item = new PinnedDockItem(item: this, id: Id);
 
-    //     return item;
+    // return item;
     // }
 
     // internal TopLevelViewModel CloneAsBand()
@@ -509,7 +509,6 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     //         _serviceProvider,
     //         _commandItemViewModel.Model.Unsafe);
     // }
-
     private sealed partial class PinToDockCommand : InvokableCommand
     {
         private readonly TopLevelViewModel _topLevelViewModel;
@@ -581,7 +580,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             // think that PinDockBand below will create a duplicate VM for it.
             _settings.DockSettings.StartBands.Add(new DockBandSettings()
             {
-                Id = _topLevelViewModel.Id,
+                CommandId = _topLevelViewModel.Id,
                 ShowLabels = true,
             });
 
@@ -597,9 +596,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         private void UnpinFromDock()
         {
             _settings.DockSettings.PinnedCommands.Remove(_topLevelViewModel.Id);
-            _settings.DockSettings.StartBands.RemoveAll(band => band.Id == _topLevelViewModel.Id);
-            _settings.DockSettings.CenterBands.RemoveAll(band => band.Id == _topLevelViewModel.Id);
-            _settings.DockSettings.EndBands.RemoveAll(band => band.Id == _topLevelViewModel.Id);
+            _settings.DockSettings.StartBands.RemoveAll(band => band.CommandId == _topLevelViewModel.Id);
+            _settings.DockSettings.CenterBands.RemoveAll(band => band.CommandId == _topLevelViewModel.Id);
+            _settings.DockSettings.EndBands.RemoveAll(band => band.CommandId == _topLevelViewModel.Id);
 
             _topLevelViewModel.Save();
         }

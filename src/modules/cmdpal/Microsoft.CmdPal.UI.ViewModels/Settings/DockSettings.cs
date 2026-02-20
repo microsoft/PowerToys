@@ -60,11 +60,11 @@ public class DockSettings
             "com.microsoft.cmdpal.winget"
         ];
 
-        StartBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.home" });
-        StartBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.winget", ShowLabels = false });
+        StartBands.Add(new DockBandSettings { CommandId = "com.microsoft.cmdpal.home" });
+        StartBands.Add(new DockBandSettings { CommandId = "com.microsoft.cmdpal.winget", ShowLabels = false });
 
-        EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.performanceWidget" });
-        EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.timedate.dockBand" });
+        EndBands.Add(new DockBandSettings { CommandId = "com.microsoft.cmdpal.performanceWidget" });
+        EndBands.Add(new DockBandSettings { CommandId = "com.microsoft.cmdpal.timedate.dockBand" });
     }
 }
 
@@ -74,7 +74,7 @@ public class DockSettings
 /// </summary>
 public class DockBandSettings
 {
-    public string Id { get; set; } = string.Empty;
+    public string CommandId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets whether titles are shown for items in this band.

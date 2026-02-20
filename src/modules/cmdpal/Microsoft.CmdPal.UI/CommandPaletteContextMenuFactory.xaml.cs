@@ -94,9 +94,9 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             return;
         }
 
-        var inStartBands = _settingsModel.DockSettings.StartBands.Any(band => band.Id == this.Id);
-        var inCenterBands = _settingsModel.DockSettings.CenterBands.Any(band => band.Id == this.Id);
-        var inEndBands = _settingsModel.DockSettings.EndBands.Any(band => band.Id == this.Id);
+        var inStartBands = _settingsModel.DockSettings.StartBands.Any(band => band.CommandId == this.Id);
+        var inCenterBands = _settingsModel.DockSettings.CenterBands.Any(band => band.CommandId == this.Id);
+        var inEndBands = _settingsModel.DockSettings.EndBands.Any(band => band.CommandId == this.Id);
         var alreadyPinned = (inStartBands || inCenterBands || inEndBands)/** &&
                             _settingsModel.DockSettings.PinnedCommands.Contains(this.Id)**/;
         var pinToTopLevelCommand = new PinToCommand(

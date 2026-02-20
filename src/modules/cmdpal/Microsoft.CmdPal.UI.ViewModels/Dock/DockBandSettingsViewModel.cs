@@ -143,19 +143,19 @@ public partial class DockBandSettingsViewModel : ObservableObject
     private DockPinSide FetchPinSide()
     {
         var dockSettings = _settingsModel.DockSettings;
-        var inStart = dockSettings.StartBands.Any(b => b.Id == _dockSettingsModel.Id);
+        var inStart = dockSettings.StartBands.Any(b => b.CommandId == _dockSettingsModel.CommandId);
         if (inStart)
         {
             return DockPinSide.Start;
         }
 
-        var inCenter = dockSettings.CenterBands.Any(b => b.Id == _dockSettingsModel.Id);
+        var inCenter = dockSettings.CenterBands.Any(b => b.CommandId == _dockSettingsModel.CommandId);
         if (inCenter)
         {
             return DockPinSide.Center;
         }
 
-        var inEnd = dockSettings.EndBands.Any(b => b.Id == _dockSettingsModel.Id);
+        var inEnd = dockSettings.EndBands.Any(b => b.CommandId == _dockSettingsModel.CommandId);
         if (inEnd)
         {
             return DockPinSide.End;
@@ -193,9 +193,9 @@ public partial class DockBandSettingsViewModel : ObservableObject
         var dockSettings = _settingsModel.DockSettings;
 
         // Remove from all sides first
-        dockSettings.StartBands.RemoveAll(b => b.Id == _dockSettingsModel.Id);
-        dockSettings.CenterBands.RemoveAll(b => b.Id == _dockSettingsModel.Id);
-        dockSettings.EndBands.RemoveAll(b => b.Id == _dockSettingsModel.Id);
+        dockSettings.StartBands.RemoveAll(b => b.CommandId == _dockSettingsModel.CommandId);
+        dockSettings.CenterBands.RemoveAll(b => b.CommandId == _dockSettingsModel.CommandId);
+        dockSettings.EndBands.RemoveAll(b => b.CommandId == _dockSettingsModel.CommandId);
 
         // Add to the selected side
         switch (side)
