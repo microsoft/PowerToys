@@ -584,10 +584,22 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public bool IsInputComplete()
         {
-            // Trigger keys are always required
-            if (_triggerKeys.Count == 0)
+            // Trigger validation depends on trigger type
+            if (CurrentTriggerType == TriggerType.Mouse)
             {
-                return false;
+                // Mouse triggers use a ComboBox, not _triggerKeys
+                if (GetMouseTriggerButtonCode() == null)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // Keyboard triggers require at least one key
+                if (_triggerKeys.Count == 0)
+                {
+                    return false;
+                }
             }
 
             return CurrentActionType switch
@@ -596,6 +608,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.Text => !string.IsNullOrWhiteSpace(TextContentBox?.Text),
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
+                ActionType.MouseClick => GetMouseActionButtonCode() != null,
                 _ => false,
             };
         }

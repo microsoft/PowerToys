@@ -271,6 +271,57 @@ namespace KeyboardManagerEditorUI.Helpers
         }
 
         /// <summary>
+        /// Validates a keyboard-trigger to mouse-click-action remapping.
+        /// Checks for empty trigger keys, missing target mouse button, duplicate mappings,
+        /// modifier-only shortcuts, illegal shortcuts, and missing app names.
+        /// </summary>
+        public static ValidationErrorType ValidateKeyToMouseMapping(
+            List<string> originalKeys,
+            int targetMouseButton,
+            bool isAppSpecific,
+            string appName,
+            KeyboardMappingService mappingService,
+            bool isEditMode = false)
+        {
+            // Check if original keys are empty
+            if (originalKeys == null || originalKeys.Count == 0)
+            {
+                return ValidationErrorType.EmptyOriginalKeys;
+            }
+
+            // Check if shortcut contains only modifier keys
+            if (originalKeys.Count > 1 && ContainsOnlyModifierKeys(originalKeys))
+            {
+                return ValidationErrorType.ModifierOnly;
+            }
+
+            // Check if app specific is checked but no app name is provided
+            if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
+            {
+                return ValidationErrorType.EmptyAppName;
+            }
+
+            // Check if this is a shortcut (multiple keys) and if it's an illegal combination
+            if (originalKeys.Count > 1)
+            {
+                string shortcutKeysString = string.Join(";", originalKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+
+                if (KeyboardManagerInterop.IsShortcutIllegal(shortcutKeysString))
+                {
+                    return ValidationErrorType.IllegalShortcut;
+                }
+            }
+
+            // Check for duplicate mappings
+            if (IsDuplicateMapping(originalKeys, isEditMode, mappingService))
+            {
+                return ValidationErrorType.DuplicateMapping;
+            }
+
+            return ValidationErrorType.NoError;
+        }
+
+        /// <summary>
         /// Validates a mouse button remapping before saving. Checks for missing action data,
         /// duplicate mappings, self-mappings, and missing app names.
         /// </summary>

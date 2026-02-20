@@ -271,16 +271,42 @@ namespace KeyboardManagerEditorUI.Pages
             if (_mappingService != null)
             {
                 var actionType = UnifiedMappingControl.CurrentActionType;
-                List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
+                var triggerType = UnifiedMappingControl.CurrentTriggerType;
 
-                if (triggerKeys != null && triggerKeys.Count > 0)
+                if (triggerType == UnifiedMappingControl.TriggerType.Mouse)
                 {
-                    ValidationErrorType error = ValidateMapping(actionType, triggerKeys);
-                    if (error != ValidationErrorType.NoError)
+                    // Mouse trigger: validate using mouse-specific validation
+                    int? mouseButtonCode = UnifiedMappingControl.GetMouseTriggerButtonCode();
+                    if (mouseButtonCode != null)
                     {
-                        UnifiedMappingControl.ShowValidationErrorFromType(error);
-                        RemappingDialog.IsPrimaryButtonEnabled = false;
-                        return;
+                        ValidationErrorType mouseError = ValidationHelper.ValidateMouseButtonMapping(
+                            mouseButtonCode.Value,
+                            actionType,
+                            UnifiedMappingControl,
+                            _mappingService,
+                            _isEditMode);
+                        if (mouseError != ValidationErrorType.NoError)
+                        {
+                            UnifiedMappingControl.ShowValidationErrorFromType(mouseError);
+                            RemappingDialog.IsPrimaryButtonEnabled = false;
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    // Keyboard trigger: validate using keyboard-specific validation
+                    List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
+
+                    if (triggerKeys != null && triggerKeys.Count > 0)
+                    {
+                        ValidationErrorType error = ValidateMapping(actionType, triggerKeys);
+                        if (error != ValidationErrorType.NoError)
+                        {
+                            UnifiedMappingControl.ShowValidationErrorFromType(error);
+                            RemappingDialog.IsPrimaryButtonEnabled = false;
+                            return;
+                        }
                     }
                 }
             }
@@ -474,6 +500,21 @@ namespace KeyboardManagerEditorUI.Pages
                     return ValidationHelper.ValidateAppMapping(
                         triggerKeys,
                         programPath,
+                        isAppSpecific,
+                        appName,
+                        _mappingService!,
+                        _isEditMode);
+
+                case UnifiedMappingControl.ActionType.MouseClick:
+                    int? targetMouseButton = UnifiedMappingControl.GetMouseActionButtonCode();
+                    if (targetMouseButton == null)
+                    {
+                        return ValidationErrorType.EmptyMouseTargetButton;
+                    }
+
+                    return ValidationHelper.ValidateKeyToMouseMapping(
+                        triggerKeys,
+                        targetMouseButton.Value,
                         isAppSpecific,
                         appName,
                         _mappingService!,
