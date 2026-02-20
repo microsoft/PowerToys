@@ -486,7 +486,31 @@ namespace KeyboardManagerEditorUI.Pages
                     default:
                         if (_editingItem.Item is IToggleableShortcut shortcut)
                         {
-                            if (originalKeys.Count == 1)
+                            // Look up the setting by ID to detect mouse mappings
+                            Settings.ShortcutSettings? setting = null;
+                            if (shortcut.Id != null)
+                            {
+                                SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(shortcut.Id, out setting);
+                            }
+
+                            bool isMouseMapping = setting?.Shortcut.OriginalKeys?.StartsWith("mouse_", StringComparison.Ordinal) == true ||
+                                                  (setting == null && shortcut.Id?.StartsWith("mouse_", StringComparison.Ordinal) == true);
+
+                            if (isMouseMapping)
+                            {
+                                // Parse the mouse button code and delete the native mouse mapping
+                                string? mouseKeyString = setting?.Shortcut.OriginalKeys ?? shortcut.Id;
+                                if (mouseKeyString != null && mouseKeyString.StartsWith("mouse_", StringComparison.Ordinal))
+                                {
+                                    var parts = mouseKeyString.Split('_', 3);
+                                    if (parts.Length >= 2 && int.TryParse(parts[1], out int buttonCode))
+                                    {
+                                        string targetApp = setting?.Shortcut.TargetApp ?? (parts.Length > 2 ? parts[2] : string.Empty);
+                                        deleted = _mappingService.DeleteMouseButtonMapping((MouseButtonCode)buttonCode, targetApp);
+                                    }
+                                }
+                            }
+                            else if (originalKeys.Count == 1)
                             {
                                 int originalKey = _mappingService.GetKeyCodeFromName(originalKeys[0]);
                                 if (originalKey != 0)
