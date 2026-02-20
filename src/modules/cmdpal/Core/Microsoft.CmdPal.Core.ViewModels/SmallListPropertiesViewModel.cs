@@ -7,11 +7,11 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public class SingleRowListPropertiesViewModel : IGridPropertiesViewModel
+public class SmallListPropertiesViewModel : IGridPropertiesViewModel
 {
-    public static readonly SingleRowListPropertiesViewModel Default = new(null!);
+    public static readonly SmallListPropertiesViewModel Default = new(null!);
 
-    private readonly ExtensionObject<ISingleRowListLayout> _model;
+    private readonly ExtensionObject<ISmallListLayout> _model;
 
     public bool IsGrid => false;
 
@@ -23,7 +23,7 @@ public class SingleRowListPropertiesViewModel : IGridPropertiesViewModel
 
     public bool IsAutomaticWrappingEnabled { get; private set; } = true;
 
-    public SingleRowListPropertiesViewModel(ISingleRowListLayout layout)
+    public SmallListPropertiesViewModel(ISmallListLayout layout)
     {
         _model = new(layout);
     }

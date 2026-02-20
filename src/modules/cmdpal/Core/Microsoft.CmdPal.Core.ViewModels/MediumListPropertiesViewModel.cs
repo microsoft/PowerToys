@@ -7,9 +7,9 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public class TwoRowListPropertiesViewModel : IGridPropertiesViewModel
+public class MediumListPropertiesViewModel : IGridPropertiesViewModel
 {
-    private readonly ExtensionObject<ITwoRowListLayout> _model;
+    private readonly ExtensionObject<IMediumListLayout> _model;
 
     public bool IsGrid => false;
 
@@ -17,9 +17,9 @@ public class TwoRowListPropertiesViewModel : IGridPropertiesViewModel
 
     public bool ShowSubtitle => true;
 
-    public TwoRowListPropertiesViewModel(ITwoRowListLayout layout)
+    public MediumListPropertiesViewModel(IMediumListLayout layout)
     {
-        _model = new ExtensionObject<ITwoRowListLayout>(layout);
+        _model = new ExtensionObject<IMediumListLayout>(layout);
     }
 
     public void InitializeProperties()

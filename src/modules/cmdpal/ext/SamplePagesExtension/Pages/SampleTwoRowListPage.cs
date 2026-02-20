@@ -13,6 +13,6 @@ internal sealed partial class SampleTwoRowListPage : SampleListPageWithItems
     {
         Icon = new IconInfo("\uEA37");
         Name = "Sample Two-Line List Page";
-        GridProperties = new TwoRowListLayout();
+        GridProperties = new MediumListLayout();
     }
 }

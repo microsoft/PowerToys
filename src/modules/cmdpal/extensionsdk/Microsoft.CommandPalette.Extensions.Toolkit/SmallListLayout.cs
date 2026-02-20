@@ -4,7 +4,7 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class SingleRowListLayout : BaseObservable, ISingleRowListLayout
+public partial class SmallListLayout : BaseObservable, ISmallListLayout
 {
     public ContentSize AutomaticWrappingBreakpoint { get; init; } = ContentSize.Medium;
 

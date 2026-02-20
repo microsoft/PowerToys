@@ -689,13 +689,13 @@ public sealed partial class ListPage : Page,
         ListItemViewMode ComputeListItemViewMode()
         {
             var useCompact =
-                ViewModel?.GridProperties is SingleRowListPropertiesViewModel p &&
+                ViewModel?.GridProperties is SmallListPropertiesViewModel p &&
                 IsCompactFeasible(p, ShellViewModel);
 
             return useCompact ? ListItemViewMode.SingleRow : ListItemViewMode.TwoRow;
         }
 
-        static bool IsCompactFeasible(SingleRowListPropertiesViewModel propertiesViewModel, ShellViewModel shellViewModel)
+        static bool IsCompactFeasible(SmallListPropertiesViewModel propertiesViewModel, ShellViewModel shellViewModel)
         {
             if (!shellViewModel.IsDetailsVisible)
             {

@@ -13,7 +13,7 @@ internal sealed partial class SampleSingleRowListPage : SampleListPageWithItems
     {
         Icon = new IconInfo("\uEA37");
         Name = "Sample Compact List Page";
-        GridProperties = new SingleRowListLayout
+        GridProperties = new SmallListLayout
         {
             // to demonstrate the automatic wrapping behavior, we set the breakpoint to medium,
             AutomaticWrappingBreakpoint = ContentSize.Medium,
