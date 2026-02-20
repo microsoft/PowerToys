@@ -21,11 +21,11 @@
 // 1. Capture
 //    --------
 //    The user selects a rectangular region via the SelectRectangle overlay.
-//    The capture loop runs at ~60 ms intervals, grabbing the absolute screen
+//    The capture loop runs at ~16 ms intervals, grabbing the absolute screen
 //    rect each iteration.  Consecutive near-duplicate frames (average
 //    per-pixel RGB difference < 6, sampled every 6th pixel with a 2.5%
 //    margin on all edges) are discarded.  Capture stops when the user
-//    presses the stop hotkey or 128 frames have been collected.
+//    presses the stop hotkey or 256 frames have been collected.
 //
 // 2. Stitching (StitchPanoramaFrames)
 //    ---------------------------------
@@ -72,7 +72,7 @@
 //      fine score is non-zero.  This catches spurious harmonic matches on
 //      repetitive content like social media layouts.
 //
-//      An adaptive fine-score threshold (25 for high-stationary, 10 for
+//      An adaptive fine-score threshold (30 for high-stationary, 15 for
 //      low-stationary content) rejects poor alignments while tolerating
 //      subpixel rendering and ClearType artifacts.
 //
@@ -895,7 +895,7 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
         return false;
     }
 
-    const int minStepDs = max( 2, dsH / 30 );
+    const int minStepDs = 1;
     const int maxStepDs = dsH - max( 2, dsH / 6 );
     const int marginX = max( 2, dsW / 20 );
 
@@ -1241,7 +1241,7 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     // truly different) can tolerate higher fine scores from subpixel rendering
     // artifacts and ClearType.  Near-duplicate frames (low stationary score)
     // use a strict threshold to avoid accepting spurious matches.
-    const unsigned __int64 fineThreshold = ( stationaryScore > 15 ) ? 25 : 10;
+    const unsigned __int64 fineThreshold = ( stationaryScore > 15 ) ? 30 : 15;
     if( bestFineScore == ( std::numeric_limits<unsigned __int64>::max )() || bestFineScore > fineThreshold )
     {
         StitchLog( L"[Panorama/Stitch] FindBestFrameShift poor-fine expected=(%d,%d) best=(%d,%d) fineScore=%llu fineThreshold=%llu stationary=%llu\n",
@@ -1760,7 +1760,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             break;
         }
 
-        Sleep( 60 );
+        Sleep( 16 );
 
         HBITMAP frame = CaptureAbsoluteScreenRectToBitmap( hdcSource.get(), absoluteRect );
         if( frame == nullptr )
@@ -1791,9 +1791,9 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         OutputDebug( L"[Panorama/Capture] Captured moving frame #%zu at iteration=%zu\n",
                      frames.size(),
                      captureIteration );
-        if( frames.size() >= 128 )
+        if( frames.size() >= 256 )
         {
-            OutputDebug( L"[Panorama/Capture] Reached frame limit (128), stopping capture\n" );
+            OutputDebug( L"[Panorama/Capture] Reached frame limit (256), stopping capture\n" );
             break;
         }
     }
