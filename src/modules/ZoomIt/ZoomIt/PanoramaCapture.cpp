@@ -734,12 +734,12 @@ static bool ComputeAveragePixelDifference( const std::vector<BYTE>& currentPixel
                                            int frameWidth,
                                            int frameHeight,
                                            unsigned __int64& avgDiff,
-                                           double& changedPixelFraction )
+                                           double& changedPixelFraction,
+                                           int sampleStep = 6,
+                                           unsigned phase = 0 )
 {
     if( currentPixels.size() != previousPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
-    {
         return false;
-    }
 
     const int stride = frameWidth * 4;
     const int marginX = max( 4, frameWidth / 40 );
@@ -750,92 +750,51 @@ static bool ComputeAveragePixelDifference( const std::vector<BYTE>& currentPixel
     const int endY = frameHeight - marginY;
 
     if( endX <= startX || endY <= startY )
-    {
         return false;
-    }
+
+    const int step = max( 1, sampleStep );
+    const int phaseX = ( step > 1 ) ? static_cast<int>( ( phase * 3u ) % static_cast<unsigned>( step ) ) : 0;
+    const int phaseY = ( step > 1 ) ? static_cast<int>( ( phase * 5u ) % static_cast<unsigned>( step ) ) : 0;
+
+    int y0 = startY + phaseY;
+    if( y0 >= endY ) y0 = startY;
+
+    int x0 = startX + phaseX;
+    if( x0 >= endX ) x0 = startX;
 
     unsigned __int64 totalDiff = 0;
     unsigned __int64 samples = 0;
     unsigned __int64 changedPixels = 0;
     unsigned __int64 pixelSamples = 0;
-    for( int y = startY; y < endY; y += 6 )
+
+    for( int y = y0; y < endY; y += step )
     {
         const int rowOffset = y * stride;
-        for( int x = startX; x < endX; x += 6 )
+        for( int x = x0; x < endX; x += step )
         {
             const int index = rowOffset + x * 4;
-            const int d0 = abs( currentPixels[index + 0] - previousPixels[index + 0] );
-            const int d1 = abs( currentPixels[index + 1] - previousPixels[index + 1] );
-            const int d2 = abs( currentPixels[index + 2] - previousPixels[index + 2] );
-            totalDiff += static_cast<unsigned __int64>( d0 + d1 + d2 );
+            const int d0 = abs( static_cast<int>( currentPixels[index + 0] ) - static_cast<int>( previousPixels[index + 0] ) );
+            const int d1 = abs( static_cast<int>( currentPixels[index + 1] ) - static_cast<int>( previousPixels[index + 1] ) );
+            const int d2 = abs( static_cast<int>( currentPixels[index + 2] ) - static_cast<int>( previousPixels[index + 2] ) );
+            const int sum = d0 + d1 + d2;
+
+            totalDiff += static_cast<unsigned __int64>( sum );
             samples += 3;
             pixelSamples++;
-            if( d0 + d1 + d2 > 30 )
-            {
+            if( sum > 30 )
                 changedPixels++;
-            }
         }
     }
 
     if( samples == 0 )
-    {
         return false;
-    }
 
     avgDiff = totalDiff / samples;
-    changedPixelFraction = pixelSamples > 0
+    changedPixelFraction = ( pixelSamples > 0 )
         ? static_cast<double>( changedPixels ) / static_cast<double>( pixelSamples )
         : 0.0;
+
     return true;
-}
-
-static bool AreFramesNearDuplicate(HBITMAP currentFrame, HBITMAP previousFrame)
-{
-    std::vector<BYTE> currentPixels;
-    std::vector<BYTE> previousPixels;
-    int currentWidth = 0, currentHeight = 0;
-    int previousWidth = 0, previousHeight = 0;
-    if( !ReadBitmapPixels32( currentFrame, currentPixels, currentWidth, currentHeight ) ||
-        !ReadBitmapPixels32( previousFrame, previousPixels, previousWidth, previousHeight ) )
-    {
-        return false;
-    }
-
-    if( currentWidth != previousWidth || currentHeight != previousHeight )
-    {
-        return false;
-    }
-
-    unsigned __int64 avgDiff = 0;
-    double changedFraction = 0.0;
-    if( !ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight, avgDiff, changedFraction ) )
-    {
-        return false;
-    }
-    // A frame is a near-duplicate if both the average per-channel difference
-    // is small AND fewer than 0.5% of sampled pixels show a significant
-    // per-pixel difference (sum of channel diffs > 30).  The second check
-    // catches scrolling in mostly-uniform content (e.g. dark background
-    // with sparse text) where the average is diluted below threshold.
-    const bool duplicate = avgDiff < 6 && changedFraction < 0.005;
-    OutputDebug( L"[Panorama/Capture] Frame compare avgDiff=%llu changedPct=%.1f%% size=%dx%d identical=%d\n",
-                 avgDiff, changedFraction * 100.0, currentWidth, currentHeight, duplicate ? 1 : 0 );
-    return duplicate;
-}
-
-static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
-                                         const std::vector<BYTE>& previousPixels,
-                                         int frameWidth,
-                                         int frameHeight )
-{
-    unsigned __int64 avgDiff = 0;
-    double changedFraction = 0.0;
-    if( !ComputeAveragePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight, avgDiff, changedFraction ) )
-    {
-        return false;
-    }
-
-    return avgDiff < 6 && changedFraction < 0.005;
 }
 
 static void BuildDownsampledLumaFrame( const std::vector<BYTE>& pixels,
@@ -864,6 +823,235 @@ static void BuildDownsampledLumaFrame( const std::vector<BYTE>& pixels,
                 static_cast<BYTE>( l );
         }
     }
+}
+
+static bool FindBestSmallShiftDownsampledLuma( const std::vector<BYTE>& previousPixels,
+                                               const std::vector<BYTE>& currentPixels,
+                                               int frameWidth,
+                                               int frameHeight,
+                                               int maxAbsDyFull,
+                                               int maxAbsDxFull,
+                                               int& bestDxFull,
+                                               int& bestDyFull,
+                                               unsigned __int64& stationaryScore,
+                                               unsigned __int64& bestShiftScore )
+{
+    bestDxFull = 0;
+    bestDyFull = 0;
+    stationaryScore = ( std::numeric_limits<unsigned __int64>::max )();
+    bestShiftScore = ( std::numeric_limits<unsigned __int64>::max )();
+
+    if( previousPixels.size() != currentPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
+        return false;
+
+    const int scale = ( min( frameWidth, frameHeight ) >= 240 ) ? 4 : 2;
+
+    std::vector<BYTE> prevLuma, currLuma;
+    int dsW = 0, dsH = 0, dsW2 = 0, dsH2 = 0;
+    BuildDownsampledLumaFrame( previousPixels, frameWidth, frameHeight, scale, prevLuma, dsW, dsH );
+    BuildDownsampledLumaFrame( currentPixels,  frameWidth, frameHeight, scale, currLuma, dsW2, dsH2 );
+    if( dsW != dsW2 || dsH != dsH2 || dsW < 8 || dsH < 8 )
+        return false;
+
+    const int maxDyDs = max( 1, maxAbsDyFull / scale );
+    const int maxDxDs = max( 0, maxAbsDxFull / scale );
+
+    const int marginX = max( 2, dsW / 20 );
+    const int marginY = max( 2, dsH / 20 );
+
+    auto scoreShift = [&]( int dx, int dy, unsigned __int64& outScore ) -> bool
+    {
+        const int absDx = abs( dx );
+        const int absDy = abs( dy );
+
+        const int overlapW = dsW - 2 * marginX - absDx;
+        const int overlapH = dsH - 2 * marginY - absDy;
+        if( overlapW <= dsW / 4 || overlapH <= dsH / 4 )
+            return false;
+
+        const int prevX = marginX + max( 0, -dx );
+        const int currX = marginX + max( 0,  dx );
+        const int prevY = marginY + max( 0, -dy );
+        const int currY = marginY + max( 0,  dy );
+
+        unsigned __int64 total = 0;
+        unsigned __int64 n = 0;
+
+        // Sample every other pixel for speed (good enough for "motion vs none")
+        for( int y = 0; y < overlapH; y += 2 )
+        {
+            const BYTE* pRow = &prevLuma[ ( prevY + y ) * dsW + prevX ];
+            const BYTE* cRow = &currLuma[ ( currY + y ) * dsW + currX ];
+            for( int x = 0; x < overlapW; x += 2 )
+            {
+                total += static_cast<unsigned __int64>( abs( static_cast<int>( pRow[x] ) - static_cast<int>( cRow[x] ) ) );
+                n++;
+            }
+        }
+
+        if( n < 200 )
+            return false;
+
+        outScore = total / n;
+        return true;
+    };
+
+    unsigned __int64 s0 = 0;
+    if( !scoreShift( 0, 0, s0 ) )
+        return false;
+
+    stationaryScore = s0;
+    bestShiftScore = s0;
+
+    int bestDxDs = 0;
+    int bestDyDs = 0;
+
+    for( int dy = -maxDyDs; dy <= maxDyDs; ++dy )
+    {
+        for( int dx = -maxDxDs; dx <= maxDxDs; ++dx )
+        {
+            if( dx == 0 && dy == 0 )
+                continue;
+
+            unsigned __int64 sc = 0;
+            if( !scoreShift( dx, dy, sc ) )
+                continue;
+
+            if( sc < bestShiftScore )
+            {
+                bestShiftScore = sc;
+                bestDxDs = dx;
+                bestDyDs = dy;
+            }
+        }
+    }
+
+    bestDxFull = bestDxDs * scale;
+    bestDyFull = bestDyDs * scale;
+    return true;
+}
+
+static bool LooksLikeSmallShiftNotDuplicate( const std::vector<BYTE>& previousPixels,
+                                             const std::vector<BYTE>& currentPixels,
+                                             int frameWidth,
+                                             int frameHeight,
+                                             int maxAbsDyFull,
+                                             int maxAbsDxFull,
+                                             int* outDxFull = nullptr,
+                                             int* outDyFull = nullptr,
+                                             unsigned __int64* outStationary = nullptr,
+                                             unsigned __int64* outBest = nullptr )
+{
+    int dx = 0, dy = 0;
+    unsigned __int64 s0 = 0, best = 0;
+    if( !FindBestSmallShiftDownsampledLuma( previousPixels, currentPixels, frameWidth, frameHeight,
+                                           maxAbsDyFull, maxAbsDxFull, dx, dy, s0, best ) )
+        return false;
+
+    if( outDxFull ) *outDxFull = dx;
+    if( outDyFull ) *outDyFull = dy;
+    if( outStationary ) *outStationary = s0;
+    if( outBest ) *outBest = best;
+
+    if( dx == 0 && dy == 0 )
+        return false;
+
+    // If stationary is extremely low, we can't reliably separate "tiny scroll" from noise.
+    if( s0 < 4 )
+        return false;
+
+    // Require meaningful improvement over stationary and a reasonably low best score.
+    if( best + 2 > s0 )
+        return false;
+
+    // At least ~15% better than stationary.
+    if( best * 100 > s0 * 85 )
+        return false;
+
+    if( best > 25 )
+        return false;
+
+    return true;
+}
+
+static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame )
+{
+    std::vector<BYTE> currentPixels;
+    std::vector<BYTE> previousPixels;
+    int currentWidth = 0, currentHeight = 0;
+    int previousWidth = 0, previousHeight = 0;
+
+    if( !ReadBitmapPixels32( currentFrame, currentPixels, currentWidth, currentHeight ) ||
+        !ReadBitmapPixels32( previousFrame, previousPixels, previousWidth, previousHeight ) )
+    {
+        return false; // fail open: keep frame
+    }
+
+    if( currentWidth != previousWidth || currentHeight != previousHeight )
+        return false;
+
+    static unsigned s_phase = 0;
+    unsigned __int64 avgDiff = 0;
+    double changedFraction = 0.0;
+
+    if( !ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight,
+                                        avgDiff, changedFraction, 6, ++s_phase ) )
+    {
+        return false;
+    }
+
+    bool duplicate = ( avgDiff < 6 && changedFraction < 0.005 );
+
+    // Guard: if it "looks duplicate" by RGB stats but a small translation aligns notably better,
+    // treat it as movement (prevents false drops during slow scrolling / low-texture content).
+    if( duplicate )
+    {
+        int guardDx = 0, guardDy = 0;
+        unsigned __int64 s0 = 0, best = 0;
+        if( LooksLikeSmallShiftNotDuplicate( previousPixels, currentPixels, currentWidth, currentHeight,
+                                            /*maxAbsDyFull=*/16, /*maxAbsDxFull=*/8,
+                                            &guardDx, &guardDy, &s0, &best ) )
+        {
+            duplicate = false;
+            OutputDebug( L"[Panorama/Capture] Duplicate-guard: avgDiff=%llu changedPct=%.2f%% smallShift=(%d,%d) stationary=%llu best=%llu\n",
+                         avgDiff, changedFraction * 100.0, guardDx, guardDy,
+                         static_cast<unsigned long long>( s0 ),
+                         static_cast<unsigned long long>( best ) );
+        }
+    }
+
+    OutputDebug( L"[Panorama/Capture] Frame compare avgDiff=%llu changedPct=%.1f%% size=%dx%d identical=%d\n",
+                 avgDiff, changedFraction * 100.0, currentWidth, currentHeight, duplicate ? 1 : 0 );
+    return duplicate;
+}
+
+static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
+                                         const std::vector<BYTE>& previousPixels,
+                                         int frameWidth,
+                                         int frameHeight )
+{
+    static unsigned s_phase = 0;
+    unsigned __int64 avgDiff = 0;
+    double changedFraction = 0.0;
+
+    if( !ComputeAveragePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight,
+                                        avgDiff, changedFraction, 6, ++s_phase ) )
+    {
+        return false;
+    }
+
+    bool duplicate = ( avgDiff < 6 && changedFraction < 0.005 );
+
+    if( duplicate )
+    {
+        if( LooksLikeSmallShiftNotDuplicate( previousPixels, currentPixels, frameWidth, frameHeight,
+                                            /*maxAbsDyFull=*/16, /*maxAbsDxFull=*/8 ) )
+        {
+            duplicate = false;
+        }
+    }
+
+    return duplicate;
 }
 
 static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
