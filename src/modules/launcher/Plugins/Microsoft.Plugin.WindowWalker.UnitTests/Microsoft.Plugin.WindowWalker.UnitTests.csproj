@@ -5,6 +5,7 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.Plugin.WindowWalker.UnitTests</RootNamespace>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,6 +3,7 @@
     "path": "..\\..\\..\\PowerToys.slnx",
     "projects": [
       "src\\common\\CalculatorEngineCommon\\CalculatorEngineCommon.vcxproj",
+      "src\\common\\Common.UI.Controls\\Common.UI.Controls.csproj",
       "src\\common\\ManagedCommon\\ManagedCommon.csproj",
       "src\\common\\ManagedCsWin32\\ManagedCsWin32.csproj",
       "src\\common\\ManagedTelemetry\\Telemetry\\ManagedTelemetry.csproj",
