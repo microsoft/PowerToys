@@ -229,15 +229,15 @@ public partial class TopLevelCommandManager : ObservableObject,
         _extensionLoadCts = new();
 
         var extensionService = _serviceProvider.GetService<IExtensionService>()!;
-        await extensionService.SignalStopExtensionsAsync();
+        await extensionService.SignalStopExtensionsAsync().ConfigureAwait(false);
 
         lock (TopLevelCommands)
         {
             TopLevelCommands.Clear();
         }
 
-        await LoadBuiltinsAsync();
-        _ = Task.Run(LoadExtensionsAsync);
+        await LoadBuiltinsAsync().ConfigureAwait(false);
+        _ = Task.Run(LoadExtensionsAsync, cancellationToken);
     }
 
     // Load commands from our extensions. Called on a background thread.
@@ -257,7 +257,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         var ct = _extensionLoadCts.Token;
 
-        var extensions = (await extensionService.GetInstalledExtensionsAsync()).ToImmutableList();
+        var extensions = (await extensionService.GetInstalledExtensionsAsync().ConfigureAwait(false)).ToImmutableList();
         lock (_commandProvidersLock)
         {
             _extensionCommandProviders.Clear();
@@ -265,7 +265,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         if (extensions is not null)
         {
-            await StartExtensionsAndGetCommands(extensions, ct);
+            await StartExtensionsAndGetCommands(extensions, ct).ConfigureAwait(false);
         }
 
         extensionService.OnExtensionAdded += ExtensionService_OnExtensionAdded;
@@ -289,7 +289,7 @@ public partial class TopLevelCommandManager : ObservableObject,
             // for each newly installed extension, start it and get commands
             // from it. One single package might have more than one
             // IExtensionWrapper in it.
-            await StartExtensionsAndGetCommands(extensions, ct);
+            await StartExtensionsAndGetCommands(extensions, ct).ConfigureAwait(false);
         });
     }
 
@@ -302,7 +302,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         var startTasks = extensions.Select(StartExtensionWithTimeoutAsync);
 
         // Wait for all extensions to start
-        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper is not null).Select(w => w!).ToList();
+        var wrappers = (await Task.WhenAll(startTasks).ConfigureAwait(false)).Where(wrapper => wrapper is not null).Select(w => w!).ToList();
 
         lock (_commandProvidersLock)
         {
@@ -312,7 +312,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         // Load the commands from the providers in parallel
         var loadTasks = wrappers.Select(w => LoadCommandsWithTimeoutAsync(w, ct));
 
-        var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results is not null).Select(r => r!).ToList();
+        var commandSets = (await Task.WhenAll(loadTasks).ConfigureAwait(false)).Where(results => results is not null).Select(r => r!).ToList();
 
         lock (TopLevelCommands)
         {
@@ -334,7 +334,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         Logger.LogDebug($"Starting {extension.PackageFullName}");
         try
         {
-            await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
             return new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
         }
         catch (Exception ex)
@@ -349,7 +349,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         var loadTask = LoadTopLevelCommandsFromProvider(wrapper);
         try
         {
-            return await loadTask.WaitAsync(TimeSpan.FromSeconds(10), ct);
+            return await loadTask.WaitAsync(TimeSpan.FromSeconds(10), ct).ConfigureAwait(false);
         }
         catch (TimeoutException)
         {
@@ -372,7 +372,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         try
         {
             // Upper bound so we don't leak tasks forever
-            var commands = await loadTask.WaitAsync(TimeSpan.FromSeconds(60), ct);
+            var commands = await loadTask.WaitAsync(TimeSpan.FromSeconds(60), ct).ConfigureAwait(false);
 
             lock (TopLevelCommands)
             {
