@@ -1109,24 +1109,25 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
         return false;
     }
 
-    const unsigned __int64 avgDiffThreshold = lowContrastMode ? 3 : 6;
-    const double changedThreshold = lowContrastMode ? 0.0008 : 0.005;
-    bool duplicate = ( avgDiff < avgDiffThreshold && changedFraction < changedThreshold );
+    const unsigned __int64 avgDiffThreshold = lowContrastMode ? 2 : 6;
+    const double changedThreshold = lowContrastMode ? 0.0005 : 0.005;
+    const bool coarseDuplicate = ( avgDiff < avgDiffThreshold && changedFraction < changedThreshold );
+    bool duplicate = coarseDuplicate;
 
     // Low-content captures (e.g. mostly blank editors where only line numbers
     // change) can be under-sampled by the coarse pass.  Recheck with denser
     // sampling before dropping a frame.
-    if( duplicate && lowContrastMode )
+    if( lowContrastMode )
     {
         unsigned __int64 fineAvgDiff = 0;
         double fineChangedFraction = 0.0;
         if( ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight,
-                                           fineAvgDiff, fineChangedFraction, 2, ++s_phase ) )
+                                           fineAvgDiff, fineChangedFraction, 1, ++s_phase ) )
         {
-            const bool fineDuplicate = ( fineAvgDiff < 2 && fineChangedFraction < 0.00035 );
-            if( !fineDuplicate )
+            const bool fineDuplicate = ( fineAvgDiff < 1 && fineChangedFraction < 0.00008 );
+            duplicate = coarseDuplicate && fineDuplicate;
+            if( coarseDuplicate && !fineDuplicate )
             {
-                duplicate = false;
                 OutputDebug( L"[Panorama/Capture] Fine-pass rescued frame avgDiff=%llu changedPct=%.3f%% fineAvg=%llu fineChangedPct=%.3f%%\n",
                              avgDiff,
                              changedFraction * 100.0,
@@ -1178,22 +1179,20 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
         return false;
     }
 
-    const unsigned __int64 avgDiffThreshold = lowContrastMode ? 3 : 6;
-    const double changedThreshold = lowContrastMode ? 0.0008 : 0.005;
-    bool duplicate = ( avgDiff < avgDiffThreshold && changedFraction < changedThreshold );
+    const unsigned __int64 avgDiffThreshold = lowContrastMode ? 2 : 6;
+    const double changedThreshold = lowContrastMode ? 0.0005 : 0.005;
+    const bool coarseDuplicate = ( avgDiff < avgDiffThreshold && changedFraction < changedThreshold );
+    bool duplicate = coarseDuplicate;
 
-    if( duplicate && lowContrastMode )
+    if( lowContrastMode )
     {
         unsigned __int64 fineAvgDiff = 0;
         double fineChangedFraction = 0.0;
         if( ComputeAveragePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight,
-                                           fineAvgDiff, fineChangedFraction, 2, ++s_phase ) )
+                                           fineAvgDiff, fineChangedFraction, 1, ++s_phase ) )
         {
-            const bool fineDuplicate = ( fineAvgDiff < 2 && fineChangedFraction < 0.00035 );
-            if( !fineDuplicate )
-            {
-                duplicate = false;
-            }
+            const bool fineDuplicate = ( fineAvgDiff < 1 && fineChangedFraction < 0.00008 );
+            duplicate = coarseDuplicate && fineDuplicate;
         }
     }
 
