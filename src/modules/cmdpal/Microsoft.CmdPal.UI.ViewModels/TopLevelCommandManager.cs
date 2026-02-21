@@ -5,6 +5,7 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -20,7 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class TopLevelCommandManager : ObservableObject,
+public sealed partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
     IRecipient<PinCommandItemMessage>,
     IPageContext,
@@ -305,23 +306,32 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions, CancellationToken ct)
     {
-        var timer = new Stopwatch();
-        timer.Start();
+        var timer = Stopwatch.StartNew();
 
         // Start all extensions in parallel
-        var startTasks = extensions.Select(StartExtensionWithTimeoutAsync);
+        var startResults = await Task.WhenAll(extensions.Select(TryStartExtensionAsync)).ConfigureAwait(false);
 
-        // Wait for all extensions to start
-        var wrappers = (await Task.WhenAll(startTasks).ConfigureAwait(false)).Where(wrapper => wrapper is not null).Select(w => w!).ToList();
+        var startedWrappers = new List<CommandProviderWrapper>();
+        foreach (var r in startResults)
+        {
+            if (r.IsStarted)
+            {
+                startedWrappers.Add(r.Wrapper);
+            }
+            else if (r.IsTimedOut)
+            {
+                _ = StartExtensionWhenReadyAsync(r.Extension, r.PendingStartTask, r.Stopwatch, ct);
+            }
+        }
 
-        // Load commands from successfully started extensions
-        var totalCommands = await RegisterAndLoadCommandsAsync(wrappers, ct).ConfigureAwait(false);
+        // Register started extensions and load their commands
+        var totalCommands = await RegisterAndLoadCommandsAsync(startedWrappers, ct).ConfigureAwait(false);
 
         timer.Stop();
-        Logger.LogInfo($"Loaded {totalCommands} command(s) from {wrappers.Count} extension(s) in {timer.ElapsedMilliseconds} ms");
+        Logger.LogInfo($"Loaded {totalCommands} command(s) from {startedWrappers.Count} extension(s) in {timer.ElapsedMilliseconds} ms");
     }
 
-    private async Task<int> RegisterAndLoadCommandsAsync(IReadOnlyList<CommandProviderWrapper> wrappers, CancellationToken ct)
+    private async Task<int> RegisterAndLoadCommandsAsync(ICollection<CommandProviderWrapper> wrappers, CancellationToken ct)
     {
         lock (_commandProvidersLock)
         {
@@ -329,27 +339,44 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
 
         // Load the commands from the providers in parallel
-        var loadTasks = wrappers.Select(w => LoadCommandsWithTimeoutAsync(w, ct));
-
-        var commandSets = (await Task.WhenAll(loadTasks).ConfigureAwait(false)).Where(results => results is not null).Select(r => r!).ToList();
+        var loadResults = await Task.WhenAll(wrappers.Select(w => TryLoadCommandsAsync(w, ct))).ConfigureAwait(false);
 
         var totalCommands = 0;
+        var timedOut = new List<CommandLoadResult>();
+
         lock (TopLevelCommands)
         {
-            foreach (var commands in commandSets)
+            foreach (var r in loadResults)
             {
-                foreach (var c in commands)
+                if (r.IsLoaded)
                 {
-                    TopLevelCommands.Add(c);
-                    totalCommands++;
+                    foreach (var c in r.Commands)
+                    {
+                        TopLevelCommands.Add(c);
+                        totalCommands++;
+                    }
                 }
+                else if (r.IsTimedOut)
+                {
+                    timedOut.Add(r);
+                }
+            }
+        }
+
+        // Fire background continuations for timed-out loads outside the lock
+        foreach (var r in timedOut)
+        {
+            // It's weird to repeat the condition here, but it allows the compiler to track nullability of other properties
+            if (r.IsTimedOut)
+            {
+                _ = AppendCommandsWhenReadyAsync(r.Wrapper, r.PendingLoadTask, r.Stopwatch, ct);
             }
         }
 
         return totalCommands;
     }
 
-    private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
+    private async Task<ExtensionStartResult> TryStartExtensionAsync(IExtensionWrapper extension)
     {
         Logger.LogDebug($"Starting {extension.PackageFullName}");
         var sw = Stopwatch.StartNew();
@@ -359,23 +386,22 @@ public partial class TopLevelCommandManager : ObservableObject,
         {
             await startTask.WaitAsync(ExtensionStartTimeout, ct).ConfigureAwait(false);
             Logger.LogInfo($"Started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
-            return new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
+            return ExtensionStartResult.Started(extension, new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache));
         }
         catch (TimeoutException)
         {
             Logger.LogWarning($"Starting extension {extension.PackageFullName} timed out after {sw.ElapsedMilliseconds} ms, continuing in background");
-            _ = StartExtensionWhenReadyAsync(extension, startTask, sw, ct);
-            return null;
+            return ExtensionStartResult.TimedOut(extension, startTask, sw);
         }
         catch (OperationCanceledException)
         {
             Logger.LogDebug($"Starting extension {extension.PackageFullName} was cancelled after {sw.ElapsedMilliseconds} ms");
-            return null;
+            return ExtensionStartResult.Failed(extension);
         }
         catch (Exception ex)
         {
             Logger.LogError($"Failed to start extension {extension.PackageFullName} after {sw.ElapsedMilliseconds} ms: {ex}");
-            return null;
+            return ExtensionStartResult.Failed(extension);
         }
     }
 
@@ -404,7 +430,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    private async Task<IEnumerable<TopLevelViewModel>?> LoadCommandsWithTimeoutAsync(CommandProviderWrapper wrapper, CancellationToken ct)
+    private async Task<CommandLoadResult> TryLoadCommandsAsync(CommandProviderWrapper wrapper, CancellationToken ct)
     {
         var sw = Stopwatch.StartNew();
         var loadTask = LoadTopLevelCommandsFromProvider(wrapper);
@@ -412,23 +438,22 @@ public partial class TopLevelCommandManager : ObservableObject,
         {
             var result = await loadTask.WaitAsync(CommandLoadTimeout, ct).ConfigureAwait(false);
             Logger.LogInfo($"Loaded commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} in {sw.ElapsedMilliseconds} ms");
-            return result;
+            return CommandLoadResult.Loaded(wrapper, result);
         }
         catch (TimeoutException)
         {
             Logger.LogWarning($"Loading commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} timed out after {sw.ElapsedMilliseconds} ms, continuing in background");
-            _ = AppendCommandsWhenReadyAsync(wrapper, loadTask, sw, ct);
-            return null;
+            return CommandLoadResult.TimedOut(wrapper, loadTask, sw);
         }
         catch (OperationCanceledException)
         {
             Logger.LogDebug($"Loading commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} was cancelled after {sw.ElapsedMilliseconds} ms");
-            return null;
+            return CommandLoadResult.Failed(wrapper);
         }
         catch (Exception ex)
         {
             Logger.LogError($"Failed to load commands for extension {wrapper.ExtensionHost?.Extension?.PackageFullName} after {sw.ElapsedMilliseconds} ms: {ex}");
-            return null;
+            return CommandLoadResult.Failed(wrapper);
         }
     }
 
@@ -440,7 +465,6 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         try
         {
-            // Upper bound so we don't leak tasks forever
             var commands = await loadTask.WaitAsync(BackgroundCommandLoadTimeout, ct).ConfigureAwait(false);
 
             lock (TopLevelCommands)
@@ -455,7 +479,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
         catch (OperationCanceledException)
         {
-            // Reload happened — discard stale results
+            // Reload happened - discard stale results
         }
         catch (Exception ex)
         {
@@ -564,5 +588,79 @@ public partial class TopLevelCommandManager : ObservableObject,
         _extensionLoadCts.Dispose();
         _reloadCommandsGate.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    private sealed class ExtensionStartResult
+    {
+        public IExtensionWrapper Extension { get; }
+
+        public CommandProviderWrapper? Wrapper { get; private init; }
+
+        public Task? PendingStartTask { get; private init; }
+
+        public Stopwatch? Stopwatch { get; private init; }
+
+        [MemberNotNullWhen(true, nameof(Wrapper))]
+        public bool IsStarted => Wrapper is not null;
+
+        [MemberNotNullWhen(true, nameof(PendingStartTask), nameof(Stopwatch))]
+        public bool IsTimedOut => PendingStartTask is not null;
+
+        private ExtensionStartResult(IExtensionWrapper extension)
+        {
+            Extension = extension;
+        }
+
+        public static ExtensionStartResult Started(IExtensionWrapper extension, CommandProviderWrapper wrapper)
+        {
+            return new ExtensionStartResult(extension) { Wrapper = wrapper };
+        }
+
+        public static ExtensionStartResult TimedOut(IExtensionWrapper extension, Task pendingStartTask, Stopwatch sw)
+        {
+            return new ExtensionStartResult(extension) { PendingStartTask = pendingStartTask, Stopwatch = sw };
+        }
+
+        public static ExtensionStartResult Failed(IExtensionWrapper extension)
+        {
+            return new ExtensionStartResult(extension);
+        }
+    }
+
+    private sealed class CommandLoadResult
+    {
+        public IEnumerable<TopLevelViewModel>? Commands { get; private init; }
+
+        public CommandProviderWrapper Wrapper { get; }
+
+        public Task<ICollection<TopLevelViewModel>>? PendingLoadTask { get; private init; }
+
+        public Stopwatch? Stopwatch { get; private init; }
+
+        [MemberNotNullWhen(true, nameof(Commands))]
+        public bool IsLoaded => Commands is not null;
+
+        [MemberNotNullWhen(true, nameof(PendingLoadTask), nameof(Stopwatch))]
+        public bool IsTimedOut => PendingLoadTask is not null;
+
+        private CommandLoadResult(CommandProviderWrapper wrapper)
+        {
+            Wrapper = wrapper;
+        }
+
+        public static CommandLoadResult Loaded(CommandProviderWrapper wrapper, IEnumerable<TopLevelViewModel> commands)
+        {
+            return new CommandLoadResult(wrapper) { Commands = commands };
+        }
+
+        public static CommandLoadResult TimedOut(CommandProviderWrapper wrapper, Task<ICollection<TopLevelViewModel>> pendingLoadTask, Stopwatch sw)
+        {
+            return new CommandLoadResult(wrapper) { PendingLoadTask = pendingLoadTask, Stopwatch = sw };
+        }
+
+        public static CommandLoadResult Failed(CommandProviderWrapper wrapper)
+        {
+            return new CommandLoadResult(wrapper);
+        }
     }
 }
