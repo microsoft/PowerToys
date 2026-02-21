@@ -8,7 +8,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <ImplicitUsings>enable</ImplicitUsings>
-	  <Nullable>enable</Nullable>
+	<Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Assets\Run.svg" />

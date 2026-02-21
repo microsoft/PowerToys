@@ -122,7 +122,7 @@ internal static class BatchUpdateManager
 
 internal interface IBatchUpdateTarget
 {
-    /// <summary>Gets uI scheduler (used by targets internally for UI marshaling). Kept here for diagnostics / consistency.</summary>
+    /// <summary>Gets UI scheduler (used by targets internally for UI marshaling). Kept here for diagnostics / consistency.</summary>
     TaskScheduler UIScheduler { get; }
 
     /// <summary>Apply any coalesced updates. Must be safe to call on a background thread.</summary>
