@@ -26,6 +26,10 @@ public partial class TopLevelCommandManager : ObservableObject,
     IPageContext,
     IDisposable
 {
+    private static readonly TimeSpan ExtensionStartTimeout = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan CommandLoadTimeout = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan BackgroundLoadTimeout = TimeSpan.FromSeconds(60);
+
     private readonly IServiceProvider _serviceProvider;
     private readonly ICommandProviderCache _commandProviderCache;
     private readonly TaskScheduler _taskScheduler;
@@ -342,7 +346,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         var sw = Stopwatch.StartNew();
         try
         {
-            await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10), _currentExtensionLoadCancellationToken).ConfigureAwait(false);
+            await extension.StartExtensionAsync().WaitAsync(ExtensionStartTimeout, _currentExtensionLoadCancellationToken).ConfigureAwait(false);
             Logger.LogInfo($"Started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
             return new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
         }
@@ -364,7 +368,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         var loadTask = LoadTopLevelCommandsFromProvider(wrapper);
         try
         {
-            var result = await loadTask.WaitAsync(TimeSpan.FromSeconds(10), ct).ConfigureAwait(false);
+            var result = await loadTask.WaitAsync(CommandLoadTimeout, ct).ConfigureAwait(false);
             Logger.LogInfo($"Loaded commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} in {sw.ElapsedMilliseconds} ms");
             return result;
         }
@@ -395,7 +399,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         try
         {
             // Upper bound so we don't leak tasks forever
-            var commands = await loadTask.WaitAsync(TimeSpan.FromSeconds(60), ct).ConfigureAwait(false);
+            var commands = await loadTask.WaitAsync(BackgroundLoadTimeout, ct).ConfigureAwait(false);
 
             lock (TopLevelCommands)
             {
