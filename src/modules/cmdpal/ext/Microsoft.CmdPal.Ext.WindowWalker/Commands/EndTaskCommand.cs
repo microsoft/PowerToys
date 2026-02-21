@@ -65,7 +65,7 @@ internal sealed partial class EndTaskCommand : InvokableCommand
 
         // Kill process
         window.Process.KillThisProcess(SettingsManager.Instance.KillProcessTree);
-        return !SettingsManager.Instance.OpenAfterKillAndClose;
+        return !SettingsManager.Instance.KeepOpenAfterKillAndClose;
     }
 
     public override ICommandResult Invoke()
