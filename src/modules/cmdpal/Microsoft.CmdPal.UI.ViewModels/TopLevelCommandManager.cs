@@ -34,6 +34,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
     private readonly Lock _commandProvidersLock = new();
     private readonly SupersedingAsyncGate _reloadCommandsGate;
+    private CancellationTokenSource _extensionLoadCts = new();
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
@@ -221,6 +222,12 @@ public partial class TopLevelCommandManager : ObservableObject,
     private async Task ReloadAllCommandsAsyncCore(CancellationToken cancellationToken)
     {
         IsLoading = true;
+
+        // Invalidate any background continuations from the previous load cycle
+        await _extensionLoadCts.CancelAsync().ConfigureAwait(false);
+        _extensionLoadCts.Dispose();
+        _extensionLoadCts = new();
+
         var extensionService = _serviceProvider.GetService<IExtensionService>()!;
         await extensionService.SignalStopExtensionsAsync();
 
@@ -248,6 +255,8 @@ public partial class TopLevelCommandManager : ObservableObject,
         extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
         extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
 
+        var ct = _extensionLoadCts.Token;
+
         var extensions = (await extensionService.GetInstalledExtensionsAsync()).ToImmutableList();
         lock (_commandProvidersLock)
         {
@@ -256,7 +265,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         if (extensions is not null)
         {
-            await StartExtensionsAndGetCommands(extensions);
+            await StartExtensionsAndGetCommands(extensions, ct);
         }
 
         extensionService.OnExtensionAdded += ExtensionService_OnExtensionAdded;
@@ -272,17 +281,19 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     private void ExtensionService_OnExtensionAdded(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
     {
+        var ct = _extensionLoadCts.Token;
+
         // When we get an extension install event, hop off to a BG thread
         _ = Task.Run(async () =>
         {
             // for each newly installed extension, start it and get commands
             // from it. One single package might have more than one
             // IExtensionWrapper in it.
-            await StartExtensionsAndGetCommands(extensions);
+            await StartExtensionsAndGetCommands(extensions, ct);
         });
     }
 
-    private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions)
+    private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions, CancellationToken ct)
     {
         var timer = new Stopwatch();
         timer.Start();
@@ -299,7 +310,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
 
         // Load the commands from the providers in parallel
-        var loadTasks = wrappers.Select(LoadCommandsWithTimeoutAsync);
+        var loadTasks = wrappers.Select(w => LoadCommandsWithTimeoutAsync(w, ct));
 
         var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results is not null).Select(r => r!).ToList();
 
@@ -333,22 +344,54 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    private async Task<IEnumerable<TopLevelViewModel>?> LoadCommandsWithTimeoutAsync(CommandProviderWrapper wrapper)
+    private async Task<IEnumerable<TopLevelViewModel>?> LoadCommandsWithTimeoutAsync(CommandProviderWrapper wrapper, CancellationToken ct)
     {
+        var loadTask = LoadTopLevelCommandsFromProvider(wrapper);
         try
         {
-            return await LoadTopLevelCommandsFromProvider(wrapper!).WaitAsync(TimeSpan.FromSeconds(10));
+            return await loadTask.WaitAsync(TimeSpan.FromSeconds(10), ct);
         }
         catch (TimeoutException)
         {
-            Logger.LogError($"Loading commands from {wrapper!.ExtensionHost?.Extension?.PackageFullName} timed out");
+            Logger.LogError($"Loading commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} timed out, continuing in background");
+            _ = AppendCommandsWhenReadyAsync(wrapper, loadTask, ct);
+            return null;
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to load commands for extension {wrapper!.ExtensionHost?.Extension?.PackageFullName}: {ex}");
+            Logger.LogError($"Failed to load commands for extension {wrapper.ExtensionHost?.Extension?.PackageFullName}: {ex}");
+            return null;
         }
+    }
 
-        return null;
+    private async Task AppendCommandsWhenReadyAsync(
+        CommandProviderWrapper wrapper,
+        Task<IEnumerable<TopLevelViewModel>> loadTask,
+        CancellationToken ct)
+    {
+        try
+        {
+            // Upper bound so we don't leak tasks forever
+            var commands = await loadTask.WaitAsync(TimeSpan.FromSeconds(60), ct);
+
+            lock (TopLevelCommands)
+            {
+                foreach (var c in commands)
+                {
+                    TopLevelCommands.Add(c);
+                }
+            }
+
+            Logger.LogDebug($"Late-loaded commands from {wrapper.ExtensionHost?.Extension?.PackageFullName}");
+        }
+        catch (OperationCanceledException)
+        {
+            // Reload happened — discard stale results
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Background loading of commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} failed: {ex}");
+        }
     }
 
     private void ExtensionService_OnExtensionRemoved(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
@@ -448,6 +491,8 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     public void Dispose()
     {
+        _extensionLoadCts.Cancel();
+        _extensionLoadCts.Dispose();
         _reloadCommandsGate.Dispose();
         GC.SuppressFinalize(this);
     }
