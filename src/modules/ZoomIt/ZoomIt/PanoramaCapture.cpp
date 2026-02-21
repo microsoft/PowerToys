@@ -1210,15 +1210,103 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
     return duplicate;
 }
 
-static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
-                                const std::vector<BYTE>& currentPixels,
-                                int frameWidth,
-                                int frameHeight,
-                                int expectedDx,
-                                int expectedDy,
-                                int& bestDx,
-                                int& bestDy,
-                                bool lowContrastMode )
+static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
+                                        const std::vector<BYTE>& currentPixels,
+                                        int frameWidth,
+                                        int frameHeight,
+                                        int dx,
+                                        int dy,
+                                        unsigned __int64& scoreOut )
+{
+    if( previousPixels.size() != currentPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
+    {
+        return false;
+    }
+
+    const int absDx = abs( dx );
+    const int absDy = abs( dy );
+    const int marginX = max( 4, frameWidth / 20 );
+    const int marginY = max( 4, frameHeight / 20 );
+    const int overlapW = frameWidth - absDx - 2 * marginX;
+    const int overlapH = frameHeight - absDy - 2 * marginY;
+    if( overlapW < frameWidth / 4 || overlapH < frameHeight / 4 )
+    {
+        return false;
+    }
+
+    unsigned __int64 totalDiff = 0;
+    unsigned __int64 samples = 0;
+
+    const int prevX = marginX + max( 0, -dx );
+    const int currX = marginX + max( 0, dx );
+    const int prevY = marginY + max( 0, -dy );
+    const int currY = marginY + max( 0, dy );
+
+    for( int y = 0; y < overlapH; y += 2 )
+    {
+        const int pY = prevY + y;
+        const int cY = currY + y;
+        for( int x = 0; x < overlapW; x += 2 )
+        {
+            const int pX = prevX + x;
+            const int cX = currX + x;
+            const int pIndex = ( pY * frameWidth + pX ) * 4;
+            const int cIndex = ( cY * frameWidth + cX ) * 4;
+            const int pLuma = ( previousPixels[pIndex + 2] * 77 + previousPixels[pIndex + 1] * 150 + previousPixels[pIndex + 0] * 29 ) >> 8;
+            const int cLuma = ( currentPixels[cIndex + 2] * 77 + currentPixels[cIndex + 1] * 150 + currentPixels[cIndex + 0] * 29 ) >> 8;
+            totalDiff += static_cast<unsigned __int64>( abs( pLuma - cLuma ) );
+            samples++;
+        }
+    }
+
+    if( samples < 100 )
+    {
+        return false;
+    }
+
+    scoreOut = totalDiff / samples;
+    return true;
+}
+
+static bool TransposePixels32( const std::vector<BYTE>& source,
+                               int sourceWidth,
+                               int sourceHeight,
+                               std::vector<BYTE>& destination )
+{
+    if( sourceWidth <= 0 || sourceHeight <= 0 ||
+        source.size() != static_cast<size_t>( sourceWidth ) * static_cast<size_t>( sourceHeight ) * 4 )
+    {
+        return false;
+    }
+
+    destination.resize( source.size() );
+    for( int y = 0; y < sourceHeight; ++y )
+    {
+        for( int x = 0; x < sourceWidth; ++x )
+        {
+            const int srcIndex = ( y * sourceWidth + x ) * 4;
+            const int dstX = y;
+            const int dstY = x;
+            const int dstWidth = sourceHeight;
+            const int dstIndex = ( dstY * dstWidth + dstX ) * 4;
+            destination[dstIndex + 0] = source[srcIndex + 0];
+            destination[dstIndex + 1] = source[srcIndex + 1];
+            destination[dstIndex + 2] = source[srcIndex + 2];
+            destination[dstIndex + 3] = source[srcIndex + 3];
+        }
+    }
+    return true;
+}
+
+static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPixels,
+                                            const std::vector<BYTE>& currentPixels,
+                                            int frameWidth,
+                                            int frameHeight,
+                                            int expectedDx,
+                                            int expectedDy,
+                                            int& bestDx,
+                                            int& bestDy,
+                                            bool lowContrastMode )
 {
     if( previousPixels.size() != currentPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
     {
@@ -1664,6 +1752,145 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     return true;
 }
 
+static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
+                                const std::vector<BYTE>& currentPixels,
+                                int frameWidth,
+                                int frameHeight,
+                                int expectedDx,
+                                int expectedDy,
+                                int& bestDx,
+                                int& bestDy,
+                                bool lowContrastMode )
+{
+    const bool axisEstablished = ( expectedDx != 0 || expectedDy != 0 );
+    const bool preferVerticalAxis = !axisEstablished || ( abs( expectedDy ) >= abs( expectedDx ) );
+
+    int directDx = 0;
+    int directDy = 0;
+    const bool directOk = FindBestFrameShiftVerticalOnly( previousPixels,
+                                                          currentPixels,
+                                                          frameWidth,
+                                                          frameHeight,
+                                                          expectedDx,
+                                                          expectedDy,
+                                                          directDx,
+                                                          directDy,
+                                                          lowContrastMode );
+
+    std::vector<BYTE> previousTransposed;
+    std::vector<BYTE> currentTransposed;
+    const bool transposedReady =
+        TransposePixels32( previousPixels, frameWidth, frameHeight, previousTransposed ) &&
+        TransposePixels32( currentPixels, frameWidth, frameHeight, currentTransposed );
+
+    int transposedDx = 0;
+    int transposedDy = 0;
+    bool transposedOk = false;
+    if( transposedReady )
+    {
+        // In transposed space, original X motion becomes Y motion.
+        transposedOk = FindBestFrameShiftVerticalOnly( previousTransposed,
+                                                       currentTransposed,
+                                                       frameHeight,
+                                                       frameWidth,
+                                                       expectedDy,
+                                                       expectedDx,
+                                                       transposedDx,
+                                                       transposedDy,
+                                                       lowContrastMode );
+    }
+
+    if( !directOk && !transposedOk )
+    {
+        return false;
+    }
+
+    int mappedDx = transposedDy;
+    int mappedDy = transposedDx;
+
+    if( axisEstablished )
+    {
+        if( preferVerticalAxis )
+        {
+            if( directOk )
+            {
+                bestDx = directDx;
+                bestDy = directDy;
+                return true;
+            }
+
+            if( transposedOk )
+            {
+                bestDx = mappedDx;
+                bestDy = mappedDy;
+                return true;
+            }
+        }
+        else
+        {
+            if( transposedOk )
+            {
+                bestDx = mappedDx;
+                bestDy = mappedDy;
+                return true;
+            }
+
+            if( directOk )
+            {
+                bestDx = directDx;
+                bestDy = directDy;
+                return true;
+            }
+        }
+    }
+
+    if( directOk && !transposedOk )
+    {
+        bestDx = directDx;
+        bestDy = directDy;
+        return true;
+    }
+
+    if( transposedOk && !directOk )
+    {
+        bestDx = mappedDx;
+        bestDy = mappedDy;
+        return true;
+    }
+
+    unsigned __int64 directScore = 0;
+    unsigned __int64 transposedScore = 0;
+    const bool directScored = ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight, directDx, directDy, directScore );
+    const bool transposedScored = ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight, mappedDx, mappedDy, transposedScore );
+
+    if( directScored && transposedScored )
+    {
+        if( transposedScore < directScore )
+        {
+            bestDx = mappedDx;
+            bestDy = mappedDy;
+        }
+        else
+        {
+            bestDx = directDx;
+            bestDy = directDy;
+        }
+        return true;
+    }
+
+    if( transposedScored )
+    {
+        bestDx = mappedDx;
+        bestDy = mappedDy;
+    }
+    else
+    {
+        bestDx = directDx;
+        bestDy = directDy;
+    }
+    return true;
+}
+
 static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<void(int)> progressCallback)
 {
     auto reportProgress = [&progressCallback]( int percent )
@@ -1736,7 +1963,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
     composedFrameOrigins.push_back( { 0, 0 } );
     composedFrameSteps.push_back( { 0, 0 } );
 
-    const int minProgress = lowContrastMode ? max( 4, frameHeight / 40 ) : max( 8, frameHeight / 30 );
+    const int minFrameDimension = min( frameWidth, frameHeight );
+    const int minProgress = lowContrastMode ? max( 4, minFrameDimension / 40 ) : max( 8, minFrameDimension / 30 );
     int expectedDx = 0;
     int expectedDy = 0;
 
@@ -1831,18 +2059,50 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
         maxY = max( maxY, nextOrigin.y + frameHeight );
     }
 
-    // Normalize output orientation so the first frame appears at the top and
-    // frames progress chronologically downward.
-    if( !composedFrameOrigins.empty() && composedFrameOrigins.back().y < composedFrameOrigins.front().y )
+    int totalAbsStepX = 0;
+    int totalAbsStepY = 0;
+    for( size_t si = 1; si < composedFrameSteps.size(); ++si )
+    {
+        totalAbsStepX += abs( composedFrameSteps[si].x );
+        totalAbsStepY += abs( composedFrameSteps[si].y );
+    }
+
+    const bool mostlyHorizontalCapture = totalAbsStepX > totalAbsStepY;
+    const bool shouldFlipHorizontal =
+        mostlyHorizontalCapture &&
+        !composedFrameOrigins.empty() &&
+        composedFrameOrigins.back().x < composedFrameOrigins.front().x;
+    const bool shouldFlipVertical =
+        !mostlyHorizontalCapture &&
+        !composedFrameOrigins.empty() &&
+        composedFrameOrigins.back().y < composedFrameOrigins.front().y;
+
+    // Normalize output orientation so the first frame appears at the top for
+    // vertical captures and at the left for horizontal captures.
+    if( shouldFlipHorizontal || shouldFlipVertical )
     {
         for( POINT& origin : composedFrameOrigins )
         {
-            origin.y = -origin.y;
+            if( shouldFlipHorizontal )
+            {
+                origin.x = -origin.x;
+            }
+            if( shouldFlipVertical )
+            {
+                origin.y = -origin.y;
+            }
         }
 
         for( POINT& step : composedFrameSteps )
         {
-            step.y = -step.y;
+            if( shouldFlipHorizontal )
+            {
+                step.x = -step.x;
+            }
+            if( shouldFlipVertical )
+            {
+                step.y = -step.y;
+            }
         }
 
         minX = 0;
@@ -1857,7 +2117,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
             maxY = max( maxY, origin.y + frameHeight );
         }
 
-        StitchLog( L"[Panorama/Stitch] Normalized orientation: first frame at top\n" );
+        StitchLog( L"[Panorama/Stitch] Normalized orientation: first frame at %ls\n",
+                     shouldFlipHorizontal ? L"left" : L"top" );
     }
 
     const int stitchedWidth = maxX - minX;
@@ -1880,6 +2141,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
     std::vector<BYTE> stitchedPixels( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ) * 4, 0 );
     std::vector<BYTE> stitchedWritten( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ), 0 );
     const int verticalFeather = max( 4, min( 28, frameHeight / 18 ) );
+    const int horizontalFeather = max( 4, min( 28, frameWidth / 18 ) );
 
     for( size_t i = 0; i < composedFrameIndices.size(); ++i )
     {
@@ -1899,9 +2161,12 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
             stepY = composedFrameSteps[i].y;
         }
 
+        const int absStepX = abs( stepX );
         const int absStepY = abs( stepY );
         const bool mostlyVerticalMove = i > 0 && absStepY >= minProgress && abs( stepX ) <= max( 12, frameWidth / 20 );
+        const bool mostlyHorizontalMove = i > 0 && absStepX >= minProgress && abs( stepY ) <= max( 12, frameHeight / 20 );
         const int overlapHeight = mostlyVerticalMove ? max( 0, frameHeight - absStepY ) : 0;
+        const int overlapWidth = mostlyHorizontalMove ? max( 0, frameWidth - absStepX ) : 0;
 
         for( int y = 0; y < frameHeight; ++y )
         {
@@ -1909,45 +2174,6 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
             if( canvasY < 0 || canvasY >= stitchedHeight )
             {
                 continue;
-            }
-
-            BYTE weightNew = 255;
-            if( mostlyVerticalMove && overlapHeight > 0 )
-            {
-                if( stepY > 0 )
-                {
-                    const int overlapEnd = overlapHeight;
-                    if( y < overlapEnd - verticalFeather )
-                    {
-                        weightNew = 0;
-                    }
-                    else if( y < overlapEnd )
-                    {
-                        const int numerator = y - ( overlapEnd - verticalFeather );
-                        weightNew = static_cast<BYTE>( max( 0, min( 255, ( numerator * 255 ) / max( 1, verticalFeather ) ) ) );
-                    }
-                    else
-                    {
-                        weightNew = 255;
-                    }
-                }
-                else
-                {
-                    const int overlapStart = absStepY;
-                    if( y < overlapStart )
-                    {
-                        weightNew = 255;
-                    }
-                    else if( y < overlapStart + verticalFeather )
-                    {
-                        const int numerator = overlapStart + verticalFeather - y;
-                        weightNew = static_cast<BYTE>( max( 0, min( 255, ( numerator * 255 ) / max( 1, verticalFeather ) ) ) );
-                    }
-                    else
-                    {
-                        weightNew = 0;
-                    }
-                }
             }
 
             const size_t srcRowBase = static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) * 4;
@@ -1965,6 +2191,82 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                 const size_t srcIndex = srcRowBase + static_cast<size_t>( x ) * 4;
                 const size_t dstIndex = dstRowBase + static_cast<size_t>( canvasX ) * 4;
                 const size_t dstMaskIndex = dstMaskRowBase + static_cast<size_t>( canvasX );
+
+                BYTE weightNew = 255;
+                if( mostlyVerticalMove && overlapHeight > 0 )
+                {
+                    if( stepY > 0 )
+                    {
+                        const int overlapEnd = overlapHeight;
+                        if( y < overlapEnd - verticalFeather )
+                        {
+                            weightNew = 0;
+                        }
+                        else if( y < overlapEnd )
+                        {
+                            const int numerator = y - ( overlapEnd - verticalFeather );
+                            weightNew = static_cast<BYTE>( max( 0, min( 255, ( numerator * 255 ) / max( 1, verticalFeather ) ) ) );
+                        }
+                        else
+                        {
+                            weightNew = 255;
+                        }
+                    }
+                    else
+                    {
+                        const int overlapStart = absStepY;
+                        if( y < overlapStart )
+                        {
+                            weightNew = 255;
+                        }
+                        else if( y < overlapStart + verticalFeather )
+                        {
+                            const int numerator = overlapStart + verticalFeather - y;
+                            weightNew = static_cast<BYTE>( max( 0, min( 255, ( numerator * 255 ) / max( 1, verticalFeather ) ) ) );
+                        }
+                        else
+                        {
+                            weightNew = 0;
+                        }
+                    }
+                }
+                else if( mostlyHorizontalMove && overlapWidth > 0 )
+                {
+                    if( stepX > 0 )
+                    {
+                        const int overlapEnd = overlapWidth;
+                        if( x < overlapEnd - horizontalFeather )
+                        {
+                            weightNew = 0;
+                        }
+                        else if( x < overlapEnd )
+                        {
+                            const int numerator = x - ( overlapEnd - horizontalFeather );
+                            weightNew = static_cast<BYTE>( max( 0, min( 255, ( numerator * 255 ) / max( 1, horizontalFeather ) ) ) );
+                        }
+                        else
+                        {
+                            weightNew = 255;
+                        }
+                    }
+                    else
+                    {
+                        const int overlapStart = absStepX;
+                        if( x < overlapStart )
+                        {
+                            weightNew = 255;
+                        }
+                        else if( x < overlapStart + horizontalFeather )
+                        {
+                            const int numerator = overlapStart + horizontalFeather - x;
+                            weightNew = static_cast<BYTE>( max( 0, min( 255, ( numerator * 255 ) / max( 1, horizontalFeather ) ) ) );
+                        }
+                        else
+                        {
+                            weightNew = 0;
+                        }
+                    }
+                }
 
                 if( stitchedWritten[dstMaskIndex] == 0 )
                 {
