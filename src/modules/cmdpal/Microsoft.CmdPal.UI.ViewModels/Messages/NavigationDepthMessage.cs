@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.CmdPal.ViewModels.Messages;
+namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
 /// Message containing the current navigation depth (BackStack count) when navigating to a page.

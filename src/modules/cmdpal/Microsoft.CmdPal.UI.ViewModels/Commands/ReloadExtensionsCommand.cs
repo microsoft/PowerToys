@@ -4,7 +4,6 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 

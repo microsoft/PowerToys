@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.CmdPal.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
-namespace Microsoft.CmdPal.ViewModels;
+namespace Microsoft.CmdPal.UI.ViewModels;
 
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public partial class CommandContextItemViewModel(ICommandContextItem contextItem, WeakReference<IPageContext> context) : CommandItemViewModel(new(contextItem), context), IContextItemViewModel

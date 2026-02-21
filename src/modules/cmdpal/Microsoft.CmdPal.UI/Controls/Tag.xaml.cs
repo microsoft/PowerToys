@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.Helpers;
-using Microsoft.CmdPal.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;

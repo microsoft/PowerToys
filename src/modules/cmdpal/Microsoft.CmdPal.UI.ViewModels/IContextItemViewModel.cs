@@ -4,7 +4,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.CmdPal.ViewModels;
+namespace Microsoft.CmdPal.UI.ViewModels;
 
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public interface IContextItemViewModel

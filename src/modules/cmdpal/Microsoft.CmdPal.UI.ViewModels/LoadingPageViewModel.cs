@@ -4,7 +4,7 @@
 
 using Microsoft.CommandPalette.Extensions;
 
-namespace Microsoft.CmdPal.ViewModels;
+namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class LoadingPageViewModel : PageViewModel
 {

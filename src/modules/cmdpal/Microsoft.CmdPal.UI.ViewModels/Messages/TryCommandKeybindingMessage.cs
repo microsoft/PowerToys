@@ -4,7 +4,7 @@
 
 using Windows.System;
 
-namespace Microsoft.CmdPal.ViewModels.Messages;
+namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 public record TryCommandKeybindingMessage(bool Ctrl, bool Alt, bool Shift, bool Win, VirtualKey Key)
 {

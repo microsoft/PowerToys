@@ -7,11 +7,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
-using Microsoft.CmdPal.ViewModels.Messages;
-using Microsoft.CmdPal.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
-namespace Microsoft.CmdPal.ViewModels;
+namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ShellViewModel : ObservableObject,
     IDisposable,

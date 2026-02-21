@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 
-namespace Microsoft.CmdPal.ViewModels;
+namespace Microsoft.CmdPal.UI.ViewModels;
 
 internal static class BatchUpdateManager
 {

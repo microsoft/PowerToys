@@ -6,13 +6,13 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
-using Microsoft.CmdPal.ViewModels.Messages;
-using Microsoft.CmdPal.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel.DataTransfer;
 
-namespace Microsoft.CmdPal.ViewModels;
+namespace Microsoft.CmdPal.UI.ViewModels;
 
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBarContext, IPrecomputedListItem

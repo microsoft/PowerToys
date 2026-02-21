@@ -3,12 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.CmdPal.ViewModels.Commands;
-using Microsoft.CmdPal.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace Microsoft.CmdPal.ViewModels;
+namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ListItemViewModel : CommandItemViewModel
 {

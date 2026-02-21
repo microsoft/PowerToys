@@ -6,7 +6,6 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:coreViewModels="using:Microsoft.CmdPal.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
@@ -29,7 +28,7 @@
                 Separator="{StaticResource SeparatorContextMenuViewModelTemplate}" />
 
             <!--  Template for context items in the context item menu  -->
-            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="coreViewModels:CommandContextItemViewModel">
+            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="viewModels:CommandContextItemViewModel">
                 <Grid Padding="{StaticResource DefaultContextMenuItemPadding}" AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
@@ -69,7 +68,7 @@
             </DataTemplate>
 
             <!--  Template for context items flagged as critical  -->
-            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="coreViewModels:CommandContextItemViewModel">
+            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="viewModels:CommandContextItemViewModel">
                 <Grid Padding="{StaticResource DefaultContextMenuItemPadding}" AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
@@ -110,7 +109,7 @@
             </DataTemplate>
 
             <!--  Template for context item separators  -->
-            <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="coreViewModels:SeparatorViewModel">
+            <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="viewModels:SeparatorViewModel">
                 <Rectangle
                     Height="1"
                     Margin="0,2,0,2"

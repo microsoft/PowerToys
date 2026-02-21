@@ -10,7 +10,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
-using Microsoft.CmdPal.ViewModels;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 

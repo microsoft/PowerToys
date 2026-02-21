@@ -55,6 +55,8 @@ public class PiiRuleProviderTests
     [DataRow("Czech phone +420 777 123 456", "Czech phone [PHONE_REDACTED]")]
     [DataRow("Slovak phone +421 777 12 34 56", "Slovak phone [PHONE_REDACTED]")]
     [DataRow("No phone number here", "No phone number here")]
+    [DataRow("Version 1.2.3.4", "Version 1.2.3.4")]
+    [DataRow("OS version: Microsoft Windows 10.0.26220", "OS version: Microsoft Windows 10.0.26220")]
     public void PhoneRules_ShouldMaskPhoneNumbers(string input, string expected)
     {
         // Arrange
@@ -104,6 +106,8 @@ public class PiiRuleProviderTests
     [DataRow("GUID: 123e4567-e89b-12d3-a456-426614174000", "GUID: 123e4567-e89b-12d3-a456-426614174000")]
     [DataRow("Timestamp: 2023-10-05T14:32:10Z", "Timestamp: 2023-10-05T14:32:10Z")]
     [DataRow("Version: 1.2.3", "Version: 1.2.3")]
+    [DataRow("Version: 1.2.3.4", "Version: 1.2.3.4")]
+    [DataRow("Version: 0.2.3.4", "Version: 0.2.3.4")]
     [DataRow("Version: 10.0.22631.3448", "Version: 10.0.22631.3448")]
     [DataRow("MAC: 00:1A:2B:3C:4D:5E", "MAC: 00:1A:2B:3C:4D:5E")]
     [DataRow("Date: 2023-10-05", "Date: 2023-10-05")]

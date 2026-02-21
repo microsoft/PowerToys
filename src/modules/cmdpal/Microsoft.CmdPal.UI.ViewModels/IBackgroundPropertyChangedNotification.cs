@@ -4,7 +4,7 @@
 
 using System.ComponentModel;
 
-namespace Microsoft.CmdPal.ViewModels;
+namespace Microsoft.CmdPal.UI.ViewModels;
 
 /// <summary>
 /// Provides a notification mechanism for property changes that fires

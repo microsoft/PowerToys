@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace Microsoft.CmdPal.ViewModels.Commands;
+namespace Microsoft.CmdPal.UI.ViewModels.Commands;
 
 public sealed partial class ShowDetailsCommand : InvokableCommand
 {

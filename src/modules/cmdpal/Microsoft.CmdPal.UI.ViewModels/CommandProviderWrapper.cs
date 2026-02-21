@@ -4,9 +4,8 @@
 
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
-using Microsoft.CmdPal.ViewModels;
-using Microsoft.CmdPal.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
