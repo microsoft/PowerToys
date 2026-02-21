@@ -272,10 +272,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             _extensionCommandProviders.Clear();
         }
 
-        if (extensions is not null)
-        {
-            await StartExtensionsAndGetCommands(extensions, ct).ConfigureAwait(false);
-        }
+        await StartExtensionsAndGetCommands(extensions, ct).ConfigureAwait(false);
 
         extensionService.OnExtensionAdded += ExtensionService_OnExtensionAdded;
         extensionService.OnExtensionRemoved += ExtensionService_OnExtensionRemoved;
