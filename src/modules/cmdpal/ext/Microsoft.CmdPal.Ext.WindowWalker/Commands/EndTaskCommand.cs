@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
+using Microsoft.CmdPal.Ext.WindowWalker.Messages;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -70,11 +72,8 @@ internal sealed partial class EndTaskCommand : InvokableCommand
 
     public override ICommandResult Invoke()
     {
-        if (KillProcess(_window))
-        {
-            return CommandResult.Dismiss();
-        }
-
-        return CommandResult.KeepOpen();
+        WeakReferenceMessenger.Default.Send(new RefreshWindowsMessage());
+        var shouldHide = KillProcess(_window);
+        return shouldHide ? CommandResult.Dismiss() : CommandResult.KeepOpen();
     }
 }

@@ -3,15 +3,18 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
+using Microsoft.CmdPal.Ext.WindowWalker.Messages;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Pages;
 
-internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposable
+internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposable, IRecipient<RefreshWindowsMessage>
 {
     private System.Threading.CancellationTokenSource _cancellationTokenSource = new();
 
@@ -30,6 +33,8 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
             Title = Resources.window_walker_top_level_command_title,
             Subtitle = Resources.windowwalker_NoResultsMessage,
         };
+
+        WeakReferenceMessenger.Default.Register<RefreshWindowsMessage>(this);
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -79,18 +84,50 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
 
     public override IListItem[] GetItems() => Query(SearchText);
 
+    public void Receive(RefreshWindowsMessage message)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (!message.Delay)
+        {
+            Refresh();
+        }
+        else
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3)).ConfigureAwait(false);
+                Refresh();
+            });
+        }
+    }
+
+    private void Refresh()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        RaiseItemsChanged();
+    }
+
     public void Dispose()
     {
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
     }
 
-    public void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (!_disposed)
         {
             if (disposing)
             {
+                WeakReferenceMessenger.Default.UnregisterAll(this);
                 _cancellationTokenSource?.Dispose();
                 _disposed = true;
             }
