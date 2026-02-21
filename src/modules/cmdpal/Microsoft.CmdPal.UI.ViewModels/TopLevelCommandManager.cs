@@ -35,6 +35,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     private readonly Lock _commandProvidersLock = new();
     private readonly SupersedingAsyncGate _reloadCommandsGate;
     private CancellationTokenSource _extensionLoadCts = new();
+    private CancellationToken _currentExtensionLoadCancellationToken;
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
@@ -42,6 +43,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         _serviceProvider = serviceProvider;
         _commandProviderCache = commandProviderCache;
+        _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
         WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
@@ -227,6 +229,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         await _extensionLoadCts.CancelAsync().ConfigureAwait(false);
         _extensionLoadCts.Dispose();
         _extensionLoadCts = new();
+        _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
 
         var extensionService = _serviceProvider.GetService<IExtensionService>()!;
         await extensionService.SignalStopExtensionsAsync().ConfigureAwait(false);
@@ -255,7 +258,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
         extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
 
-        var ct = _extensionLoadCts.Token;
+        var ct = _currentExtensionLoadCancellationToken;
 
         var extensions = (await extensionService.GetInstalledExtensionsAsync().ConfigureAwait(false)).ToImmutableList();
         lock (_commandProvidersLock)
@@ -281,16 +284,18 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     private void ExtensionService_OnExtensionAdded(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
     {
-        var ct = _extensionLoadCts.Token;
+        var ct = _currentExtensionLoadCancellationToken;
 
         // When we get an extension install event, hop off to a BG thread
-        _ = Task.Run(async () =>
-        {
-            // for each newly installed extension, start it and get commands
-            // from it. One single package might have more than one
-            // IExtensionWrapper in it.
-            await StartExtensionsAndGetCommands(extensions, ct).ConfigureAwait(false);
-        });
+        _ = Task.Run(
+            async () =>
+            {
+                // for each newly installed extension, start it and get commands
+                // from it. One single package might have more than one
+                // IExtensionWrapper in it.
+                await StartExtensionsAndGetCommands(extensions, ct).ConfigureAwait(false);
+            },
+            ct);
     }
 
     private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions, CancellationToken ct)
@@ -337,7 +342,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         var sw = Stopwatch.StartNew();
         try
         {
-            await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+            await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10), _currentExtensionLoadCancellationToken).ConfigureAwait(false);
             Logger.LogInfo($"Started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
             return new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
         }
@@ -465,7 +470,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     }
 
     public void Receive(ReloadCommandsMessage message) =>
-        ReloadAllCommandsAsync().ConfigureAwait(false);
+        _ = ReloadAllCommandsAsync();
 
     public void Receive(PinCommandItemMessage message)
     {
