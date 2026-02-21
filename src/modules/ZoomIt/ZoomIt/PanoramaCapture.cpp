@@ -127,7 +127,7 @@ const wchar_t* HotkeyIdToString( WPARAM hotkeyId );
 DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap );
 std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId );
 
-static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames, bool lowContrastMode, bool lowContrastLowEntropyMode, std::function<void(int)> progressCallback = nullptr );
+static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<void(int)> progressCallback = nullptr );
 static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile );
 
 //----------------------------------------------------------------------------
@@ -697,7 +697,7 @@ static bool RunPanoramaStitchFromDumpDirectory( const std::filesystem::path& dum
         g_StitchLogFile = fopen( logPath.string().c_str(), "w" );
     }
 
-    HBITMAP stitched = StitchPanoramaFrames( frames, false, false );
+    HBITMAP stitched = StitchPanoramaFrames( frames, false );
 
     if( g_StitchLogFile != nullptr )
     {
@@ -798,13 +798,10 @@ static bool ComputeAveragePixelDifference( const std::vector<BYTE>& currentPixel
     return true;
 }
 
-static constexpr double kLowContrastLowEntropyEntropyCutoff = 3.2;
-
 static bool IsLowContrastSeedFrame( HBITMAP frame,
                                     double* outSpread = nullptr,
                                     double* outStdDev = nullptr,
-                                    double* outEdgeDelta = nullptr,
-                                    double* outEntropy = nullptr )
+                                    double* outEdgeDelta = nullptr )
 {
     std::vector<BYTE> pixels;
     int frameWidth = 0;
@@ -883,17 +880,6 @@ static bool IsLowContrastSeedFrame( HBITMAP frame,
     const double edgeDelta = ( edgeSamples > 0 )
         ? static_cast<double>( edgeDeltaSum ) / static_cast<double>( edgeSamples )
         : 0.0;
-    double entropy = 0.0;
-    for( int l = 0; l < 256; ++l )
-    {
-        if( histogram[l] == 0 )
-        {
-            continue;
-        }
-
-        const double p = static_cast<double>( histogram[l] ) / static_cast<double>( sampleCount );
-        entropy -= p * std::log2( p );
-    }
 
     if( outSpread )
     {
@@ -906,10 +892,6 @@ static bool IsLowContrastSeedFrame( HBITMAP frame,
     if( outEdgeDelta )
     {
         *outEdgeDelta = edgeDelta;
-    }
-    if( outEntropy )
-    {
-        *outEntropy = entropy;
     }
 
     const bool darkBaseline = mean < 96.0;
@@ -1100,7 +1082,7 @@ static bool LooksLikeSmallShiftNotDuplicate( const std::vector<BYTE>& previousPi
     return true;
 }
 
-static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame, bool lowContrastMode, bool lowContrastLowEntropyMode )
+static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame, bool lowContrastMode )
 {
     std::vector<BYTE> currentPixels;
     std::vector<BYTE> previousPixels;
@@ -1120,15 +1102,15 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
     unsigned __int64 avgDiff = 0;
     double changedFraction = 0.0;
 
-    const int coarseSampleStep = lowContrastMode ? ( lowContrastLowEntropyMode ? 3 : 4 ) : 6;
+    const int coarseSampleStep = lowContrastMode ? 4 : 6;
     if( !ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight,
                                         avgDiff, changedFraction, coarseSampleStep, ++s_phase ) )
     {
         return false;
     }
 
-    const unsigned __int64 avgDiffThreshold = lowContrastMode ? ( lowContrastLowEntropyMode ? 1 : 2 ) : 6;
-    const double changedThreshold = lowContrastMode ? ( lowContrastLowEntropyMode ? 0.00025 : 0.0005 ) : 0.005;
+    const unsigned __int64 avgDiffThreshold = lowContrastMode ? 2 : 6;
+    const double changedThreshold = lowContrastMode ? 0.0005 : 0.005;
     const bool coarseDuplicate = ( avgDiff < avgDiffThreshold && changedFraction < changedThreshold );
     bool duplicate = coarseDuplicate;
 
@@ -1142,9 +1124,7 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
         if( ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight,
                                            fineAvgDiff, fineChangedFraction, 1, ++s_phase ) )
         {
-            const bool fineDuplicate = lowContrastLowEntropyMode
-                ? ( fineAvgDiff == 0 && fineChangedFraction < 0.00004 )
-                : ( fineAvgDiff < 1 && fineChangedFraction < 0.00008 );
+            const bool fineDuplicate = ( fineAvgDiff < 1 && fineChangedFraction < 0.00008 );
             duplicate = coarseDuplicate && fineDuplicate;
             if( coarseDuplicate && !fineDuplicate )
             {
@@ -1177,14 +1157,8 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
         }
     }
 
-    OutputDebug( L"[Panorama/Capture] Frame compare avgDiff=%llu changedPct=%.1f%% size=%dx%d identical=%d lowContrast=%d lowEntropy=%d\n",
-                 avgDiff,
-                 changedFraction * 100.0,
-                 currentWidth,
-                 currentHeight,
-                 duplicate ? 1 : 0,
-                 lowContrastMode ? 1 : 0,
-                 lowContrastLowEntropyMode ? 1 : 0 );
+    OutputDebug( L"[Panorama/Capture] Frame compare avgDiff=%llu changedPct=%.1f%% size=%dx%d identical=%d lowContrast=%d\n",
+                 avgDiff, changedFraction * 100.0, currentWidth, currentHeight, duplicate ? 1 : 0, lowContrastMode ? 1 : 0 );
     return duplicate;
 }
 
@@ -1192,22 +1166,21 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
                                          const std::vector<BYTE>& previousPixels,
                                          int frameWidth,
                                          int frameHeight,
-                                         bool lowContrastMode,
-                                         bool lowContrastLowEntropyMode )
+                                         bool lowContrastMode )
 {
     static unsigned s_phase = 0;
     unsigned __int64 avgDiff = 0;
     double changedFraction = 0.0;
 
-    const int coarseSampleStep = lowContrastMode ? ( lowContrastLowEntropyMode ? 3 : 4 ) : 6;
+    const int coarseSampleStep = lowContrastMode ? 4 : 6;
     if( !ComputeAveragePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight,
                                         avgDiff, changedFraction, coarseSampleStep, ++s_phase ) )
     {
         return false;
     }
 
-    const unsigned __int64 avgDiffThreshold = lowContrastMode ? ( lowContrastLowEntropyMode ? 1 : 2 ) : 6;
-    const double changedThreshold = lowContrastMode ? ( lowContrastLowEntropyMode ? 0.00025 : 0.0005 ) : 0.005;
+    const unsigned __int64 avgDiffThreshold = lowContrastMode ? 2 : 6;
+    const double changedThreshold = lowContrastMode ? 0.0005 : 0.005;
     const bool coarseDuplicate = ( avgDiff < avgDiffThreshold && changedFraction < changedThreshold );
     bool duplicate = coarseDuplicate;
 
@@ -1218,9 +1191,7 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
         if( ComputeAveragePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight,
                                            fineAvgDiff, fineChangedFraction, 1, ++s_phase ) )
         {
-            const bool fineDuplicate = lowContrastLowEntropyMode
-                ? ( fineAvgDiff == 0 && fineChangedFraction < 0.00004 )
-                : ( fineAvgDiff < 1 && fineChangedFraction < 0.00008 );
+            const bool fineDuplicate = ( fineAvgDiff < 1 && fineChangedFraction < 0.00008 );
             duplicate = coarseDuplicate && fineDuplicate;
         }
     }
@@ -1693,7 +1664,7 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     return true;
 }
 
-static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool lowContrastMode, bool lowContrastLowEntropyMode, std::function<void(int)> progressCallback)
+static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<void(int)> progressCallback)
 {
     auto reportProgress = [&progressCallback]( int percent )
     {
@@ -1783,7 +1754,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
         bool foundShift = FindBestFrameShift( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, expectedDx, expectedDy, dx, dy, lowContrastMode );
         if( !foundShift )
         {
-            if( ArePixelFramesNearDuplicate( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, lowContrastMode, lowContrastLowEntropyMode ) )
+            if( ArePixelFramesNearDuplicate( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, lowContrastMode ) )
             {
                 StitchLog( L"[Panorama/Stitch] Frame %zu rejected: duplicate vs frame %zu\n",
                              i,
@@ -2190,17 +2161,12 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     double contrastSpread = 0.0;
     double contrastStdDev = 0.0;
     double contrastEdgeDelta = 0.0;
-    double contrastEntropy = 0.0;
-    const bool lowContrastMode = IsLowContrastSeedFrame( firstFrame, &contrastSpread, &contrastStdDev, &contrastEdgeDelta, &contrastEntropy );
-    const bool lowContrastLowEntropyMode = lowContrastMode && contrastEntropy < kLowContrastLowEntropyEntropyCutoff;
-    OutputDebug( L"[Panorama/Capture] Captured frame #1 lowContrast=%d lowEntropy=%d spread=%.1f stdDev=%.1f edgeDelta=%.1f entropy=%.2f cutoff=%.2f\n",
+    const bool lowContrastMode = IsLowContrastSeedFrame( firstFrame, &contrastSpread, &contrastStdDev, &contrastEdgeDelta );
+    OutputDebug( L"[Panorama/Capture] Captured frame #1 lowContrast=%d spread=%.1f stdDev=%.1f edgeDelta=%.1f\n",
                  lowContrastMode ? 1 : 0,
-                 lowContrastLowEntropyMode ? 1 : 0,
                  contrastSpread,
                  contrastStdDev,
-                 contrastEdgeDelta,
-                 contrastEntropy,
-                 kLowContrastLowEntropyEntropyCutoff );
+                 contrastEdgeDelta );
 
 #ifdef _DEBUG
     DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, firstFrame );
@@ -2242,7 +2208,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, frame );
 #endif
 
-        if( AreFramesNearDuplicate( frame, frames.back(), lowContrastMode, lowContrastLowEntropyMode ) )
+        if( AreFramesNearDuplicate( frame, frames.back(), lowContrastMode ) )
         {
             duplicateFrameCount++;
             if( duplicateFrameCount <= 3 || ( duplicateFrameCount % 10 ) == 0 )
@@ -2303,7 +2269,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     else
     {
         g_ProgressDialog.Create( hWnd );
-        panoramaBitmap = StitchPanoramaFrames( frames, lowContrastMode, lowContrastLowEntropyMode, [&]( int percent )
+        panoramaBitmap = StitchPanoramaFrames( frames, lowContrastMode, [&]( int percent )
         {
             g_ProgressDialog.SetProgress( percent );
         } );
@@ -2600,7 +2566,7 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
 
-        HBITMAP stitchedBitmap = StitchPanoramaFrames( frames, false, false );
+        HBITMAP stitchedBitmap = StitchPanoramaFrames( frames, false );
 
         for( HBITMAP frame : frames )
         {
@@ -3028,7 +2994,7 @@ bool RunPanoramaStitchSelfTest()
                 frames.push_back( bmp );
             }
 
-            HBITMAP stitchedBmp = StitchPanoramaFrames( frames, false, false );
+            HBITMAP stitchedBmp = StitchPanoramaFrames( frames, false );
             for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
 
             if( !stitchedBmp )
