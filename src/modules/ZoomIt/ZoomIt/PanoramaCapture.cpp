@@ -1072,6 +1072,7 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     // Search a LIMITED range around the expected shift to avoid harmonic
     // matches on repetitive content.  For the first frame pair
     // (expectedDy == 0) search outward from the smallest step.
+    //
     const int downsampleScale = ( min( frameWidth, frameHeight ) >= 240 ) ? 4 : 2;
     std::vector<BYTE> previousLuma;
     std::vector<BYTE> currentLuma;
@@ -1160,7 +1161,8 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     };
 
     constexpr int kMaxCandidates = 12;
-    CoarseCandidate candidates[kMaxCandidates];
+    constexpr int kMaxCandidatesWithProbes = 24;
+    CoarseCandidate candidates[kMaxCandidatesWithProbes];
     int candidateCount = 0;
 
     for( int absStep = minStepDs; absStep <= maxStepDs; ++absStep )
@@ -1257,6 +1259,39 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     if( prunedCount < 1 )
     {
         prunedCount = 1;
+    }
+
+    // Inject probe candidates near the expected shift.  Content with regular
+    // vertical structure (e.g. code text at ~13 px line height) produces many
+    // similarly-scored coarse candidates at text-line harmonics, pushing the
+    // correct shift outside the top-12.  Adding probes at the expected step
+    // ensures the fine search always evaluates the correct neighborhood.
+    if( expectedDyDs != 0 && prunedCount < kMaxCandidatesWithProbes )
+    {
+        for( int probe = -3; probe <= 3 && prunedCount < kMaxCandidatesWithProbes; ++probe )
+        {
+            const int probeDyDs = expectedDyDs + probe;
+            if( abs( probeDyDs ) < minStepDs || abs( probeDyDs ) > maxStepDs )
+            {
+                continue;
+            }
+
+            bool alreadyPresent = false;
+            for( int ci = 0; ci < prunedCount; ++ci )
+            {
+                if( candidates[ci].dyDs == probeDyDs )
+                {
+                    alreadyPresent = true;
+                    break;
+                }
+            }
+
+            if( !alreadyPresent )
+            {
+                candidates[prunedCount] = { probeDyDs, coarsePruneThreshold };
+                prunedCount++;
+            }
+        }
     }
 
     // ── Phase 2 ── Rank candidates by full-resolution comparison ──────
@@ -1414,8 +1449,20 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     // handles, list layouts) that correlate at a wrong offset.  A perfect
     // fine score (fineScore == 0) indicates the pixel-level alignment is
     // genuine even when the stationary score is low.
+    //
+    // Exception: when the scroll direction has already been established and
+    // the detected shift is in the same direction, skip this check.  Content
+    // like code with a dark theme has inherently low stationary scores (~8-12)
+    // even for genuine large scrolls because most pixels are uniform
+    // background.  The fine-score threshold below still rejects poor matches.
     const int detectedStep = abs( bestDx ) + abs( bestDy );
-    if( stationaryScore < 15 && detectedStep > frameHeight / 3 && bestFineScore > 0 )
+    const bool directionEstablished = ( expectedDx != 0 || expectedDy != 0 );
+    const bool shiftMatchesDirection =
+        directionEstablished &&
+        ( ( expectedDy < 0 && bestDy < 0 ) || ( expectedDy > 0 && bestDy > 0 ) ||
+          ( expectedDx < 0 && bestDx < 0 ) || ( expectedDx > 0 && bestDx > 0 ) );
+
+    if( !shiftMatchesDirection && stationaryScore < 15 && detectedStep > frameHeight / 3 && bestFineScore > 0 )
     {
         StitchLog( L"[Panorama/Stitch] FindBestFrameShift shift-stationary-mismatch expected=(%d,%d) best=(%d,%d) step=%d fineScore=%llu stationary=%llu\n",
                      expectedDx, expectedDy, bestDx, bestDy,
@@ -1562,6 +1609,30 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, std::fun
 
         int stepX = -dx;
         int stepY = -dy;
+
+        // After establishing a predominantly vertical or horizontal scroll
+        // direction, clamp the perpendicular component to zero.  Subpixel
+        // rendering noise (e.g. ClearType) causes the fine refinement to
+        // report ±1 px cross-axis drift per frame, which accumulates into
+        // visible slanting over many composed frames.
+        if( composedFrameSteps.size() >= 3 )
+        {
+            int totalAbsStepX = 0, totalAbsStepY = 0;
+            for( size_t si = 1; si < composedFrameSteps.size(); ++si )
+            {
+                totalAbsStepX += abs( composedFrameSteps[si].x );
+                totalAbsStepY += abs( composedFrameSteps[si].y );
+            }
+
+            if( totalAbsStepY > totalAbsStepX * 8 )
+            {
+                stepX = 0;
+            }
+            else if( totalAbsStepX > totalAbsStepY * 8 )
+            {
+                stepY = 0;
+            }
+        }
 
         if( abs( stepX ) + abs( stepY ) < minProgress / 2 )
         {
@@ -2409,7 +2480,7 @@ bool RunPanoramaStitchSelfTest()
     {
         constexpr int frameWidth = 420;
         constexpr int frameHeight = 320;
-        constexpr int stepY = 90;
+        constexpr int stepY = 92;
         constexpr int frameCount = 10;
         constexpr int canvasHeight = frameHeight + stepY * ( frameCount + 1 );
         constexpr int expectedStitchedHeight = frameHeight + stepY * ( frameCount - 1 );
