@@ -1,9 +1,9 @@
+
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 #include "pch.h"
-#include "../../../interface/powertoy_module_interface.h"
 #include "../../../common/SettingsAPI/settings_objects.h"
 #include "trace.h"
 #include "../../../common/utils/process_path.h"
@@ -74,7 +74,7 @@ class CursorWrap;
 static CursorWrap* g_cursorWrapInstance = nullptr;
 
 // Implement the PowerToy Module Interface and all the required methods.
-class CursorWrap : public PowertoyModuleIface
+class CursorWrap
 {
 private:
     // The PowerToy state.
@@ -91,9 +91,6 @@ private:
     // Core wrapping engine (edge-based polygon model)
     CursorWrapCore m_core;
     
-    // Hotkey
-    Hotkey m_activationHotkey{};
-
     // Event-driven trigger support (for CmdPal/automation)
     HANDLE m_triggerEventHandle = nullptr;
     HANDLE m_terminateEventHandle = nullptr;
@@ -115,79 +112,6 @@ public:
         m_core.UpdateMonitorInfo();
         g_cursorWrapInstance = this; // Set global instance pointer
     };
-
-    // Destroy the powertoy and free memory
-    virtual void destroy() override
-    {
-        // Ensure hooks/threads/handles are torn down before deletion
-        disable();
-        g_cursorWrapInstance = nullptr; // Clear global instance pointer
-        delete this;
-    }
-
-    // Return the localized display name of the powertoy
-    virtual const wchar_t* get_name() override
-    {
-        return MODULE_NAME;
-    }
-
-    // Return the non localized key of the powertoy, this will be cached by the runner
-    virtual const wchar_t* get_key() override
-    {
-        return MODULE_NAME;
-    }
-
-    // Return the configured status for the gpo policy for the module
-    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
-    {
-        return powertoys_gpo::getConfiguredCursorWrapEnabledValue();
-    }
-
-    // Return JSON with the configuration options.
-    virtual bool get_config(wchar_t* buffer, int* buffer_size) override
-    {
-        HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
-
-        PowerToysSettings::Settings settings(hinstance, get_name());
-
-        settings.set_description(IDS_CURSORWRAP_NAME);
-        settings.set_icon_key(L"pt-cursor-wrap");
-        
-        // Create HotkeyObject from the Hotkey struct for the settings
-        auto hotkey_object = PowerToysSettings::HotkeyObject::from_settings(
-            m_activationHotkey.win,
-            m_activationHotkey.ctrl,
-            m_activationHotkey.alt,
-            m_activationHotkey.shift,
-            m_activationHotkey.key);
-
-        settings.add_hotkey(JSON_KEY_ACTIVATION_SHORTCUT, IDS_CURSORWRAP_NAME, hotkey_object);
-        settings.add_bool_toggle(JSON_KEY_AUTO_ACTIVATE, IDS_CURSORWRAP_NAME, m_autoActivate);
-        settings.add_bool_toggle(JSON_KEY_DISABLE_WRAP_DURING_DRAG, IDS_CURSORWRAP_NAME, m_disableWrapDuringDrag);
-
-        return settings.serialize_to_buffer(buffer, buffer_size);
-    }
-
-    // Signal from the Settings editor to call a custom action.
-    // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* /*action*/) override {}
-
-    // Called by the runner to pass the updated settings values as a serialized JSON.
-    virtual void set_config(const wchar_t* config) override
-    {
-        try
-        {
-            // Parse the input JSON string.
-            PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
-
-            parse_settings(values);
-        }
-        catch (std::exception&)
-        {
-            Logger::error("Invalid json when trying to parse CursorWrap settings json.");
-        }
-    }
 
     // Enable the powertoy
     virtual void enable()
@@ -289,44 +213,6 @@ public:
         }
     }
 
-    // Returns if the powertoys is enabled
-    virtual bool is_enabled() override
-    {
-        return m_enabled;
-    }
-
-    // Returns whether the PowerToys should be enabled by default
-    virtual bool is_enabled_by_default() const override
-    {
-        return false;
-    }
-
-    // Legacy hotkey support
-    virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) override
-    {
-        if (buffer && buffer_size >= 1)
-        {
-            buffer[0] = m_activationHotkey;
-        }
-        return 1;
-    }
-
-    virtual bool on_hotkey(size_t hotkeyId) override
-    {
-        if (!m_enabled || hotkeyId != 0)
-        {
-            return false;
-        }
-
-        // Toggle on the thread that owns the WH_MOUSE_LL hook (the event listener thread).
-        if (m_triggerEventHandle)
-        {
-            return SetEvent(m_triggerEventHandle);
-        }
-
-        return false;
-    }
-
     // Called when display configuration changes - update monitor topology
     void OnDisplayChange()
     {
@@ -358,7 +244,7 @@ private:
         {
             // Load and parse the settings file for this PowerToy.
             PowerToysSettings::PowerToyValues settings =
-                PowerToysSettings::PowerToyValues::load_from_settings_file(CursorWrap::get_key());
+                PowerToysSettings::PowerToyValues::load_from_settings_file(L"CursorWrap");
             parse_settings(settings);
         }
         catch (std::exception&)
@@ -372,23 +258,6 @@ private:
         auto settingsObject = settings.get_raw_json();
         if (settingsObject.GetView().Size())
         {
-            try
-            {
-                // Parse activation HotKey
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
-                auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonPropertiesObject);
-
-                m_activationHotkey.win = hotkey.win_pressed();
-                m_activationHotkey.ctrl = hotkey.ctrl_pressed();
-                m_activationHotkey.shift = hotkey.shift_pressed();
-                m_activationHotkey.alt = hotkey.alt_pressed();
-                m_activationHotkey.key = static_cast<unsigned char>(hotkey.get_code());
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize CursorWrap activation shortcut");
-            }
-            
             try
             {
                 // Parse auto activate
@@ -449,18 +318,9 @@ private:
         {
             Logger::info("CursorWrap settings are empty");
         }
-        
-        // Set default hotkey if not configured
-        if (m_activationHotkey.key == 0)
-        {
-            m_activationHotkey.win = true;
-            m_activationHotkey.alt = true;
-            m_activationHotkey.ctrl = false;
-            m_activationHotkey.shift = false;
-            m_activationHotkey.key = 'U'; // Win+Alt+U
-        }
     }
 
+public:
     void StartMouseHook()
     {
         if (m_mouseHook || m_hookActive)
@@ -694,7 +554,20 @@ private:
     }
 };
 
-extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
+EXTERN_C __declspec(dllexport) void CursorWrapStartMouseHook()
 {
-    return new CursorWrap();
+    if (!g_cursorWrapInstance)
+    {
+        g_cursorWrapInstance = new CursorWrap();
+    }
+    g_cursorWrapInstance->StartMouseHook();
 }
+
+EXTERN_C __declspec(dllexport) void CursorWrapStopMouseHook()
+{
+    if (g_cursorWrapInstance)
+    {
+        g_cursorWrapInstance->StopMouseHook();
+    }
+}
+

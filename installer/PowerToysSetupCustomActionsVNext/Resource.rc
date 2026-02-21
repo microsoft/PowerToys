@@ -2,7 +2,7 @@
 //
 #include <windows.h>
 #include "resource.h"
-#include "../../src/common/version/version.h"
+#include "../../src/common/utils/version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////

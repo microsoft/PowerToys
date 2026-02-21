@@ -726,7 +726,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Workspaces_ShortDescription"), Shortcut = settings.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Workspaces_ShortDescription"), Shortcut = settings.Properties.Hotkey.GetKeysList() },
                 new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("Workspaces_LaunchEditorButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("FancyZones_LaunchEditorButtonControl/Description"), ButtonGlyph = "ms-appx:///Assets/Settings/Icons/Workspaces.png", ButtonClickHandler = WorkspacesLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);

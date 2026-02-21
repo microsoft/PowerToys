@@ -22,8 +22,6 @@
 #include <common/utils/ProcessWaiter.h>
 #include <common/utils/process_path.h>
 
-#include "../ZoomItModuleInterface/trace.h"
-#include <common/Telemetry/EtwTrace/EtwTrace.h>
 #include <common/logger/logger.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
@@ -6328,12 +6326,6 @@ LRESULT APIENTRY MainWndProc(
             //
             // Enter drawing mode without zoom
             //
-#ifdef __ZOOMIT_POWERTOYS__
-            if( g_StartedByPowerToys )
-            {
-                Trace::ZoomItActivateDraw();
-            }
-#endif // __ZOOMIT_POWERTOYS__
 
             if( !g_Zoomed ) {
                 OutputDebug(L"LiveDraw: %d (%d)\n", wParam, (wParam == LIVE_DRAW_HOTKEY));
@@ -6386,12 +6378,6 @@ LRESULT APIENTRY MainWndProc(
             }
 
             bool zoomed = true;
-#ifdef __ZOOMIT_POWERTOYS__
-            if( g_StartedByPowerToys )
-            {
-                Trace::ZoomItActivateSnip();
-            }
-#endif // __ZOOMIT_POWERTOYS__
 
             // First, static zoom
             if( !g_Zoomed )
@@ -6521,12 +6507,6 @@ LRESULT APIENTRY MainWndProc(
                 MessageBox( hWnd, L"Unrecognized DemoType file content", APPNAME, MB_OK );
                 break;
             default:
-#ifdef __ZOOMIT_POWERTOYS__
-                if( g_StartedByPowerToys )
-                {
-                    Trace::ZoomItActivateDemoType();
-                }
-#endif // __ZOOMIT_POWERTOYS__
                 break;
             }
             break;
@@ -6547,12 +6527,6 @@ LRESULT APIENTRY MainWndProc(
             }
 
             if( !g_Zoomed && !g_TimerActive && ( !g_fullScreenWorkaround || !g_RecordToggle ) ) {
-#ifdef __ZOOMIT_POWERTOYS__
-                if( g_StartedByPowerToys )
-                {
-                    Trace::ZoomItActivateLiveZoom();
-                }
-#endif // __ZOOMIT_POWERTOYS__
 
                 if( g_hWndLiveZoom == NULL ) {
                     OutputDebug(L"Create LIVEZOOM\n");
@@ -6763,13 +6737,6 @@ LRESULT APIENTRY MainWndProc(
             {
                 g_RecordToggle = TRUE;
 
-#ifdef __ZOOMIT_POWERTOYS__
-                if( g_StartedByPowerToys )
-                {
-                    Trace::ZoomItActivateRecord();
-                }
-#endif // __ZOOMIT_POWERTOYS__
-
                 StartRecordingAsync( hWnd, &cropRc, hWndRecord );
             }
             else
@@ -6840,13 +6807,6 @@ LRESULT APIENTRY MainWndProc(
                     RegisterHotKey(hWnd, COPY_CROP_HOTKEY, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'C');
                     RegisterHotKey(hWnd, SAVE_IMAGE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'S');
                     RegisterHotKey(hWnd, SAVE_CROP_HOTKEY, MOD_CONTROL | MOD_SHIFT | MOD_NOREPEAT, 'S');
-
-#ifdef __ZOOMIT_POWERTOYS__
-                    if( g_StartedByPowerToys )
-                    {
-                        Trace::ZoomItActivateZoom();
-                    }
-#endif // __ZOOMIT_POWERTOYS__
 
                     // Hide the cursor before capturing if in live zoom
                     if( g_hWndLiveZoom != nullptr )
@@ -8989,12 +8949,6 @@ LRESULT APIENTRY MainWndProc(
             activeBreakShowDesktop = g_BreakShowDesktop;
 
             g_TimerActive = TRUE;
-#ifdef __ZOOMIT_POWERTOYS__
-            if( g_StartedByPowerToys )
-            {
-                Trace::ZoomItActivateBreak();
-            }
-#endif // __ZOOMIT_POWERTOYS__
 
             breakTimeout = g_BreakTimeout * 60 + 1;
 
@@ -9909,27 +9863,21 @@ void ZoomIt_DispatchCommand(ZoomItCommand cmd)
         {
             PostMessage(g_hWndMain, WM_COMMAND, IDC_ZOOM, 0);
         }
-        Trace::ZoomItActivateZoom();
         break;
     case ZoomItCommand::Draw:
         post_hotkey(DRAW_HOTKEY);
-        Trace::ZoomItActivateDraw();
         break;
     case ZoomItCommand::Break:
         post_hotkey(BREAK_HOTKEY);
-        Trace::ZoomItActivateBreak();
         break;
     case ZoomItCommand::LiveZoom:
         post_hotkey(LIVE_HOTKEY);
-        Trace::ZoomItActivateLiveZoom();
         break;
     case ZoomItCommand::Snip:
         post_hotkey(SNIP_HOTKEY);
-        Trace::ZoomItActivateSnip();
         break;
     case ZoomItCommand::Record:
         post_hotkey(RECORD_HOTKEY);
-        Trace::ZoomItActivateRecord();
         break;
     default:
         break;
@@ -9957,17 +9905,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         return 1;
     }
 
-    Shared::Trace::ETWTrace* trace = nullptr;
     std::wstring pid = std::wstring(lpCmdLine); // The PowerToys pid is the argument to the process.
     auto mainThreadId = GetCurrentThreadId();
     if (!pid.empty())
     {
         g_StartedByPowerToys = TRUE;
-
-        trace = new Shared::Trace::ETWTrace();
-        Trace::RegisterProvider();
-        trace->UpdateState(true);
-        Trace::ZoomItStarted();
 
         // Initialize logger
         LoggerHelpers::init_logger(L"ZoomIt", L"", LogSettings::zoomItLoggerName);
@@ -10245,11 +10187,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 #ifdef __ZOOMIT_POWERTOYS__
     if(g_StartedByPowerToys)
     {
-        if (trace!=nullptr) {
-            trace->Flush();
-            delete trace;
-        }
-        Trace::UnregisterProvider();
         // Needed to unblock MsgWaitForMultipleObjects one last time
         SetEvent(m_reload_settings_event_handle);
         CloseHandle(m_reload_settings_event_handle);

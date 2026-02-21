@@ -77,36 +77,3 @@ void Trace::CropAndLock::CreateScreenshotWindow() noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
-// Event to send settings telemetry.
-void Trace::CropAndLock::SettingsTelemetry(PowertoyModuleIface::Hotkey& reparentHotkey, PowertoyModuleIface::Hotkey& thumbnailHotkey, PowertoyModuleIface::Hotkey& screenshotHotkey) noexcept
-{
-    std::wstring hotKeyStrReparent =
-        std::wstring(reparentHotkey.win ? L"Win + " : L"") +
-        std::wstring(reparentHotkey.ctrl ? L"Ctrl + " : L"") +
-        std::wstring(reparentHotkey.shift ? L"Shift + " : L"") +
-        std::wstring(reparentHotkey.alt ? L"Alt + " : L"") +
-        std::wstring(L"VK ") + std::to_wstring(reparentHotkey.key);
-
-    std::wstring hotKeyStrThumbnail =
-        std::wstring(thumbnailHotkey.win ? L"Win + " : L"") +
-        std::wstring(thumbnailHotkey.ctrl ? L"Ctrl + " : L"") +
-        std::wstring(thumbnailHotkey.shift ? L"Shift + " : L"") +
-        std::wstring(thumbnailHotkey.alt ? L"Alt + " : L"") +
-        std::wstring(L"VK ") + std::to_wstring(thumbnailHotkey.key);
-
-    std::wstring hotKeyStrScreenshot =
-        std::wstring(screenshotHotkey.win ? L"Win + " : L"") +
-        std::wstring(screenshotHotkey.ctrl ? L"Ctrl + " : L"") +
-        std::wstring(screenshotHotkey.shift ? L"Shift + " : L"") +
-        std::wstring(screenshotHotkey.alt ? L"Alt + " : L"") +
-        std::wstring(L"VK ") + std::to_wstring(screenshotHotkey.key);
-
-    TraceLoggingWriteWrapper(
-        g_hProvider,
-        "CropAndLock_Settings",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingWideString(hotKeyStrReparent.c_str(), "ReparentHotKey"),
-        TraceLoggingWideString(hotKeyStrThumbnail.c_str(), "ThumbnailHotkey"),
-        TraceLoggingWideString(hotKeyStrScreenshot.c_str(), "ScreenshotHotkey"));
-}

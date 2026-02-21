@@ -1,0 +1,124 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Update
+{
+    public sealed class UpdatingSettings
+    {
+        public enum UpdatingState
+        {
+            UpToDate = 0,
+            ErrorDownloading,
+            ReadyToDownload,
+            ReadyToInstall,
+            NetworkError,
+        }
+
+        // Gets or sets a value of the updating state
+        [JsonPropertyName("state")]
+        public UpdatingState State { get; set; }
+
+        // Gets or sets a value of the release page url
+        [JsonPropertyName("releasePageUrl")]
+        public string ReleasePageLink { get; set; } = string.Empty;
+
+        // Gets or sets a value of the github last checked date
+        [JsonPropertyName("githubUpdateLastCheckedDate")]
+        public string LastCheckedDate { get; set; } = string.Empty;
+
+        // Gets or sets a value of the updating state
+        [JsonPropertyName("downloadedInstallerFilename")]
+        public string DownloadedInstallerFilename { get; set; } = string.Empty;
+
+        // Non-localizable strings: Files
+        public const string SettingsFilePath = "\\Microsoft\\PowerToys\\";
+        public const string SettingsFile = "UpdateState.json";
+
+        public string NewVersion
+        {
+            get
+            {
+                if (ReleasePageLink == null)
+                {
+                    return string.Empty;
+                }
+
+                try
+                {
+                    string version = ReleasePageLink.Substring(ReleasePageLink.LastIndexOf('/') + 1);
+                    return version.Trim();
+                }
+                catch (Exception)
+                {
+                }
+
+                return string.Empty;
+            }
+        }
+
+        public string LastCheckedDateLocalized
+        {
+            get
+            {
+                try
+                {
+                    if (LastCheckedDate == null)
+                    {
+                        return string.Empty;
+                    }
+
+                    long seconds = long.Parse(LastCheckedDate, CultureInfo.CurrentCulture);
+                    var date = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
+                    return date.ToLocalTime().ToString(CultureInfo.CurrentCulture);
+                }
+                catch (Exception)
+                {
+                }
+
+                return string.Empty;
+            }
+        }
+
+        public UpdatingSettings()
+        {
+            State = UpdatingState.UpToDate;
+        }
+
+        public static UpdatingSettings LoadSettings()
+        {
+            var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var file = localAppDataDir + SettingsFilePath + SettingsFile;
+
+            if (File.Exists(file))
+            {
+                try
+                {
+                    FileStream inputStream = File.Open(file, FileMode.Open);
+                    StreamReader reader = new(inputStream);
+                    string data = reader.ReadToEnd();
+                    inputStream.Close();
+                    reader.Dispose();
+
+                    return JsonSerializer.Deserialize(data, UpdatingsSettingsSourceGenerationContext.Default.UpdatingSettings)!;
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            return new UpdatingSettings();
+        }
+
+        public string ToJsonString()
+        {
+            return JsonSerializer.Serialize(this, UpdatingsSettingsSourceGenerationContext.Default.UpdatingSettings);
+        }
+    }
+}

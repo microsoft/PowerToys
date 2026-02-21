@@ -97,7 +97,6 @@
     <ClInclude Include="ScreenCapturing.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\MeasureToolModuleInterface\trace.cpp" />
     <ClCompile Include="BGRATextureView.cpp" />
     <ClCompile Include="BoundsToolOverlayUI.cpp" />
     <ClCompile Include="Clipboard.cpp" />

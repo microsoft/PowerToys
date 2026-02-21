@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
+using System.Diagnostics;
 using ColorPicker.Helpers;
 using ColorPicker.Mouse;
 using ColorPickerUI;

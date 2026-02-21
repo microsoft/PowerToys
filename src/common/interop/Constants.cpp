@@ -83,10 +83,6 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::ADVANCED_PASTE_TERMINATE_APP_MESSAGE;
     }
-    hstring Constants::AlwaysOnTopPinEvent()
-    {
-        return CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT;
-    }
     hstring Constants::FindMyMouseTriggerEvent()
     {
         return CommonSharedConstants::FIND_MY_MOUSE_TRIGGER_EVENT;
@@ -250,6 +246,30 @@ namespace winrt::PowerToys::Interop::implementation
     hstring Constants::ShowCmdPalEvent()
     {
         return CommonSharedConstants::CMDPAL_SHOW_EVENT;
+    }
+    hstring Constants::AlwaysOnTopPinEvent()
+    {
+        return CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT;
+    }
+    hstring Constants::AlwaysOnTopTerminateEvent()
+    {
+        return CommonSharedConstants::ALWAYS_ON_TOP_TERMINATE_EVENT;
+    }
+    hstring Constants::CropAndLockExitEvent()
+    {
+        return CommonSharedConstants::CROP_AND_LOCK_EXIT_EVENT;
+    }
+    hstring Constants::ZoomItRefreshSettingsEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_REFRESH_SETTINGS_EVENT;
+    }
+    hstring Constants::TerminateKBMSharedEvent()
+    {
+        return CommonSharedConstants::TERMINATE_KBM_SHARED_EVENT;
+    }
+    hstring Constants::LightSwitchManualOverrideEvent()
+    {
+        return CommonSharedConstants::LIGHTSWITCH_MANUAL_OVERRIDE_EVENT;
     }
     hstring Constants::TogglePowerDisplayEvent()
     {

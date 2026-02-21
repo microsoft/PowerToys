@@ -98,7 +98,7 @@ public partial class App : Application, IDisposable
         CoreLogger.InitializeLogger(logWrapper);
 
         // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
-        appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
+        appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath!);
     }
 
     /// <summary>

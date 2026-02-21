@@ -25,13 +25,6 @@
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
   </PropertyGroup>
 
-  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
-  <PropertyGroup>
-    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
-    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
-    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Remove="AdvancedPasteXAML\Controls\ClipboardHistoryItemPreviewControl.xaml" />
     <None Remove="AdvancedPasteXAML\Controls\PromptBox.xaml" />
@@ -108,9 +101,9 @@
   <ItemGroup>
     <!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
-    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 

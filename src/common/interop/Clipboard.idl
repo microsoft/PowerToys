@@ -1,0 +1,11 @@
+namespace PowerToys
+{
+    namespace Interop
+    {
+        [default_interface] runtimeclass Clipboard
+        {
+            static void PasteAsPlainText();
+        }
+
+    }
+}

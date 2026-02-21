@@ -48,8 +48,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             var hotkeyAccessors = new List<HotkeyAccessor>
             {
                 new HotkeyAccessor(
-                    () => Properties.Hotkey.Value,
-                    value => Properties.Hotkey.Value = value ?? WorkspacesProperties.DefaultHotkeyValue,
+                    () => Properties.Hotkey,
+                    value => Properties.Hotkey = value ?? WorkspacesProperties.DefaultHotkeyValue,
                     "Workspaces_ActivationShortcut"),
             };
 

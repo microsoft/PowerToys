@@ -329,22 +329,16 @@ function Test-CoreFiles {
         'PowerToys.Settings.UI.Lib.dll',
         'PowerToys.GPOWrapper.dll',
         'PowerToys.GPOWrapperProjection.dll',
-        'PowerToys.AllExperiments.dll',
         
         # Module executables and libraries
         'PowerToys.AlwaysOnTop.exe',
-        'PowerToys.AlwaysOnTopModuleInterface.dll',
-        'PowerToys.CmdNotFoundModuleInterface.dll',
+
         'PowerToys.ColorPicker.dll',
         'PowerToys.ColorPickerUI.dll',
         'PowerToys.ColorPickerUI.exe',
-        'PowerToys.CropAndLockModuleInterface.dll',
         'PowerToys.CropAndLock.exe',
-        'PowerToys.PowerOCRModuleInterface.dll',
         'PowerToys.PowerOCR.dll',
         'PowerToys.PowerOCR.exe',
-        'PowerToys.AdvancedPasteModuleInterface.dll',
-        'PowerToys.AwakeModuleInterface.dll',
         'PowerToys.Awake.exe',
         'PowerToys.Awake.dll',
         
@@ -352,51 +346,37 @@ function Test-CoreFiles {
         'PowerToys.FancyZonesEditor.exe',
         'PowerToys.FancyZonesEditor.dll',
         'PowerToys.FancyZonesEditorCommon.dll',
-        'PowerToys.FancyZonesModuleInterface.dll',
         'PowerToys.FancyZones.exe',
         
         # Preview handlers
         'PowerToys.GcodePreviewHandler.dll',
         'PowerToys.GcodePreviewHandler.exe',
-        'PowerToys.GcodePreviewHandlerCpp.dll',
         'PowerToys.GcodeThumbnailProvider.dll',
         'PowerToys.GcodeThumbnailProvider.exe',
-        'PowerToys.GcodeThumbnailProviderCpp.dll',
         'PowerToys.BgcodePreviewHandler.dll',
         'PowerToys.BgcodePreviewHandler.exe',
-        'PowerToys.BgcodePreviewHandlerCpp.dll',
         'PowerToys.BgcodeThumbnailProvider.dll',
         'PowerToys.BgcodeThumbnailProvider.exe',
-        'PowerToys.BgcodeThumbnailProviderCpp.dll',
         'PowerToys.MarkdownPreviewHandler.dll',
         'PowerToys.MarkdownPreviewHandler.exe',
-        'PowerToys.MarkdownPreviewHandlerCpp.dll',
         'PowerToys.MonacoPreviewHandler.dll',
         'PowerToys.MonacoPreviewHandler.exe',
-        'PowerToys.MonacoPreviewHandlerCpp.dll',
         'PowerToys.PdfPreviewHandler.dll',
         'PowerToys.PdfPreviewHandler.exe',
-        'PowerToys.PdfPreviewHandlerCpp.dll',
         'PowerToys.PdfThumbnailProvider.dll',
         'PowerToys.PdfThumbnailProvider.exe',
-        'PowerToys.PdfThumbnailProviderCpp.dll',
         'PowerToys.powerpreview.dll',
         'PowerToys.PreviewHandlerCommon.dll',
         'PowerToys.QoiPreviewHandler.dll',
         'PowerToys.QoiPreviewHandler.exe',
-        'PowerToys.QoiPreviewHandlerCpp.dll',
         'PowerToys.QoiThumbnailProvider.dll',
         'PowerToys.QoiThumbnailProvider.exe',
-        'PowerToys.QoiThumbnailProviderCpp.dll',
         'PowerToys.StlThumbnailProvider.dll',
         'PowerToys.StlThumbnailProvider.exe',
-        'PowerToys.StlThumbnailProviderCpp.dll',
         'PowerToys.SvgPreviewHandler.dll',
         'PowerToys.SvgPreviewHandler.exe',
-        'PowerToys.SvgPreviewHandlerCpp.dll',
         'PowerToys.SvgThumbnailProvider.dll',
         'PowerToys.SvgThumbnailProvider.exe',
-        'PowerToys.SvgThumbnailProviderCpp.dll',
         
         # Image Resizer
         'PowerToys.ImageResizer.exe',
@@ -426,7 +406,6 @@ function Test-CoreFiles {
         'PowerToys.MouseJumpUI.exe',
         'PowerToys.MouseWithoutBorders.dll',
         'PowerToys.MouseWithoutBorders.exe',
-        'PowerToys.MouseWithoutBordersModuleInterface.dll',
         'PowerToys.MouseWithoutBordersService.dll',
         'PowerToys.MouseWithoutBordersService.exe',
         'PowerToys.MouseWithoutBordersHelper.dll',
@@ -436,7 +415,6 @@ function Test-CoreFiles {
         'PowerAccent.Core.dll',
         'PowerToys.PowerAccent.dll',
         'PowerToys.PowerAccent.exe',
-        'PowerToys.PowerAccentModuleInterface.dll',
         'PowerToys.PowerAccentKeyboardService.dll',
         
         # Workspaces
@@ -447,20 +425,16 @@ function Test-CoreFiles {
         'PowerToys.WorkspacesEditor.dll',
         'PowerToys.WorkspacesLauncherUI.exe',
         'PowerToys.WorkspacesLauncherUI.dll',
-        'PowerToys.WorkspacesModuleInterface.dll',
         'PowerToys.WorkspacesCsharpLibrary.dll',
         
         # Shortcut Guide
         'PowerToys.ShortcutGuide.exe',
-        'PowerToys.ShortcutGuideModuleInterface.dll',
         
         # ZoomIt
         'PowerToys.ZoomIt.exe',
-        'PowerToys.ZoomItModuleInterface.dll',
         'PowerToys.ZoomItSettingsInterop.dll',
         
         # Command Palette
-        'PowerToys.CmdPalModuleInterface.dll',
         'CmdPalKeyboardService.dll'
     )
     
@@ -470,7 +444,6 @@ function Test-CoreFiles {
         'PowerToys.Settings.exe',
         'PowerToys.AdvancedPaste.exe',
         'PowerToys.AdvancedPaste.dll',
-        'PowerToys.HostsModuleInterface.dll',
         'PowerToys.HostsUILib.dll',
         'PowerToys.Hosts.dll',
         'PowerToys.Hosts.exe',
@@ -484,11 +457,9 @@ function Test-CoreFiles {
         'Powertoys.Peek.UI.dll',
         'Powertoys.Peek.UI.exe',
         'Powertoys.Peek.dll',
-        'PowerToys.EnvironmentVariablesModuleInterface.dll',
         'PowerToys.EnvironmentVariablesUILib.dll',
         'PowerToys.EnvironmentVariables.dll',
         'PowerToys.EnvironmentVariables.exe',
-        'PowerToys.MeasureToolModuleInterface.dll',
         'PowerToys.MeasureToolCore.dll',
         'PowerToys.MeasureToolUI.dll',
         'PowerToys.MeasureToolUI.exe',

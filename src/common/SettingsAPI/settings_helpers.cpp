@@ -99,65 +99,6 @@ namespace PTSettingsHelper
         return result.wstring();
     }
 
-    bool get_oobe_opened_state()
-    {
-        std::filesystem::path oobePath(PTSettingsHelper::get_root_save_folder_location());
-        oobePath = oobePath.append(oobe_filename);
-        if (std::filesystem::exists(oobePath))
-        {
-            auto saved_settings = json::from_file(oobePath.c_str());
-            if (!saved_settings.has_value())
-            {
-                return false;
-            }
-
-            bool opened = saved_settings->GetNamedBoolean(opened_at_first_launch_json_field_name, false);
-            return opened;
-        }
-
-        return false;
-    }
-
-    void save_oobe_opened_state()
-    {
-        std::filesystem::path oobePath(PTSettingsHelper::get_root_save_folder_location());
-        oobePath = oobePath.append(oobe_filename);
-
-        json::JsonObject obj;
-        obj.SetNamedValue(opened_at_first_launch_json_field_name, json::value(true));
-
-        json::to_file(oobePath.c_str(), obj);
-    }
-
-    std::wstring get_last_version_run()
-    {
-        std::filesystem::path lastVersionRunPath(PTSettingsHelper::get_root_save_folder_location());
-        lastVersionRunPath = lastVersionRunPath.append(last_version_run_filename);
-        if (std::filesystem::exists(lastVersionRunPath))
-        {
-            auto saved_settings = json::from_file(lastVersionRunPath.c_str());
-            if (!saved_settings.has_value())
-            {
-                return L"";
-            }
-
-            std::wstring last_version = saved_settings->GetNamedString(last_version_json_field_name, L"").c_str();
-            return last_version;
-        }
-        return L"";
-    }
-
-    void save_last_version_run(const std::wstring& version)
-    {
-        std::filesystem::path lastVersionRunPath(PTSettingsHelper::get_root_save_folder_location());
-        lastVersionRunPath = lastVersionRunPath.append(last_version_run_filename);
-
-        json::JsonObject obj;
-        obj.SetNamedValue(last_version_json_field_name, json::value(version));
-
-        json::to_file(lastVersionRunPath.c_str(), obj);
-    }
-
     void save_data_diagnostics(bool enabled)
     {
         HKEY key{};

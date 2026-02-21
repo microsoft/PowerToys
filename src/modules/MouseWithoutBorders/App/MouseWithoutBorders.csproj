@@ -27,12 +27,6 @@
     <NoWarn />
   </PropertyGroup>
 
-  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
-  <PropertyGroup>
-    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
-    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
-    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-  </PropertyGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
       <_Parameter1>false</_Parameter1>
@@ -217,7 +211,7 @@
     <PackageReference Include="System.Data.SqlClient" /> <!-- It's a dependency of Microsoft.Windows.Compatibility. We're adding it here to force it to the version specified in Directory.Packages.props -->
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
   <ItemGroup>

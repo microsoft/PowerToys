@@ -14,7 +14,6 @@
     <ClCompile Include="D2DState.cpp" />
     <ClCompile Include="BoundsToolOverlayUI.cpp" />
     <ClCompile Include="MeasureToolOverlayUI.cpp" />
-    <ClCompile Include="..\MeasureToolModuleInterface\trace.cpp" />
     <ClCompile Include="Clipboard.cpp" />
     <ClCompile Include="PerGlyphOpacityTextRender.cpp" />
     <ClCompile Include="Measurement.cpp" />

@@ -41,7 +41,6 @@
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    
     <CharacterSet>Unicode</CharacterSet>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
@@ -86,7 +85,7 @@
       <AdditionalOptions>%(AdditionalOptions) /bigobj /Zc:twoPhase- </AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WindowsApp.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;Taskschd.lib;shell32.lib;advapi32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>PowerToys.Interop.def</ModuleDefinitionFile>
@@ -94,12 +93,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="async_message_queue.h" />
+    <ClInclude Include="AutoStart.h" />
+    <ClInclude Include="Clipboard.h" />
     <ClInclude Include="CommonManaged.h">
       <DependentUpon>CommonManaged.idl</DependentUpon>
     </ClInclude>
     <ClInclude Include="Constants.h">
       <DependentUpon>KeyboardListener.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="Elevation.h" />
     <ClInclude Include="HotkeyManager.h">
       <DependentUpon>HotkeyManager.idl</DependentUpon>
     </ClInclude>
@@ -111,9 +113,12 @@
     <ClInclude Include="LayoutMapManaged.h">
       <DependentUpon>LayoutMapManaged.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="Notifications.h" />
+    <ClInclude Include="Package.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shared_constants.h" />
+    <ClInclude Include="ThemeHelper.h" />
     <ClInclude Include="TwoWayPipeMessageIPCManaged.h">
       <DependentUpon>TwoWayPipeMessageIPCManaged.idl</DependentUpon>
     </ClInclude>
@@ -121,12 +126,15 @@
     <ClInclude Include="two_way_pipe_message_ipc_impl.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AutoStart.cpp" />
+    <ClCompile Include="Clipboard.cpp" />
     <ClCompile Include="CommonManaged.cpp">
       <DependentUpon>CommonManaged.idl</DependentUpon>
     </ClCompile>
     <ClCompile Include="Constants.cpp">
       <DependentUpon>KeyboardListener.idl</DependentUpon>
     </ClCompile>
+    <ClCompile Include="Elevation.cpp" />
     <ClCompile Include="HotkeyManager.cpp">
       <DependentUpon>HotkeyManager.idl</DependentUpon>
     </ClCompile>
@@ -137,8 +145,13 @@
     <ClCompile Include="LayoutMapManaged.cpp">
       <DependentUpon>LayoutMapManaged.idl</DependentUpon>
     </ClCompile>
+    <ClCompile Include="Notifications.cpp" />
+    <ClCompile Include="Package.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="ThemeHelper.cpp">
+      <DependentUpon>ThemeHelper.idl</DependentUpon>
     </ClCompile>
     <ClCompile Include="TwoWayPipeMessageIPCManaged.cpp">
       <DependentUpon>TwoWayPipeMessageIPCManaged.idl</DependentUpon>
@@ -157,16 +170,25 @@
     <None Include="PropertySheet.props" />
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="AutoStart.idl" />
+    <Midl Include="Clipboard.idl" />
     <Midl Include="CommonManaged.idl" />
     <Midl Include="Constants.idl" />
+    <Midl Include="Elevation.idl" />
     <Midl Include="HotkeyManager.idl" />
     <Midl Include="KeyboardHook.idl" />
     <Midl Include="LayoutMapManaged.idl" />
+    <Midl Include="Notifications.idl" />
+    <Midl Include="Package.idl" />
+    <Midl Include="ThemeHelper.idl" />
     <Midl Include="TwoWayPipeMessageIPCManaged.idl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\version\version.vcxproj">
-      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
+    <ProjectReference Include="..\logger\logger.vcxproj">
+      <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\notifications\notifications.vcxproj">
+      <Project>{1d5be09d-78c0-4fd7-af00-ae7c1af7c525}</Project>
     </ProjectReference>
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets" />

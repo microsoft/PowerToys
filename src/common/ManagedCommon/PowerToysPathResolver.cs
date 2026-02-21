@@ -20,14 +20,14 @@ namespace ManagedCommon
         /// Gets the PowerToys installation path by checking registry entries
         /// </summary>
         /// <returns>The path to PowerToys installation directory, or null if not found</returns>
-        public static string GetPowerToysInstallPath()
+        public static string? GetPowerToysInstallPath()
         {
 #if DEBUG
             // In debug builds, resolve directly from the running process (no installer/registry involved).
             return GetPathFromCurrentProcess();
 #else
             // Try to get path from Per-User installation first
-            string path = GetPathFromRegistry(RegistryHive.CurrentUser);
+            string? path = GetPathFromRegistry(RegistryHive.CurrentUser);
             if (!string.IsNullOrEmpty(path))
             {
                 return path;
@@ -44,14 +44,14 @@ namespace ManagedCommon
 #endif
         }
 
-        private static string GetPathFromRegistry(RegistryHive hive)
+        private static string? GetPathFromRegistry(RegistryHive hive)
         {
             try
             {
                 using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
 
                 // First try to get path from the powertoys protocol registration
-                string path = GetPathFromProtocolRegistration(baseKey);
+                string? path = GetPathFromProtocolRegistration(baseKey);
                 if (!string.IsNullOrEmpty(path))
                 {
                     return path;
@@ -65,7 +65,7 @@ namespace ManagedCommon
             return null;
         }
 
-        private static string GetPathFromProtocolRegistration(RegistryKey baseKey)
+        private static string? GetPathFromProtocolRegistration(RegistryKey baseKey)
         {
             try
             {
@@ -73,7 +73,7 @@ namespace ManagedCommon
 
                 if (key != null)
                 {
-                    string command = key.GetValue(string.Empty)?.ToString();
+                    string? command = key.GetValue(string.Empty)?.ToString();
                     if (!string.IsNullOrEmpty(command))
                     {
                         // Parse command like: "C:\Program Files\PowerToys\PowerToys.exe" "%1"
@@ -89,7 +89,7 @@ namespace ManagedCommon
             return null;
         }
 
-        private static string GetPathFromCurrentProcess()
+        private static string? GetPathFromCurrentProcess()
         {
             try
             {
@@ -125,7 +125,7 @@ namespace ManagedCommon
             return null;
         }
 
-        private static string ExtractPathFromCommand(string command)
+        private static string? ExtractPathFromCommand(string command)
         {
             if (string.IsNullOrEmpty(command))
             {

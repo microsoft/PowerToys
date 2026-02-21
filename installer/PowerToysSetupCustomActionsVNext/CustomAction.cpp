@@ -10,11 +10,10 @@
 #include "../../src/common/utils/gpo.h"
 #include "../../src/common/utils/MsiUtils.h"
 #include "../../src/common/utils/modulesRegistry.h"
-#include "../../src/common/updating/installer.h"
-#include "../../src/common/version/version.h"
+#include "../../src/common/utils/version.h"
 #include "../../src/common/Telemetry/EtwTrace/EtwTrace.h"
-#include "../../src/common/utils/package.h"
 #include "../../src/common/utils/clean_video_conference.h"
+#include "../../src/common/utils/package.h"
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
@@ -25,6 +24,7 @@
 #include <processthreadsapi.h>
 #include <UserEnv.h>
 #include <winnt.h>
+
 
 using namespace std;
 

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
@@ -159,6 +160,45 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.Workspaces => WorkspacesSettings.ModuleName,
                 ModuleType.ZoomIt => ZoomItSettings.ModuleName,
                 _ => moduleType.ToString(),
+            };
+        }
+
+        public static ModuleType GetModuleType(string moduleName)
+        {
+            return moduleName switch
+            {
+                AdvancedPasteSettings.ModuleName => ModuleType.AdvancedPaste,
+                AlwaysOnTopSettings.ModuleName => ModuleType.AlwaysOnTop,
+                AwakeSettings.ModuleName => ModuleType.Awake,
+                "CmdPal" => ModuleType.CmdPal, // No dedicated settings class
+                ColorPickerSettings.ModuleName => ModuleType.ColorPicker,
+                CropAndLockSettings.ModuleName => ModuleType.CropAndLock,
+                CursorWrapSettings.ModuleName => ModuleType.CursorWrap,
+                EnvironmentVariablesSettings.ModuleName => ModuleType.EnvironmentVariables,
+                FancyZonesSettings.ModuleName => ModuleType.FancyZones,
+                FileLocksmithSettings.ModuleName => ModuleType.FileLocksmith,
+                FindMyMouseSettings.ModuleName => ModuleType.FindMyMouse,
+                HostsSettings.ModuleName => ModuleType.Hosts,
+                ImageResizerSettings.ModuleName => ModuleType.ImageResizer,
+                KeyboardManagerSettings.ModuleName => ModuleType.KeyboardManager,
+                LightSwitchSettings.ModuleName => ModuleType.LightSwitch,
+                MouseHighlighterSettings.ModuleName => ModuleType.MouseHighlighter,
+                MouseJumpSettings.ModuleName => ModuleType.MouseJump,
+                MousePointerCrosshairsSettings.ModuleName => ModuleType.MousePointerCrosshairs,
+                MouseWithoutBordersSettings.ModuleName => ModuleType.MouseWithoutBorders,
+                NewPlusSettings.ModuleName => ModuleType.NewPlus,
+                PeekSettings.ModuleName => ModuleType.Peek,
+                PowerDisplaySettings.ModuleName => ModuleType.PowerDisplay,
+                PowerRenameSettings.ModuleName => ModuleType.PowerRename,
+                PowerLauncherSettings.ModuleName => ModuleType.PowerLauncher,
+                PowerAccentSettings.ModuleName => ModuleType.PowerAccent,
+                RegistryPreviewSettings.ModuleName => ModuleType.RegistryPreview,
+                MeasureToolSettings.ModuleName => ModuleType.MeasureTool,
+                ShortcutGuideSettings.ModuleName => ModuleType.ShortcutGuide,
+                PowerOcrSettings.ModuleName => ModuleType.PowerOCR,
+                WorkspacesSettings.ModuleName => ModuleType.Workspaces,
+                ZoomItSettings.ModuleName => ModuleType.ZoomIt,
+                _ => throw new ArgumentException($"Unknown module name: {moduleName}"),
             };
         }
     }

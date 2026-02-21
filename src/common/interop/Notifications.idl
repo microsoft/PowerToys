@@ -1,0 +1,17 @@
+namespace PowerToys
+{
+    namespace Interop
+    {
+        [default_interface] runtimeclass Notifications
+        {
+            static void ShowToast(String title, String content);
+            static void RemoveToastsByTag(String tag);
+            static void RemoveAllScheduledToasts();
+            static void ShowToastWithActivation(String title, String content, String tag);
+            static void RunDesktopAppActivatorLoop();
+            static void ShowUpdateAvailableNotification(String title, String content, String tag, String updateNowString, String openOverviewString);
+        }
+    }
+}
+
+
