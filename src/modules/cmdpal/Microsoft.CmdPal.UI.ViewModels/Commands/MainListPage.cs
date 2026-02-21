@@ -47,7 +47,8 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
-    private int _appResultLimit = 10;
+
+    private int AppResultLimit => AllAppsCommandProvider.TopLevelResultLimit;
 
     private InterlockedBoolean _refreshRunning;
     private InterlockedBoolean _refreshRequested;
@@ -190,7 +191,7 @@ public sealed partial class MainListPage : DynamicListPage,
                     validScoredFallbacks,
                     _filteredApps,
                     validFallbacks,
-                    _appResultLimit);
+                    AppResultLimit);
             }
         }
     }
