@@ -185,9 +185,7 @@ public sealed class CommandProviderWrapper
         }
         catch (Exception e)
         {
-            Logger.LogError("Failed to load commands from extension");
-            Logger.LogError($"Extension was {Extension!.PackageFamilyName}");
-            Logger.LogError(e.ToString());
+            Logger.LogError($"Failed to load commands from extension {Extension!.PackageFamilyName}", e);
 
             if (!displayInfoInitialized)
             {
