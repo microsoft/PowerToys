@@ -103,7 +103,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     }
 
     // May be called from a background thread
-    private async Task<IEnumerable<TopLevelViewModel>> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
+    private async Task<ICollection<TopLevelViewModel>> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
         WeakReference<IPageContext> weakSelf = new(this);
 
@@ -314,6 +314,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         var commandSets = (await Task.WhenAll(loadTasks).ConfigureAwait(false)).Where(results => results is not null).Select(r => r!).ToList();
 
+        var totalCommands = 0;
         lock (TopLevelCommands)
         {
             foreach (var commands in commandSets)
@@ -321,52 +322,59 @@ public partial class TopLevelCommandManager : ObservableObject,
                 foreach (var c in commands)
                 {
                     TopLevelCommands.Add(c);
+                    totalCommands++;
                 }
             }
         }
 
         timer.Stop();
-        Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms");
+        Logger.LogInfo($"Loaded {totalCommands} command(s) from {wrappers.Count} extension(s) in {timer.ElapsedMilliseconds} ms");
     }
 
     private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
     {
         Logger.LogDebug($"Starting {extension.PackageFullName}");
+        var sw = Stopwatch.StartNew();
         try
         {
             await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+            Logger.LogInfo($"Started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
             return new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to start extension {extension.PackageFullName}: {ex}");
+            Logger.LogError($"Failed to start extension {extension.PackageFullName} after {sw.ElapsedMilliseconds} ms: {ex}");
             return null; // Return null for failed extensions
         }
     }
 
     private async Task<IEnumerable<TopLevelViewModel>?> LoadCommandsWithTimeoutAsync(CommandProviderWrapper wrapper, CancellationToken ct)
     {
+        var sw = Stopwatch.StartNew();
         var loadTask = LoadTopLevelCommandsFromProvider(wrapper);
         try
         {
-            return await loadTask.WaitAsync(TimeSpan.FromSeconds(10), ct).ConfigureAwait(false);
+            var result = await loadTask.WaitAsync(TimeSpan.FromSeconds(10), ct).ConfigureAwait(false);
+            Logger.LogInfo($"Loaded commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} in {sw.ElapsedMilliseconds} ms");
+            return result;
         }
         catch (TimeoutException)
         {
-            Logger.LogError($"Loading commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} timed out, continuing in background");
-            _ = AppendCommandsWhenReadyAsync(wrapper, loadTask, ct);
+            Logger.LogWarning($"Loading commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} timed out after {sw.ElapsedMilliseconds} ms, continuing in background");
+            _ = AppendCommandsWhenReadyAsync(wrapper, loadTask, sw, ct);
             return null;
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to load commands for extension {wrapper.ExtensionHost?.Extension?.PackageFullName}: {ex}");
+            Logger.LogError($"Failed to load commands for extension {wrapper.ExtensionHost?.Extension?.PackageFullName} after {sw.ElapsedMilliseconds} ms: {ex}");
             return null;
         }
     }
 
     private async Task AppendCommandsWhenReadyAsync(
         CommandProviderWrapper wrapper,
-        Task<IEnumerable<TopLevelViewModel>> loadTask,
+        Task<ICollection<TopLevelViewModel>> loadTask,
+        Stopwatch sw,
         CancellationToken ct)
     {
         try
@@ -382,7 +390,7 @@ public partial class TopLevelCommandManager : ObservableObject,
                 }
             }
 
-            Logger.LogDebug($"Late-loaded commands from {wrapper.ExtensionHost?.Extension?.PackageFullName}");
+            Logger.LogInfo($"Late-loaded {commands.Count} command(s) from {wrapper.ExtensionHost?.Extension?.PackageFullName} in {sw.ElapsedMilliseconds} ms");
         }
         catch (OperationCanceledException)
         {
@@ -390,7 +398,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Background loading of commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} failed: {ex}");
+            Logger.LogError($"Background loading of commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} failed after {sw.ElapsedMilliseconds} ms: {ex}");
         }
     }
 
