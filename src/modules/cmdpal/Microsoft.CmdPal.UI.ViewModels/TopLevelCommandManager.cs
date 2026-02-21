@@ -28,7 +28,8 @@ public partial class TopLevelCommandManager : ObservableObject,
 {
     private static readonly TimeSpan ExtensionStartTimeout = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan CommandLoadTimeout = TimeSpan.FromSeconds(10);
-    private static readonly TimeSpan BackgroundLoadTimeout = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan BackgroundStartTimeout = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan BackgroundCommandLoadTimeout = TimeSpan.FromSeconds(60);
 
     private readonly IServiceProvider _serviceProvider;
     private readonly ICommandProviderCache _commandProviderCache;
@@ -313,6 +314,15 @@ public partial class TopLevelCommandManager : ObservableObject,
         // Wait for all extensions to start
         var wrappers = (await Task.WhenAll(startTasks).ConfigureAwait(false)).Where(wrapper => wrapper is not null).Select(w => w!).ToList();
 
+        // Load commands from successfully started extensions
+        var totalCommands = await RegisterAndLoadCommandsAsync(wrappers, ct).ConfigureAwait(false);
+
+        timer.Stop();
+        Logger.LogInfo($"Loaded {totalCommands} command(s) from {wrappers.Count} extension(s) in {timer.ElapsedMilliseconds} ms");
+    }
+
+    private async Task<int> RegisterAndLoadCommandsAsync(IReadOnlyList<CommandProviderWrapper> wrappers, CancellationToken ct)
+    {
         lock (_commandProvidersLock)
         {
             _extensionCommandProviders.AddRange(wrappers);
@@ -336,19 +346,26 @@ public partial class TopLevelCommandManager : ObservableObject,
             }
         }
 
-        timer.Stop();
-        Logger.LogInfo($"Loaded {totalCommands} command(s) from {wrappers.Count} extension(s) in {timer.ElapsedMilliseconds} ms");
+        return totalCommands;
     }
 
     private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
     {
         Logger.LogDebug($"Starting {extension.PackageFullName}");
         var sw = Stopwatch.StartNew();
+        var ct = _currentExtensionLoadCancellationToken;
+        var startTask = extension.StartExtensionAsync();
         try
         {
-            await extension.StartExtensionAsync().WaitAsync(ExtensionStartTimeout, _currentExtensionLoadCancellationToken).ConfigureAwait(false);
+            await startTask.WaitAsync(ExtensionStartTimeout, ct).ConfigureAwait(false);
             Logger.LogInfo($"Started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
             return new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
+        }
+        catch (TimeoutException)
+        {
+            Logger.LogWarning($"Starting extension {extension.PackageFullName} timed out after {sw.ElapsedMilliseconds} ms, continuing in background");
+            _ = StartExtensionWhenReadyAsync(extension, startTask, sw, ct);
+            return null;
         }
         catch (OperationCanceledException)
         {
@@ -358,7 +375,32 @@ public partial class TopLevelCommandManager : ObservableObject,
         catch (Exception ex)
         {
             Logger.LogError($"Failed to start extension {extension.PackageFullName} after {sw.ElapsedMilliseconds} ms: {ex}");
-            return null; // Return null for failed extensions
+            return null;
+        }
+    }
+
+    private async Task StartExtensionWhenReadyAsync(
+        IExtensionWrapper extension,
+        Task startTask,
+        Stopwatch sw,
+        CancellationToken ct)
+    {
+        try
+        {
+            await startTask.WaitAsync(BackgroundStartTimeout, ct).ConfigureAwait(false);
+
+            var wrapper = new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
+            Logger.LogInfo($"Late-started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms, loading commands");
+
+            await RegisterAndLoadCommandsAsync([wrapper], ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Reload happened -- discard stale results
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Background start/load of extension {extension.PackageFullName} failed after {sw.ElapsedMilliseconds} ms: {ex}");
         }
     }
 
@@ -399,7 +441,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         try
         {
             // Upper bound so we don't leak tasks forever
-            var commands = await loadTask.WaitAsync(BackgroundLoadTimeout, ct).ConfigureAwait(false);
+            var commands = await loadTask.WaitAsync(BackgroundCommandLoadTimeout, ct).ConfigureAwait(false);
 
             lock (TopLevelCommands)
             {
