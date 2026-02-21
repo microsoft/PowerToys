@@ -975,6 +975,7 @@ NTAPI
 ntdll
 NTSTATUS
 NTSYSAPI
+nullability
 NULLCURSOR
 nullonfailure
 numberbox
