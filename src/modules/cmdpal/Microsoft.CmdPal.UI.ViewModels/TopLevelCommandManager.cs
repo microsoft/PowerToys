@@ -346,6 +346,11 @@ public partial class TopLevelCommandManager : ObservableObject,
             Logger.LogInfo($"Started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
             return new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
         }
+        catch (OperationCanceledException)
+        {
+            Logger.LogDebug($"Starting extension {extension.PackageFullName} was cancelled after {sw.ElapsedMilliseconds} ms");
+            return null;
+        }
         catch (Exception ex)
         {
             Logger.LogError($"Failed to start extension {extension.PackageFullName} after {sw.ElapsedMilliseconds} ms: {ex}");
@@ -367,6 +372,11 @@ public partial class TopLevelCommandManager : ObservableObject,
         {
             Logger.LogWarning($"Loading commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} timed out after {sw.ElapsedMilliseconds} ms, continuing in background");
             _ = AppendCommandsWhenReadyAsync(wrapper, loadTask, sw, ct);
+            return null;
+        }
+        catch (OperationCanceledException)
+        {
+            Logger.LogDebug($"Loading commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} was cancelled after {sw.ElapsedMilliseconds} ms");
             return null;
         }
         catch (Exception ex)
