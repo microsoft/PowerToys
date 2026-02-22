@@ -114,6 +114,8 @@
 #include <commctrl.h>
 #if defined(_M_X64) || defined(_M_IX86)
 #include <emmintrin.h>
+#elif defined(_M_ARM64)
+#include <arm_neon.h>
 #endif
 
 // Externs from Zoomit.cpp
@@ -1093,6 +1095,67 @@ static void BuildDownsampledLumaFrame( const std::vector<BYTE>& pixels,
     }
 }
 
+// Build a full-resolution single-channel luma array from 32-bpp BGRA pixels.
+static void BuildFullLumaFrame( const std::vector<BYTE>& pixels,
+                                int frameWidth,
+                                int frameHeight,
+                                std::vector<BYTE>& luma )
+{
+    const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight );
+    luma.resize( pixelCount );
+
+    size_t p = 0;
+
+#if defined(_M_ARM64)
+    // NEON: process 8 pixels (32 BGRA bytes) at a time.
+    const uint8x8_t wR = vdup_n_u8( 77 );
+    const uint8x8_t wG = vdup_n_u8( 150 );
+    const uint8x8_t wB = vdup_n_u8( 29 );
+    for( ; p + 8 <= pixelCount; p += 8 )
+    {
+        const uint8x8x4_t bgra = vld4_u8( &pixels[p * 4] );
+        const uint16x8_t r16 = vmull_u8( bgra.val[2], wR );
+        const uint16x8_t g16 = vmull_u8( bgra.val[1], wG );
+        const uint16x8_t b16 = vmull_u8( bgra.val[0], wB );
+        const uint16x8_t sum = vaddq_u16( vaddq_u16( r16, g16 ), b16 );
+        vst1_u8( &luma[p], vshrn_n_u16( sum, 8 ) );
+    }
+#endif
+
+    for( ; p < pixelCount; ++p )
+    {
+        const size_t idx = p * 4;
+        luma[p] = static_cast<BYTE>( ( pixels[idx + 2] * 77 +
+                                       pixels[idx + 1] * 150 +
+                                       pixels[idx + 0] * 29 ) >> 8 );
+    }
+}
+
+// Downsample from a pre-computed full-resolution luma array.
+static void BuildDownsampledLumaFromFullLuma( const std::vector<BYTE>& fullLuma,
+                                              int frameWidth,
+                                              int frameHeight,
+                                              int scale,
+                                              std::vector<BYTE>& luma,
+                                              int& downsampledWidth,
+                                              int& downsampledHeight )
+{
+    downsampledWidth = max( 1, frameWidth / scale );
+    downsampledHeight = max( 1, frameHeight / scale );
+    luma.resize( static_cast<size_t>( downsampledWidth ) * static_cast<size_t>( downsampledHeight ) );
+
+    for( int y = 0; y < downsampledHeight; ++y )
+    {
+        const int sourceY = min( frameHeight - 1, y * scale + ( scale / 2 ) );
+        for( int x = 0; x < downsampledWidth; ++x )
+        {
+            const int sourceX = min( frameWidth - 1, x * scale + ( scale / 2 ) );
+            luma[static_cast<size_t>( y ) * static_cast<size_t>( downsampledWidth ) + static_cast<size_t>( x )] =
+                fullLuma[static_cast<size_t>( sourceY ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( sourceX )];
+        }
+    }
+}
+
 static bool FindBestSmallShiftDownsampledLuma( const std::vector<BYTE>& previousPixels,
                                                const std::vector<BYTE>& currentPixels,
                                                int frameWidth,
@@ -1526,7 +1589,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                                             int expectedDy,
                                             int& bestDx,
                                             int& bestDy,
-                                            bool lowContrastMode )
+                                            bool lowContrastMode,
+                                            const std::vector<BYTE>& precomputedPrevLuma = {},
+                                            const std::vector<BYTE>& precomputedCurrLuma = {} )
 {
     if( previousPixels.size() != currentPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
     {
@@ -1542,8 +1607,17 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     std::vector<BYTE> previousLuma;
     std::vector<BYTE> currentLuma;
     int dsW = 0, dsH = 0, dsW2 = 0, dsH2 = 0;
-    BuildDownsampledLumaFrame( previousPixels, frameWidth, frameHeight, downsampleScale, previousLuma, dsW, dsH );
-    BuildDownsampledLumaFrame( currentPixels, frameWidth, frameHeight, downsampleScale, currentLuma, dsW2, dsH2 );
+    const bool hasPrecomputedLuma = !precomputedPrevLuma.empty() && !precomputedCurrLuma.empty();
+    if( hasPrecomputedLuma )
+    {
+        BuildDownsampledLumaFromFullLuma( precomputedPrevLuma, frameWidth, frameHeight, downsampleScale, previousLuma, dsW, dsH );
+        BuildDownsampledLumaFromFullLuma( precomputedCurrLuma, frameWidth, frameHeight, downsampleScale, currentLuma, dsW2, dsH2 );
+    }
+    else
+    {
+        BuildDownsampledLumaFrame( previousPixels, frameWidth, frameHeight, downsampleScale, previousLuma, dsW, dsH );
+        BuildDownsampledLumaFrame( currentPixels, frameWidth, frameHeight, downsampleScale, currentLuma, dsW2, dsH2 );
+    }
     if( dsW != dsW2 || dsH != dsH2 )
     {
         return false;
@@ -1586,12 +1660,12 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
     // Build downsampled informative mask: a pixel is informative if the
     // luma gradient exceeds a small threshold in either frame.
-    std::vector<bool> dsMaskPrev;
-    std::vector<bool> dsMaskCurr;
+    std::vector<BYTE> dsMaskPrev;
+    std::vector<BYTE> dsMaskCurr;
     if( veryLowEntropyPair )
     {
-        dsMaskPrev.resize( static_cast<size_t>( dsW ) * dsH, false );
-        dsMaskCurr.resize( static_cast<size_t>( dsW ) * dsH, false );
+        dsMaskPrev.resize( static_cast<size_t>( dsW ) * dsH, 0 );
+        dsMaskCurr.resize( static_cast<size_t>( dsW ) * dsH, 0 );
         const int dsEdgeThreshold = 3;
         for( int y = 1; y < dsH - 1; ++y )
         {
@@ -1601,27 +1675,27 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 const int gradHP = abs( static_cast<int>( previousLuma[idx] ) - static_cast<int>( previousLuma[idx + 1] ) );
                 const int gradVP = abs( static_cast<int>( previousLuma[idx] ) - static_cast<int>( previousLuma[idx + dsW] ) );
                 if( gradHP + gradVP >= dsEdgeThreshold )
-                    dsMaskPrev[idx] = true;
+                    dsMaskPrev[idx] = 1;
                 const int gradHC = abs( static_cast<int>( currentLuma[idx] ) - static_cast<int>( currentLuma[idx + 1] ) );
                 const int gradVC = abs( static_cast<int>( currentLuma[idx] ) - static_cast<int>( currentLuma[idx + dsW] ) );
                 if( gradHC + gradVC >= dsEdgeThreshold )
-                    dsMaskCurr[idx] = true;
+                    dsMaskCurr[idx] = 1;
             }
         }
         // Dilate masks by 1px so adjacent-to-edge pixels are included.
-        std::vector<bool> dilatedPrev( dsMaskPrev.size(), false );
-        std::vector<bool> dilatedCurr( dsMaskCurr.size(), false );
+        std::vector<BYTE> dilatedPrev( dsMaskPrev.size(), 0 );
+        std::vector<BYTE> dilatedCurr( dsMaskCurr.size(), 0 );
         for( int y = 1; y < dsH - 1; ++y )
         {
             for( int x = 1; x < dsW - 1; ++x )
             {
                 const int idx = y * dsW + x;
-                if( dsMaskPrev[idx] || dsMaskPrev[idx - 1] || dsMaskPrev[idx + 1] ||
-                    dsMaskPrev[idx - dsW] || dsMaskPrev[idx + dsW] )
-                    dilatedPrev[idx] = true;
-                if( dsMaskCurr[idx] || dsMaskCurr[idx - 1] || dsMaskCurr[idx + 1] ||
-                    dsMaskCurr[idx - dsW] || dsMaskCurr[idx + dsW] )
-                    dilatedCurr[idx] = true;
+                if( dsMaskPrev[idx] | dsMaskPrev[idx - 1] | dsMaskPrev[idx + 1] |
+                    dsMaskPrev[idx - dsW] | dsMaskPrev[idx + dsW] )
+                    dilatedPrev[idx] = 1;
+                if( dsMaskCurr[idx] | dsMaskCurr[idx - 1] | dsMaskCurr[idx + 1] |
+                    dsMaskCurr[idx - dsW] | dsMaskCurr[idx + dsW] )
+                    dilatedCurr[idx] = 1;
             }
         }
         dsMaskPrev = std::move( dilatedPrev );
@@ -1863,32 +1937,30 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     const int refineRadiusDy = max( 3, downsampleScale + 1 );
     const int refineRadiusDx = 1;
 
-    std::vector<BYTE> previousFullLuma( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) );
-    std::vector<BYTE> currentFullLuma( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) );
+    std::vector<BYTE> previousFullLumaOwned;
+    std::vector<BYTE> currentFullLumaOwned;
+    if( hasPrecomputedLuma )
     {
-        const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight );
-        for( size_t p = 0; p < pixelCount; ++p )
-        {
-            const size_t idx = p * 4;
-            previousFullLuma[p] = static_cast<BYTE>( ( previousPixels[idx + 2] * 77 +
-                                                       previousPixels[idx + 1] * 150 +
-                                                       previousPixels[idx + 0] * 29 ) >> 8 );
-            currentFullLuma[p] = static_cast<BYTE>( ( currentPixels[idx + 2] * 77 +
-                                                      currentPixels[idx + 1] * 150 +
-                                                      currentPixels[idx + 0] * 29 ) >> 8 );
-        }
+        // Use caller-provided luma arrays directly (zero-copy).
     }
+    else
+    {
+        BuildFullLumaFrame( previousPixels, frameWidth, frameHeight, previousFullLumaOwned );
+        BuildFullLumaFrame( currentPixels, frameWidth, frameHeight, currentFullLumaOwned );
+    }
+    const std::vector<BYTE>& previousFullLuma = hasPrecomputedLuma ? precomputedPrevLuma : previousFullLumaOwned;
+    const std::vector<BYTE>& currentFullLuma  = hasPrecomputedLuma ? precomputedCurrLuma : currentFullLumaOwned;
 
     // Build full-resolution informative masks for very-low-entropy pairs.
     // A pixel is informative if the gradient in its neighborhood exceeds
     // a small threshold, dilated by 1 pixel to capture full text strokes.
-    std::vector<bool> fullMaskPrev;
-    std::vector<bool> fullMaskCurr;
+    std::vector<BYTE> fullMaskPrev;
+    std::vector<BYTE> fullMaskCurr;
     if( veryLowEntropyPair )
     {
         const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight );
-        fullMaskPrev.resize( pixelCount, false );
-        fullMaskCurr.resize( pixelCount, false );
+        fullMaskPrev.resize( pixelCount, 0 );
+        fullMaskCurr.resize( pixelCount, 0 );
         const int fineEdgeThreshold = 4;
         for( int y = 1; y < frameHeight - 1; ++y )
         {
@@ -1898,27 +1970,27 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 const int gHP = abs( static_cast<int>( previousFullLuma[idx] ) - static_cast<int>( previousFullLuma[idx + 1] ) );
                 const int gVP = abs( static_cast<int>( previousFullLuma[idx] ) - static_cast<int>( previousFullLuma[idx + frameWidth] ) );
                 if( gHP + gVP >= fineEdgeThreshold )
-                    fullMaskPrev[idx] = true;
+                    fullMaskPrev[idx] = 1;
                 const int gHC = abs( static_cast<int>( currentFullLuma[idx] ) - static_cast<int>( currentFullLuma[idx + 1] ) );
                 const int gVC = abs( static_cast<int>( currentFullLuma[idx] ) - static_cast<int>( currentFullLuma[idx + frameWidth] ) );
                 if( gHC + gVC >= fineEdgeThreshold )
-                    fullMaskCurr[idx] = true;
+                    fullMaskCurr[idx] = 1;
             }
         }
         // Dilate by 1 pixel.
-        std::vector<bool> dilPrev( pixelCount, false );
-        std::vector<bool> dilCurr( pixelCount, false );
+        std::vector<BYTE> dilPrev( pixelCount, 0 );
+        std::vector<BYTE> dilCurr( pixelCount, 0 );
         for( int y = 1; y < frameHeight - 1; ++y )
         {
             for( int x = 1; x < frameWidth - 1; ++x )
             {
                 const int idx = y * frameWidth + x;
-                if( fullMaskPrev[idx] || fullMaskPrev[idx - 1] || fullMaskPrev[idx + 1] ||
-                    fullMaskPrev[idx - frameWidth] || fullMaskPrev[idx + frameWidth] )
-                    dilPrev[idx] = true;
-                if( fullMaskCurr[idx] || fullMaskCurr[idx - 1] || fullMaskCurr[idx + 1] ||
-                    fullMaskCurr[idx - frameWidth] || fullMaskCurr[idx + frameWidth] )
-                    dilCurr[idx] = true;
+                if( fullMaskPrev[idx] | fullMaskPrev[idx - 1] | fullMaskPrev[idx + 1] |
+                    fullMaskPrev[idx - frameWidth] | fullMaskPrev[idx + frameWidth] )
+                    dilPrev[idx] = 1;
+                if( fullMaskCurr[idx] | fullMaskCurr[idx - 1] | fullMaskCurr[idx + 1] |
+                    fullMaskCurr[idx - frameWidth] | fullMaskCurr[idx + frameWidth] )
+                    dilCurr[idx] = 1;
             }
         }
         fullMaskPrev = std::move( dilPrev );
@@ -2028,8 +2100,27 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                         rowDiff += static_cast<unsigned __int64>(
                             abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
                     }
+#elif defined(_M_ARM64)
+                    // NEON: process 16 luma pixels at a time using
+                    // vabdq_u8 (absolute difference) + horizontal reduction.
+                    uint64x2_t sadAcc = vdupq_n_u64( 0 );
+                    int xi = 0;
+                    for( ; xi + 16 <= xSpan; xi += 16 )
+                    {
+                        const uint8x16_t a = vld1q_u8( pBase + xi );
+                        const uint8x16_t b = vld1q_u8( cBase + xi );
+                        sadAcc = vpadalq_u32( sadAcc, vpaddlq_u16( vpaddlq_u8( vabdq_u8( a, b ) ) ) );
+                    }
+
+                    rowDiff = vgetq_lane_u64( sadAcc, 0 ) + vgetq_lane_u64( sadAcc, 1 );
+
+                    for( ; xi < xSpan; ++xi )
+                    {
+                        rowDiff += static_cast<unsigned __int64>(
+                            abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
+                    }
 #else
-                    // Scalar fallback for ARM64.
+                    // Scalar fallback.
                     for( int xi = 0; xi < xSpan; ++xi )
                     {
                         rowDiff += static_cast<unsigned __int64>(
@@ -2158,7 +2249,9 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                                 int expectedDy,
                                 int& bestDx,
                                 int& bestDy,
-                                bool lowContrastMode )
+                                bool lowContrastMode,
+                                const std::vector<BYTE>& precomputedPrevLuma = {},
+                                const std::vector<BYTE>& precomputedCurrLuma = {} )
 {
     const bool axisEstablished = ( expectedDx != 0 || expectedDy != 0 );
     const bool preferVerticalAxis = !axisEstablished || ( abs( expectedDy ) >= abs( expectedDx ) );
@@ -2173,7 +2266,9 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                                                           expectedDy,
                                                           directDx,
                                                           directDy,
-                                                          lowContrastMode );
+                                                          lowContrastMode,
+                                                          precomputedPrevLuma,
+                                                          precomputedCurrLuma );
 
     std::vector<BYTE> previousTransposed;
     std::vector<BYTE> currentTransposed;
@@ -2187,6 +2282,7 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     if( transposedReady )
     {
         // In transposed space, original X motion becomes Y motion.
+        // Pre-computed luma is not transposed, so don't pass it here.
         transposedOk = FindBestFrameShiftVerticalOnly( previousTransposed,
                                                        currentTransposed,
                                                        frameHeight,
@@ -2362,6 +2458,13 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
         }
     }
 
+    std::vector<std::vector<BYTE>> frameLuma;
+    frameLuma.resize( frames.size() );
+    for( size_t i = 0; i < frames.size(); i++ )
+    {
+        BuildFullLumaFrame( framePixels[i], frameWidth, frameHeight, frameLuma[i] );
+    }
+
     std::vector<size_t> composedFrameIndices;
     std::vector<POINT> composedFrameOrigins;
     std::vector<POINT> composedFrameSteps;
@@ -2393,7 +2496,17 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
 
         int dx = expectedDx;
         int dy = expectedDy;
-        bool foundShift = FindBestFrameShift( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, expectedDx, expectedDy, dx, dy, lowContrastMode );
+        bool foundShift = FindBestFrameShift( framePixels[composedFrameIndices.back()],
+                              framePixels[i],
+                              frameWidth,
+                              frameHeight,
+                              expectedDx,
+                              expectedDy,
+                              dx,
+                              dy,
+                              lowContrastMode,
+                              frameLuma[composedFrameIndices.back()],
+                              frameLuma[i] );
         if( !foundShift )
         {
             if( ArePixelFramesNearDuplicate( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, lowContrastMode ) )
