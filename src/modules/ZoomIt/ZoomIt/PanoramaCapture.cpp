@@ -903,6 +903,123 @@ static bool IsLowContrastSeedFrame( HBITMAP frame,
     return definitelyLowContrast || likelyDarkLowContrast;
 }
 
+// ── Per-frame "very low entropy" detection ────────────────────────────
+// Returns the fraction of pixels in a frame that sit in constant/uniform
+// regions (local max-luma-deviation within a 5x5 block ≤ 3).  Sampled
+// every 4th pixel in both axes for speed.  A pair of frames is "very
+// low entropy" if both frames have constantFraction > 0.58.
+static double ComputeConstantContentFraction( const std::vector<BYTE>& pixels,
+                                              int frameWidth,
+                                              int frameHeight )
+{
+    if( frameWidth <= 8 || frameHeight <= 8 )
+        return 0.0;
+
+    auto pixelLuma = [&]( int x, int y ) -> int
+    {
+        const int idx = ( y * frameWidth + x ) * 4;
+        return ( pixels[idx + 2] * 77 + pixels[idx + 1] * 150 + pixels[idx + 0] * 29 ) >> 8;
+    };
+
+    const int sampleStep = 4;
+    const int radius = 2;
+    unsigned __int64 constantCount = 0;
+    unsigned __int64 totalCount = 0;
+
+    for( int y = radius; y < frameHeight - radius; y += sampleStep )
+    {
+        for( int x = radius; x < frameWidth - radius; x += sampleStep )
+        {
+            const int centerLuma = pixelLuma( x, y );
+            int maxDev = 0;
+            for( int ny = -radius; ny <= radius && maxDev <= 3; ny += 2 )
+            {
+                for( int nx = -radius; nx <= radius && maxDev <= 3; nx += 2 )
+                {
+                    const int dev = abs( pixelLuma( x + nx, y + ny ) - centerLuma );
+                    if( dev > maxDev )
+                        maxDev = dev;
+                }
+            }
+            totalCount++;
+            if( maxDev <= 3 )
+                constantCount++;
+        }
+    }
+
+    return ( totalCount > 0 ) ? static_cast<double>( constantCount ) / static_cast<double>( totalCount ) : 0.0;
+}
+
+static bool IsVeryLowEntropyPair( const std::vector<BYTE>& previousPixels,
+                                  const std::vector<BYTE>& currentPixels,
+                                  int frameWidth,
+                                  int frameHeight )
+{
+    const double prevConstant = ComputeConstantContentFraction( previousPixels, frameWidth, frameHeight );
+    const double currConstant = ComputeConstantContentFraction( currentPixels, frameWidth, frameHeight );
+    return ( prevConstant > 0.58 && currConstant > 0.58 );
+}
+
+// ── Informative pixel difference ──────────────────────────────────────
+// Computes the average pixel difference ONLY at "informative" locations
+// (pixels where the local luma gradient exceeds a threshold, i.e. edges
+// and text, not flat background).  Used to rescue frames that look like
+// duplicates overall but have meaningful changes in their content areas.
+static bool ComputeInformativePixelDifference( const std::vector<BYTE>& currentPixels,
+                                               const std::vector<BYTE>& previousPixels,
+                                               int frameWidth,
+                                               int frameHeight,
+                                               unsigned __int64& informativeDiff,
+                                               unsigned __int64& informativeCount )
+{
+    informativeDiff = 0;
+    informativeCount = 0;
+    if( frameWidth < 8 || frameHeight < 8 )
+        return false;
+
+    const int stride = frameWidth * 4;
+    const int edgeThreshold = 4;
+
+    // Sample every 2nd pixel to keep it fast.
+    for( int y = 1; y < frameHeight - 1; y += 2 )
+    {
+        const int rowOff = y * stride;
+        for( int x = 1; x < frameWidth - 1; x += 2 )
+        {
+            const int idx = rowOff + x * 4;
+            // Luma of current position in the PREVIOUS frame (where
+            // we want to detect edges).
+            auto lumaAt = [&]( const std::vector<BYTE>& px, int ix, int iy ) -> int
+            {
+                const int i = ( iy * frameWidth + ix ) * 4;
+                return ( px[i + 2] * 77 + px[i + 1] * 150 + px[i + 0] * 29 ) >> 8;
+            };
+
+            // Check gradient in previous frame.
+            const int prevLuma = lumaAt( previousPixels, x, y );
+            const int gradH = abs( prevLuma - lumaAt( previousPixels, x + 1, y ) );
+            const int gradV = abs( prevLuma - lumaAt( previousPixels, x, y + 1 ) );
+
+            // Also check gradient in current frame (text may have scrolled in).
+            const int currLuma = lumaAt( currentPixels, x, y );
+            const int gradH2 = abs( currLuma - lumaAt( currentPixels, x + 1, y ) );
+            const int gradV2 = abs( currLuma - lumaAt( currentPixels, x, y + 1 ) );
+
+            if( ( gradH + gradV ) >= edgeThreshold || ( gradH2 + gradV2 ) >= edgeThreshold )
+            {
+                // This is an informative pixel.  Compute RGB diff.
+                const int d0 = abs( static_cast<int>( currentPixels[idx + 0] ) - static_cast<int>( previousPixels[idx + 0] ) );
+                const int d1 = abs( static_cast<int>( currentPixels[idx + 1] ) - static_cast<int>( previousPixels[idx + 1] ) );
+                const int d2 = abs( static_cast<int>( currentPixels[idx + 2] ) - static_cast<int>( previousPixels[idx + 2] ) );
+                informativeDiff += static_cast<unsigned __int64>( d0 + d1 + d2 );
+                informativeCount++;
+            }
+        }
+    }
+
+    return ( informativeCount > 0 );
+}
+
 static void BuildDownsampledLumaFrame( const std::vector<BYTE>& pixels,
                                        int frameWidth,
                                        int frameHeight,
@@ -1157,6 +1274,27 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
         }
     }
 
+    // Informative-pixel rescue: if the frame still looks like a duplicate but
+    // the edge/text pixels show real differences, keep it.  This catches slow
+    // scrolls of very-low-entropy content where overall avgDiff is diluted
+    // by the overwhelmingly constant background.
+    if( duplicate && lowContrastMode )
+    {
+        unsigned __int64 infDiff = 0, infCount = 0;
+        if( ComputeInformativePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight, infDiff, infCount ) &&
+            infCount > 0 )
+        {
+            const unsigned __int64 avgInfDiff = infDiff / ( infCount * 3 );
+            if( avgInfDiff >= 8 )
+            {
+                duplicate = false;
+                OutputDebug( L"[Panorama/Capture] Informative-pixel rescued frame avgInfDiff=%llu infCount=%llu\n",
+                             static_cast<unsigned long long>( avgInfDiff ),
+                             static_cast<unsigned long long>( infCount ) );
+            }
+        }
+    }
+
     OutputDebug( L"[Panorama/Capture] Frame compare avgDiff=%llu changedPct=%.1f%% size=%dx%d identical=%d lowContrast=%d\n",
                  avgDiff, changedFraction * 100.0, currentWidth, currentHeight, duplicate ? 1 : 0, lowContrastMode ? 1 : 0 );
     return duplicate;
@@ -1207,6 +1345,21 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
         }
     }
 
+    // Informative-pixel rescue (see AreFramesNearDuplicate for details).
+    if( duplicate && lowContrastMode )
+    {
+        unsigned __int64 infDiff = 0, infCount = 0;
+        if( ComputeInformativePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight, infDiff, infCount ) &&
+            infCount > 0 )
+        {
+            const unsigned __int64 avgInfDiff = infDiff / ( infCount * 3 );
+            if( avgInfDiff >= 8 )
+            {
+                duplicate = false;
+            }
+        }
+    }
+
     return duplicate;
 }
 
@@ -1216,7 +1369,8 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
                                         int frameHeight,
                                         int dx,
                                         int dy,
-                                        unsigned __int64& scoreOut )
+                                        unsigned __int64& scoreOut,
+                                        bool ignoreConstantRegions = false )
 {
     if( previousPixels.size() != currentPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
     {
@@ -1254,12 +1408,33 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
             const int cIndex = ( cY * frameWidth + cX ) * 4;
             const int pLuma = ( previousPixels[pIndex + 2] * 77 + previousPixels[pIndex + 1] * 150 + previousPixels[pIndex + 0] * 29 ) >> 8;
             const int cLuma = ( currentPixels[cIndex + 2] * 77 + currentPixels[cIndex + 1] * 150 + currentPixels[cIndex + 0] * 29 ) >> 8;
+
+            // When ignoring constant regions, skip pixels where neither
+            // frame has meaningful gradient (flat background).
+            if( ignoreConstantRegions )
+            {
+                auto hasGradient = [&]( const std::vector<BYTE>& px, int gx, int gy ) -> bool
+                {
+                    if( gx + 1 >= frameWidth || gy + 1 >= frameHeight )
+                        return false;
+                    const int idx = ( gy * frameWidth + gx ) * 4;
+                    const int idxR = idx + 4;
+                    const int idxD = idx + frameWidth * 4;
+                    const int lc = ( px[idx + 2] * 77 + px[idx + 1] * 150 + px[idx + 0] * 29 ) >> 8;
+                    const int lr = ( px[idxR + 2] * 77 + px[idxR + 1] * 150 + px[idxR + 0] * 29 ) >> 8;
+                    const int ld = ( px[idxD + 2] * 77 + px[idxD + 1] * 150 + px[idxD + 0] * 29 ) >> 8;
+                    return ( abs( lc - lr ) + abs( lc - ld ) ) >= 4;
+                };
+                if( !hasGradient( previousPixels, pX, pY ) && !hasGradient( currentPixels, cX, cY ) )
+                    continue;
+            }
+
             totalDiff += static_cast<unsigned __int64>( abs( pLuma - cLuma ) );
             samples++;
         }
     }
 
-    if( samples < 100 )
+    if( samples < ( ignoreConstantRegions ? 20 : 100 ) )
     {
         return false;
     }
@@ -1355,13 +1530,97 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
     }
 
-    // Reject if frames are stationary (near-identical).
-    const unsigned __int64 stationaryRejectThreshold = lowContrastMode ? 1 : 2;
-    if( stationaryScore <= stationaryRejectThreshold )
+    // ── Very-low-entropy detection and informative mask ──────────────
+    // For frames that are mostly constant (>58% uniform pixels in both
+    // frames), build a boolean mask of "informative" downsampled pixels
+    // (those near edges/text).  Scoring limited to these pixels avoids
+    // the background-to-background dilution that makes low-entropy
+    // content indistinguishable at every shift.
+    const bool veryLowEntropyPair = lowContrastMode &&
+        IsVeryLowEntropyPair( previousPixels, currentPixels, frameWidth, frameHeight );
+
+    // Build downsampled informative mask: a pixel is informative if the
+    // luma gradient exceeds a small threshold in either frame.
+    std::vector<bool> dsMaskPrev;
+    std::vector<bool> dsMaskCurr;
+    if( veryLowEntropyPair )
     {
-        StitchLog( L"[Panorama/Stitch] FindBestFrameShift stationary expected=(%d,%d) stationary=%llu frame=%dx%d\n",
+        dsMaskPrev.resize( static_cast<size_t>( dsW ) * dsH, false );
+        dsMaskCurr.resize( static_cast<size_t>( dsW ) * dsH, false );
+        const int dsEdgeThreshold = 3;
+        for( int y = 1; y < dsH - 1; ++y )
+        {
+            for( int x = 1; x < dsW - 1; ++x )
+            {
+                const int idx = y * dsW + x;
+                const int gradHP = abs( static_cast<int>( previousLuma[idx] ) - static_cast<int>( previousLuma[idx + 1] ) );
+                const int gradVP = abs( static_cast<int>( previousLuma[idx] ) - static_cast<int>( previousLuma[idx + dsW] ) );
+                if( gradHP + gradVP >= dsEdgeThreshold )
+                    dsMaskPrev[idx] = true;
+                const int gradHC = abs( static_cast<int>( currentLuma[idx] ) - static_cast<int>( currentLuma[idx + 1] ) );
+                const int gradVC = abs( static_cast<int>( currentLuma[idx] ) - static_cast<int>( currentLuma[idx + dsW] ) );
+                if( gradHC + gradVC >= dsEdgeThreshold )
+                    dsMaskCurr[idx] = true;
+            }
+        }
+        // Dilate masks by 1px so adjacent-to-edge pixels are included.
+        std::vector<bool> dilatedPrev( dsMaskPrev.size(), false );
+        std::vector<bool> dilatedCurr( dsMaskCurr.size(), false );
+        for( int y = 1; y < dsH - 1; ++y )
+        {
+            for( int x = 1; x < dsW - 1; ++x )
+            {
+                const int idx = y * dsW + x;
+                if( dsMaskPrev[idx] || dsMaskPrev[idx - 1] || dsMaskPrev[idx + 1] ||
+                    dsMaskPrev[idx - dsW] || dsMaskPrev[idx + dsW] )
+                    dilatedPrev[idx] = true;
+                if( dsMaskCurr[idx] || dsMaskCurr[idx - 1] || dsMaskCurr[idx + 1] ||
+                    dsMaskCurr[idx - dsW] || dsMaskCurr[idx + dsW] )
+                    dilatedCurr[idx] = true;
+            }
+        }
+        dsMaskPrev = std::move( dilatedPrev );
+        dsMaskCurr = std::move( dilatedCurr );
+    }
+
+    // Compute masked stationary score for very-low-entropy pairs.
+    unsigned __int64 maskedStationaryScore = stationaryScore;
+    if( veryLowEntropyPair )
+    {
+        unsigned __int64 maskedDiff = 0;
+        unsigned __int64 maskedSamples = 0;
+        for( int y = 0; y < dsH; ++y )
+        {
+            const int row = y * dsW;
+            for( int x = marginX; x < dsW - marginX; x += 2 )
+            {
+                if( dsMaskPrev[row + x] || dsMaskCurr[row + x] )
+                {
+                    maskedDiff += static_cast<unsigned __int64>(
+                        abs( static_cast<int>( previousLuma[row + x] ) -
+                             static_cast<int>( currentLuma[row + x] ) ) );
+                    maskedSamples++;
+                }
+            }
+        }
+        if( maskedSamples > 0 )
+        {
+            maskedStationaryScore = maskedDiff / maskedSamples;
+        }
+    }
+
+    // Reject if frames are stationary (near-identical).
+    // For very-low-entropy pairs, use the masked stationary score which
+    // focuses on content pixels and isn't diluted by the background.
+    const unsigned __int64 effectiveStationaryScore = veryLowEntropyPair ? maskedStationaryScore : stationaryScore;
+    const unsigned __int64 stationaryRejectThreshold = lowContrastMode ? 1 : 2;
+    if( effectiveStationaryScore <= stationaryRejectThreshold )
+    {
+        StitchLog( L"[Panorama/Stitch] FindBestFrameShift stationary expected=(%d,%d) stationary=%llu maskedStationary=%llu veryLowEntropy=%d frame=%dx%d\n",
                      expectedDx, expectedDy,
                      static_cast<unsigned long long>( stationaryScore ),
+                     static_cast<unsigned long long>( maskedStationaryScore ),
+                     veryLowEntropyPair ? 1 : 0,
                      frameWidth, frameHeight );
         return false;
     }
@@ -1436,6 +1695,14 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 const int currRow = cY * dsW;
                 for( int x = marginX; x < dsW - marginX; x += 2 )
                 {
+                    // For very-low-entropy pairs, only score informative
+                    // pixels (those near edges/text in either frame).
+                    if( veryLowEntropyPair &&
+                        !dsMaskPrev[prevRow + x] && !dsMaskCurr[currRow + x] )
+                    {
+                        continue;
+                    }
+
                     totalDiff += static_cast<unsigned __int64>(
                         abs( static_cast<int>( previousLuma[prevRow + x] ) -
                              static_cast<int>( currentLuma[currRow + x] ) ) );
@@ -1451,7 +1718,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 }
             }
 
-            if( earlyExitCoarse || samples < 100 )
+            if( earlyExitCoarse || samples < ( veryLowEntropyPair ? 20 : 100 ) )
             {
                 continue;
             }
@@ -1567,6 +1834,52 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
     }
 
+    // Build full-resolution informative masks for very-low-entropy pairs.
+    // A pixel is informative if the gradient in its neighborhood exceeds
+    // a small threshold, dilated by 1 pixel to capture full text strokes.
+    std::vector<bool> fullMaskPrev;
+    std::vector<bool> fullMaskCurr;
+    if( veryLowEntropyPair )
+    {
+        const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight );
+        fullMaskPrev.resize( pixelCount, false );
+        fullMaskCurr.resize( pixelCount, false );
+        const int fineEdgeThreshold = 4;
+        for( int y = 1; y < frameHeight - 1; ++y )
+        {
+            for( int x = 1; x < frameWidth - 1; ++x )
+            {
+                const int idx = y * frameWidth + x;
+                const int gHP = abs( static_cast<int>( previousFullLuma[idx] ) - static_cast<int>( previousFullLuma[idx + 1] ) );
+                const int gVP = abs( static_cast<int>( previousFullLuma[idx] ) - static_cast<int>( previousFullLuma[idx + frameWidth] ) );
+                if( gHP + gVP >= fineEdgeThreshold )
+                    fullMaskPrev[idx] = true;
+                const int gHC = abs( static_cast<int>( currentFullLuma[idx] ) - static_cast<int>( currentFullLuma[idx + 1] ) );
+                const int gVC = abs( static_cast<int>( currentFullLuma[idx] ) - static_cast<int>( currentFullLuma[idx + frameWidth] ) );
+                if( gHC + gVC >= fineEdgeThreshold )
+                    fullMaskCurr[idx] = true;
+            }
+        }
+        // Dilate by 1 pixel.
+        std::vector<bool> dilPrev( pixelCount, false );
+        std::vector<bool> dilCurr( pixelCount, false );
+        for( int y = 1; y < frameHeight - 1; ++y )
+        {
+            for( int x = 1; x < frameWidth - 1; ++x )
+            {
+                const int idx = y * frameWidth + x;
+                if( fullMaskPrev[idx] || fullMaskPrev[idx - 1] || fullMaskPrev[idx + 1] ||
+                    fullMaskPrev[idx - frameWidth] || fullMaskPrev[idx + frameWidth] )
+                    dilPrev[idx] = true;
+                if( fullMaskCurr[idx] || fullMaskCurr[idx - 1] || fullMaskCurr[idx + 1] ||
+                    fullMaskCurr[idx - frameWidth] || fullMaskCurr[idx + frameWidth] )
+                    dilCurr[idx] = true;
+            }
+        }
+        fullMaskPrev = std::move( dilPrev );
+        fullMaskCurr = std::move( dilCurr );
+    }
+
     unsigned __int64 bestFineScore = ( std::numeric_limits<unsigned __int64>::max )();
     unsigned __int64 secondBestFineScore = ( std::numeric_limits<unsigned __int64>::max )();
     bestDx = 0;
@@ -1629,6 +1942,27 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                     const int xSpan = xEnd - xStart;
                     unsigned __int64 rowDiff = 0;
 
+                    if( veryLowEntropyPair )
+                    {
+                        // Masked scoring: only accumulate at informative
+                        // pixels (union of both masks at their respective
+                        // positions).
+                        for( int xi = 0; xi < xSpan; ++xi )
+                        {
+                            const int prevIdx = prevRow + xStart + xi;
+                            const int currIdx = currRow + xStart + xi + dx;
+                            if( fullMaskPrev[prevIdx] || fullMaskCurr[currIdx] )
+                            {
+                                rowDiff += static_cast<unsigned __int64>(
+                                    abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
+                                samples++;
+                            }
+                        }
+                        totalDiff += rowDiff;
+                    }
+                    else
+                    {
+
 #if defined(_M_X64) || defined(_M_IX86)
                     // SSE2 SIMD: process 16 luma pixels at once using
                     // _mm_sad_epu8 (sum of absolute differences).
@@ -1661,16 +1995,18 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                     totalDiff += rowDiff;
                     samples += xSpan;
 
+                    } // !veryLowEntropyPair
+
                     // Early termination: if running average already exceeds
                     // the best fine score, this candidate cannot win.
                     if( bestFineScore != ( std::numeric_limits<unsigned __int64>::max )() &&
-                        samples >= 200 && totalDiff / samples > bestFineScore )
+                        samples >= ( veryLowEntropyPair ? static_cast<unsigned __int64>( 50 ) : static_cast<unsigned __int64>( 200 ) ) && totalDiff / samples > bestFineScore )
                     {
                         earlyExit = true;
                     }
                 }
 
-                if( earlyExit || samples < 100 )
+                if( earlyExit || samples < ( veryLowEntropyPair ? 20 : 100 ) )
                 {
                     continue;
                 }
@@ -1714,39 +2050,56 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         ( ( expectedDy < 0 && bestDy < 0 ) || ( expectedDy > 0 && bestDy > 0 ) ||
           ( expectedDx < 0 && bestDx < 0 ) || ( expectedDx > 0 && bestDx > 0 ) );
 
+    // Cross-validate shift vs stationary score.  For very-low-entropy
+    // pairs, use the masked stationary score (which only considers content
+    // pixels) since the raw score is inherently near-zero.
+    const unsigned __int64 crossValidStationaryUsed = veryLowEntropyPair ? maskedStationaryScore : stationaryScore;
     const unsigned __int64 crossValidationStationaryThreshold = lowContrastMode ? 18 : 15;
-    if( !shiftMatchesDirection && stationaryScore < crossValidationStationaryThreshold && detectedStep > frameHeight / 3 && bestFineScore > 0 )
+    if( !shiftMatchesDirection && crossValidStationaryUsed < crossValidationStationaryThreshold && detectedStep > frameHeight / 3 && bestFineScore > 0 )
     {
-        StitchLog( L"[Panorama/Stitch] FindBestFrameShift shift-stationary-mismatch expected=(%d,%d) best=(%d,%d) step=%d fineScore=%llu stationary=%llu\n",
+        StitchLog( L"[Panorama/Stitch] FindBestFrameShift shift-stationary-mismatch expected=(%d,%d) best=(%d,%d) step=%d fineScore=%llu stationary=%llu maskedStat=%llu veryLowEntropy=%d\n",
                      expectedDx, expectedDy, bestDx, bestDy,
                      detectedStep,
                      static_cast<unsigned long long>( bestFineScore ),
-                     static_cast<unsigned long long>( stationaryScore ) );
+                     static_cast<unsigned long long>( stationaryScore ),
+                     static_cast<unsigned long long>( maskedStationaryScore ),
+                     veryLowEntropyPair ? 1 : 0 );
         return false;
     }
 
-    // Adaptive fine threshold: content with high stationary score (frames are
-    // truly different) can tolerate higher fine scores from subpixel rendering
-    // artifacts and ClearType.  Near-duplicate frames (low stationary score)
-    // use a strict threshold to avoid accepting spurious matches.
-    const unsigned __int64 fineThreshold = ( stationaryScore > 15 )
-        ? ( lowContrastMode ? 24 : 30 )
-        : ( lowContrastMode ? 12 : 15 );
+    // Adaptive fine threshold.  For very-low-entropy pairs the masked
+    // fine score is on a different scale (higher, because only content
+    // pixels contribute) so use a dedicated, more generous threshold.
+    unsigned __int64 fineThreshold;
+    if( veryLowEntropyPair )
+    {
+        fineThreshold = ( maskedStationaryScore > 15 ) ? 30 : 20;
+    }
+    else
+    {
+        fineThreshold = ( stationaryScore > 15 )
+            ? ( lowContrastMode ? 24 : 30 )
+            : ( lowContrastMode ? 12 : 15 );
+    }
     if( bestFineScore == ( std::numeric_limits<unsigned __int64>::max )() || bestFineScore > fineThreshold )
     {
-        StitchLog( L"[Panorama/Stitch] FindBestFrameShift poor-fine expected=(%d,%d) best=(%d,%d) fineScore=%llu fineThreshold=%llu stationary=%llu\n",
+        StitchLog( L"[Panorama/Stitch] FindBestFrameShift poor-fine expected=(%d,%d) best=(%d,%d) fineScore=%llu fineThreshold=%llu stationary=%llu maskedStat=%llu veryLowEntropy=%d\n",
                      expectedDx, expectedDy, bestDx, bestDy,
                      static_cast<unsigned long long>( bestFineScore ),
                      static_cast<unsigned long long>( fineThreshold ),
-                     static_cast<unsigned long long>( stationaryScore ) );
+                     static_cast<unsigned long long>( stationaryScore ),
+                     static_cast<unsigned long long>( maskedStationaryScore ),
+                     veryLowEntropyPair ? 1 : 0 );
         return false;
     }
 
-    StitchLog( L"[Panorama/Stitch] FindBestFrameShift expected=(%d,%d) best=(%d,%d) coarseScore=%llu fineScore=%llu stationary=%llu window=[%d,%d] accepted=1\n",
+    StitchLog( L"[Panorama/Stitch] FindBestFrameShift expected=(%d,%d) best=(%d,%d) coarseScore=%llu fineScore=%llu stationary=%llu maskedStat=%llu veryLowEntropy=%d window=[%d,%d] accepted=1\n",
                  expectedDx, expectedDy, bestDx, bestDy,
                  static_cast<unsigned long long>( bestCoarseScore ),
                  static_cast<unsigned long long>( bestFineScore ),
                  static_cast<unsigned long long>( stationaryScore ),
+                 static_cast<unsigned long long>( maskedStationaryScore ),
+                 veryLowEntropyPair ? 1 : 0,
                  searchMinDy * downsampleScale,
                  searchMaxDy * downsampleScale );
     return true;
@@ -1860,8 +2213,10 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
 
     unsigned __int64 directScore = 0;
     unsigned __int64 transposedScore = 0;
-    const bool directScored = ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight, directDx, directDy, directScore );
-    const bool transposedScored = ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight, mappedDx, mappedDy, transposedScore );
+    const bool ignoreConst = lowContrastMode &&
+        IsVeryLowEntropyPair( previousPixels, currentPixels, frameWidth, frameHeight );
+    const bool directScored = ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight, directDx, directDy, directScore, ignoreConst );
+    const bool transposedScored = ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight, mappedDx, mappedDy, transposedScore, ignoreConst );
 
     if( directScored && transposedScored )
     {
@@ -2010,13 +2365,18 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
         // rendering noise (e.g. ClearType) causes the fine refinement to
         // report ±1 px cross-axis drift per frame, which accumulates into
         // visible slanting over many composed frames.
+        //
+        // Cap each step's contribution to the direction vote so that one
+        // outlier (e.g. a spurious large-shift match on blank content)
+        // cannot dominate the accumulator and lock the wrong axis.
         if( composedFrameSteps.size() >= 3 )
         {
+            const int stepCapForDirection = 3 * minProgress;
             int totalAbsStepX = 0, totalAbsStepY = 0;
             for( size_t si = 1; si < composedFrameSteps.size(); ++si )
             {
-                totalAbsStepX += abs( composedFrameSteps[si].x );
-                totalAbsStepY += abs( composedFrameSteps[si].y );
+                totalAbsStepX += min( abs( composedFrameSteps[si].x ), stepCapForDirection );
+                totalAbsStepY += min( abs( composedFrameSteps[si].y ), stepCapForDirection );
             }
 
             if( totalAbsStepY > totalAbsStepX * 8 )
