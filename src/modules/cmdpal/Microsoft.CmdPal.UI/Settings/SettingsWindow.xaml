@@ -31,6 +31,10 @@
             IsBackButtonVisible="{x:Bind NavFrame.CanGoBack, Mode=OneWay}"
             IsTabStop="False"
             PaneToggleRequested="AppTitleBar_PaneToggleRequested">
+            <TitleBar.Resources>
+                <!--  Override default WinUI 3 style  -->
+                <x:Double x:Key="TitleBarCompactHeight">40</x:Double>
+            </TitleBar.Resources>
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="ms-appx:///Assets/icon.svg" />
             </TitleBar.IconSource>
