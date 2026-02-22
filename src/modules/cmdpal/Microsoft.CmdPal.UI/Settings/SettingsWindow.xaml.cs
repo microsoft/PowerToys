@@ -44,7 +44,6 @@ public sealed partial class SettingsWindow : WindowEx,
         this.SetIcon();
         var title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.Title = title;
-        this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         this.AppTitleBar.Title = title;
         PositionCentered();
 
