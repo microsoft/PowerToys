@@ -127,7 +127,7 @@ const wchar_t* HotkeyIdToString( WPARAM hotkeyId );
 DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap );
 std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId );
 
-static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<void(int)> progressCallback = nullptr );
+static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<bool(int)> progressCallback = nullptr );
 static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile );
 
 //----------------------------------------------------------------------------
@@ -136,22 +136,26 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile );
 class PanoramaProgressDialog
 {
 public:
-    PanoramaProgressDialog() : m_hWnd( nullptr ), m_hProgress( nullptr ), m_hLabel( nullptr ) {}
+    PanoramaProgressDialog() : m_hWnd( nullptr ), m_hProgress( nullptr ), m_hLabel( nullptr ), m_hButton( nullptr ), m_cancelled( false ) {}
 
     void Create( HWND hWndParent )
     {
         EnsureWindowClass();
+
+        m_cancelled = false;
 
         // Get DPI for proper sizing
         const UINT dpi = GetDpiForWindowHelper( hWndParent ? hWndParent : GetDesktopWindow() );
         const int margin = ScaleForDpi( 14, dpi );
         const int labelHeight = ScaleForDpi( 20, dpi );
         const int barHeight = ScaleForDpi( 16, dpi );
+        const int buttonHeight = ScaleForDpi( 26, dpi );
+        const int buttonWidth = ScaleForDpi( 80, dpi );
         const int spacing = ScaleForDpi( 10, dpi );
 
         // Compute desired client area, then inflate to full window size
         const int clientWidth = ScaleForDpi( 340, dpi );
-        const int clientHeight = margin + labelHeight + spacing + barHeight + margin;
+        const int clientHeight = margin + labelHeight + spacing + barHeight + spacing + buttonHeight + margin;
         const DWORD style = WS_POPUP | WS_CAPTION | WS_VISIBLE | WS_CLIPCHILDREN;
         const DWORD exStyle = WS_EX_TOOLWINDOW | WS_EX_TOPMOST;
         RECT rcWindow = { 0, 0, clientWidth, clientHeight };
@@ -174,6 +178,8 @@ public:
         if( m_hWnd == nullptr )
             return;
 
+        SetWindowLongPtr( m_hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>( this ) );
+
         // Apply dark mode to title bar
         const bool darkMode = IsDarkModeEnabled();
         SetDarkModeForWindow( m_hWnd, darkMode );
@@ -189,6 +195,16 @@ public:
             WS_CHILD | WS_VISIBLE | PBS_SMOOTH,
             margin, margin + labelHeight + spacing, clientWidth - margin * 2, barHeight,
             m_hWnd, nullptr, g_hInstance, nullptr );
+
+        m_hButton = CreateWindowExW(
+            0, L"BUTTON", L"Cancel",
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON,
+            clientWidth - margin - buttonWidth, margin + labelHeight + spacing + barHeight + spacing, buttonWidth, buttonHeight,
+            m_hWnd, reinterpret_cast<HMENU>( static_cast<INT_PTR>( IDCANCEL ) ), g_hInstance, nullptr );
+        if( m_hButton && darkMode )
+        {
+            SetWindowTheme( m_hButton, L"DarkMode_Explorer", nullptr );
+        }
         if( m_hProgress )
         {
             SendMessage( m_hProgress, PBM_SETRANGE, 0, MAKELPARAM( 0, 100 ) );
@@ -217,6 +233,7 @@ public:
         if( m_hFont )
         {
             SendMessage( m_hLabel, WM_SETFONT, reinterpret_cast<WPARAM>( m_hFont ), TRUE );
+            SendMessage( m_hButton, WM_SETFONT, reinterpret_cast<WPARAM>( m_hFont ), TRUE );
         }
 
         HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
@@ -237,6 +254,8 @@ public:
         PumpMessages();
     }
 
+    bool IsCancelled() const { return m_cancelled; }
+
     void Destroy()
     {
         if( m_hWnd )
@@ -245,6 +264,7 @@ public:
             m_hWnd = nullptr;
             m_hLabel = nullptr;
             m_hProgress = nullptr;
+            m_hButton = nullptr;
         }
         if( m_hFont )
         {
@@ -259,6 +279,11 @@ private:
         MSG msg{};
         while( PeekMessage( &msg, nullptr, 0, 0, PM_REMOVE ) )
         {
+            if( msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE )
+            {
+                m_cancelled = true;
+                continue;
+            }
             TranslateMessage( &msg );
             DispatchMessage( &msg );
         }
@@ -267,13 +292,33 @@ private:
     HWND m_hWnd;
     HWND m_hProgress;
     HWND m_hLabel;
+    HWND m_hButton;
+    bool m_cancelled;
     HFONT m_hFont = nullptr;
 
     static LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
     {
+        PanoramaProgressDialog* pThis = reinterpret_cast<PanoramaProgressDialog*>(
+            GetWindowLongPtr( hWnd, GWLP_USERDATA ) );
         switch( uMsg )
         {
+        case WM_COMMAND:
+            if( LOWORD( wParam ) == IDCANCEL && pThis )
+            {
+                pThis->m_cancelled = true;
+                return 0;
+            }
+            break;
+
+        case WM_CLOSE:
+            if( pThis )
+            {
+                pThis->m_cancelled = true;
+            }
+            return 0;
+
         case WM_CTLCOLORSTATIC:
+        case WM_CTLCOLORBTN:
             if( IsDarkModeEnabled() )
             {
                 HDC hdc = reinterpret_cast<HDC>( wParam );
@@ -2246,13 +2291,17 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     return true;
 }
 
-static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<void(int)> progressCallback)
+static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<bool(int)> progressCallback)
 {
-    auto reportProgress = [&progressCallback]( int percent )
+    bool cancelled = false;
+    auto reportProgress = [&progressCallback, &cancelled]( int percent )
     {
         if( progressCallback )
         {
-            progressCallback( max( 0, min( 100, percent ) ) );
+            if( progressCallback( max( 0, min( 100, percent ) ) ) )
+            {
+                cancelled = true;
+            }
         }
     };
     const ULONGLONG stitchStart = GetTickCount64();
@@ -2306,6 +2355,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
         }
 
         reportProgress( static_cast<int>( ( i + 1 ) * 5 / frames.size() ) );
+        if( cancelled )
+        {
+            StitchLog( L"[Panorama/Stitch] Cancelled during pixel read\n" );
+            return nullptr;
+        }
     }
 
     std::vector<size_t> composedFrameIndices;
@@ -2331,6 +2385,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
     for( size_t i = 1; i < frames.size(); i++ )
     {
         reportProgress( 5 + static_cast<int>( i * 85 / frames.size() ) );
+        if( cancelled )
+        {
+            StitchLog( L"[Panorama/Stitch] Cancelled during shift computation\n" );
+            return nullptr;
+        }
 
         int dx = expectedDx;
         int dy = expectedDy;
@@ -2506,6 +2565,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
     for( size_t i = 0; i < composedFrameIndices.size(); ++i )
     {
         reportProgress( 90 + static_cast<int>( ( i + 1 ) * 9 / composedFrameIndices.size() ) );
+        if( cancelled )
+        {
+            StitchLog( L"[Panorama/Stitch] Cancelled during composition\n" );
+            return nullptr;
+        }
 
         const size_t frameIndex = composedFrameIndices[i];
         const POINT& currentOrigin = composedFrameOrigins[i];
@@ -2931,11 +2995,25 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     else
     {
         g_ProgressDialog.Create( hWnd );
-        panoramaBitmap = StitchPanoramaFrames( frames, lowContrastMode, [&]( int percent )
+        panoramaBitmap = StitchPanoramaFrames( frames, lowContrastMode, [&]( int percent ) -> bool
         {
             g_ProgressDialog.SetProgress( percent );
+            return g_ProgressDialog.IsCancelled();
         } );
         g_ProgressDialog.Destroy();
+
+        if( panoramaBitmap == nullptr && g_ProgressDialog.IsCancelled() )
+        {
+            OutputDebug( L"[Panorama/Capture] Stitching cancelled by user\n" );
+            for( HBITMAP frame : frames )
+            {
+                if( frame != nullptr )
+                {
+                    DeleteObject( frame );
+                }
+            }
+            return false;
+        }
     }
 
     for( HBITMAP frame : frames )
