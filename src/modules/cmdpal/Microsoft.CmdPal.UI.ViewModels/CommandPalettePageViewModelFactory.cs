@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -17,12 +16,12 @@ public class CommandPalettePageViewModelFactory
         _scheduler = scheduler;
     }
 
-    public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host)
+    public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host, CommandProviderContext providerContext)
     {
         return page switch
         {
-            IListPage listPage => new ListViewModel(listPage, _scheduler, host) { IsRootPage = !nested },
-            IContentPage contentPage => new CommandPaletteContentPageViewModel(contentPage, _scheduler, host),
+            IListPage listPage => new ListViewModel(listPage, _scheduler, host, providerContext) { IsRootPage = !nested },
+            IContentPage contentPage => new CommandPaletteContentPageViewModel(contentPage, _scheduler, host, providerContext),
             _ => null,
         };
     }

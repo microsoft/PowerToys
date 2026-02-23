@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,11 +6,10 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Text;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -29,7 +28,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private readonly CommandItemViewModel _commandItemViewModel;
     private readonly DockViewModel? _dockViewModel;
 
-    private readonly string _commandProviderId;
+    public CommandProviderContext ProviderContext { get; private set; }
 
     private string IdFromModel => IsFallback && !string.IsNullOrWhiteSpace(_fallbackId) ? _fallbackId : _commandItemViewModel.Command.Id;
 
@@ -61,7 +60,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public CommandItemViewModel ItemViewModel => _commandItemViewModel;
 
-    public string CommandProviderId => _commandProviderId;
+    public string CommandProviderId => ProviderContext.ProviderId;
 
     public IconInfoViewModel IconViewModel => _commandItemViewModel.Icon;
 
@@ -207,7 +206,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         CommandItemViewModel item,
         TopLevelType topLevelType,
         CommandPaletteHost extensionHost,
-        string commandProviderId,
+        CommandProviderContext commandProviderContext,
         SettingsModel settings,
         ProviderSettings providerSettings,
         IServiceProvider serviceProvider,
@@ -216,7 +215,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         _serviceProvider = serviceProvider;
         _settings = settings;
         _providerSettings = providerSettings;
-        _commandProviderId = commandProviderId;
+        ProviderContext = commandProviderContext;
         _commandItemViewModel = item;
 
         IsFallback = topLevelType == TopLevelType.Fallback;
@@ -375,8 +374,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         // Use WyHash64 to generate stable ID hashes.
         // manually seeding with 0, so that the hash is stable across launches
-        var result = WyHash64.ComputeHash64(_commandProviderId + DisplayTitle + Title + Subtitle, seed: 0);
-        _generatedId = $"{_commandProviderId}{result}";
+        var result = WyHash64.ComputeHash64(CommandProviderId + DisplayTitle + Title + Subtitle, seed: 0);
+        _generatedId = $"{CommandProviderId}{result}";
     }
 
     private void DoOnUiThread(Action action)
@@ -441,7 +440,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public PerformCommandMessage GetPerformCommandMessage()
     {
-        return new PerformCommandMessage(this.CommandViewModel.Model, new Core.ViewModels.Models.ExtensionObject<IListItem>(this));
+        return new PerformCommandMessage(this.CommandViewModel.Model, new Models.ExtensionObject<IListItem>(this));
     }
 
     public override string ToString()
@@ -527,7 +526,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             _commandItemViewModel,
             TopLevelType.DockBand,
             ExtensionHost,
-            _commandProviderId,
+            ProviderContext,
             _settings,
             _providerSettings,
             _serviceProvider,

@@ -77,6 +77,7 @@ functionality.
     - [Rendering of ICommandItems in Lists and Menus](#rendering-of-icommanditems-in-lists-and-menus)
   - [Addenda I: API additions (ICommandProvider2)](#addenda-i-api-additions-icommandprovider2)
   - [Addenda IV: Dock bands](#addenda-iv-dock-bands)
+    - [Pinning nested commands to the dock (and top level)](#pinning-nested-commands-to-the-dock-and-top-level)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -2127,6 +2128,36 @@ Users may choose to have:
   shown or hidden.
   - Dock bands will still display the `Title` & `Subtitle` of each item in the
     band as the tooltip on those items, even when the "labels" are hidden. 
+
+### Pinning nested commands to the dock (and top level)
+
+We'll use another command provider method to allow the host to ask extensions
+for items based on their ID.
+
+```csharp
+interface ICommandProvider4 requires ICommandProvider3
+{
+    ICommandItem GetCommandItem(String id);
+};
+```
+
+This will allow users to pin not just top-level commands, but also nested
+commands which have an ID. The host can store that ID away, and then later ask
+the extension for the `ICommandItem` with that ID, to get the full details of
+the command to pin.
+
+This is needed separate from the `GetCommand` method on `ICommandProvider`,
+because that method is was designed for two main purposes:
+
+* Short-circuiting the loading of top-level commands for frozen extensions. In
+  that case, DevPal would only need to look up the actual `ICommand` to perform
+  it. It wouldn't need the full `ICommandItem` with all the details.
+* Allowing invokable commands to navigate using the GoToPageArgs. In that case,
+  DevPal would only need the `ICommand` to perform the navigation.
+
+In neither of those scenarios was the full "display" of the item needed. In
+pinning scenarios, however, we need everything that the user would see in the UI
+for that item, which is all in the `ICommandItem`.
 
 ## Class diagram
 

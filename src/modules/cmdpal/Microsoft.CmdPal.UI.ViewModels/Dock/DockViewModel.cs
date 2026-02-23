@@ -5,8 +5,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common;
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -119,7 +117,7 @@ public sealed partial class DockViewModel : IDisposable,
     public void Receive(CommandsReloadedMessage message)
     {
         SetupBands();
-        CoreLogger.LogDebug("Bands reloaded");
+        Logger.LogDebug("Bands reloaded");
     }
 
     private DockBandViewModel CreateBandItem(
@@ -569,7 +567,7 @@ public sealed partial class DockViewModel : IDisposable,
     public void ShowException(Exception ex, string? extensionHint = null)
     {
         var extensionText = extensionHint ?? "<unknown>";
-        CoreLogger.LogError($"Error in extension {extensionText}", ex);
+        Logger.LogError($"Error in extension {extensionText}", ex);
     }
 
     private void DoOnUiThread(Action action)

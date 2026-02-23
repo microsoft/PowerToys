@@ -2,11 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Foundation.Collections;
 
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 

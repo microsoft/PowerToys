@@ -3,15 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Models;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
-
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -27,6 +24,8 @@ public sealed class CommandProviderWrapper
     private readonly TaskScheduler _taskScheduler;
 
     private readonly ICommandProviderCache? _commandProviderCache;
+
+    private readonly CommandProviderContext _providerContext;
 
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
@@ -71,6 +70,8 @@ public sealed class CommandProviderWrapper
         Icon = new(provider.Icon);
         Icon.InitializeProperties();
 
+        _providerContext = new() { ProviderId = ProviderId };
+
         // Note: explicitly not InitializeProperties()ing the settings here. If
         // we do that, then we'd regress GH #38321
         Settings = new(provider.Settings, this, _taskScheduler);
@@ -85,6 +86,7 @@ public sealed class CommandProviderWrapper
 
         Extension = extension;
         ExtensionHost = new CommandPaletteHost(extension);
+        _providerContext = new() { ProviderId = ProviderId };
         if (!Extension.IsRunning())
         {
             throw new ArgumentException("You forgot to start the extension. This is a CmdPal error - we need to make sure to call StartExtensionAsync");
@@ -171,10 +173,13 @@ public sealed class CommandProviderWrapper
                 var bands = supportsDockBands.GetDockBands();
                 if (bands is not null)
                 {
-                    CoreLogger.LogDebug($"Found {bands.Length} bands on {DisplayName} ({ProviderId}) ");
+                    Logger.LogDebug($"Found {bands.Length} bands on {DisplayName} ({ProviderId}) ");
                     dockBands = bands;
                 }
             }
+
+            // Load pinned commands from saved settings
+            var pinnedCommands = LoadPinnedCommands(model, providerSettings);
 
             Id = model.Id;
             DisplayName = model.DisplayName;
@@ -193,7 +198,7 @@ public sealed class CommandProviderWrapper
             Settings = new(model.Settings, this, _taskScheduler);
 
             // We do need to explicitly initialize commands though
-            var objects = new TopLevelObjects(commands, fallbacks, dockBands);
+            var objects = new TopLevelObjects(commands, fallbacks, pinnedCommands, dockBands);
             InitializeCommands(objects, serviceProvider, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
@@ -228,6 +233,7 @@ public sealed class CommandProviderWrapper
     private record TopLevelObjects(
         ICommandItem[]? Commands,
         IFallbackCommandItem[]? Fallbacks,
+        ICommandItem[]? PinnedCommands,
         ICommandItem[]? DockBands);
 
     private void InitializeCommands(
@@ -239,21 +245,28 @@ public sealed class CommandProviderWrapper
         var state = serviceProvider.GetService<AppStateModel>()!;
         var providerSettings = GetProviderSettings(settings);
 
-        Func<ICommandItem?, TopLevelType, TopLevelViewModel> make = (ICommandItem? i, TopLevelType t) =>
+        var make = (ICommandItem? i, TopLevelType t) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider, i);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, _providerContext, settings, providerSettings, serviceProvider, i);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
         };
 
+        var topLevelList = new List<TopLevelViewModel>();
+
         if (objects.Commands is not null)
         {
-            TopLevelItems = objects.Commands
-                .Select(c => make(c, TopLevelType.Normal))
-                .ToArray();
+            topLevelList.AddRange(objects.Commands.Select(c => make(c, TopLevelType.Normal)));
         }
+
+        if (objects.PinnedCommands is not null)
+        {
+            topLevelList.AddRange(objects.PinnedCommands.Select(c => make(c, TopLevelType.Normal)));
+        }
+
+        TopLevelItems = topLevelList.ToArray();
 
         if (objects.Fallbacks is not null)
         {
@@ -289,6 +302,32 @@ public sealed class CommandProviderWrapper
         }
     }
 
+    private ICommandItem[] LoadPinnedCommands(ICommandProvider model, ProviderSettings providerSettings)
+    {
+        var pinnedItems = new List<ICommandItem>();
+
+        if (model is ICommandProvider4 provider4)
+        {
+            foreach (var pinnedId in providerSettings.PinnedCommandIds)
+            {
+                try
+                {
+                    var commandItem = provider4.GetCommandItem(pinnedId);
+                    if (commandItem is not null)
+                    {
+                        pinnedItems.Add(commandItem);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError($"Failed to load pinned command {pinnedId}: {e.Message}");
+                }
+            }
+        }
+
+        return pinnedItems.ToArray();
+    }
+
     private void UnsafePreCacheApiAdditions(ICommandProvider2 provider)
     {
         var apiExtensions = provider.GetApiExtensionStubs();
@@ -304,6 +343,26 @@ public sealed class CommandProviderWrapper
                 Logger.LogDebug($"{ProviderId}: Found an ICommandItem[]");
             }
         }
+    }
+
+    public void PinCommand(string commandId, IServiceProvider serviceProvider)
+    {
+        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var providerSettings = GetProviderSettings(settings);
+
+        if (!providerSettings.PinnedCommandIds.Contains(commandId))
+        {
+            providerSettings.PinnedCommandIds.Add(commandId);
+            SettingsModel.SaveSettings(settings);
+
+            // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
+            this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        }
+    }
+
+    public CommandProviderContext GetProviderContext()
+    {
+        return _providerContext;
     }
 
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;

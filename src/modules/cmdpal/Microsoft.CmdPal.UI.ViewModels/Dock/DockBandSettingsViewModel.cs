@@ -5,11 +5,9 @@
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
-#pragma warning disable SA1402 // File may only contain a single type
 
 public partial class DockBandSettingsViewModel : ObservableObject
 {
@@ -251,5 +249,3 @@ public enum ShowLabelsOption
     ShowLabels,
     HideLabels,
 }
-
-#pragma warning restore SA1402 // File may only contain a single type

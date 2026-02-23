@@ -292,4 +292,12 @@
     <value>Dock settings</value>
     <comment>Command name for opening dock settings</comment>
   </data> 
+  <data name="ShowDetailsCommand" xml:space="preserve">
+    <value>Show details</value>
+    <comment>Name for the command that shows details of an item</comment>
+  </data>
+  <data name="PinnedItemSuffix" xml:space="preserve">
+    <value>Pinned</value>
+    <comment>Suffix shown for pinned items in the dock</comment>
+  </data>
 </root>
