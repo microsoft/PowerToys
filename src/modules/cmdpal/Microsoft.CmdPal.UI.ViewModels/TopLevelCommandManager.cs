@@ -374,6 +374,22 @@ public partial class TopLevelCommandManager : ObservableObject,
                     }
                 }
 
+                // Clean up any hotkeys assigned to the removed commands
+                if (commandsToRemove.Count != 0)
+                {
+                    var removedIds = commandsToRemove.Select(c => c.Id).ToHashSet();
+                    var settings = _serviceProvider.GetService<SettingsModel>();
+                    if (settings != null)
+                    {
+                        var originalCount = settings.CommandHotkeys.Count;
+                        settings.CommandHotkeys.RemoveAll(h => removedIds.Contains(h.CommandId));
+                        if (settings.CommandHotkeys.Count != originalCount)
+                        {
+                            SettingsModel.SaveSettings(settings);
+                        }
+                    }
+                }
+
                 // Then back on the UI thread (remember, TopLevelCommands is
                 // Observable, so you can't touch it on the BG thread)...
                 await Task.Factory.StartNew(
