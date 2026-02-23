@@ -71,56 +71,29 @@ public sealed partial class CmdPalLogger : Extensions.Logging.ILogger
 
                 if (!string.IsNullOrEmpty(message))
                 {
-                    Logger.LogDebug(finalMessage);
-                }
-
-                if (exception is not null)
-                {
-                    Logger.LogDebug(exception.Message);
+                    Logger.LogDebug(finalMessage, exception);
                 }
 
                 break;
 
             case LogLevel.Debug:
-                Logger.LogDebug(finalMessage);
-
-                if (exception is not null)
-                {
-                    Logger.LogDebug(exception.Message);
-                }
+                Logger.LogDebug(finalMessage, exception);
 
                 break;
 
             case LogLevel.Information:
-                Logger.LogInfo(finalMessage);
-
-                if (exception is not null)
-                {
-                    Logger.LogInfo(exception.Message);
-                }
+                Logger.LogInfo(finalMessage, exception);
 
                 break;
 
             case LogLevel.Warning:
-                Logger.LogWarning(finalMessage);
-
-                if (exception is not null)
-                {
-                    Logger.LogWarning(exception.Message);
-                }
+                Logger.LogWarning(finalMessage, exception);
 
                 break;
 
             case LogLevel.Error:
             case LogLevel.Critical:
-                if (exception is not null)
-                {
-                    Logger.LogError(finalMessage, exception);
-                }
-                else
-                {
-                    Logger.LogError(finalMessage);
-                }
+                Logger.LogError(finalMessage, exception);
 
                 break;
 

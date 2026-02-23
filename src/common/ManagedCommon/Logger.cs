@@ -8,7 +8,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using PowerToys.Interop;
 
@@ -136,29 +135,8 @@ namespace ManagedCommon
 
         public static void LogError(string message, Exception ex, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
-            if (ex == null)
-            {
-                Log(message, Error, memberName, sourceFilePath, sourceLineNumber);
-            }
-            else
-            {
-                var exMessage =
-                    message + Environment.NewLine +
-                    ex.GetType() + " (" + ex.HResult + "): " + ex.Message + Environment.NewLine;
-
-                if (ex.InnerException != null)
-                {
-                    exMessage +=
-                        "Inner exception: " + Environment.NewLine +
-                        ex.InnerException.GetType() + " (" + ex.InnerException.HResult + "): " + ex.InnerException.Message + Environment.NewLine;
-                }
-
-                exMessage +=
-                    "Stack trace: " + Environment.NewLine +
-                    ex.StackTrace;
-
-                Log(exMessage, Error, memberName, sourceFilePath, sourceLineNumber);
-            }
+            var logMessage = GenerateExceptionMessage(message, ex);
+            LogError(logMessage, memberName, sourceFilePath, sourceLineNumber);
         }
 
         public static void LogWarning(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
@@ -166,9 +144,21 @@ namespace ManagedCommon
             Log(message, Warning, memberName, sourceFilePath, sourceLineNumber);
         }
 
+        public static void LogWarning(string message, Exception ex, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
+        {
+            var logMessage = GenerateExceptionMessage(message, ex);
+            LogWarning(logMessage, memberName, sourceFilePath, sourceLineNumber);
+        }
+
         public static void LogInfo(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
             Log(message, Info, memberName, sourceFilePath, sourceLineNumber);
+        }
+
+        public static void LogInfo(string message, Exception ex, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
+        {
+            var logMessage = GenerateExceptionMessage(message, ex);
+            LogInfo(logMessage, memberName, sourceFilePath, sourceLineNumber);
         }
 
         public static void LogDebug(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
@@ -176,6 +166,12 @@ namespace ManagedCommon
 #if DEBUG
             Log(message, Debug, memberName, sourceFilePath, sourceLineNumber);
 #endif
+        }
+
+        public static void LogDebug(string message, Exception ex, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
+        {
+            var logMessage = GenerateExceptionMessage(message, ex);
+            LogDebug(logMessage, memberName, sourceFilePath, sourceLineNumber);
         }
 
         public static void LogTrace([System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
@@ -193,6 +189,29 @@ namespace ManagedCommon
             }
 
             Trace.Unindent();
+        }
+
+        private static string GenerateExceptionMessage(string message, Exception ex)
+        {
+            var finalMessage = message;
+            if (ex is not null)
+            {
+                finalMessage = message + Environment.NewLine +
+                                    ex.GetType() + " (" + ex.HResult + "): " + ex.Message + Environment.NewLine;
+
+                if (ex.InnerException != null)
+                {
+                    finalMessage +=
+                        "Inner exception: " + Environment.NewLine +
+                        ex.InnerException.GetType() + " (" + ex.InnerException.HResult + "): " + ex.InnerException.Message + Environment.NewLine;
+                }
+
+                finalMessage +=
+                    "Stack trace: " + Environment.NewLine +
+                    ex.StackTrace;
+            }
+
+            return finalMessage;
         }
 
         private static string GetCallerInfo(string memberName, string sourceFilePath, int sourceLineNumber)
