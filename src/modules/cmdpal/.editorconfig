@@ -264,3 +264,15 @@ dotnet_style_prefer_simplified_interpolation = true:suggestion
 [*.{cs,vb}]
 # CS8305: Type is for evaluation purposes only and is subject to change or removal in future updates.
 dotnet_diagnostic.CS8305.severity = suggestion
+
+##################################################
+# Solutions and projects
+##################################################
+
+[*.{*proj,props,target}]
+tab_width = 2
+indent_size = 2
+end_of_line = crlf
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
