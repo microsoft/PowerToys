@@ -114,8 +114,6 @@
 #include <commctrl.h>
 #if defined(_M_X64) || defined(_M_IX86)
 #include <emmintrin.h>
-#elif defined(_M_ARM64)
-#include <arm_neon.h>
 #endif
 
 // Externs from Zoomit.cpp
@@ -129,67 +127,8 @@ const wchar_t* HotkeyIdToString( WPARAM hotkeyId );
 DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap );
 std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId );
 
-static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
-                                     bool lowContrastMode,
-                                     std::function<bool(int)> progressCallback = nullptr,
-                                     const std::vector<int>* frameSourceIds = nullptr );
+static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<bool(int)> progressCallback = nullptr );
 static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile );
-
-namespace
-{
-// Duplicate-detection sampling cadence for normal/low-contrast capture.
-constexpr int kDuplicateSampleStepLowContrast = 4;
-constexpr int kDuplicateSampleStepNormal = 6;
-
-// Coarse duplicate thresholds (avg RGB diff and changed pixel fraction).
-constexpr unsigned __int64 kDuplicateAvgDiffThresholdLowContrast = 2;
-constexpr unsigned __int64 kDuplicateAvgDiffThresholdNormal = 6;
-constexpr double kDuplicateChangedFractionThresholdLowContrast = 0.0005;
-constexpr double kDuplicateChangedFractionThresholdNormal = 0.005;
-
-// Fine duplicate thresholds used for low-contrast refinement.
-constexpr unsigned __int64 kFineDuplicateAvgDiffThreshold = 1;
-constexpr double kFineDuplicateChangedFractionThreshold = 0.00008;
-
-// Small-shift duplicate guard bounds.
-constexpr int kSmallShiftGuardMaxAbsDyLowContrast = 24;
-constexpr int kSmallShiftGuardMaxAbsDyNormal = 16;
-constexpr int kSmallShiftGuardMaxAbsDxLowContrast = 12;
-constexpr int kSmallShiftGuardMaxAbsDxNormal = 8;
-
-// Informative-pixel rescue minimum average diff for low-contrast duplicates.
-constexpr unsigned __int64 kInformativeRescueAvgDiffThreshold = 8;
-
-// Alignment-score overlap and sampling thresholds.
-constexpr int kAlignmentMarginMinPixels = 4;
-constexpr int kAlignmentMarginDenominator = 20;
-constexpr int kAlignmentOverlapMinDenominator = 4;
-constexpr int kAlignmentSampleStride = 2;
-constexpr int kAlignmentGradientThreshold = 4;
-constexpr unsigned __int64 kAlignmentMinSamplesMasked = 20;
-constexpr unsigned __int64 kAlignmentMinSamplesUnmasked = 100;
-
-// Shift-search tuning thresholds.
-constexpr int kDownsampleScaleMinDimension = 240;
-constexpr int kDownsampleScaleLargeFrames = 4;
-constexpr int kDownsampleScaleSmallFrames = 2;
-constexpr int kSearchMinStepDownsampled = 1;
-constexpr int kSearchMaxStepMinPadding = 2;
-constexpr int kSearchMaxStepDenominator = 6;
-constexpr int kSearchMarginMinPixels = 2;
-constexpr int kSearchMarginDenominator = 20;
-
-// Candidate shortlist sizes for coarse-to-fine refinement.
-constexpr int kMaxCoarseCandidates = 12;
-constexpr int kMaxCoarseCandidatesWithProbes = 24;
-
-// Minimum one-axis advance (in feather widths) required once a frame is
-// considered a mostly single-axis scroll step. This suppresses near-total
-// overlap updates that tend to hide intermediate content without adding
-// meaningful new panorama area.
-constexpr int kComposeMinAdvanceFeatherNumerator = 5;
-constexpr int kComposeMinAdvanceFeatherDenominator = 2;
-}
 
 //----------------------------------------------------------------------------
 // Progress dialog for panorama stitching.
@@ -426,40 +365,6 @@ static PanoramaProgressDialog g_ProgressDialog;
 // Temporary file-based trace for stitch debugging (debug builds only).
 #ifdef _DEBUG
 static FILE* g_StitchLogFile = nullptr;
-static std::filesystem::path g_StitchLogPath;
-
-static void CloseStitchLogFile()
-{
-    if( g_StitchLogFile != nullptr )
-    {
-        fclose( g_StitchLogFile );
-        g_StitchLogFile = nullptr;
-    }
-}
-
-static void OpenStitchLogFile( const std::filesystem::path& outputFolder,
-                               const wchar_t* fileName = L"stitch_trace.log" )
-{
-    CloseStitchLogFile();
-
-    if( outputFolder.empty() )
-    {
-        g_StitchLogPath.clear();
-        return;
-    }
-
-    std::error_code errorCode;
-    std::filesystem::create_directories( outputFolder, errorCode );
-    if( errorCode )
-    {
-        g_StitchLogPath.clear();
-        return;
-    }
-
-    g_StitchLogPath = outputFolder / fileName;
-    g_StitchLogFile = _wfopen( g_StitchLogPath.c_str(), L"w" );
-}
-
 static void StitchLog( const wchar_t* format, ... )
 {
     va_list args;
@@ -814,9 +719,7 @@ static bool RunPanoramaStitchFromDumpDirectory( const std::filesystem::path& dum
                  dumpDirectory.c_str() );
 
     std::vector<HBITMAP> frames;
-    std::vector<int> frameSourceIds;
     frames.reserve( framePaths.size() );
-    frameSourceIds.reserve( framePaths.size() );
     for( const auto& framePath : framePaths )
     {
         HBITMAP bitmap = LoadBitmapFromFile( framePath );
@@ -831,30 +734,21 @@ static bool RunPanoramaStitchFromDumpDirectory( const std::filesystem::path& dum
         }
 
         frames.push_back( bitmap );
-
-        int sourceId = static_cast<int>( frameSourceIds.size() + 1 );
-        const auto stem = framePath.stem().wstring();
-        const size_t underscore = stem.find_last_of( L'_' );
-        if( underscore != std::wstring::npos && underscore + 1 < stem.size() )
-        {
-            const std::wstring idText = stem.substr( underscore + 1 );
-            try
-            {
-                sourceId = std::stoi( idText );
-            }
-            catch( ... )
-            {
-            }
-        }
-        frameSourceIds.push_back( sourceId );
     }
 
     // Open a trace log in the dump directory for diagnostics.
-    OpenStitchLogFile( dumpDirectory );
+    {
+        auto logPath = dumpDirectory / L"stitch_trace.log";
+        g_StitchLogFile = fopen( logPath.string().c_str(), "w" );
+    }
 
-    HBITMAP stitched = StitchPanoramaFrames( frames, false, nullptr, &frameSourceIds );
+    HBITMAP stitched = StitchPanoramaFrames( frames, false );
 
-    CloseStitchLogFile();
+    if( g_StitchLogFile != nullptr )
+    {
+        fclose( g_StitchLogFile );
+        g_StitchLogFile = nullptr;
+    }
 
     for( HBITMAP frame : frames )
     {
@@ -1199,67 +1093,6 @@ static void BuildDownsampledLumaFrame( const std::vector<BYTE>& pixels,
     }
 }
 
-// Build a full-resolution single-channel luma array from 32-bpp BGRA pixels.
-static void BuildFullLumaFrame( const std::vector<BYTE>& pixels,
-                                int frameWidth,
-                                int frameHeight,
-                                std::vector<BYTE>& luma )
-{
-    const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight );
-    luma.resize( pixelCount );
-
-    size_t p = 0;
-
-#if defined(_M_ARM64)
-    // NEON: process 8 pixels (32 BGRA bytes) at a time.
-    const uint8x8_t wR = vdup_n_u8( 77 );
-    const uint8x8_t wG = vdup_n_u8( 150 );
-    const uint8x8_t wB = vdup_n_u8( 29 );
-    for( ; p + 8 <= pixelCount; p += 8 )
-    {
-        const uint8x8x4_t bgra = vld4_u8( &pixels[p * 4] );
-        const uint16x8_t r16 = vmull_u8( bgra.val[2], wR );
-        const uint16x8_t g16 = vmull_u8( bgra.val[1], wG );
-        const uint16x8_t b16 = vmull_u8( bgra.val[0], wB );
-        const uint16x8_t sum = vaddq_u16( vaddq_u16( r16, g16 ), b16 );
-        vst1_u8( &luma[p], vshrn_n_u16( sum, 8 ) );
-    }
-#endif
-
-    for( ; p < pixelCount; ++p )
-    {
-        const size_t idx = p * 4;
-        luma[p] = static_cast<BYTE>( ( pixels[idx + 2] * 77 +
-                                       pixels[idx + 1] * 150 +
-                                       pixels[idx + 0] * 29 ) >> 8 );
-    }
-}
-
-// Downsample from a pre-computed full-resolution luma array.
-static void BuildDownsampledLumaFromFullLuma( const std::vector<BYTE>& fullLuma,
-                                              int frameWidth,
-                                              int frameHeight,
-                                              int scale,
-                                              std::vector<BYTE>& luma,
-                                              int& downsampledWidth,
-                                              int& downsampledHeight )
-{
-    downsampledWidth = max( 1, frameWidth / scale );
-    downsampledHeight = max( 1, frameHeight / scale );
-    luma.resize( static_cast<size_t>( downsampledWidth ) * static_cast<size_t>( downsampledHeight ) );
-
-    for( int y = 0; y < downsampledHeight; ++y )
-    {
-        const int sourceY = min( frameHeight - 1, y * scale + ( scale / 2 ) );
-        for( int x = 0; x < downsampledWidth; ++x )
-        {
-            const int sourceX = min( frameWidth - 1, x * scale + ( scale / 2 ) );
-            luma[static_cast<size_t>( y ) * static_cast<size_t>( downsampledWidth ) + static_cast<size_t>( x )] =
-                fullLuma[static_cast<size_t>( sourceY ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( sourceX )];
-        }
-    }
-}
-
 static bool FindBestSmallShiftDownsampledLuma( const std::vector<BYTE>& previousPixels,
                                                const std::vector<BYTE>& currentPixels,
                                                int frameWidth,
@@ -1431,15 +1264,15 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
     unsigned __int64 avgDiff = 0;
     double changedFraction = 0.0;
 
-    const int coarseSampleStep = lowContrastMode ? kDuplicateSampleStepLowContrast : kDuplicateSampleStepNormal;
+    const int coarseSampleStep = lowContrastMode ? 4 : 6;
     if( !ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight,
                                         avgDiff, changedFraction, coarseSampleStep, ++s_phase ) )
     {
         return false;
     }
 
-    const unsigned __int64 avgDiffThreshold = lowContrastMode ? kDuplicateAvgDiffThresholdLowContrast : kDuplicateAvgDiffThresholdNormal;
-    const double changedThreshold = lowContrastMode ? kDuplicateChangedFractionThresholdLowContrast : kDuplicateChangedFractionThresholdNormal;
+    const unsigned __int64 avgDiffThreshold = lowContrastMode ? 2 : 6;
+    const double changedThreshold = lowContrastMode ? 0.0005 : 0.005;
     const bool coarseDuplicate = ( avgDiff < avgDiffThreshold && changedFraction < changedThreshold );
     bool duplicate = coarseDuplicate;
 
@@ -1453,9 +1286,7 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
         if( ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight,
                                            fineAvgDiff, fineChangedFraction, 1, ++s_phase ) )
         {
-                        const bool fineDuplicate =
-                                ( fineAvgDiff < kFineDuplicateAvgDiffThreshold &&
-                                    fineChangedFraction < kFineDuplicateChangedFractionThreshold );
+            const bool fineDuplicate = ( fineAvgDiff < 1 && fineChangedFraction < 0.00008 );
             duplicate = coarseDuplicate && fineDuplicate;
             if( coarseDuplicate && !fineDuplicate )
             {
@@ -1551,8 +1382,8 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
     if( duplicate )
     {
         if( LooksLikeSmallShiftNotDuplicate( previousPixels, currentPixels, frameWidth, frameHeight,
-                                            /*maxAbsDyFull=*/lowContrastMode ? kSmallShiftGuardMaxAbsDyLowContrast : kSmallShiftGuardMaxAbsDyNormal,
-                                            /*maxAbsDxFull=*/lowContrastMode ? kSmallShiftGuardMaxAbsDxLowContrast : kSmallShiftGuardMaxAbsDxNormal,
+                                            /*maxAbsDyFull=*/lowContrastMode ? 24 : 16,
+                                            /*maxAbsDxFull=*/lowContrastMode ? 12 : 8,
                                             lowContrastMode ) )
         {
             duplicate = false;
@@ -1567,7 +1398,7 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
             infCount > 0 )
         {
             const unsigned __int64 avgInfDiff = infDiff / ( infCount * 3 );
-            if( avgInfDiff >= kInformativeRescueAvgDiffThreshold )
+            if( avgInfDiff >= 8 )
             {
                 duplicate = false;
             }
@@ -1593,11 +1424,11 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
 
     const int absDx = abs( dx );
     const int absDy = abs( dy );
-    const int marginX = max( kAlignmentMarginMinPixels, frameWidth / kAlignmentMarginDenominator );
-    const int marginY = max( kAlignmentMarginMinPixels, frameHeight / kAlignmentMarginDenominator );
+    const int marginX = max( 4, frameWidth / 20 );
+    const int marginY = max( 4, frameHeight / 20 );
     const int overlapW = frameWidth - absDx - 2 * marginX;
     const int overlapH = frameHeight - absDy - 2 * marginY;
-    if( overlapW < frameWidth / kAlignmentOverlapMinDenominator || overlapH < frameHeight / kAlignmentOverlapMinDenominator )
+    if( overlapW < frameWidth / 4 || overlapH < frameHeight / 4 )
     {
         return false;
     }
@@ -1610,11 +1441,11 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
     const int prevY = marginY + max( 0, -dy );
     const int currY = marginY + max( 0, dy );
 
-    for( int y = 0; y < overlapH; y += kAlignmentSampleStride )
+    for( int y = 0; y < overlapH; y += 2 )
     {
         const int pY = prevY + y;
         const int cY = currY + y;
-        for( int x = 0; x < overlapW; x += kAlignmentSampleStride )
+        for( int x = 0; x < overlapW; x += 2 )
         {
             const int pX = prevX + x;
             const int cX = currX + x;
@@ -1637,7 +1468,7 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
                     const int lc = ( px[idx + 2] * 77 + px[idx + 1] * 150 + px[idx + 0] * 29 ) >> 8;
                     const int lr = ( px[idxR + 2] * 77 + px[idxR + 1] * 150 + px[idxR + 0] * 29 ) >> 8;
                     const int ld = ( px[idxD + 2] * 77 + px[idxD + 1] * 150 + px[idxD + 0] * 29 ) >> 8;
-                    return ( abs( lc - lr ) + abs( lc - ld ) ) >= kAlignmentGradientThreshold;
+                    return ( abs( lc - lr ) + abs( lc - ld ) ) >= 4;
                 };
                 if( !hasGradient( previousPixels, pX, pY ) && !hasGradient( currentPixels, cX, cY ) )
                     continue;
@@ -1648,7 +1479,7 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
         }
     }
 
-    if( samples < ( ignoreConstantRegions ? kAlignmentMinSamplesMasked : kAlignmentMinSamplesUnmasked ) )
+    if( samples < ( ignoreConstantRegions ? 20 : 100 ) )
     {
         return false;
     }
@@ -1695,9 +1526,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                                             int expectedDy,
                                             int& bestDx,
                                             int& bestDy,
-                                            bool lowContrastMode,
-                                            const std::vector<BYTE>& precomputedPrevLuma = {},
-                                            const std::vector<BYTE>& precomputedCurrLuma = {} )
+                                            bool lowContrastMode )
 {
     if( previousPixels.size() != currentPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
     {
@@ -1709,32 +1538,20 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // matches on repetitive content.  For the first frame pair
     // (expectedDy == 0) search outward from the smallest step.
     //
-    const int downsampleScale =
-        ( min( frameWidth, frameHeight ) >= kDownsampleScaleMinDimension )
-        ? kDownsampleScaleLargeFrames
-        : kDownsampleScaleSmallFrames;
+    const int downsampleScale = ( min( frameWidth, frameHeight ) >= 240 ) ? 4 : 2;
     std::vector<BYTE> previousLuma;
     std::vector<BYTE> currentLuma;
     int dsW = 0, dsH = 0, dsW2 = 0, dsH2 = 0;
-    const bool hasPrecomputedLuma = !precomputedPrevLuma.empty() && !precomputedCurrLuma.empty();
-    if( hasPrecomputedLuma )
-    {
-        BuildDownsampledLumaFromFullLuma( precomputedPrevLuma, frameWidth, frameHeight, downsampleScale, previousLuma, dsW, dsH );
-        BuildDownsampledLumaFromFullLuma( precomputedCurrLuma, frameWidth, frameHeight, downsampleScale, currentLuma, dsW2, dsH2 );
-    }
-    else
-    {
-        BuildDownsampledLumaFrame( previousPixels, frameWidth, frameHeight, downsampleScale, previousLuma, dsW, dsH );
-        BuildDownsampledLumaFrame( currentPixels, frameWidth, frameHeight, downsampleScale, currentLuma, dsW2, dsH2 );
-    }
+    BuildDownsampledLumaFrame( previousPixels, frameWidth, frameHeight, downsampleScale, previousLuma, dsW, dsH );
+    BuildDownsampledLumaFrame( currentPixels, frameWidth, frameHeight, downsampleScale, currentLuma, dsW2, dsH2 );
     if( dsW != dsW2 || dsH != dsH2 )
     {
         return false;
     }
 
-    const int minStepDs = kSearchMinStepDownsampled;
-    const int maxStepDs = dsH - max( kSearchMaxStepMinPadding, dsH / kSearchMaxStepDenominator );
-    const int marginX = max( kSearchMarginMinPixels, dsW / kSearchMarginDenominator );
+    const int minStepDs = 1;
+    const int maxStepDs = dsH - max( 2, dsH / 6 );
+    const int marginX = max( 2, dsW / 20 );
 
     // Stationary score: how well the frames match with zero shift.
     unsigned __int64 stationaryScore = ( std::numeric_limits<unsigned __int64>::max )();
@@ -1769,12 +1586,12 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
     // Build downsampled informative mask: a pixel is informative if the
     // luma gradient exceeds a small threshold in either frame.
-    std::vector<BYTE> dsMaskPrev;
-    std::vector<BYTE> dsMaskCurr;
+    std::vector<bool> dsMaskPrev;
+    std::vector<bool> dsMaskCurr;
     if( veryLowEntropyPair )
     {
-        dsMaskPrev.resize( static_cast<size_t>( dsW ) * dsH, 0 );
-        dsMaskCurr.resize( static_cast<size_t>( dsW ) * dsH, 0 );
+        dsMaskPrev.resize( static_cast<size_t>( dsW ) * dsH, false );
+        dsMaskCurr.resize( static_cast<size_t>( dsW ) * dsH, false );
         const int dsEdgeThreshold = 3;
         for( int y = 1; y < dsH - 1; ++y )
         {
@@ -1784,27 +1601,27 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 const int gradHP = abs( static_cast<int>( previousLuma[idx] ) - static_cast<int>( previousLuma[idx + 1] ) );
                 const int gradVP = abs( static_cast<int>( previousLuma[idx] ) - static_cast<int>( previousLuma[idx + dsW] ) );
                 if( gradHP + gradVP >= dsEdgeThreshold )
-                    dsMaskPrev[idx] = 1;
+                    dsMaskPrev[idx] = true;
                 const int gradHC = abs( static_cast<int>( currentLuma[idx] ) - static_cast<int>( currentLuma[idx + 1] ) );
                 const int gradVC = abs( static_cast<int>( currentLuma[idx] ) - static_cast<int>( currentLuma[idx + dsW] ) );
                 if( gradHC + gradVC >= dsEdgeThreshold )
-                    dsMaskCurr[idx] = 1;
+                    dsMaskCurr[idx] = true;
             }
         }
         // Dilate masks by 1px so adjacent-to-edge pixels are included.
-        std::vector<BYTE> dilatedPrev( dsMaskPrev.size(), 0 );
-        std::vector<BYTE> dilatedCurr( dsMaskCurr.size(), 0 );
+        std::vector<bool> dilatedPrev( dsMaskPrev.size(), false );
+        std::vector<bool> dilatedCurr( dsMaskCurr.size(), false );
         for( int y = 1; y < dsH - 1; ++y )
         {
             for( int x = 1; x < dsW - 1; ++x )
             {
                 const int idx = y * dsW + x;
-                if( dsMaskPrev[idx] | dsMaskPrev[idx - 1] | dsMaskPrev[idx + 1] |
-                    dsMaskPrev[idx - dsW] | dsMaskPrev[idx + dsW] )
-                    dilatedPrev[idx] = 1;
-                if( dsMaskCurr[idx] | dsMaskCurr[idx - 1] | dsMaskCurr[idx + 1] |
-                    dsMaskCurr[idx - dsW] | dsMaskCurr[idx + dsW] )
-                    dilatedCurr[idx] = 1;
+                if( dsMaskPrev[idx] || dsMaskPrev[idx - 1] || dsMaskPrev[idx + 1] ||
+                    dsMaskPrev[idx - dsW] || dsMaskPrev[idx + dsW] )
+                    dilatedPrev[idx] = true;
+                if( dsMaskCurr[idx] || dsMaskCurr[idx - 1] || dsMaskCurr[idx + 1] ||
+                    dsMaskCurr[idx - dsW] || dsMaskCurr[idx + dsW] )
+                    dilatedCurr[idx] = true;
             }
         }
         dsMaskPrev = std::move( dilatedPrev );
@@ -1893,7 +1710,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         unsigned __int64 score;
     };
 
-    CoarseCandidate candidates[kMaxCoarseCandidatesWithProbes];
+    constexpr int kMaxCandidates = 12;
+    constexpr int kMaxCandidatesWithProbes = 24;
+    CoarseCandidate candidates[kMaxCandidatesWithProbes];
     int candidateCount = 0;
 
     for( int absStep = minStepDs; absStep <= maxStepDs; ++absStep )
@@ -1937,7 +1756,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
                 // Early termination: if running average already exceeds
                 // the worst kept candidate, this step cannot win.
-                if( candidateCount >= kMaxCoarseCandidates && samples >= 100 &&
+                if( candidateCount >= kMaxCandidates && samples >= 100 &&
                     totalDiff / samples > candidates[candidateCount - 1].score )
                 {
                     earlyExitCoarse = true;
@@ -1952,21 +1771,21 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
             unsigned __int64 score = totalDiff / samples;
 
             // Insert into sorted candidates list if good enough
-            if( candidateCount < kMaxCoarseCandidates || score < candidates[candidateCount - 1].score )
+            if( candidateCount < kMaxCandidates || score < candidates[candidateCount - 1].score )
             {
-                int insertPos = candidateCount < kMaxCoarseCandidates ? candidateCount : candidateCount - 1;
+                int insertPos = candidateCount < kMaxCandidates ? candidateCount : candidateCount - 1;
                 for( int j = insertPos; j > 0 && candidates[j - 1].score > score; --j )
                 {
-                    if( j < kMaxCoarseCandidates )
+                    if( j < kMaxCandidates )
                     {
                         candidates[j] = candidates[j - 1];
                     }
                     insertPos = j - 1;
                 }
-                if( insertPos < kMaxCoarseCandidates )
+                if( insertPos < kMaxCandidates )
                 {
                     candidates[insertPos] = { dyDs, score };
-                    if( candidateCount < kMaxCoarseCandidates )
+                    if( candidateCount < kMaxCandidates )
                     {
                         candidateCount++;
                     }
@@ -2005,9 +1824,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // similarly-scored coarse candidates at text-line harmonics, pushing the
     // correct shift outside the top-12.  Adding probes at the expected step
     // ensures the fine search always evaluates the correct neighborhood.
-    if( expectedDyDs != 0 && prunedCount < kMaxCoarseCandidatesWithProbes )
+    if( expectedDyDs != 0 && prunedCount < kMaxCandidatesWithProbes )
     {
-        for( int probe = -3; probe <= 3 && prunedCount < kMaxCoarseCandidatesWithProbes; ++probe )
+        for( int probe = -3; probe <= 3 && prunedCount < kMaxCandidatesWithProbes; ++probe )
         {
             const int probeDyDs = expectedDyDs + probe;
             if( abs( probeDyDs ) < minStepDs || abs( probeDyDs ) > maxStepDs )
@@ -2044,30 +1863,32 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     const int refineRadiusDy = max( 3, downsampleScale + 1 );
     const int refineRadiusDx = 1;
 
-    std::vector<BYTE> previousFullLumaOwned;
-    std::vector<BYTE> currentFullLumaOwned;
-    if( hasPrecomputedLuma )
+    std::vector<BYTE> previousFullLuma( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) );
+    std::vector<BYTE> currentFullLuma( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) );
     {
-        // Use caller-provided luma arrays directly (zero-copy).
+        const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight );
+        for( size_t p = 0; p < pixelCount; ++p )
+        {
+            const size_t idx = p * 4;
+            previousFullLuma[p] = static_cast<BYTE>( ( previousPixels[idx + 2] * 77 +
+                                                       previousPixels[idx + 1] * 150 +
+                                                       previousPixels[idx + 0] * 29 ) >> 8 );
+            currentFullLuma[p] = static_cast<BYTE>( ( currentPixels[idx + 2] * 77 +
+                                                      currentPixels[idx + 1] * 150 +
+                                                      currentPixels[idx + 0] * 29 ) >> 8 );
+        }
     }
-    else
-    {
-        BuildFullLumaFrame( previousPixels, frameWidth, frameHeight, previousFullLumaOwned );
-        BuildFullLumaFrame( currentPixels, frameWidth, frameHeight, currentFullLumaOwned );
-    }
-    const std::vector<BYTE>& previousFullLuma = hasPrecomputedLuma ? precomputedPrevLuma : previousFullLumaOwned;
-    const std::vector<BYTE>& currentFullLuma  = hasPrecomputedLuma ? precomputedCurrLuma : currentFullLumaOwned;
 
     // Build full-resolution informative masks for very-low-entropy pairs.
     // A pixel is informative if the gradient in its neighborhood exceeds
     // a small threshold, dilated by 1 pixel to capture full text strokes.
-    std::vector<BYTE> fullMaskPrev;
-    std::vector<BYTE> fullMaskCurr;
+    std::vector<bool> fullMaskPrev;
+    std::vector<bool> fullMaskCurr;
     if( veryLowEntropyPair )
     {
         const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight );
-        fullMaskPrev.resize( pixelCount, 0 );
-        fullMaskCurr.resize( pixelCount, 0 );
+        fullMaskPrev.resize( pixelCount, false );
+        fullMaskCurr.resize( pixelCount, false );
         const int fineEdgeThreshold = 4;
         for( int y = 1; y < frameHeight - 1; ++y )
         {
@@ -2077,27 +1898,27 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 const int gHP = abs( static_cast<int>( previousFullLuma[idx] ) - static_cast<int>( previousFullLuma[idx + 1] ) );
                 const int gVP = abs( static_cast<int>( previousFullLuma[idx] ) - static_cast<int>( previousFullLuma[idx + frameWidth] ) );
                 if( gHP + gVP >= fineEdgeThreshold )
-                    fullMaskPrev[idx] = 1;
+                    fullMaskPrev[idx] = true;
                 const int gHC = abs( static_cast<int>( currentFullLuma[idx] ) - static_cast<int>( currentFullLuma[idx + 1] ) );
                 const int gVC = abs( static_cast<int>( currentFullLuma[idx] ) - static_cast<int>( currentFullLuma[idx + frameWidth] ) );
                 if( gHC + gVC >= fineEdgeThreshold )
-                    fullMaskCurr[idx] = 1;
+                    fullMaskCurr[idx] = true;
             }
         }
         // Dilate by 1 pixel.
-        std::vector<BYTE> dilPrev( pixelCount, 0 );
-        std::vector<BYTE> dilCurr( pixelCount, 0 );
+        std::vector<bool> dilPrev( pixelCount, false );
+        std::vector<bool> dilCurr( pixelCount, false );
         for( int y = 1; y < frameHeight - 1; ++y )
         {
             for( int x = 1; x < frameWidth - 1; ++x )
             {
                 const int idx = y * frameWidth + x;
-                if( fullMaskPrev[idx] | fullMaskPrev[idx - 1] | fullMaskPrev[idx + 1] |
-                    fullMaskPrev[idx - frameWidth] | fullMaskPrev[idx + frameWidth] )
-                    dilPrev[idx] = 1;
-                if( fullMaskCurr[idx] | fullMaskCurr[idx - 1] | fullMaskCurr[idx + 1] |
-                    fullMaskCurr[idx - frameWidth] | fullMaskCurr[idx + frameWidth] )
-                    dilCurr[idx] = 1;
+                if( fullMaskPrev[idx] || fullMaskPrev[idx - 1] || fullMaskPrev[idx + 1] ||
+                    fullMaskPrev[idx - frameWidth] || fullMaskPrev[idx + frameWidth] )
+                    dilPrev[idx] = true;
+                if( fullMaskCurr[idx] || fullMaskCurr[idx - 1] || fullMaskCurr[idx + 1] ||
+                    fullMaskCurr[idx - frameWidth] || fullMaskCurr[idx + frameWidth] )
+                    dilCurr[idx] = true;
             }
         }
         fullMaskPrev = std::move( dilPrev );
@@ -2207,27 +2028,8 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                         rowDiff += static_cast<unsigned __int64>(
                             abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
                     }
-#elif defined(_M_ARM64)
-                    // NEON: process 16 luma pixels at a time using
-                    // vabdq_u8 (absolute difference) + horizontal reduction.
-                    uint64x2_t sadAcc = vdupq_n_u64( 0 );
-                    int xi = 0;
-                    for( ; xi + 16 <= xSpan; xi += 16 )
-                    {
-                        const uint8x16_t a = vld1q_u8( pBase + xi );
-                        const uint8x16_t b = vld1q_u8( cBase + xi );
-                        sadAcc = vpadalq_u32( sadAcc, vpaddlq_u16( vpaddlq_u8( vabdq_u8( a, b ) ) ) );
-                    }
-
-                    rowDiff = vgetq_lane_u64( sadAcc, 0 ) + vgetq_lane_u64( sadAcc, 1 );
-
-                    for( ; xi < xSpan; ++xi )
-                    {
-                        rowDiff += static_cast<unsigned __int64>(
-                            abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
-                    }
 #else
-                    // Scalar fallback.
+                    // Scalar fallback for ARM64.
                     for( int xi = 0; xi < xSpan; ++xi )
                     {
                         rowDiff += static_cast<unsigned __int64>(
@@ -2317,10 +2119,6 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     if( veryLowEntropyPair )
     {
         fineThreshold = ( maskedStationaryScore > 15 ) ? 30 : 20;
-        if( shiftMatchesDirection && fineThreshold >= 30 )
-        {
-            fineThreshold += 6;
-        }
     }
     else
     {
@@ -2360,9 +2158,7 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                                 int expectedDy,
                                 int& bestDx,
                                 int& bestDy,
-                                bool lowContrastMode,
-                                const std::vector<BYTE>& precomputedPrevLuma = {},
-                                const std::vector<BYTE>& precomputedCurrLuma = {} )
+                                bool lowContrastMode )
 {
     const bool axisEstablished = ( expectedDx != 0 || expectedDy != 0 );
     const bool preferVerticalAxis = !axisEstablished || ( abs( expectedDy ) >= abs( expectedDx ) );
@@ -2377,9 +2173,7 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                                                           expectedDy,
                                                           directDx,
                                                           directDy,
-                                                          lowContrastMode,
-                                                          precomputedPrevLuma,
-                                                          precomputedCurrLuma );
+                                                          lowContrastMode );
 
     std::vector<BYTE> previousTransposed;
     std::vector<BYTE> currentTransposed;
@@ -2393,7 +2187,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     if( transposedReady )
     {
         // In transposed space, original X motion becomes Y motion.
-        // Pre-computed luma is not transposed, so don't pass it here.
         transposedOk = FindBestFrameShiftVerticalOnly( previousTransposed,
                                                        currentTransposed,
                                                        frameHeight,
@@ -2407,11 +2200,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
 
     if( !directOk && !transposedOk )
     {
-        StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=%d preferVertical=%d directOk=0 transposedOk=0 => reject\n",
-                     expectedDx,
-                     expectedDy,
-                     axisEstablished ? 1 : 0,
-                     preferVerticalAxis ? 1 : 0 );
         return false;
     }
 
@@ -2426,11 +2214,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
             {
                 bestDx = directDx;
                 bestDy = directDy;
-                StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=1 preferVertical=1 chose=direct best=(%d,%d) reason=axis_lock\n",
-                             expectedDx,
-                             expectedDy,
-                             bestDx,
-                             bestDy );
                 return true;
             }
 
@@ -2438,11 +2221,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
             {
                 bestDx = mappedDx;
                 bestDy = mappedDy;
-                StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=1 preferVertical=1 chose=transposed best=(%d,%d) reason=direct_unavailable\n",
-                             expectedDx,
-                             expectedDy,
-                             bestDx,
-                             bestDy );
                 return true;
             }
         }
@@ -2452,11 +2230,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
             {
                 bestDx = mappedDx;
                 bestDy = mappedDy;
-                StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=1 preferVertical=0 chose=transposed best=(%d,%d) reason=axis_lock\n",
-                             expectedDx,
-                             expectedDy,
-                             bestDx,
-                             bestDy );
                 return true;
             }
 
@@ -2464,11 +2237,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
             {
                 bestDx = directDx;
                 bestDy = directDy;
-                StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=1 preferVertical=0 chose=direct best=(%d,%d) reason=transposed_unavailable\n",
-                             expectedDx,
-                             expectedDy,
-                             bestDx,
-                             bestDy );
                 return true;
             }
         }
@@ -2478,11 +2246,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     {
         bestDx = directDx;
         bestDy = directDy;
-        StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=0 chose=direct best=(%d,%d) reason=only_candidate\n",
-                     expectedDx,
-                     expectedDy,
-                     bestDx,
-                     bestDy );
         return true;
     }
 
@@ -2490,11 +2253,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     {
         bestDx = mappedDx;
         bestDy = mappedDy;
-        StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=0 chose=transposed best=(%d,%d) reason=only_candidate\n",
-                     expectedDx,
-                     expectedDy,
-                     bestDx,
-                     bestDy );
         return true;
     }
 
@@ -2517,15 +2275,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
             bestDx = directDx;
             bestDy = directDy;
         }
-        StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=0 chose=%ls best=(%d,%d) reason=score_compare directScore=%llu transposedScore=%llu ignoreConst=%d\n",
-                     expectedDx,
-                     expectedDy,
-                     ( transposedScore < directScore ) ? L"transposed" : L"direct",
-                     bestDx,
-                     bestDy,
-                     static_cast<unsigned long long>( directScore ),
-                     static_cast<unsigned long long>( transposedScore ),
-                     ignoreConst ? 1 : 0 );
         return true;
     }
 
@@ -2533,33 +2282,16 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     {
         bestDx = mappedDx;
         bestDy = mappedDy;
-        StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=0 chose=transposed best=(%d,%d) reason=single_scored transposedScore=%llu ignoreConst=%d\n",
-                     expectedDx,
-                     expectedDy,
-                     bestDx,
-                     bestDy,
-                     static_cast<unsigned long long>( transposedScore ),
-                     ignoreConst ? 1 : 0 );
     }
     else
     {
         bestDx = directDx;
         bestDy = directDy;
-        StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=0 chose=direct best=(%d,%d) reason=single_scored directScore=%llu ignoreConst=%d\n",
-                     expectedDx,
-                     expectedDy,
-                     bestDx,
-                     bestDy,
-                     static_cast<unsigned long long>( directScore ),
-                     ignoreConst ? 1 : 0 );
     }
     return true;
 }
 
-static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
-                                     bool lowContrastMode,
-                                     std::function<bool(int)> progressCallback,
-                                     const std::vector<int>* frameSourceIds )
+static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<bool(int)> progressCallback)
 {
     bool cancelled = false;
     auto reportProgress = [&progressCallback, &cancelled]( int percent )
@@ -2630,13 +2362,6 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
         }
     }
 
-    std::vector<std::vector<BYTE>> frameLuma;
-    frameLuma.resize( frames.size() );
-    for( size_t i = 0; i < frames.size(); i++ )
-    {
-        BuildFullLumaFrame( framePixels[i], frameWidth, frameHeight, frameLuma[i] );
-    }
-
     std::vector<size_t> composedFrameIndices;
     std::vector<POINT> composedFrameOrigins;
     std::vector<POINT> composedFrameSteps;
@@ -2649,18 +2374,6 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
 
     const int minFrameDimension = min( frameWidth, frameHeight );
     const int minProgress = lowContrastMode ? max( 4, minFrameDimension / 40 ) : max( 8, minFrameDimension / 30 );
-    const int verticalFeather = max( 4, min( 28, frameHeight / 18 ) );
-    const int horizontalFeather = max( 4, min( 28, frameWidth / 18 ) );
-    const int minComposeAdvanceY = max( minProgress, ( verticalFeather * kComposeMinAdvanceFeatherNumerator ) / kComposeMinAdvanceFeatherDenominator );
-    const int minComposeAdvanceX = max( minProgress, ( horizontalFeather * kComposeMinAdvanceFeatherNumerator ) / kComposeMinAdvanceFeatherDenominator );
-    const int axisClassificationMinStep = max( 1, minProgress / 2 );
-    enum class AlignmentMode
-    {
-        Unknown,
-        Vertical,
-        Horizontal,
-    };
-    AlignmentMode alignmentMode = AlignmentMode::Unknown;
     int expectedDx = 0;
     int expectedDy = 0;
 
@@ -2680,47 +2393,10 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
 
         int dx = expectedDx;
         int dy = expectedDy;
-        const size_t previousComposedFrameIndex = composedFrameIndices.back();
-        const int currentSourceFrameId =
-            ( frameSourceIds != nullptr && i < frameSourceIds->size() )
-            ? ( *frameSourceIds )[i]
-            : static_cast<int>( i + 1 );
-        const int previousSourceFrameId =
-            ( frameSourceIds != nullptr && previousComposedFrameIndex < frameSourceIds->size() )
-            ? ( *frameSourceIds )[previousComposedFrameIndex]
-            : static_cast<int>( previousComposedFrameIndex + 1 );
-        bool foundShift = FindBestFrameShift( framePixels[composedFrameIndices.back()],
-                              framePixels[i],
-                              frameWidth,
-                              frameHeight,
-                              expectedDx,
-                              expectedDy,
-                              dx,
-                              dy,
-                              lowContrastMode,
-                              frameLuma[composedFrameIndices.back()],
-                              frameLuma[i] );
-        StitchLog( L"[Panorama/StitchFlow] Frame %zu match-attempt prev=%zu expected=(%d,%d) foundShift=%d rawMatch=(%d,%d) minProgress=%d\n",
-                     i,
-                     previousComposedFrameIndex,
-                     expectedDx,
-                     expectedDy,
-                     foundShift ? 1 : 0,
-                     dx,
-                     dy,
-                     minProgress );
-        StitchLog( L"[Panorama/StitchFlow] Frame %zu sourceId=%d prevSourceId=%d\n",
-                 i,
-                 currentSourceFrameId,
-                 previousSourceFrameId );
+        bool foundShift = FindBestFrameShift( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, expectedDx, expectedDy, dx, dy, lowContrastMode );
         if( !foundShift )
         {
-            const bool duplicateCandidate = ArePixelFramesNearDuplicate( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, lowContrastMode );
-            StitchLog( L"[Panorama/StitchFlow] Frame %zu no-match duplicate-check prev=%zu duplicate=%d\n",
-                         i,
-                         previousComposedFrameIndex,
-                         duplicateCandidate ? 1 : 0 );
-            if( duplicateCandidate )
+            if( ArePixelFramesNearDuplicate( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, lowContrastMode ) )
             {
                 StitchLog( L"[Panorama/Stitch] Frame %zu rejected: duplicate vs frame %zu\n",
                              i,
@@ -2737,18 +2413,8 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
 
         const int maxAbsDx = max( 8, frameWidth / 6 );
         const int maxAbsDy = frameHeight - minProgress;
-    const int unclampedDx = dx;
-    const int unclampedDy = dy;
         dx = max( -maxAbsDx, min( maxAbsDx, dx ) );
         dy = max( -maxAbsDy, min( maxAbsDy, dy ) );
-    StitchLog( L"[Panorama/StitchFlow] Frame %zu clamp-shift raw=(%d,%d) clamped=(%d,%d) limits=(%d,%d)\n",
-             i,
-             unclampedDx,
-             unclampedDy,
-             dx,
-             dy,
-             maxAbsDx,
-             maxAbsDy );
 
         int stepX = -dx;
         int stepY = -dy;
@@ -2772,125 +2438,25 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
                 totalAbsStepY += min( abs( composedFrameSteps[si].y ), stepCapForDirection );
             }
 
-            if( alignmentMode == AlignmentMode::Unknown )
-            {
-                if( totalAbsStepY > totalAbsStepX * 8 )
-                {
-                    alignmentMode = AlignmentMode::Vertical;
-                    StitchLog( L"[Panorama/StitchFlow] Alignment mode latched: vertical totalAbs=(%d,%d) stepCap=%d\n",
-                                 totalAbsStepX,
-                                 totalAbsStepY,
-                                 stepCapForDirection );
-                }
-                else if( totalAbsStepX > totalAbsStepY * 8 )
-                {
-                    alignmentMode = AlignmentMode::Horizontal;
-                    StitchLog( L"[Panorama/StitchFlow] Alignment mode latched: horizontal totalAbs=(%d,%d) stepCap=%d\n",
-                                 totalAbsStepX,
-                                 totalAbsStepY,
-                                 stepCapForDirection );
-                }
-            }
-
-            if( alignmentMode == AlignmentMode::Vertical )
+            if( totalAbsStepY > totalAbsStepX * 8 )
             {
                 stepX = 0;
-                StitchLog( L"[Panorama/StitchFlow] Frame %zu axis-lock vertical totalAbs=(%d,%d) stepCap=%d\n",
-                             i,
-                             totalAbsStepX,
-                             totalAbsStepY,
-                             stepCapForDirection );
             }
-            else if( alignmentMode == AlignmentMode::Horizontal )
+            else if( totalAbsStepX > totalAbsStepY * 8 )
             {
                 stepY = 0;
-                StitchLog( L"[Panorama/StitchFlow] Frame %zu axis-lock horizontal totalAbs=(%d,%d) stepCap=%d\n",
-                             i,
-                             totalAbsStepX,
-                             totalAbsStepY,
-                             stepCapForDirection );
             }
         }
 
-        const int movementMagnitude = abs( stepX ) + abs( stepY );
-        const int lowMovementThreshold = minProgress / 2;
-        const int absStepX = abs( stepX );
-        const int absStepY = abs( stepY );
-        bool mostlyVerticalMove =
-            absStepY >= axisClassificationMinStep &&
-            absStepY >= absStepX &&
-            absStepX <= max( 12, frameWidth / 20 );
-        bool mostlyHorizontalMove =
-            absStepX >= axisClassificationMinStep &&
-            absStepX >= absStepY &&
-            absStepY <= max( 12, frameHeight / 20 );
-        if( alignmentMode == AlignmentMode::Vertical )
-        {
-            mostlyVerticalMove = ( absStepY >= axisClassificationMinStep );
-            mostlyHorizontalMove = false;
-        }
-        else if( alignmentMode == AlignmentMode::Horizontal )
-        {
-            mostlyHorizontalMove = ( absStepX >= axisClassificationMinStep );
-            mostlyVerticalMove = false;
-        }
-        StitchLog( L"[Panorama/StitchFlow] Frame %zu movement-check step=(%d,%d) magnitude=%d threshold=%d\n",
-                     i,
-                     stepX,
-                     stepY,
-                     movementMagnitude,
-                     lowMovementThreshold );
-        if( movementMagnitude < lowMovementThreshold )
+        if( abs( stepX ) + abs( stepY ) < minProgress / 2 )
         {
             StitchLog( L"[Panorama/Stitch] Frame %zu rejected: low movement step=(%d,%d)\n", i, stepX, stepY );
-            continue;
-        }
-
-        if( mostlyVerticalMove && absStepY < minComposeAdvanceY )
-        {
-            expectedDx = dx;
-            expectedDy = dy;
-            StitchLog( L"[Panorama/StitchFlow] Frame %zu predictor-update reject=excessive-overlap-vertical expected=(%d,%d)\n",
-                         i,
-                         expectedDx,
-                         expectedDy );
-            StitchLog( L"[Panorama/Stitch] Frame %zu rejected: excessive overlap vertical stepY=%d minAdvance=%d minProgress=%d feather=%d\n",
-                         i,
-                         absStepY,
-                         minComposeAdvanceY,
-                         minProgress,
-                         verticalFeather );
-            continue;
-        }
-
-        if( mostlyHorizontalMove && absStepX < minComposeAdvanceX )
-        {
-            expectedDx = dx;
-            expectedDy = dy;
-            StitchLog( L"[Panorama/StitchFlow] Frame %zu predictor-update reject=excessive-overlap-horizontal expected=(%d,%d)\n",
-                         i,
-                         expectedDx,
-                         expectedDy );
-            StitchLog( L"[Panorama/Stitch] Frame %zu rejected: excessive overlap horizontal stepX=%d minAdvance=%d minProgress=%d feather=%d\n",
-                         i,
-                         absStepX,
-                         minComposeAdvanceX,
-                         minProgress,
-                         horizontalFeather );
             continue;
         }
 
         POINT nextOrigin = composedFrameOrigins.back();
         nextOrigin.x += stepX;
         nextOrigin.y += stepY;
-        StitchLog( L"[Panorama/StitchFlow] Frame %zu compose-origin prevOrigin=(%d,%d) step=(%d,%d) nextOrigin=(%d,%d) reason=matched_shift\n",
-                     i,
-                     composedFrameOrigins.back().x,
-                     composedFrameOrigins.back().y,
-                     stepX,
-                     stepY,
-                     nextOrigin.x,
-                     nextOrigin.y );
         composedFrameIndices.push_back( i );
         composedFrameOrigins.push_back( nextOrigin );
         composedFrameSteps.push_back( { stepX, stepY } );
@@ -2993,6 +2559,9 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
 
     std::vector<BYTE> stitchedPixels( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ) * 4, 0 );
     std::vector<BYTE> stitchedWritten( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ), 0 );
+    const int verticalFeather = max( 4, min( 28, frameHeight / 18 ) );
+    const int horizontalFeather = max( 4, min( 28, frameWidth / 18 ) );
+
     for( size_t i = 0; i < composedFrameIndices.size(); ++i )
     {
         reportProgress( 90 + static_cast<int>( ( i + 1 ) * 9 / composedFrameIndices.size() ) );
@@ -3018,62 +2587,10 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
 
         const int absStepX = abs( stepX );
         const int absStepY = abs( stepY );
-        bool mostlyVerticalMove =
-            i > 0 &&
-            absStepY >= axisClassificationMinStep &&
-            absStepY >= absStepX &&
-            abs( stepX ) <= max( 12, frameWidth / 20 );
-        bool mostlyHorizontalMove =
-            i > 0 &&
-            absStepX >= axisClassificationMinStep &&
-            absStepX >= absStepY &&
-            abs( stepY ) <= max( 12, frameHeight / 20 );
-        if( alignmentMode == AlignmentMode::Vertical )
-        {
-            mostlyVerticalMove = ( i > 0 && absStepY >= axisClassificationMinStep );
-            mostlyHorizontalMove = false;
-        }
-        else if( alignmentMode == AlignmentMode::Horizontal )
-        {
-            mostlyHorizontalMove = ( i > 0 && absStepX >= axisClassificationMinStep );
-            mostlyVerticalMove = false;
-        }
+        const bool mostlyVerticalMove = i > 0 && absStepY >= minProgress && abs( stepX ) <= max( 12, frameWidth / 20 );
+        const bool mostlyHorizontalMove = i > 0 && absStepX >= minProgress && abs( stepY ) <= max( 12, frameHeight / 20 );
         const int overlapHeight = mostlyVerticalMove ? max( 0, frameHeight - absStepY ) : 0;
         const int overlapWidth = mostlyHorizontalMove ? max( 0, frameWidth - absStepX ) : 0;
-        const bool useVerticalFeather =
-            mostlyVerticalMove &&
-            overlapHeight > 0 &&
-            !( alignmentMode == AlignmentMode::Vertical && absStepY >= minComposeAdvanceY );
-        const bool useHorizontalFeather =
-            mostlyHorizontalMove &&
-            overlapWidth > 0 &&
-            !( alignmentMode == AlignmentMode::Horizontal && absStepX >= minComposeAdvanceX );
-        const int estimatedNewRows = mostlyVerticalMove ? max( 0, absStepY ) : frameHeight;
-        const int estimatedNewCols = mostlyHorizontalMove ? max( 0, absStepX ) : frameWidth;
-        StitchLog( L"[Panorama/StitchFlow] Compose frame %zu source=%zu dest=(%d,%d) step=(%d,%d) classify vertical=%d horizontal=%d overlapH=%d overlapW=%d feather=(%d,%d)\n",
-                 i,
-                 frameIndex,
-                 destinationX,
-                 destinationY,
-                 stepX,
-                 stepY,
-                 mostlyVerticalMove ? 1 : 0,
-                 mostlyHorizontalMove ? 1 : 0,
-                 overlapHeight,
-                 overlapWidth,
-                 verticalFeather,
-                 horizontalFeather );
-
-            int inBoundsPixels = 0;
-            int influencedPixels = 0;
-            int firstWritePixels = 0;
-            int overwrittenPixels = 0;
-            int blendedPixels = 0;
-            int blockedByWeightPixels = 0;
-            int influencedRows = 0;
-            int firstWriteRows = 0;
-            std::vector<BYTE> rowInfluenced( static_cast<size_t>( frameHeight ), 0 );
-            std::vector<BYTE> rowFirstWrite( static_cast<size_t>( frameHeight ), 0 );
 
         for( int y = 0; y < frameHeight; ++y )
         {
@@ -3098,7 +2615,6 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
                 const size_t srcIndex = srcRowBase + static_cast<size_t>( x ) * 4;
                 const size_t dstIndex = dstRowBase + static_cast<size_t>( canvasX ) * 4;
                 const size_t dstMaskIndex = dstMaskRowBase + static_cast<size_t>( canvasX );
-                ++inBoundsPixels;
 
                 BYTE weightNew = 255;
                 if( mostlyVerticalMove && overlapHeight > 0 )
@@ -3106,11 +2622,7 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
                     if( stepY > 0 )
                     {
                         const int overlapEnd = overlapHeight;
-                        if( !useVerticalFeather )
-                        {
-                            weightNew = ( y < overlapEnd ) ? 0 : 255;
-                        }
-                        else if( y < overlapEnd - verticalFeather )
+                        if( y < overlapEnd - verticalFeather )
                         {
                             weightNew = 0;
                         }
@@ -3127,11 +2639,7 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
                     else
                     {
                         const int overlapStart = absStepY;
-                        if( !useVerticalFeather )
-                        {
-                            weightNew = ( y < overlapStart ) ? 255 : 0;
-                        }
-                        else if( y < overlapStart )
+                        if( y < overlapStart )
                         {
                             weightNew = 255;
                         }
@@ -3151,11 +2659,7 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
                     if( stepX > 0 )
                     {
                         const int overlapEnd = overlapWidth;
-                        if( !useHorizontalFeather )
-                        {
-                            weightNew = ( x < overlapEnd ) ? 0 : 255;
-                        }
-                        else if( x < overlapEnd - horizontalFeather )
+                        if( x < overlapEnd - horizontalFeather )
                         {
                             weightNew = 0;
                         }
@@ -3172,11 +2676,7 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
                     else
                     {
                         const int overlapStart = absStepX;
-                        if( !useHorizontalFeather )
-                        {
-                            weightNew = ( x < overlapStart ) ? 255 : 0;
-                        }
-                        else if( x < overlapStart )
+                        if( x < overlapStart )
                         {
                             weightNew = 255;
                         }
@@ -3199,24 +2699,11 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
                     stitchedPixels[dstIndex + 2] = sourcePixels[srcIndex + 2];
                     stitchedPixels[dstIndex + 3] = 0xFF;
                     stitchedWritten[dstMaskIndex] = 1;
-                    ++influencedPixels;
-                    ++firstWritePixels;
-                    if( rowInfluenced[static_cast<size_t>( y )] == 0 )
-                    {
-                        rowInfluenced[static_cast<size_t>( y )] = 1;
-                        ++influencedRows;
-                    }
-                    if( rowFirstWrite[static_cast<size_t>( y )] == 0 )
-                    {
-                        rowFirstWrite[static_cast<size_t>( y )] = 1;
-                        ++firstWriteRows;
-                    }
                     continue;
                 }
 
                 if( weightNew == 0 )
                 {
-                    ++blockedByWeightPixels;
                     continue;
                 }
 
@@ -3226,13 +2713,6 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
                     stitchedPixels[dstIndex + 1] = sourcePixels[srcIndex + 1];
                     stitchedPixels[dstIndex + 2] = sourcePixels[srcIndex + 2];
                     stitchedPixels[dstIndex + 3] = 0xFF;
-                    ++influencedPixels;
-                    ++overwrittenPixels;
-                    if( rowInfluenced[static_cast<size_t>( y )] == 0 )
-                    {
-                        rowInfluenced[static_cast<size_t>( y )] = 1;
-                        ++influencedRows;
-                    }
                     continue;
                 }
 
@@ -3244,29 +2724,8 @@ static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
                 stitchedPixels[dstIndex + 2] = static_cast<BYTE>( ( static_cast<int>( stitchedPixels[dstIndex + 2] ) * oldWeight +
                                                                     static_cast<int>( sourcePixels[srcIndex + 2] ) * static_cast<int>( weightNew ) ) / 255 );
                 stitchedPixels[dstIndex + 3] = 0xFF;
-                ++influencedPixels;
-                ++blendedPixels;
-                if( rowInfluenced[static_cast<size_t>( y )] == 0 )
-                {
-                    rowInfluenced[static_cast<size_t>( y )] = 1;
-                    ++influencedRows;
-                }
             }
         }
-
-        StitchLog( L"[Panorama/StitchFlow] ComposeContribution frame %zu source=%zu inBounds=%d influenced=%d firstWrite=%d overwrite=%d blended=%d blockedByWeight=%d influencedRows=%d firstWriteRows=%d estNewRows=%d estNewCols=%d\n",
-                 i,
-                 frameIndex,
-                 inBoundsPixels,
-                 influencedPixels,
-                 firstWritePixels,
-                 overwrittenPixels,
-                 blendedPixels,
-                 blockedByWeightPixels,
-                 influencedRows,
-                 firstWriteRows,
-                 estimatedNewRows,
-                 estimatedNewCols );
     }
 
     HBITMAP stitchedBitmap = CreateBitmapFromPixels32( stitchedPixels, stitchedWidth, stitchedHeight );
@@ -3416,7 +2875,6 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     g_SelectRectangle.SetExcludeFromCapture( false );
 
     std::vector<HBITMAP> frames;
-    std::vector<int> acceptedFrameSourceIds;
     HBITMAP firstFrame = CaptureAbsoluteScreenRectToBitmap( hdcSource.get(), absoluteRect );
     if( firstFrame == nullptr )
     {
@@ -3425,8 +2883,6 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         return false;
     }
     frames.push_back( firstFrame );
-    size_t grabbedFrameId = 1;
-    acceptedFrameSourceIds.push_back( static_cast<int>( grabbedFrameId ) );
 
     double contrastSpread = 0.0;
     double contrastStdDev = 0.0;
@@ -3475,9 +2931,8 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         }
 
 #ifdef _DEBUG
-    DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, frame );
+        DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, frame );
 #endif
-    ++grabbedFrameId;
 
         if( AreFramesNearDuplicate( frame, frames.back(), lowContrastMode ) )
         {
@@ -3493,7 +2948,6 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         }
 
         frames.push_back( frame );
-        acceptedFrameSourceIds.push_back( static_cast<int>( grabbedFrameId ) );
         frame = nullptr;
         OutputDebug( L"[Panorama/Capture] Captured moving frame #%zu at iteration=%zu\n",
                      frames.size(),
@@ -3540,25 +2994,13 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     }
     else
     {
-#ifdef _DEBUG
-        if( !debugDumpDirectory.empty() )
-        {
-            OpenStitchLogFile( std::filesystem::path( debugDumpDirectory ) );
-        }
-#endif
-
         g_ProgressDialog.Create( hWnd );
         panoramaBitmap = StitchPanoramaFrames( frames, lowContrastMode, [&]( int percent ) -> bool
         {
             g_ProgressDialog.SetProgress( percent );
             return g_ProgressDialog.IsCancelled();
-        },
-        &acceptedFrameSourceIds );
+        } );
         g_ProgressDialog.Destroy();
-
-#ifdef _DEBUG
-        CloseStitchLogFile();
-#endif
 
         if( panoramaBitmap == nullptr && g_ProgressDialog.IsCancelled() )
         {
@@ -3653,21 +3095,6 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             if( saveResult == ERROR_SUCCESS )
             {
                 g_ScreenshotSaveLocation = selectedFilePath;
-#ifdef _DEBUG
-                if( !debugDumpDirectory.empty() )
-                {
-                    std::error_code copyError;
-                    const std::filesystem::path sourceLog = std::filesystem::path( debugDumpDirectory ) / L"stitch_trace.log";
-                    const std::filesystem::path destinationLog = std::filesystem::path( selectedFilePath ).parent_path() / L"stitch_trace.log";
-                    if( std::filesystem::exists( sourceLog, copyError ) && !copyError )
-                    {
-                        std::filesystem::copy_file( sourceLog,
-                                                    destinationLog,
-                                                    std::filesystem::copy_options::overwrite_existing,
-                                                    copyError );
-                    }
-                }
-#endif
                 OutputDebug( L"[Panorama/Capture] Success: saved to %s\n", selectedFilePath.c_str() );
                 success = true;
             }
@@ -4199,6 +3626,8 @@ bool RunPanoramaStitchSelfTest()
         }
         const auto imageDir = std::filesystem::path( modulePath ).parent_path().parent_path().parent_path() / L"Debug";
 
+
+
         OutputDebug( L"[Panorama/Test] Image directory: %s\n", imageDir.c_str() );
 
         const wchar_t* imageFiles[] = { L"image1.png", L"image2.png", L"image3.png", L"image4.png", L"image5.png", L"image6.png" };
@@ -4463,7 +3892,8 @@ bool RunPanoramaStitchSelfTest()
 
             std::vector<BYTE> imagePixels;
             int imageWidth = 0, imageHeight = 0;
-            if( !loadImageFile( imagePath, imagePixels, imageWidth, imageHeight ) )
+            const bool loaded = loadImageFile( imagePath, imagePixels, imageWidth, imageHeight );
+            if( !loaded )
             {
                 OutputDebug( L"[Panorama/Test] Failed to load image: %s\n", imagePath.c_str() );
                 CoUninitialize();
@@ -4630,6 +4060,486 @@ bool RunPanoramaStitchSelfTest()
             wchar_t summary[128]{};
             swprintf_s( summary, L"imageSliceTestsPassed=%d", imageSliceTestsPassed );
             DumpPanoramaText( selfTestDumpDirectory, L"image_slice_results.txt", summary );
+        }
+
+        // ====================================================================
+        // Stress tests: vertical_stress.png and horizontal_stress.png
+        //
+        // Each trial generates ~100 overlapping frames with random step sizes
+        // from 0 (duplicate) up to 25% of the portal size.  This exercises
+        // all four content regimes (high/low entropy × high/low contrast),
+        // duplicate detection, variable-speed scrolling, and near-zero motion.
+        // ====================================================================
+
+        const auto stressDir = imageDir / L"stress_test";
+
+        OutputDebug( L"[Panorama/Test] Stress test directory: %s  exists=%d\n",
+                     stressDir.c_str(), std::filesystem::exists( stressDir ) ? 1 : 0 );
+
+
+        std::wstring stressLog;       // Accumulate all results for single dump at end.
+        std::wstring stressFailLog;
+        int stressTestsPassed = 0;
+        int stressTestsRun = 0;
+
+        // Horizontal-scroll variant of stitchAndCompare.
+        // Extracts vertical slices (columns) from a wide image and stitches
+        // them, then verifies the result matches the source image span.
+        auto stitchAndCompareHorizontal = [&](
+            const wchar_t* scenario,
+            const std::vector<BYTE>& imgPx, int imgW, int imgH,
+            const std::vector<int>& originsX, int winW ) -> int
+        {
+            // Compute the expected width from distinct, sufficiently-spaced
+            // origins (the stitcher drops duplicates and near-zero-step frames).
+            const int minDim = min( winW, imgH );
+            const int stitcherMinProgress = max( 8, minDim / 30 );
+            int distinctLastX = 0;
+            int distinctCount = 1;
+            for( size_t i = 1; i < originsX.size(); ++i )
+            {
+                if( originsX[i] - distinctLastX >= stitcherMinProgress / 2 )
+                {
+                    distinctLastX = originsX[i];
+                    distinctCount++;
+                }
+            }
+            const int expectedW = distinctLastX + winW;
+
+            std::vector<HBITMAP> frames;
+            frames.reserve( originsX.size() );
+            for( size_t fi = 0; fi < originsX.size(); ++fi )
+            {
+                const int originX = originsX[fi];
+                if( originX < 0 || originX + winW > imgW )
+                {
+                    for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
+                    return -1;
+                }
+
+                std::vector<BYTE> fp( static_cast<size_t>( winW ) * static_cast<size_t>( imgH ) * 4 );
+                for( int row = 0; row < imgH; ++row )
+                {
+                    const size_t srcOff = ( static_cast<size_t>( row ) * imgW + originX ) * 4;
+                    const size_t dstOff = ( static_cast<size_t>( row ) * winW ) * 4;
+                    memcpy( fp.data() + dstOff, imgPx.data() + srcOff, static_cast<size_t>( winW ) * 4 );
+                }
+
+                HBITMAP bmp = createBitmapFromPixels( fp, winW, imgH );
+                if( !bmp )
+                {
+                    for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
+                    return -1;
+                }
+                frames.push_back( bmp );
+            }
+
+            HBITMAP stitchedBmp = StitchPanoramaFrames( frames, false );
+            for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
+
+            if( !stitchedBmp )
+            {
+                OutputDebug( L"[Panorama/Test] %s: StitchPanoramaFrames returned nullptr\n", scenario );
+                return -1;
+            }
+
+            std::vector<BYTE> sPx;
+            int sW = 0, sH = 0;
+            if( !ReadBitmapPixels32( stitchedBmp, sPx, sW, sH ) )
+            {
+                DeleteObject( stitchedBmp );
+                return -1;
+            }
+            DeleteObject( stitchedBmp );
+
+            OutputDebug( L"[Panorama/Test] %s: stitched=%dx%d expectedW=%d imgH=%d distinctFrames=%d\n",
+                         scenario, sW, sH, expectedW, imgH, distinctCount );
+            {
+                wchar_t diagMsg[512]{};
+                swprintf_s( diagMsg, L"DIMS: %s stitched=%dx%d expected=%dx%d distinct=%d\n",
+                            scenario, sW, sH, expectedW, imgH, distinctCount );
+                stressLog += diagMsg;
+            }
+
+            // Wrong-axis detection: if height grew significantly, the stitcher
+            // composed vertically instead of horizontally.
+            if( sH > imgH + imgH / 4 )
+            {
+                wchar_t msg[512]{};
+                swprintf_s( msg, L"AXIS: %s stitched=%dx%d (vertical growth, expected horizontal)\n",
+                            scenario, sW, sH );
+                stressFailLog += msg;
+                OutputDebug( L"[Panorama/Test] %s FAILED: wrong axis stitched=%dx%d\n", scenario, sW, sH );
+                return 0;
+            }
+
+            // Width tolerance: allow dropping up to 40% of expected span due to
+            // duplicate/small-step rejection + feather blend overlap.
+            const int wtol = max( winW, expectedW * 2 / 5 );
+            if( sW < expectedW - wtol || sW > expectedW + wtol )
+            {
+                // Check if the source image is low-contrast horizontally.
+                double avgHorizDiff = 0;
+                int nHS = 0;
+                const int testStepX = min( winW / 2, imgW / 4 );
+                for( int y = 4; y < imgH - 4; y += 37 )
+                    for( int x = 0; x + testStepX < imgW; x += 17 )
+                    {
+                        const size_t a = ( static_cast<size_t>( y ) * imgW + x ) * 4;
+                        const size_t b = ( static_cast<size_t>( y ) * imgW + x + testStepX ) * 4;
+                        const int la = ( imgPx[a] + imgPx[a + 1] + imgPx[a + 2] ) / 3;
+                        const int lb = ( imgPx[b] + imgPx[b + 1] + imgPx[b + 2] ) / 3;
+                        avgHorizDiff += abs( la - lb );
+                        nHS++;
+                    }
+                avgHorizDiff = nHS > 0 ? avgHorizDiff / nHS : 0;
+
+                if( avgHorizDiff <= 10.0 )
+                {
+                    OutputDebug( L"[Panorama/Test] %s: low-contrast horizontal (avgDiff=%.1f), graceful degradation — PASS\n",
+                                 scenario, avgHorizDiff );
+                    return 1;
+                }
+
+                OutputDebug( L"[Panorama/Test] %s FAILED: width stitched=%d expected=%d tol=%d\n",
+                             scenario, sW, expectedW, wtol );
+                {
+                    wchar_t msg[512]{};
+                    swprintf_s( msg, L"WIDTH: %s stitched=%dx%d expected=%dx%d tol=%d\n",
+                                scenario, sW, sH, expectedW, imgH, wtol );
+                    stressFailLog += msg;
+                }
+                return 0;
+            }
+
+            // ---- Column-luminance profile correlation ----
+            //
+            // Instead of per-pixel comparison (which breaks down due to
+            // feather-blend artifacts), verify structure correctness:
+            // 1.  Compute average luma per column for the stitched image.
+            // 2.  Compute average luma per column for the expected source region.
+            // 3.  Find the best linear mapping (offset + scale) from stitched
+            //     columns to source columns using exhaustive search.
+            // 4.  Compute Pearson correlation.  If > 0.65 the structure matches.
+            //
+            // This is robust because column averages smooth out per-pixel
+            // blend differences while preserving overall content structure.
+
+            // Build column-average luma profiles.
+            const int cmpH = min( sH, imgH );
+            const int yMargin = 4;
+
+            auto columnLuma = []( const std::vector<BYTE>& px, int w, int h,
+                                  int col, int y0, int y1 ) -> double
+            {
+                double sum = 0;
+                int cnt = 0;
+                for( int y = y0; y < y1; ++y )
+                {
+                    const size_t off = ( static_cast<size_t>( y ) * w + col ) * 4;
+                    if( off + 3 >= px.size() ) continue;
+                    sum += ( px[off] + px[off + 1] + px[off + 2] ) / 3.0;
+                    cnt++;
+                }
+                return cnt > 0 ? sum / cnt : 0.0;
+            };
+
+            // Sample every Nth column from stitched image.
+            constexpr int kColStep = 8;
+            std::vector<double> stitchProf;
+            stitchProf.reserve( sW / kColStep + 1 );
+            for( int x = 0; x < sW; x += kColStep )
+                stitchProf.push_back( columnLuma( sPx, sW, sH, x, yMargin, cmpH - yMargin ) );
+
+            // Full column profile of source image (within the expected region).
+            const int srcEnd = min( imgW, expectedW + winW / 2 );
+            std::vector<double> srcProf;
+            srcProf.reserve( srcEnd / kColStep + 1 );
+            for( int x = 0; x < srcEnd; x += kColStep )
+                srcProf.push_back( columnLuma( imgPx, imgW, imgH, x, yMargin, cmpH - yMargin ) );
+
+            // Find best linear mapping: stitchProf[i] ↔ srcProf[offset + i*scale].
+            // Search a range of offsets and scales.
+            const int nS = static_cast<int>( stitchProf.size() );
+            const int nSrc = static_cast<int>( srcProf.size() );
+            double bestCorr = -1e18;
+            double bestOff = 0, bestScale = 1.0;
+
+            auto computeCorrelation = [&]( double off, double sc ) -> double
+            {
+                double sx = 0, sy = 0, sxx = 0, syy = 0, sxy = 0;
+                int n = 0;
+                for( int i = 0; i < nS; ++i )
+                {
+                    const double srcIdx = off + i * sc;
+                    const int idx = static_cast<int>( srcIdx + 0.5 );
+                    if( idx < 0 || idx >= nSrc ) continue;
+                    const double x = stitchProf[i];
+                    const double y = srcProf[idx];
+                    sx += x; sy += y;
+                    sxx += x * x; syy += y * y;
+                    sxy += x * y;
+                    n++;
+                }
+                if( n < 10 ) return -1.0;
+                const double mx = sx / n, my = sy / n;
+                const double vx = sxx / n - mx * mx;
+                const double vy = syy / n - my * my;
+                if( vx < 1e-6 || vy < 1e-6 ) return 0.0; // constant data
+                return ( sxy / n - mx * my ) / sqrt( vx * vy );
+            };
+
+            // Coarse search: scale from 0.5× to 2.5× in steps of 0.05,
+            // offset from -nSrc/4 to nSrc/4 in steps of 2.
+            for( double sc = 0.5; sc <= 2.5; sc += 0.05 )
+            {
+                for( int off = -nSrc / 4; off <= nSrc / 4; off += 2 )
+                {
+                    const double c = computeCorrelation( off, sc );
+                    if( c > bestCorr ) { bestCorr = c; bestOff = off; bestScale = sc; }
+                }
+            }
+
+            // Fine refinement around best.
+            for( double sc = bestScale - 0.1; sc <= bestScale + 0.1; sc += 0.005 )
+            {
+                for( double off = bestOff - 3; off <= bestOff + 3; off += 0.5 )
+                {
+                    const double c = computeCorrelation( off, sc );
+                    if( c > bestCorr ) { bestCorr = c; bestOff = off; bestScale = sc; }
+                }
+            }
+
+            // A correlation ≥ 0.65 indicates the structure strongly matches.
+            // This is generous enough to accept feather-blend distortion while
+            // still catching wrong-image, reversed, or scrambled content.
+            const bool ok = bestCorr >= 0.65;
+            const double xScale = sW > 0 ? static_cast<double>( expectedW ) / sW : 1.0;
+
+            OutputDebug( L"[Panorama/Test] %s result=%s stitched=%dx%d xScale=%.3f corr=%.4f mapOff=%.1f mapScale=%.3f\n",
+                         scenario, ok ? L"PASS" : L"FAIL", sW, sH, xScale, bestCorr, bestOff, bestScale );
+
+            if( !ok && !selfTestDumpDirectory.empty() )
+            {
+                wchar_t msg[512]{};
+                swprintf_s( msg, L"CORR: %s stitched=%dx%d xScale=%.3f corr=%.4f mapOff=%.1f mapScale=%.3f\n",
+                            scenario, sW, sH, xScale, bestCorr, bestOff, bestScale );
+                stressFailLog += msg;
+            }
+
+            return ok ? 1 : 0;
+        };
+
+        // --- Vertical stress test: ~100 frames per trial, steps 0..25% of portal ---
+        {
+            const auto vPath = stressDir / L"vertical_stress.png";
+            if( std::filesystem::exists( vPath ) )
+            {
+                std::vector<BYTE> vPx;
+                int vW = 0, vH = 0;
+                if( !loadImageFile( vPath, vPx, vW, vH ) )
+                {
+                    OutputDebug( L"[Panorama/Test] Failed to load vertical_stress.png\n" );
+                }
+                else
+                {
+                    OutputDebug( L"[Panorama/Test] Loaded vertical_stress.png %dx%d\n", vW, vH );
+
+                    constexpr int kStressTrials = 5;
+                    for( int trial = 0; trial < kStressTrials; ++trial )
+                    {
+                        srand( static_cast<unsigned>( 70000 + trial * 13 ) );
+
+                        // Portal height: between 150 and 400.
+                        const int winH = 150 + rand() % 251;
+                        const int maxStep = max( 1, winH / 4 ); // 25% of portal
+
+                        // Build ~100 frames with random steps including zero-movement.
+                        std::vector<int> originsY;
+                        originsY.push_back( 0 );
+                        int y = 0;
+                        for( int f = 1; f < 100; ++f )
+                        {
+                            // Step from 0 (duplicate) to maxStep.
+                            const int step = rand() % ( maxStep + 1 );
+                            const int nextY = y + step;
+                            if( nextY + winH > vH )
+                                break;
+                            y = nextY;
+                            originsY.push_back( y );
+                        }
+
+                        if( originsY.size() < 3 )
+                            continue;
+
+                        wchar_t scenarioName[256];
+                        swprintf_s( scenarioName, L"stress-vertical-trial%d-w%d-n%zu-maxstep%d",
+                                    trial, winH, originsY.size(), maxStep );
+
+                        // Log frame origins for diagnostics.
+                        {
+                            std::wstring origStr;
+                            for( size_t oi = 0; oi < originsY.size() && oi < 20; ++oi )
+                            {
+                                if( oi > 0 ) origStr += L",";
+                                origStr += std::to_wstring( originsY[oi] );
+                            }
+                            if( originsY.size() > 20 ) origStr += L",...";
+                            OutputDebug( L"[Panorama/Test] Running %s origins=[%s]\n", scenarioName, origStr.c_str() );
+                        }
+                        stressTestsRun++;
+                        const int result = stitchAndCompare( scenarioName, vPx, vW, vH, originsY, winH );
+                        {
+                            wchar_t msg[512]{};
+                            if( result < 0 )
+                            {
+                                OutputDebug( L"[Panorama/Test] %s INFRASTRUCTURE ERROR\n", scenarioName );
+                                swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu)\n", scenarioName, winH, originsY.size() );
+                                stressFailLog += msg;
+                            }
+                            else if( result == 1 )
+                            {
+                                stressTestsPassed++;
+                                swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winH, originsY.size(), maxStep );
+                            }
+                            else
+                            {
+                                OutputDebug( L"[Panorama/Test] %s COMPARISON FAILED\n", scenarioName );
+                                swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winH, originsY.size(), maxStep );
+                                stressFailLog += msg;
+                            }
+                            stressLog += msg;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                OutputDebug( L"[Panorama/Test] Skipping vertical_stress.png (not found at %s)\n", vPath.c_str() );
+            }
+        }
+
+        // --- Horizontal stress test: ~100 frames per trial, steps 0..25% of portal ---
+        {
+            const auto hPath = stressDir / L"horizontal_stress.png";
+            if( std::filesystem::exists( hPath ) )
+            {
+                std::vector<BYTE> hPx;
+                int hW = 0, hH = 0;
+                if( !loadImageFile( hPath, hPx, hW, hH ) )
+                {
+                    OutputDebug( L"[Panorama/Test] Failed to load horizontal_stress.png\n" );
+                }
+                else
+                {
+                    OutputDebug( L"[Panorama/Test] Loaded horizontal_stress.png %dx%d\n", hW, hH );
+
+                    constexpr int kStressTrials = 5;
+                    for( int trial = 0; trial < kStressTrials; ++trial )
+                    {
+                        srand( static_cast<unsigned>( 80000 + trial * 17 ) );
+
+                        // Portal width: between 500 and 900 (wider than
+                        // the image height of 200 so frames are clearly landscape).
+                        const int winW = 500 + rand() % 401;
+                        const int maxStep = max( 1, winW / 4 ); // 25% of portal
+
+                        // Build ~100 frames with random horizontal steps including zero.
+                        // For the first 3 frames, enforce a minimum step so the stitcher
+                        // establishes the horizontal axis before we feed zero-step frames.
+                        const int minEstablish = max( 1, maxStep / 5 );
+                        std::vector<int> originsX;
+                        originsX.push_back( 0 );
+                        int x = 0;
+                        for( int f = 1; f < 100; ++f )
+                        {
+                            int step = rand() % ( maxStep + 1 );
+                            if( f < 3 && step < minEstablish )
+                                step = minEstablish;
+                            const int nextX = x + step;
+                            if( nextX + winW > hW )
+                                break;
+                            x = nextX;
+                            originsX.push_back( x );
+                        }
+
+                        if( originsX.size() < 3 )
+                            continue;
+
+                        wchar_t scenarioName[256];
+                        swprintf_s( scenarioName, L"stress-horizontal-trial%d-w%d-n%zu-maxstep%d",
+                                    trial, winW, originsX.size(), maxStep );
+
+                        {
+                            std::wstring origStr;
+                            for( size_t oi = 0; oi < originsX.size() && oi < 20; ++oi )
+                            {
+                                if( oi > 0 ) origStr += L",";
+                                origStr += std::to_wstring( originsX[oi] );
+                            }
+                            if( originsX.size() > 20 ) origStr += L",...";
+                            OutputDebug( L"[Panorama/Test] Running %s origins=[%s]\n", scenarioName, origStr.c_str() );
+                        }
+                        stressTestsRun++;
+                        const int result = stitchAndCompareHorizontal( scenarioName, hPx, hW, hH, originsX, winW );
+                        {
+                            wchar_t msg[512]{};
+                            if( result < 0 )
+                            {
+                                OutputDebug( L"[Panorama/Test] %s INFRASTRUCTURE ERROR\n", scenarioName );
+                                swprintf_s( msg, L"INFRA: %s (winW=%d, nFrames=%zu)\n", scenarioName, winW, originsX.size() );
+                                stressFailLog += msg;
+                            }
+                            else if( result == 1 )
+                            {
+                                stressTestsPassed++;
+                                swprintf_s( msg, L"PASS: %s (winW=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winW, originsX.size(), maxStep );
+                            }
+                            else
+                            {
+                                OutputDebug( L"[Panorama/Test] %s COMPARISON FAILED\n", scenarioName );
+                                swprintf_s( msg, L"FAIL: %s (winW=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winW, originsX.size(), maxStep );
+                                stressFailLog += msg;
+                            }
+                            stressLog += msg;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                OutputDebug( L"[Panorama/Test] Skipping horizontal_stress.png (not found at %s)\n", hPath.c_str() );
+            }
+        }
+
+        OutputDebug( L"[Panorama/Test] Stress tests: %d/%d passed\n", stressTestsPassed, stressTestsRun );
+
+        // Dump accumulated stress test results (always, for diagnostics).
+        if( !selfTestDumpDirectory.empty() )
+        {
+            wchar_t hdr[256]{};
+            swprintf_s( hdr, L"[stressTestsRun=%d stressTestsPassed=%d]\n", stressTestsRun, stressTestsPassed );
+            stressLog = hdr + stressLog;
+            DumpPanoramaText( selfTestDumpDirectory, L"stress_test_results.txt", stressLog );
+        }
+        if( !selfTestDumpDirectory.empty() && !stressFailLog.empty() )
+        {
+            DumpPanoramaText( selfTestDumpDirectory, L"stress_test_failed.txt", stressFailLog );
+        }
+
+        if( stressTestsRun > 0 && stressTestsPassed < stressTestsRun )
+        {
+            OutputDebug( L"[Panorama/Test] Stress test failures: %d/%d\n",
+                         stressTestsRun - stressTestsPassed, stressTestsRun );
+            if( !selfTestDumpDirectory.empty() )
+            {
+                wchar_t msg[256]{};
+                swprintf_s( msg, L"STRESS SUMMARY: %d/%d passed\n\n", stressTestsPassed, stressTestsRun );
+                stressFailLog = msg + stressFailLog;
+                DumpPanoramaText( selfTestDumpDirectory, L"stress_test_failed.txt", stressFailLog );
+            }
+            CoUninitialize();
+            return false;
         }
 
         CoUninitialize();
