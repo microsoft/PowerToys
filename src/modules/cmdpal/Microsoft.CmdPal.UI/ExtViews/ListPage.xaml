@@ -405,7 +405,7 @@
                 <!--
                     8px right margin is added to visually match the spacing between then icon,
                     and the left margin of the list, as there's
-
+                    
                     ItemRepeater is light-weight control (in comparison to ItemsControl)
                 -->
                 <ItemsRepeater
