@@ -421,7 +421,13 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    public void Receive(GoHomeMessage message) => ClearSearch();
+    public void Receive(GoHomeMessage message)
+    {
+        if (!Settings.KeepPreviousQuery)
+        {
+            ClearSearch();
+        }
+    }
 
     public void Receive(FocusSearchBoxMessage message) => FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 
