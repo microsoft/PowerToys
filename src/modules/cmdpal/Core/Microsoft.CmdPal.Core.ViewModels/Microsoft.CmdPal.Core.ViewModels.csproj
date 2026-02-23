@@ -4,16 +4,16 @@
   <PropertyGroup>
     <EnableCoreMrtTooling>false</EnableCoreMrtTooling>
   </PropertyGroup>
-	
+
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Common" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
-		
+
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
   </ItemGroup>
-		
+
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
