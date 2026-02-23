@@ -1,0 +1,244 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="windowwalker_name" xml:space="preserve">
+    <value>Ŵīńďōŵ Ŵåĺķēŕ</value>
+  </data>
+  <data name="windowwalker_plugin_description" xml:space="preserve">
+    <value>Šŵīťčĥēš ƀēťŵēēń ōṗēń ŵīńďōŵš</value>
+  </data>
+  <data name="windowwalker_Running" xml:space="preserve">
+    <value>Ŕūńńīńğ</value>
+  </data>
+  <data name="windowwalker_SettingConfirmKillProcess" xml:space="preserve">
+    <value>Ŕēqūēšť čōńƒīŕṁåťīōń ŵĥēń ķīĺĺīńğ å ṗŕōčēšš</value>
+  </data>
+  <data name="windowwalker_SettingExplorerSettingInfo" xml:space="preserve">
+    <value>Ĥīďē Ēẋṗĺōŕēŕ ṗŕōčēšš īńƒōŕṁåťīōń</value>
+    <comment>Explorer is here the program File Explorer</comment>
+  </data>
+  <data name="windowwalker_SettingHideKillProcess" xml:space="preserve">
+    <value>Ĥīďē "ķīĺĺ ṗŕōčēšš" ƀūťťōń īƒ åďďīťīōńåĺ ṗēŕṁīššīōńš ŕēqūīŕēď</value>
+  </data>
+  <data name="windowwalker_SettingResultsVisibleDesktop" xml:space="preserve">
+    <value>Šĥōŵ ōńĺŷ ŕēšūĺťš ƒŕōṁ ṽīšīƀĺē ďēšķťōṗ</value>
+  </data>
+  <data name="windowwalker_SettingTagDesktopName" xml:space="preserve">
+    <value>Šĥōŵ ďēšķťōṗ åš å ťåğ ōń ťĥē ĺīšť īťēṁ</value>
+  </data>
+  <data name="windowwalker_SettingTagPid" xml:space="preserve">
+    <value>Šĥōŵ ṗŕōčēšš īď åš å ťåğ ōń ťĥē ĺīšť īťēṁ</value>
+  </data>
+  <data name="windowwalker_SettingOpenAfterKillAndClose" xml:space="preserve">
+    <value>Šťåŷ ōṗēń åƒťēŕ čĺōšīńğ ŵīńďōŵš åńď ķīĺĺīńğ ṗŕōčēššēš</value>
+  </data>
+  <data name="windowwalker_Desktop" xml:space="preserve">
+    <value>Ďēšķťōṗ</value>
+  </data>
+  <data name="windowwalker_Number" xml:space="preserve">
+    <value>Ńō.</value>
+    <comment>Short version of "Number"</comment>
+  </data>
+  <data name="windowwalker_Process" xml:space="preserve">
+    <value>Ṗŕōčēšš ńåṁē</value>
+  </data>
+  <data name="windowwalker_ProcessId" xml:space="preserve">
+    <value>Ṗŕōčēšš īď</value>
+  </data>
+  <data name="windowwalker_ExplorerInfoSubTitle" xml:space="preserve">
+    <value>Ƒōĺďēŕ ŵīńďōŵš ďō ńōť ŕūń īń šēṗåŕåťē ṗŕōčēššēš. (Čĺīčķ ťō ōṗēń Ēẋṗĺōŕēŕ ṗŕōṗēŕťīēš.)</value>
+    <comment>Explorer is here the program File Explorer</comment>
+  </data>
+  <data name="windowwalker_ExplorerInfoTitle" xml:space="preserve">
+    <value>Īńƒō: Ēńďīńğ ťĥē Ēẋṗĺōŕēŕ ṗŕōčēšš īšń'ť ṗōššīƀĺē.</value>
+    <comment>Explorer is here the program File Explorer</comment>
+  </data>
+  <data name="windowwalker_Close" xml:space="preserve">
+    <value>Čĺōšē ŵīńďōŵ</value>
+  </data>
+  <data name="windowwalker_Kill" xml:space="preserve">
+    <value>Ēńď ťåšķ</value>
+  </data>
+  <data name="windowwalker_KillMessage" xml:space="preserve">
+    <value>Ťĥē ƒōĺĺōŵīńğ ṗŕōčēšš ŵīĺĺ ƀē ēńďēď:</value>
+  </data>
+  <data name="windowwalker_KillMessageQuestion" xml:space="preserve">
+    <value>Čōńťīńūē?</value>
+  </data>
+  <data name="windowwalker_KillMessageTitle" xml:space="preserve">
+    <value>Ēńď ťåšķ čōńƒīŕṁåťīōń</value>
+  </data>
+  <data name="windowwalker_KillMessageUwp" xml:space="preserve">
+    <value>Ɓēčåūšē ťĥīš īš åń åṗṗ ṗŕōčēšš, åĺĺ īńšťåńčēš ōƒ ťĥē åṗṗ ŵīĺĺ ƀē ķīĺĺēď. Čōńťīńūē?</value>
+  </data>
+  <data name="windowwalker_SettingKillProcessTree" xml:space="preserve">
+    <value>Ķīĺĺ ṗŕōčēšš åńď īťš čĥīĺď ṗŕōčēššēš</value>
+  </data>
+  <data name="windowwalker_SettingExplorerSettingInfo_Description" xml:space="preserve">
+    <value>Ťĥīš īš åń ōṗťīōńåĺ ṁēššåğē ťĥåť īńƒōŕṁš ūšēŕš åƀōūť ēẋṗĺōŕēŕ ƀēĥåṽīōŕ</value>
+  </data>
+  <data name="windowwalker_SettingKillProcessTree_Description" xml:space="preserve">
+    <value>Ɓē čåŕēƒūĺ ŵĥēń åčťīṽåťīńğ ťĥīš. Ķīĺĺīńğ ťĥē ŵĥōĺē ṗŕōčēšš ťŕēē čåń ĺēåď ťō ṗŕōƀĺēṁåťīč åṗṗĺīčåťīōń čŕåšĥēš.</value>
+  </data>
+  <data name="windowwalker_SettingOpenAfterKillAndClose_Description" xml:space="preserve">
+    <value>Ťĥīš ƒēåťūŕē ŵōń'ť ŵōŕķ īƒ ťĥē ķīĺĺ ṗŕōčēšš čōńƒīŕṁåťīōń īš ēńåƀĺēď.</value>
+  </data>
+  <data name="windowwalker_SettingSubtitleDesktopName_Description" xml:space="preserve">
+    <value>Ťĥīš īńƒōŕṁåťīōń īš ōńĺŷ šĥōŵń īń šūƀťīťĺē åńď ťōōĺ ťīṗ, īƒ ŷōū ĥåṽē åť ĺēåšť ťŵō ďēšķťōṗš.</value>
+  </data>
+  <data name="windowwalker_SettingInMruOrder" xml:space="preserve">
+    <value>Šĥōŵ ŵīńďōŵš īń ṁōšť-ŕēčēńťĺŷ-ūšēď ōŕďēŕ</value>
+  </data>
+  <data name="windowwalker_SettingInMruOrder_Description" xml:space="preserve">
+    <value>Ŵĥēń ďīšåƀĺēď, ŵīńďōŵš ŵīĺĺ ƀē šōŕťēď ƀŷ ťīťĺē</value>
+  </data>
+  <data name="windowwalker_NotResponding" xml:space="preserve">
+    <value>Ńōť ŕēšṗōńďīńğ</value>
+  </data>
+  <data name="window_walker_top_level_command_title" xml:space="preserve">
+    <value>Šŵīťčĥ ƀēťŵēēń ōṗēń ŵīńďōŵš</value>
+  </data>
+  <data name="switch_to_command_title" xml:space="preserve">
+    <value>Šŵīťčĥ ťō</value>
+  </data>
+  <data name="VirtualDesktopHelper_AllDesktops" xml:space="preserve">
+    <value>Ōń åĺĺ ďēšķťōṗš</value>
+  </data>
+  <data name="VirtualDesktopHelper_Desktop" xml:space="preserve">
+    <value>Ďēšķťōṗ {0}</value>
+  </data>
+  <data name="windowwalker_settings_name" xml:space="preserve">
+    <value>Šēťťīńğš</value>
+  </data>
+  <data name="windowwalker_pid" xml:space="preserve">
+    <value>ṗīď</value>
+  </data>
+  <data name="windowwalker_PlaceholderText" xml:space="preserve">
+    <value>Šēåŕčĥ ōṗēń ŵīńďōŵš...</value>
+  </data>
+  <data name="windowwalker_NoResultsMessage" xml:space="preserve">
+    <value>Ńō ōṗēń ŵīńďōŵš ƒōūńď</value>
+  </data>
+  <data name="windowwalker_SettingUseWindowIcon" xml:space="preserve">
+    <value>Ūšē ŵīńďōŵ īčōńš</value>
+  </data>
+  <data name="windowwalker_SettingUseWindowIcon_Description" xml:space="preserve">
+    <value>Šĥōŵ ťĥē åčťūåĺ ŵīńďōŵ īčōń īńšťēåď ōƒ ťĥē ṗŕōčēšš īčōń</value>
+  </data>
+</root>

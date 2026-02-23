@@ -86,6 +86,23 @@
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_Language_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            DisplayMemberPath="DisplayName"
+                            ItemsSource="{x:Bind viewModel.Languages}"
+                            SelectedIndex="{x:Bind viewModel.LanguageIndex, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <InfoBar
+                        x:Uid="Settings_GeneralPage_LanguageRestartInfo"
+                        IsClosable="False"
+                        IsOpen="{x:Bind viewModel.LanguageChanged, Mode=OneWay}"
+                        Severity="Warning">
+                        <InfoBar.ActionButton>
+                            <Button x:Uid="Settings_GeneralPage_LanguageRestartButton" Click="LanguageRestartButton_Click" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+
                     <!--  'For Developers' section  -->
 
                     <TextBlock x:Uid="ForDevelopersSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />

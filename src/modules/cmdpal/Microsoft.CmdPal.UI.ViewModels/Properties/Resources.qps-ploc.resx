@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -118,23 +118,23 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="builtin_new_extension_subtitle" xml:space="preserve">
-    <value>Generate a new Command Palette extension project</value>
+    <value>Ğēńēŕåťē å ńēŵ Čōṁṁåńď Ṗåĺēťťē ēẋťēńšīōń ṗŕōĵēčť</value>
   </data>
   <data name="builtin_quit_subtitle" xml:space="preserve">
-    <value>Exit Command Palette</value>
+    <value>Ēẋīť Čōṁṁåńď Ṗåĺēťťē</value>
   </data>
   <data name="builtin_display_name" xml:space="preserve">
-    <value>Built-in commands</value>
+    <value>Ɓūīĺť-īń čōṁṁåńďš</value>
   </data>
   <data name="builtin_extension_name" xml:space="preserve">
-    <value>Built-in</value>
+    <value>Ɓūīĺť-īń</value>
   </data>
   <data name="builtin_extension_subtext" xml:space="preserve">
-    <value>{0}, {1} commands</value>
+    <value>{0}, {1} čōṁṁåńďš</value>
     <comment>{0}=extension name, {1}=number of commands</comment>
   </data>
   <data name="builtin_extension_subtext_with_fallback" xml:space="preserve">
-    <value>{0}, {1} commands, {2} fallback commands</value>
+    <value>{0}, {1} čōṁṁåńďš, {2} ƒåĺĺƀåčķ čōṁṁåńďš</value>
     <comment>{0}=extension name, {1}=number of commands, {2} number of fallback commands</comment>
   </data>
   <data name="builtin_extension_subtext_disabled" xml:space="preserve">
@@ -142,125 +142,125 @@
     <comment>{0}=extension name, {1}=message</comment>
   </data>
   <data name="builtin_log_subtitle" xml:space="preserve">
-    <value>View log messages</value>
+    <value>Ṽīēŵ ĺōğ ṁēššåğēš</value>
   </data>
   <data name="builtin_log_title" xml:space="preserve">
-    <value>View log</value>
+    <value>Ṽīēŵ ĺōğ</value>
   </data>
   <data name="builtin_log_folder_command_name" xml:space="preserve">
-    <value>View log folder</value>
+    <value>Ṽīēŵ ĺōğ ƒōĺďēŕ</value>
   </data>
   <data name="builtin_reload_subtitle" xml:space="preserve">
-    <value>Reload Command Palette extensions</value>
+    <value>Ŕēĺōåď Čōṁṁåńď Ṗåĺēťťē ēẋťēńšīōńš</value>
   </data>
   <data name="builtin_reload_name" xml:space="preserve">
-    <value>Reload</value>
+    <value>Ŕēĺōåď</value>
   </data>
   <data name="builtin_log_name" xml:space="preserve">
-    <value>View log</value>
+    <value>Ṽīēŵ ĺōğ</value>
   </data>
   <data name="builtin_log_page_name" xml:space="preserve">
-    <value>Log</value>
+    <value>Ĺōğ</value>
   </data>
   <data name="builtin_creating_extension_message" xml:space="preserve">
-    <value>Creating new extension...</value>
+    <value>Čŕēåťīńğ ńēŵ ēẋťēńšīōń...</value>
   </data>
   <data name="builtin_create_extension_name" xml:space="preserve">
-    <value>Open</value>
+    <value>Ōṗēń</value>
   </data>
   <data name="builtin_create_extension_title" xml:space="preserve">
-    <value>Create extension</value>
+    <value>Čŕēåťē ēẋťēńšīōń</value>
   </data>
   <data name="builtin_open_settings_name" xml:space="preserve">
-    <value>Open Command Palette settings</value>
+    <value>Ōṗēń Čōṁṁåńď Ṗåĺēťťē šēťťīńğš</value>
   </data>
   <data name="builtin_create_extension_success" xml:space="preserve">
-    <value>Successfully created your new extension!</value>
+    <value>Šūččēššƒūĺĺŷ čŕēåťēď ŷōūŕ ńēŵ ēẋťēńšīōń!</value>
   </data>
   <data name="builtin_created_in_text" xml:space="preserve">
-    <value>Your new extension '${displayName}' was created in:</value>
+    <value>Ŷōūŕ ńēŵ ēẋťēńšīōń '${displayName}' ŵåš čŕēåťēď īń:</value>
     <comment>{Locked="'${displayName}'"}</comment>
   </data>
   <data name="builtin_created_next_steps_title" xml:space="preserve">
-    <value>Next steps</value>
+    <value>Ńēẋť šťēṗš</value>
   </data>
   <data name="builtin_created_next_steps" xml:space="preserve">
-    <value>Now that your extension project has been created, open the solution up in Visual Studio to start writing your extension code.</value>
+    <value>Ńōŵ ťĥåť ŷōūŕ ēẋťēńšīōń ṗŕōĵēčť ĥåš ƀēēń čŕēåťēď, ōṗēń ťĥē šōĺūťīōń ūṗ īń Ṽīšūåĺ Šťūďīō ťō šťåŕť ŵŕīťīńğ ŷōūŕ ēẋťēńšīōń čōďē.</value>
   </data>
   <data name="builtin_created_next_steps_p2" xml:space="preserve">
-    <value>Navigate to `${name}Page.cs` to start adding items to the list, or to `${name}CommandsProvider.cs` to add new commands.</value>
+    <value>Ńåṽīğåťē ťō `${name}Ṗåğē.čš` ťō šťåŕť åďďīńğ īťēṁš ťō ťĥē ĺīšť, ōŕ ťō `${name}ČōṁṁåńďšṖŕōṽīďēŕ.čš` ťō åďď ńēŵ čōṁṁåńďš.</value>
     <comment>{Locked="`${name}Page.cs`", "`${name}CommandsProvider.cs`"}</comment>
   </data>
   <data name="builtin_created_next_steps_p3" xml:space="preserve">
-    <value>Once you're ready to test deploy the package locally with Visual Studio, then run the \"Reload\" command in the Command Palette to load your new extension.</value>
+    <value>Ōńčē ŷōū'ŕē ŕēåďŷ ťō ťēšť ďēṗĺōŷ ťĥē ṗåčķåğē ĺōčåĺĺŷ ŵīťĥ Ṽīšūåĺ Šťūďīō, ťĥēń ŕūń ťĥē \"Ŕēĺōåď\" čōṁṁåńď īń ťĥē Čōṁṁåńď Ṗåĺēťťē ťō ĺōåď ŷōūŕ ńēŵ ēẋťēńšīōń.</value>
   </data>
   <data name="builtin_create_extension_page_title" xml:space="preserve">
-    <value>Create a new extension</value>
+    <value>Čŕēåťē å ńēŵ ēẋťēńšīōń</value>
   </data>
   <data name="builtin_create_extension_name_description" xml:space="preserve">
-    <value>Enter a valid C# class name for the new extension project. It's recommended to include the word "Extension" in the name.</value>
+    <value>Ēńťēŕ å ṽåĺīď Č# čĺåšš ńåṁē ƒōŕ ťĥē ńēŵ ēẋťēńšīōń ṗŕōĵēčť. Īť'š ŕēčōṁṁēńďēď ťō īńčĺūďē ťĥē ŵōŕď "Ēẋťēńšīōń" īń ťĥē ńåṁē.</value>
   </data>
   <data name="builtin_create_extension_name_label" xml:space="preserve">
-    <value>Extension name</value>
+    <value>Ēẋťēńšīōń ńåṁē</value>
   </data>
   <data name="builtin_create_extension_name_required" xml:space="preserve">
-    <value>Extension name is required and must be a valid C# identifier (start with a letter or underscore, followed by letters, numbers, or underscores)</value>
+    <value>Ēẋťēńšīōń ńåṁē īš ŕēqūīŕēď åńď ṁūšť ƀē å ṽåĺīď Č# īďēńťīƒīēŕ (šťåŕť ŵīťĥ å ĺēťťēŕ ōŕ ūńďēŕščōŕē, ƒōĺĺōŵēď ƀŷ ĺēťťēŕš, ńūṁƀēŕš, ōŕ ūńďēŕščōŕēš)</value>
   </data>
   <data name="builtin_create_extension_display_name_description" xml:space="preserve">
-    <value>The name of the extension as it will appear to users.</value>
+    <value>Ťĥē ńåṁē ōƒ ťĥē ēẋťēńšīōń åš īť ŵīĺĺ åṗṗēåŕ ťō ūšēŕš.</value>
   </data>
   <data name="builtin_create_extension_display_name_label" xml:space="preserve">
-    <value>Display name</value>
+    <value>Ďīšṗĺåŷ ńåṁē</value>
   </data>
   <data name="builtin_create_extension_display_name_required" xml:space="preserve">
-    <value>Display name is required</value>
+    <value>Ďīšṗĺåŷ ńåṁē īš ŕēqūīŕēď</value>
   </data>
   <data name="builtin_create_extension_directory_description" xml:space="preserve">
-    <value>Select the folder where the new extension will be created. The path will be created if it doesn't exist.</value>
+    <value>Šēĺēčť ťĥē ƒōĺďēŕ ŵĥēŕē ťĥē ńēŵ ēẋťēńšīōń ŵīĺĺ ƀē čŕēåťēď. Ťĥē ṗåťĥ ŵīĺĺ ƀē čŕēåťēď īƒ īť ďōēšń'ť ēẋīšť.</value>
   </data>
   <data name="builtin_create_extension_directory_label" xml:space="preserve">
-    <value>Output path</value>
+    <value>Ōūťṗūť ṗåťĥ</value>
   </data>
   <data name="builtin_create_extension_directory_required" xml:space="preserve">
-    <value>Output path is required</value>
+    <value>Ōūťṗūť ṗåťĥ īš ŕēqūīŕēď</value>
   </data>
   <data name="builtin_create_extension_open_solution" xml:space="preserve">
-    <value>Open Solution</value>
+    <value>Ōṗēń Šōĺūťīōń</value>
   </data>
   <data name="builtin_create_extension_open_directory" xml:space="preserve">
-    <value>Open directory</value>
+    <value>Ōṗēń ďīŕēčťōŕŷ</value>
   </data>
   <data name="builtin_create_extension_create_another" xml:space="preserve">
-    <value>Create another</value>
+    <value>Čŕēåťē åńōťĥēŕ</value>
   </data>
   <data name="builtin_create_extension_submit" xml:space="preserve">
-    <value>Create extension</value>
+    <value>Čŕēåťē ēẋťēńšīōń</value>
   </data>
   <data name="builtin_reload_display_title" xml:space="preserve">
-    <value>Reload Command Palette extensions</value>
+    <value>Ŕēĺōåď Čōṁṁåńď Ṗåĺēťťē ēẋťēńšīōńš</value>
   </data>
   <data name="builtin_disabled_extension" xml:space="preserve">
-    <value>Disabled</value>
+    <value>Ďīšåƀĺēď</value>
   </data>
   <data name="builtin_main_list_page_searchbar_placeholder" xml:space="preserve">
-    <value>Search for apps, files and commands...</value>
+    <value>Šēåŕčĥ ƒōŕ åṗṗš, ƒīĺēš åńď čōṁṁåńďš...</value>
   </data>
   <data name="builtin_home_name" xml:space="preserve">
-    <value>Home</value>
+    <value>Ĥōṁē</value>
   </data>
   <data name="builtin_settings_extension_n_extensions_found" xml:space="preserve">
-    <value>{0} extensions found</value>
+    <value>{0} ēẋťēńšīōńš ƒōūńď</value>
   </data>
   <data name="builtin_settings_extension_n_extensions_installed" xml:space="preserve">
-    <value>{0} extensions installed</value>
+    <value>{0} ēẋťēńšīōńš īńšťåĺĺēď</value>
   </data>
   <data name="builtin_settings_appearance_pick_background_image_title" xml:space="preserve">
-    <value>Pick background image</value>
+    <value>Ṗīčķ ƀåčķğŕōūńď īṁåğē</value>
   </data>
   <data name="fallbacks" xml:space="preserve">
-    <value>Fallbacks</value>
+    <value>Ƒåĺĺƀåčķš</value>
   </data>
   <data name="Language_Default" xml:space="preserve">
-    <value>Windows display language</value>
+    <value>Ŵīńďōŵš ďīšṗĺåŷ ĺåńğūåğē</value>
   </data>
 </root>

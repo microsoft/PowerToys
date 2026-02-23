@@ -1,0 +1,232 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="calculator_display_name" xml:space="preserve">
+    <value>Čåĺčūĺåťōŕ</value>
+  </data>
+  <data name="calculator_title" xml:space="preserve">
+    <value>Čåĺčūĺåťōŕ</value>
+  </data>
+  <data name="calculator_top_level_subtitle" xml:space="preserve">
+    <value>Ṗŕēšš = ťō ťŷṗē åń ēqūåťīōń</value>
+    <comment>{Locked="="}</comment>
+  </data>
+  <data name="calculator_placeholder_text" xml:space="preserve">
+    <value>Ťŷṗē åń ēqūåťīōń...</value>
+  </data>
+  <data name="calculator_error" xml:space="preserve">
+    <value>Ēŕŕōŕ: {0}</value>
+    <comment>{0} will be replaced by an error message from an invalid equation</comment>
+  </data>
+  <data name="calculator_save_command_name" xml:space="preserve">
+    <value>Šåṽē</value>
+  </data>
+  <data name="calculator_copy_command_name" xml:space="preserve">
+    <value>Čōṗŷ</value>
+  </data>
+  <data name="calculator_calculation_failed_title" xml:space="preserve">
+    <value>Ƒåīĺēď ťō čåĺčūĺåťē ťĥē īńṗūť</value>
+  </data>
+  <data name="calculator_division_by_zero" xml:space="preserve">
+    <value>Ēẋṗŕēššīōń čōńťåīńš ďīṽīšīōń ƀŷ žēŕō</value>
+  </data>
+  <data name="calculator_expression_not_complete" xml:space="preserve">
+    <value>Ēẋṗŕēššīōń ŵŕōńğ ōŕ īńčōṁṗĺēťē</value>
+  </data>
+  <data name="calculator_not_a_number" xml:space="preserve">
+    <value>Čåĺčūĺåťīōń ŕēšūĺť īš ńōť å ṽåĺīď ńūṁƀēŕ (ŃåŃ)</value>
+  </data>
+  <data name="calculator_double_array_returned" xml:space="preserve">
+    <value>Ūńšūṗṗōŕťēď ūšē ōƒ šqūåŕē ƀŕåčķēťš</value>
+  </data>
+  <data name="calculator_settings_trig_unit_gradians" xml:space="preserve">
+    <value>Ğŕåďīåńš</value>
+  </data>
+  <data name="calculator_settings_trig_unit_degrees" xml:space="preserve">
+    <value>Ďēğŕēēš</value>
+  </data>
+  <data name="calculator_settings_trig_unit_radians" xml:space="preserve">
+    <value>Ŕåďīåńš</value>
+  </data>
+  <data name="calculator_settings_trig_unit_mode" xml:space="preserve">
+    <value>Ťŕīğōńōṁēťŕŷ Ūńīť</value>
+  </data>
+  <data name="calculator_settings_trig_unit_mode_description" xml:space="preserve">
+    <value>Šṗēčīƒīēš ťĥē åńğĺē ūńīť ťō ūšē ƒōŕ ťŕīğōńōṁēťŕŷ ōṗēŕåťīōńš</value>
+  </data>
+  <data name="calculator_settings_out_en_format" xml:space="preserve">
+    <value>Ūšē Ēńğĺīšĥ (Ūńīťēď Šťåťēš) ńūṁƀēŕ ƒōŕṁåť ƒōŕ ōūťṗūť</value>
+  </data>
+  <data name="calculator_settings_out_en_format_description" xml:space="preserve">
+    <value>Īğńōŕēš ŷōūŕ šŷšťēṁ šēťťīńğ åńď ŕēťūŕńš ńūṁƀēŕš īń ťĥē ƒōŕṁåť '{0}'.</value>
+    <comment>{0} is a placeholder and will be replaced in code.</comment>
+  </data>
+  <data name="calculator_settings_in_en_format" xml:space="preserve">
+    <value>Ūšē Ēńğĺīšĥ (Ūńīťēď Šťåťēš) ńūṁƀēŕ ƒōŕṁåť ƒōŕ īńṗūť</value>
+  </data>
+  <data name="calculator_settings_in_en_format_description" xml:space="preserve">
+    <value>Īğńōŕēš ŷōūŕ šŷšťēṁ šēťťīńğ åńď ēẋṗēčťš ńūṁƀēŕš īń ťĥē ƒōŕṁåť '{0}'.</value>
+    <comment>{0} is a placeholder and will be replaced in code.</comment>
+  </data>
+  <data name="calculator_settings_close_on_enter" xml:space="preserve">
+    <value>Čĺōšē ōń Ēńťēŕ</value>
+  </data>
+  <data name="calculator_settings_close_on_enter_description" xml:space="preserve">
+    <value>Ṁåķēš Čōṗŷ åńď čĺōšē ťĥē ṗŕīṁåŕŷ čōṁṁåńď</value>
+  </data>
+  <data name="calculator_settings_replace_input" xml:space="preserve">
+    <value>Ŕēṗĺåčē īńṗūť īƒ qūēŕŷ ēńďš ŵīťĥ '='</value>
+  </data>
+  <data name="calculator_settings_replace_input_description" xml:space="preserve">
+    <value>Ŵĥēń ūšīńğ ďīŕēčť åčťīṽåťīōń, åṗṗēńďīńğ '=' ťō ťĥē ēẋṗŕēššīōń ŵīĺĺ ŕēṗĺåčē ťĥē īńṗūť ŵīťĥ ťĥē čåĺčūĺåťēď ŕēšūĺť (ē.ğ. '=5*3-2=' ŵīĺĺ čĥåńğē ťĥē qūēŕŷ ťō '=13').</value>
+  </data>
+  <data name="calculator_not_covert_to_decimal" xml:space="preserve">
+    <value>Ŕēšūĺť ṽåĺūē ŵåš ēīťĥēŕ ťōō ĺåŕğē ōŕ ťōō šṁåĺĺ ƒōŕ å ďēčīṁåĺ ńūṁƀēŕ</value>
+  </data>
+  <data name="calculator_copy_hex" xml:space="preserve">
+    <value>Čōṗŷ ĥēẋåďēčīṁåĺ</value>
+  </data>
+  <data name="calculator_copy_binary" xml:space="preserve">
+    <value>Čōṗŷ ƀīńåŕŷ</value>
+  </data>
+  <data name="calculator_expression_empty" xml:space="preserve">
+    <value>Ṗĺēåšē ēńťēŕ åń ēẋṗŕēššīōń</value>
+  </data>
+  <data name="calculator_settings_copy_result_to_search_bar" xml:space="preserve">
+    <value>Ŕēṗĺåčē qūēŕŷ ŵīťĥ ŕēšūĺť ōń ēqūåĺš</value>
+  </data>
+  <data name="calculator_settings_copy_result_to_search_bar_description" xml:space="preserve">
+    <value>Ūṗďåťēš ťĥē qūēŕŷ ťō ťĥē ŕēšūĺť ŵĥēń (=) īš ēńťēŕēď</value>
+  </data>
+  <data name="calculator_settings_auto_fix_query" xml:space="preserve">
+    <value>Ƒīẋ īńčōṁṗĺēťē čåĺčūĺåťīōńš åūťōṁåťīčåĺĺŷ</value>
+  </data>
+  <data name="calculator_settings_auto_fix_query_description" xml:space="preserve">
+    <value>Åťťēṁṗť ťō ēṽåĺūåťē īńčōṁṗĺēťē čåĺčūĺåťīōńš ƀŷ īğńōŕīńğ ēẋťŕå ōṗēŕåťōŕš ōŕ šŷṁƀōĺš</value>
+  </data>
+  <data name="calculator_settings_input_normalization" xml:space="preserve">
+    <value>Ĥåńďĺē ēẋťŕå ōṗēŕåťōŕš åńď šŷṁƀōĺš</value>
+  </data>
+  <data name="calculator_settings_input_normalization_description" xml:space="preserve">
+    <value>Ēńåƀĺē åďṽåńčēď īńṗūť ńōŕṁåĺīžåťīōń åńď ēẋťŕå šŷṁƀōĺš (ē.ğ. ÷, ×, π)</value>
+  </data>
+  <data name="calculator_copy_octal" xml:space="preserve">
+    <value>Čōṗŷ ōčťåĺ</value>
+  </data>
+</root>

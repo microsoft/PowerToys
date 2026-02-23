@@ -118,708 +118,708 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppName" xml:space="preserve">
-    <value>Command Palette</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē</value>
     <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
   </data>
   <data name="AppNameDev" xml:space="preserve">
-    <value>Command Palette Dev</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē Ďēṽ</value>
     <comment>{Locked} The dev build will never be seen in multiple languages</comment>
   </data>
   <data name="AppNameCan" xml:space="preserve">
-    <value>Command Palette Canary</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē Čåńåŕŷ</value>
     <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
   </data>
   <data name="AppNamePre" xml:space="preserve">
-    <value>Command Palette Preview</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē Ṗŕēṽīēŵ</value>
     <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
   </data>
   <data name="AppStoreName" xml:space="preserve">
-    <value>Windows Command Palette</value>
+    <value>Ŵīńďōŵš Čōṁṁåńď Ṗåĺēťťē</value>
     <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
   </data>
   <data name="AppStoreNameDev" xml:space="preserve">
-    <value>Windows Command Palette Dev</value>
+    <value>Ŵīńďōŵš Čōṁṁåńď Ṗåĺēťťē Ďēṽ</value>
     <comment>{Locked} The dev build will never be seen in multiple languages</comment>
   </data>
   <data name="AppStoreNameCan" xml:space="preserve">
-    <value>Windows Command Palette Canary</value>
+    <value>Ŵīńďōŵš Čōṁṁåńď Ṗåĺēťťē Čåńåŕŷ</value>
     <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}. "Canary" in this context means an unstable or nightly build of a software product, not the bird.</comment>
   </data>
   <data name="AppStoreNamePre" xml:space="preserve">
-    <value>Windows Command Palette Preview</value>
+    <value>Ŵīńďōŵš Čōṁṁåńď Ṗåĺēťťē Ṗŕēṽīēŵ</value>
     <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
   </data>
   <data name="AppShortName" xml:space="preserve">
-    <value>Command Palette</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē</value>
     <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
   </data>
   <data name="AppShortNameDev" xml:space="preserve">
-    <value>Command Palette Dev</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē Ďēṽ</value>
     <comment>{Locked} The dev build will never be seen in multiple languages</comment>
   </data>
   <data name="AppShortNameCan" xml:space="preserve">
-    <value>Command Palette Canary</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē Čåńåŕŷ</value>
     <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
   </data>
   <data name="AppShortNamePre" xml:space="preserve">
-    <value>Command Palette Preview</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē Ṗŕēṽīēŵ</value>
     <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
   </data>
   <data name="AppDescription" xml:space="preserve">
-    <value>The Windows Command Palette</value>
+    <value>Ťĥē Ŵīńďōŵš Čōṁṁåńď Ṗåĺēťťē</value>
   </data>
   <data name="AppDescriptionDev" xml:space="preserve">
-    <value>A dev build of the Command Palette</value>
+    <value>Å ďēṽ ƀūīĺď ōƒ ťĥē Čōṁṁåńď Ṗåĺēťťē</value>
     <comment>{Locked} The dev build will never be seen in multiple languages</comment>
   </data>
   <data name="AppDescriptionCan" xml:space="preserve">
-    <value>The Windows Command Palette (Canary build)</value>
+    <value>Ťĥē Ŵīńďōŵš Čōṁṁåńď Ṗåĺēťťē (Čåńåŕŷ ƀūīĺď)</value>
     <comment>{Locked}</comment>
   </data>
   <data name="AppDescriptionPre" xml:space="preserve">
-    <value>The Windows Command Palette (Preview build)</value>
+    <value>Ťĥē Ŵīńďōŵš Čōṁṁåńď Ṗåĺēťťē (Ṗŕēṽīēŵ ƀūīĺď)</value>
   </data>
   <data name="StartupTaskName" xml:space="preserve">
-    <value>Command Palette</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē</value>
     <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
   </data>
   <data name="StartupTaskNameDev" xml:space="preserve">
-    <value>Command Palette Dev</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē Ďēṽ</value>
     <comment>{Locked} The dev build will never be seen in multiple languages</comment>
   </data>
   <data name="Activation_Shortcut_Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Čåńčēĺ</value>
   </data>
   <data name="Activation_Shortcut_Description" xml:space="preserve">
-    <value>Press a combination of keys to change this shortcut</value>
+    <value>Ṗŕēšš å čōṁƀīńåťīōń ōƒ ķēŷš ťō čĥåńğē ťĥīš šĥōŕťčūť</value>
   </data>
   <data name="Activation_Shortcut_With_Disable_Description" xml:space="preserve">
-    <value>Press a combination of keys to change this shortcut.
-Right-click to remove the key combination, thereby deactivating the shortcut.</value>
+    <value>Ṗŕēšš å čōṁƀīńåťīōń ōƒ ķēŷš ťō čĥåńğē ťĥīš šĥōŕťčūť.
+Ŕīğĥť-čĺīčķ ťō ŕēṁōṽē ťĥē ķēŷ čōṁƀīńåťīōń, ťĥēŕēƀŷ ďēåčťīṽåťīńğ ťĥē šĥōŕťčūť.</value>
   </data>
   <data name="Activation_Shortcut_Reset" xml:space="preserve">
-    <value>Reset</value>
+    <value>Ŕēšēť</value>
   </data>
   <data name="Activation_Shortcut_Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Šåṽē</value>
   </data>
   <data name="Activation_Shortcut_Title" xml:space="preserve">
-    <value>Activation shortcut</value>
+    <value>Åčťīṽåťīōń šĥōŕťčūť</value>
   </data>
   <data name="InvalidShortcut.Title" xml:space="preserve">
-    <value>Invalid shortcut</value>
+    <value>Īńṽåĺīď šĥōŕťčūť</value>
   </data>
   <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
-    <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
+    <value>Ōńĺŷ šĥōŕťčūťš ťĥåť šťåŕť ŵīťĥ **Ŵīńďōŵš ķēŷ**, **Čťŕĺ**, **Åĺť** ōŕ **Šĥīƒť** åŕē ṽåĺīď.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
   <data name="WarningShortcutAltGr.Title" xml:space="preserve">
-    <value>Possible shortcut interference with Alt Gr</value>
+    <value>Ṗōššīƀĺē šĥōŕťčūť īńťēŕƒēŕēńčē ŵīťĥ Åĺť Ğŕ</value>
     <comment>Alt Gr refers to the right alt key on some international keyboards</comment>
   </data>
   <data name="WarningShortcutAltGr.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
+    <value>Šĥōŕťčūťš ŵīťĥ **Čťŕĺ** åńď **Åĺť** ṁåŷ ŕēṁōṽē ƒūńčťīōńåĺīťŷ ƒŕōṁ šōṁē īńťēŕńåťīōńåĺ ķēŷƀōåŕďš, ƀēčåūšē **Čťŕĺ** + **Åĺť** = **Åĺť Ğŕ** īń ťĥōšē ķēŷƀōåŕďš.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
   <data name="CmdPalSettingsHeader.Text" xml:space="preserve">
-    <value>Command Palette settings</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē šēťťīńğš</value>
     <comment>A section header for app-wide settings. "Command Palette" is the name of the app.</comment>
   </data>
   <data name="AboutSettingsHeader.Text" xml:space="preserve">
-    <value>About</value>
+    <value>Åƀōūť</value>
     <comment>A section header for information about the app</comment>
   </data>
   <data name="ExtensionAboutHeader.Text" xml:space="preserve">
-    <value>About</value>
+    <value>Åƀōūť</value>
     <comment>A section header for information about the app</comment>
   </data>
   <data name="ExtensionSettingsHeader.Text" xml:space="preserve">
-    <value>Extension settings</value>
+    <value>Ēẋťēńšīōń šēťťīńğš</value>
     <comment>A section header for extension-specific settings.</comment>
   </data>
   <data name="ExtensionCommandsHeader.Text" xml:space="preserve">
-    <value>Commands</value>
+    <value>Čōṁṁåńďš</value>
     <comment>A section header for information about the app</comment>
   </data>
   <data name="ExtensionFallbackCommandsHeader.Text" xml:space="preserve">
-    <value>Fallback commands</value>
+    <value>Ƒåĺĺƀåčķ čōṁṁåńďš</value>
     <comment>A section header for information about the commands presented to the user when the search text doesn't exactly match the name of a command.</comment>
   </data>
   <data name="ExtensionDisabledHeader.Text" xml:space="preserve">
-    <value>This extension is disabled</value>
+    <value>Ťĥīš ēẋťēńšīōń īš ďīšåƀĺēď</value>
     <comment>A header to inform the user that an extension is not currently active</comment>
   </data>
   <data name="ExtensionDisabledDetails.Text" xml:space="preserve">
-    <value>Enable this extension to view commands and settings</value>
+    <value>Ēńåƀĺē ťĥīš ēẋťēńšīōń ťō ṽīēŵ čōṁṁåńďš åńď šēťťīńğš</value>
     <comment>Additional details for when an extension is disabled. Displayed under ExtensionDisabledHeader.Text</comment>
   </data>
   <data name="ExtensionDisabledText" xml:space="preserve">
-    <value>Disabled</value>
+    <value>Ďīšåƀĺēď</value>
     <comment>Displayed when an extension is disabled</comment>
   </data>
   <data name="ExtensionEnable.Text" xml:space="preserve">
-    <value>Enable</value>
+    <value>Ēńåƀĺē</value>
     <comment>Displayed on a toggle controlling the extension's enabled / disabled state</comment>
   </data>
   <data name="ExtensionEnableCard.Description" xml:space="preserve">
-    <value>Load commands and settings from this extension</value>
+    <value>Ĺōåď čōṁṁåńďš åńď šēťťīńğš ƒŕōṁ ťĥīš ēẋťēńšīōń</value>
     <comment>Displayed on a toggle controlling the extension's enabled / disabled state</comment>
   </data>
   <data name="SettingsWindowTitle" xml:space="preserve">
-    <value>Command Palette Settings</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē Šēťťīńğš</value>
     <comment>The title of the settings window for the app</comment>
   </data>
   <data name="ToastWindowTitle" xml:space="preserve">
-    <value>Command Palette Toast</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē Ťōåšť</value>
     <comment>The title of the toast window for the command palette</comment>
   </data>
   <data name="DefaultSearchPlaceholderText" xml:space="preserve">
-    <value>Type here to search...</value>
+    <value>Ťŷṗē ĥēŕē ťō šēåŕčĥ...</value>
   </data>
   <data name="Run_PositionHeader.Header" xml:space="preserve">
-    <value>Preferred monitor position</value>
+    <value>Ṗŕēƒēŕŕēď ṁōńīťōŕ ṗōšīťīōń</value>
     <comment>as in Show Command Palette on primary monitor</comment>
   </data>
   <data name="Run_PositionHeader.Description" xml:space="preserve">
-    <value>If multiple monitors are in use, Command Palette can be launched on the desired monitor</value>
+    <value>Īƒ ṁūĺťīṗĺē ṁōńīťōŕš åŕē īń ūšē, Čōṁṁåńď Ṗåĺēťťē čåń ƀē ĺåūńčĥēď ōń ťĥē ďēšīŕēď ṁōńīťōŕ</value>
     <comment>as in Show Command Palette on primary monitor</comment>
   </data>
   <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
-    <value>Monitor with mouse cursor</value>
+    <value>Ṁōńīťōŕ ŵīťĥ ṁōūšē čūŕšōŕ</value>
   </data>
   <data name="Run_Radio_Position_Focus.Content" xml:space="preserve">
-    <value>Monitor with focused window</value>
+    <value>Ṁōńīťōŕ ŵīťĥ ƒōčūšēď ŵīńďōŵ</value>
   </data>
   <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
-    <value>Primary monitor</value>
+    <value>Ṗŕīṁåŕŷ ṁōńīťōŕ</value>
   </data>
   <data name="Run_Radio_Position_In_Place.Content" xml:space="preserve">
-    <value>Don't move</value>
+    <value>Ďōń'ť ṁōṽē</value>
   </data>
   <data name="ConfirmationDialog_ConfirmButtonText" xml:space="preserve">
-    <value>Confirm</value>
+    <value>Čōńƒīŕṁ</value>
   </data>
   <data name="ConfirmationDialog_CancelButtonText" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Čåńčēĺ</value>
   </data>
   <data name="Settings_ExtensionPage_GlobalHotkey_SettingsCard.Header" xml:space="preserve">
-    <value>Global hotkey</value>
+    <value>Ğĺōƀåĺ ĥōťķēŷ</value>
   </data>
   <data name="Settings_ExtensionPage_GlobalHotkey_SettingsCard.Description" xml:space="preserve">
-    <value>Directly open Command Palette to this command.</value>
+    <value>Ďīŕēčťĺŷ ōṗēń Čōṁṁåńď Ṗåĺēťťē ťō ťĥīš čōṁṁåńď.</value>
   </data>
   <data name="Settings_ExtensionPage_Alias_SettingsCard.Header" xml:space="preserve">
-    <value>Alias</value>
+    <value>Åĺīåš</value>
   </data>
   <data name="Settings_ExtensionPage_Alias_SettingsCard.Description" xml:space="preserve">
-    <value>A short keyword used to navigate to this command.</value>
+    <value>Å šĥōŕť ķēŷŵōŕď ūšēď ťō ńåṽīğåťē ťō ťĥīš čōṁṁåńď.</value>
   </data>
   <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Header" xml:space="preserve">
-    <value>Alias activation</value>
+    <value>Åĺīåš åčťīṽåťīōń</value>
   </data>
   <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Description" xml:space="preserve">
-    <value>Choose when the alias runs. Direct runs as soon as you type the alias. Indirect runs after a trailing space.</value>
+    <value>Čĥōōšē ŵĥēń ťĥē åĺīåš ŕūńš. Ďīŕēčť ŕūńš åš šōōń åš ŷōū ťŷṗē ťĥē åĺīåš. Īńďīŕēčť ŕūńš åƒťēŕ å ťŕåīĺīńğ šṗåčē.</value>
   </data>
   <data name="Settings_ExtensionPage_Builtin_SettingsCard.Header" xml:space="preserve">
-    <value>Built-in</value>
+    <value>Ɓūīĺť-īń</value>
   </data>
   <data name="Settings_ExtensionPage_Builtin_SettingsCard.Description" xml:space="preserve">
-    <value>These commands are built-in to the Windows Command Palette.</value>
+    <value>Ťĥēšē čōṁṁåńďš åŕē ƀūīĺť-īń ťō ťĥē Ŵīńďōŵš Čōṁṁåńď Ṗåĺēťťē.</value>
   </data>
   <data name="Settings_GeneralPage_ActivationKey_SettingsExpander.Header" xml:space="preserve">
-    <value>Activation key</value>
+    <value>Åčťīṽåťīōń ķēŷ</value>
   </data>
   <data name="Settings_GeneralPage_ActivationKey_SettingsExpander.Description" xml:space="preserve">
-    <value>This key will open the Command Palette.</value>
+    <value>Ťĥīš ķēŷ ŵīĺĺ ōṗēń ťĥē Čōṁṁåńď Ṗåĺēťťē.</value>
   </data>
   <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Header" xml:space="preserve">
-    <value>Use low-level keyboard hook</value>
+    <value>Ūšē ĺōŵ-ĺēṽēĺ ķēŷƀōåŕď ĥōōķ</value>
   </data>
   <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Description" xml:space="preserve">
-    <value>Try this if there are issues with the shortcut (Command Palette might not get focus when triggered from an elevated window)</value>
+    <value>Ťŕŷ ťĥīš īƒ ťĥēŕē åŕē īššūēš ŵīťĥ ťĥē šĥōŕťčūť (Čōṁṁåńď Ṗåĺēťťē ṁīğĥť ńōť ğēť ƒōčūš ŵĥēń ťŕīğğēŕēď ƒŕōṁ åń ēĺēṽåťēď ŵīńďōŵ)</value>
   </data>
   <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Header" xml:space="preserve">
-    <value>Ignore shortcut in fullscreen mode</value>
+    <value>Īğńōŕē šĥōŕťčūť īń ƒūĺĺščŕēēń ṁōďē</value>
   </data>
   <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Description" xml:space="preserve">
-    <value>Preventing disruption of the program running in fullscreen by unintentional activation of shortcut</value>
+    <value>Ṗŕēṽēńťīńğ ďīšŕūṗťīōń ōƒ ťĥē ṗŕōğŕåṁ ŕūńńīńğ īń ƒūĺĺščŕēēń ƀŷ ūńīńťēńťīōńåĺ åčťīṽåťīōń ōƒ šĥōŕťčūť</value>
   </data>
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
-    <value>Highlight search on activate</value>
+    <value>Ĥīğĥĺīğĥť šēåŕčĥ ōń åčťīṽåťē</value>
   </data>
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Description" xml:space="preserve">
-    <value>Selects the previous search text at launch</value>
+    <value>Šēĺēčťš ťĥē ṗŕēṽīōūš šēåŕčĥ ťēẋť åť ĺåūńčĥ</value>
   </data>
   <data name="Settings_GeneralPage_ShowAppDetails_SettingsCard.Header" xml:space="preserve">
-    <value>Show app details</value>
+    <value>Šĥōŵ åṗṗ ďēťåīĺš</value>
   </data>
   <data name="Settings_GeneralPage_ShowAppDetails_SettingsCard.Description" xml:space="preserve">
-    <value>Controls if app details are automatically expanded or not.</value>
+    <value>Čōńťŕōĺš īƒ åṗṗ ďēťåīĺš åŕē åūťōṁåťīčåĺĺŷ ēẋṗåńďēď ōŕ ńōť.</value>
   </data>
   <data name="Settings_GeneralPage_BackspaceGoesBack_SettingsCard.Header" xml:space="preserve">
-    <value>Backspace goes back</value>
+    <value>Ɓåčķšṗåčē ğōēš ƀåčķ</value>
   </data>
   <data name="Settings_GeneralPage_BackspaceGoesBack_SettingsCard.Description" xml:space="preserve">
-    <value>If the search field is empty, backspace returns to the previous page</value>
+    <value>Īƒ ťĥē šēåŕčĥ ƒīēĺď īš ēṁṗťŷ, ƀåčķšṗåčē ŕēťūŕńš ťō ťĥē ṗŕēṽīōūš ṗåğē</value>
   </data>
   <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Header" xml:space="preserve">
-    <value>Single-click activation</value>
+    <value>Šīńğĺē-čĺīčķ åčťīṽåťīōń</value>
   </data>
   <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Description" xml:space="preserve">
-    <value>Choose how to interact with list items: single-click to activate, or single-click to select and double-click to activate</value>
+    <value>Čĥōōšē ĥōŵ ťō īńťēŕåčť ŵīťĥ ĺīšť īťēṁš: šīńğĺē-čĺīčķ ťō åčťīṽåťē, ōŕ šīńğĺē-čĺīčķ ťō šēĺēčť åńď ďōūƀĺē-čĺīčķ ťō åčťīṽåťē</value>
   </data>
   <data name="Settings_GeneralPage_About_SettingsExpander.Header" xml:space="preserve">
-    <value>Windows Command Palette</value>
+    <value>Ŵīńďōŵš Čōṁṁåńď Ṗåĺēťťē</value>
   </data>
   <data name="Settings_GeneralPage_About_SettingsExpander.Description" xml:space="preserve">
-    <value>© 2026. All rights reserved.</value>
+    <value>© 2026. Åĺĺ ŕīğĥťš ŕēšēŕṽēď.</value>
   </data>
   <data name="Settings_GeneralPage_About_GithubLink_Hyperlink.Content" xml:space="preserve">
-    <value>View GitHub repository</value>
+    <value>Ṽīēŵ ĞīťĤūƀ ŕēṗōšīťōŕŷ</value>
   </data>
   <data name="Settings_GeneralPage_About_SDKDocs_Hyperlink.Content" xml:space="preserve">
-    <value>Extension SDK docs</value>
+    <value>Ēẋťēńšīōń ŠĎĶ ďōčš</value>
   </data>
   <data name="Settings_GeneralPage_SendFeedback_Hyperlink.Content" xml:space="preserve">
-    <value>Send feedback</value>
+    <value>Šēńď ƒēēďƀåčķ</value>
   </data>
   <data name="Settings_GeneralPage_NavigationViewItem_General.Content" xml:space="preserve">
-    <value>General</value>
+    <value>Ğēńēŕåĺ</value>
   </data>
   <data name="Settings_GeneralPage_NavigationViewItem_Extensions.Content" xml:space="preserve">
-    <value>Extensions</value>
+    <value>Ēẋťēńšīōńš</value>
   </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Open Command Palette settings</value>
+    <value>Ōṗēń Čōṁṁåńď Ṗåĺēťťē šēťťīńğš</value>
   </data>
   <data name="ActivationSettingsHeader.Text" xml:space="preserve">
-    <value>Activation</value>
+    <value>Åčťīṽåťīōń</value>
   </data>
   <data name="BehaviorSettingsHeader.Text" xml:space="preserve">
-    <value>Behavior</value>
+    <value>Ɓēĥåṽīōŕ</value>
   </data>
   <data name="ContextFilterBox.PlaceholderText" xml:space="preserve">
-    <value>Search commands...</value>
+    <value>Šēåŕčĥ čōṁṁåńďš...</value>
   </data>
   <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Header" xml:space="preserve">
-    <value>Show system tray icon</value>
+    <value>Šĥōŵ šŷšťēṁ ťŕåŷ īčōń</value>
   </data>
   <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Description" xml:space="preserve">
-    <value>Choose if Command Palette is visible in the system tray</value>
+    <value>Čĥōōšē īƒ Čōṁṁåńď Ṗåĺēťťē īš ṽīšīƀĺē īń ťĥē šŷšťēṁ ťŕåŷ</value>
   </data>
   <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Header" xml:space="preserve">
-    <value>Disable animations</value>
+    <value>Ďīšåƀĺē åńīṁåťīōńš</value>
   </data>
   <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Description" xml:space="preserve">
-    <value>Disable animations when switching between pages</value>
+    <value>Ďīšåƀĺē åńīṁåťīōńš ŵĥēń šŵīťčĥīńğ ƀēťŵēēń ṗåğēš</value>
   </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Back</value>
+    <value>Ɓåčķ</value>
   </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Back (Alt + Left arrow)</value>
+    <value>Ɓåčķ (Åĺť + Ĺēƒť åŕŕōŵ)</value>
   </data>
   <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>More</value>
+    <value>Ṁōŕē</value>
   </data>
   <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
-    <value>Last position</value>
+    <value>Ĺåšť ṗōšīťīōń</value>
     <comment>Reopen the window where it was last closed</comment>
   </data>
   <data name="TrayMenu_Settings" xml:space="preserve">
-    <value>Settings</value>
+    <value>Šēťťīńğš</value>
   </data>
   <data name="TrayMenu_Close" xml:space="preserve">
-    <value>Close</value>
+    <value>Čĺōšē</value>
     <comment>Close as a verb, as in Close the application</comment>
   </data>
   <data name="Settings_ExtensionPage_Alias_DirectComboBox.Content" xml:space="preserve">
-    <value>Direct</value>
+    <value>Ďīŕēčť</value>
   </data>
   <data name="Settings_ExtensionPage_Alias_InDirectComboBox.Content" xml:space="preserve">
-    <value>Indirect</value>
+    <value>Īńďīŕēčť</value>
   </data>
   <data name="Settings_ExtensionPage_Alias_PlaceholderText.PlaceholderText" xml:space="preserve">
-    <value>Enter alias</value>
+    <value>Ēńťēŕ åĺīåš</value>
   </data>
   <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Show status messages</value>
+    <value>Šĥōŵ šťåťūš ṁēššåğēš</value>
   </data>
   <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Show status messages</value>
+    <value>Šĥōŵ šťåťūš ṁēššåğēš</value>
   </data>
   <data name="NavigationPaneClosed" xml:space="preserve">
-    <value>Navigation pane closed</value>
+    <value>Ńåṽīğåťīōń ṗåńē čĺōšēď</value>
   </data>
   <data name="NavigationPaneOpened" xml:space="preserve">
-    <value>Navigation page opened</value>
+    <value>Ńåṽīğåťīōń ṗåğē ōṗēńēď</value>
   </data>
   <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Header" xml:space="preserve">
-    <value>Enable external reload</value>
+    <value>Ēńåƀĺē ēẋťēŕńåĺ ŕēĺōåď</value>
   </data>
   <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Description" xml:space="preserve">
-    <value>Trigger reload of the extension externally with the x-cmdpal://reload command</value>
+    <value>Ťŕīğğēŕ ŕēĺōåď ōƒ ťĥē ēẋťēńšīōń ēẋťēŕńåĺĺŷ ŵīťĥ ťĥē ẋ-čṁďṗåĺ://ŕēĺōåď čōṁṁåńď</value>
   </data>
   <data name="ForDevelopersSettingsHeader.Text" xml:space="preserve">
-    <value>For developers</value>
+    <value>Ƒōŕ ďēṽēĺōṗēŕš</value>
   </data>
   <data name="UntitledPageTitle" xml:space="preserve">
-    <value>an untitled</value>
+    <value>åń ūńťīťĺēď</value>
   </data>
   <data name="ScreenReader_Announcement_NavigatedToPage0" xml:space="preserve">
-    <value>Navigated to {0} page</value>
+    <value>Ńåṽīğåťēď ťō {0} ṗåğē</value>
   </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Settings (Ctrl+,)</value>
+    <value>Šēťťīńğš (Čťŕĺ+,)</value>
   </data>
   <data name="Settings_ExtensionsPage_NoResults_Primary.Text" xml:space="preserve">
-    <value>No extensions found</value>
+    <value>Ńō ēẋťēńšīōńš ƒōūńď</value>
   </data>
   <data name="Settings_ExtensionsPage_NoResults_Secondary.Text" xml:space="preserve">
-    <value>Try a different search term</value>
+    <value>Ťŕŷ å ďīƒƒēŕēńť šēåŕčĥ ťēŕṁ</value>
   </data>
   <data name="Settings_ExtensionsPage_More_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>More options</value>
+    <value>Ṁōŕē ōṗťīōńš</value>
   </data>
   <data name="Settings_ExtensionsPage_More_Reload_MenuFlyoutItem.Text" xml:space="preserve">
-    <value>Reload extensions</value>
+    <value>Ŕēĺōåď ēẋťēńšīōńš</value>
   </data>
   <data name="Settings_ExtensionsPage_Reloading_Text.Text" xml:space="preserve">
-    <value>Reloading extensions..</value>
+    <value>Ŕēĺōåďīńğ ēẋťēńšīōńš..</value>
   </data>
   <data name="Settings_ExtensionsPage_Banner_Header.Text" xml:space="preserve">
-    <value>Discover more extensions</value>
+    <value>Ďīščōṽēŕ ṁōŕē ēẋťēńšīōńš</value>
   </data>
   <data name="Settings_ExtensionsPage_Banner_Description.Text" xml:space="preserve">
-    <value>Find more extensions on the Microsoft Store or WinGet.</value>
+    <value>Ƒīńď ṁōŕē ēẋťēńšīōńš ōń ťĥē Ṁīčŕōšōƒť Šťōŕē ōŕ ŴīńĞēť.</value>
   </data>
   <data name="Settings_ExtensionsPage_Banner_Hyperlink.Content" xml:space="preserve">
-    <value>Learn how to create your own extensions</value>
+    <value>Ĺēåŕń ĥōŵ ťō čŕēåťē ŷōūŕ ōŵń ēẋťēńšīōńš</value>
   </data>
   <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Find extensions on the Microsoft Store</value>
+    <value>Ƒīńď ēẋťēńšīōńš ōń ťĥē Ṁīčŕōšōƒť Šťōŕē</value>
   </data>
   <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Microsoft Store</value>
+    <value>Ṁīčŕōšōƒť Šťōŕē</value>
   </data>
   <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Find extensions on WinGet</value>
+    <value>Ƒīńď ēẋťēńšīōńš ōń ŴīńĞēť</value>
   </data>
   <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Microsoft Store</value>
+    <value>Ṁīčŕōšōƒť Šťōŕē</value>
   </data>
   <data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
-    <value>Search extensions</value>
+    <value>Šēåŕčĥ ēẋťēńšīōńš</value>
   </data>
   <data name="GlobalErrorHandler_CrashMessageBox_Message" xml:space="preserve">
-    <value>Command Palette has encountered a fatal error and must close.</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē ĥåš ēńčōūńťēŕēď å ƒåťåĺ ēŕŕōŕ åńď ṁūšť čĺōšē.</value>
   </data>
   <data name="GlobalErrorHandler_CrashMessageBox_Caption" xml:space="preserve">
-    <value>Command Palette - Fatal error</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē - Ƒåťåĺ ēŕŕōŕ</value>
   </data>
   <data name="Settings_GeneralPage_AutoGoHome_Item_Never.Content" xml:space="preserve">
-    <value>Never</value>
+    <value>Ńēṽēŕ</value>
   </data>
   <data name="Settings_GeneralPage_AutoGoHome_Item_Immediately.Content" xml:space="preserve">
-    <value>Immediately</value>
+    <value>Īṁṁēďīåťēĺŷ</value>
   </data>
   <data name="Settings_GeneralPage_AutoGoHome_Item_After10Seconds.Content" xml:space="preserve">
-    <value>10 seconds</value>
+    <value>10 šēčōńďš</value>
   </data>
   <data name="Settings_GeneralPage_AutoGoHome_Item_After20Seconds.Content" xml:space="preserve">
-    <value>20 seconds</value>
+    <value>20 šēčōńďš</value>
   </data>
   <data name="Settings_GeneralPage_AutoGoHome_Item_After30Seconds.Content" xml:space="preserve">
-    <value>30 seconds</value>
+    <value>30 šēčōńďš</value>
   </data>
   <data name="Settings_GeneralPage_AutoGoHome_Item_After60Seconds.Content" xml:space="preserve">
-    <value>60 seconds</value>
+    <value>60 šēčōńďš</value>
   </data>
   <data name="Settings_GeneralPage_AutoGoHome_Item_After90Seconds.Content" xml:space="preserve">
-    <value>90 seconds</value>
+    <value>90 šēčōńďš</value>
   </data>
   <data name="Settings_GeneralPage_AutoGoHome_Item_After120Seconds.Content" xml:space="preserve">
-    <value>2 minutes</value>
+    <value>2 ṁīńūťēš</value>
   </data>
   <data name="Settings_GeneralPage_AutoGoHome_Item_After180Seconds.Content" xml:space="preserve">
-    <value>3 minutes</value>
+    <value>3 ṁīńūťēš</value>
   </data>
   <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Header" xml:space="preserve">
-    <value>Automatically return home</value>
+    <value>Åūťōṁåťīčåĺĺŷ ŕēťūŕń ĥōṁē</value>
   </data>
   <data name="Settings_GeneralPage_AutoGoHome_SettingsCard.Description" xml:space="preserve">
-    <value>Automatically returns to home page after a period of inactivity when Command Palette is closed</value>
+    <value>Åūťōṁåťīčåĺĺŷ ŕēťūŕńš ťō ĥōṁē ṗåğē åƒťēŕ å ṗēŕīōď ōƒ īńåčťīṽīťŷ ŵĥēń Čōṁṁåńď Ṗåĺēťťē īš čĺōšēď</value>
   </data>
   <data name="Settings_GeneralPage_NavigationViewItem_Appearance.Content" xml:space="preserve">
-    <value>Personalization</value>
+    <value>Ṗēŕšōńåĺīžåťīōń</value>
   </data>
   <data name="Settings_GeneralPage_AppTheme_SettingsCard.Header" xml:space="preserve">
-    <value>App theme mode</value>
+    <value>Åṗṗ ťĥēṁē ṁōďē</value>
   </data>
   <data name="Settings_GeneralPage_AppTheme_SettingsCard.Description" xml:space="preserve">
-    <value>Select which app theme to display</value>
+    <value>Šēĺēčť ŵĥīčĥ åṗṗ ťĥēṁē ťō ďīšṗĺåŷ</value>
   </data>
   <data name="AppearanceSettingsHeader.Text" xml:space="preserve">
-    <value>Appearance</value>
+    <value>Åṗṗēåŕåńčē</value>
   </data>
   <data name="Settings_GeneralPage_AppTheme_Mode_System.Text" xml:space="preserve">
-    <value>Use system settings</value>
+    <value>Ūšē šŷšťēṁ šēťťīńğš</value>
   </data>
   <data name="Settings_GeneralPage_AppTheme_Mode_Light.Text" xml:space="preserve">
-    <value>Light</value>
+    <value>Ĺīğĥť</value>
   </data>
   <data name="Settings_GeneralPage_AppTheme_Mode_Dark.Text" xml:space="preserve">
-    <value>Dark</value>
+    <value>Ďåŕķ</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundTint_SettingsCard.Header" xml:space="preserve">
-    <value>Color tint</value>
+    <value>Čōĺōŕ ťīńť</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundTintIntensity_SettingsCard.Header" xml:space="preserve">
-    <value>Color intensity</value>
+    <value>Čōĺōŕ īńťēńšīťŷ</value>
   </data>
   <data name="Settings_GeneralPage_ImageTintIntensity_SettingsCard.Header" xml:space="preserve">
-    <value>Color intensity</value>
+    <value>Čōĺōŕ īńťēńšīťŷ</value>
   </data>
   <data name="OptionalColorPickerButton_UnsetTextBlock.Text" xml:space="preserve">
-    <value>Choose color</value>
+    <value>Čĥōōšē čōĺōŕ</value>
   </data>
   <data name="OptionalColorPickerButton_ResetButton.Content" xml:space="preserve">
-    <value>Use default</value>
+    <value>Ūšē ďēƒåūĺť</value>
   </data>
   <data name="OptionalColorPickerButton_TransparentColorButton.Content" xml:space="preserve">
-    <value>Use default color</value>
+    <value>Ūšē ďēƒåūĺť čōĺōŕ</value>
   </data>
   <data name="OptionalColorPickerButton_WindowsColorsSectionHeading.Text" xml:space="preserve">
-    <value>Windows colors</value>
+    <value>Ŵīńďōŵš čōĺōŕš</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImage_SettingsExpander.Header" xml:space="preserve">
-    <value>Background image</value>
+    <value>Ɓåčķğŕōūńď īṁåğē</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImageOpacity_SettingsCard.Header" xml:space="preserve">
-    <value>Background image opacity</value>
+    <value>Ɓåčķğŕōūńď īṁåğē ōṗåčīťŷ</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImageFit_SettingsCard.Header" xml:space="preserve">
-    <value>Background image fit</value>
+    <value>Ɓåčķğŕōūńď īṁåğē ƒīť</value>
   </data>
   <data name="BackgroundImageFit_ComboBoxItem_Fill.Content" xml:space="preserve">
-    <value>Fill</value>
+    <value>Ƒīĺĺ</value>
   </data>
   <data name="BackgroundImageFit_ComboBoxItem_Fit.Content" xml:space="preserve">
-    <value>Fit</value>
+    <value>Ƒīť</value>
   </data>
   <data name="BackgroundImageFit_ComboBoxItem_Stretch.Content" xml:space="preserve">
-    <value>Stretch</value>
+    <value>Šťŕēťčĥ</value>
   </data>
   <data name="Settings_PageTitles_GeneralPage" xml:space="preserve">
-    <value>General</value>
+    <value>Ğēńēŕåĺ</value>
   </data>
   <data name="Settings_PageTitles_AppearancePage" xml:space="preserve">
-    <value>Personalization</value>
+    <value>Ṗēŕšōńåĺīžåťīōń</value>
   </data>
   <data name="Settings_PageTitles_ExtensionsPage" xml:space="preserve">
-    <value>Extensions</value>
+    <value>Ēẋťēńšīōńš</value>
   </data>
   <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_DismissEmptySearchOrGoBack.Content" xml:space="preserve">
-    <value>Clear search first, then go back</value>
+    <value>Čĺēåŕ šēåŕčĥ ƒīŕšť, ťĥēń ğō ƀåčķ</value>
   </data>
   <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysGoBack.Content" xml:space="preserve">
-    <value>Go back</value>
+    <value>Ğō ƀåčķ</value>
   </data>
   <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysDismiss.Content" xml:space="preserve">
-    <value>Hide window and go home</value>
+    <value>Ĥīďē ŵīńďōŵ åńď ğō ĥōṁē</value>
   </data>
   <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysHide.Content" xml:space="preserve">
-    <value>Hide window</value>
+    <value>Ĥīďē ŵīńďōŵ</value>
   </data>
   <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Header" xml:space="preserve">
-    <value>Escape key behavior</value>
+    <value>Ēščåṗē ķēŷ ƀēĥåṽīōŕ</value>
   </data>
   <data name="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard.Description" xml:space="preserve">
-    <value>Choose how Escape key behaves</value>
+    <value>Čĥōōšē ĥōŵ Ēščåṗē ķēŷ ƀēĥåṽēš</value>
   </data>
   <data name="SettingsButtonTextBlock.Text" xml:space="preserve">
-    <value>Settings</value>
+    <value>Šēťťīńğš</value>
   </data>
   <data name="OptionalColorPickerButton_CustomColorsSectionHeading.Text" xml:space="preserve">
-    <value>Custom colors</value>
+    <value>Čūšťōṁ čōĺōŕš</value>
   </data>
   <data name="Settings_GeneralPage_ColorizationMode_None.Content" xml:space="preserve">
-    <value>None</value>
+    <value>Ńōńē</value>
   </data>
   <data name="Settings_GeneralPage_ColorizationMode_CustomColor.Content" xml:space="preserve">
-    <value>Custom color</value>
+    <value>Čūšťōṁ čōĺōŕ</value>
   </data>
   <data name="Settings_GeneralPage_ColorizationMode_WindowsAccent.Content" xml:space="preserve">
-    <value>Accent color</value>
+    <value>Åččēńť čōĺōŕ</value>
   </data>
   <data name="Settings_GeneralPage_ColorizationMode_Image.Content" xml:space="preserve">
-    <value>Image</value>
+    <value>Īṁåğē</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImage_ChooseImageButton.Content" xml:space="preserve">
-    <value>Browse...</value>
+    <value>Ɓŕōŵšē...</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImage_ResetImageButton.Content" xml:space="preserve">
-    <value>Remove image</value>
+    <value>Ŕēṁōṽē īṁåğē</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundColor_SettingsExpander.Header" xml:space="preserve">
-    <value>Background color</value>
+    <value>Ɓåčķğŕōūńď čōĺōŕ</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundColor_SettingsExpander.Description" xml:space="preserve">
-    <value>Choose a custom background color or use the current accent color</value>
+    <value>Čĥōōšē å čūšťōṁ ƀåčķğŕōūńď čōĺōŕ ōŕ ūšē ťĥē čūŕŕēńť åččēńť čōĺōŕ</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImage_SettingsCard.Header" xml:space="preserve">
-    <value>Background image</value>
+    <value>Ɓåčķğŕōūńď īṁåğē</value>
   </data>
   <data name="Settings_GeneralPage_NoBackground_DescriptionTextBlock.Text" xml:space="preserve">
-    <value>No additional settings are available.</value>
+    <value>Ńō åďďīťīōńåĺ šēťťīńğš åŕē åṽåīĺåƀĺē.</value>
   </data>
   <data name="Settings_GeneralPage_Background_SettingsExpander.Header" xml:space="preserve">
-    <value>Background</value>
+    <value>Ɓåčķğŕōūńď</value>
   </data>
   <data name="Settings_GeneralPage_Background_SettingsExpander.Description" xml:space="preserve">
-    <value>Choose a custom background color or image</value>
+    <value>Čĥōōšē å čūšťōṁ ƀåčķğŕōūńď čōĺōŕ ōŕ īṁåğē</value>
   </data>
   <data name="Settings_GeneralPage_Background_NotAvailable.Text" xml:space="preserve">
-    <value>Not available with Mica</value>
+    <value>Ńōť åṽåīĺåƀĺē ŵīťĥ Ṁīčå</value>
   </data>
   <data name="Settings_GeneralPage_WindowsAccentColor_SettingsCard.Header" xml:space="preserve">
-    <value>System accent color</value>
+    <value>Šŷšťēṁ åččēńť čōĺōŕ</value>
   </data>
   <data name="Settings_GeneralPage_WindowsAccentColor_OpenWindowsColorsLinkText.Text" xml:space="preserve">
-    <value>Personalization › Colors</value>
+    <value>Ṗēŕšōńåĺīžåťīōń › Čōĺōŕš</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImageBlur_SettingsCard.Header" xml:space="preserve">
-    <value>Background image blur</value>
+    <value>Ɓåčķğŕōūńď īṁåğē ƀĺūŕ</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImageBrightness_SettingsCard.Header" xml:space="preserve">
-    <value>Background image brightness</value>
+    <value>Ɓåčķğŕōūńď īṁåğē ƀŕīğĥťńēšš</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImage_ResetProperties_SettingsCard.Header" xml:space="preserve">
-    <value>Restore defaults</value>
+    <value>Ŕēšťōŕē ďēƒåūĺťš</value>
   </data>
   <data name="Settings_GeneralPage_Background_ResetImagePropertiesButton.Content" xml:space="preserve">
-    <value>Reset image settings</value>
+    <value>Ŕēšēť īṁåğē šēťťīńğš</value>
   </data>
   <data name="Settings_GeneralPage_WindowsAccentColor_SettingsCard_Description1.Text" xml:space="preserve">
-    <value>Change the system accent in Windows Settings:</value>
+    <value>Čĥåńğē ťĥē šŷšťēṁ åččēńť īń Ŵīńďōŵš Šēťťīńğš:</value>
   </data>
   <data name="Settings_GeneralPage_AppTheme_Mode_Light_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Light</value>
+    <value>Ĺīğĥť</value>
   </data>
   <data name="Settings_GeneralPage_AppTheme_Mode_Dark_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Dark</value>
+    <value>Ďåŕķ</value>
   </data>
   <data name="Settings_GeneralPage_AppTheme_Mode_System_Automation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Use system settings</value>
+    <value>Ūšē šŷšťēṁ šēťťīńğš</value>
   </data>
   <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Header" xml:space="preserve">
-    <value>Include in the Global result</value>
+    <value>Īńčĺūďē īń ťĥē Ğĺōƀåĺ ŕēšūĺť</value>
   </data>
   <data name="Settings_FallbacksPage_GlobalResults_SettingsCard.Description" xml:space="preserve">
-    <value>Show results on queries without direct activation command</value>
+    <value>Šĥōŵ ŕēšūĺťš ōń qūēŕīēš ŵīťĥōūť ďīŕēčť åčťīṽåťīōń čōṁṁåńď</value>
   </data>
   <data name="ManageFallbackRankAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Manage fallback order</value>
+    <value>Ṁåńåğē ƒåĺĺƀåčķ ōŕďēŕ</value>
   </data>
   <data name="ManageFallbackRank.Text" xml:space="preserve">
-    <value>Manage fallback order</value>
+    <value>Ṁåńåğē ƒåĺĺƀåčķ ōŕďēŕ</value>
   </data>
   <data name="ManageFallbackOrderDialogDescription.Text" xml:space="preserve">
-    <value>Drag items to set which fallback commands run first; commands at the top take priority.</value>
+    <value>Ďŕåğ īťēṁš ťō šēť ŵĥīčĥ ƒåĺĺƀåčķ čōṁṁåńďš ŕūń ƒīŕšť; čōṁṁåńďš åť ťĥē ťōṗ ťåķē ṗŕīōŕīťŷ.</value>
   </data>
   <data name="Settings_ExtensionsPage_More_ReorderFallbacks_MenuFlyoutItem.Text" xml:space="preserve">
-    <value>Manage fallback order</value>
+    <value>Ṁåńåğē ƒåĺĺƀåčķ ōŕďēŕ</value>
   </data>
   <data name="Settings_GeneralPage_VersionNo" xml:space="preserve">
-    <value>Version {0}</value>
+    <value>Ṽēŕšīōń {0}</value>
   </data>
   <data name="Settings_GeneralPage_BackdropOpacity_SettingsCard.Header" xml:space="preserve">
-    <value>Opacity</value>
+    <value>Ōṗåčīťŷ</value>
   </data>
   <data name="Settings_GeneralPage_BackdropStyle_SettingsCard.Header" xml:space="preserve">
-    <value>Material</value>
+    <value>Ṁåťēŕīåĺ</value>
   </data>
   <data name="Settings_GeneralPage_BackdropStyle_SettingsCard.Description" xml:space="preserve">
-    <value>Select the visual material used for the window background</value>
+    <value>Šēĺēčť ťĥē ṽīšūåĺ ṁåťēŕīåĺ ūšēď ƒōŕ ťĥē ŵīńďōŵ ƀåčķğŕōūńď</value>
   </data>
   <data name="Settings_GeneralPage_BackdropStyle_Acrylic.Content" xml:space="preserve">
-    <value>Acrylic (default)</value>
+    <value>Åčŕŷĺīč (ďēƒåūĺť)</value>
   </data>
   <data name="Settings_GeneralPage_BackdropStyle_Transparent.Content" xml:space="preserve">
-    <value>Transparent</value>
+    <value>Ťŕåńšṗåŕēńť</value>
   </data>
   <data name="Settings_GeneralPage_BackdropStyle_Mica.Content" xml:space="preserve">
-    <value>Mica</value>
+    <value>Ṁīčå</value>
   </data>
   <data name="Settings_GeneralPage_BackdropStyle_AcrylicThin.Content" xml:space="preserve">
-    <value>Thin Acrylic</value>
+    <value>Ťĥīń Åčŕŷĺīč</value>
   </data>
   <data name="Settings_GeneralPage_BackdropStyle_MicaAlt.Content" xml:space="preserve">
-    <value>Mica Alt</value>
+    <value>Ṁīčå Åĺť</value>
   </data>
   <data name="Settings_GeneralPage_MicaBackdrop_DescriptionTextBlock.Text" xml:space="preserve">
-    <value>Mica automatically adapts to your desktop wallpaper. Custom backgrounds and opacity settings are not available for this material.</value>
+    <value>Ṁīčå åūťōṁåťīčåĺĺŷ åďåṗťš ťō ŷōūŕ ďēšķťōṗ ŵåĺĺṗåṗēŕ. Čūšťōṁ ƀåčķğŕōūńďš åńď ōṗåčīťŷ šēťťīńğš åŕē ńōť åṽåīĺåƀĺē ƒōŕ ťĥīš ṁåťēŕīåĺ.</value>
   </data>
   <data name="Settings_AppearancePage_OpenCommandPaletteButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Open Command Palette</value>
+    <value>Ōṗēń Čōṁṁåńď Ṗåĺēťťē</value>
     <comment>Button to open the Command Palette window to preview appearance changes</comment>
   </data>
   <data name="Settings_AppearancePage_OpenCommandPaletteButton_Text.Text" xml:space="preserve">
-    <value>Open Command Palette</value>
+    <value>Ōṗēń Čōṁṁåńď Ṗåĺēťťē</value>
   </data>
   <data name="Settings_AppearancePage_ResetAppearanceButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Reset appearance settings</value>
+    <value>Ŕēšēť åṗṗēåŕåńčē šēťťīńğš</value>
     <comment>Button to reset all appearance settings to their default values</comment>
   </data>
   <data name="Settings_AppearancePage_ResetAppearanceButton_Text.Text" xml:space="preserve">
-    <value>Reset to defaults</value>
+    <value>Ŕēšēť ťō ďēƒåūĺťš</value>
   </data>
   <data name="Settings_ExtensionsPage_More_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>More options</value>
+    <value>Ṁōŕē ōṗťīōńš</value>
   </data>
   <data name="MoreCommandsButton_Label.Text" xml:space="preserve">
-    <value>More</value>
+    <value>Ṁōŕē</value>
   </data>
   <data name="CommandBar_SecondaryButton_HotkeyCtrl.Text" xml:space="preserve">
-    <value>Ctrl</value>
+    <value>Čťŕĺ</value>
     <comment>Key modifier</comment>
   </data>
   <data name="CommandBar_MoreCommandsButtonButton_HotkeyCtrl.Text" xml:space="preserve">
-    <value>Ctrl</value>
+    <value>Čťŕĺ</value>
     <comment>Key modifier</comment>
   </data>
   <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Ctrl+K</value>
+    <value>Čťŕĺ+Ķ</value>
   </data>
   <data name="CommandBar_MoreCommandsButtonButton_HotkeyCtrl2.Text" xml:space="preserve">
-    <value>K</value>
+    <value>Ķ</value>
     <comment>Keyboard key</comment>
   </data>
   <data name="ConfigureShortcut" xml:space="preserve">
-    <value>Configure shortcut</value>
+    <value>Čōńƒīğūŕē šĥōŕťčūť</value>
   </data>
   <data name="ConfigureShortcutText.Text" xml:space="preserve">
-    <value>Assign shortcut</value>
+    <value>Åššīğń šĥōŕťčūť</value>
   </data>
   <data name="Settings_GeneralPage_Language_SettingsCard.Header" xml:space="preserve">
-    <value>Language</value>
+    <value>Ĺåńğūåğē</value>
   </data>
   <data name="Settings_GeneralPage_Language_SettingsCard.Description" xml:space="preserve">
-    <value>Command Palette uses your Windows display language by default</value>
+    <value>Čōṁṁåńď Ṗåĺēťťē ūšēš ŷōūŕ Ŵīńďōŵš ďīšṗĺåŷ ĺåńğūåğē ƀŷ ďēƒåūĺť</value>
   </data>
   <data name="Settings_GeneralPage_LanguageRestartDialog_Title" xml:space="preserve">
-    <value>A restart is needed for the language change to take effect</value>
+    <value>Å ŕēšťåŕť īš ńēēďēď ƒōŕ ťĥē ĺåńğūåğē čĥåńğē ťō ťåķē ēƒƒēčť</value>
   </data>
   <data name="Settings_GeneralPage_LanguageRestartInfo.Title" xml:space="preserve">
-    <value>A restart is needed for the language change to take effect</value>
+    <value>Å ŕēšťåŕť īš ńēēďēď ƒōŕ ťĥē ĺåńğūåğē čĥåńğē ťō ťåķē ēƒƒēčť</value>
   </data>
   <data name="Settings_GeneralPage_LanguageRestartDialog_RestartNowButtonText" xml:space="preserve">
-    <value>Restart now</value>
+    <value>Ŕēšťåŕť ńōŵ</value>
   </data>
   <data name="Settings_GeneralPage_LanguageRestartButton.Content" xml:space="preserve">
-    <value>Restart now</value>
+    <value>Ŕēšťåŕť ńōŵ</value>
   </data>
   <data name="Settings_GeneralPage_LanguageRestartDialog_LaterNowButtonText" xml:space="preserve">
-    <value>Later</value>
+    <value>Ĺåťēŕ</value>
   </data>
 </root>

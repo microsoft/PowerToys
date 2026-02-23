@@ -1,0 +1,276 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="copy_command_name" xml:space="preserve">
+    <value>Čōṗŷ</value>
+  </data>
+  <data name="paste_command_name" xml:space="preserve">
+    <value>Ṗåšťē</value>
+  </data>
+  <data name="paste_toast_text" xml:space="preserve">
+    <value>Ṗåšťīńğ</value>
+  </data>
+  <data name="copied_toast_text" xml:space="preserve">
+    <value>Čōṗīēď ťō čĺīṗƀōåŕď</value>
+  </data>
+  <data name="list_item_title" xml:space="preserve">
+    <value>Čĺīṗƀōåŕď Ĥīšťōŕŷ</value>
+  </data>
+  <data name="list_item_subtitle" xml:space="preserve">
+    <value>Čōṗŷ, ṗåšťē, åńď šēåŕčĥ īťēṁš ōń ťĥē čĺīṗƀōåŕď</value>
+  </data>
+  <data name="provider_display_name" xml:space="preserve">
+    <value>Čĺīṗƀōåŕď Ĥīšťōŕŷ</value>
+  </data>
+  <data name="clipboard_history_page_name" xml:space="preserve">
+    <value>Ōṗēń</value>
+  </data>
+  <data name="clipboard_failed_to_load" xml:space="preserve">
+    <value>Ĺōåďīńğ čĺīṗƀōåŕď ĥīšťōŕŷ ƒåīĺēď</value>
+  </data>
+  <data name="delete_command_name" xml:space="preserve">
+    <value>Ďēĺēťē</value>
+  </data>
+  <data name="delete_toast_text" xml:space="preserve">
+    <value>Ďēĺēťēď ƒŕōṁ čĺīṗƀōåŕď ĥīšťōŕŷ</value>
+  </data>
+  <data name="settings_keep_after_paste_description" xml:space="preserve">
+    <value>Ķēēṗ īťēṁš īń čĺīṗƀōåŕď ĥīšťōŕŷ åƒťēŕ ṗåšťīńğ</value>
+  </data>
+  <data name="settings_keep_after_paste_title" xml:space="preserve">
+    <value>Ķēēṗ īťēṁš åƒťēŕ ṗåšťīńğ</value>
+  </data>
+  <data name="settings_confirm_delete_title" xml:space="preserve">
+    <value>Åšķ ƒōŕ čōńƒīŕṁåťīōń ƀēƒōŕē ďēĺēťīńğ īťēṁš</value>
+  </data>
+  <data name="settings_confirm_delete_description" xml:space="preserve">
+    <value>Šĥōŵ å čōńƒīŕṁåťīōń ďīåĺōğ ŵĥēń ṁåńūåĺĺŷ ďēĺēťīńğ åń īťēṁ</value>
+  </data>
+  <data name="delete_confirmation_title" xml:space="preserve">
+    <value>Ďēĺēťē īťēṁ?</value>
+  </data>
+  <data name="delete_confirmation_message" xml:space="preserve">
+    <value>Åŕē ŷōū šūŕē ŷōū ŵåńť ťō ďēĺēťē ťĥīš īťēṁ ƒŕōṁ čĺīṗƀōåŕď ĥīšťōŕŷ? Ťĥīš åčťīōń čåńńōť ƀē ūńďōńē.</value>
+  </data>
+  <data name="settings_primary_action_title" xml:space="preserve">
+    <value>Ṗŕīṁåŕŷ åčťīōń</value>
+  </data>
+  <data name="settings_primary_action_description" xml:space="preserve">
+    <value>Ṗŕīṁåŕŷ åčťīōń (Ēńťēŕ ķēŷ)</value>
+  </data>
+  <data name="settings_primary_action_default" xml:space="preserve">
+    <value>Ďēƒåūĺť (Čōṗŷ ťō Čĺīṗƀōåŕď)</value>
+  </data>
+  <data name="settings_primary_action_paste" xml:space="preserve">
+    <value>Ṗåšťē</value>
+  </data>
+  <data name="settings_primary_action_copy" xml:space="preserve">
+    <value>Čōṗŷ ťō Čĺīṗƀōåŕď</value>
+  </data>
+  <data name="open_url_command_name" xml:space="preserve">
+    <value>Ōṗēń ŪŔĹ</value>
+  </data>
+  <data name="metadata_image_section_title" xml:space="preserve">
+    <value>Īṁåğē ṁēťåďåťå</value>
+  </data>
+  <data name="metadata_image_dimensions_key" xml:space="preserve">
+    <value>Ďīṁēńšīōńš</value>
+  </data>
+  <data name="metadata_image_dpi_key" xml:space="preserve">
+    <value>ĎṖĪ</value>
+  </data>
+  <data name="metadata_image_storage_size_key" xml:space="preserve">
+    <value>Šťōŕåğē šīžē</value>
+  </data>
+  <data name="metadata_text_section_title" xml:space="preserve">
+    <value>Ťēẋť šťåťīšťīčš</value>
+  </data>
+  <data name="metadata_text_characters_key" xml:space="preserve">
+    <value>Čĥåŕåčťēŕš</value>
+  </data>
+  <data name="metadata_text_words_key" xml:space="preserve">
+    <value>Ŵōŕďš</value>
+  </data>
+  <data name="metadata_text_sentences_key" xml:space="preserve">
+    <value>Šēńťēńčēš</value>
+  </data>
+  <data name="metadata_text_lines_key" xml:space="preserve">
+    <value>Ĺīńēš</value>
+  </data>
+  <data name="metadata_text_paragraphs_key" xml:space="preserve">
+    <value>Ṗåŕåğŕåṗĥš</value>
+  </data>
+  <data name="metadata_text_line_ending_key" xml:space="preserve">
+    <value>Ĺīńē ēńďīńğ</value>
+  </data>
+  <data name="metadata_file_system_section_title" xml:space="preserve">
+    <value>Ƒīĺē</value>
+  </data>
+  <data name="metadata_file_system_name_key" xml:space="preserve">
+    <value>Ńåṁē</value>
+  </data>
+  <data name="metadata_file_system_location_key" xml:space="preserve">
+    <value>Ĺōčåťīōń</value>
+  </data>
+  <data name="metadata_file_system_type_key" xml:space="preserve">
+    <value>Ťŷṗē</value>
+  </data>
+  <data name="metadata_file_system_size_key" xml:space="preserve">
+    <value>Šīžē</value>
+  </data>
+  <data name="metadata_file_system_modified_key" xml:space="preserve">
+    <value>Ṁōďīƒīēď</value>
+  </data>
+  <data name="metadata_file_system_created_key" xml:space="preserve">
+    <value>Čŕēåťēď</value>
+  </data>
+  <data name="metadata_web_link_section_title" xml:space="preserve">
+    <value>Ŵēƀ ĺīńķ</value>
+  </data>
+  <data name="metadata_web_link_url_key" xml:space="preserve">
+    <value>ŪŔĹ</value>
+  </data>
+  <data name="metadata_web_link_host_key" xml:space="preserve">
+    <value>Ĥōšť</value>
+  </data>
+  <data name="metadata_web_link_port_key" xml:space="preserve">
+    <value>Ṗōŕť</value>
+  </data>
+  <data name="metadata_web_link_path_key" xml:space="preserve">
+    <value>Ṗåťĥ</value>
+  </data>
+  <data name="metadata_web_link_query_params_key" xml:space="preserve">
+    <value>Qūēŕŷ ṗåŕåṁš</value>
+  </data>
+  <data name="metadata_web_link_fragment_key" xml:space="preserve">
+    <value>Ƒŕåğṁēńť</value>
+  </data>
+  <data name="clipboard_item_image_title" xml:space="preserve">
+    <value>Īṁåğē</value>
+  </data>
+  <data name="metadata_general_section_title" xml:space="preserve">
+    <value>Ğēńēŕåĺ</value>
+  </data>
+  <data name="metadata_copied_key" xml:space="preserve">
+    <value>Čōṗīēď</value>
+  </data>
+  <data name="metadata_file_system_folder_value" xml:space="preserve">
+    <value>Ƒōĺďēŕ</value>
+  </data>
+</root>

@@ -4,6 +4,8 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -27,8 +29,65 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     private readonly SettingsModel _settings;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly ILanguageService _languageService;
+
+    private int _languageIndex;
+    private int _initialLanguageIndex;
+    private bool _languageInitialized;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public event Action? RestartRequested;
+
+    public List<LanguageItem> Languages { get; private set; } = [];
+
+    public int LanguageIndex
+    {
+        get => _languageIndex;
+        set
+        {
+            if (_languageIndex == value)
+            {
+                return;
+            }
+
+            _languageIndex = value;
+            if (Languages.Count > 0 && value >= 0 && value < Languages.Count)
+            {
+                _settings.Language = Languages[value].Tag;
+                Save();
+            }
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LanguageIndex)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LanguageChanged)));
+
+            if (_languageInitialized && LanguageChanged)
+            {
+                RestartRequested?.Invoke();
+            }
+        }
+    }
+
+    public bool LanguageChanged
+    {
+        get
+        {
+            if (Languages.Count == 0)
+            {
+                return false;
+            }
+
+            var initialLanguage = _initialLanguageIndex >= 0 && _initialLanguageIndex < Languages.Count
+                ? Languages[_initialLanguageIndex].Tag : string.Empty;
+            var currentLanguage = _languageIndex >= 0 && _languageIndex < Languages.Count
+                ? Languages[_languageIndex].Tag : string.Empty;
+
+            return !string.Equals(
+                _languageService.GetEffectiveLanguageTag(initialLanguage),
+                _languageService.GetEffectiveLanguageTag(currentLanguage),
+                StringComparison.OrdinalIgnoreCase);
+        }
+    }
 
     public AppearanceSettingsViewModel Appearance { get; }
 
@@ -179,10 +238,13 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public SettingsExtensionsViewModel Extensions { get; }
 
-    public SettingsViewModel(SettingsModel settings, TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService)
+    public SettingsViewModel(SettingsModel settings, TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService, ILanguageService languageService)
     {
         _settings = settings;
         _topLevelCommandManager = topLevelCommandManager;
+        _languageService = languageService;
+
+        InitializeLanguages(languageService);
 
         Appearance = new AppearanceSettingsViewModel(themeService, _settings);
 
@@ -229,6 +291,39 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         {
             ApplyFallbackSort();
         }
+    }
+
+    private void InitializeLanguages(ILanguageService languageService)
+    {
+        var defaultItem = new LanguageItem(string.Empty, Properties.Resources.Language_Default);
+
+        var sorted = new List<LanguageItem>();
+        foreach (var tag in languageService.AvailableLanguages)
+        {
+            try
+            {
+                var culture = new CultureInfo(tag);
+                sorted.Add(new LanguageItem(tag, culture.DisplayName));
+            }
+            catch (CultureNotFoundException ex)
+            {
+                Logger.LogError($"Culture '{tag}' not found", ex);
+            }
+        }
+
+        sorted.Sort((a, b) => string.Compare(a.DisplayName, b.DisplayName, StringComparison.OrdinalIgnoreCase));
+        sorted.Insert(0, defaultItem);
+        Languages = sorted;
+
+        var currentLang = _settings.Language ?? string.Empty;
+        _initialLanguageIndex = Languages.FindIndex(l => l.Tag.Equals(currentLang, StringComparison.OrdinalIgnoreCase));
+        if (_initialLanguageIndex < 0)
+        {
+            _initialLanguageIndex = 0;
+        }
+
+        _languageIndex = _initialLanguageIndex;
+        _languageInitialized = true;
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()

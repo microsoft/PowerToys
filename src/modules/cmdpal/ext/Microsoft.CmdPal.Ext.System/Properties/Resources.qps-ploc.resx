@@ -1,0 +1,432 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="confirm_system_commands" xml:space="preserve">
+    <value>Šĥōŵ å ďīåĺōğ ťō čōńƒīŕṁ šŷšťēṁ čōṁṁåńďš</value>
+  </data>
+  <data name="EmptyRecycleBin_ConfirmationDialog_Description" xml:space="preserve">
+    <value>Ďō ŷōū ŵåńť ťō ēṁṗťŷ ŷōūŕ Ŕēčŷčĺē Ɓīń?</value>
+  </data>
+  <data name="Microsoft_plugin_command_name_empty" xml:space="preserve">
+    <value>Ēṁṗťŷ</value>
+    <comment>Empty recycle bin command name</comment>
+  </data>
+  <data name="Microsoft_plugin_command_name_hibernate" xml:space="preserve">
+    <value>Ĥīƀēŕńåťē</value>
+  </data>
+  <data name="Microsoft_plugin_command_name_lock" xml:space="preserve">
+    <value>Ĺōčķ</value>
+  </data>
+  <data name="Microsoft_plugin_command_name_signout" xml:space="preserve">
+    <value>Šīğń Ōūť</value>
+  </data>
+  <data name="Microsoft_plugin_command_name_open" xml:space="preserve">
+    <value>Ōṗēń</value>
+  </data>
+  <data name="Microsoft_plugin_command_name_reboot" xml:space="preserve">
+    <value>Ŕēƀōōť</value>
+  </data>
+  <data name="Microsoft_plugin_command_name_restart" xml:space="preserve">
+    <value>Ŕēšťåŕť</value>
+  </data>
+  <data name="Microsoft_plugin_command_name_shutdown" xml:space="preserve">
+    <value>Šĥūťďōŵń</value>
+  </data>
+  <data name="Microsoft_plugin_ext_connection_details" xml:space="preserve">
+    <value>Čōńńēčťīōń ďēťåīĺš</value>
+  </data>
+  <data name="Microsoft_plugin_ext_adapter_details" xml:space="preserve">
+    <value>Åďåṗťēŕ ďēťåīĺš</value>
+  </data>
+  <data name="Microsoft_plugin_ext_copy" xml:space="preserve">
+    <value>Čōṗŷ ťō čĺīṗƀōåŕď</value>
+  </data>
+  <data name="Microsoft_plugin_ext_settings_hideDisconnectedNetworkInfo" xml:space="preserve">
+    <value>Ĥīďē ďīščōńńēčťēď ńēťŵōŕķ īńƒō</value>
+  </data>
+  <data name="Microsoft_plugin_ext_system_page_title" xml:space="preserve">
+    <value>Ŵīńďōŵš šŷšťēṁ čōṁṁåńďš</value>
+  </data>
+  <data name="Microsoft_plugin_ext_system_page_name" xml:space="preserve">
+    <value>Šŷšťēṁ čōṁṁåńďš</value>
+  </data>
+  <data name="Microsoft_plugin_sys_AdapterName" xml:space="preserve">
+    <value>Åďåṗťēŕ ńåṁē</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Cable" xml:space="preserve">
+    <value>Čåƀĺē</value>
+  </data>
+  <data name="Microsoft_plugin_sys_confirmation" xml:space="preserve">
+    <value>Ṗĺēåšē čōńƒīŕṁ.</value>
+    <comment>Request confirmation</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_Connected" xml:space="preserve">
+    <value>Čōńńēčťēď</value>
+  </data>
+  <data name="Microsoft_plugin_sys_ConnectionName" xml:space="preserve">
+    <value>Čōńńēčťīōń ńåṁē</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Dhcp" xml:space="preserve">
+    <value>ĎĤČṖ šēŕṽēŕš</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Disconnected" xml:space="preserve">
+    <value>Ďīščōńńēčťēď</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Dns" xml:space="preserve">
+    <value>ĎŃŠ šēŕṽēŕš</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Gateways" xml:space="preserve">
+    <value>Ďēƒåūĺť Ğåťēŵåŷ</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Gbps" xml:space="preserve">
+    <value>{0} Ğƀṗš</value>
+    <comment>Abbreviation of 'Gbits per seconds'. Don't translate the placeholder '{0}' as it is replaced in code.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_hibernate" xml:space="preserve">
+    <value>Ĥīƀēŕńåťē</value>
+    <comment>This should align to the action in Windows of a hibernating your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_hibernate_confirmation" xml:space="preserve">
+    <value>Ŷōū åŕē åƀōūť ťō ṗūť ťĥīš čōṁṗūťēŕ īńťō ĥīƀēŕńåťīōń, åŕē ŷōū šūŕē?</value>
+    <comment>This should align to the action in Windows of a hibernating your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_hibernate_description" xml:space="preserve">
+    <value>Ĥīƀēŕńåťē čōṁṗūťēŕ</value>
+    <comment>This should align to the action in Windows of a hibernating your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_Ip4Address" xml:space="preserve">
+    <value>ĪṖṽ4 åďďŕēšš</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Ip4SubnetMask" xml:space="preserve">
+    <value>ĪṖṽ4 šūƀńēť ṁåšķ</value>
+  </data>
+  <data name="Microsoft_plugin_sys_ip4_description" xml:space="preserve">
+    <value>ĪṖṽ4 åďďŕēšš ōƒ {0}</value>
+    <comment>Don't translate the placeholder '{0}' as it is replaced in code.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_Ip6Address" xml:space="preserve">
+    <value>ĪṖṽ6 Åďďŕēšš</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Ip6Link" xml:space="preserve">
+    <value>ĪṖṽ6 ĺīńķ-ĺōčåĺ åďďŕēšš</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Ip6Site" xml:space="preserve">
+    <value>ĪṖṽ6 šīťē-ĺōčåĺ åďďŕēšš</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Ip6Temp" xml:space="preserve">
+    <value>ĪṖṽ6 ťēṁṗōŕåŕŷ åďďŕēšš</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Ip6Unique" xml:space="preserve">
+    <value>ĪṖṽ6 ūńīqūē ĺōčåĺ åďďŕēšš</value>
+  </data>
+  <data name="Microsoft_plugin_sys_ip6_description" xml:space="preserve">
+    <value>ĪṖṽ6 åďďŕēšš ōƒ {0}</value>
+    <comment>Don't translate the placeholder '{0}' as it is replaced in code.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_lock" xml:space="preserve">
+    <value>Ĺōčķ</value>
+    <comment>This should align to the action in Windows of a locking your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_lock_confirmation" xml:space="preserve">
+    <value>Ŷōū åŕē åƀōūť ťō ĺōčķ ťĥīš čōṁṗūťēŕ, åŕē ŷōū šūŕē?</value>
+    <comment>This should align to the action in Windows of a locking your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_lock_description" xml:space="preserve">
+    <value>Ĺōčķ čōṁṗūťēŕ</value>
+    <comment>This should align to the action in Windows of a locking your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_Loopback" xml:space="preserve">
+    <value>Ĺōōṗƀåčķ</value>
+  </data>
+  <data name="Microsoft_plugin_sys_mac_description" xml:space="preserve">
+    <value>ṀÅČ åďďŕēšš ōƒ {0} ({1})</value>
+    <comment>Don't translate the placeholders '{0}' and '{1}' as they are replaced in code.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_Mbps" xml:space="preserve">
+    <value>{0} Ṁƀṗš</value>
+    <comment>Abbreviation of 'Mbits per seconds'. Don't translate the placeholder '{0}' as it is replaced in code.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_MobileBroadband" xml:space="preserve">
+    <value>Ṁōƀīĺē ƀŕōåďƀåńď</value>
+  </data>
+  <data name="Microsoft_plugin_sys_PhysicalAddress" xml:space="preserve">
+    <value>Ṗĥŷšīčåĺ åďďŕēšš (ṀÅČ)</value>
+  </data>
+  <data name="Microsoft_plugin_sys_plugin_name" xml:space="preserve">
+    <value>Ŵīńďōŵš Šŷšťēṁ Čōṁṁåńďš</value>
+    <comment>Windows operating system commands.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin" xml:space="preserve">
+    <value>Ŕēčŷčĺē Ɓīń</value>
+    <comment>Means the recycle bin folder in Explorer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBinEmptyResult" xml:space="preserve">
+    <value>Ēṁṗťŷ Ŕēčŷčĺē Ɓīń</value>
+    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBinEmpty_description" xml:space="preserve">
+    <value>Ēṁṗťŷ Ŕēčŷčĺē Ɓīń</value>
+    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBinOpen" xml:space="preserve">
+    <value>Ōṗēń Ŕēčŷčĺē Ɓīń</value>
+    <comment>Means the recycle bin folder in Explorer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_contextMenu" xml:space="preserve">
+    <value>Ēṁṗťŷ Ŕēčŷčĺē Ɓīń (Šĥīƒť+Ďēĺēťē)</value>
+    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_description" xml:space="preserve">
+    <value>Ōṗēń ťĥē Ŕēčŷčĺē Ɓīń</value>
+    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_EmptySuccessMessage" xml:space="preserve">
+    <value>Ŕēčŷčĺē Ɓīń ēṁṗťīēď šūččēššƒūĺĺŷ.</value>
+    <comment>Means the recycle bin folder in Explorer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_EmptyTaskRunning" xml:space="preserve">
+    <value>Ťĥē ťåšķ ťō ēṁṗťŷ ťĥē Ŕēčŷčĺē Ɓīń īš åĺŕēåďŷ ŕūńńīńğ.</value>
+    <comment>Means the recycle bin folder in Explorer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_ErrorMsg" xml:space="preserve">
+    <value>Ƒåīĺēď ťō ēṁṗťŷ ťĥē Ŕēčŷčĺē Ɓīń:</value>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_IsEmpty" xml:space="preserve">
+    <value>Ŕēčŷčĺē Ɓīń īš ēṁṗťŷ.</value>
+    <comment>Means the recycle bin folder in Explorer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_searchTag" xml:space="preserve">
+    <value>Ēṁṗťŷ Ŕēčŷčĺē Ɓīń</value>
+    <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_HideEmpty" xml:space="preserve">
+    <value>Ĥīďē ťĥē Ēṁṗťŷ Ŕēčŷčĺē Ɓīń čōṁṁåńď</value>
+  </data>
+  <data name="Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage" xml:space="preserve">
+    <value>Šĥōŵ å šūččēšš ṁēššåğē åƒťēŕ ēṁṗťŷīńğ ťĥē Ŕēčŷčĺē Ɓīń</value>
+    <comment>Means the recycle bin folder in Explorer and "emptying" refers to "Empty Recycle Bin" command.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_restart_computer" xml:space="preserve">
+    <value>Ŕēšťåŕť</value>
+    <comment>This should align to the action in Windows of a restarting your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_restart_computer_confirmation" xml:space="preserve">
+    <value>Ŷōū åŕē åƀōūť ťō ŕēšťåŕť ťĥīš čōṁṗūťēŕ. Åŕē ŷōū šūŕē?</value>
+    <comment>This should align to the action in Windows of a restarting your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_restart_computer_description" xml:space="preserve">
+    <value>Ŕēšťåŕť čōṁṗūťēŕ</value>
+    <comment>This should align to the action in Windows of a restarting your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_Search_NetworkKeywordList" xml:space="preserve">
+    <value>īṗ; ṁåč; åďďŕēšš</value>
+    <comment>Translate 'ip' as 'ip' and not as 'ip address'. Same for 'mac'.)</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_shutdown_computer" xml:space="preserve">
+    <value>Šĥūťďōŵń</value>
+    <comment>This should align to the action in Windows of a shutting down your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_shutdown_computer_confirmation" xml:space="preserve">
+    <value>Ŷōū åŕē åƀōūť ťō šĥūť ďōŵń ťĥīš čōṁṗūťēŕ, åŕē ŷōū šūŕē?</value>
+    <comment>This should align to the action in Windows of a shutting down your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_shutdown_computer_description" xml:space="preserve">
+    <value>Šĥūťďōŵń čōṁṗūťēŕ</value>
+    <comment>This should align to the action in Windows of a shutting down your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_sign_out" xml:space="preserve">
+    <value>Šīğń ōūť</value>
+    <comment>This should align to the action in windows of a signing out back to the lock screen.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_sign_out_confirmation" xml:space="preserve">
+    <value>Ŷōū åŕē åƀōūť ťō šīğń ōūť ōƒ ťĥīš čōṁṗūťēŕ, åŕē ŷōū šūŕē?</value>
+    <comment>This should align to the action in windows of a signing out back to the lock screen.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_sign_out_description" xml:space="preserve">
+    <value>Šīğń ōūť ōƒ čōṁṗūťēŕ</value>
+    <comment>This should align to the action in windows of a signing out back to the lock screen.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_sleep" xml:space="preserve">
+    <value>Šĺēēṗ</value>
+    <comment>This should align to the action in Windows of a making your computer go to sleep.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_sleep_confirmation" xml:space="preserve">
+    <value>Ŷōū åŕē åƀōūť ťō ṗūť ťĥīš čōṁṗūťēŕ ťō šĺēēṗ, åŕē ŷōū šūŕē?</value>
+    <comment>This should align to the action in Windows of a making your computer go to sleep.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_sleep_description" xml:space="preserve">
+    <value>Ṗūť čōṁṗūťēŕ ťō šĺēēṗ</value>
+    <comment>This should align to the action in Windows of a making your computer go to sleep.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_Speed" xml:space="preserve">
+    <value>Šṗēēď</value>
+  </data>
+  <data name="Microsoft_plugin_sys_State" xml:space="preserve">
+    <value>Šťåťē</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Suffix" xml:space="preserve">
+    <value>ĎŃŠ šūƒƒīẋ</value>
+  </data>
+  <data name="Microsoft_plugin_sys_TunnelConnection" xml:space="preserve">
+    <value>Ťūńńēĺ</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Type" xml:space="preserve">
+    <value>Ťŷṗē</value>
+    <comment>Means type like category. Here it means network interface type (ethernet, wifi, ...).</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_uefi" xml:space="preserve">
+    <value>ŪĒƑĪ ƒīŕṁŵåŕē šēťťīńğš</value>
+    <comment>This should align to the action in Windows Recovery Environment that restart into uefi settings.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_uefi_confirmation" xml:space="preserve">
+    <value>Ŷōū åŕē åƀōūť ťō ŕēƀōōť ťĥīš čōṁṗūťēŕ īńťō ŪĒƑĪ ƒīŕṁŵåŕē šēťťīńğš ṁēńū, åŕē ŷōū šūŕē?</value>
+    <comment>This should align to the action in Windows Recovery Environment that restart into uefi settings.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_uefi_description" xml:space="preserve">
+    <value>Ŕēƀōōť čōṁṗūťēŕ īńťō ŪĒƑĪ ƒīŕṁŵåŕē Šēťťīńğš (ŕēqūīŕēš åďṁīńīšťŕåťīṽē ṗēŕṁīššīōńš.)</value>
+    <comment>This should align to the action in Windows Recovery Environment that restart into uefi settings.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_Unknown" xml:space="preserve">
+    <value>Ūńķńōŵń</value>
+  </data>
+  <data name="Microsoft_plugin_sys_Wins" xml:space="preserve">
+    <value>ŴĪŃŠ šēŕṽēŕš</value>
+  </data>
+  <data name="Microsoft_plugin_sys_WirelessLan" xml:space="preserve">
+    <value>Ŵīŕēĺēšš ĹÅŃ</value>
+  </data>
+  <data name="Microsoft_plugin_command_name_sleep" xml:space="preserve">
+    <value>Šĺēēṗ</value>
+  </data>
+  <data name="Microsoft_plugin_ext_fallback_display_title" xml:space="preserve">
+    <value>Ēẋēčūťē šŷšťēṁ čōṁṁåńďš</value>
+  </data>
+  <data name="Microsoft_plugin_sys_RestartShell" xml:space="preserve">
+    <value>Ŕēšťåŕť Ŵīńďōŵš Ēẋṗĺōŕēŕ</value>
+  </data>
+  <data name="Microsoft_plugin_sys_RestartShell_description" xml:space="preserve">
+    <value>Ēńď åńď ŕēšťåŕť ťĥē Ŵīńďōŵš Ēẋṗĺōŕēŕ šĥēĺĺ ṗŕōčēšš</value>
+  </data>
+  <data name="Microsoft_plugin_sys_RestartShell_name" xml:space="preserve">
+    <value>Ŕēšťåŕť</value>
+  </data>
+  <data name="Microsoft_plugin_sys_RestartShell_confirmation" xml:space="preserve">
+    <value>Ŷōū åŕē åƀōūť ťō ŕēšťåŕť Ŵīńďōŵš Ēẋṗĺōŕēŕ, åŕē ŷōū šūŕē?</value>
+  </data>
+</root>
