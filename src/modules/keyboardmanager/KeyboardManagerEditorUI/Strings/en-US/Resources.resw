@@ -117,4 +117,116 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  
+  <!-- Button Texts -->
+  <data name="NewRemappingBtn_Text.Text" xml:space="preserve">
+    <value>Add new remapping</value>
+    <comment>Button text to create a new keyboard remapping</comment>
+  </data>
+  
+  <!-- Empty State -->
+  <data name="EmptyStateTitle.Text" xml:space="preserve">
+    <value>Nothing mapped yet</value>
+    <comment>Title shown when no mappings exist</comment>
+  </data>
+  <data name="EmptyStateDescription.Text" xml:space="preserve">
+    <value>Create a key or shortcut remapping to customize how your keyboard works.</value>
+    <comment>Description shown when no mappings exist</comment>
+  </data>
+  
+  <!-- Section Headers -->
+  <data name="RemappingsHeader.Text" xml:space="preserve">
+    <value>Keys and shortcuts</value>
+    <comment>Header for the keys and shortcuts remapping section</comment>
+  </data>
+  <data name="TextMappingsHeader.Text" xml:space="preserve">
+    <value>Text</value>
+    <comment>Header for the text mapping section</comment>
+  </data>
+  <data name="ProgramsHeader.Text" xml:space="preserve">
+    <value>Programs</value>
+    <comment>Header for the programs section</comment>
+  </data>
+  <data name="UrlsHeader.Text" xml:space="preserve">
+    <value>Urls</value>
+    <comment>Header for the URLs section</comment>
+  </data>
+  
+  <!-- List Item Actions -->
+  <data name="MapsToText.Text" xml:space="preserve">
+    <value>maps to</value>
+    <comment>Text showing key mapping relationship</comment>
+  </data>
+  <data name="InsertsText.Text" xml:space="preserve">
+    <value>inserts</value>
+    <comment>Text showing text insertion action</comment>
+  </data>
+  <data name="OpensText.Text" xml:space="preserve">
+    <value>opens</value>
+    <comment>Text showing opening action for programs and URLs</comment>
+  </data>
+  <data name="InText.Text" xml:space="preserve">
+    <value>in</value>
+    <comment>Text showing app-specific context</comment>
+  </data>
+  
+  <!-- Context Menu -->
+  <data name="DeleteMenuItem.Text" xml:space="preserve">
+    <value>Delete</value>
+    <comment>Menu item to delete a mapping</comment>
+  </data>
+  
+  <!-- Tooltip Labels -->
+  <data name="TooltipArguments.Text" xml:space="preserve">
+    <value>Arguments:</value>
+    <comment>Label for program arguments in tooltip</comment>
+  </data>
+  <data name="TooltipStartIn.Text" xml:space="preserve">
+    <value>Start in:</value>
+    <comment>Label for start directory in tooltip</comment>
+  </data>
+  <data name="TooltipElevation.Text" xml:space="preserve">
+    <value>Elevation:</value>
+    <comment>Label for elevation level in tooltip</comment>
+  </data>
+  <data name="TooltipIfRunning.Text" xml:space="preserve">
+    <value>If running:</value>
+    <comment>Label for if running action in tooltip</comment>
+  </data>
+  <data name="TooltipWindow.Text" xml:space="preserve">
+    <value>Window:</value>
+    <comment>Label for window visibility in tooltip</comment>
+  </data>
+  
+  <!-- RemappingDialog -->
+  <data name="RemappingDialog.Title" xml:space="preserve">
+    <value>Add new remapping</value>
+    <comment>Default title for remapping dialog (changed dynamically to "Edit remapping" in code)</comment>
+  </data>
+  <data name="RemappingDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+    <comment>Primary button text for remapping dialog</comment>
+  </data>
+  <data name="RemappingDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Close button text for remapping dialog</comment>
+  </data>
+  
+  <!-- Delete Confirmation Dialog -->
+  <data name="DeleteConfirmationDialog.Title" xml:space="preserve">
+    <value>Are you sure?</value>
+    <comment>Title for delete confirmation dialog</comment>
+  </data>
+  <data name="DeleteConfirmationDialogContent.Text" xml:space="preserve">
+    <value>You are about to delete this remapping.</value>
+    <comment>Content for delete confirmation dialog</comment>
+  </data>
+  <data name="DeleteConfirmationDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Delete</value>
+    <comment>Primary button text for delete confirmation dialog</comment>
+  </data>
+  <data name="DeleteConfirmationDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Close button text for delete confirmation dialog</comment>
+  </data>
 </root>

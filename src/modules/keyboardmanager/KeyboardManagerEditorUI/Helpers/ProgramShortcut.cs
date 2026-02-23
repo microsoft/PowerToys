@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static KeyboardManagerEditorUI.Interop.ShortcutKeyMapping;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
@@ -21,5 +22,17 @@ namespace KeyboardManagerEditorUI.Helpers
         public bool IsActive { get; set; } = true;
 
         public string Id { get; set; } = string.Empty;
+
+        public bool IsAllApps { get; set; } = true;
+
+        public string AppName { get; set; } = string.Empty;
+
+        public string StartInDirectory { get; set; } = string.Empty;
+
+        public string Elevation { get; set; } = string.Empty;
+
+        public string IfRunningAction { get; set; } = string.Empty;
+
+        public string Visibility { get; set; } = string.Empty;
     }
 }

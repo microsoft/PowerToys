@@ -936,6 +936,12 @@ namespace KeyboardManagerEditorUI.Pages
                     Args = mapping.ProgramArgs,
                     IsActive = shortcutSettings.IsActive,
                     Id = shortcutSettings.Id,
+                    IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
+                    AppName = string.IsNullOrEmpty(mapping.TargetApp) ? string.Empty : mapping.TargetApp,
+                    StartInDirectory = mapping.StartInDirectory,
+                    Elevation = mapping.Elevation.ToString(),
+                    IfRunningAction = mapping.IfRunningAction.ToString(),
+                    Visibility = mapping.Visibility.ToString(),
                 });
             }
         }
@@ -951,6 +957,7 @@ namespace KeyboardManagerEditorUI.Pages
 
             foreach (var shortcutSettings in SettingsManager.GetShortcutSettingsByOperationType(ShortcutOperationType.OpenUri))
             {
+                ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
                 string[] originalKeyCodes = shortcutSettings.Shortcut.OriginalKeys.Split(';');
                 var originalKeyNames = new List<string>();
                 foreach (var keyCode in originalKeyCodes)
@@ -964,9 +971,11 @@ namespace KeyboardManagerEditorUI.Pages
                 UrlShortcuts.Add(new URLShortcut
                 {
                     Shortcut = originalKeyNames,
-                    URL = shortcutSettings.Shortcut.UriToOpen,
+                    URL = mapping.UriToOpen,
                     Id = shortcutSettings.Id,
                     IsActive = shortcutSettings.IsActive,
+                    IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
+                    AppName = string.IsNullOrEmpty(mapping.TargetApp) ? string.Empty : mapping.TargetApp,
                 });
             }
         }

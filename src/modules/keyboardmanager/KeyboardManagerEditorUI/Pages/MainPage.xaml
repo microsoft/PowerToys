@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="KeyboardManagerEditorUI.Pages.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -82,7 +82,7 @@
                 Click="NewRemappingBtn_Click">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon FontSize="14" Glyph="&#xE710;" />
-                    <TextBlock VerticalAlignment="Center" Text="Add new remapping" />
+                    <TextBlock x:Uid="NewRemappingBtn_Text" VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
         </Grid>
@@ -108,17 +108,17 @@
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Glyph="&#xEDA7;" />
                         <TextBlock
+                            x:Uid="EmptyStateTitle"
                             VerticalAlignment="Center"
                             CharacterSpacing="12"
-                            Text="Nothing mapped yet"
                             TextAlignment="Center"
                             TextTrimming="CharacterEllipsis"
                             TextWrapping="NoWrap" />
                         <TextBlock
+                            x:Uid="EmptyStateDescription"
                             VerticalAlignment="Center"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="Create a key or shortcut remapping to customize how your keyboard works."
                             TextAlignment="Center"
                             TextTrimming="CharacterEllipsis"
                             TextWrapping="NoWrap" />
@@ -131,9 +131,9 @@
                                 <!--  Remappings Section  -->
                                 <StackPanel Orientation="Vertical" Visibility="{x:Bind RemappingList.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
                                     <TextBlock
+                                        x:Uid="RemappingsHeader"
                                         Margin="16,16,0,8"
-                                        Style="{StaticResource BodyStrongTextBlockStyle}"
-                                        Text="Keys and shortcuts" />
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
                                     <Rectangle
                                         Height="1"
                                         HorizontalAlignment="Stretch"
@@ -166,9 +166,9 @@
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>
                                                         <TextBlock
+                                                            x:Uid="MapsToText"
                                                             VerticalAlignment="Center"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Text="maps to" />
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                         <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind RemappedKeys}">
                                                             <ItemsControl.ItemsPanel>
                                                                 <ItemsPanelTemplate>
@@ -186,9 +186,9 @@
                                                             Spacing="8"
                                                             Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
                                                             <TextBlock
+                                                                x:Uid="InText"
                                                                 VerticalAlignment="Center"
-                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                Text="in" />
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                             <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                         </StackPanel>
                                                     </StackPanel>
@@ -208,11 +208,11 @@
                                                             <Button.Flyout>
                                                                 <MenuFlyout>
                                                                     <MenuFlyoutItem
+                                                                        x:Uid="DeleteMenuItem"
                                                                         Click="DeleteMapping_Click"
                                                                         Icon="{ui:FontIcon Glyph=&#xE74D;,
                                                                                            FontSize=14}"
-                                                                        Tag="{x:Bind}"
-                                                                        Text="Delete" />
+                                                                        Tag="{x:Bind}" />
                                                                 </MenuFlyout>
                                                             </Button.Flyout>
                                                         </Button>
@@ -226,9 +226,9 @@
                                 <!--  Text Section  -->
                                 <StackPanel Orientation="Vertical" Visibility="{x:Bind TextMappings.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
                                     <TextBlock
+                                        x:Uid="TextMappingsHeader"
                                         Margin="16,16,0,8"
-                                        Style="{StaticResource BodyStrongTextBlockStyle}"
-                                        Text="Text" />
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
                                     <Rectangle
                                         Height="1"
                                         HorizontalAlignment="Stretch"
@@ -262,9 +262,9 @@
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>
                                                         <TextBlock
+                                                            x:Uid="InsertsText"
                                                             VerticalAlignment="Center"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Text="inserts" />
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                         <controls:IconLabelControl
                                                             ActionType="Text"
                                                             Label="{x:Bind Text}"
@@ -274,9 +274,9 @@
                                                             Spacing="8"
                                                             Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
                                                             <TextBlock
+                                                                x:Uid="InText"
                                                                 VerticalAlignment="Center"
-                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                Text="in" />
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                             <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                         </StackPanel>
                                                     </StackPanel>
@@ -296,11 +296,11 @@
                                                             <Button.Flyout>
                                                                 <MenuFlyout>
                                                                     <MenuFlyoutItem
+                                                                        x:Uid="DeleteMenuItem"
                                                                         Click="DeleteMapping_Click"
                                                                         Icon="{ui:FontIcon Glyph=&#xE74D;,
                                                                                            FontSize=14}"
-                                                                        Tag="{x:Bind}"
-                                                                        Text="Delete" />
+                                                                        Tag="{x:Bind}" />
                                                                 </MenuFlyout>
                                                             </Button.Flyout>
                                                         </Button>
@@ -314,9 +314,9 @@
                                 <!--  Programs Section  -->
                                 <StackPanel Orientation="Vertical" Visibility="{x:Bind ProgramShortcuts.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
                                     <TextBlock
+                                        x:Uid="ProgramsHeader"
                                         Margin="16,16,0,8"
-                                        Style="{StaticResource BodyStrongTextBlockStyle}"
-                                        Text="Programs" />
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
                                     <Rectangle
                                         Height="1"
                                         HorizontalAlignment="Stretch"
@@ -337,6 +337,35 @@
                                                     </Grid.ColumnDefinitions>
                                                     <Rectangle Style="{StaticResource ItemDividerStyle}" />
                                                     <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <ToolTipService.ToolTip>
+                                                            <ToolTip>
+                                                                <StackPanel Spacing="4">
+                                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                        <TextBlock x:Uid="TooltipArguments" FontWeight="SemiBold" />
+                                                                        <TextBlock Text="{x:Bind Args}" />
+                                                                    </StackPanel>
+                                                                    <StackPanel
+                                                                        Orientation="Horizontal"
+                                                                        Spacing="8"
+                                                                        Visibility="{x:Bind StartInDirectory, Converter={StaticResource StringVisibilityConverter}}">
+                                                                        <TextBlock x:Uid="TooltipStartIn" FontWeight="SemiBold" />
+                                                                        <TextBlock Text="{x:Bind StartInDirectory}" />
+                                                                    </StackPanel>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                        <TextBlock x:Uid="TooltipElevation" FontWeight="SemiBold" />
+                                                                        <TextBlock Text="{x:Bind Elevation}" />
+                                                                    </StackPanel>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                        <TextBlock x:Uid="TooltipIfRunning" FontWeight="SemiBold" />
+                                                                        <TextBlock Text="{x:Bind IfRunningAction}" />
+                                                                    </StackPanel>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                        <TextBlock x:Uid="TooltipWindow" FontWeight="SemiBold" />
+                                                                        <TextBlock Text="{x:Bind Visibility}" />
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                            </ToolTip>
+                                                        </ToolTipService.ToolTip>
                                                         <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind Shortcut}">
                                                             <ItemsControl.ItemsPanel>
                                                                 <ItemsPanelTemplate>
@@ -350,25 +379,23 @@
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>
                                                         <TextBlock
+                                                            x:Uid="OpensText"
                                                             VerticalAlignment="Center"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Text="opens" />
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                         <controls:IconLabelControl
                                                             ActionType="Program"
                                                             Label="{x:Bind AppToRun}"
                                                             Style="{StaticResource RemappedIconLabelControlStyle}" />
-                                                        <!--  TO DO: Add a ToolTip or Flyout with some of the important advanced info like args  -->
-                                                        <!--  {x:Bind Args}  -->
-                                                        <!--<StackPanel
-                                                    Orientation="Horizontal"
-                                                    Spacing="8"
-                                                    Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
-                                                    <TextBlock
-                                                        VerticalAlignment="Center"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        Text="in" />
-                                                    <kbmcontrols:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
-                                                </StackPanel>-->
+                                                        <StackPanel
+                                                            Orientation="Horizontal"
+                                                            Spacing="8"
+                                                            Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
+                                                            <TextBlock
+                                                                x:Uid="InText"
+                                                                VerticalAlignment="Center"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                            <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                        </StackPanel>
                                                     </StackPanel>
                                                     <StackPanel
                                                         Grid.Column="1"
@@ -387,11 +414,11 @@
                                                             <Button.Flyout>
                                                                 <MenuFlyout>
                                                                     <MenuFlyoutItem
+                                                                        x:Uid="DeleteMenuItem"
                                                                         Click="DeleteMapping_Click"
                                                                         Icon="{ui:FontIcon Glyph=&#xE74D;,
                                                                                            FontSize=14}"
-                                                                        Tag="{x:Bind}"
-                                                                        Text="Delete" />
+                                                                        Tag="{x:Bind}" />
                                                                 </MenuFlyout>
                                                             </Button.Flyout>
                                                         </Button>
@@ -405,9 +432,9 @@
                                 <!--  URLs Section  -->
                                 <StackPanel Orientation="Vertical" Visibility="{x:Bind UrlShortcuts.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
                                     <TextBlock
+                                        x:Uid="UrlsHeader"
                                         Margin="16,16,0,8"
-                                        Style="{StaticResource BodyStrongTextBlockStyle}"
-                                        Text="Urls" />
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
                                     <Rectangle
                                         Height="1"
                                         HorizontalAlignment="Stretch"
@@ -441,23 +468,23 @@
                                                             </ItemsControl.ItemTemplate>
                                                         </ItemsControl>
                                                         <TextBlock
+                                                            x:Uid="OpensText"
                                                             VerticalAlignment="Center"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Text="opens" />
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                         <controls:IconLabelControl
                                                             ActionType="Url"
                                                             Label="{x:Bind URL}"
                                                             Style="{StaticResource RemappedIconLabelControlStyle}" />
-                                                        <!--<StackPanel
-                                                    Orientation="Horizontal"
-                                                    Spacing="8"
-                                                    Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
-                                                    <TextBlock
-                                                        VerticalAlignment="Center"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        Text="in" />
-                                                    <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
-                                                </StackPanel>-->
+                                                        <StackPanel
+                                                            Orientation="Horizontal"
+                                                            Spacing="8"
+                                                            Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
+                                                            <TextBlock
+                                                                x:Uid="InText"
+                                                                VerticalAlignment="Center"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                            <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                        </StackPanel>
                                                     </StackPanel>
                                                     <StackPanel
                                                         Grid.Column="1"
@@ -475,11 +502,11 @@
                                                             <Button.Flyout>
                                                                 <MenuFlyout>
                                                                     <MenuFlyoutItem
+                                                                        x:Uid="DeleteMenuItem"
                                                                         Click="DeleteMapping_Click"
                                                                         Icon="{ui:FontIcon Glyph=&#xE74D;,
                                                                                            FontSize=14}"
-                                                                        Tag="{x:Bind}"
-                                                                        Text="Delete" />
+                                                                        Tag="{x:Bind}" />
                                                                 </MenuFlyout>
                                                             </Button.Flyout>
                                                         </Button>
@@ -499,27 +526,23 @@
         <!--  Content Dialog for new remapping  -->
         <ContentDialog
             x:Name="RemappingDialog"
-            Title="Add new remapping"
+            x:Uid="RemappingDialog"
             Width="760"
             MinWidth="800"
             MinHeight="500"
             MaxWidth="900"
-            CloseButtonText="Cancel"
             DefaultButton="Primary"
             IsPrimaryButtonEnabled="False"
-            PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
-            PrimaryButtonText="Save">
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <controls:UnifiedMappingControl x:Name="UnifiedMappingControl" Margin="0,16,0,0" />
         </ContentDialog>
 
         <!--  Confirmation Dialog for delete  -->
         <ContentDialog
             x:Name="DeleteConfirmationDialog"
-            Title="Are you sure?"
-            CloseButtonText="Cancel"
-            DefaultButton="Primary"
-            PrimaryButtonText="Delete">
-            <TextBlock Text="You are about to delete this remapping." TextWrapping="Wrap" />
+            x:Uid="DeleteConfirmationDialog"
+            DefaultButton="Primary">
+            <TextBlock x:Uid="DeleteConfirmationDialogContent" TextWrapping="Wrap" />
         </ContentDialog>
     </Grid>
 </Page>

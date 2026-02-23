@@ -19,5 +19,9 @@ namespace KeyboardManagerEditorUI.Helpers
         public bool IsActive { get; set; } = true;
 
         public string Id { get; set; } = string.Empty;
+
+        public bool IsAllApps { get; set; } = true;
+
+        public string AppName { get; set; } = string.Empty;
     }
 }
