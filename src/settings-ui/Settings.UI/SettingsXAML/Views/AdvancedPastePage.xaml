@@ -152,6 +152,18 @@
                             x:Uid="AdvancedPasteUI_Shortcut"
                             HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                             IsExpanded="True">
+                            <tkcontrols:SettingsExpander.ItemsHeader>
+                                <InfoBar
+                                    x:Uid="GPO_SettingIsManaged"
+                                    IsClosable="False"
+                                    IsOpen="{x:Bind ViewModel.ShowClipboardHistoryIsGpoConfiguredInfoBar, Mode=OneWay}"
+                                    IsTabStop="{x:Bind ViewModel.ShowClipboardHistoryIsGpoConfiguredInfoBar, Mode=OneWay}"
+                                    Severity="Informational">
+                                    <InfoBar.IconSource>
+                                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                                    </InfoBar.IconSource>
+                                </InfoBar>
+                            </tkcontrols:SettingsExpander.ItemsHeader>
                             <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
@@ -166,16 +178,7 @@
                                     IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=OneWay}">
                                     <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard" IsChecked="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
-                                <InfoBar
-                                    x:Uid="GPO_SettingIsManaged"
-                                    IsClosable="False"
-                                    IsOpen="{x:Bind ViewModel.ShowClipboardHistoryIsGpoConfiguredInfoBar, Mode=OneWay}"
-                                    IsTabStop="{x:Bind ViewModel.ShowClipboardHistoryIsGpoConfiguredInfoBar, Mode=OneWay}"
-                                    Severity="Informational">
-                                    <InfoBar.IconSource>
-                                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                                    </InfoBar.IconSource>
-                                </InfoBar>
+
                                 <tkcontrols:SettingsCard Name="AdvancedPasteCloseAfterLosingFocus" ContentAlignment="Left">
                                     <CheckBox x:Uid="AdvancedPaste_CloseAfterLosingFocus" IsChecked="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>

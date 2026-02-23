@@ -5,11 +5,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
-    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     x:Name="PageRoot"
     Background="Transparent"
     DataContext="{x:Bind ViewModel, Mode=OneWay}"
@@ -236,7 +236,7 @@
             <Setter Property="MinHeight" Value="{StaticResource ListViewSeparatorMinHeight}" />
         </Style>
 
-        <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
+        <DataTemplate x:Key="TagTemplate" x:DataType="viewModels:TagViewModel">
             <cpcontrols:Tag
                 AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
                 BackgroundColor="{x:Bind Background, Mode=OneWay}"
@@ -249,7 +249,7 @@
 
         <cmdpalUI:ListItemTemplateSelector
             x:Key="ListItemTemplateSelector"
-            x:DataType="coreViewModels:ListItemViewModel"
+            x:DataType="viewModels:ListItemViewModel"
             ListItem="{StaticResource ListItemViewModelTemplate}"
             Section="{StaticResource ListSectionViewModelTemplate}"
             Separator="{StaticResource ListSeparatorViewModelTemplate}" />
@@ -262,7 +262,7 @@
 
         <cmdpalUI:GridItemTemplateSelector
             x:Key="GridItemTemplateSelector"
-            x:DataType="coreViewModels:ListItemViewModel"
+            x:DataType="viewModels:ListItemViewModel"
             Gallery="{StaticResource GalleryGridItemViewModelTemplate}"
             GridProperties="{x:Bind ViewModel.GridProperties, Mode=OneWay}"
             Medium="{StaticResource MediumGridItemViewModelTemplate}"
@@ -280,7 +280,7 @@
             Small="{StaticResource IconGridViewItemStyle}" />
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
-        <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+        <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
             <Grid
                 Padding="0,12,0,12"
                 AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
@@ -343,7 +343,7 @@
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="ListSeparatorViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+        <DataTemplate x:Key="ListSeparatorViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="28" />
@@ -356,7 +356,7 @@
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="ListSectionViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+        <DataTemplate x:Key="ListSectionViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
             <Grid
                 Margin="0,8,0,0"
                 VerticalAlignment="Center"
@@ -377,7 +377,7 @@
         </DataTemplate>
 
         <!--  Grid item templates for visual grid representation  -->
-        <DataTemplate x:Key="SmallGridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+        <DataTemplate x:Key="SmallGridItemViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -400,7 +400,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="MediumGridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+        <DataTemplate x:Key="MediumGridItemViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
             <Grid
                 Width="{StaticResource MediumGridContainerSize}"
                 Height="{StaticResource MediumGridContainerSize}"
@@ -440,7 +440,7 @@
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="GalleryGridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+        <DataTemplate x:Key="GalleryGridItemViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
             <StackPanel
                 Width="{StaticResource GalleryGridSize}"
                 Margin="4"
@@ -509,7 +509,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="GridSeparatorViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+        <DataTemplate x:Key="GridSeparatorViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
             <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
         </DataTemplate>
     </Page.Resources>

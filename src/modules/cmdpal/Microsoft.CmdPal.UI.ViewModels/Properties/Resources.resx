@@ -260,4 +260,8 @@
   <data name="fallbacks" xml:space="preserve">
     <value>Fallbacks</value>
   </data>
+  <data name="ShowDetailsCommand" xml:space="preserve">
+    <value>Show details</value>
+    <comment>Name for the command that shows details of an item</comment>
+  </data>
 </root>
