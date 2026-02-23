@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Text;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CommandPalette.Extensions;
@@ -206,7 +206,7 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         {
             Title = this.Title,
             HeroImage = CoalesceIcon(CoalesceIcon(heroImage, this.Icon as IconInfo)),
-            Metadata = [..metadata],
+            Metadata = [.. metadata],
         };
     }
 

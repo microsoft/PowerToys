@@ -5,11 +5,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -23,7 +23,7 @@
                 Separator="{StaticResource SeparatorViewModelTemplate}" />
 
             <!--  Template for the filter items  -->
-            <DataTemplate x:Key="FilterItemViewModelTemplate" x:DataType="coreViewModels:FilterItemViewModel">
+            <DataTemplate x:Key="FilterItemViewModelTemplate" x:DataType="viewModels:FilterItemViewModel">
                 <Grid Padding="12,8,12,8" AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
@@ -44,7 +44,7 @@
             </DataTemplate>
 
             <!--  Template for separators  -->
-            <DataTemplate x:Key="SeparatorViewModelTemplate" x:DataType="coreViewModels:SeparatorViewModel">
+            <DataTemplate x:Key="SeparatorViewModelTemplate" x:DataType="viewModels:SeparatorViewModel">
                 <Rectangle
                     Height="1"
                     Margin="0,2,0,2"
