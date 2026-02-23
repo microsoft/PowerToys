@@ -42,6 +42,8 @@ public partial class SettingsModel : ObservableObject
 
     public bool HighlightSearchOnActivate { get; set; } = true;
 
+    public bool KeepPreviousQuery { get; set; }
+
     public bool ShowSystemTrayIcon { get; set; } = true;
 
     public bool IgnoreShortcutWhenFullscreen { get; set; }

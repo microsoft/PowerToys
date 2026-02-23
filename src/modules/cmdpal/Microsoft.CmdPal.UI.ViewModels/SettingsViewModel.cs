@@ -163,6 +163,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool KeepPreviousQuery
+    {
+        get => _settings.KeepPreviousQuery;
+        set
+        {
+            _settings.KeepPreviousQuery = value;
+            Save();
+        }
+    }
+
     public int MonitorPositionIndex
     {
         get => (int)_settings.SummonOn;
