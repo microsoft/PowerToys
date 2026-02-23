@@ -801,4 +801,25 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="ConfigureShortcutText.Text" xml:space="preserve">
     <value>Assign shortcut</value>
   </data>
+  <data name="FiltersDropDown.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Filters</value>
+  </data>
+  <data name="FiltersDropDown.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Filters (Alt+F)</value>
+  </data>
+  <data name="FiltersDropDown_DefaultText" xml:space="preserve">
+    <value>Filters</value>
+  </data>
+  <data name="FilterSearchBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search filters</value>
+  </data>
+  <data name="FilterSearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search filters...</value>
+  </data>
+  <data name="FilterListView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Filter options</value>
+  </data>
+  <data name="FiltersDropDown_NoResults.Text" xml:space="preserve">
+    <value>No results</value>
+  </data>
 </root>

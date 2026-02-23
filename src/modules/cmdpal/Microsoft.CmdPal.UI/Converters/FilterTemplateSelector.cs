@@ -16,21 +16,38 @@ internal sealed partial class FilterTemplateSelector : DataTemplateSelector
     public DataTemplate? Separator { get; set; }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Microsoft.UI.Xaml.Controls.ComboBoxItem", "Microsoft.WinUI")]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, "Microsoft.UI.Xaml.Controls.ListViewItem", "Microsoft.WinUI")]
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject dependencyObject)
     {
         DataTemplate? dataTemplate = Default;
 
-        if (dependencyObject is ComboBoxItem comboBoxItem)
-        {
-            comboBoxItem.IsEnabled = true;
+        var isSeparator = item is SeparatorViewModel;
 
-            if (item is SeparatorViewModel)
-            {
-                comboBoxItem.IsEnabled = false;
-                comboBoxItem.AllowFocusWhenDisabled = false;
-                comboBoxItem.AllowFocusOnInteraction = false;
-                dataTemplate = Separator;
-            }
+        switch (dependencyObject)
+        {
+            case ComboBoxItem comboBoxItem:
+                comboBoxItem.IsEnabled = !isSeparator;
+                if (isSeparator)
+                {
+                    comboBoxItem.AllowFocusWhenDisabled = false;
+                    comboBoxItem.AllowFocusOnInteraction = false;
+                }
+
+                break;
+            case ListViewItem listViewItem:
+                listViewItem.IsEnabled = !isSeparator;
+                if (isSeparator)
+                {
+                    listViewItem.MinHeight = 0;
+                    listViewItem.IsHitTestVisible = false;
+                }
+
+                break;
+        }
+
+        if (isSeparator)
+        {
+            dataTemplate = Separator;
         }
 
         return dataTemplate;
