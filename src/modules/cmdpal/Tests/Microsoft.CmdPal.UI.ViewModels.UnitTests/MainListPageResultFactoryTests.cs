@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
