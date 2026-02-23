@@ -3,16 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Models;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
-
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -178,7 +175,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                 var bands = supportsDockBands.GetDockBands();
                 if (bands is not null)
                 {
-                    CoreLogger.LogDebug($"Found {bands.Length} bands on {DisplayName} ({ProviderId}) ");
+                    Logger.LogDebug($"Found {bands.Length} bands on {DisplayName} ({ProviderId}) ");
                     dockBands = bands;
                 }
             }
@@ -261,7 +258,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
 
-        Func<ICommandItem?, TopLevelType, TopLevelViewModel> make = (ICommandItem? i, TopLevelType t) =>
+        var make = (ICommandItem? i, TopLevelType t) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext, contextMenuFactory: contextMenuFactory);
             TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, ourContext, settings, providerSettings, serviceProvider, i);
@@ -309,14 +306,14 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         var pinnedBandsForThisProvider = allPinnedCommands.Where(c => c.ProviderId == ProviderId);
         foreach (var (providerId, commandId) in pinnedBandsForThisProvider)
         {
-            CoreLogger.LogDebug($"Looking for pinned dock band command {commandId} for provider {providerId}");
+            Logger.LogDebug($"Looking for pinned dock band command {commandId} for provider {providerId}");
 
             // First, try to lookup the command as one of this provider's
             // top-level commands. If it's there, then we can skip a lot of
             // work and just clone it as a band.
             if (LookupTopLevelCommand(commandId) is TopLevelViewModel topLevelCommand)
             {
-                CoreLogger.LogDebug($"Found pinned dock band command {commandId} for provider {providerId} as a top-level command");
+                Logger.LogDebug($"Found pinned dock band command {commandId} for provider {providerId} as a top-level command");
                 var bandModel = topLevelCommand.ToPinnedDockBandItem();
                 var bandVm = make(bandModel, TopLevelType.DockBand);
                 bands.Add(bandVm);
@@ -335,23 +332,23 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                     var commandItem = four.GetCommandItem(commandId);
                     if (commandItem is not null)
                     {
-                        CoreLogger.LogDebug($"Found pinned dock band command {commandId} for provider {providerId} through ICommandProvider4 API");
+                        Logger.LogDebug($"Found pinned dock band command {commandId} for provider {providerId} through ICommandProvider4 API");
                         var bandVm = make(commandItem, TopLevelType.DockBand);
                         bands.Add(bandVm);
                     }
                     else
                     {
-                        CoreLogger.LogWarning($"Couldn't find pinned dock band command {commandId} for provider {providerId} through ICommandProvider4 API. This command won't be shown as a dock band.");
+                        Logger.LogWarning($"Couldn't find pinned dock band command {commandId} for provider {providerId} through ICommandProvider4 API. This command won't be shown as a dock band.");
                     }
                 }
                 catch (Exception e)
                 {
-                    CoreLogger.LogError($"Failed to load pinned dock band command {commandId} for provider {providerId}: {e.Message}");
+                    Logger.LogError($"Failed to load pinned dock band command {commandId} for provider {providerId}: {e.Message}");
                 }
             }
             else
             {
-                CoreLogger.LogWarning($"Couldn't find pinned dock band command {commandId} for provider {providerId} as a top-level command, and provider doesn't support ICommandProvider4 API to get it directly. This command won't be shown as a dock band.");
+                Logger.LogWarning($"Couldn't find pinned dock band command {commandId} for provider {providerId} as a top-level command, and provider doesn't support ICommandProvider4 API to get it directly. This command won't be shown as a dock band.");
             }
         }
 

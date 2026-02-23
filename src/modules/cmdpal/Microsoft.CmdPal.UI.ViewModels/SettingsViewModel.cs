@@ -5,7 +5,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -105,6 +104,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         set
         {
             _settings.HighlightSearchOnActivate = value;
+            Save();
+        }
+    }
+
+    public bool KeepPreviousQuery
+    {
+        get => _settings.KeepPreviousQuery;
+        set
+        {
+            _settings.KeepPreviousQuery = value;
             Save();
         }
     }

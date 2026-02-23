@@ -122,13 +122,13 @@ public sealed partial class DockWindow : WindowEx,
         _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)style);
 
         ShowDesktop.AddHook(this);
-        UpdateSettings();
+        UpdateSettingsOnUiThread();
     }
 
     private void SettingsChangedHandler(SettingsModel sender, object? args)
     {
         _settings = sender.DockSettings;
-        UpdateSettings();
+        DispatcherQueue.TryEnqueue(UpdateSettingsOnUiThread);
     }
 
     private void DockWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -148,7 +148,7 @@ public sealed partial class DockWindow : WindowEx,
         return new HWND(hwnd);
     }
 
-    private void UpdateSettings()
+    private void UpdateSettingsOnUiThread()
     {
         this.viewModel.UpdateSettings(_settings);
 

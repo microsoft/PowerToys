@@ -7,9 +7,8 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Text;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
@@ -46,7 +45,8 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
-    private int _appResultLimit = 10;
+
+    private int AppResultLimit => AllAppsCommandProvider.TopLevelResultLimit;
 
     private InterlockedBoolean _refreshRunning;
     private InterlockedBoolean _refreshRequested;
@@ -190,7 +190,7 @@ public sealed partial class MainListPage : DynamicListPage,
                     validScoredFallbacks,
                     _filteredApps,
                     validFallbacks,
-                    _appResultLimit);
+                    AppResultLimit);
             }
         }
     }
