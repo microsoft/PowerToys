@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -24,6 +24,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
     IRecipient<PinCommandItemMessage>,
     IRecipient<UnpinCommandItemMessage>,
+    IRecipient<PinToDockMessage>,
     IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
@@ -44,6 +45,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
         WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
         WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
     }
 
@@ -528,6 +530,21 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         var wrapper = LookupProvider(message.ProviderId);
         wrapper?.UnpinCommand(message.CommandId, _serviceProvider);
+    }
+
+    public void Receive(PinToDockMessage message)
+    {
+        if (LookupProvider(message.ProviderId) is CommandProviderWrapper wrapper)
+        {
+            if (message.Pin)
+            {
+                wrapper?.PinDockBand(message.CommandId, _serviceProvider);
+            }
+            else
+            {
+                wrapper?.UnpinDockBand(message.CommandId, _serviceProvider);
+            }
+        }
     }
 
     public CommandProviderWrapper? LookupProvider(string providerId)

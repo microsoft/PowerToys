@@ -95,13 +95,9 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             return;
         }
 
-        Func<DockBandSettings, bool> matches = (bandSettings) =>
-            bandSettings.CommandId == itemId &&
-            bandSettings.ProviderId == providerId;
-
-        var inStartBands = _settingsModel.DockSettings.StartBands.Any(band => matches(band));
-        var inCenterBands = _settingsModel.DockSettings.CenterBands.Any(band => matches(band));
-        var inEndBands = _settingsModel.DockSettings.EndBands.Any(band => matches(band));
+        var inStartBands = _settingsModel.DockSettings.StartBands.Any(band => MatchesBand(band, itemId, providerId));
+        var inCenterBands = _settingsModel.DockSettings.CenterBands.Any(band => MatchesBand(band, itemId, providerId));
+        var inEndBands = _settingsModel.DockSettings.EndBands.Any(band => MatchesBand(band, itemId, providerId));
         var alreadyPinned = inStartBands || inCenterBands || inEndBands; /** &&
                             _settingsModel.DockSettings.PinnedCommands.Contains(this.Id)**/
         var pinToTopLevelCommand = new PinToCommand(
@@ -114,6 +110,12 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
         moreCommands.Add(contextItem);
+    }
+
+    internal static bool MatchesBand(DockBandSettings bandSettings, string commandId, string providerId)
+    {
+        return bandSettings.CommandId == commandId &&
+               bandSettings.ProviderId == providerId;
     }
 
     internal enum PinLocation
@@ -232,12 +234,27 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         private void PinToDock()
         {
-            // TODO! implement
+            PinToDockMessage message = new(_providerId, _commandId, true);
+            WeakReferenceMessenger.Default.Send(message);
+
+            // // TODO! implement
+            // var bandSettings = new DockBandSettings
+            // {
+            //     CommandId = _commandId,
+            //     ProviderId = _providerId,
+            // };
+            // _settings.DockSettings.StartBands.Add(bandSettings);
         }
 
         private void UnpinFromDock()
         {
-            // TODO! implement
+            PinToDockMessage message = new(_providerId, _commandId, false);
+            WeakReferenceMessenger.Default.Send(message);
+
+            // _settings.DockSettings.StartBands.RemoveAll(band => MatchesBand(band, _commandId, _providerId));
+            // _settings.DockSettings.CenterBands.RemoveAll(band => MatchesBand(band, _commandId, _providerId));
+            // _settings.DockSettings.EndBands.RemoveAll(band => MatchesBand(band, _commandId, _providerId));
+            // SettingsModel.Save(_settings);
         }
     }
 }
