@@ -60,8 +60,8 @@
         MinWidth="200"
         Margin="0,0,12,0"
         Padding="16,5,8,5"
-        HorizontalContentAlignment="Left"
         VerticalAlignment="Center"
+        HorizontalContentAlignment="Left"
         PreviewKeyDown="FilterDropDownButton_PreviewKeyDown"
         Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
         <DropDownButton.Content>
@@ -74,9 +74,7 @@
                     AutomationProperties.AccessibilityView="Raw"
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}"
                     Visibility="Collapsed" />
-                <TextBlock
-                    x:Name="SelectedFilterText"
-                    VerticalAlignment="Center" />
+                <TextBlock x:Name="SelectedFilterText" VerticalAlignment="Center" />
             </StackPanel>
         </DropDownButton.Content>
         <DropDownButton.Flyout>
@@ -116,8 +114,8 @@
                         x:Name="FilterListView"
                         x:Uid="FilterListView"
                         Grid.Row="2"
-                        Margin="0,4,0,4"
                         MaxHeight="300"
+                        Margin="0,4,0,4"
                         IsItemClickEnabled="True"
                         ItemClick="FilterListView_ItemClick"
                         ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
