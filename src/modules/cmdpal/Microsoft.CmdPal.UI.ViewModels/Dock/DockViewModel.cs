@@ -45,6 +45,15 @@ public sealed partial class DockViewModel : IDisposable,
         Scheduler = scheduler;
         _pageContext = new(this);
         WeakReferenceMessenger.Default.Register<CommandsReloadedMessage>(this);
+
+        _topLevelCommandManager.DockBands.CollectionChanged += DockBands_CollectionChanged;
+    }
+
+    private void DockBands_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        Logger.LogDebug("Starting DockBands_CollectionChanged");
+        SetupBands();
+        Logger.LogDebug("Ended DockBands_CollectionChanged");
     }
 
     public void UpdateSettings(DockSettings settings)

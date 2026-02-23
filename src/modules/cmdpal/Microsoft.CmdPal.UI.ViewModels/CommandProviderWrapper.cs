@@ -415,10 +415,10 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         if (!providerSettings.PinnedCommandIds.Contains(commandId))
         {
             providerSettings.PinnedCommandIds.Add(commandId);
-            SettingsModel.SaveSettings(settings);
 
             // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
             this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+            SettingsModel.SaveSettings(settings, false);
         }
     }
 
@@ -429,10 +429,10 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
         if (providerSettings.PinnedCommandIds.Remove(commandId))
         {
-            SettingsModel.SaveSettings(settings);
-
             // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
             this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+
+            SettingsModel.SaveSettings(settings, false);
         }
     }
 
@@ -445,10 +445,11 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             ProviderId = this.ProviderId,
         };
         settings.DockSettings.StartBands.Add(bandSettings);
-        SettingsModel.SaveSettings(settings);
 
         // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
         this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+
+        SettingsModel.SaveSettings(settings, false);
     }
 
     public void UnpinDockBand(string commandId, IServiceProvider serviceProvider)
@@ -457,10 +458,10 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         settings.DockSettings.StartBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId);
         settings.DockSettings.CenterBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId);
         settings.DockSettings.EndBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId);
-        SettingsModel.SaveSettings(settings);
 
         // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
         this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        SettingsModel.SaveSettings(settings, false);
     }
 
     public ICommandProviderContext GetProviderContext() => this;

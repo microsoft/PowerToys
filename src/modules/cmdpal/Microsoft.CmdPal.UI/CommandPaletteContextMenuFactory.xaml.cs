@@ -164,7 +164,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         public override string Name => _pin ?
             (IsPinToDock ? RS_.GetString("dock_pin_command_name") : RS_.GetString("top_level_pin_command_name")) :
-            (IsPinToDock ? RS_.GetString("dock_pin_command_name") : RS_.GetString("top_level_unpin_command_name"));
+            (IsPinToDock ? RS_.GetString("dock_unpin_command_name") : RS_.GetString("top_level_unpin_command_name"));
 
         internal event EventHandler? PinStateChanged;
 
