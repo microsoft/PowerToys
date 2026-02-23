@@ -68,6 +68,9 @@
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE933;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
                     </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_KeepPreviousQuery_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE81C;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.KeepPreviousQuery, Mode=TwoWay}" />
+                    </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind viewModel.MonitorPositionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />

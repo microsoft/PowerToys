@@ -847,6 +847,7 @@ MOUSEINPUT
 MOVESIZEEND
 MOVESIZESTART
 MRM
+MRT
 mru
 msc
 mscorlib
@@ -2040,7 +2041,6 @@ mousehighlighter
 mousejump
 mousepointer
 mouseutils
-mrt
 MSAL
 msdia
 MSIs

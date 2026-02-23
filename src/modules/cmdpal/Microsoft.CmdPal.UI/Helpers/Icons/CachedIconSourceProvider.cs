@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.CompilerServices;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 
