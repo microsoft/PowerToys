@@ -17,7 +17,7 @@ public sealed partial class DockViewModel : IDisposable,
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly SettingsModel _settingsModel;
-    private readonly DockPageContext _pageContext;
+    private readonly DockPageContext _pageContext; // only to be used for our own context menu - not for dock bands themselves
     private readonly IContextMenuFactory _contextMenuFactory;
 
     private DockSettings _settings;

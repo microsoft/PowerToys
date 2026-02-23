@@ -130,7 +130,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         return settings.GetProviderSettings(this);
     }
 
-    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider)
     {
         if (!isValid)
         {
@@ -209,7 +209,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
             // We do need to explicitly initialize commands though
             var objects = new TopLevelObjects(commands, fallbacks, pinnedCommands, dockBands);
-            InitializeCommands(objects, serviceProvider, four, pageContext);
+            InitializeCommands(objects, serviceProvider, four);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -249,15 +249,14 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
     private void InitializeCommands(
         TopLevelObjects objects,
         IServiceProvider serviceProvider,
-        ICommandProvider4? four,
-        WeakReference<IPageContext> pageContext)
+        ICommandProvider4? four)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
         var contextMenuFactory = serviceProvider.GetService<IContextMenuFactory>()!;
         var state = serviceProvider.GetService<AppStateModel>()!;
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
-
+        WeakReference<IPageContext> pageContext = new(this.TopLevelPageContext);
         var make = (ICommandItem? i, TopLevelType t) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext, contextMenuFactory: contextMenuFactory);
