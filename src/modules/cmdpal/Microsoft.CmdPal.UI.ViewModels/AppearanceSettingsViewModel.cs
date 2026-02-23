@@ -87,12 +87,13 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         Color.FromArgb(255, 126, 115, 95), // #7e735f
     ];
 
-    private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
     private readonly UISettings _uiSettings;
     private readonly IThemeService _themeService;
     private readonly DispatcherQueueTimer _saveTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
     private readonly DispatcherQueue _uiDispatcher = DispatcherQueue.GetForCurrentThread();
 
+    private SettingsModel _settings;
     private ElementTheme? _elementThemeOverride;
     private Color _currentSystemAccentColor;
 
@@ -340,25 +341,25 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     }
 
     /// <summary>
-    /// Gets whether the backdrop opacity slider should be visible.
+    /// Gets a value indicating whether the backdrop opacity slider should be visible.
     /// </summary>
     public bool IsBackdropOpacityVisible =>
         BackdropStyles.Get(_settings.BackdropStyle).SupportsOpacity;
 
     /// <summary>
-    /// Gets whether the backdrop description (for styles without options) should be visible.
+    /// Gets a value indicating whether the backdrop description (for styles without options) should be visible.
     /// </summary>
     public bool IsMicaBackdropDescriptionVisible =>
         !BackdropStyles.Get(_settings.BackdropStyle).SupportsOpacity;
 
     /// <summary>
-    /// Gets whether background/colorization settings are available.
+    /// Gets a value indicating whether background/colorization settings are available.
     /// </summary>
     public bool IsBackgroundSettingsEnabled =>
         BackdropStyles.Get(_settings.BackdropStyle).SupportsColorization;
 
     /// <summary>
-    /// Gets whether the "not available" message should be shown (inverse of IsBackgroundSettingsEnabled).
+    /// Gets a value indicating whether the "not available" message should be shown (inverse of IsBackgroundSettingsEnabled).
     /// </summary>
     public bool IsBackgroundNotAvailableVisible =>
         !BackdropStyles.Get(_settings.BackdropStyle).SupportsColorization;
@@ -436,11 +437,14 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
                 ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
                 : null;
 
-    public AppearanceSettingsViewModel(IThemeService themeService, SettingsModel settings)
+    public AppearanceSettingsViewModel(IThemeService themeService, SettingsService settingsService)
     {
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
-        _settings = settings;
+        _settingsService = settingsService;
+        _settings = _settingsService.CurrentSettings;
+
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
 
         _uiSettings = new UISettings();
         _uiSettings.ColorValuesChanged += UiSettingsOnColorValuesChanged;
@@ -449,6 +453,11 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         Reapply();
 
         IsColorizationDetailsExpanded = _settings.ColorizationMode != ColorizationMode.None && IsBackgroundSettingsEnabled;
+    }
+
+    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    {
+        _settings = sender;
     }
 
     private void UiSettingsOnColorValuesChanged(UISettings sender, object args) => _uiDispatcher.TryEnqueue(() => UpdateAccentColor(sender));
@@ -469,7 +478,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     private void Save()
     {
-        SettingsModel.SaveSettings(_settings);
+        _settingsService.SaveSettings(_settings);
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 
@@ -530,5 +539,6 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     {
         _uiSettings.ColorValuesChanged -= UiSettingsOnColorValuesChanged;
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 }

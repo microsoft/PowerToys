@@ -30,7 +30,8 @@ public sealed partial class MainListPage : DynamicListPage,
 {
     private readonly TopLevelCommandManager _tlcManager;
     private readonly AliasManager _aliasManager;
-    private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
+    private readonly AppStateService _appStateService;
     private readonly AppStateModel _appStateModel;
     private readonly ScoringFunction<IListItem> _scoringFunction;
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
@@ -44,6 +45,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private IEnumerable<RoScored<IListItem>>? _scoredFallbackItems;
     private IEnumerable<RoScored<IListItem>>? _fallbackItems;
 
+    private SettingsModel _settings;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
 
@@ -56,23 +58,27 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public MainListPage(
         TopLevelCommandManager topLevelCommandManager,
-        SettingsModel settings,
+        SettingsService settingsService,
         AliasManager aliasManager,
-        AppStateModel appStateModel,
+        AppStateService appStateService,
         IFuzzyMatcherProvider fuzzyMatcherProvider)
     {
         Title = Resources.builtin_home_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
         PlaceholderText = Properties.Resources.builtin_main_list_page_searchbar_placeholder;
 
-        _settings = settings;
+        _settingsService = settingsService;
+        _settings = _settingsService.CurrentSettings;
+        _appStateService = appStateService;
+        _appStateModel = _appStateService.CurrentSettings;
+
         _aliasManager = aliasManager;
-        _appStateModel = appStateModel;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
         _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateModel.RecentCommands, _fuzzyMatcherProvider.Current);
         _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settings.FallbackRanks);
 
+        _settingsService.SettingsChanged += SettingsChangedHandler;
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
 
@@ -90,8 +96,8 @@ public sealed partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
 
-        settings.SettingsChanged += SettingsChangedHandler;
-        HotReloadSettings(settings);
+        _settingsService.SettingsChanged += SettingsChangedHandler;
+        HotReloadSettings(_settings);
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
 
         IsLoading = true;
@@ -585,7 +591,7 @@ public sealed partial class MainListPage : DynamicListPage,
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
         var history = _appStateModel.RecentCommands;
         history.AddHistoryItem(id);
-        AppStateModel.SaveState(_appStateModel);
+        _appStateService.SaveSettings(_appStateModel);
     }
 
     private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
@@ -605,7 +611,11 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public void Receive(UpdateFallbackItemsMessage message) => RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
+    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    {
+        _settings = sender;
+        HotReloadSettings(sender);
+    }
 
     private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
 
@@ -614,13 +624,9 @@ public sealed partial class MainListPage : DynamicListPage,
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
 
+        _settingsService.SettingsChanged -= SettingsChangedHandler;
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
-
-        if (_settings is not null)
-        {
-            _settings.SettingsChanged -= SettingsChangedHandler;
-        }
 
         WeakReferenceMessenger.Default.UnregisterAll(this);
         GC.SuppressFinalize(this);

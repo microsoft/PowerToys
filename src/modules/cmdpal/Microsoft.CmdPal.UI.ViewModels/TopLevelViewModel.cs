@@ -24,6 +24,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private readonly SettingsModel _settings;
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
+    private readonly SettingsService _settingsService;
     private readonly CommandItemViewModel _commandItemViewModel;
 
     public CommandProviderContext ProviderContext { get; private set; }
@@ -190,13 +191,14 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         bool isFallback,
         CommandPaletteHost extensionHost,
         CommandProviderContext commandProviderContext,
-        SettingsModel settings,
+        SettingsService settingsService,
         ProviderSettings providerSettings,
         IServiceProvider serviceProvider,
         ICommandItem? commandItem)
     {
         _serviceProvider = serviceProvider;
-        _settings = settings;
+        _settingsService = settingsService;
+        _settings = settingsService.CurrentSettings;
         _providerSettings = providerSettings;
         ProviderContext = commandProviderContext;
         _commandItemViewModel = item;
@@ -290,7 +292,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.SaveSettings(_settings);
 
     private void HandleChangeAlias()
     {

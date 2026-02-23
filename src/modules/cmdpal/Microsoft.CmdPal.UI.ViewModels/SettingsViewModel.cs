@@ -26,6 +26,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     ];
 
     private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -189,12 +190,17 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public SettingsExtensionsViewModel Extensions { get; }
 
-    public SettingsViewModel(SettingsModel settings, TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService)
+    public SettingsViewModel(
+        SettingsService settingsService,
+        TopLevelCommandManager topLevelCommandManager,
+        TaskScheduler scheduler,
+        IThemeService themeService)
     {
-        _settings = settings;
+        _settingsService = settingsService;
+        _settings = _settingsService.CurrentSettings;
         _topLevelCommandManager = topLevelCommandManager;
 
-        Appearance = new AppearanceSettingsViewModel(themeService, _settings);
+        Appearance = new AppearanceSettingsViewModel(themeService, _settingsService);
 
         var activeProviders = GetCommandProviders();
         var allProviderSettings = _settings.ProviderSettings;
@@ -205,9 +211,9 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
         foreach (var item in activeProviders)
         {
-            var providerSettings = settings.GetProviderSettings(item);
+            var providerSettings = _settings.GetProviderSettings(item);
 
-            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _settings);
+            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _settingsService);
             CommandProviders.Add(settingsModel);
 
             fallbacks.AddRange(settingsModel.FallbackCommands);
@@ -254,5 +260,5 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.SaveSettings(_settings);
 }

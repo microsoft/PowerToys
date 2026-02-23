@@ -130,7 +130,8 @@ public sealed class CommandProviderWrapper
             return;
         }
 
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var settingsService = serviceProvider.GetService<SettingsService>()!;
+        var settings = settingsService.CurrentSettings;
 
         var providerSettings = GetProviderSettings(settings);
         IsActive = providerSettings.IsEnabled;
@@ -210,13 +211,14 @@ public sealed class CommandProviderWrapper
 
     private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, ICommandItem[] pinnedCommands, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var settingsService = serviceProvider.GetService<SettingsService>()!;
+        var settings = settingsService.CurrentSettings;
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ourContext, settings, providerSettings, serviceProvider, i);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ourContext, settingsService, providerSettings, serviceProvider, i);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
@@ -285,13 +287,14 @@ public sealed class CommandProviderWrapper
 
     public void PinCommand(string commandId, IServiceProvider serviceProvider)
     {
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var settingsService = serviceProvider.GetService<SettingsService>()!;
+        var settings = settingsService.CurrentSettings;
         var providerSettings = GetProviderSettings(settings);
 
         if (!providerSettings.PinnedCommandIds.Contains(commandId))
         {
             providerSettings.PinnedCommandIds.Add(commandId);
-            SettingsModel.SaveSettings(settings);
+            settingsService.SaveSettings(settings);
 
             // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
             this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));

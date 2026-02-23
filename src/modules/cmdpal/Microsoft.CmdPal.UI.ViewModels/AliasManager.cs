@@ -15,9 +15,10 @@ public partial class AliasManager : ObservableObject
     // REMEMBER, CommandAlias.SearchPrefix is what we use as keys
     private readonly Dictionary<string, CommandAlias> _aliases;
 
-    public AliasManager(TopLevelCommandManager tlcManager, SettingsModel settings)
+    public AliasManager(TopLevelCommandManager tlcManager, SettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
+        var settings = settingsService.CurrentSettings;
         _aliases = settings.Aliases;
 
         if (_aliases.Count == 0)

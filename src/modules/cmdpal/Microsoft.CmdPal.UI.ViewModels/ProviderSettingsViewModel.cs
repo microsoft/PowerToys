@@ -21,6 +21,7 @@ public partial class ProviderSettingsViewModel : ObservableObject
     private static readonly CompositeFormat ExtensionSubtextDisabledFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_disabled);
 
     private readonly CommandProviderWrapper _provider;
+    private readonly SettingsService _settingsService;
     private readonly ProviderSettings _providerSettings;
     private readonly SettingsModel _settings;
     private readonly Lock _initializeSettingsLock = new();
@@ -30,11 +31,12 @@ public partial class ProviderSettingsViewModel : ObservableObject
     public ProviderSettingsViewModel(
         CommandProviderWrapper provider,
         ProviderSettings providerSettings,
-        SettingsModel settings)
+        SettingsService settingsService)
     {
         _provider = provider;
         _providerSettings = providerSettings;
-        _settings = settings;
+        _settingsService = settingsService;
+        _settings = settingsService.CurrentSettings;
 
         LoadingSettings = _provider.Settings?.HasSettings ?? false;
 
@@ -179,18 +181,18 @@ public partial class ProviderSettingsViewModel : ObservableObject
         {
             if (_providerSettings.FallbackCommands.TryGetValue(fallbackItem.Id, out var fallbackSettings))
             {
-                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, fallbackSettings, _settings, this));
+                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, fallbackSettings, _settingsService, this));
             }
             else
             {
-                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, new(), _settings, this));
+                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, new(), _settingsService, this));
             }
         }
 
         FallbackCommands = fallbackViewModels;
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.SaveSettings(_settings);
 
     private void InitializeSettingsPage()
     {
