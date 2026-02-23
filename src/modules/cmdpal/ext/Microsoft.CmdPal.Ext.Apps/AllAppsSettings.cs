@@ -48,6 +48,10 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 
     public bool EnablePathEnvironmentVariableSource => _enablePathEnvironmentVariableSource.Value;
 
+    public bool HideGenericFilesOnDesktop => _hideGenericFilesOnDesktop.Value;
+
+    public bool HideGenericFilesInStartMenu => _hideGenericFilesInStartMenu.Value;
+
     private readonly ChoiceSetSetting _searchResultLimitSource = new(
         Namespaced(nameof(SearchResultLimit)),
         Resources.limit_fallback_results_source,
@@ -80,6 +84,18 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         string.Empty,
         false); // this one is very VERY noisy
 
+    private readonly ToggleSetting _hideGenericFilesOnDesktop = new(
+        Namespaced(nameof(HideGenericFilesOnDesktop)),
+        "    " + Resources.hide_generic_files_on_desktop,
+        string.Empty,
+        true);
+
+    private readonly ToggleSetting _hideGenericFilesInStartMenu = new(
+        Namespaced(nameof(HideGenericFilesInStartMenu)),
+        "    " + Resources.hide_generic_files_in_start_menu,
+        string.Empty,
+        false);
+
     public double MinScoreThreshold { get; set; } = 0.75;
 
     internal const char SuffixSeparator = ';';
@@ -98,7 +114,9 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         FilePath = SettingsJsonPath();
 
         Settings.Add(_enableStartMenuSource);
+        Settings.Add(_hideGenericFilesInStartMenu);
         Settings.Add(_enableDesktopSource);
+        Settings.Add(_hideGenericFilesOnDesktop);
         Settings.Add(_enableRegistrySource);
         Settings.Add(_enablePathEnvironmentVariableSource);
         Settings.Add(_searchResultLimitSource);
