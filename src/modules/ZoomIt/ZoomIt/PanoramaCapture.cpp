@@ -114,6 +114,8 @@
 #include <commctrl.h>
 #if defined(_M_X64) || defined(_M_IX86)
 #include <emmintrin.h>
+#elif defined(_M_ARM64)
+#include <arm_neon.h>
 #endif
 
 // Externs from Zoomit.cpp
@@ -1093,6 +1095,47 @@ static void BuildDownsampledLumaFrame( const std::vector<BYTE>& pixels,
     }
 }
 
+// Build a full-resolution single-channel luma array from 32-bpp BGRA pixels.
+static void BuildFullLumaFrame( const std::vector<BYTE>& pixels,
+                                int frameWidth,
+                                int frameHeight,
+                                std::vector<BYTE>& luma )
+{
+    const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight );
+    luma.resize( pixelCount );
+    for( size_t p = 0; p < pixelCount; ++p )
+    {
+        const size_t idx = p * 4;
+        luma[p] = static_cast<BYTE>( ( pixels[idx + 2] * 77 +
+                                       pixels[idx + 1] * 150 +
+                                       pixels[idx + 0] * 29 ) >> 8 );
+    }
+}
+
+// Downsample from a pre-computed full-resolution luma array.
+static void BuildDownsampledLumaFromFullLuma( const std::vector<BYTE>& fullLuma,
+                                              int frameWidth,
+                                              int frameHeight,
+                                              int scale,
+                                              std::vector<BYTE>& luma,
+                                              int& downsampledWidth,
+                                              int& downsampledHeight )
+{
+    downsampledWidth = max( 1, frameWidth / scale );
+    downsampledHeight = max( 1, frameHeight / scale );
+    luma.resize( static_cast<size_t>( downsampledWidth ) * static_cast<size_t>( downsampledHeight ) );
+    for( int y = 0; y < downsampledHeight; ++y )
+    {
+        const int sourceY = min( frameHeight - 1, y * scale + ( scale / 2 ) );
+        for( int x = 0; x < downsampledWidth; ++x )
+        {
+            const int sourceX = min( frameWidth - 1, x * scale + ( scale / 2 ) );
+            luma[static_cast<size_t>( y ) * static_cast<size_t>( downsampledWidth ) + static_cast<size_t>( x )] =
+                fullLuma[static_cast<size_t>( sourceY ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( sourceX )];
+        }
+    }
+}
+
 static bool FindBestSmallShiftDownsampledLuma( const std::vector<BYTE>& previousPixels,
                                                const std::vector<BYTE>& currentPixels,
                                                int frameWidth,
@@ -1526,7 +1569,10 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                                             int expectedDy,
                                             int& bestDx,
                                             int& bestDy,
-                                            bool lowContrastMode )
+                                            bool lowContrastMode,
+                                            const std::vector<BYTE>& precomputedPrevLuma = {},
+                                            const std::vector<BYTE>& precomputedCurrLuma = {},
+                                            int precomputedVeryLowEntropy = -1 )
 {
     if( previousPixels.size() != currentPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
     {
@@ -1539,11 +1585,20 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // (expectedDy == 0) search outward from the smallest step.
     //
     const int downsampleScale = ( min( frameWidth, frameHeight ) >= 240 ) ? 4 : 2;
+    const bool hasPrecomputedLuma = !precomputedPrevLuma.empty() && !precomputedCurrLuma.empty();
     std::vector<BYTE> previousLuma;
     std::vector<BYTE> currentLuma;
     int dsW = 0, dsH = 0, dsW2 = 0, dsH2 = 0;
-    BuildDownsampledLumaFrame( previousPixels, frameWidth, frameHeight, downsampleScale, previousLuma, dsW, dsH );
-    BuildDownsampledLumaFrame( currentPixels, frameWidth, frameHeight, downsampleScale, currentLuma, dsW2, dsH2 );
+    if( hasPrecomputedLuma )
+    {
+        BuildDownsampledLumaFromFullLuma( precomputedPrevLuma, frameWidth, frameHeight, downsampleScale, previousLuma, dsW, dsH );
+        BuildDownsampledLumaFromFullLuma( precomputedCurrLuma, frameWidth, frameHeight, downsampleScale, currentLuma, dsW2, dsH2 );
+    }
+    else
+    {
+        BuildDownsampledLumaFrame( previousPixels, frameWidth, frameHeight, downsampleScale, previousLuma, dsW, dsH );
+        BuildDownsampledLumaFrame( currentPixels, frameWidth, frameHeight, downsampleScale, currentLuma, dsW2, dsH2 );
+    }
     if( dsW != dsW2 || dsH != dsH2 )
     {
         return false;
@@ -1582,16 +1637,18 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // the background-to-background dilution that makes low-entropy
     // content indistinguishable at every shift.
     const bool veryLowEntropyPair = lowContrastMode &&
-        IsVeryLowEntropyPair( previousPixels, currentPixels, frameWidth, frameHeight );
+        ( precomputedVeryLowEntropy >= 0
+          ? ( precomputedVeryLowEntropy != 0 )
+          : IsVeryLowEntropyPair( previousPixels, currentPixels, frameWidth, frameHeight ) );
 
     // Build downsampled informative mask: a pixel is informative if the
     // luma gradient exceeds a small threshold in either frame.
-    std::vector<bool> dsMaskPrev;
-    std::vector<bool> dsMaskCurr;
+    std::vector<BYTE> dsMaskPrev;
+    std::vector<BYTE> dsMaskCurr;
     if( veryLowEntropyPair )
     {
-        dsMaskPrev.resize( static_cast<size_t>( dsW ) * dsH, false );
-        dsMaskCurr.resize( static_cast<size_t>( dsW ) * dsH, false );
+        dsMaskPrev.resize( static_cast<size_t>( dsW ) * dsH, 0 );
+        dsMaskCurr.resize( static_cast<size_t>( dsW ) * dsH, 0 );
         const int dsEdgeThreshold = 3;
         for( int y = 1; y < dsH - 1; ++y )
         {
@@ -1601,27 +1658,27 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 const int gradHP = abs( static_cast<int>( previousLuma[idx] ) - static_cast<int>( previousLuma[idx + 1] ) );
                 const int gradVP = abs( static_cast<int>( previousLuma[idx] ) - static_cast<int>( previousLuma[idx + dsW] ) );
                 if( gradHP + gradVP >= dsEdgeThreshold )
-                    dsMaskPrev[idx] = true;
+                    dsMaskPrev[idx] = 1;
                 const int gradHC = abs( static_cast<int>( currentLuma[idx] ) - static_cast<int>( currentLuma[idx + 1] ) );
                 const int gradVC = abs( static_cast<int>( currentLuma[idx] ) - static_cast<int>( currentLuma[idx + dsW] ) );
                 if( gradHC + gradVC >= dsEdgeThreshold )
-                    dsMaskCurr[idx] = true;
+                    dsMaskCurr[idx] = 1;
             }
         }
         // Dilate masks by 1px so adjacent-to-edge pixels are included.
-        std::vector<bool> dilatedPrev( dsMaskPrev.size(), false );
-        std::vector<bool> dilatedCurr( dsMaskCurr.size(), false );
+        std::vector<BYTE> dilatedPrev( dsMaskPrev.size(), 0 );
+        std::vector<BYTE> dilatedCurr( dsMaskCurr.size(), 0 );
         for( int y = 1; y < dsH - 1; ++y )
         {
             for( int x = 1; x < dsW - 1; ++x )
             {
                 const int idx = y * dsW + x;
-                if( dsMaskPrev[idx] || dsMaskPrev[idx - 1] || dsMaskPrev[idx + 1] ||
-                    dsMaskPrev[idx - dsW] || dsMaskPrev[idx + dsW] )
-                    dilatedPrev[idx] = true;
-                if( dsMaskCurr[idx] || dsMaskCurr[idx - 1] || dsMaskCurr[idx + 1] ||
-                    dsMaskCurr[idx - dsW] || dsMaskCurr[idx + dsW] )
-                    dilatedCurr[idx] = true;
+                if( dsMaskPrev[idx] | dsMaskPrev[idx - 1] | dsMaskPrev[idx + 1] |
+                    dsMaskPrev[idx - dsW] | dsMaskPrev[idx + dsW] )
+                    dilatedPrev[idx] = 1;
+                if( dsMaskCurr[idx] | dsMaskCurr[idx - 1] | dsMaskCurr[idx + 1] |
+                    dsMaskCurr[idx - dsW] | dsMaskCurr[idx + dsW] )
+                    dilatedCurr[idx] = 1;
             }
         }
         dsMaskPrev = std::move( dilatedPrev );
@@ -1863,32 +1920,27 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     const int refineRadiusDy = max( 3, downsampleScale + 1 );
     const int refineRadiusDx = 1;
 
-    std::vector<BYTE> previousFullLuma( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) );
-    std::vector<BYTE> currentFullLuma( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) );
+    // Use caller-provided full-resolution luma if available; otherwise compute locally.
+    std::vector<BYTE> previousFullLumaOwned;
+    std::vector<BYTE> currentFullLumaOwned;
+    if( !hasPrecomputedLuma )
     {
-        const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight );
-        for( size_t p = 0; p < pixelCount; ++p )
-        {
-            const size_t idx = p * 4;
-            previousFullLuma[p] = static_cast<BYTE>( ( previousPixels[idx + 2] * 77 +
-                                                       previousPixels[idx + 1] * 150 +
-                                                       previousPixels[idx + 0] * 29 ) >> 8 );
-            currentFullLuma[p] = static_cast<BYTE>( ( currentPixels[idx + 2] * 77 +
-                                                      currentPixels[idx + 1] * 150 +
-                                                      currentPixels[idx + 0] * 29 ) >> 8 );
-        }
+        BuildFullLumaFrame( previousPixels, frameWidth, frameHeight, previousFullLumaOwned );
+        BuildFullLumaFrame( currentPixels, frameWidth, frameHeight, currentFullLumaOwned );
     }
+    const std::vector<BYTE>& previousFullLuma = hasPrecomputedLuma ? precomputedPrevLuma : previousFullLumaOwned;
+    const std::vector<BYTE>& currentFullLuma = hasPrecomputedLuma ? precomputedCurrLuma : currentFullLumaOwned;
 
     // Build full-resolution informative masks for very-low-entropy pairs.
     // A pixel is informative if the gradient in its neighborhood exceeds
     // a small threshold, dilated by 1 pixel to capture full text strokes.
-    std::vector<bool> fullMaskPrev;
-    std::vector<bool> fullMaskCurr;
+    std::vector<BYTE> fullMaskPrev;
+    std::vector<BYTE> fullMaskCurr;
     if( veryLowEntropyPair )
     {
         const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight );
-        fullMaskPrev.resize( pixelCount, false );
-        fullMaskCurr.resize( pixelCount, false );
+        fullMaskPrev.resize( pixelCount, 0 );
+        fullMaskCurr.resize( pixelCount, 0 );
         const int fineEdgeThreshold = 4;
         for( int y = 1; y < frameHeight - 1; ++y )
         {
@@ -1898,27 +1950,27 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 const int gHP = abs( static_cast<int>( previousFullLuma[idx] ) - static_cast<int>( previousFullLuma[idx + 1] ) );
                 const int gVP = abs( static_cast<int>( previousFullLuma[idx] ) - static_cast<int>( previousFullLuma[idx + frameWidth] ) );
                 if( gHP + gVP >= fineEdgeThreshold )
-                    fullMaskPrev[idx] = true;
+                    fullMaskPrev[idx] = 1;
                 const int gHC = abs( static_cast<int>( currentFullLuma[idx] ) - static_cast<int>( currentFullLuma[idx + 1] ) );
                 const int gVC = abs( static_cast<int>( currentFullLuma[idx] ) - static_cast<int>( currentFullLuma[idx + frameWidth] ) );
                 if( gHC + gVC >= fineEdgeThreshold )
-                    fullMaskCurr[idx] = true;
+                    fullMaskCurr[idx] = 1;
             }
         }
         // Dilate by 1 pixel.
-        std::vector<bool> dilPrev( pixelCount, false );
-        std::vector<bool> dilCurr( pixelCount, false );
+        std::vector<BYTE> dilPrev( pixelCount, 0 );
+        std::vector<BYTE> dilCurr( pixelCount, 0 );
         for( int y = 1; y < frameHeight - 1; ++y )
         {
             for( int x = 1; x < frameWidth - 1; ++x )
             {
                 const int idx = y * frameWidth + x;
-                if( fullMaskPrev[idx] || fullMaskPrev[idx - 1] || fullMaskPrev[idx + 1] ||
-                    fullMaskPrev[idx - frameWidth] || fullMaskPrev[idx + frameWidth] )
-                    dilPrev[idx] = true;
-                if( fullMaskCurr[idx] || fullMaskCurr[idx - 1] || fullMaskCurr[idx + 1] ||
-                    fullMaskCurr[idx - frameWidth] || fullMaskCurr[idx + frameWidth] )
-                    dilCurr[idx] = true;
+                if( fullMaskPrev[idx] | fullMaskPrev[idx - 1] | fullMaskPrev[idx + 1] |
+                    fullMaskPrev[idx - frameWidth] | fullMaskPrev[idx + frameWidth] )
+                    dilPrev[idx] = 1;
+                if( fullMaskCurr[idx] | fullMaskCurr[idx - 1] | fullMaskCurr[idx + 1] |
+                    fullMaskCurr[idx - frameWidth] | fullMaskCurr[idx + frameWidth] )
+                    dilCurr[idx] = 1;
             }
         }
         fullMaskPrev = std::move( dilPrev );
@@ -2028,8 +2080,33 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                         rowDiff += static_cast<unsigned __int64>(
                             abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
                     }
+#elif defined(_M_ARM64)
+                    // NEON SIMD: process 16 luma pixels at once using
+                    // vabdq_u8 (absolute difference) + vpaddlq (pairwise
+                    // widening add) to compute sum of absolute differences.
+                    uint64x2_t sadAcc = vdupq_n_u64( 0 );
+                    int xi = 0;
+                    for( ; xi + 16 <= xSpan; xi += 16 )
+                    {
+                        const uint8x16_t a = vld1q_u8( pBase + xi );
+                        const uint8x16_t b = vld1q_u8( cBase + xi );
+                        const uint8x16_t absDiff = vabdq_u8( a, b );
+                        // Widen 8→16→32→64 with pairwise adds.
+                        const uint16x8_t sum16 = vpaddlq_u8( absDiff );
+                        const uint32x4_t sum32 = vpaddlq_u16( sum16 );
+                        const uint64x2_t sum64 = vpaddlq_u32( sum32 );
+                        sadAcc = vaddq_u64( sadAcc, sum64 );
+                    }
+
+                    rowDiff = vgetq_lane_u64( sadAcc, 0 ) + vgetq_lane_u64( sadAcc, 1 );
+
+                    for( ; xi < xSpan; ++xi )
+                    {
+                        rowDiff += static_cast<unsigned __int64>(
+                            abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
+                    }
 #else
-                    // Scalar fallback for ARM64.
+                    // Scalar fallback.
                     for( int xi = 0; xi < xSpan; ++xi )
                     {
                         rowDiff += static_cast<unsigned __int64>(
@@ -2158,11 +2235,94 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                                 int expectedDy,
                                 int& bestDx,
                                 int& bestDy,
-                                bool lowContrastMode )
+                                bool lowContrastMode,
+                                const std::vector<BYTE>& precomputedPrevLuma = {},
+                                const std::vector<BYTE>& precomputedCurrLuma = {},
+                                int precomputedVeryLowEntropy = -1 )
 {
     const bool axisEstablished = ( expectedDx != 0 || expectedDy != 0 );
     const bool preferVerticalAxis = !axisEstablished || ( abs( expectedDy ) >= abs( expectedDx ) );
 
+    // ── Fast path: once the scroll axis is established, only run the
+    // preferred-axis search.  This avoids the expensive transpose +
+    // second FindBestFrameShiftVerticalOnly call for ~97% of frames.
+    // Fall through to the dual-search path only if the preferred axis
+    // search fails (rare: content anomaly or direction reversal).
+    if( axisEstablished )
+    {
+        if( preferVerticalAxis )
+        {
+            int directDx = 0, directDy = 0;
+            if( FindBestFrameShiftVerticalOnly( previousPixels, currentPixels,
+                                                frameWidth, frameHeight,
+                                                expectedDx, expectedDy,
+                                                directDx, directDy, lowContrastMode,
+                                                precomputedPrevLuma, precomputedCurrLuma,
+                                                precomputedVeryLowEntropy ) )
+            {
+                bestDx = directDx;
+                bestDy = directDy;
+                return true;
+            }
+            // Preferred axis failed — try the transposed axis as fallback.
+            // Note: pre-computed luma is not transposed, so don't pass it here.
+            std::vector<BYTE> previousTransposed, currentTransposed;
+            if( TransposePixels32( previousPixels, frameWidth, frameHeight, previousTransposed ) &&
+                TransposePixels32( currentPixels, frameWidth, frameHeight, currentTransposed ) )
+            {
+                int tDx = 0, tDy = 0;
+                if( FindBestFrameShiftVerticalOnly( previousTransposed, currentTransposed,
+                                                    frameHeight, frameWidth,
+                                                    expectedDy, expectedDx,
+                                                    tDx, tDy, lowContrastMode,
+                                                    {}, {},
+                                                    precomputedVeryLowEntropy ) )
+                {
+                    bestDx = tDy;  // transposed mapping
+                    bestDy = tDx;
+                    return true;
+                }
+            }
+            return false;
+        }
+        else
+        {
+            // Prefer horizontal (transposed) axis.
+            std::vector<BYTE> previousTransposed, currentTransposed;
+            if( TransposePixels32( previousPixels, frameWidth, frameHeight, previousTransposed ) &&
+                TransposePixels32( currentPixels, frameWidth, frameHeight, currentTransposed ) )
+            {
+                int tDx = 0, tDy = 0;
+                if( FindBestFrameShiftVerticalOnly( previousTransposed, currentTransposed,
+                                                    frameHeight, frameWidth,
+                                                    expectedDy, expectedDx,
+                                                    tDx, tDy, lowContrastMode,
+                                                    {}, {},
+                                                    precomputedVeryLowEntropy ) )
+                {
+                    bestDx = tDy;
+                    bestDy = tDx;
+                    return true;
+                }
+            }
+            // Transposed axis failed — try direct as fallback.
+            int directDx = 0, directDy = 0;
+            if( FindBestFrameShiftVerticalOnly( previousPixels, currentPixels,
+                                                frameWidth, frameHeight,
+                                                expectedDx, expectedDy,
+                                                directDx, directDy, lowContrastMode,
+                                                precomputedPrevLuma, precomputedCurrLuma,
+                                                precomputedVeryLowEntropy ) )
+            {
+                bestDx = directDx;
+                bestDy = directDy;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    // ── First frame pair: axis unknown — run both searches and pick best.
     int directDx = 0;
     int directDy = 0;
     const bool directOk = FindBestFrameShiftVerticalOnly( previousPixels,
@@ -2173,7 +2333,10 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                                                           expectedDy,
                                                           directDx,
                                                           directDy,
-                                                          lowContrastMode );
+                                                          lowContrastMode,
+                                                          precomputedPrevLuma,
+                                                          precomputedCurrLuma,
+                                                          precomputedVeryLowEntropy );
 
     std::vector<BYTE> previousTransposed;
     std::vector<BYTE> currentTransposed;
@@ -2186,7 +2349,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     bool transposedOk = false;
     if( transposedReady )
     {
-        // In transposed space, original X motion becomes Y motion.
         transposedOk = FindBestFrameShiftVerticalOnly( previousTransposed,
                                                        currentTransposed,
                                                        frameHeight,
@@ -2195,7 +2357,9 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                                                        expectedDx,
                                                        transposedDx,
                                                        transposedDy,
-                                                       lowContrastMode );
+                                                       lowContrastMode,
+                                                       {}, {},
+                                                       precomputedVeryLowEntropy );
     }
 
     if( !directOk && !transposedOk )
@@ -2205,42 +2369,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
 
     int mappedDx = transposedDy;
     int mappedDy = transposedDx;
-
-    if( axisEstablished )
-    {
-        if( preferVerticalAxis )
-        {
-            if( directOk )
-            {
-                bestDx = directDx;
-                bestDy = directDy;
-                return true;
-            }
-
-            if( transposedOk )
-            {
-                bestDx = mappedDx;
-                bestDy = mappedDy;
-                return true;
-            }
-        }
-        else
-        {
-            if( transposedOk )
-            {
-                bestDx = mappedDx;
-                bestDy = mappedDy;
-                return true;
-            }
-
-            if( directOk )
-            {
-                bestDx = directDx;
-                bestDy = directDy;
-                return true;
-            }
-        }
-    }
 
     if( directOk && !transposedOk )
     {
@@ -2259,7 +2387,9 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     unsigned __int64 directScore = 0;
     unsigned __int64 transposedScore = 0;
     const bool ignoreConst = lowContrastMode &&
-        IsVeryLowEntropyPair( previousPixels, currentPixels, frameWidth, frameHeight );
+        ( precomputedVeryLowEntropy >= 0
+          ? ( precomputedVeryLowEntropy != 0 )
+          : IsVeryLowEntropyPair( previousPixels, currentPixels, frameWidth, frameHeight ) );
     const bool directScored = ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight, directDx, directDy, directScore, ignoreConst );
     const bool transposedScored = ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight, mappedDx, mappedDy, transposedScore, ignoreConst );
 
@@ -2362,6 +2492,22 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
         }
     }
 
+    // Pre-compute full-resolution luma for every frame so that
+    // FindBestFrameShift can skip redundant BGRA→luma conversions.
+    std::vector<std::vector<BYTE>> frameLuma( frames.size() );
+    for( size_t i = 0; i < frames.size(); i++ )
+    {
+        BuildFullLumaFrame( framePixels[i], frameWidth, frameHeight, frameLuma[i] );
+    }
+
+    // Pre-compute per-frame constant-content fraction so that
+    // IsVeryLowEntropyPair can be resolved without redundant scans.
+    std::vector<double> frameConstantFraction( frames.size() );
+    for( size_t i = 0; i < frames.size(); i++ )
+    {
+        frameConstantFraction[i] = ComputeConstantContentFraction( framePixels[i], frameWidth, frameHeight );
+    }
+
     std::vector<size_t> composedFrameIndices;
     std::vector<POINT> composedFrameOrigins;
     std::vector<POINT> composedFrameSteps;
@@ -2393,7 +2539,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
 
         int dx = expectedDx;
         int dy = expectedDy;
-        bool foundShift = FindBestFrameShift( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, expectedDx, expectedDy, dx, dy, lowContrastMode );
+        const int veryLowEntropy = ( frameConstantFraction[composedFrameIndices.back()] > 0.58 && frameConstantFraction[i] > 0.58 ) ? 1 : 0;
+        bool foundShift = FindBestFrameShift( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, expectedDx, expectedDy, dx, dy, lowContrastMode, frameLuma[composedFrameIndices.back()], frameLuma[i], veryLowEntropy );
         if( !foundShift )
         {
             if( ArePixelFramesNearDuplicate( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, lowContrastMode ) )
@@ -2616,7 +2763,12 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                 const size_t dstIndex = dstRowBase + static_cast<size_t>( canvasX ) * 4;
                 const size_t dstMaskIndex = dstMaskRowBase + static_cast<size_t>( canvasX );
 
-                BYTE weightNew = 255;
+                // When a frame has no clear directional movement (neither
+                // mostlyVerticalMove nor mostlyHorizontalMove), default to
+                // preserving existing canvas content.  Only unwritten pixels
+                // (gaps) will be filled.  This prevents near-duplicate or
+                // small-step frames from overwriting correctly composed content.
+                BYTE weightNew = ( i > 0 && !mostlyVerticalMove && !mostlyHorizontalMove ) ? 0 : 255;
                 if( mostlyVerticalMove && overlapHeight > 0 )
                 {
                     if( stepY > 0 )
@@ -3455,6 +3607,203 @@ bool RunPanoramaStitchSelfTest()
         }
     }
 
+    // Test: small-step frames must not overwrite previously composed content.
+    //
+    // When a frame's step falls between minProgress/2 (the acceptance
+    // threshold) and minProgress (the feather-blend threshold), the frame
+    // is accepted but neither mostlyVerticalMove nor mostlyHorizontalMove
+    // is set.  Previously this caused weightNew=255 for all pixels,
+    // overwriting already-composed canvas content.  This scenario verifies
+    // the fix: a tampered small-step frame's overlap markers must NOT
+    // appear in the output.
+    {
+        constexpr int frameWidth = 420;
+        constexpr int frameHeight = 320;
+        // minProgress = max(8, 320/30) = 10;  minProgress/2 = 5
+        // Normal steps of 92 followed by a step of 6 (between 5 and 10).
+        constexpr int normalStep = 92;
+        constexpr int smallStep = 6;
+        constexpr int normalFrameCount = 5;
+        constexpr int totalFrames = normalFrameCount + 1;  // +1 for the small-step frame
+        const int canvasHeight = frameHeight + normalStep * normalFrameCount + smallStep + 100;
+        const int expectedStitchedHeight = frameHeight + normalStep * ( normalFrameCount - 1 ) + smallStep;
+
+        std::vector<BYTE> syntheticCanvasPixels(
+            static_cast<size_t>( frameWidth ) * static_cast<size_t>( canvasHeight ) * 4 );
+
+        for( int y = 0; y < canvasHeight; ++y )
+        {
+            for( int x = 0; x < frameWidth; ++x )
+            {
+                BYTE blue = static_cast<BYTE>( ( x * 17 + y * 11 ) & 0xFF );
+                BYTE green = static_cast<BYTE>( ( x * 7 + y * 19 + ( ( y / 23 ) * 13 ) ) & 0xFF );
+                BYTE red = static_cast<BYTE>( ( x * 29 + y * 5 + ( ( x / 31 ) * 9 ) ) & 0xFF );
+
+                if( ( y % 97 ) < 2 )
+                {
+                    red = static_cast<BYTE>( 255 - red / 3 );
+                    green = static_cast<BYTE>( 255 - green / 3 );
+                    blue = static_cast<BYTE>( 255 - blue / 3 );
+                }
+
+                if( ( x % 89 ) < 2 )
+                {
+                    red = static_cast<BYTE>( red / 2 );
+                    green = static_cast<BYTE>( green / 2 );
+                    blue = static_cast<BYTE>( blue / 2 );
+                }
+
+                const size_t index = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( x ) ) * 4;
+                syntheticCanvasPixels[index + 0] = blue;
+                syntheticCanvasPixels[index + 1] = green;
+                syntheticCanvasPixels[index + 2] = red;
+                syntheticCanvasPixels[index + 3] = 0xFF;
+            }
+        }
+
+        // Build frame origins: 5 normal frames then 1 small-step frame.
+        std::vector<int> originsY;
+        for( int fi = 0; fi < normalFrameCount; ++fi )
+        {
+            originsY.push_back( fi * normalStep );
+        }
+        const int smallStepOrigin = ( normalFrameCount - 1 ) * normalStep + smallStep;
+        originsY.push_back( smallStepOrigin );
+
+        // Create frame bitmaps, but tamper with the last frame's overlap
+        // region: paint a bright-red marker stripe that should NOT appear
+        // in the stitched output because the overlap is already composed.
+        std::vector<HBITMAP> frames;
+        frames.reserve( totalFrames );
+        bool createFailed = false;
+
+        for( int fi = 0; fi < totalFrames; ++fi )
+        {
+            const int originY = originsY[fi];
+            std::vector<BYTE> framePixels( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) * 4 );
+            for( int y = 0; y < frameHeight; ++y )
+            {
+                const size_t srcStart = ( static_cast<size_t>( originY + y ) * static_cast<size_t>( frameWidth ) ) * 4;
+                const size_t dstStart = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) ) * 4;
+                memcpy( framePixels.data() + dstStart,
+                        syntheticCanvasPixels.data() + srcStart,
+                        static_cast<size_t>( frameWidth ) * 4 );
+            }
+
+            // Tamper with the last frame: paint marker in the overlap zone.
+            // The overlap covers rows 0..(frameHeight - smallStep - 1) of
+            // the last frame.  Place markers in the middle of the overlap.
+            if( fi == totalFrames - 1 )
+            {
+                const int markerY0 = frameHeight / 4;
+                const int markerY1 = frameHeight / 4 + 10;
+                for( int y = markerY0; y < markerY1; ++y )
+                {
+                    for( int x = 10; x < frameWidth - 10; ++x )
+                    {
+                        const size_t idx = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( x ) ) * 4;
+                        framePixels[idx + 0] = 0;       // B
+                        framePixels[idx + 1] = 0;       // G
+                        framePixels[idx + 2] = 255;     // R — bright red marker
+                        framePixels[idx + 3] = 0xFF;
+                    }
+                }
+            }
+
+            BITMAPINFO bmi{};
+            bmi.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
+            bmi.bmiHeader.biWidth = frameWidth;
+            bmi.bmiHeader.biHeight = -frameHeight;
+            bmi.bmiHeader.biPlanes = 1;
+            bmi.bmiHeader.biBitCount = 32;
+            bmi.bmiHeader.biCompression = BI_RGB;
+
+            HDC hdc = GetDC( nullptr );
+            void* bits = nullptr;
+            HBITMAP bitmap = CreateDIBSection( hdc, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0 );
+            if( bitmap != nullptr && bits != nullptr )
+            {
+                memcpy( bits, framePixels.data(), framePixels.size() );
+            }
+            else if( bitmap != nullptr )
+            {
+                DeleteObject( bitmap );
+                bitmap = nullptr;
+            }
+            ReleaseDC( nullptr, hdc );
+
+            if( bitmap == nullptr )
+            {
+                createFailed = true;
+                break;
+            }
+            frames.push_back( bitmap );
+        }
+
+        if( createFailed )
+        {
+            for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
+            OutputDebug( L"[Panorama/Test] small-step-no-overwrite: failed to create frame bitmaps\n" );
+            return false;
+        }
+
+        HBITMAP stitchedBitmap = StitchPanoramaFrames( frames, false );
+        for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
+
+        if( stitchedBitmap == nullptr )
+        {
+            OutputDebug( L"[Panorama/Test] small-step-no-overwrite: StitchPanoramaFrames returned nullptr\n" );
+            return false;
+        }
+
+        std::vector<BYTE> stitchedPixels;
+        int stitchedWidth = 0;
+        int stitchedHeight = 0;
+        if( !ReadBitmapPixels32( stitchedBitmap, stitchedPixels, stitchedWidth, stitchedHeight ) )
+        {
+            DeleteObject( stitchedBitmap );
+            OutputDebug( L"[Panorama/Test] small-step-no-overwrite: failed to read stitched bitmap\n" );
+            return false;
+        }
+        DeleteObject( stitchedBitmap );
+
+        // Verify the red markers do NOT appear in the stitched output.
+        // The marker row in source coordinates is at smallStepOrigin + markerY0.
+        const int markerCanvasY = smallStepOrigin + frameHeight / 4;
+        size_t markerPixels = 0;
+        size_t markerPresent = 0;
+        for( int x = 10; x < min( stitchedWidth, frameWidth ) - 10; x += 3 )
+        {
+            if( markerCanvasY >= stitchedHeight )
+                break;
+            const size_t idx = ( static_cast<size_t>( markerCanvasY ) * static_cast<size_t>( stitchedWidth ) + static_cast<size_t>( x ) ) * 4;
+            if( idx + 3 >= stitchedPixels.size() )
+                break;
+            markerPixels++;
+            // Check for the bright-red marker: R=255, G=0, B=0.
+            if( stitchedPixels[idx + 2] == 255 && stitchedPixels[idx + 1] == 0 && stitchedPixels[idx + 0] == 0 )
+            {
+                markerPresent++;
+            }
+        }
+
+        const bool markerVisible = markerPresent > markerPixels / 2;
+        OutputDebug( L"[Panorama/Test] small-step-no-overwrite: markerPixels=%zu markerPresent=%zu visible=%d\n",
+                     markerPixels, markerPresent, markerVisible ? 1 : 0 );
+        if( markerVisible )
+        {
+            OutputDebug( L"[Panorama/Test] small-step-no-overwrite FAILED: overlap was overwritten\n" );
+            if( !selfTestDumpDirectory.empty() )
+            {
+                DumpPanoramaText( selfTestDumpDirectory, L"scenario_fail_detail.txt",
+                                  L"OVERWRITE: small-step-no-overwrite — red markers visible in overlap" );
+            }
+            return false;
+        }
+
+        OutputDebug( L"[Panorama/Test] small-step-no-overwrite PASSED\n" );
+    }
+
     {
         constexpr int frameWidth = 1099;
         constexpr int frameHeight = 336;
@@ -4060,6 +4409,129 @@ bool RunPanoramaStitchSelfTest()
             wchar_t summary[128]{};
             swprintf_s( summary, L"imageSliceTestsPassed=%d", imageSliceTestsPassed );
             DumpPanoramaText( selfTestDumpDirectory, L"image_slice_results.txt", summary );
+        }
+
+        // ====================================================================
+        // Capture-log replay tests
+        //
+        // Replays the exact frame origins from recorded capture logs in
+        // the image*-stitches/ subdirectories.  This tests the stitcher
+        // against real-world scrolling patterns captured from actual use.
+        // ====================================================================
+        {
+            int captureReplayRun = 0;
+            int captureReplayPassed = 0;
+
+            for( const wchar_t* imageFile : imageFiles )
+            {
+                // Derive the stitch directory name from the image file name.
+                // e.g. "image6.png" -> "image6-stitches"
+                std::wstring baseName( imageFile );
+                const auto dotPos = baseName.rfind( L'.' );
+                if( dotPos != std::wstring::npos )
+                    baseName.resize( dotPos );
+                const auto stitchDir = imageDir / ( baseName + L"-stitches" );
+
+                if( !std::filesystem::exists( stitchDir ) )
+                    continue;
+
+                // Load the source image.
+                const auto imagePath = imageDir / imageFile;
+                std::vector<BYTE> imagePixels;
+                int imageWidth = 0, imageHeight = 0;
+                if( !loadImageFile( imagePath, imagePixels, imageWidth, imageHeight ) )
+                {
+                    OutputDebug( L"[Panorama/Test] CaptureReplay: failed to load %s\n", imageFile );
+                    continue;
+                }
+
+                // Iterate over all capture logs in the stitch directory.
+                for( const auto& entry : std::filesystem::directory_iterator( stitchDir ) )
+                {
+                    const auto& logPath = entry.path();
+                    if( logPath.extension() != L".log" )
+                        continue;
+                    const auto logName = logPath.filename().wstring();
+                    if( logName.find( L"-capture.log" ) == std::wstring::npos )
+                        continue;
+
+                    // Parse the capture log file.
+                    FILE* fp = nullptr;
+                    if( _wfopen_s( &fp, logPath.c_str(), L"r" ) != 0 || !fp )
+                        continue;
+
+                    int capW = 0, capH = 0;
+                    std::vector<int> originsY;
+                    char line[512];
+                    while( fgets( line, sizeof(line), fp ) )
+                    {
+                        int w = 0, h = 0;
+                        if( sscanf_s( line, "captureWindowSize=%dx%d", &w, &h ) == 2 )
+                        {
+                            capW = w;
+                            capH = h;
+                        }
+                        int fidx = 0, ox = 0, oy = 0, fw = 0, fh = 0;
+                        if( sscanf_s( line, "frame%d.offset=(%d,%d) size=%dx%d", &fidx, &ox, &oy, &fw, &fh ) == 5 )
+                        {
+                            originsY.push_back( oy );
+                        }
+                    }
+                    fclose( fp );
+
+                    if( capH <= 0 || originsY.size() < 2 )
+                        continue;
+                    if( capW != imageWidth )
+                        continue;
+
+                    // Verify all origins are valid.
+                    bool valid = true;
+                    for( int oy : originsY )
+                    {
+                        if( oy < 0 || oy + capH > imageHeight )
+                        {
+                            valid = false;
+                            break;
+                        }
+                    }
+                    if( !valid )
+                        continue;
+
+                    // Build scenario name from the log file name.
+                    std::wstring scenarioW = L"capture-replay-" + logName.substr( 0, logName.size() - 4 );
+                    wchar_t scenarioName[256]{};
+                    wcsncpy_s( scenarioName, scenarioW.c_str(), _TRUNCATE );
+
+                    OutputDebug( L"[Panorama/Test] Running %s (%s %dx%d portal=%d frames=%zu)\n",
+                                 scenarioName, imageFile, imageWidth, imageHeight, capH, originsY.size() );
+
+                    captureReplayRun++;
+                    const int result = stitchAndCompare( scenarioName, imagePixels, imageWidth, imageHeight, originsY, capH );
+
+                    if( result < 0 )
+                    {
+                        OutputDebug( L"[Panorama/Test] %s INFRASTRUCTURE ERROR\n", scenarioName );
+                    }
+                    else if( result == 1 )
+                    {
+                        captureReplayPassed++;
+                    }
+                    else
+                    {
+                        OutputDebug( L"[Panorama/Test] %s COMPARISON FAILED\n", scenarioName );
+                    }
+                }
+            }
+
+            OutputDebug( L"[Panorama/Test] Capture replay: %d/%d passed\n", captureReplayPassed, captureReplayRun );
+
+            if( captureReplayRun > 0 && captureReplayPassed < captureReplayRun )
+            {
+                OutputDebug( L"[Panorama/Test] Capture replay failures: %d/%d — aborting\n",
+                             captureReplayRun - captureReplayPassed, captureReplayRun );
+                CoUninitialize();
+                return false;
+            }
         }
 
         // ====================================================================
