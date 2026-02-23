@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using ManagedCommon;
 using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
@@ -53,6 +54,18 @@ internal static class QueryStringBuilder
         }
 
         queryHelper.SetQueryWhereRestrictions($"AND {ScopeFileConditions}");
-        return queryHelper.GenerateSQLFromUserQuery(searchText);
+
+        // Strip characters that Windows Search treats as noise words (e.g. &, @, #)
+        // to avoid QUERY_E_ALLNOISE errors. Keep only alphanumeric characters,
+        // whitespace, dots, hyphens, and underscores which are valid in file names.
+        var sanitized = Regex.Replace(searchText, @"[^\w\s.\-]", " ");
+        sanitized = Regex.Replace(sanitized, @"\s+", " ").Trim();
+
+        if (string.IsNullOrEmpty(sanitized))
+        {
+            return string.Empty;
+        }
+
+        return queryHelper.GenerateSQLFromUserQuery(sanitized);
     }
 }
