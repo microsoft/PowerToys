@@ -17,14 +17,9 @@ public static partial class QueryHelper
         ISettingsInterface settings,
         bool isFallbackSearch,
         out string displayQuery,
-        TypedEventHandler<object, object> handleSave = null,
         TypedEventHandler<object, object> handleReplace = null)
     {
         ArgumentNullException.ThrowIfNull(query);
-        if (!isFallbackSearch)
-        {
-            ArgumentNullException.ThrowIfNull(handleSave);
-        }
 
         CultureInfo inputCulture =
             settings.InputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
@@ -87,13 +82,9 @@ public static partial class QueryHelper
                 return errorMessage == default ? null : ErrorHandler.OnError(isFallbackSearch, query, errorMessage);
             }
 
-            if (isFallbackSearch)
-            {
-                // Fallback search
-                return ResultHelper.CreateResult(result.RoundedResult, inputCulture, outputCulture, displayQuery);
-            }
-
-            return ResultHelper.CreateResult(result.RoundedResult, inputCulture, outputCulture, displayQuery, settings, handleSave, handleReplace);
+            return isFallbackSearch
+                ? ResultHelper.CreateResultForFallback(result.RoundedResult, inputCulture, outputCulture, displayQuery)
+                : ResultHelper.CreateResultForPage(result.RoundedResult, inputCulture, outputCulture, displayQuery, settings, handleReplace);
         }
         catch (OverflowException)
         {
