@@ -129,8 +129,67 @@ const wchar_t* HotkeyIdToString( WPARAM hotkeyId );
 DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap );
 std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId );
 
-static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<bool(int)> progressCallback = nullptr );
+static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
+                                     bool lowContrastMode,
+                                     std::function<bool(int)> progressCallback = nullptr,
+                                     const std::vector<int>* frameSourceIds = nullptr );
 static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile );
+
+namespace
+{
+// Duplicate-detection sampling cadence for normal/low-contrast capture.
+constexpr int kDuplicateSampleStepLowContrast = 4;
+constexpr int kDuplicateSampleStepNormal = 6;
+
+// Coarse duplicate thresholds (avg RGB diff and changed pixel fraction).
+constexpr unsigned __int64 kDuplicateAvgDiffThresholdLowContrast = 2;
+constexpr unsigned __int64 kDuplicateAvgDiffThresholdNormal = 6;
+constexpr double kDuplicateChangedFractionThresholdLowContrast = 0.0005;
+constexpr double kDuplicateChangedFractionThresholdNormal = 0.005;
+
+// Fine duplicate thresholds used for low-contrast refinement.
+constexpr unsigned __int64 kFineDuplicateAvgDiffThreshold = 1;
+constexpr double kFineDuplicateChangedFractionThreshold = 0.00008;
+
+// Small-shift duplicate guard bounds.
+constexpr int kSmallShiftGuardMaxAbsDyLowContrast = 24;
+constexpr int kSmallShiftGuardMaxAbsDyNormal = 16;
+constexpr int kSmallShiftGuardMaxAbsDxLowContrast = 12;
+constexpr int kSmallShiftGuardMaxAbsDxNormal = 8;
+
+// Informative-pixel rescue minimum average diff for low-contrast duplicates.
+constexpr unsigned __int64 kInformativeRescueAvgDiffThreshold = 8;
+
+// Alignment-score overlap and sampling thresholds.
+constexpr int kAlignmentMarginMinPixels = 4;
+constexpr int kAlignmentMarginDenominator = 20;
+constexpr int kAlignmentOverlapMinDenominator = 4;
+constexpr int kAlignmentSampleStride = 2;
+constexpr int kAlignmentGradientThreshold = 4;
+constexpr unsigned __int64 kAlignmentMinSamplesMasked = 20;
+constexpr unsigned __int64 kAlignmentMinSamplesUnmasked = 100;
+
+// Shift-search tuning thresholds.
+constexpr int kDownsampleScaleMinDimension = 240;
+constexpr int kDownsampleScaleLargeFrames = 4;
+constexpr int kDownsampleScaleSmallFrames = 2;
+constexpr int kSearchMinStepDownsampled = 1;
+constexpr int kSearchMaxStepMinPadding = 2;
+constexpr int kSearchMaxStepDenominator = 6;
+constexpr int kSearchMarginMinPixels = 2;
+constexpr int kSearchMarginDenominator = 20;
+
+// Candidate shortlist sizes for coarse-to-fine refinement.
+constexpr int kMaxCoarseCandidates = 12;
+constexpr int kMaxCoarseCandidatesWithProbes = 24;
+
+// Minimum one-axis advance (in feather widths) required once a frame is
+// considered a mostly single-axis scroll step. This suppresses near-total
+// overlap updates that tend to hide intermediate content without adding
+// meaningful new panorama area.
+constexpr int kComposeMinAdvanceFeatherNumerator = 5;
+constexpr int kComposeMinAdvanceFeatherDenominator = 2;
+}
 
 //----------------------------------------------------------------------------
 // Progress dialog for panorama stitching.
@@ -367,6 +426,40 @@ static PanoramaProgressDialog g_ProgressDialog;
 // Temporary file-based trace for stitch debugging (debug builds only).
 #ifdef _DEBUG
 static FILE* g_StitchLogFile = nullptr;
+static std::filesystem::path g_StitchLogPath;
+
+static void CloseStitchLogFile()
+{
+    if( g_StitchLogFile != nullptr )
+    {
+        fclose( g_StitchLogFile );
+        g_StitchLogFile = nullptr;
+    }
+}
+
+static void OpenStitchLogFile( const std::filesystem::path& outputFolder,
+                               const wchar_t* fileName = L"stitch_trace.log" )
+{
+    CloseStitchLogFile();
+
+    if( outputFolder.empty() )
+    {
+        g_StitchLogPath.clear();
+        return;
+    }
+
+    std::error_code errorCode;
+    std::filesystem::create_directories( outputFolder, errorCode );
+    if( errorCode )
+    {
+        g_StitchLogPath.clear();
+        return;
+    }
+
+    g_StitchLogPath = outputFolder / fileName;
+    g_StitchLogFile = _wfopen( g_StitchLogPath.c_str(), L"w" );
+}
+
 static void StitchLog( const wchar_t* format, ... )
 {
     va_list args;
@@ -721,7 +814,9 @@ static bool RunPanoramaStitchFromDumpDirectory( const std::filesystem::path& dum
                  dumpDirectory.c_str() );
 
     std::vector<HBITMAP> frames;
+    std::vector<int> frameSourceIds;
     frames.reserve( framePaths.size() );
+    frameSourceIds.reserve( framePaths.size() );
     for( const auto& framePath : framePaths )
     {
         HBITMAP bitmap = LoadBitmapFromFile( framePath );
@@ -736,21 +831,30 @@ static bool RunPanoramaStitchFromDumpDirectory( const std::filesystem::path& dum
         }
 
         frames.push_back( bitmap );
+
+        int sourceId = static_cast<int>( frameSourceIds.size() + 1 );
+        const auto stem = framePath.stem().wstring();
+        const size_t underscore = stem.find_last_of( L'_' );
+        if( underscore != std::wstring::npos && underscore + 1 < stem.size() )
+        {
+            const std::wstring idText = stem.substr( underscore + 1 );
+            try
+            {
+                sourceId = std::stoi( idText );
+            }
+            catch( ... )
+            {
+            }
+        }
+        frameSourceIds.push_back( sourceId );
     }
 
     // Open a trace log in the dump directory for diagnostics.
-    {
-        auto logPath = dumpDirectory / L"stitch_trace.log";
-        g_StitchLogFile = fopen( logPath.string().c_str(), "w" );
-    }
+    OpenStitchLogFile( dumpDirectory );
 
-    HBITMAP stitched = StitchPanoramaFrames( frames, false );
+    HBITMAP stitched = StitchPanoramaFrames( frames, false, nullptr, &frameSourceIds );
 
-    if( g_StitchLogFile != nullptr )
-    {
-        fclose( g_StitchLogFile );
-        g_StitchLogFile = nullptr;
-    }
+    CloseStitchLogFile();
 
     for( HBITMAP frame : frames )
     {
@@ -1327,15 +1431,15 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
     unsigned __int64 avgDiff = 0;
     double changedFraction = 0.0;
 
-    const int coarseSampleStep = lowContrastMode ? 4 : 6;
+    const int coarseSampleStep = lowContrastMode ? kDuplicateSampleStepLowContrast : kDuplicateSampleStepNormal;
     if( !ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight,
                                         avgDiff, changedFraction, coarseSampleStep, ++s_phase ) )
     {
         return false;
     }
 
-    const unsigned __int64 avgDiffThreshold = lowContrastMode ? 2 : 6;
-    const double changedThreshold = lowContrastMode ? 0.0005 : 0.005;
+    const unsigned __int64 avgDiffThreshold = lowContrastMode ? kDuplicateAvgDiffThresholdLowContrast : kDuplicateAvgDiffThresholdNormal;
+    const double changedThreshold = lowContrastMode ? kDuplicateChangedFractionThresholdLowContrast : kDuplicateChangedFractionThresholdNormal;
     const bool coarseDuplicate = ( avgDiff < avgDiffThreshold && changedFraction < changedThreshold );
     bool duplicate = coarseDuplicate;
 
@@ -1349,7 +1453,9 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
         if( ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight,
                                            fineAvgDiff, fineChangedFraction, 1, ++s_phase ) )
         {
-            const bool fineDuplicate = ( fineAvgDiff < 1 && fineChangedFraction < 0.00008 );
+                        const bool fineDuplicate =
+                                ( fineAvgDiff < kFineDuplicateAvgDiffThreshold &&
+                                    fineChangedFraction < kFineDuplicateChangedFractionThreshold );
             duplicate = coarseDuplicate && fineDuplicate;
             if( coarseDuplicate && !fineDuplicate )
             {
@@ -1445,8 +1551,8 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
     if( duplicate )
     {
         if( LooksLikeSmallShiftNotDuplicate( previousPixels, currentPixels, frameWidth, frameHeight,
-                                            /*maxAbsDyFull=*/lowContrastMode ? 24 : 16,
-                                            /*maxAbsDxFull=*/lowContrastMode ? 12 : 8,
+                                            /*maxAbsDyFull=*/lowContrastMode ? kSmallShiftGuardMaxAbsDyLowContrast : kSmallShiftGuardMaxAbsDyNormal,
+                                            /*maxAbsDxFull=*/lowContrastMode ? kSmallShiftGuardMaxAbsDxLowContrast : kSmallShiftGuardMaxAbsDxNormal,
                                             lowContrastMode ) )
         {
             duplicate = false;
@@ -1461,7 +1567,7 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
             infCount > 0 )
         {
             const unsigned __int64 avgInfDiff = infDiff / ( infCount * 3 );
-            if( avgInfDiff >= 8 )
+            if( avgInfDiff >= kInformativeRescueAvgDiffThreshold )
             {
                 duplicate = false;
             }
@@ -1487,11 +1593,11 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
 
     const int absDx = abs( dx );
     const int absDy = abs( dy );
-    const int marginX = max( 4, frameWidth / 20 );
-    const int marginY = max( 4, frameHeight / 20 );
+    const int marginX = max( kAlignmentMarginMinPixels, frameWidth / kAlignmentMarginDenominator );
+    const int marginY = max( kAlignmentMarginMinPixels, frameHeight / kAlignmentMarginDenominator );
     const int overlapW = frameWidth - absDx - 2 * marginX;
     const int overlapH = frameHeight - absDy - 2 * marginY;
-    if( overlapW < frameWidth / 4 || overlapH < frameHeight / 4 )
+    if( overlapW < frameWidth / kAlignmentOverlapMinDenominator || overlapH < frameHeight / kAlignmentOverlapMinDenominator )
     {
         return false;
     }
@@ -1504,11 +1610,11 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
     const int prevY = marginY + max( 0, -dy );
     const int currY = marginY + max( 0, dy );
 
-    for( int y = 0; y < overlapH; y += 2 )
+    for( int y = 0; y < overlapH; y += kAlignmentSampleStride )
     {
         const int pY = prevY + y;
         const int cY = currY + y;
-        for( int x = 0; x < overlapW; x += 2 )
+        for( int x = 0; x < overlapW; x += kAlignmentSampleStride )
         {
             const int pX = prevX + x;
             const int cX = currX + x;
@@ -1531,7 +1637,7 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
                     const int lc = ( px[idx + 2] * 77 + px[idx + 1] * 150 + px[idx + 0] * 29 ) >> 8;
                     const int lr = ( px[idxR + 2] * 77 + px[idxR + 1] * 150 + px[idxR + 0] * 29 ) >> 8;
                     const int ld = ( px[idxD + 2] * 77 + px[idxD + 1] * 150 + px[idxD + 0] * 29 ) >> 8;
-                    return ( abs( lc - lr ) + abs( lc - ld ) ) >= 4;
+                    return ( abs( lc - lr ) + abs( lc - ld ) ) >= kAlignmentGradientThreshold;
                 };
                 if( !hasGradient( previousPixels, pX, pY ) && !hasGradient( currentPixels, cX, cY ) )
                     continue;
@@ -1542,7 +1648,7 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
         }
     }
 
-    if( samples < ( ignoreConstantRegions ? 20 : 100 ) )
+    if( samples < ( ignoreConstantRegions ? kAlignmentMinSamplesMasked : kAlignmentMinSamplesUnmasked ) )
     {
         return false;
     }
@@ -1603,7 +1709,10 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // matches on repetitive content.  For the first frame pair
     // (expectedDy == 0) search outward from the smallest step.
     //
-    const int downsampleScale = ( min( frameWidth, frameHeight ) >= 240 ) ? 4 : 2;
+    const int downsampleScale =
+        ( min( frameWidth, frameHeight ) >= kDownsampleScaleMinDimension )
+        ? kDownsampleScaleLargeFrames
+        : kDownsampleScaleSmallFrames;
     std::vector<BYTE> previousLuma;
     std::vector<BYTE> currentLuma;
     int dsW = 0, dsH = 0, dsW2 = 0, dsH2 = 0;
@@ -1623,9 +1732,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         return false;
     }
 
-    const int minStepDs = 1;
-    const int maxStepDs = dsH - max( 2, dsH / 6 );
-    const int marginX = max( 2, dsW / 20 );
+    const int minStepDs = kSearchMinStepDownsampled;
+    const int maxStepDs = dsH - max( kSearchMaxStepMinPadding, dsH / kSearchMaxStepDenominator );
+    const int marginX = max( kSearchMarginMinPixels, dsW / kSearchMarginDenominator );
 
     // Stationary score: how well the frames match with zero shift.
     unsigned __int64 stationaryScore = ( std::numeric_limits<unsigned __int64>::max )();
@@ -1784,9 +1893,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         unsigned __int64 score;
     };
 
-    constexpr int kMaxCandidates = 12;
-    constexpr int kMaxCandidatesWithProbes = 24;
-    CoarseCandidate candidates[kMaxCandidatesWithProbes];
+    CoarseCandidate candidates[kMaxCoarseCandidatesWithProbes];
     int candidateCount = 0;
 
     for( int absStep = minStepDs; absStep <= maxStepDs; ++absStep )
@@ -1830,7 +1937,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
                 // Early termination: if running average already exceeds
                 // the worst kept candidate, this step cannot win.
-                if( candidateCount >= kMaxCandidates && samples >= 100 &&
+                if( candidateCount >= kMaxCoarseCandidates && samples >= 100 &&
                     totalDiff / samples > candidates[candidateCount - 1].score )
                 {
                     earlyExitCoarse = true;
@@ -1845,21 +1952,21 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
             unsigned __int64 score = totalDiff / samples;
 
             // Insert into sorted candidates list if good enough
-            if( candidateCount < kMaxCandidates || score < candidates[candidateCount - 1].score )
+            if( candidateCount < kMaxCoarseCandidates || score < candidates[candidateCount - 1].score )
             {
-                int insertPos = candidateCount < kMaxCandidates ? candidateCount : candidateCount - 1;
+                int insertPos = candidateCount < kMaxCoarseCandidates ? candidateCount : candidateCount - 1;
                 for( int j = insertPos; j > 0 && candidates[j - 1].score > score; --j )
                 {
-                    if( j < kMaxCandidates )
+                    if( j < kMaxCoarseCandidates )
                     {
                         candidates[j] = candidates[j - 1];
                     }
                     insertPos = j - 1;
                 }
-                if( insertPos < kMaxCandidates )
+                if( insertPos < kMaxCoarseCandidates )
                 {
                     candidates[insertPos] = { dyDs, score };
-                    if( candidateCount < kMaxCandidates )
+                    if( candidateCount < kMaxCoarseCandidates )
                     {
                         candidateCount++;
                     }
@@ -1898,9 +2005,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // similarly-scored coarse candidates at text-line harmonics, pushing the
     // correct shift outside the top-12.  Adding probes at the expected step
     // ensures the fine search always evaluates the correct neighborhood.
-    if( expectedDyDs != 0 && prunedCount < kMaxCandidatesWithProbes )
+    if( expectedDyDs != 0 && prunedCount < kMaxCoarseCandidatesWithProbes )
     {
-        for( int probe = -3; probe <= 3 && prunedCount < kMaxCandidatesWithProbes; ++probe )
+        for( int probe = -3; probe <= 3 && prunedCount < kMaxCoarseCandidatesWithProbes; ++probe )
         {
             const int probeDyDs = expectedDyDs + probe;
             if( abs( probeDyDs ) < minStepDs || abs( probeDyDs ) > maxStepDs )
@@ -2210,6 +2317,10 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     if( veryLowEntropyPair )
     {
         fineThreshold = ( maskedStationaryScore > 15 ) ? 30 : 20;
+        if( shiftMatchesDirection && fineThreshold >= 30 )
+        {
+            fineThreshold += 6;
+        }
     }
     else
     {
@@ -2296,6 +2407,11 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
 
     if( !directOk && !transposedOk )
     {
+        StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=%d preferVertical=%d directOk=0 transposedOk=0 => reject\n",
+                     expectedDx,
+                     expectedDy,
+                     axisEstablished ? 1 : 0,
+                     preferVerticalAxis ? 1 : 0 );
         return false;
     }
 
@@ -2310,6 +2426,11 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
             {
                 bestDx = directDx;
                 bestDy = directDy;
+                StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=1 preferVertical=1 chose=direct best=(%d,%d) reason=axis_lock\n",
+                             expectedDx,
+                             expectedDy,
+                             bestDx,
+                             bestDy );
                 return true;
             }
 
@@ -2317,6 +2438,11 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
             {
                 bestDx = mappedDx;
                 bestDy = mappedDy;
+                StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=1 preferVertical=1 chose=transposed best=(%d,%d) reason=direct_unavailable\n",
+                             expectedDx,
+                             expectedDy,
+                             bestDx,
+                             bestDy );
                 return true;
             }
         }
@@ -2326,6 +2452,11 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
             {
                 bestDx = mappedDx;
                 bestDy = mappedDy;
+                StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=1 preferVertical=0 chose=transposed best=(%d,%d) reason=axis_lock\n",
+                             expectedDx,
+                             expectedDy,
+                             bestDx,
+                             bestDy );
                 return true;
             }
 
@@ -2333,6 +2464,11 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
             {
                 bestDx = directDx;
                 bestDy = directDy;
+                StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=1 preferVertical=0 chose=direct best=(%d,%d) reason=transposed_unavailable\n",
+                             expectedDx,
+                             expectedDy,
+                             bestDx,
+                             bestDy );
                 return true;
             }
         }
@@ -2342,6 +2478,11 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     {
         bestDx = directDx;
         bestDy = directDy;
+        StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=0 chose=direct best=(%d,%d) reason=only_candidate\n",
+                     expectedDx,
+                     expectedDy,
+                     bestDx,
+                     bestDy );
         return true;
     }
 
@@ -2349,6 +2490,11 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     {
         bestDx = mappedDx;
         bestDy = mappedDy;
+        StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=0 chose=transposed best=(%d,%d) reason=only_candidate\n",
+                     expectedDx,
+                     expectedDy,
+                     bestDx,
+                     bestDy );
         return true;
     }
 
@@ -2371,6 +2517,15 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
             bestDx = directDx;
             bestDy = directDy;
         }
+        StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=0 chose=%ls best=(%d,%d) reason=score_compare directScore=%llu transposedScore=%llu ignoreConst=%d\n",
+                     expectedDx,
+                     expectedDy,
+                     ( transposedScore < directScore ) ? L"transposed" : L"direct",
+                     bestDx,
+                     bestDy,
+                     static_cast<unsigned long long>( directScore ),
+                     static_cast<unsigned long long>( transposedScore ),
+                     ignoreConst ? 1 : 0 );
         return true;
     }
 
@@ -2378,16 +2533,33 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     {
         bestDx = mappedDx;
         bestDy = mappedDy;
+        StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=0 chose=transposed best=(%d,%d) reason=single_scored transposedScore=%llu ignoreConst=%d\n",
+                     expectedDx,
+                     expectedDy,
+                     bestDx,
+                     bestDy,
+                     static_cast<unsigned long long>( transposedScore ),
+                     ignoreConst ? 1 : 0 );
     }
     else
     {
         bestDx = directDx;
         bestDy = directDy;
+        StitchLog( L"[Panorama/StitchFlow] ShiftSelect expected=(%d,%d) axisEstablished=0 chose=direct best=(%d,%d) reason=single_scored directScore=%llu ignoreConst=%d\n",
+                     expectedDx,
+                     expectedDy,
+                     bestDx,
+                     bestDy,
+                     static_cast<unsigned long long>( directScore ),
+                     ignoreConst ? 1 : 0 );
     }
     return true;
 }
 
-static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<bool(int)> progressCallback)
+static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
+                                     bool lowContrastMode,
+                                     std::function<bool(int)> progressCallback,
+                                     const std::vector<int>* frameSourceIds )
 {
     bool cancelled = false;
     auto reportProgress = [&progressCallback, &cancelled]( int percent )
@@ -2477,6 +2649,18 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
 
     const int minFrameDimension = min( frameWidth, frameHeight );
     const int minProgress = lowContrastMode ? max( 4, minFrameDimension / 40 ) : max( 8, minFrameDimension / 30 );
+    const int verticalFeather = max( 4, min( 28, frameHeight / 18 ) );
+    const int horizontalFeather = max( 4, min( 28, frameWidth / 18 ) );
+    const int minComposeAdvanceY = max( minProgress, ( verticalFeather * kComposeMinAdvanceFeatherNumerator ) / kComposeMinAdvanceFeatherDenominator );
+    const int minComposeAdvanceX = max( minProgress, ( horizontalFeather * kComposeMinAdvanceFeatherNumerator ) / kComposeMinAdvanceFeatherDenominator );
+    const int axisClassificationMinStep = max( 1, minProgress / 2 );
+    enum class AlignmentMode
+    {
+        Unknown,
+        Vertical,
+        Horizontal,
+    };
+    AlignmentMode alignmentMode = AlignmentMode::Unknown;
     int expectedDx = 0;
     int expectedDy = 0;
 
@@ -2496,6 +2680,15 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
 
         int dx = expectedDx;
         int dy = expectedDy;
+        const size_t previousComposedFrameIndex = composedFrameIndices.back();
+        const int currentSourceFrameId =
+            ( frameSourceIds != nullptr && i < frameSourceIds->size() )
+            ? ( *frameSourceIds )[i]
+            : static_cast<int>( i + 1 );
+        const int previousSourceFrameId =
+            ( frameSourceIds != nullptr && previousComposedFrameIndex < frameSourceIds->size() )
+            ? ( *frameSourceIds )[previousComposedFrameIndex]
+            : static_cast<int>( previousComposedFrameIndex + 1 );
         bool foundShift = FindBestFrameShift( framePixels[composedFrameIndices.back()],
                               framePixels[i],
                               frameWidth,
@@ -2507,9 +2700,27 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                               lowContrastMode,
                               frameLuma[composedFrameIndices.back()],
                               frameLuma[i] );
+        StitchLog( L"[Panorama/StitchFlow] Frame %zu match-attempt prev=%zu expected=(%d,%d) foundShift=%d rawMatch=(%d,%d) minProgress=%d\n",
+                     i,
+                     previousComposedFrameIndex,
+                     expectedDx,
+                     expectedDy,
+                     foundShift ? 1 : 0,
+                     dx,
+                     dy,
+                     minProgress );
+        StitchLog( L"[Panorama/StitchFlow] Frame %zu sourceId=%d prevSourceId=%d\n",
+                 i,
+                 currentSourceFrameId,
+                 previousSourceFrameId );
         if( !foundShift )
         {
-            if( ArePixelFramesNearDuplicate( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, lowContrastMode ) )
+            const bool duplicateCandidate = ArePixelFramesNearDuplicate( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, lowContrastMode );
+            StitchLog( L"[Panorama/StitchFlow] Frame %zu no-match duplicate-check prev=%zu duplicate=%d\n",
+                         i,
+                         previousComposedFrameIndex,
+                         duplicateCandidate ? 1 : 0 );
+            if( duplicateCandidate )
             {
                 StitchLog( L"[Panorama/Stitch] Frame %zu rejected: duplicate vs frame %zu\n",
                              i,
@@ -2526,8 +2737,18 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
 
         const int maxAbsDx = max( 8, frameWidth / 6 );
         const int maxAbsDy = frameHeight - minProgress;
+    const int unclampedDx = dx;
+    const int unclampedDy = dy;
         dx = max( -maxAbsDx, min( maxAbsDx, dx ) );
         dy = max( -maxAbsDy, min( maxAbsDy, dy ) );
+    StitchLog( L"[Panorama/StitchFlow] Frame %zu clamp-shift raw=(%d,%d) clamped=(%d,%d) limits=(%d,%d)\n",
+             i,
+             unclampedDx,
+             unclampedDy,
+             dx,
+             dy,
+             maxAbsDx,
+             maxAbsDy );
 
         int stepX = -dx;
         int stepY = -dy;
@@ -2551,25 +2772,125 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                 totalAbsStepY += min( abs( composedFrameSteps[si].y ), stepCapForDirection );
             }
 
-            if( totalAbsStepY > totalAbsStepX * 8 )
+            if( alignmentMode == AlignmentMode::Unknown )
+            {
+                if( totalAbsStepY > totalAbsStepX * 8 )
+                {
+                    alignmentMode = AlignmentMode::Vertical;
+                    StitchLog( L"[Panorama/StitchFlow] Alignment mode latched: vertical totalAbs=(%d,%d) stepCap=%d\n",
+                                 totalAbsStepX,
+                                 totalAbsStepY,
+                                 stepCapForDirection );
+                }
+                else if( totalAbsStepX > totalAbsStepY * 8 )
+                {
+                    alignmentMode = AlignmentMode::Horizontal;
+                    StitchLog( L"[Panorama/StitchFlow] Alignment mode latched: horizontal totalAbs=(%d,%d) stepCap=%d\n",
+                                 totalAbsStepX,
+                                 totalAbsStepY,
+                                 stepCapForDirection );
+                }
+            }
+
+            if( alignmentMode == AlignmentMode::Vertical )
             {
                 stepX = 0;
+                StitchLog( L"[Panorama/StitchFlow] Frame %zu axis-lock vertical totalAbs=(%d,%d) stepCap=%d\n",
+                             i,
+                             totalAbsStepX,
+                             totalAbsStepY,
+                             stepCapForDirection );
             }
-            else if( totalAbsStepX > totalAbsStepY * 8 )
+            else if( alignmentMode == AlignmentMode::Horizontal )
             {
                 stepY = 0;
+                StitchLog( L"[Panorama/StitchFlow] Frame %zu axis-lock horizontal totalAbs=(%d,%d) stepCap=%d\n",
+                             i,
+                             totalAbsStepX,
+                             totalAbsStepY,
+                             stepCapForDirection );
             }
         }
 
-        if( abs( stepX ) + abs( stepY ) < minProgress / 2 )
+        const int movementMagnitude = abs( stepX ) + abs( stepY );
+        const int lowMovementThreshold = minProgress / 2;
+        const int absStepX = abs( stepX );
+        const int absStepY = abs( stepY );
+        bool mostlyVerticalMove =
+            absStepY >= axisClassificationMinStep &&
+            absStepY >= absStepX &&
+            absStepX <= max( 12, frameWidth / 20 );
+        bool mostlyHorizontalMove =
+            absStepX >= axisClassificationMinStep &&
+            absStepX >= absStepY &&
+            absStepY <= max( 12, frameHeight / 20 );
+        if( alignmentMode == AlignmentMode::Vertical )
+        {
+            mostlyVerticalMove = ( absStepY >= axisClassificationMinStep );
+            mostlyHorizontalMove = false;
+        }
+        else if( alignmentMode == AlignmentMode::Horizontal )
+        {
+            mostlyHorizontalMove = ( absStepX >= axisClassificationMinStep );
+            mostlyVerticalMove = false;
+        }
+        StitchLog( L"[Panorama/StitchFlow] Frame %zu movement-check step=(%d,%d) magnitude=%d threshold=%d\n",
+                     i,
+                     stepX,
+                     stepY,
+                     movementMagnitude,
+                     lowMovementThreshold );
+        if( movementMagnitude < lowMovementThreshold )
         {
             StitchLog( L"[Panorama/Stitch] Frame %zu rejected: low movement step=(%d,%d)\n", i, stepX, stepY );
+            continue;
+        }
+
+        if( mostlyVerticalMove && absStepY < minComposeAdvanceY )
+        {
+            expectedDx = dx;
+            expectedDy = dy;
+            StitchLog( L"[Panorama/StitchFlow] Frame %zu predictor-update reject=excessive-overlap-vertical expected=(%d,%d)\n",
+                         i,
+                         expectedDx,
+                         expectedDy );
+            StitchLog( L"[Panorama/Stitch] Frame %zu rejected: excessive overlap vertical stepY=%d minAdvance=%d minProgress=%d feather=%d\n",
+                         i,
+                         absStepY,
+                         minComposeAdvanceY,
+                         minProgress,
+                         verticalFeather );
+            continue;
+        }
+
+        if( mostlyHorizontalMove && absStepX < minComposeAdvanceX )
+        {
+            expectedDx = dx;
+            expectedDy = dy;
+            StitchLog( L"[Panorama/StitchFlow] Frame %zu predictor-update reject=excessive-overlap-horizontal expected=(%d,%d)\n",
+                         i,
+                         expectedDx,
+                         expectedDy );
+            StitchLog( L"[Panorama/Stitch] Frame %zu rejected: excessive overlap horizontal stepX=%d minAdvance=%d minProgress=%d feather=%d\n",
+                         i,
+                         absStepX,
+                         minComposeAdvanceX,
+                         minProgress,
+                         horizontalFeather );
             continue;
         }
 
         POINT nextOrigin = composedFrameOrigins.back();
         nextOrigin.x += stepX;
         nextOrigin.y += stepY;
+        StitchLog( L"[Panorama/StitchFlow] Frame %zu compose-origin prevOrigin=(%d,%d) step=(%d,%d) nextOrigin=(%d,%d) reason=matched_shift\n",
+                     i,
+                     composedFrameOrigins.back().x,
+                     composedFrameOrigins.back().y,
+                     stepX,
+                     stepY,
+                     nextOrigin.x,
+                     nextOrigin.y );
         composedFrameIndices.push_back( i );
         composedFrameOrigins.push_back( nextOrigin );
         composedFrameSteps.push_back( { stepX, stepY } );
@@ -2672,9 +2993,6 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
 
     std::vector<BYTE> stitchedPixels( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ) * 4, 0 );
     std::vector<BYTE> stitchedWritten( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ), 0 );
-    const int verticalFeather = max( 4, min( 28, frameHeight / 18 ) );
-    const int horizontalFeather = max( 4, min( 28, frameWidth / 18 ) );
-
     for( size_t i = 0; i < composedFrameIndices.size(); ++i )
     {
         reportProgress( 90 + static_cast<int>( ( i + 1 ) * 9 / composedFrameIndices.size() ) );
@@ -2700,10 +3018,62 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
 
         const int absStepX = abs( stepX );
         const int absStepY = abs( stepY );
-        const bool mostlyVerticalMove = i > 0 && absStepY >= minProgress && abs( stepX ) <= max( 12, frameWidth / 20 );
-        const bool mostlyHorizontalMove = i > 0 && absStepX >= minProgress && abs( stepY ) <= max( 12, frameHeight / 20 );
+        bool mostlyVerticalMove =
+            i > 0 &&
+            absStepY >= axisClassificationMinStep &&
+            absStepY >= absStepX &&
+            abs( stepX ) <= max( 12, frameWidth / 20 );
+        bool mostlyHorizontalMove =
+            i > 0 &&
+            absStepX >= axisClassificationMinStep &&
+            absStepX >= absStepY &&
+            abs( stepY ) <= max( 12, frameHeight / 20 );
+        if( alignmentMode == AlignmentMode::Vertical )
+        {
+            mostlyVerticalMove = ( i > 0 && absStepY >= axisClassificationMinStep );
+            mostlyHorizontalMove = false;
+        }
+        else if( alignmentMode == AlignmentMode::Horizontal )
+        {
+            mostlyHorizontalMove = ( i > 0 && absStepX >= axisClassificationMinStep );
+            mostlyVerticalMove = false;
+        }
         const int overlapHeight = mostlyVerticalMove ? max( 0, frameHeight - absStepY ) : 0;
         const int overlapWidth = mostlyHorizontalMove ? max( 0, frameWidth - absStepX ) : 0;
+        const bool useVerticalFeather =
+            mostlyVerticalMove &&
+            overlapHeight > 0 &&
+            !( alignmentMode == AlignmentMode::Vertical && absStepY >= minComposeAdvanceY );
+        const bool useHorizontalFeather =
+            mostlyHorizontalMove &&
+            overlapWidth > 0 &&
+            !( alignmentMode == AlignmentMode::Horizontal && absStepX >= minComposeAdvanceX );
+        const int estimatedNewRows = mostlyVerticalMove ? max( 0, absStepY ) : frameHeight;
+        const int estimatedNewCols = mostlyHorizontalMove ? max( 0, absStepX ) : frameWidth;
+        StitchLog( L"[Panorama/StitchFlow] Compose frame %zu source=%zu dest=(%d,%d) step=(%d,%d) classify vertical=%d horizontal=%d overlapH=%d overlapW=%d feather=(%d,%d)\n",
+                 i,
+                 frameIndex,
+                 destinationX,
+                 destinationY,
+                 stepX,
+                 stepY,
+                 mostlyVerticalMove ? 1 : 0,
+                 mostlyHorizontalMove ? 1 : 0,
+                 overlapHeight,
+                 overlapWidth,
+                 verticalFeather,
+                 horizontalFeather );
+
+            int inBoundsPixels = 0;
+            int influencedPixels = 0;
+            int firstWritePixels = 0;
+            int overwrittenPixels = 0;
+            int blendedPixels = 0;
+            int blockedByWeightPixels = 0;
+            int influencedRows = 0;
+            int firstWriteRows = 0;
+            std::vector<BYTE> rowInfluenced( static_cast<size_t>( frameHeight ), 0 );
+            std::vector<BYTE> rowFirstWrite( static_cast<size_t>( frameHeight ), 0 );
 
         for( int y = 0; y < frameHeight; ++y )
         {
@@ -2728,6 +3098,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                 const size_t srcIndex = srcRowBase + static_cast<size_t>( x ) * 4;
                 const size_t dstIndex = dstRowBase + static_cast<size_t>( canvasX ) * 4;
                 const size_t dstMaskIndex = dstMaskRowBase + static_cast<size_t>( canvasX );
+                ++inBoundsPixels;
 
                 BYTE weightNew = 255;
                 if( mostlyVerticalMove && overlapHeight > 0 )
@@ -2735,7 +3106,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                     if( stepY > 0 )
                     {
                         const int overlapEnd = overlapHeight;
-                        if( y < overlapEnd - verticalFeather )
+                        if( !useVerticalFeather )
+                        {
+                            weightNew = ( y < overlapEnd ) ? 0 : 255;
+                        }
+                        else if( y < overlapEnd - verticalFeather )
                         {
                             weightNew = 0;
                         }
@@ -2752,7 +3127,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                     else
                     {
                         const int overlapStart = absStepY;
-                        if( y < overlapStart )
+                        if( !useVerticalFeather )
+                        {
+                            weightNew = ( y < overlapStart ) ? 255 : 0;
+                        }
+                        else if( y < overlapStart )
                         {
                             weightNew = 255;
                         }
@@ -2772,7 +3151,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                     if( stepX > 0 )
                     {
                         const int overlapEnd = overlapWidth;
-                        if( x < overlapEnd - horizontalFeather )
+                        if( !useHorizontalFeather )
+                        {
+                            weightNew = ( x < overlapEnd ) ? 0 : 255;
+                        }
+                        else if( x < overlapEnd - horizontalFeather )
                         {
                             weightNew = 0;
                         }
@@ -2789,7 +3172,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                     else
                     {
                         const int overlapStart = absStepX;
-                        if( x < overlapStart )
+                        if( !useHorizontalFeather )
+                        {
+                            weightNew = ( x < overlapStart ) ? 255 : 0;
+                        }
+                        else if( x < overlapStart )
                         {
                             weightNew = 255;
                         }
@@ -2812,11 +3199,24 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                     stitchedPixels[dstIndex + 2] = sourcePixels[srcIndex + 2];
                     stitchedPixels[dstIndex + 3] = 0xFF;
                     stitchedWritten[dstMaskIndex] = 1;
+                    ++influencedPixels;
+                    ++firstWritePixels;
+                    if( rowInfluenced[static_cast<size_t>( y )] == 0 )
+                    {
+                        rowInfluenced[static_cast<size_t>( y )] = 1;
+                        ++influencedRows;
+                    }
+                    if( rowFirstWrite[static_cast<size_t>( y )] == 0 )
+                    {
+                        rowFirstWrite[static_cast<size_t>( y )] = 1;
+                        ++firstWriteRows;
+                    }
                     continue;
                 }
 
                 if( weightNew == 0 )
                 {
+                    ++blockedByWeightPixels;
                     continue;
                 }
 
@@ -2826,6 +3226,13 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                     stitchedPixels[dstIndex + 1] = sourcePixels[srcIndex + 1];
                     stitchedPixels[dstIndex + 2] = sourcePixels[srcIndex + 2];
                     stitchedPixels[dstIndex + 3] = 0xFF;
+                    ++influencedPixels;
+                    ++overwrittenPixels;
+                    if( rowInfluenced[static_cast<size_t>( y )] == 0 )
+                    {
+                        rowInfluenced[static_cast<size_t>( y )] = 1;
+                        ++influencedRows;
+                    }
                     continue;
                 }
 
@@ -2837,8 +3244,29 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                 stitchedPixels[dstIndex + 2] = static_cast<BYTE>( ( static_cast<int>( stitchedPixels[dstIndex + 2] ) * oldWeight +
                                                                     static_cast<int>( sourcePixels[srcIndex + 2] ) * static_cast<int>( weightNew ) ) / 255 );
                 stitchedPixels[dstIndex + 3] = 0xFF;
+                ++influencedPixels;
+                ++blendedPixels;
+                if( rowInfluenced[static_cast<size_t>( y )] == 0 )
+                {
+                    rowInfluenced[static_cast<size_t>( y )] = 1;
+                    ++influencedRows;
+                }
             }
         }
+
+        StitchLog( L"[Panorama/StitchFlow] ComposeContribution frame %zu source=%zu inBounds=%d influenced=%d firstWrite=%d overwrite=%d blended=%d blockedByWeight=%d influencedRows=%d firstWriteRows=%d estNewRows=%d estNewCols=%d\n",
+                 i,
+                 frameIndex,
+                 inBoundsPixels,
+                 influencedPixels,
+                 firstWritePixels,
+                 overwrittenPixels,
+                 blendedPixels,
+                 blockedByWeightPixels,
+                 influencedRows,
+                 firstWriteRows,
+                 estimatedNewRows,
+                 estimatedNewCols );
     }
 
     HBITMAP stitchedBitmap = CreateBitmapFromPixels32( stitchedPixels, stitchedWidth, stitchedHeight );
@@ -2988,6 +3416,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     g_SelectRectangle.SetExcludeFromCapture( false );
 
     std::vector<HBITMAP> frames;
+    std::vector<int> acceptedFrameSourceIds;
     HBITMAP firstFrame = CaptureAbsoluteScreenRectToBitmap( hdcSource.get(), absoluteRect );
     if( firstFrame == nullptr )
     {
@@ -2996,6 +3425,8 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         return false;
     }
     frames.push_back( firstFrame );
+    size_t grabbedFrameId = 1;
+    acceptedFrameSourceIds.push_back( static_cast<int>( grabbedFrameId ) );
 
     double contrastSpread = 0.0;
     double contrastStdDev = 0.0;
@@ -3044,8 +3475,9 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         }
 
 #ifdef _DEBUG
-        DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, frame );
+    DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, frame );
 #endif
+    ++grabbedFrameId;
 
         if( AreFramesNearDuplicate( frame, frames.back(), lowContrastMode ) )
         {
@@ -3061,6 +3493,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         }
 
         frames.push_back( frame );
+        acceptedFrameSourceIds.push_back( static_cast<int>( grabbedFrameId ) );
         frame = nullptr;
         OutputDebug( L"[Panorama/Capture] Captured moving frame #%zu at iteration=%zu\n",
                      frames.size(),
@@ -3107,13 +3540,25 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     }
     else
     {
+#ifdef _DEBUG
+        if( !debugDumpDirectory.empty() )
+        {
+            OpenStitchLogFile( std::filesystem::path( debugDumpDirectory ) );
+        }
+#endif
+
         g_ProgressDialog.Create( hWnd );
         panoramaBitmap = StitchPanoramaFrames( frames, lowContrastMode, [&]( int percent ) -> bool
         {
             g_ProgressDialog.SetProgress( percent );
             return g_ProgressDialog.IsCancelled();
-        } );
+        },
+        &acceptedFrameSourceIds );
         g_ProgressDialog.Destroy();
+
+#ifdef _DEBUG
+        CloseStitchLogFile();
+#endif
 
         if( panoramaBitmap == nullptr && g_ProgressDialog.IsCancelled() )
         {
@@ -3208,6 +3653,21 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             if( saveResult == ERROR_SUCCESS )
             {
                 g_ScreenshotSaveLocation = selectedFilePath;
+#ifdef _DEBUG
+                if( !debugDumpDirectory.empty() )
+                {
+                    std::error_code copyError;
+                    const std::filesystem::path sourceLog = std::filesystem::path( debugDumpDirectory ) / L"stitch_trace.log";
+                    const std::filesystem::path destinationLog = std::filesystem::path( selectedFilePath ).parent_path() / L"stitch_trace.log";
+                    if( std::filesystem::exists( sourceLog, copyError ) && !copyError )
+                    {
+                        std::filesystem::copy_file( sourceLog,
+                                                    destinationLog,
+                                                    std::filesystem::copy_options::overwrite_existing,
+                                                    copyError );
+                    }
+                }
+#endif
                 OutputDebug( L"[Panorama/Capture] Success: saved to %s\n", selectedFilePath.c_str() );
                 success = true;
             }
