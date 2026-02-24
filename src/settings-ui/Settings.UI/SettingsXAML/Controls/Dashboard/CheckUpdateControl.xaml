@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Controls.CheckUpdateControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -72,7 +72,7 @@
                 <TextBlock x:Uid="YoureUpToDate" FontWeight="SemiBold" />
                 <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}">
                     <Run x:Uid="General_VersionLastChecked" />
-                        <Run Text="{x:Bind UpdateSettingsConfig.LastCheckedDateLocalized, Mode=OneTime}" />
+                    <Run Text="{x:Bind UpdateSettingsConfig.LastCheckedDateLocalized, Mode=OneTime}" />
                 </TextBlock>
             </StackPanel>
         </Grid>
