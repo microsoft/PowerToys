@@ -1,12 +1,9 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using System;
+
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
-using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
@@ -192,22 +189,27 @@ internal sealed class WindowProcess
     /// <summary>
     /// Gets the process name for the process ID
     /// </summary>
-    /// <param name="pid">The id of the process/param>
+    /// <param name="pid">The id of the process</param>
     /// <returns>A string representing the process name or an empty string if the function fails</returns>
     internal static string GetProcessNameFromProcessID(uint pid)
     {
         var processHandle = NativeMethods.OpenProcess(ProcessAccessFlags.QueryLimitedInformation, true, (int)pid);
-        StringBuilder processName = new StringBuilder(MaximumFileNameLength);
+        try
+        {
+            var processName = new StringBuilder(MaximumFileNameLength);
+            var processNameLength = NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength);
+            if (processNameLength == 0)
+            {
+                return string.Empty;
+            }
 
-        if (NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
-        {
-            _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
-            return processName.ToString().Split('\\').Reverse().ToArray()[0];
+            var processNameStr = processName.ToString();
+            var lastSeparatorIndex = processNameStr.LastIndexOf('\\');
+            return lastSeparatorIndex >= 0 ? processNameStr[(lastSeparatorIndex + 1)..] : processNameStr;
         }
-        else
+        finally
         {
             _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
-            return string.Empty;
         }
     }
 

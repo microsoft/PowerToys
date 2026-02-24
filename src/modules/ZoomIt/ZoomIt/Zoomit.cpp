@@ -5507,9 +5507,29 @@ auto GetUniqueRecordingFilename()
     return GetUniqueFilename(g_RecordingSaveLocation, defaultFile, FOLDERID_Videos);
 }
 
+//----------------------------------------------------------------------------
+//
+// GetUniqueScreenshotFilename
+//
+// Gets a unique file name for screenshot saves, using the current date and
+// time as a suffix. This reduces the chance that the user could overwrite an
+// existing file if they are saving multiple captures in the same folder, and
+// also ensures that ordering is correct when sorted by name.
+//
+//----------------------------------------------------------------------------
 auto GetUniqueScreenshotFilename()
 {
-    return GetUniqueFilename(g_ScreenshotSaveLocation, DEFAULT_SCREENSHOT_FILE, FOLDERID_Pictures);
+    SYSTEMTIME lt;
+    GetLocalTime(&lt);
+
+    // Format: "ZoomIt YYYY-MM-DD HHMMSS.png"
+    wchar_t buffer[MAX_PATH];
+    swprintf_s(buffer, L"%s %04d-%02d-%02d %02d%02d%02d.png",
+        APPNAME,
+        lt.wYear, lt.wMonth, lt.wDay,
+        lt.wHour, lt.wMinute, lt.wSecond);
+
+    return std::wstring(buffer);
 }
 
 //----------------------------------------------------------------------------
