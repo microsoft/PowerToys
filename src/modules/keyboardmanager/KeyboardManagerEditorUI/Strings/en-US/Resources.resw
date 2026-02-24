@@ -1,64 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
-    Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
-    associated with the data types.
-    
-    Example:
-    
-    ... ado.net/XML headers & schema ...
-    <resheader name="resmimetype">text/microsoft-resx</resheader>
-    <resheader name="version">2.0</resheader>
-    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
-    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
-    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
-    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
-    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
-        <value>[base64 mime encoded serialized .NET Framework object]</value>
-    </data>
-    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
-        <comment>This is a comment</comment>
-    </data>
-                
-    There are any number of "resheader" rows that contain simple 
-    name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
-    mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
-    extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
-    read any of the formats listed below.
-    
-    mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
-            : and then encoded with base64 encoding.
-    
-    mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
-            : and then encoded with base64 encoding.
-
-    mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
-            : using a System.ComponentModel.TypeConverter
-            : and then encoded with base64 encoding.
-    -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
@@ -117,116 +58,238 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  
-  <!-- Button Texts -->
   <data name="NewRemappingBtn_Text.Text" xml:space="preserve">
     <value>Add new remapping</value>
-    <comment>Button text to create a new keyboard remapping</comment>
   </data>
-  
-  <!-- Empty State -->
   <data name="EmptyStateTitle.Text" xml:space="preserve">
     <value>Nothing mapped yet</value>
-    <comment>Title shown when no mappings exist</comment>
   </data>
   <data name="EmptyStateDescription.Text" xml:space="preserve">
     <value>Create a key or shortcut remapping to customize how your keyboard works.</value>
-    <comment>Description shown when no mappings exist</comment>
   </data>
-  
-  <!-- Section Headers -->
   <data name="RemappingsHeader.Text" xml:space="preserve">
     <value>Keys and shortcuts</value>
-    <comment>Header for the keys and shortcuts remapping section</comment>
   </data>
   <data name="TextMappingsHeader.Text" xml:space="preserve">
     <value>Text</value>
-    <comment>Header for the text mapping section</comment>
   </data>
   <data name="ProgramsHeader.Text" xml:space="preserve">
     <value>Programs</value>
-    <comment>Header for the programs section</comment>
   </data>
   <data name="UrlsHeader.Text" xml:space="preserve">
     <value>Urls</value>
-    <comment>Header for the URLs section</comment>
   </data>
-  
-  <!-- List Item Actions -->
   <data name="MapsToText.Text" xml:space="preserve">
     <value>maps to</value>
-    <comment>Text showing key mapping relationship</comment>
   </data>
   <data name="InsertsText.Text" xml:space="preserve">
     <value>inserts</value>
-    <comment>Text showing text insertion action</comment>
   </data>
   <data name="OpensText.Text" xml:space="preserve">
     <value>opens</value>
-    <comment>Text showing opening action for programs and URLs</comment>
   </data>
   <data name="InText.Text" xml:space="preserve">
     <value>in</value>
-    <comment>Text showing app-specific context</comment>
   </data>
-  
-  <!-- Context Menu -->
   <data name="DeleteMenuItem.Text" xml:space="preserve">
     <value>Delete</value>
-    <comment>Menu item to delete a mapping</comment>
   </data>
-  
-  <!-- Tooltip Labels -->
   <data name="TooltipArguments.Text" xml:space="preserve">
     <value>Arguments:</value>
-    <comment>Label for program arguments in tooltip</comment>
   </data>
   <data name="TooltipStartIn.Text" xml:space="preserve">
     <value>Start in:</value>
-    <comment>Label for start directory in tooltip</comment>
   </data>
   <data name="TooltipElevation.Text" xml:space="preserve">
     <value>Elevation:</value>
-    <comment>Label for elevation level in tooltip</comment>
   </data>
   <data name="TooltipIfRunning.Text" xml:space="preserve">
     <value>If running:</value>
-    <comment>Label for if running action in tooltip</comment>
   </data>
   <data name="TooltipWindow.Text" xml:space="preserve">
     <value>Window:</value>
-    <comment>Label for window visibility in tooltip</comment>
   </data>
-  
-  <!-- RemappingDialog -->
   <data name="RemappingDialog.Title" xml:space="preserve">
     <value>Add new remapping</value>
-    <comment>Default title for remapping dialog (changed dynamically to "Edit remapping" in code)</comment>
   </data>
   <data name="RemappingDialog.PrimaryButtonText" xml:space="preserve">
     <value>Save</value>
-    <comment>Primary button text for remapping dialog</comment>
   </data>
   <data name="RemappingDialog.CloseButtonText" xml:space="preserve">
     <value>Cancel</value>
-    <comment>Close button text for remapping dialog</comment>
   </data>
-  
-  <!-- Delete Confirmation Dialog -->
   <data name="DeleteConfirmationDialog.Title" xml:space="preserve">
     <value>Are you sure?</value>
-    <comment>Title for delete confirmation dialog</comment>
   </data>
   <data name="DeleteConfirmationDialogContent.Text" xml:space="preserve">
     <value>You are about to delete this remapping.</value>
-    <comment>Content for delete confirmation dialog</comment>
   </data>
   <data name="DeleteConfirmationDialog.PrimaryButtonText" xml:space="preserve">
     <value>Delete</value>
-    <comment>Primary button text for delete confirmation dialog</comment>
   </data>
   <data name="DeleteConfirmationDialog.CloseButtonText" xml:space="preserve">
     <value>Cancel</value>
-    <comment>Close button text for delete confirmation dialog</comment>
+  </data>
+  <data name="TriggerLabel.Text" xml:space="preserve">
+    <value>Trigger</value>
+  </data>
+  <data name="ActionLabel.Text" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="TriggerType_KeyOrShortcut.AutomationProperties.Name" xml:space="preserve">
+    <value>Key or shortcut</value>
+  </data>
+  <data name="TriggerType_KeyOrShortcut_Text.Text" xml:space="preserve">
+    <value>Key or shortcut</value>
+  </data>
+  <data name="TriggerType_Mouse.AutomationProperties.Name" xml:space="preserve">
+    <value>Mouse button</value>
+  </data>
+  <data name="TriggerType_Mouse_Text.Text" xml:space="preserve">
+    <value>Mouse button</value>
+  </data>
+  <data name="AllowChordsCheckBox.Content" xml:space="preserve">
+    <value>Allow chords</value>
+  </data>
+  <data name="ExactMatchCheckBox.Content" xml:space="preserve">
+    <value>Exact match</value>
+  </data>
+  <data name="MouseButton_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="MouseButton_Center.Content" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="MouseButton_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="MouseButton_Button1.Content" xml:space="preserve">
+    <value>Button 1</value>
+  </data>
+  <data name="MouseButton_Button2.Content" xml:space="preserve">
+    <value>Button 2</value>
+  </data>
+  <data name="AppSpecificCheckBox.Content" xml:space="preserve">
+    <value>Only apply to a specific app</value>
+  </data>
+  <data name="AppNameTextBox.Header" xml:space="preserve">
+    <value>App name</value>
+  </data>
+  <data name="AppNameTextBox.PlaceholderText" xml:space="preserve">
+    <value>Enter app name (e.g., notepad.exe)</value>
+  </data>
+  <data name="ActionType_KeyOrShortcut.AutomationProperties.Name" xml:space="preserve">
+    <value>Remap to key or shortcut</value>
+  </data>
+  <data name="ActionType_KeyOrShortcut_Text.Text" xml:space="preserve">
+    <value>Remap to key or shortcut</value>
+  </data>
+  <data name="ActionType_Text.AutomationProperties.Name" xml:space="preserve">
+    <value>Insert text</value>
+  </data>
+  <data name="ActionType_Text_Text.Text" xml:space="preserve">
+    <value>Insert text</value>
+  </data>
+  <data name="ActionType_OpenUrl.AutomationProperties.Name" xml:space="preserve">
+    <value>Open URL</value>
+  </data>
+  <data name="ActionType_OpenUrl_Text.Text" xml:space="preserve">
+    <value>Open URL</value>
+  </data>
+  <data name="ActionType_OpenApp.AutomationProperties.Name" xml:space="preserve">
+    <value>Open app</value>
+  </data>
+  <data name="ActionType_OpenApp_Text.Text" xml:space="preserve">
+    <value>Open app</value>
+  </data>
+  <data name="ActionType_MouseClick.AutomationProperties.Name" xml:space="preserve">
+    <value>Remap to mouse click</value>
+  </data>
+  <data name="ActionType_MouseClick_Text.Text" xml:space="preserve">
+    <value>Remap to mouse click</value>
+  </data>
+  <data name="TextContentBox.Header" xml:space="preserve">
+    <value>Text to type</value>
+  </data>
+  <data name="TextContentBox.PlaceholderText" xml:space="preserve">
+    <value>Enter the text to type when triggered</value>
+  </data>
+  <data name="UrlPathInput.Header" xml:space="preserve">
+    <value>URL to open</value>
+  </data>
+  <data name="UrlPathInput.PlaceholderText" xml:space="preserve">
+    <value>https://example.com</value>
+  </data>
+  <data name="ProgramPathInput.Header" xml:space="preserve">
+    <value>Program path</value>
+  </data>
+  <data name="ProgramPathInput.PlaceholderText" xml:space="preserve">
+    <value>C:\Program Files\...</value>
+  </data>
+  <data name="ProgramPathSelectButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Select program path</value>
+  </data>
+  <data name="ProgramArgsInput.Header" xml:space="preserve">
+    <value>Arguments (optional)</value>
+  </data>
+  <data name="ProgramArgsInput.PlaceholderText" xml:space="preserve">
+    <value>--arg1 value1</value>
+  </data>
+  <data name="StartInPathInput.Header" xml:space="preserve">
+    <value>Start in directory (optional)</value>
+  </data>
+  <data name="StartInPathInput.PlaceholderText" xml:space="preserve">
+    <value>C:\Users\...</value>
+  </data>
+  <data name="StartInSelectButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Select start directory</value>
+  </data>
+  <data name="ElevationComboBox.Header" xml:space="preserve">
+    <value>Run as</value>
+  </data>
+  <data name="Elevation_Normal.Content" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Elevation_Elevated.Content" xml:space="preserve">
+    <value>Elevated</value>
+  </data>
+  <data name="Elevation_DifferentUser.Content" xml:space="preserve">
+    <value>Different user</value>
+  </data>
+  <data name="IfRunningComboBox.Header" xml:space="preserve">
+    <value>If already running</value>
+  </data>
+  <data name="IfRunning_ShowWindow.Content" xml:space="preserve">
+    <value>Show window</value>
+  </data>
+  <data name="IfRunning_StartAnother.Content" xml:space="preserve">
+    <value>Start another</value>
+  </data>
+  <data name="IfRunning_DoNothing.Content" xml:space="preserve">
+    <value>Do nothing</value>
+  </data>
+  <data name="IfRunning_Close.Content" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="IfRunning_EndTask.Content" xml:space="preserve">
+    <value>End task</value>
+  </data>
+  <data name="VisibilityComboBox.Header" xml:space="preserve">
+    <value>Window visibility</value>
+  </data>
+  <data name="Visibility_Normal.Content" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Visibility_Hidden.Content" xml:space="preserve">
+    <value>Hidden</value>
+  </data>
+  <data name="Visibility_Minimized.Content" xml:space="preserve">
+    <value>Minimized</value>
+  </data>
+  <data name="Visibility_Maximized.Content" xml:space="preserve">
+    <value>Maximized</value>
+  </data>
+  <data name="MouseClickPlaceholder.Text" xml:space="preserve">
+    <value>Mouse click action - coming soon</value>
   </data>
 </root>

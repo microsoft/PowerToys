@@ -33,33 +33,30 @@
             Orientation="Vertical"
             Spacing="8">
             <TextBlock
-                x:Uid="UnifiedMappingControlTriggerTextBlock"
-                FontWeight="SemiBold"
-                Text="Trigger" />
-
+                x:Uid="TriggerLabel"
+                FontWeight="SemiBold" />
             <ComboBox
                 x:Name="TriggerTypeComboBox"
                 HorizontalAlignment="Stretch"
                 SelectionChanged="TriggerTypeComboBox_SelectionChanged">
                 <ComboBoxItem
-                    AutomationProperties.Name="Key or shortcut"
+                    x:Uid="TriggerType_KeyOrShortcut"
                     IsSelected="True"
                     Tag="KeyOrShortcut">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xEDA7;" />
-                        <TextBlock Text="Key or shortcut" />
+                        <TextBlock x:Uid="TriggerType_KeyOrShortcut_Text" />
                     </StackPanel>
                 </ComboBoxItem>
                 <!--
-                <ComboBoxItem AutomationProperties.Name="Mouse button" Tag="Mouse">
+                <ComboBoxItem x:Uid="TriggerType_Mouse" Tag="Mouse">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="16" Glyph="&#xE962;" />
-                        <TextBlock Text="Mouse button" />
+                        <TextBlock x:Uid="TriggerType_Mouse_Text" />
                     </StackPanel>
                 </ComboBoxItem>
                 -->
             </ComboBox>
-
             <Rectangle
                 Height="1"
                 Margin="0,12,0,12"
@@ -109,11 +106,10 @@
                                 </ItemsControl>
                             </ToggleButton.Content>
                         </ToggleButton>
-                        <CheckBox Content="Allow chords" IsChecked="True" />
-                        <CheckBox Content="Exact match" IsChecked="True" />
+                        <CheckBox x:Uid="AllowChordsCheckBox" IsChecked="True" />
+                        <CheckBox x:Uid="ExactMatchCheckBox" IsChecked="True" />
                     </StackPanel>
                 </tkcontrols:Case>
-
                 <!--  Mouse Button Trigger  -->
                 <tkcontrols:Case Value="Mouse">
                     <ComboBox
@@ -121,30 +117,26 @@
                         MinHeight="86"
                         HorizontalAlignment="Stretch"
                         VerticalContentAlignment="Center">
-                        <ComboBoxItem Content="Left" Tag="LeftMouse" />
-                        <ComboBoxItem Content="Center" Tag="RightMouse" />
-                        <ComboBoxItem Content="Right" Tag="RightMouse" />
-                        <ComboBoxItem Content="Button 1" Tag="ScrollUp" />
-                        <ComboBoxItem Content="Button 2" Tag="ScrollDown" />
+                        <ComboBoxItem x:Uid="MouseButton_Left" Tag="LeftMouse" />
+                        <ComboBoxItem x:Uid="MouseButton_Center" Tag="CenterMouse" />
+                        <ComboBoxItem x:Uid="MouseButton_Right" Tag="RightMouse" />
+                        <ComboBoxItem x:Uid="MouseButton_Button1" Tag="Button1" />
+                        <ComboBoxItem x:Uid="MouseButton_Button2" Tag="Button2" />
                     </ComboBox>
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
-
             <CheckBox
                 x:Name="AppSpecificCheckBox"
-                x:Uid="UnifiedMappingControlAppSpecificCheckBox"
-                Content="Only apply to a specific app"
+                x:Uid="AppSpecificCheckBox"
                 IsEnabled="False" />
             <TextBox
                 x:Name="AppNameTextBox"
-                x:Uid="UnifiedMappingControlAppNameTextBox"
+                x:Uid="AppNameTextBox"
                 Background="{ThemeResource TextControlBackgroundFocused}"
                 BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                 GotFocus="AppNameTextBox_GotFocus"
-                PlaceholderText="Enter app name (e.g., notepad.exe)"
                 Visibility="Collapsed" />
         </StackPanel>
-
         <!--  Arrow Separator  -->
         <Grid
             Grid.Row="0"
@@ -155,13 +147,11 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-
             <Rectangle
                 Width="1"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
                 Fill="{ThemeResource TextFillColorDisabledBrush}" />
-
             <Viewbox
                 Grid.Row="1"
                 Width="12"
@@ -182,61 +172,57 @@
             Orientation="Vertical"
             Spacing="8">
             <TextBlock
-                x:Uid="UnifiedMappingControlActionTextBlock"
-                FontWeight="SemiBold"
-                Text="Action" />
+                x:Uid="ActionLabel"
+                FontWeight="SemiBold" />
             <ComboBox
                 x:Name="ActionTypeComboBox"
                 HorizontalAlignment="Stretch"
                 SelectionChanged="ActionTypeComboBox_SelectionChanged">
                 <ComboBoxItem
-                    AutomationProperties.Name="Remap to key or shortcut"
+                    x:Uid="ActionType_KeyOrShortcut"
                     IsSelected="True"
                     Tag="KeyOrShortcut">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xEDA7;" />
-                        <TextBlock Text="Remap to key or shortcut" />
+                        <TextBlock x:Uid="ActionType_KeyOrShortcut_Text" />
                     </StackPanel>
                 </ComboBoxItem>
-                <ComboBoxItem AutomationProperties.Name="Insert text" Tag="Text">
+                <ComboBoxItem x:Uid="ActionType_Text" Tag="Text">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xE8D2;" />
-                        <TextBlock Text="Insert text" />
+                        <TextBlock x:Uid="ActionType_Text_Text" />
                     </StackPanel>
                 </ComboBoxItem>
-                <ComboBoxItem AutomationProperties.Name="Open URL" Tag="OpenUrl">
+                <ComboBoxItem x:Uid="ActionType_OpenUrl" Tag="OpenUrl">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xE774;" />
-                        <TextBlock Text="Open URL" />
+                        <TextBlock x:Uid="ActionType_OpenUrl_Text" />
                     </StackPanel>
                 </ComboBoxItem>
-                <ComboBoxItem AutomationProperties.Name="Open app" Tag="OpenApp">
+                <ComboBoxItem x:Uid="ActionType_OpenApp" Tag="OpenApp">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xECAA;" />
-                        <TextBlock Text="Open app" />
+                        <TextBlock x:Uid="ActionType_OpenApp_Text" />
                     </StackPanel>
                 </ComboBoxItem>
                 <!--
-                <ComboBoxItem AutomationProperties.Name="Remap to mouse click" Tag="MouseClick">
+                <ComboBoxItem x:Uid="ActionType_MouseClick" Tag="MouseClick">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xE962;" />
-                        <TextBlock Text="Remap to mouse click" />
+                        <TextBlock x:Uid="ActionType_MouseClick_Text" />
                     </StackPanel>
                 </ComboBoxItem>
                 -->
             </ComboBox>
-
             <Rectangle
                 Height="1"
                 Margin="0,12,0,12"
                 HorizontalAlignment="Stretch"
                 Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-
             <tkcontrols:SwitchPresenter
                 x:Name="ActionSwitchPresenter"
                 TargetType="x:String"
                 Value="{Binding SelectedItem.Tag, ElementName=ActionTypeComboBox}">
-
                 <!--  Key or Shortcut Action  -->
                 <tkcontrols:Case Value="KeyOrShortcut">
                     <ToggleButton
@@ -276,38 +262,31 @@
                         </ToggleButton.Content>
                     </ToggleButton>
                 </tkcontrols:Case>
-
                 <!--  Text Action  -->
                 <tkcontrols:Case Value="Text">
                     <TextBox
                         x:Name="TextContentBox"
-                        x:Uid="UnifiedMappingControlTextContentTextBox"
+                        x:Uid="TextContentBox"
                         Height="120"
                         AcceptsReturn="True"
                         Background="{ThemeResource TextControlBackgroundFocused}"
                         BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                         FontSize="13"
                         GotFocus="TextContentBox_GotFocus"
-                        Header="Text to type"
-                        PlaceholderText="Enter the text to type when triggered"
                         TextChanged="TextContentBox_TextChanged"
                         TextWrapping="Wrap" />
                 </tkcontrols:Case>
-
                 <!--  Open URL Action  -->
                 <tkcontrols:Case Value="OpenUrl">
                     <TextBox
                         x:Name="UrlPathInput"
-                        x:Uid="UnifiedMappingControlUrlPathTextBox"
+                        x:Uid="UrlPathInput"
                         Background="{ThemeResource TextControlBackgroundFocused}"
                         BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                         FontSize="13"
                         GotFocus="UrlPathInput_GotFocus"
-                        Header="URL to open"
-                        PlaceholderText="https://example.com"
                         TextChanged="UrlPathInput_TextChanged" />
                 </tkcontrols:Case>
-
                 <!--  Open App Action  -->
                 <tkcontrols:Case Value="OpenApp">
                     <StackPanel Orientation="Vertical" Spacing="16">
@@ -318,31 +297,24 @@
                             </Grid.ColumnDefinitions>
                             <TextBox
                                 x:Name="ProgramPathInput"
-                                x:Uid="UnifiedMappingControlProgramPathTextBox"
+                                x:Uid="ProgramPathInput"
                                 HorizontalAlignment="Stretch"
                                 GotFocus="ProgramPathInput_GotFocus"
-                                Header="Program path"
-                                PlaceholderText="C:\Program Files\..."
                                 TextChanged="ProgramPathInput_TextChanged" />
                             <Button
                                 x:Name="ProgramPathSelectButton"
-                                x:Uid="UnifiedMappingControlPathSelectButton"
+                                x:Uid="ProgramPathSelectButton"
                                 Grid.Column="1"
                                 VerticalAlignment="Bottom"
-                                AutomationProperties.Name="Select program path"
                                 Click="ProgramPathSelectButton_Click"
                                 Content="{ui:FontIcon Glyph=&#xE8DA;,
                                                       FontSize=16}"
                                 Style="{StaticResource SubtleButtonStyle}" />
                         </Grid>
-
                         <TextBox
                             x:Name="ProgramArgsInput"
-                            x:Uid="UnifiedMappingControlArgumentsTextBox"
-                            GotFocus="ProgramArgsInput_GotFocus"
-                            Header="Arguments (optional)"
-                            PlaceholderText="--arg1 value1" />
-
+                            x:Uid="ProgramArgsInput"
+                            GotFocus="ProgramArgsInput_GotFocus" />
                         <Grid ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -350,71 +322,60 @@
                             </Grid.ColumnDefinitions>
                             <TextBox
                                 x:Name="StartInPathInput"
-                                x:Uid="UnifiedMappingControlStartInTextBox"
+                                x:Uid="StartInPathInput"
                                 HorizontalAlignment="Stretch"
-                                GotFocus="StartInPathInput_GotFocus"
-                                Header="Start in directory (optional)"
-                                PlaceholderText="C:\Users\..." />
+                                GotFocus="StartInPathInput_GotFocus" />
                             <Button
                                 x:Name="StartInSelectButton"
-                                x:Uid="UnifiedMappingControlStartInSelectButton"
+                                x:Uid="StartInSelectButton"
                                 Grid.Column="1"
                                 VerticalAlignment="Bottom"
-                                AutomationProperties.Name="Select start directory"
                                 Click="StartInSelectButton_Click"
                                 Content="{ui:FontIcon Glyph=&#xE8DA;,
                                                       FontSize=16}"
                                 Style="{StaticResource SubtleButtonStyle}" />
                         </Grid>
-
                         <ComboBox
                             x:Name="ElevationComboBox"
-                            x:Uid="UnifiedMappingControlElevationComboBox"
+                            x:Uid="ElevationComboBox"
                             HorizontalAlignment="Stretch"
-                            Header="Run as"
                             SelectedIndex="0">
-                            <ComboBoxItem Content="Normal" />
-                            <ComboBoxItem Content="Elevated" />
-                            <ComboBoxItem Content="Different user" />
+                            <ComboBoxItem x:Uid="Elevation_Normal" />
+                            <ComboBoxItem x:Uid="Elevation_Elevated" />
+                            <ComboBoxItem x:Uid="Elevation_DifferentUser" />
                         </ComboBox>
-
                         <ComboBox
                             x:Name="IfRunningComboBox"
-                            x:Uid="UnifiedMappingControlIfRunningComboBox"
+                            x:Uid="IfRunningComboBox"
                             HorizontalAlignment="Stretch"
-                            Header="If already running"
                             SelectedIndex="0">
-                            <ComboBoxItem Content="Show window" />
-                            <ComboBoxItem Content="Start another" />
-                            <ComboBoxItem Content="Do nothing" />
-                            <ComboBoxItem Content="Close" />
-                            <ComboBoxItem Content="End task" />
+                            <ComboBoxItem x:Uid="IfRunning_ShowWindow" />
+                            <ComboBoxItem x:Uid="IfRunning_StartAnother" />
+                            <ComboBoxItem x:Uid="IfRunning_DoNothing" />
+                            <ComboBoxItem x:Uid="IfRunning_Close" />
+                            <ComboBoxItem x:Uid="IfRunning_EndTask" />
                         </ComboBox>
-
                         <ComboBox
                             x:Name="VisibilityComboBox"
-                            x:Uid="UnifiedMappingControlVisibilityComboBox"
+                            x:Uid="VisibilityComboBox"
                             HorizontalAlignment="Stretch"
-                            Header="Window visibility"
                             SelectedIndex="0">
-                            <ComboBoxItem Content="Normal" />
-                            <ComboBoxItem Content="Hidden" />
-                            <ComboBoxItem Content="Minimized" />
-                            <ComboBoxItem Content="Maximized" />
+                            <ComboBoxItem x:Uid="Visibility_Normal" />
+                            <ComboBoxItem x:Uid="Visibility_Hidden" />
+                            <ComboBoxItem x:Uid="Visibility_Minimized" />
+                            <ComboBoxItem x:Uid="Visibility_Maximized" />
                         </ComboBox>
                     </StackPanel>
                 </tkcontrols:Case>
-
                 <!--  Mouse Click Action (Placeholder)  -->
                 <tkcontrols:Case Value="MouseClick">
                     <TextBlock
+                        x:Uid="MouseClickPlaceholder"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Mouse click action - coming soon"
                         TextWrapping="Wrap" />
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
         </StackPanel>
-
         <!--  Validation InfoBar spanning all columns  -->
         <InfoBar
             x:Name="ValidationInfoBar"
