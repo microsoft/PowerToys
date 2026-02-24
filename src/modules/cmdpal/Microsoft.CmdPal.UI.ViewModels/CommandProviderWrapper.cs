@@ -127,7 +127,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         return settings.GetProviderSettings(this);
     }
 
-    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider)
     {
         if (!isValid)
         {
@@ -189,7 +189,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             Settings = new(model.Settings, this, _taskScheduler);
 
             // We do need to explicitly initialize commands though
-            InitializeCommands(commands, fallbacks, pinnedCommands, serviceProvider, pageContext);
+            InitializeCommands(commands, fallbacks, pinnedCommands, serviceProvider);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -224,13 +224,13 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         ICommandItem[] commands,
         IFallbackCommandItem[] fallbacks,
         ICommandItem[] pinnedCommands,
-        IServiceProvider serviceProvider,
-        WeakReference<IPageContext> pageContext)
+        IServiceProvider serviceProvider)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
         var contextMenuFactory = serviceProvider.GetService<IContextMenuFactory>()!;
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
+        var pageContext = new WeakReference<IPageContext>(TopLevelPageContext);
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext, contextMenuFactory: contextMenuFactory);

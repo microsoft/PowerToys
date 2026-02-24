@@ -102,9 +102,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     // May be called from a background thread
     private async Task<IEnumerable<TopLevelViewModel>> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
-        WeakReference<IPageContext> weak = new(commandProvider.TopLevelPageContext);
-
-        await commandProvider.LoadTopLevelCommands(_serviceProvider, weak);
+        await commandProvider.LoadTopLevelCommands(_serviceProvider);
 
         var commands = await Task.Factory.StartNew(
             () =>
@@ -151,9 +149,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     /// <returns>an awaitable task</returns>
     private async Task UpdateCommandsForProvider(CommandProviderWrapper sender, IItemsChangedEventArgs args)
     {
-        TopLevelItemPageContext pageContext = new(sender, _taskScheduler);
-        WeakReference<IPageContext> weak = new(pageContext);
-        await sender.LoadTopLevelCommands(_serviceProvider, weak);
+        await sender.LoadTopLevelCommands(_serviceProvider);
 
         List<TopLevelViewModel> newItems = [.. sender.TopLevelItems];
         foreach (var i in sender.FallbackItems)
