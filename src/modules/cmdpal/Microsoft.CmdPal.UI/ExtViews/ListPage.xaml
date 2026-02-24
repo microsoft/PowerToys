@@ -405,7 +405,7 @@
                 <!--
                     An 8px right margin is added to visually match the spacing between the icon
                     and the left margin of the list.
-
+                    
                     ItemRepeater is a lightweight control (compared to ItemsControl).
                 -->
                 <ItemsRepeater
