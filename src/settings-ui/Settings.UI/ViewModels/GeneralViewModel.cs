@@ -226,7 +226,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // Supported languages. Taken from Resources.wxs + default + en-US
         private Dictionary<string, string> langTagsAndIds = new Dictionary<string, string>
         {
-            { string.Empty, "Default_language" },
+            { string.Empty, "Default_Language" },
             { "ar-SA", "Arabic_Saudi_Arabia_Language" },
             { "cs-CZ", "Czech_Language" },
             { "de-DE", "German_Language" },
