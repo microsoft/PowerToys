@@ -12,7 +12,7 @@
         <Button
             Click="SWVersionButtonClicked"
             Style="{StaticResource SubtleButtonStyle}"
-            Visibility="{x:Bind UpdateAvailable, Mode=OneWay}">
+            Visibility="{x:Bind UpdateAvailable, Mode=OneTime}">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -38,7 +38,7 @@
                     <TextBlock x:Uid="UpdateAvailableTextBlock" FontWeight="SemiBold" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}">
                         <Run x:Uid="GeneralVersion" />
-                        <Run Text="{x:Bind UpdateSettingsConfig.NewVersion, Mode=OneWay}" />
+                        <Run Text="{x:Bind UpdateSettingsConfig.NewVersion, Mode=OneTime}" />
                     </TextBlock>
                 </StackPanel>
             </Grid>
@@ -47,7 +47,7 @@
             Padding="0,0,4,0"
             VerticalAlignment="Center"
             ColumnSpacing="16"
-            Visibility="{x:Bind UpdateAvailable, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}">
+            Visibility="{x:Bind UpdateAvailable, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneTime}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -72,7 +72,7 @@
                 <TextBlock x:Uid="YoureUpToDate" FontWeight="SemiBold" />
                 <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}">
                     <Run x:Uid="General_VersionLastChecked" />
-                    <Run Text="{x:Bind UpdateSettingsConfig.LastCheckedDateLocalized, Mode=OneWay}" />
+                        <Run Text="{x:Bind UpdateSettingsConfig.LastCheckedDateLocalized, Mode=OneTime}" />
                 </TextBlock>
             </StackPanel>
         </Grid>
