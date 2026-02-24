@@ -7,10 +7,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using CommunityToolkit.WinUI.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -19,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     public sealed partial class ScoobeReleaseNotesPage : Page
     {
         private IList<PowerToysReleaseInfo> _currentReleases;
+        private string _currentMarkdown;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScoobeReleaseNotesPage"/> class.
@@ -26,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public ScoobeReleaseNotesPage()
         {
             this.InitializeComponent();
+            Unloaded += OnUnloaded;
         }
 
         /// <summary>
@@ -127,10 +132,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 LoadingProgressRing.Visibility = Visibility.Collapsed;
 
-                // Apply correct theme-aware foreground colors before rendering
-                ApplyMarkdownThemeColors();
-
                 var (releaseNotesMarkdown, heroImageUrl) = ProcessReleaseNotesMarkdown(_currentReleases);
+                _currentMarkdown = releaseNotesMarkdown;
 
                 // Set the Hero image if found
                 if (!string.IsNullOrEmpty(heroImageUrl))
@@ -143,7 +146,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     HeroImageHolder.Visibility = Visibility.Collapsed;
                 }
 
-                ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
+                ApplyThemeAndRenderMarkdown();
                 ReleaseNotesMarkdown.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
@@ -155,51 +158,78 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             ActualThemeChanged += OnActualThemeChanged;
+            App.ThemeService.ThemeChanged += OnAppThemeChanged;
             DisplayReleaseNotes();
         }
 
         private void OnActualThemeChanged(FrameworkElement sender, object args)
         {
-            // Re-apply header foreground colors when theme changes at runtime
-            ApplyMarkdownThemeColors();
-
-            if (_currentReleases != null && _currentReleases.Count > 0)
-            {
-                var (releaseNotesMarkdown, _) = ProcessReleaseNotesMarkdown(_currentReleases);
-                ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
-            }
+            ApplyThemeAndRenderMarkdown();
         }
 
-        /// <summary>
-        /// Updates MarkdownThemes header foreground brushes to match the current effective theme.
-        /// MarkdownThemes uses plain CLR properties initialized from Application.Current.Resources
-        /// at construction time, which resolves based on the app-level theme rather than the
-        /// window's RequestedTheme. This causes incorrect header colors when the two differ.
-        /// </summary>
-        private void ApplyMarkdownThemeColors()
+        private void OnAppThemeChanged(object sender, ElementTheme theme)
         {
-            if (Resources.TryGetValue("ReleaseNotesMarkdownThemeConfig", out var obj) &&
-                obj is CommunityToolkit.WinUI.Controls.MarkdownThemes markdownThemes)
+            if (DispatcherQueue.HasThreadAccess)
             {
-                var foreground = ReleaseNotesMarkdown.Foreground;
-                markdownThemes.H1Foreground = foreground;
-                markdownThemes.H2Foreground = foreground;
-                markdownThemes.H3Foreground = foreground;
-
-                // Resolve theme-aware brushes from the visual tree (respects RequestedTheme)
-                // rather than Application.Current.Resources (which uses the app-level theme).
-                var resources = ReleaseNotesMarkdown.XamlRoot?.Content switch
-                {
-                    FrameworkElement fe => fe.Resources,
-                    _ => Application.Current.Resources,
-                };
-
-                if (resources.TryGetValue("DividerStrokeColorDefaultBrush", out var dividerBrush) &&
-                    dividerBrush is Microsoft.UI.Xaml.Media.Brush brush)
-                {
-                    markdownThemes.HorizontalRuleBrush = brush;
-                }
+                ApplyThemeAndRenderMarkdown();
+                return;
             }
+
+            _ = DispatcherQueue.TryEnqueue(ApplyThemeAndRenderMarkdown);
+        }
+
+        private void ApplyThemeAndRenderMarkdown()
+        {
+            var headingForeground = ReleaseNotesMarkdown.Foreground as Brush;
+            if (headingForeground == null)
+            {
+                return;
+            }
+
+            ReleaseNotesMarkdown.Config = BuildMarkdownConfig(headingForeground);
+
+            if (string.IsNullOrEmpty(_currentMarkdown))
+            {
+                return;
+            }
+
+            // Force markdown regeneration so headings pick up the updated theme config.
+            ReleaseNotesMarkdown.Text = string.Empty;
+            ReleaseNotesMarkdown.Text = _currentMarkdown;
+        }
+
+        private static MarkdownConfig BuildMarkdownConfig(Brush headingForeground)
+        {
+            return new MarkdownConfig
+            {
+                Themes = new MarkdownThemes
+                {
+                    BoldFontWeight = FontWeights.SemiBold,
+                    H1FontSize = 28,
+                    H1FontWeight = FontWeights.SemiBold,
+                    H1Margin = new Thickness(0, 36, 0, 8),
+                    H1Foreground = headingForeground,
+                    H2FontSize = 20,
+                    H2FontWeight = FontWeights.SemiBold,
+                    H2Margin = new Thickness(0, 16, 0, 4),
+                    H2Foreground = headingForeground,
+                    H3FontSize = 16,
+                    H3FontWeight = FontWeights.SemiBold,
+                    H3Margin = new Thickness(0, 16, 0, 4),
+                    H3Foreground = headingForeground,
+                    HorizontalRuleThickness = 1,
+                    ImageStretch = Stretch.Uniform,
+                    ListBulletSpacing = 1,
+                    ListGutterWidth = 10,
+                },
+            };
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            ActualThemeChanged -= OnActualThemeChanged;
+            App.ThemeService.ThemeChanged -= OnAppThemeChanged;
+            Unloaded -= OnUnloaded;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
