@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -17,6 +17,9 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public partial class MainListPageResultFactoryTests
 {
+    private static readonly Separator _resultsSeparator = new("Results");
+    private static readonly Separator _fallbacksSeparator = new("Fallbacks");
+
     private sealed partial class MockListItem : IListItem
     {
         public string Title { get; set; } = string.Empty;
@@ -82,18 +85,22 @@ public partial class MainListPageResultFactoryTests
             scoredFallback,
             apps,
             fallbacks,
+            _resultsSeparator,
+            _fallbacksSeparator,
             appResultLimit: 10);
 
         // Expected order:
+        // "Results" section header
         // 100: F1, SF1, A1
         // 60: SF2
         // 55: A2
         // 50: F2
+        // "Fallbacks" section header
         // Then fallbacks in original order: FB1, FB2
         var titles = result.Select(r => r.Title).ToArray();
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
         CollectionAssert.AreEqual(
-            new[] { "F1", "SF1", "A1", "SF2", "A2", "F2", "Fallbacks", "FB1", "FB2" },
+            new[] { "Results", "F1", "SF1", "A1", "SF2", "A2", "F2", "Fallbacks", "FB1", "FB2" },
             titles);
 #pragma warning restore CA1861 // Avoid constant arrays as arguments
     }
@@ -113,11 +120,14 @@ public partial class MainListPageResultFactoryTests
             null,
             apps,
             null,
+            _resultsSeparator,
+            _fallbacksSeparator,
             2);
 
-        Assert.AreEqual(2, result.Length);
-        Assert.AreEqual("A1", result[0].Title);
-        Assert.AreEqual("A2", result[1].Title);
+        Assert.AreEqual(3, result.Length);
+        Assert.AreEqual("Results", result[0].Title);
+        Assert.AreEqual("A1", result[1].Title);
+        Assert.AreEqual("A2", result[2].Title);
     }
 
     [TestMethod]
@@ -135,10 +145,13 @@ public partial class MainListPageResultFactoryTests
             null,
             apps,
             null,
+            _resultsSeparator,
+            _fallbacksSeparator,
             appResultLimit: 1);
 
-        Assert.AreEqual(1, result.Length);
-        Assert.AreEqual("A1", result[0].Title);
+        Assert.AreEqual(2, result.Length);
+        Assert.AreEqual("Results", result[0].Title);
+        Assert.AreEqual("A1", result[1].Title);
     }
 
     [TestMethod]
@@ -155,6 +168,8 @@ public partial class MainListPageResultFactoryTests
             null,
             apps,
             null,
+            _resultsSeparator,
+            _fallbacksSeparator,
             appResultLimit: 0);
 
         Assert.AreEqual(0, result.Length);
@@ -181,12 +196,15 @@ public partial class MainListPageResultFactoryTests
             null,
             apps,
             null,
+            _resultsSeparator,
+            _fallbacksSeparator,
             appResultLimit: 1);
 
-        Assert.AreEqual(3, result.Length);
-        Assert.AreEqual("F1", result[0].Title);
-        Assert.AreEqual("A1", result[1].Title);
-        Assert.AreEqual("F2", result[2].Title);
+        Assert.AreEqual(4, result.Length);
+        Assert.AreEqual("Results", result[0].Title);
+        Assert.AreEqual("F1", result[1].Title);
+        Assert.AreEqual("A1", result[2].Title);
+        Assert.AreEqual("F2", result[3].Title);
     }
 
     [TestMethod]
@@ -203,6 +221,8 @@ public partial class MainListPageResultFactoryTests
             null,
             null,
             fallbacks,
+            _resultsSeparator,
+            _fallbacksSeparator,
             appResultLimit: 10);
 
         Assert.AreEqual(3, result.Length);
@@ -219,6 +239,8 @@ public partial class MainListPageResultFactoryTests
             null,
             null,
             null,
+            _resultsSeparator,
+            _fallbacksSeparator,
             appResultLimit: 10);
 
         Assert.IsNotNull(result);

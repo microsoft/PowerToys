@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
+
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class ListHelpers
@@ -58,84 +60,81 @@ public partial class ListHelpers
     }
 
     /// <summary>
-    /// Modifies the contents of `original` in-place, to match those of
-    /// `newContents`. The canonical use being:
-    /// ```cs
+    /// Modifies the contents of <paramref name="original"/> in-place, to match those of
+    /// <paramref name="newContents"/>.
+    /// <example>
+    /// The canonical use being:
+    /// <code>
     /// ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(ItemsToFilter, TextToFilterOn));
-    /// ```
+    /// </code>
+    /// </example>
     /// </summary>
     /// <typeparam name="T">Any type that can be compared for equality</typeparam>
     /// <param name="original">Collection to modify</param>
-    /// <param name="newContents">The enumerable which `original` should match</param>
+    /// <param name="newContents">The enumerable which <c>original</c> should match</param>
     public static void InPlaceUpdateList<T>(IList<T> original, IEnumerable<T> newContents)
         where T : class
     {
-        InPlaceUpdateList(original, newContents, out _);
-    }
-
-    /// <summary>
-    /// Modifies the contents of `original` in-place, to match those of
-    /// `newContents`. The canonical use being:
-    /// ```cs
-    /// ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(ItemsToFilter, TextToFilterOn));
-    /// ```
-    /// </summary>
-    /// <typeparam name="T">Any type that can be compared for equality</typeparam>
-    /// <param name="original">Collection to modify</param>
-    /// <param name="newContents">The enumerable which `original` should match</param>
-    /// <param name="removedItems">List of items that were removed from the original collection</param>
-    public static void InPlaceUpdateList<T>(IList<T> original, IEnumerable<T> newContents, out List<T> removedItems)
-        where T : class
-    {
-        removedItems = [];
-
-        // we're not changing newContents - stash this so we don't re-evaluate it every time
-        var numberOfNew = newContents.Count();
+        // Materialize once to avoid re-enumeration
+        var newList = newContents as IList<T> ?? newContents.ToList();
+        var numberOfNew = newList.Count;
 
         // Short circuit - new contents should just be empty
         if (numberOfNew == 0)
         {
-            removedItems.AddRange(original);
-            original.Clear();
+            while (original.Count > 0)
+            {
+                original.RemoveAt(original.Count - 1);
+            }
+
             return;
         }
 
+        // Detect if we can use Move() for better ObservableCollection performance
+        var observableCollection = original as ObservableCollection<T>;
+
+        // Simple forward-scan merge. No HashSet needed because we don't track
+        // removed items — the icon-bug guard is unnecessary, and items removed
+        // mid-merge that appear later in newList will simply be re-inserted.
         var i = 0;
-        foreach (var newItem in newContents)
+        for (var newIndex = 0; newIndex < numberOfNew; newIndex++)
         {
+            var newItem = newList[newIndex];
+
             if (i >= original.Count)
             {
                 break;
             }
 
+            // Search for this item in the remaining portion of original
+            var foundIndex = -1;
             for (var j = i; j < original.Count; j++)
             {
-                var og_2 = original[j];
-                var areEqual_2 = og_2?.Equals(newItem) ?? false;
-                if (areEqual_2)
+                if (original[j]?.Equals(newItem) ?? false)
                 {
-                    for (var k = i; k < j; k++)
-                    {
-                        // This item from the original list was not in the new list. Remove it.
-                        removedItems.Add(original[i]);
-                        original.RemoveAt(i);
-                    }
-
+                    foundIndex = j;
                     break;
                 }
             }
 
-            var og = original[i];
-            var areEqual = og?.Equals(newItem) ?? false;
-
-            // Is this new item already in the list?
-            if (areEqual)
+            if (foundIndex >= 0)
             {
-                // It is already in the list
+                // Remove all items between i and foundIndex
+                for (var k = foundIndex - 1; k >= i; k--)
+                {
+                    original.RemoveAt(k);
+                    foundIndex--;
+                }
+
+                // If the found item isn't at position i yet, move it there
+                if (foundIndex > i)
+                {
+                    MoveItem(original, observableCollection, foundIndex, i);
+                }
             }
             else
             {
-                // it isn't. Add it.
+                // Not found - insert new item at position i
                 original.Insert(i, newItem);
             }
 
@@ -145,19 +144,283 @@ public partial class ListHelpers
         // Remove any extra trailing items from the destination
         while (original.Count > numberOfNew)
         {
-            // RemoveAtEnd
-            removedItems.Add(original[original.Count - 1]);
             original.RemoveAt(original.Count - 1);
         }
 
         // Add any extra trailing items from the source
-        if (original.Count < numberOfNew)
+        while (i < numberOfNew)
         {
-            var remaining = newContents.Skip(original.Count);
-            foreach (var item in remaining)
+            original.Add(newList[i]);
+            i++;
+        }
+    }
+
+    /// <summary>
+    /// Modifies the contents of <paramref name="original"/> in-place, to match those of
+    /// <paramref name="newContents"/>.
+    /// <example>
+    /// The canonical use being:
+    /// <code>
+    /// ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(ItemsToFilter, TextToFilterOn), out var removedItems);
+    /// </code>
+    /// </example>
+    /// </summary>
+    /// <typeparam name="T">Any type that can be compared for equality</typeparam>
+    /// <param name="original">Collection to modify</param>
+    /// <param name="newContents">The enumerable which <c>original</c> should match</param>
+    /// <param name="removedItems">List of items that were removed from the original collection</param>
+    public static void InPlaceUpdateList<T>(IList<T> original, IEnumerable<T> newContents, out List<T> removedItems)
+        where T : class
+    {
+        removedItems = [];
+
+        // Materialize once to avoid re-enumeration
+        var newList = newContents as IList<T> ?? newContents.ToList();
+        var numberOfNew = newList.Count;
+
+        // Short circuit - new contents should just be empty
+        if (numberOfNew == 0)
+        {
+            while (original.Count > 0)
             {
-                original.Add(item);
+                removedItems.Add(original[^1]);
+                original.RemoveAt(original.Count - 1);
             }
+
+            return;
+        }
+
+        // Detect if we can use Move() for better ObservableCollection performance
+        var observableCollection = original as ObservableCollection<T>;
+
+        // Build a set of new items for O(1) existence checks.
+        var newSet = new HashSet<T>(numberOfNew);
+        for (var i = 0; i < numberOfNew; i++)
+        {
+            newSet.Add(newList[i]);
+        }
+
+        // When there is zero overlap (e.g. navigating between pages), use
+        // indexed replacement instead of Insert + Remove. Each Replace reuses
+        // the container slot and fires one notification instead of two.
+        var hasOverlap = false;
+        for (var i = 0; i < original.Count; i++)
+        {
+            if (newSet.Contains(original[i]))
+            {
+                hasOverlap = true;
+                break;
+            }
+        }
+
+        if (!hasOverlap)
+        {
+            var minLen = Math.Min(original.Count, numberOfNew);
+            for (var i = 0; i < minLen; i++)
+            {
+                removedItems.Add(original[i]);
+                original[i] = newList[i]; // Replace — single notification, container reused
+            }
+
+            while (original.Count > numberOfNew)
+            {
+                removedItems.Add(original[^1]);
+                original.RemoveAt(original.Count - 1);
+            }
+
+            for (var i = minLen; i < numberOfNew; i++)
+            {
+                original.Add(newList[i]);
+            }
+
+            return;
+        }
+
+        // Large collections benefit from pre-filtering (O(n) removal shrinks the
+        // working set), which outweighs the extra pass. Small collections are
+        // faster with lazy removal during the merge. Threshold determined empirically.
+        if (original.Count >= 5000)
+        {
+            MergeWithPreRemoval(original, newList, numberOfNew, newSet, observableCollection, removedItems);
+        }
+        else
+        {
+            MergeWithLazyRemoval(original, newList, numberOfNew, newSet, observableCollection, removedItems);
+        }
+    }
+
+    /// <summary>
+    /// Fast path for small/medium collections. Removes non-matching items lazily
+    /// during the forward-scan merge, avoiding a separate pre-removal pass.
+    /// </summary>
+    private static void MergeWithLazyRemoval<T>(
+        IList<T> original,
+        IList<T> newList,
+        int numberOfNew,
+        HashSet<T> newSet,
+        ObservableCollection<T>? observableCollection,
+        List<T>? removedItems)
+    where T : class
+    {
+        var i = 0;
+        for (var newIndex = 0; newIndex < numberOfNew; newIndex++)
+        {
+            var newItem = newList[newIndex];
+
+            if (i >= original.Count)
+            {
+                break;
+            }
+
+            // Search for this item in the remaining portion of original
+            var foundIndex = -1;
+            for (var j = i; j < original.Count; j++)
+            {
+                if (original[j]?.Equals(newItem) ?? false)
+                {
+                    foundIndex = j;
+                    break;
+                }
+            }
+
+            if (foundIndex >= 0)
+            {
+                // Remove only items between i and foundIndex that are NOT in newList.
+                // Items still needed later stay in the collection, avoiding
+                // unnecessary Remove+Insert cycles and extra UI notifications.
+                for (var k = foundIndex - 1; k >= i; k--)
+                {
+                    if (!newSet.Contains(original[k]))
+                    {
+                        removedItems?.Add(original[k]);
+                        original.RemoveAt(k);
+                        foundIndex--;
+                    }
+                }
+
+                // If the found item isn't at position i yet, move it there
+                if (foundIndex > i)
+                {
+                    MoveItem(original, observableCollection, foundIndex, i);
+                }
+            }
+            else
+            {
+                // Not found - insert new item at position i
+                original.Insert(i, newItem);
+            }
+
+            i++;
+        }
+
+        // Remove any extra trailing items from the destination
+        while (original.Count > numberOfNew)
+        {
+            removedItems?.Add(original[^1]);
+            original.RemoveAt(original.Count - 1);
+        }
+
+        // Add any extra trailing items from the source
+        while (i < numberOfNew)
+        {
+            original.Add(newList[i]);
+            i++;
+        }
+    }
+
+    /// <summary>
+    /// Path for large collections. Pre-removes non-matching items to shrink the
+    /// working set before merging, making linear searches faster.
+    /// </summary>
+    private static void MergeWithPreRemoval<T>(
+        IList<T> original,
+        IList<T> newList,
+        int numberOfNew,
+        HashSet<T> newSet,
+        ObservableCollection<T>? observableCollection,
+        List<T>? removedItems)
+    where T : class
+    {
+        // Pre-remove items that are not in newList. Iterating backwards keeps
+        // earlier indices stable and shrinks the working set for the merge loop.
+        for (var i = original.Count - 1; i >= 0; i--)
+        {
+            if (!newSet.Contains(original[i]))
+            {
+                removedItems?.Add(original[i]);
+                original.RemoveAt(i);
+            }
+        }
+
+        // Forward-scan merge: move or insert items to match newList order.
+        // After pre-removal, original only contains items that exist in newList,
+        // so the merge loop is simple — just Move or Insert.
+        for (var i = 0; i < numberOfNew; i++)
+        {
+            var newItem = newList[i];
+
+            // If we've run out of original items, append the rest
+            if (i >= original.Count)
+            {
+                original.Add(newItem);
+                continue;
+            }
+
+            // Already correct?
+            if (original[i]?.Equals(newItem) ?? false)
+            {
+                continue;
+            }
+
+            // Find the item later in the original list
+            var foundIndex = -1;
+            for (var j = i + 1; j < original.Count; j++)
+            {
+                if (original[j]?.Equals(newItem) ?? false)
+                {
+                    foundIndex = j;
+                    break;
+                }
+            }
+
+            if (foundIndex >= 0)
+            {
+                MoveItem(original, observableCollection, foundIndex, i);
+                continue;
+            }
+
+            // Not found: insert new item at i
+            original.Insert(i, newItem);
+        }
+
+        // Remove any extra trailing items from the destination
+        while (original.Count > numberOfNew)
+        {
+            removedItems?.Add(original[^1]);
+            original.RemoveAt(original.Count - 1);
+        }
+    }
+
+    /// <summary>
+    /// Moves an item from <paramref name="fromIndex"/> to <paramref name="toIndex"/>.
+    /// Uses ObservableCollection.Move() when available for a single notification,
+    /// otherwise falls back to RemoveAt + Insert.
+    /// </summary>
+    private static void MoveItem<T>(
+        IList<T> original,
+        ObservableCollection<T>? observableCollection,
+        int fromIndex,
+        int toIndex)
+    {
+        if (observableCollection is not null)
+        {
+            observableCollection.Move(fromIndex, toIndex);
+        }
+        else
+        {
+            var item = original[fromIndex];
+            original.RemoveAt(fromIndex);
+            original.Insert(toIndex, item);
         }
     }
 }
