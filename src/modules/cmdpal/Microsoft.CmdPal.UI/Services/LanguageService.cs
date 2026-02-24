@@ -53,17 +53,17 @@ internal sealed class LanguageService : ILanguageService
             languages = [.. manifestLanguages];
         }
 
-        // Fallback 1: find satelitte assemblies
+        // Fallback 1: find satellite assemblies
         if (languages.Count == 0)
         {
             var assembly = Assembly.GetEntryAssembly()!;
             if (assembly is not null)
             {
-                var satelitteLanguages = GetSatelliteCultures(assembly);
+                var satelliteLanguages = GetSatelliteCultures(assembly);
                 languages ??= [];
-                foreach (var satelitteLanguage in satelitteLanguages)
+                foreach (var satelliteLanguage in satelliteLanguages)
                 {
-                    languages.Add(satelitteLanguage.Name);
+                    languages.Add(satelliteLanguage.Name);
                 }
             }
         }
