@@ -7,9 +7,8 @@ using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Events;
@@ -72,6 +71,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private bool _ignoreHotKeyWhenFullScreen = true;
+    private bool _suppressDpiChange;
     private bool _themeServiceInitialized;
 
     // Session tracking for telemetry
@@ -127,6 +127,16 @@ public sealed partial class MainWindow : WindowEx,
 
         _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
 
+        WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
+
+        // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
+        // member (and instead like, use a local), then the pointer we marshal
+        // into the WindowLongPtr will be useless after we leave this function,
+        // and our **WindProc will explode**.
+        _hotkeyWndProc = HotKeyPrc;
+        var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
+        _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
+
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
         RestoreWindowPosition();
@@ -152,16 +162,6 @@ public sealed partial class MainWindow : WindowEx,
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         SizeChanged += WindowSizeChanged;
         RootElement.Loaded += RootElementLoaded;
-
-        WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
-
-        // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
-        // member (and instead like, use a local), then the pointer we marshal
-        // into the WindowLongPtr will be useless after we leave this function,
-        // and our **WindProc will explode**.
-        _hotkeyWndProc = HotKeyPrc;
-        var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
-        _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
@@ -213,6 +213,11 @@ public sealed partial class MainWindow : WindowEx,
         // Now that our content has loaded, we can update our draggable regions
         UpdateRegionsForCustomTitleBar();
 
+        // Also update regions when DPI changes. SizeChanged only fires when the logical
+        // (DIP) size changes — a DPI change that scales the physical size while preserving
+        // the DIP size won't trigger it, leaving drag regions at the old physical coordinates.
+        RootElement.XamlRoot.Changed += XamlRoot_Changed;
+
         // Add dev ribbon if enabled
         if (!BuildInfo.IsCiBuild)
         {
@@ -220,6 +225,8 @@ public sealed partial class MainWindow : WindowEx,
             RootElement.Children.Add(_devRibbon);
         }
     }
+
+    private void XamlRoot_Changed(XamlRoot sender, XamlRootChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
@@ -231,16 +238,14 @@ public sealed partial class MainWindow : WindowEx,
 
     private void PositionCentered(DisplayArea displayArea)
     {
-        var position = WindowPositionHelper.CalculateCenteredPosition(
+        var rect = WindowPositionHelper.CenterOnDisplay(
             displayArea,
             AppWindow.Size,
             (int)this.GetDpiForWindow());
 
-        if (position is not null)
+        if (rect is not null)
         {
-            // Use Move(), not MoveAndResize(). Windows auto-resizes on DPI change via WM_DPICHANGED;
-            // the helper already accounts for this when calculating the centered position.
-            AppWindow.Move((PointInt32)position);
+            MoveAndResizeDpiAware(rect.Value);
         }
     }
 
@@ -249,29 +254,62 @@ public sealed partial class MainWindow : WindowEx,
         var settings = App.Current.Services.GetService<SettingsModel>();
         if (settings?.LastWindowPosition is not { Width: > 0, Height: > 0 } savedPosition)
         {
+            // don't try to restore if the saved position is invalid, just recenter
             PositionCentered();
             return;
         }
 
-        // MoveAndResize is safe here—we're restoring a saved state at startup,
-        // not moving a live window between displays.
         var newRect = WindowPositionHelper.AdjustRectForVisibility(
             savedPosition.ToPhysicalWindowRectangle(),
             new SizeInt32(savedPosition.ScreenWidth, savedPosition.ScreenHeight),
             savedPosition.Dpi);
 
-        AppWindow.MoveAndResize(newRect);
+        MoveAndResizeDpiAware(newRect);
+    }
+
+    /// <summary>
+    /// Moves and resizes the window while suppressing WM_DPICHANGED.
+    /// The caller is expected to provide a rect already scaled for the target display's DPI.
+    /// Without suppression, the framework would apply its own DPI scaling on top, double-scaling the window.
+    /// </summary>
+    private void MoveAndResizeDpiAware(RectInt32 rect)
+    {
+        var originalMinHeight = MinHeight;
+        var originalMinWidth = MinWidth;
+
+        _suppressDpiChange = true;
+
+        try
+        {
+            // WindowEx is uses current DPI to calculate the minimum window size
+            MinHeight = 0;
+            MinWidth = 0;
+            AppWindow.MoveAndResize(rect);
+        }
+        finally
+        {
+            MinHeight = originalMinHeight;
+            MinWidth = originalMinWidth;
+            _suppressDpiChange = false;
+        }
     }
 
     private void UpdateWindowPositionInMemory()
     {
+        var placement = new WINDOWPLACEMENT { length = (uint)Marshal.SizeOf<WINDOWPLACEMENT>() };
+        if (!PInvoke.GetWindowPlacement(_hwnd, ref placement))
+        {
+            return;
+        }
+
+        var rect = placement.rcNormalPosition;
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest) ?? DisplayArea.Primary;
         _currentWindowPosition = new WindowPosition
         {
-            X = AppWindow.Position.X,
-            Y = AppWindow.Position.Y,
-            Width = AppWindow.Size.Width,
-            Height = AppWindow.Size.Height,
+            X = rect.X,
+            Y = rect.Y,
+            Width = rect.Width,
+            Height = rect.Height,
             Dpi = (int)this.GetDpiForWindow(),
             ScreenWidth = displayArea.WorkArea.Width,
             ScreenHeight = displayArea.WorkArea.Height,
@@ -480,7 +518,7 @@ public sealed partial class MainWindow : WindowEx,
         {
             var originalScreen = new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight);
             var newRect = WindowPositionHelper.AdjustRectForVisibility(_currentWindowPosition.ToPhysicalWindowRectangle(), originalScreen, _currentWindowPosition.Dpi);
-            AppWindow.MoveAndResize(newRect);
+            MoveAndResizeDpiAware(newRect);
         }
         else
         {
@@ -737,18 +775,12 @@ public sealed partial class MainWindow : WindowEx,
         var settings = serviceProvider.GetService<SettingsModel>();
         if (settings is not null)
         {
-            settings.LastWindowPosition = new WindowPosition
+            // a quick sanity check, so we don't overwrite correct values
+            if (_currentWindowPosition.IsSizeValid)
             {
-                X = _currentWindowPosition.X,
-                Y = _currentWindowPosition.Y,
-                Width = _currentWindowPosition.Width,
-                Height = _currentWindowPosition.Height,
-                Dpi = _currentWindowPosition.Dpi,
-                ScreenWidth = _currentWindowPosition.ScreenWidth,
-                ScreenHeight = _currentWindowPosition.ScreenHeight,
-            };
-
-            SettingsModel.SaveSettings(settings);
+                settings.LastWindowPosition = _currentWindowPosition;
+                SettingsModel.SaveSettings(settings);
+            }
         }
 
         var extensionService = serviceProvider.GetService<IExtensionService>()!;
@@ -1108,6 +1140,13 @@ public sealed partial class MainWindow : WindowEx,
             // Prevent the window from maximizing when double-clicking the title bar area
             case PInvoke.WM_NCLBUTTONDBLCLK:
                 return (LRESULT)IntPtr.Zero;
+
+            // When restoring a saved position across monitors with different DPIs,
+            // MoveAndResize already sets the correctly-scaled size. Suppress the
+            // framework's automatic DPI resize to avoid double-scaling.
+            case PInvoke.WM_DPICHANGED when _suppressDpiChange:
+                return (LRESULT)IntPtr.Zero;
+
             case PInvoke.WM_HOTKEY:
                 {
                     var hotkeyIndex = (int)wParam.Value;
