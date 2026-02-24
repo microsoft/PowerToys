@@ -1143,6 +1143,7 @@ prvpane
 psapi
 pscid
 PSECURITY
+pseudolocalizer
 psfgao
 psfi
 PSMODULEPATH
