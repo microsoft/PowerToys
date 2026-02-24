@@ -22,6 +22,8 @@ namespace NonLocalizable
     const static wchar_t* TOOL_WINDOW_CLASS_NAME = L"AlwaysOnTopWindow";
     const static wchar_t* WINDOW_IS_PINNED_PROP = L"AlwaysOnTop_Pinned";
     constexpr UINT SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND = 0xEFE0;
+    constexpr DWORD SYSTEM_EVENT_MENU_POPUP_START = 0x0006;
+    constexpr DWORD SYSTEM_EVENT_MENU_POPUP_END = 0x0007;
 }
 
 bool isExcluded(HWND window)
@@ -408,8 +410,8 @@ void AlwaysOnTop::SubscribeToEvents()
         EVENT_SYSTEM_FOREGROUND,
         EVENT_OBJECT_DESTROY,
         EVENT_OBJECT_FOCUS,
-        EVENT_SYSTEM_MENUPOPUPSTART,
-        EVENT_SYSTEM_MENUPOPUPEND,
+        NonLocalizable::SYSTEM_EVENT_MENU_POPUP_START,
+        NonLocalizable::SYSTEM_EVENT_MENU_POPUP_END,
         EVENT_OBJECT_INVOKED,
     };
 
@@ -537,7 +539,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
     switch (data->event)
     {
-    case EVENT_SYSTEM_MENUPOPUPSTART:
+    case NonLocalizable::SYSTEM_EVENT_MENU_POPUP_START:
     {
         if (data->idObject == OBJID_SYSMENU && data->hwnd)
         {
@@ -546,7 +548,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
         }
     }
     return;
-    case EVENT_SYSTEM_MENUPOPUPEND:
+    case NonLocalizable::SYSTEM_EVENT_MENU_POPUP_END:
     {
         if (data->idObject == OBJID_SYSMENU && data->hwnd == m_lastSystemMenuWindow)
         {
