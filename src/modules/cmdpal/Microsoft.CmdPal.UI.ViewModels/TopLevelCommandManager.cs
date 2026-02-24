@@ -374,8 +374,6 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         timer.Stop();
         Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms");
-
-        WeakReferenceMessenger.Default.Send<CommandsReloadedMessage>();
     }
 
     private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
@@ -599,9 +597,6 @@ public partial class TopLevelCommandManager : ObservableObject,
                 {
                     DockBands.Add(bandVm);
                 }
-
-                // Notify DockViewModel to update its collections
-                WeakReferenceMessenger.Default.Send<CommandsReloadedMessage>();
             }
         }
     }

@@ -471,6 +471,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         return ToString();
     }
 
+    /// <summary>
+    /// Helper to convert our context menu viewmodels back into the API 
+    /// interfaces that ICommandItem expects.
+    /// </summary>
     private IContextItem?[] BuildContextMenu()
     {
         List<IContextItem?> contextItems = new();
@@ -495,117 +499,6 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         var item = new PinnedDockItem(item: this, id: Id);
 
         return item;
-    }
-
-    // internal TopLevelViewModel CloneAsBand()
-    // {
-    //     return new TopLevelViewModel(
-    //         _commandItemViewModel,
-    //         TopLevelType.DockBand,
-    //         ExtensionHost,
-    //         ProviderContext,
-    //         _settings,
-    //         _providerSettings,
-    //         _serviceProvider,
-    //         _commandItemViewModel.Model.Unsafe);
-    // }
-    private sealed partial class PinToDockCommand : InvokableCommand
-    {
-        private readonly TopLevelViewModel _topLevelViewModel;
-        private readonly DockViewModel _dockViewModel;
-        private readonly SettingsModel _settings;
-        private readonly TopLevelCommandManager _topLevelCommandManager;
-        private readonly bool _pin;
-
-        public override IconInfo Icon => _pin ? Icons.PinIcon : Icons.UnpinIcon;
-
-        public override string Name => _pin ? Properties.Resources.dock_pin_command_name : Properties.Resources.dock_unpin_command_name;
-
-        public PinToDockCommand(
-            TopLevelViewModel topLevelViewModel,
-            bool pin,
-            DockViewModel dockViewModel,
-            SettingsModel settings,
-            TopLevelCommandManager topLevelCommandManager)
-        {
-            _topLevelViewModel = topLevelViewModel;
-            _dockViewModel = dockViewModel;
-            _settings = settings;
-            _topLevelCommandManager = topLevelCommandManager;
-            _pin = pin;
-        }
-
-        public override CommandResult Invoke()
-        {
-            Logger.LogDebug($"PinToDockCommand.Invoke({_pin}): {_topLevelViewModel.Id}");
-            if (_pin)
-            {
-                PinToDock();
-            }
-            else
-            {
-                UnpinFromDock();
-            }
-
-            // Notify that the MoreCommands have changed, so the context menu updates
-            _topLevelViewModel.PropChanged?.Invoke(
-                _topLevelViewModel,
-                new PropChangedEventArgs(nameof(ICommandItem.MoreCommands)));
-            return CommandResult.GoHome();
-        }
-
-        private void PinToDock()
-        {
-            /**
-            // It's possible that the top-level command shares an ID with a
-            // band. In that case, we don't want to add it to PinnedCommands.
-            // PinnedCommands is just for top-level commands IDs that aren't
-            // otherwise bands.
-            //
-            // Check the top-level command ID against the bands first.
-            if (_topLevelCommandManager.DockBands.Any(band => band.Id == _topLevelViewModel.Id))
-            {
-            }
-            else
-            {
-                // In this case, the ID isn't another band, so add it to PinnedCommands.
-                if (!_settings.DockSettings.PinnedCommands.Contains(_topLevelViewModel.Id))
-                {
-                    _settings.DockSettings.PinnedCommands.Add(_topLevelViewModel.Id);
-                }
-            }
-
-            // TODO! Deal with "the command ID is already pinned in
-            // PinnedCommands but not in one of StartBands/EndBands". I think
-            // we're already avoiding adding it to PinnedCommands above, but I
-            // think that PinDockBand below will create a duplicate VM for it.
-            _settings.DockSettings.StartBands.Add(new DockBandSettings()
-            {
-                CommandId = _topLevelViewModel.Id,
-                ShowLabels = true,
-            });
-
-            // Create a new band VM from our current TopLevelViewModel. This
-            // will allow us to update the bands in the CommandProviderWrapper
-            // and the TopLevelCommandManager, without forcing a whole reload
-            var bandVm = _topLevelViewModel.CloneAsBand();
-            _topLevelCommandManager.PinDockBand(bandVm);
-
-            _topLevelViewModel.Save();
-            **/
-        }
-
-        private void UnpinFromDock()
-        {
-            /**
-            _settings.DockSettings.PinnedCommands.Remove(_topLevelViewModel.Id);
-            _settings.DockSettings.StartBands.RemoveAll(band => band.CommandId == _topLevelViewModel.Id);
-            _settings.DockSettings.CenterBands.RemoveAll(band => band.CommandId == _topLevelViewModel.Id);
-            _settings.DockSettings.EndBands.RemoveAll(band => band.CommandId == _topLevelViewModel.Id);
-
-            _topLevelViewModel.Save();
-            **/
-        }
     }
 }
 

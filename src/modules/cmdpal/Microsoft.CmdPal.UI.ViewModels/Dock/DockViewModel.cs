@@ -12,8 +12,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 
-public sealed partial class DockViewModel : IDisposable,
-    IRecipient<CommandsReloadedMessage>
+public sealed partial class DockViewModel : IDisposable
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly SettingsModel _settingsModel;
@@ -119,21 +118,6 @@ public sealed partial class DockViewModel : IDisposable,
         {
             removedItem.SafeCleanup();
         }
-    }
-
-    public void Dispose()
-    {
-        WeakReferenceMessenger.Default.Unregister<CommandsReloadedMessage>(this);
-    }
-
-    public void Receive(CommandsReloadedMessage message)
-    {
-        //// After we've loaded once, subscribe us to DockBand updates
-        // _topLevelCommandManager.DockBands.CollectionChanged -= DockBands_CollectionChanged;
-        // _topLevelCommandManager.DockBands.CollectionChanged += DockBands_CollectionChanged;
-
-        // SetupBands();
-        // Logger.LogDebug("Bands reloaded");
     }
 
     /// <summary>
@@ -639,5 +623,3 @@ public sealed partial class DockViewModel : IDisposable,
         }
     }
 }
-
-#pragma warning restore SA1402 // File may only contain a single type
