@@ -105,14 +105,14 @@
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Center"
                                         Click="OnIgnoreConflictClicked"
-                                        IsChecked="{x:Bind ConflictIgnored, Mode=OneWay}" />
+                                        IsChecked="{x:Bind ConflictIgnored, Mode=OneTime}" />
                                 </Grid>
 
                                 <!--  PowerToys Module Cards  -->
                                 <ItemsControl
                                     Grid.Row="1"
-                                    IsEnabled="{x:Bind ConflictVisible, Mode=OneWay}"
-                                    ItemsSource="{x:Bind Modules, Mode=OneWay}">
+                                    IsEnabled="{x:Bind ConflictVisible, Mode=OneTime}"
+                                    ItemsSource="{x:Bind Modules, Mode=OneTime}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="hotkeyConflicts:ModuleHotkeyData">
                                             <tkcontrols:SettingsCard
@@ -147,7 +147,7 @@
                                     Background="Transparent"
                                     BorderThickness="0,1,0,0"
                                     CornerRadius="0"
-                                    IsEnabled="{x:Bind ShouldShowSysConflict, Mode=OneWay}">
+                                    IsEnabled="{x:Bind ShouldShowSysConflict, Mode=OneTime}">
                                     <tkcontrols:SettingsCard.HeaderIcon>
                                         <PathIcon Data="M9 20H0V11H9V20ZM20 20H11V11H20V20ZM9 9H0V0H9V9ZM20 9H11V0H20V9Z" Foreground="{ThemeResource WindowsLogoGradient}" />
                                     </tkcontrols:SettingsCard.HeaderIcon>

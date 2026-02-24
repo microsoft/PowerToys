@@ -145,10 +145,13 @@ public partial class MainListPageResultFactoryTests
             null,
             apps,
             null,
+            _resultsSeparator,
+            _fallbacksSeparator,
             appResultLimit: 1);
 
-        Assert.AreEqual(1, result.Length);
-        Assert.AreEqual("A1", result[0].Title);
+        Assert.AreEqual(2, result.Length);
+        Assert.AreEqual("Results", result[0].Title);
+        Assert.AreEqual("A1", result[1].Title);
     }
 
     [TestMethod]
@@ -165,6 +168,8 @@ public partial class MainListPageResultFactoryTests
             null,
             apps,
             null,
+            _resultsSeparator,
+            _fallbacksSeparator,
             appResultLimit: 0);
 
         Assert.AreEqual(0, result.Length);
@@ -191,12 +196,15 @@ public partial class MainListPageResultFactoryTests
             null,
             apps,
             null,
+            _resultsSeparator,
+            _fallbacksSeparator,
             appResultLimit: 1);
 
-        Assert.AreEqual(3, result.Length);
-        Assert.AreEqual("F1", result[0].Title);
-        Assert.AreEqual("A1", result[1].Title);
-        Assert.AreEqual("F2", result[2].Title);
+        Assert.AreEqual(4, result.Length);
+        Assert.AreEqual("Results", result[0].Title);
+        Assert.AreEqual("F1", result[1].Title);
+        Assert.AreEqual("A1", result[2].Title);
+        Assert.AreEqual("F2", result[3].Title);
     }
 
     [TestMethod]

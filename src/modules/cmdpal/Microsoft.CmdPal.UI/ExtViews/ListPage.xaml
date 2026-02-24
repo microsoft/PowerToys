@@ -403,10 +403,10 @@
                 </Grid>
 
                 <!--
-                    8px right margin is added to visually match the spacing between then icon,
-                    and the left margin of the list, as there's
-                    
-                    ItemRepeater is light-weight control (in comparison to ItemsControl)
+                    An 8px right margin is added to visually match the spacing between the icon
+                    and the left margin of the list.
+
+                    ItemRepeater is a lightweight control (compared to ItemsControl).
                 -->
                 <ItemsRepeater
                     Grid.Column="2"
