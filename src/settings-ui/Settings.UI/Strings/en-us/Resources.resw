@@ -4772,6 +4772,9 @@ The break timer font matches the text font.</value>
   <data name="LanguageRestartInfoButton.Content" xml:space="preserve">
     <value>Restart</value>
   </data>
+  <data name="Default_language" xml:space="preserve">
+    <value>Windows default</value>
+  </data>
   <data name="Arabic_Saudi_Arabia_Language" xml:space="preserve">
     <value>Arabic (Saudi Arabia)</value>
   </data>
