@@ -121,7 +121,6 @@ extern "C"
         {
             bool shouldCount = false;
 
-
             if (operationType == 0)
             {
                 if ((kv.second.targetShortcut.index() == 0) ||
@@ -221,37 +220,42 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         {
             bool shouldAdd = false;
 
-            if (operationType == 0) // RemapShortcut
+            switch (operationType)
             {
+            case 0: // RemapShortcut
                 if ((kv.second.targetShortcut.index() == 0) ||
                     (kv.second.targetShortcut.index() == 1 &&
                      std::get<Shortcut>(kv.second.targetShortcut).operationType == Shortcut::OperationType::RemapShortcut))
                 {
                     shouldAdd = true;
                 }
-            }
-            else if (operationType == 1) // RunProgram
-            {
+                break;
+
+            case 1: // RunProgram
                 if (kv.second.targetShortcut.index() == 1 &&
                     std::get<Shortcut>(kv.second.targetShortcut).operationType == Shortcut::OperationType::RunProgram)
                 {
                     shouldAdd = true;
                 }
-            }
-            else if (operationType == 2) // OpenURI
-            {
+                break;
+
+            case 2: // OpenURI
                 if (kv.second.targetShortcut.index() == 1 &&
                     std::get<Shortcut>(kv.second.targetShortcut).operationType == Shortcut::OperationType::OpenURI)
                 {
                     shouldAdd = true;
                 }
-            }
-            else if (operationType == 3)
-            {
+                break;
+
+            case 3:
                 if (kv.second.targetShortcut.index() == 2)
                 {
                     shouldAdd = true;
                 }
+                break;
+
+            default:
+                break;
             }
 
             if (shouldAdd)
@@ -266,37 +270,42 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             {
                 bool shouldAdd = false;
 
-                if (operationType == 0) // RemapShortcut
+                switch (operationType)
                 {
+                case 0: // RemapShortcut
                     if ((shortcutKv.second.targetShortcut.index() == 0) ||
                         (shortcutKv.second.targetShortcut.index() == 1 &&
                          std::get<Shortcut>(shortcutKv.second.targetShortcut).operationType == Shortcut::OperationType::RemapShortcut))
                     {
                         shouldAdd = true;
                     }
-                }
-                else if (operationType == 1) // RunProgram
-                {
+                    break;
+
+                case 1: // RunProgram
                     if (shortcutKv.second.targetShortcut.index() == 1 &&
                         std::get<Shortcut>(shortcutKv.second.targetShortcut).operationType == Shortcut::OperationType::RunProgram)
                     {
                         shouldAdd = true;
                     }
-                }
-                else if (operationType == 2) // OpenURI
-                {
+                    break;
+
+                case 2: // OpenURI
                     if (shortcutKv.second.targetShortcut.index() == 1 &&
                         std::get<Shortcut>(shortcutKv.second.targetShortcut).operationType == Shortcut::OperationType::OpenURI)
                     {
                         shouldAdd = true;
                     }
-                }
-                else if (operationType == 3)
-                {
+                    break;
+
+                case 3:
                     if (shortcutKv.second.targetShortcut.index() == 2)
                     {
                         shouldAdd = true;
                     }
+                    break;
+
+                default:
+                    break;
                 }
 
                 if (shouldAdd)
@@ -335,29 +344,31 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
             mapping->operationType = static_cast<int>(targetShortcut.operationType);
 
-            if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
+            switch (targetShortcut.operationType)
             {
+            case Shortcut::OperationType::RunProgram:
                 mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(targetShortcut.runProgramFilePath);
                 mapping->programArgs = AllocateAndCopyString(targetShortcut.runProgramArgs);
                 mapping->uriToOpen = AllocateAndCopyString(L"");
-            }
-            else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
-            {
+                break;
+
+            case Shortcut::OperationType::OpenURI:
                 mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(L"");
                 mapping->programArgs = AllocateAndCopyString(L"");
                 mapping->uriToOpen = AllocateAndCopyString(targetShortcut.uriToOpen);
-            }
-            else
-            {
+                break;
+
+            default:
                 mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(L"");
                 mapping->programArgs = AllocateAndCopyString(L"");
                 mapping->uriToOpen = AllocateAndCopyString(L"");
+                break;
             }
         }
         else if (targetShortcutUnion.index() == 2)

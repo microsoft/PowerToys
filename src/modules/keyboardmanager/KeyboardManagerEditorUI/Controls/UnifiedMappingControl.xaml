@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="KeyboardManagerEditorUI.Controls.UnifiedMappingControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -32,9 +32,7 @@
             Grid.Column="0"
             Orientation="Vertical"
             Spacing="8">
-            <TextBlock
-                x:Uid="TriggerLabel"
-                FontWeight="SemiBold" />
+            <TextBlock x:Uid="TriggerLabel" FontWeight="SemiBold" />
             <ComboBox
                 x:Name="TriggerTypeComboBox"
                 HorizontalAlignment="Stretch"
@@ -171,9 +169,7 @@
             Grid.Column="2"
             Orientation="Vertical"
             Spacing="8">
-            <TextBlock
-                x:Uid="ActionLabel"
-                FontWeight="SemiBold" />
+            <TextBlock x:Uid="ActionLabel" FontWeight="SemiBold" />
             <ComboBox
                 x:Name="ActionTypeComboBox"
                 HorizontalAlignment="Stretch"
@@ -267,11 +263,11 @@
                     <TextBox
                         x:Name="TextContentBox"
                         x:Uid="TextContentBox"
-                        Height="120"
+                        MinHeight="120"
+                        MaxHeight="240"
                         AcceptsReturn="True"
                         Background="{ThemeResource TextControlBackgroundFocused}"
                         BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                        FontSize="13"
                         GotFocus="TextContentBox_GotFocus"
                         TextChanged="TextContentBox_TextChanged"
                         TextWrapping="Wrap" />
@@ -283,7 +279,6 @@
                         x:Uid="UrlPathInput"
                         Background="{ThemeResource TextControlBackgroundFocused}"
                         BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                        FontSize="13"
                         GotFocus="UrlPathInput_GotFocus"
                         TextChanged="UrlPathInput_TextChanged" />
                 </tkcontrols:Case>
