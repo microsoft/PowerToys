@@ -69,10 +69,12 @@ private:
     std::thread m_thread;
     const bool m_useCentralizedLLKH;
     bool m_running = true;
+    HWND m_lastSystemMenuWindow{ nullptr };
     std::unique_ptr<notifications::NotificationUtil> m_notificationUtil;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void HandleWinHookEvent(WinHookEvent* data) noexcept;
+    void UpdateSystemMenuItem(HWND window) const noexcept;
     
     bool InitMainWindow();
     void RegisterHotkey() const;

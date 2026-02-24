@@ -21,6 +21,7 @@ namespace NonLocalizable
 {
     const static wchar_t* TOOL_WINDOW_CLASS_NAME = L"AlwaysOnTopWindow";
     const static wchar_t* WINDOW_IS_PINNED_PROP = L"AlwaysOnTop_Pinned";
+    constexpr UINT SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND = 0xEFE0;
 }
 
 bool isExcluded(HWND window)
@@ -53,6 +54,11 @@ AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
         
         SubscribeToEvents();
         StartTrackingTopmostWindows();
+
+        if (HWND foregroundWindow = GetForegroundWindow())
+        {
+            UpdateSystemMenuItem(foregroundWindow);
+        }
     }
     else
     {
@@ -225,6 +231,8 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         m_sound.Play(soundType);    
     }
+
+    UpdateSystemMenuItem(window);
 }
 
 void AlwaysOnTop::StartTrackingTopmostWindows()
@@ -392,7 +400,7 @@ void AlwaysOnTop::RegisterLLKH()
 void AlwaysOnTop::SubscribeToEvents()
 {
     // subscribe to windows events
-    std::array<DWORD, 7> events_to_subscribe = {
+    std::array<DWORD, 10> events_to_subscribe = {
         EVENT_OBJECT_LOCATIONCHANGE,
         EVENT_SYSTEM_MINIMIZESTART,
         EVENT_SYSTEM_MINIMIZEEND,
@@ -400,6 +408,9 @@ void AlwaysOnTop::SubscribeToEvents()
         EVENT_SYSTEM_FOREGROUND,
         EVENT_OBJECT_DESTROY,
         EVENT_OBJECT_FOCUS,
+        EVENT_SYSTEM_MENUPOPUPSTART,
+        EVENT_SYSTEM_MENUPOPUPEND,
+        EVENT_OBJECT_INVOKED,
     };
 
     for (const auto event : events_to_subscribe)
@@ -413,6 +424,38 @@ void AlwaysOnTop::SubscribeToEvents()
         {
             Logger::error(L"Failed to set win event hook");
         }
+    }
+}
+
+void AlwaysOnTop::UpdateSystemMenuItem(HWND window) const noexcept
+{
+    if (!window || !IsWindow(window))
+    {
+        return;
+    }
+
+    const auto systemMenu = GetSystemMenu(window, false);
+    if (!systemMenu)
+    {
+        return;
+    }
+
+    auto text = GET_RESOURCE_STRING(IDS_SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP);
+    MENUITEMINFOW menuItemInfo{};
+    menuItemInfo.cbSize = sizeof(menuItemInfo);
+    menuItemInfo.fMask = MIIM_ID | MIIM_STATE | MIIM_STRING;
+    menuItemInfo.wID = NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND;
+    menuItemInfo.fState = IsPinned(window) ? MFS_CHECKED : MFS_UNCHECKED;
+    menuItemInfo.dwTypeData = text.data();
+
+    if (GetMenuState(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND) == static_cast<UINT>(-1))
+    {
+        InsertMenuItemW(systemMenu, SC_CLOSE, FALSE, &menuItemInfo);
+    }
+    else
+    {
+        menuItemInfo.fMask = MIIM_STATE | MIIM_STRING;
+        SetMenuItemInfoW(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, FALSE, &menuItemInfo);
     }
 }
 
@@ -492,6 +535,51 @@ bool AlwaysOnTop::IsTracked(HWND window) const noexcept
 
 void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
+    switch (data->event)
+    {
+    case EVENT_SYSTEM_MENUPOPUPSTART:
+    {
+        if (data->idObject == OBJID_SYSMENU && data->hwnd)
+        {
+            m_lastSystemMenuWindow = data->hwnd;
+            UpdateSystemMenuItem(data->hwnd);
+        }
+    }
+    return;
+    case EVENT_SYSTEM_MENUPOPUPEND:
+    {
+        if (data->idObject == OBJID_SYSMENU && data->hwnd == m_lastSystemMenuWindow)
+        {
+            m_lastSystemMenuWindow = nullptr;
+        }
+    }
+    return;
+    case EVENT_OBJECT_INVOKED:
+    {
+        if (data->idChild == static_cast<LONG>(NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND))
+        {
+            HWND commandWindow = m_lastSystemMenuWindow;
+            if (!commandWindow || !IsWindow(commandWindow))
+            {
+                commandWindow = GetForegroundWindow();
+            }
+
+            if ((!commandWindow || !IsWindow(commandWindow)) && data->hwnd && IsWindow(data->hwnd))
+            {
+                commandWindow = data->hwnd;
+            }
+
+            if (commandWindow)
+            {
+                ProcessCommand(commandWindow);
+            }
+        }
+    }
+    return;
+    default:
+        break;
+    }
+
     if (!AlwaysOnTopSettings::settings().enableFrame || !data->hwnd)
     {
         return;
@@ -566,6 +654,8 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     break;
     case EVENT_SYSTEM_FOREGROUND:
     {
+        UpdateSystemMenuItem(data->hwnd);
+
         if (!is_process_elevated() && IsProcessOfWindowElevated(data->hwnd))
         {
             m_notificationUtil->WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_ALWAYSONTOP),
