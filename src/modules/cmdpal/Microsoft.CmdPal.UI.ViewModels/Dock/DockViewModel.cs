@@ -44,7 +44,6 @@ public sealed partial class DockViewModel : IDisposable,
         _settings = settings.DockSettings;
         Scheduler = scheduler;
         _pageContext = new(this);
-        WeakReferenceMessenger.Default.Register<CommandsReloadedMessage>(this);
 
         _topLevelCommandManager.DockBands.CollectionChanged += DockBands_CollectionChanged;
     }
@@ -129,8 +128,12 @@ public sealed partial class DockViewModel : IDisposable,
 
     public void Receive(CommandsReloadedMessage message)
     {
-        SetupBands();
-        Logger.LogDebug("Bands reloaded");
+        //// After we've loaded once, subscribe us to DockBand updates
+        // _topLevelCommandManager.DockBands.CollectionChanged -= DockBands_CollectionChanged;
+        // _topLevelCommandManager.DockBands.CollectionChanged += DockBands_CollectionChanged;
+
+        // SetupBands();
+        // Logger.LogDebug("Bands reloaded");
     }
 
     /// <summary>
