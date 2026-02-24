@@ -6,7 +6,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed class Icons
+public static class Icons
 {
     public static IconInfo PinIcon => new("\uE718"); // Pin icon
 

@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -118,6 +118,75 @@ public partial class MainListPageResultFactoryTests
         Assert.AreEqual(2, result.Length);
         Assert.AreEqual("A1", result[0].Title);
         Assert.AreEqual("A2", result[1].Title);
+    }
+
+    [TestMethod]
+    public void Merge_AppLimitOfOne_ReturnsOnlyTopApp()
+    {
+        var apps = new List<RoScored<IListItem>>
+        {
+            S("A1", 100),
+            S("A2", 90),
+            S("A3", 80),
+        };
+
+        var result = MainListPageResultFactory.Create(
+            null,
+            null,
+            apps,
+            null,
+            appResultLimit: 1);
+
+        Assert.AreEqual(1, result.Length);
+        Assert.AreEqual("A1", result[0].Title);
+    }
+
+    [TestMethod]
+    public void Merge_AppLimitOfZero_ReturnsNoApps()
+    {
+        var apps = new List<RoScored<IListItem>>
+        {
+            S("A1", 100),
+            S("A2", 90),
+        };
+
+        var result = MainListPageResultFactory.Create(
+            null,
+            null,
+            apps,
+            null,
+            appResultLimit: 0);
+
+        Assert.AreEqual(0, result.Length);
+    }
+
+    [TestMethod]
+    public void Merge_AppLimitOfOne_WithOtherResults_AppsAreLimited()
+    {
+        var filtered = new List<RoScored<IListItem>>
+        {
+            S("F1", 100),
+            S("F2", 50),
+        };
+
+        var apps = new List<RoScored<IListItem>>
+        {
+            S("A1", 90),
+            S("A2", 80),
+            S("A3", 70),
+        };
+
+        var result = MainListPageResultFactory.Create(
+            filtered,
+            null,
+            apps,
+            null,
+            appResultLimit: 1);
+
+        Assert.AreEqual(3, result.Length);
+        Assert.AreEqual("F1", result[0].Title);
+        Assert.AreEqual("A1", result[1].Title);
+        Assert.AreEqual("F2", result[2].Title);
     }
 
     [TestMethod]

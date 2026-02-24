@@ -3,14 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Models;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
-
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -129,7 +127,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         return settings.GetProviderSettings(this);
     }
 
-    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider)
     {
         if (!isValid)
         {
@@ -191,7 +189,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             Settings = new(model.Settings, this, _taskScheduler);
 
             // We do need to explicitly initialize commands though
-            InitializeCommands(commands, fallbacks, pinnedCommands, serviceProvider, pageContext);
+            InitializeCommands(commands, fallbacks, pinnedCommands, serviceProvider);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -226,13 +224,13 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         ICommandItem[] commands,
         IFallbackCommandItem[] fallbacks,
         ICommandItem[] pinnedCommands,
-        IServiceProvider serviceProvider,
-        WeakReference<IPageContext> pageContext)
+        IServiceProvider serviceProvider)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
         var contextMenuFactory = serviceProvider.GetService<IContextMenuFactory>()!;
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
+        var pageContext = new WeakReference<IPageContext>(TopLevelPageContext);
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext, contextMenuFactory: contextMenuFactory);
