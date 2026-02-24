@@ -103,8 +103,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     // May be called from a background thread
     private async Task<IEnumerable<TopLevelViewModel>> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
-        TopLevelItemPageContext pageContext = new(commandProvider, _taskScheduler);
-        WeakReference<IPageContext> weak = new(pageContext);
+        WeakReference<IPageContext> weak = new(commandProvider.TopLevelPageContext);
 
         await commandProvider.LoadTopLevelCommands(_serviceProvider, weak);
 

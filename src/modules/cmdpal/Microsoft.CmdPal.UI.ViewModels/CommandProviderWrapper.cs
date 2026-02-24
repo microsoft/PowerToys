@@ -51,12 +51,15 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     public bool SupportsPinning { get; private set; }
 
+    public TopLevelItemPageContext TopLevelPageContext { get; }
+
     public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
         // This ctor is only used for in-proc builtin commands. So the Unsafe!
         // calls are pretty dang safe actually.
         _commandProvider = new(provider);
         _taskScheduler = mainThread;
+        TopLevelPageContext = new TopLevelItemPageContext(this, _taskScheduler);
 
         // Hook the extension back into us
         ExtensionHost = new CommandPaletteHost(provider);
@@ -81,6 +84,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
     {
         _taskScheduler = mainThread;
         _commandProviderCache = commandProviderCache;
+        TopLevelPageContext = new TopLevelItemPageContext(this, _taskScheduler);
 
         Extension = extension;
         ExtensionHost = new CommandPaletteHost(extension);
