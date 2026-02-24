@@ -6,6 +6,7 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     Width="1100"
     Height="700"
     MinWidth="480"
@@ -59,6 +60,12 @@
                     </StackPanel>
                 </DataTemplate>
             </NavigationView.MenuItemTemplate>
+            <NavigationView.PaneFooter>
+                <NavigationViewItem
+                    x:Uid="Scoobe_OpenSettings"
+                    Icon="{ui:FontIcon Glyph=&#xE713;}"
+                    Tapped="OpenSettingsItem_Tapped" />
+            </NavigationView.PaneFooter>
             <NavigationView.Content>
                 <Grid>
                     <ProgressRing
