@@ -12,7 +12,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 
-public sealed partial class DockViewModel : IDisposable
+public sealed partial class DockViewModel
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly SettingsModel _settingsModel;

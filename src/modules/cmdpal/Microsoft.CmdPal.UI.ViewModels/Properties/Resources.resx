@@ -258,14 +258,6 @@
     <value>Built-in</value>
     <comment>Fallback name for built-in extensions</comment>
   </data>
-  <data name="dock_pin_command_name" xml:space="preserve">
-    <value>Pin to dock</value>
-    <comment>Command name for pinning an item to the dock</comment>
-  </data>
-  <data name="dock_unpin_command_name" xml:space="preserve">
-    <value>Unpin from dock</value>
-    <comment>Command name for unpinning an item from the dock</comment>
-  </data>
   <data name="dock_item_count_singular" xml:space="preserve">
     <value>1 item</value>
     <comment>Singular form for item count in dock band</comment>

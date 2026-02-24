@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -297,15 +297,18 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Built-in.
         /// </summary>
-        public static string builtin_extension_name_fallback {
-            get {
-                return ResourceManager.GetString("builtin_extension_name_fallback", resourceCulture);
-            }
-        }
-
         public static string builtin_extension_name {
             get {
                 return ResourceManager.GetString("builtin_extension_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Built-in.
+        /// </summary>
+        public static string builtin_extension_name_fallback {
+            get {
+                return ResourceManager.GetString("builtin_extension_name_fallback", resourceCulture);
             }
         }
         
@@ -508,15 +511,6 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pin to dock.
-        /// </summary>
-        public static string dock_pin_command_name {
-            get {
-                return ResourceManager.GetString("dock_pin_command_name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Dock settings.
         /// </summary>
         public static string dock_settings_name {
@@ -526,20 +520,20 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unpin from dock.
-        /// </summary>
-        public static string dock_unpin_command_name {
-            get {
-                return ResourceManager.GetString("dock_unpin_command_name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Fallbacks.
         /// </summary>
         public static string fallbacks {
             get {
                 return ResourceManager.GetString("fallbacks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pinned.
+        /// </summary>
+        public static string PinnedItemSuffix {
+            get {
+                return ResourceManager.GetString("PinnedItemSuffix", resourceCulture);
             }
         }
         

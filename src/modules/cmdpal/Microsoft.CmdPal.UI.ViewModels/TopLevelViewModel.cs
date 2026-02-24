@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -472,7 +472,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     }
 
     /// <summary>
-    /// Helper to convert our context menu viewmodels back into the API 
+    /// Helper to convert our context menu viewmodels back into the API
     /// interfaces that ICommandItem expects.
     /// </summary>
     private IContextItem?[] BuildContextMenu()

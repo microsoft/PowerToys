@@ -618,7 +618,6 @@ public sealed partial class DockWindow : WindowEx,
     public void Dispose()
     {
         DisposeAcrylic();
-        viewModel.Dispose();
         _windowViewModel.Dispose();
     }
 
