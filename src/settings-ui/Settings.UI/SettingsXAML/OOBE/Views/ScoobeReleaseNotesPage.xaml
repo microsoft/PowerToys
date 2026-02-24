@@ -52,6 +52,7 @@
                         <tkcontrols:MarkdownTextBlock
                             x:Name="ReleaseNotesMarkdown"
                             Config="{StaticResource ReleaseNotesMarkdownConfig}"
+                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                             UseAutoLinks="True"
                             UseEmphasisExtras="True"
                             UseListExtras="True"

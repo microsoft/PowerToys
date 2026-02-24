@@ -127,6 +127,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 LoadingProgressRing.Visibility = Visibility.Collapsed;
 
+                // Apply correct theme-aware foreground colors before rendering
+                ApplyMarkdownThemeColors();
+
                 var (releaseNotesMarkdown, heroImageUrl) = ProcessReleaseNotesMarkdown(_currentReleases);
 
                 // Set the Hero image if found
@@ -151,7 +154,52 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            ActualThemeChanged += OnActualThemeChanged;
             DisplayReleaseNotes();
+        }
+
+        private void OnActualThemeChanged(FrameworkElement sender, object args)
+        {
+            // Re-apply header foreground colors when theme changes at runtime
+            ApplyMarkdownThemeColors();
+
+            if (_currentReleases != null && _currentReleases.Count > 0)
+            {
+                var (releaseNotesMarkdown, _) = ProcessReleaseNotesMarkdown(_currentReleases);
+                ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
+            }
+        }
+
+        /// <summary>
+        /// Updates MarkdownThemes header foreground brushes to match the current effective theme.
+        /// MarkdownThemes uses plain CLR properties initialized from Application.Current.Resources
+        /// at construction time, which resolves based on the app-level theme rather than the
+        /// window's RequestedTheme. This causes incorrect header colors when the two differ.
+        /// </summary>
+        private void ApplyMarkdownThemeColors()
+        {
+            if (Resources.TryGetValue("ReleaseNotesMarkdownThemeConfig", out var obj) &&
+                obj is CommunityToolkit.WinUI.Controls.MarkdownThemes markdownThemes)
+            {
+                var foreground = ReleaseNotesMarkdown.Foreground;
+                markdownThemes.H1Foreground = foreground;
+                markdownThemes.H2Foreground = foreground;
+                markdownThemes.H3Foreground = foreground;
+
+                // Resolve theme-aware brushes from the visual tree (respects RequestedTheme)
+                // rather than Application.Current.Resources (which uses the app-level theme).
+                var resources = ReleaseNotesMarkdown.XamlRoot?.Content switch
+                {
+                    FrameworkElement fe => fe.Resources,
+                    _ => Application.Current.Resources,
+                };
+
+                if (resources.TryGetValue("DividerStrokeColorDefaultBrush", out var dividerBrush) &&
+                    dividerBrush is Microsoft.UI.Xaml.Media.Brush brush)
+                {
+                    markdownThemes.HorizontalRuleBrush = brush;
+                }
+            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
