@@ -182,6 +182,9 @@ public sealed partial class MainWindow : WindowEx,
 
         // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
         HideWindow();
+
+        // Initialize Adaptive Cards, before any view model can create a card
+        ContentFormControl.Initialize();
     }
 
     private void OnAutoGoHomeTimerOnTick(object? s, object e)

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
-using static Microsoft.CommandPalette.Extensions.Toolkit.ChoiceSetSetting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -11,8 +10,11 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 [JsonSerializable(typeof(int))]
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(bool))]
-[JsonSerializable(typeof(Choice))]
-[JsonSerializable(typeof(List<Choice>))]
+[JsonSerializable(typeof(ChoiceSetCardSetting.Entry))]
+[JsonSerializable(typeof(ChoiceSetSetting.Choice))]
+[JsonSerializable(typeof(List<ChoiceSetCardSetting.Entry>))]
+[JsonSerializable(typeof(List<ChoiceSetSetting.Choice>))]
+[JsonSerializable(typeof(List<ChoiceSetCardSetting>))]
 [JsonSerializable(typeof(List<ChoiceSetSetting>))]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
 [JsonSerializable(typeof(List<Dictionary<string, object>>))]

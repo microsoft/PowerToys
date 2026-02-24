@@ -15,26 +15,26 @@ internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
 
     private static string Namespaced(string propertyName) => $"{Namespace}.{propertyName}";
 
-    private readonly ToggleSetting _keepAfterPaste = new(
+    private readonly ToggleCardSetting _keepAfterPaste = new(
         Namespaced(nameof(KeepAfterPaste)),
         Resources.settings_keep_after_paste_title!,
         Resources.settings_keep_after_paste_description!,
         false);
 
-    private readonly ToggleSetting _confirmDelete = new(
+    private readonly CheckBoxCardSettings _confirmDelete = new(
         Namespaced(nameof(DeleteFromHistoryRequiresConfirmation)),
         Resources.settings_confirm_delete_title!,
         Resources.settings_confirm_delete_description!,
         true);
 
-    private readonly ChoiceSetSetting _primaryAction = new(
+    private readonly ChoiceSetCardSetting _primaryAction = new(
         Namespaced(nameof(PrimaryAction)),
         Resources.settings_primary_action_title!,
         Resources.settings_primary_action_description!,
         [
-            new ChoiceSetSetting.Choice(Resources.settings_primary_action_default!, PrimaryAction.Default.ToString("G")),
-            new ChoiceSetSetting.Choice(Resources.settings_primary_action_paste!, PrimaryAction.Paste.ToString("G")),
-            new ChoiceSetSetting.Choice(Resources.settings_primary_action_copy!, PrimaryAction.Copy.ToString("G"))
+            new ChoiceSetCardSetting.Entry(Resources.settings_primary_action_default!, PrimaryAction.Default.ToString("G")),
+            new ChoiceSetCardSetting.Entry(Resources.settings_primary_action_paste!, PrimaryAction.Paste.ToString("G")),
+            new ChoiceSetCardSetting.Entry(Resources.settings_primary_action_copy!, PrimaryAction.Copy.ToString("G"))
         ]);
 
     public bool KeepAfterPaste => _keepAfterPaste.Value;

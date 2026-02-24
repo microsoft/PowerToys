@@ -191,13 +191,7 @@
                                     Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                                     Visibility="{x:Bind ViewModel.HasSettings}" />
 
-                                <Frame
-                                    x:Name="SettingsFrame"
-                                    Background="{ThemeResource SettingsCardBackground}"
-                                    BorderBrush="{ThemeResource SettingsCardBorderBrush}"
-                                    BorderThickness="{ThemeResource SettingsCardBorderThickness}"
-                                    CornerRadius="{StaticResource ControlCornerRadius}"
-                                    Visibility="{x:Bind ViewModel.HasSettings}">
+                                <Frame x:Name="SettingsFrame" Visibility="{x:Bind ViewModel.HasSettings}">
                                     <controls:SwitchPresenter
                                         HorizontalAlignment="Stretch"
                                         TargetType="x:Boolean"
@@ -211,7 +205,11 @@
                                                 IsIndeterminate="True" />
                                         </controls:Case>
                                         <controls:Case Value="False">
-                                            <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
+                                            <cmdpalUI:ContentPage
+                                                ContentMargin="0"
+                                                ContentPadding="0"
+                                                ItemSpacing="4"
+                                                ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
                                         </controls:Case>
                                     </controls:SwitchPresenter>
                                 </Frame>
