@@ -39,7 +39,8 @@ public:
     {
         RemapShortcut = 0,
         RunProgram = 1,
-        OpenURI = 2
+        OpenURI = 2,
+        RemapText = 3
     };
 
     enum StartWindowType

@@ -63,7 +63,7 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.IllegalShortcut;
             }
 
-            if (IsDuplicateMapping(originalKeys, isEditMode, mappingService))
+            if (IsDuplicateMapping(originalKeys, isEditMode, mappingService, appName))
             {
                 return ValidationErrorType.DuplicateMapping;
             }
@@ -109,7 +109,7 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.IllegalShortcut;
             }
 
-            if (IsDuplicateMapping(keys, isEditMode, mappingService))
+            if (IsDuplicateMapping(keys, isEditMode, mappingService, appName))
             {
                 return ValidationErrorType.DuplicateMapping;
             }
@@ -151,12 +151,13 @@ namespace KeyboardManagerEditorUI.Helpers
             return ValidateProgramOrUrlMapping(originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingRemapping);
         }
 
-        public static bool IsDuplicateMapping(List<string> keys, bool isEditMode, KeyboardMappingService mappingService)
+        public static bool IsDuplicateMapping(List<string> keys, bool isEditMode, KeyboardMappingService mappingService, string appName)
         {
             int upperLimit = isEditMode ? 1 : 0;
             string shortcutKeysString = BuildKeyCodeString(keys, mappingService);
             return SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values
-                .Count(settings => KeyboardManagerInterop.AreShortcutsEqual(settings.Shortcut.OriginalKeys, shortcutKeysString)) > upperLimit;
+                .Count(settings => KeyboardManagerInterop.AreShortcutsEqual(settings.Shortcut.OriginalKeys, shortcutKeysString) &&
+                                   settings.Shortcut.TargetApp == appName) > upperLimit;
         }
 
         public static bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys, KeyboardMappingService mappingService)
