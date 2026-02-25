@@ -30,8 +30,6 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     {
         var results = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(items, commandItem);
 
-        List<IContextItem> moreCommands = [];
-        var itemId = commandItem.Command.Id;
         IPageContext? page = null;
         var succeeded = commandItem.PageContext.TryGetTarget(out page);
         if (!succeeded || page is null)
@@ -40,10 +38,18 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         }
 
         var isTopLevelItem = page is TopLevelItemPageContext;
+        if (isTopLevelItem)
+        {
+            // Bail early. We'll handle it below.
+            return results;
+        }
+
+        List<IContextItem> moreCommands = [];
+        var itemId = commandItem.Command.Id;
         var providerContext = page.ProviderContext;
         var supportsPinning = providerContext.SupportsPinning;
 
-        if ((isTopLevelItem || supportsPinning) &&
+        if (supportsPinning &&
             !string.IsNullOrEmpty(itemId))
         {
             // Add pin/unpin commands for pinning items to the top-level or to
@@ -87,6 +93,58 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// Called to create the context menu on TopLevelViewModels.
+    ///
+    /// These are handled differently from everyone else. With
+    /// TopLevelViewModels, the ID isn't on the Command, it's on the TLVM
+    /// itself.
+    ///
+    /// </summary>
+    public void UnsafeAddAndInitMoreTopLevelCommands(
+        TopLevelViewModel topLevelItem,
+        ICommandProviderContext providerContext,
+        List<IContextItem?> contextItems)
+    {
+        var itemId = topLevelItem.Id;
+        var supportsPinning = providerContext.SupportsPinning;
+        List<IContextItem> moreCommands = [];
+        var commandItem = topLevelItem.ItemViewModel;
+
+        // Add pin/unpin commands for pinning items to the top-level or to
+        // the dock.
+        var providerId = providerContext.ProviderId;
+        if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
+        {
+            var providerSettings = _settingsModel.GetProviderSettings(provider);
+
+            var isPinnedSubCommand = providerSettings.PinnedCommandIds.Contains(itemId);
+            if (isPinnedSubCommand)
+            {
+                var pinToTopLevelCommand = new PinToCommand(
+                       commandId: itemId,
+                       providerId: providerId,
+                       pin: !isPinnedSubCommand,
+                       PinLocation.TopLevel,
+                       _settingsModel,
+                       _topLevelCommandManager);
+
+                var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
+                moreCommands.Add(contextItem);
+            }
+
+            TryAddPinToDockCommand(providerSettings, itemId, providerId, moreCommands, commandItem);
+        }
+
+        if (moreCommands.Count > 0)
+        {
+            moreCommands.Insert(0, new Separator());
+
+            // var moreResults = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(moreCommands.ToArray(), commandItem);
+            contextItems.AddRange(moreCommands);
+        }
     }
 
     private void TryAddPinToDockCommand(

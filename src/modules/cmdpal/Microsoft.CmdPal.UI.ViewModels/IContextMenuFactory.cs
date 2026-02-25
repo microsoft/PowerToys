@@ -9,4 +9,9 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public interface IContextMenuFactory
 {
     List<IContextItemViewModel> UnsafeBuildAndInitMoreCommands(IContextItem[] items, CommandItemViewModel commandItem);
+
+    void UnsafeAddAndInitMoreTopLevelCommands(
+        TopLevelViewModel topLevelItem,
+        ICommandProviderContext providerContext,
+        List<IContextItem?> contextItems);
 }
