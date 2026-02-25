@@ -331,8 +331,14 @@ public sealed partial class ListPage : Page,
 
     private void PushSelectionToVm()
     {
-        if (ViewModel is null || ItemView.SelectedItem is not ListItemViewModel li || IsSeparator(li))
+        if (ViewModel is null)
         {
+            return;
+        }
+
+        if (ItemView.SelectedItem is not ListItemViewModel li || IsSeparator(li))
+        {
+            ViewModel.UpdateSelectedItemCommand.Execute(null);
             return;
         }
 
@@ -664,6 +670,7 @@ public sealed partial class ListPage : Page,
                 _lastPushedToVm = null;
             }
 
+            PushSelectionToVm();
             return true;
         }
 
@@ -685,6 +692,7 @@ public sealed partial class ListPage : Page,
                 _lastPushedToVm = null;
             }
 
+            PushSelectionToVm();
             return true;
         }
 
