@@ -261,10 +261,10 @@
                                         <!--  HACK: ShortcutControl does not work correctly if it's the first or last item in the expander, so we add invisible cards.  -->
                                         <tkcontrols:SettingsCard Visibility="Collapsed" />
                                         <tkcontrols:SettingsCard Name="KBMEditorShortcut" x:Uid="KeyboardManager_Editor_Shortcut">
-                                          <controls:ShortcutControl 
-                                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                                            AllowDisable="True"
-                                            HotkeySettings="{x:Bind Path=ViewModel.ToggleShortcut, Mode=TwoWay}" />
+                                            <controls:ShortcutControl
+                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                AllowDisable="True"
+                                                HotkeySettings="{x:Bind Path=ViewModel.ToggleShortcut, Mode=TwoWay}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard Visibility="Collapsed" />
                                     </tkcontrols:SettingsExpander.Items>
