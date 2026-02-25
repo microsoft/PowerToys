@@ -12,7 +12,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -192,11 +191,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => Settings.Properties.ToggleShortcut;
             set
             {
-                if (Settings.Properties.ToggleShortcut != value)
+                if (value != Settings.Properties.ToggleShortcut)
                 {
-                    Settings.Properties.ToggleShortcut = value ?? Settings.Properties.DefaultToggleShortcut;
+                    Settings.Properties.ToggleShortcut = value == null ? Settings.Properties.DefaultToggleShortcut : value;
+
                     OnPropertyChanged(nameof(ToggleShortcut));
                     NotifySettingsChanged();
+
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            KeyboardManagerSettings.ModuleName,
+                            JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.KeyboardManagerSettings)));
                 }
             }
         }

@@ -37,6 +37,7 @@ namespace
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ToggleShortcut";
+    const wchar_t JSON_KEY_USE_NEW_EDITOR[] = L"useNewEditor";
 }
 
 // Implement the PowerToy Module Interface and all the required methods.
@@ -56,9 +57,13 @@ private:
     // Hotkey for toggling the module
     Hotkey m_hotkey = { .key = 0 };
 
+    // Whether to use the new WinUI3 editor
+    bool m_useNewEditor = false;
+
     ULONGLONG m_lastHotkeyToggleTime = 0;
 
     HANDLE m_hProcess = nullptr;
+    HANDLE m_hEditorProcess = nullptr;
 
     HANDLE m_hTerminateEngineEvent = nullptr;
 
@@ -174,6 +179,20 @@ private:
             m_hotkey.alt = false;
             m_hotkey.key = 'K';
         }
+
+        // Parse useNewEditor setting
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                m_useNewEditor = propertiesObject.GetNamedBoolean(JSON_KEY_USE_NEW_EDITOR, false);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to parse useNewEditor setting, defaulting to false");
+            }
+        }
     }
 
     // Load the settings file.
@@ -224,6 +243,11 @@ public:
         {
             CloseHandle(m_hTerminateEngineEvent);
             m_hTerminateEngineEvent = nullptr;
+        }
+        if (m_hEditorProcess)
+        {
+            CloseHandle(m_hEditorProcess);
+            m_hEditorProcess = nullptr;
         }
     }
 
@@ -336,6 +360,51 @@ public:
         }
     }
 
+    bool launch_editor()
+    {
+        // Check if editor is already running
+        if (m_hEditorProcess)
+        {
+            if (WaitForSingleObject(m_hEditorProcess, 0) == WAIT_TIMEOUT)
+            {
+                // Editor still running, bring it to front
+                DWORD editorPid = GetProcessId(m_hEditorProcess);
+                if (editorPid)
+                {
+                    AllowSetForegroundWindow(editorPid);
+                }
+                return true;
+            }
+            else
+            {
+                CloseHandle(m_hEditorProcess);
+                m_hEditorProcess = nullptr;
+            }
+        }
+
+        unsigned long powertoys_pid = GetCurrentProcessId();
+        std::wstring executable_args = std::to_wstring(powertoys_pid);
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"WinUI3Apps\\PowerToys.KeyboardManagerEditorUI.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+        if (ShellExecuteExW(&sei) == false)
+        {
+            Logger::error(L"Failed to start new keyboard manager editor");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+            return false;
+        }
+
+        m_hEditorProcess = sei.hProcess;
+        return m_hEditorProcess != nullptr;
+    }
+
     // Process the hotkey event
     virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {
@@ -352,14 +421,9 @@ public:
         }
         m_lastHotkeyToggleTime = now;
 
-        refresh_process_state();
-        if (m_active)
+        if (m_useNewEditor)
         {
-            stop_engine();
-        }
-        else
-        {
-            start_engine();
+            launch_editor();
         }
 
         return true;
