@@ -639,33 +639,42 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
             return;
         }
 
-        const bool isSystemMenuInvoke = (data->idObject == OBJID_SYSMENU || data->idObject == OBJID_MENU);
-        if (!isSystemMenuInvoke)
+        const bool isMenuRelatedObject = (data->idObject == OBJID_SYSMENU || data->idObject == OBJID_MENU || data->idObject == OBJID_CLIENT);
+        if (!isMenuRelatedObject && (!m_lastSystemMenuWindow || !IsWindow(m_lastSystemMenuWindow)))
         {
             return;
         }
 
-        HWND commandWindow = nullptr;
-        if (m_lastSystemMenuWindow && IsWindow(m_lastSystemMenuWindow))
-        {
-            // If we tracked the active system menu window, require consistency.
-            if (data->hwnd && IsWindow(data->hwnd) && data->hwnd != m_lastSystemMenuWindow)
+        const auto hasToggleMenuItem = [](HWND window) -> bool {
+            if (!window || !IsWindow(window))
             {
-                return;
+                return false;
             }
 
-            commandWindow = m_lastSystemMenuWindow;
-        }
-        else if (data->hwnd && IsWindow(data->hwnd))
-        {
-            commandWindow = data->hwnd;
-        }
-        else
-        {
-            return;
-        }
+            const auto systemMenu = GetSystemMenu(window, false);
+            return systemMenu &&
+                   GetMenuState(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND) != static_cast<UINT>(-1);
+        };
 
-        ProcessCommand(commandWindow);
+        HWND commandWindow = nullptr;
+        const auto trySetCommandWindow = [&](HWND candidate) noexcept {
+            if (!commandWindow && hasToggleMenuItem(candidate))
+            {
+                commandWindow = candidate;
+            }
+        };
+
+        if (m_lastSystemMenuWindow && IsWindow(m_lastSystemMenuWindow))
+        {
+            trySetCommandWindow(m_lastSystemMenuWindow);
+        }
+        trySetCommandWindow(data->hwnd);
+        trySetCommandWindow(GetForegroundWindow());
+
+        if (commandWindow)
+        {
+            ProcessCommand(commandWindow);
+        }
     }
     return;
     default:
