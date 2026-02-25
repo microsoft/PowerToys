@@ -26,6 +26,22 @@ namespace NonLocalizable
     constexpr DWORD SYSTEM_EVENT_MENU_POPUP_END = 0x0007;
 }
 
+namespace
+{
+    void UnsubscribeEvents(std::vector<HWINEVENTHOOK>& hooks) noexcept
+    {
+        for (const auto hook : hooks)
+        {
+            if (hook)
+            {
+                UnhookWinEvent(hook);
+            }
+        }
+
+        hooks.clear();
+    }
+}
+
 bool isExcluded(HWND window)
 {
     auto processPath = get_process_path(window);
@@ -154,6 +170,7 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
     break;
     case SettingId::ShowInSystemMenu:
     {
+        UpdateSystemMenuEventHooks(AlwaysOnTopSettings::settings().showInSystemMenu);
         m_lastSystemMenuWindow = nullptr;
         UpdateSystemMenuItem(GetForegroundWindow());
     }
@@ -408,7 +425,7 @@ void AlwaysOnTop::RegisterLLKH()
 void AlwaysOnTop::SubscribeToEvents()
 {
     // subscribe to windows events
-    std::array<DWORD, 10> events_to_subscribe = {
+    std::array<DWORD, 7> events_to_subscribe = {
         EVENT_OBJECT_LOCATIONCHANGE,
         EVENT_SYSTEM_MINIMIZESTART,
         EVENT_SYSTEM_MINIMIZEEND,
@@ -416,9 +433,6 @@ void AlwaysOnTop::SubscribeToEvents()
         EVENT_SYSTEM_FOREGROUND,
         EVENT_OBJECT_DESTROY,
         EVENT_OBJECT_FOCUS,
-        NonLocalizable::SYSTEM_EVENT_MENU_POPUP_START,
-        NonLocalizable::SYSTEM_EVENT_MENU_POPUP_END,
-        EVENT_OBJECT_INVOKED,
     };
 
     for (const auto event : events_to_subscribe)
@@ -432,6 +446,45 @@ void AlwaysOnTop::SubscribeToEvents()
         {
             Logger::error(L"Failed to set win event hook");
         }
+    }
+
+    UpdateSystemMenuEventHooks(AlwaysOnTopSettings::settings().showInSystemMenu);
+}
+
+void AlwaysOnTop::UpdateSystemMenuEventHooks(bool enable)
+{
+    constexpr std::array<DWORD, 3> menu_events_to_subscribe = {
+        NonLocalizable::SYSTEM_EVENT_MENU_POPUP_START,
+        NonLocalizable::SYSTEM_EVENT_MENU_POPUP_END,
+        EVENT_OBJECT_INVOKED,
+    };
+
+    if (enable)
+    {
+        if (m_systemMenuWinEventHooks.size() == menu_events_to_subscribe.size())
+        {
+            return;
+        }
+
+        // Recover from any partial hook registration before re-registering.
+        UnsubscribeEvents(m_systemMenuWinEventHooks);
+
+        for (const auto event : menu_events_to_subscribe)
+        {
+            auto hook = SetWinEventHook(event, event, nullptr, WinHookProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+            if (hook)
+            {
+                m_systemMenuWinEventHooks.emplace_back(hook);
+            }
+            else
+            {
+                Logger::error(L"Failed to set system menu win event hook");
+            }
+        }
+    }
+    else
+    {
+        UnsubscribeEvents(m_systemMenuWinEventHooks);
     }
 }
 
@@ -494,6 +547,9 @@ void AlwaysOnTop::UnpinAll()
 
 void AlwaysOnTop::CleanUp()
 {
+    UnsubscribeEvents(m_systemMenuWinEventHooks);
+    UnsubscribeEvents(m_staticWinEventHooks);
+
     UnpinAll();
     if (m_window)
     {
@@ -578,24 +634,38 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
             return;
         }
 
-        if (data->idChild == static_cast<LONG>(NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND))
+        if (data->idChild != static_cast<LONG>(NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND))
         {
-            HWND commandWindow = m_lastSystemMenuWindow;
-            if (!commandWindow || !IsWindow(commandWindow))
-            {
-                commandWindow = GetForegroundWindow();
-            }
-
-            if ((!commandWindow || !IsWindow(commandWindow)) && data->hwnd && IsWindow(data->hwnd))
-            {
-                commandWindow = data->hwnd;
-            }
-
-            if (commandWindow)
-            {
-                ProcessCommand(commandWindow);
-            }
+            return;
         }
+
+        const bool isSystemMenuInvoke = (data->idObject == OBJID_SYSMENU || data->idObject == OBJID_MENU);
+        if (!isSystemMenuInvoke)
+        {
+            return;
+        }
+
+        HWND commandWindow = nullptr;
+        if (m_lastSystemMenuWindow && IsWindow(m_lastSystemMenuWindow))
+        {
+            // If we tracked the active system menu window, require consistency.
+            if (data->hwnd && IsWindow(data->hwnd) && data->hwnd != m_lastSystemMenuWindow)
+            {
+                return;
+            }
+
+            commandWindow = m_lastSystemMenuWindow;
+        }
+        else if (data->hwnd && IsWindow(data->hwnd))
+        {
+            commandWindow = data->hwnd;
+        }
+        else
+        {
+            return;
+        }
+
+        ProcessCommand(commandWindow);
     }
     return;
     default:

@@ -45,6 +45,7 @@ private:
 
     static inline AlwaysOnTop* s_instance = nullptr;
     std::vector<HWINEVENTHOOK> m_staticWinEventHooks{};
+    std::vector<HWINEVENTHOOK> m_systemMenuWinEventHooks{};
     Sound m_sound;
     VirtualDesktopUtils m_virtualDesktopUtils;
 
@@ -80,6 +81,7 @@ private:
     void RegisterHotkey() const;
     void RegisterLLKH();
     void SubscribeToEvents();
+    void UpdateSystemMenuEventHooks(bool enable);
 
     void ProcessCommand(HWND window);
     void StartTrackingTopmostWindows();
