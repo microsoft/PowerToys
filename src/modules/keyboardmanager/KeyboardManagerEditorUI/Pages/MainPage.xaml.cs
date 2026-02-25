@@ -389,11 +389,11 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
-        private void DeleteShortcutMapping(List<string> originalKeys)
+        private void DeleteShortcutMapping(List<string> originalKeys, string targetApp = "")
         {
             bool deleted = originalKeys.Count == 1
                 ? DeleteSingleKeyMapping(originalKeys[0])
-                : DeleteMultiKeyMapping(originalKeys);
+                : DeleteMultiKeyMapping(originalKeys, targetApp);
 
             if (deleted)
             {
@@ -407,10 +407,10 @@ namespace KeyboardManagerEditorUI.Pages
             return originalKey != 0 && _mappingService.DeleteSingleKeyMapping(originalKey);
         }
 
-        private bool DeleteMultiKeyMapping(List<string> originalKeys)
+        private bool DeleteMultiKeyMapping(List<string> originalKeys, string targetApp = "")
         {
             string originalKeysString = string.Join(";", originalKeys.Select(k => _mappingService!.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-            return _mappingService!.DeleteShortcutMapping(originalKeysString);
+            return _mappingService!.DeleteShortcutMapping(originalKeysString, targetApp);
         }
 
         private bool SaveKeyOrShortcutMapping(List<string> triggerKeys)
@@ -638,7 +638,7 @@ namespace KeyboardManagerEditorUI.Pages
         private bool DeleteMultiKeyShortcut(IToggleableShortcut shortcut)
         {
             string originalKeys = string.Join(";", shortcut.Shortcut.Select(k => _mappingService!.GetKeyCodeFromName(k)));
-            return _mappingService!.DeleteShortcutMapping(originalKeys);
+            return _mappingService!.DeleteShortcutMapping(originalKeys, shortcut.AppName);
         }
 
         #endregion
@@ -750,8 +750,9 @@ namespace KeyboardManagerEditorUI.Pages
 
             RemappingList.Clear();
 
-            foreach (var shortcutSettings in SettingsManager.GetShortcutSettingsByOperationType(ShortcutOperationType.RemapShortcut))
+            foreach (var id in SettingsManager.EditorSettings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut])
             {
+                ShortcutSettings shortcutSettings = SettingsManager.EditorSettings.ShortcutSettingsDictionary[id];
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
                 var originalKeyNames = ParseKeyCodes(mapping.OriginalKeys);
                 var remappedKeyNames = ParseKeyCodes(mapping.TargetKeys);
@@ -777,8 +778,9 @@ namespace KeyboardManagerEditorUI.Pages
 
             TextMappings.Clear();
 
-            foreach (var shortcutSettings in SettingsManager.GetShortcutSettingsByOperationType(ShortcutOperationType.RemapText))
+            foreach (var id in SettingsManager.EditorSettings.ShortcutsByOperationType[ShortcutOperationType.RemapText])
             {
+                ShortcutSettings shortcutSettings = SettingsManager.EditorSettings.ShortcutSettingsDictionary[id];
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
                 var originalKeyNames = ParseKeyCodes(mapping.OriginalKeys);
 
@@ -803,8 +805,9 @@ namespace KeyboardManagerEditorUI.Pages
 
             ProgramShortcuts.Clear();
 
-            foreach (var shortcutSettings in SettingsManager.GetShortcutSettingsByOperationType(ShortcutOperationType.RunProgram))
+            foreach (var id in SettingsManager.EditorSettings.ShortcutsByOperationType[ShortcutOperationType.RunProgram])
             {
+                ShortcutSettings shortcutSettings = SettingsManager.EditorSettings.ShortcutSettingsDictionary[id];
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
                 var originalKeyNames = ParseKeyCodes(mapping.OriginalKeys);
 
@@ -834,8 +837,9 @@ namespace KeyboardManagerEditorUI.Pages
 
             UrlShortcuts.Clear();
 
-            foreach (var shortcutSettings in SettingsManager.GetShortcutSettingsByOperationType(ShortcutOperationType.OpenUri))
+            foreach (var id in SettingsManager.EditorSettings.ShortcutsByOperationType[ShortcutOperationType.OpenUri])
             {
+                ShortcutSettings shortcutSettings = SettingsManager.EditorSettings.ShortcutSettingsDictionary[id];
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
                 var originalKeyNames = ParseKeyCodes(mapping.OriginalKeys);
 
@@ -857,13 +861,6 @@ namespace KeyboardManagerEditorUI.Pages
                 .Where(keyCode => int.TryParse(keyCode, out int code))
                 .Select(keyCode => _mappingService!.GetKeyDisplayName(int.Parse(keyCode, CultureInfo.InvariantCulture)))
                 .ToList();
-        }
-
-        private static string GetKeyDisplayNameFromCode(int keyCode)
-        {
-            var keyName = new StringBuilder(64);
-            GetKeyDisplayName(keyCode, keyName, keyName.Capacity);
-            return keyName.ToString();
         }
 
         #endregion

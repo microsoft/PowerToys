@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using KeyboardManagerEditorUI.Interop;
 using KeyboardManagerEditorUI.Settings;
 
@@ -39,49 +37,37 @@ namespace KeyboardManagerEditorUI.Helpers
             bool isEditMode = false,
             Remapping? editingRemapping = null)
         {
-            // Check if original keys are empty
             if (originalKeys == null || originalKeys.Count == 0)
             {
                 return ValidationErrorType.EmptyOriginalKeys;
             }
 
-            // Check if remapped keys are empty
             if (remappedKeys == null || remappedKeys.Count == 0)
             {
                 return ValidationErrorType.EmptyRemappedKeys;
             }
 
-            // Check if shortcut contains only modifier keys
             if ((originalKeys.Count > 1 && ContainsOnlyModifierKeys(originalKeys)) ||
                 (remappedKeys.Count > 1 && ContainsOnlyModifierKeys(remappedKeys)))
             {
                 return ValidationErrorType.ModifierOnly;
             }
 
-            // Check if app specific is checked but no app name is provided
             if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
             {
                 return ValidationErrorType.EmptyAppName;
             }
 
-            // Check if this is a shortcut (multiple keys) and if it's an illegal combination
-            if (originalKeys.Count > 1)
+            if (originalKeys.Count > 1 && IsIllegalShortcut(originalKeys, mappingService))
             {
-                string shortcutKeysString = string.Join(";", originalKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-
-                if (KeyboardManagerInterop.IsShortcutIllegal(shortcutKeysString))
-                {
-                    return ValidationErrorType.IllegalShortcut;
-                }
+                return ValidationErrorType.IllegalShortcut;
             }
 
-            // Check for duplicate mappings
             if (IsDuplicateMapping(originalKeys, isEditMode, mappingService))
             {
                 return ValidationErrorType.DuplicateMapping;
             }
 
-            // Check for self-mapping
             if (IsSelfMapping(originalKeys, remappedKeys, mappingService))
             {
                 return ValidationErrorType.SelfMapping;
@@ -98,39 +84,29 @@ namespace KeyboardManagerEditorUI.Helpers
             KeyboardMappingService mappingService,
             bool isEditMode = false)
         {
-            // Check if original keys are empty
             if (keys == null || keys.Count == 0)
             {
                 return ValidationErrorType.EmptyOriginalKeys;
             }
 
-            // Check if text content is empty
             if (string.IsNullOrWhiteSpace(textContent))
             {
                 return ValidationErrorType.EmptyTargetText;
             }
 
-            // Check if shortcut contains only modifier keys
             if (keys.Count > 1 && ContainsOnlyModifierKeys(keys))
             {
                 return ValidationErrorType.ModifierOnly;
             }
 
-            // Check if app specific is checked but no app name is provided
             if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
             {
                 return ValidationErrorType.EmptyAppName;
             }
 
-            // Check if this is a shortcut (multiple keys) and if it's an illegal combination
-            if (keys.Count > 1)
+            if (keys.Count > 1 && IsIllegalShortcut(keys, mappingService))
             {
-                string shortcutKeysString = string.Join(";", keys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-
-                if (KeyboardManagerInterop.IsShortcutIllegal(shortcutKeysString))
-                {
-                    return ValidationErrorType.IllegalShortcut;
-                }
+                return ValidationErrorType.IllegalShortcut;
             }
 
             if (IsDuplicateMapping(keys, isEditMode, mappingService))
@@ -138,31 +114,7 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.DuplicateMapping;
             }
 
-            // No errors found
             return ValidationErrorType.NoError;
-        }
-
-        public static ValidationErrorType ValidateProgramOrUrlMapping(
-            List<string> originalKeys,
-            bool isAppSpecific,
-            string appName,
-            KeyboardMappingService mappingService,
-            bool isEditMode = false,
-            Remapping? editingRemapping = null)
-        {
-            if (originalKeys.Count < 2)
-            {
-                return ValidationErrorType.OneKeyMapping;
-            }
-
-            ValidationErrorType error = ValidateKeyMapping(originalKeys, originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingRemapping);
-
-            if (error == ValidationErrorType.SelfMapping)
-            {
-                return ValidationErrorType.NoError;
-            }
-
-            return error;
         }
 
         public static ValidationErrorType ValidateUrlMapping(
@@ -202,26 +154,21 @@ namespace KeyboardManagerEditorUI.Helpers
         public static bool IsDuplicateMapping(List<string> keys, bool isEditMode, KeyboardMappingService mappingService)
         {
             int upperLimit = isEditMode ? 1 : 0;
-            string shortcutKeysString = string.Join(";", keys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-            return SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values.Count(settings => KeyboardManagerInterop.AreShortcutsEqual(settings.Shortcut.OriginalKeys, shortcutKeysString)) > upperLimit;
+            string shortcutKeysString = BuildKeyCodeString(keys, mappingService);
+            return SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values
+                .Count(settings => KeyboardManagerInterop.AreShortcutsEqual(settings.Shortcut.OriginalKeys, shortcutKeysString)) > upperLimit;
         }
 
         public static bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys, KeyboardMappingService mappingService)
         {
-            if (mappingService == null)
-            {
-                return false;
-            }
-
-            // If either list is empty, it's not a self-mapping
-            if (originalKeys == null || remappedKeys == null ||
+            if (mappingService == null || originalKeys == null || remappedKeys == null ||
                 originalKeys.Count == 0 || remappedKeys.Count == 0)
             {
                 return false;
             }
 
-            string originalKeysString = string.Join(";", originalKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-            string remappedKeysString = string.Join(";", remappedKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+            string originalKeysString = BuildKeyCodeString(originalKeys, mappingService);
+            string remappedKeysString = BuildKeyCodeString(remappedKeys, mappingService);
 
             return KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, remappedKeysString);
         }
@@ -233,25 +180,17 @@ namespace KeyboardManagerEditorUI.Helpers
                 return false;
             }
 
-            foreach (string key in keys)
+            return keys.All(key =>
             {
                 int keyCode = KeyboardManagerInterop.GetKeyCodeFromName(key);
                 var keyType = (KeyType)KeyboardManagerInterop.GetKeyType(keyCode);
-
-                // If any key is an action key, return false
-                if (keyType == KeyType.Action)
-                {
-                    return false;
-                }
-            }
-
-            // All keys are modifier keys
-            return true;
+                return keyType != KeyType.Action;
+            });
         }
 
         public static bool IsKeyOrphaned(int originalKey, KeyboardMappingService mappingService)
         {
-            // Check all single key mappings
+            // Check single key mappings
             foreach (var mapping in mappingService.GetSingleKeyMappings())
             {
                 if (!mapping.IsShortcut && int.TryParse(mapping.TargetKey, out int targetKey) && targetKey == originalKey)
@@ -260,7 +199,7 @@ namespace KeyboardManagerEditorUI.Helpers
                 }
             }
 
-            // Check all shortcut mappings
+            // Check shortcut mappings
             foreach (var mapping in mappingService.GetShortcutMappings())
             {
                 string[] targetKeys = mapping.TargetKeys.Split(';');
@@ -270,8 +209,36 @@ namespace KeyboardManagerEditorUI.Helpers
                 }
             }
 
-            // No mapping found for the original key
             return true;
+        }
+
+        private static ValidationErrorType ValidateProgramOrUrlMapping(
+            List<string> originalKeys,
+            bool isAppSpecific,
+            string appName,
+            KeyboardMappingService mappingService,
+            bool isEditMode = false,
+            Remapping? editingRemapping = null)
+        {
+            if (originalKeys.Count < 2)
+            {
+                return ValidationErrorType.OneKeyMapping;
+            }
+
+            ValidationErrorType error = ValidateKeyMapping(originalKeys, originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingRemapping);
+
+            return error == ValidationErrorType.SelfMapping ? ValidationErrorType.NoError : error;
+        }
+
+        private static bool IsIllegalShortcut(List<string> keys, KeyboardMappingService mappingService)
+        {
+            string shortcutKeysString = BuildKeyCodeString(keys, mappingService);
+            return KeyboardManagerInterop.IsShortcutIllegal(shortcutKeysString);
+        }
+
+        private static string BuildKeyCodeString(List<string> keys, KeyboardMappingService mappingService)
+        {
+            return string.Join(";", keys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
         }
     }
 }
