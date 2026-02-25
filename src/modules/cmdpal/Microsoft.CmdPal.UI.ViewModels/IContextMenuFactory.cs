@@ -10,7 +10,7 @@ public interface IContextMenuFactory
 {
     List<IContextItemViewModel> UnsafeBuildAndInitMoreCommands(IContextItem[] items, CommandItemViewModel commandItem);
 
-    void UnsafeAddAndInitMoreTopLevelCommands(
+    void AddMoreCommandsToTopLevel(
         TopLevelViewModel topLevelItem,
         ICommandProviderContext providerContext,
         List<IContextItem?> contextItems);

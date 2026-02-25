@@ -24,6 +24,14 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         _topLevelCommandManager = topLevelCommandManager;
     }
 
+    /// <summary>
+    /// Constructs the view models for the MoreCommands of a
+    /// CommandItemViewModel. In our case, we can use our settings to add a
+    /// contextually-relevant pin/unpin command to this item.
+    ///
+    /// This is called on all CommandItemViewModels. There are however some
+    /// weird edge cases we need to handle, concerning
+    /// </summary>
     public List<IContextItemViewModel> UnsafeBuildAndInitMoreCommands(
         IContextItem[] items,
         CommandItemViewModel commandItem)
@@ -99,11 +107,15 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     /// Called to create the context menu on TopLevelViewModels.
     ///
     /// These are handled differently from everyone else. With
-    /// TopLevelViewModels, the ID isn't on the Command, it's on the TLVM
-    /// itself.
+    /// TopLevelViewModels, the ID isn't on the Command, it is on the TLVM
+    /// itself. Basically, we can't figure out how to add pin/unpin commands
+    /// directly attached to the ICommandItems that we get from the API.
     ///
+    /// Instead, this method is used to extend the set of IContextItems that are
+    /// added to the TLVM itself. This lets us pin/unpin the generated ID of the
+    /// TLVM, even if the command didn't have one.
     /// </summary>
-    public void UnsafeAddAndInitMoreTopLevelCommands(
+    public void AddMoreCommandsToTopLevel(
         TopLevelViewModel topLevelItem,
         ICommandProviderContext providerContext,
         List<IContextItem?> contextItems)
