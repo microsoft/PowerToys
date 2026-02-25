@@ -176,10 +176,10 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         }
         else
         {
+            var dockItem = new DockItemViewModel(_rootItem, _showTitles, _showSubtitles, _contextMenuFactory);
+            dockItem.SlowInitializeProperties();
             DoOnUiThread(() =>
             {
-                var dockItem = new DockItemViewModel(_rootItem, _showTitles, _showSubtitles, _contextMenuFactory);
-                dockItem.SlowInitializeProperties();
                 Items.Add(dockItem);
             });
         }

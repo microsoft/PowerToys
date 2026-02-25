@@ -234,8 +234,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     internal void InitializeProperties()
     {
-        ItemViewModel.SlowInitializeProperties();
+        // Init first, so that we get the ID & titles,
+        // then generate the ID,
+        // then slow init for the context menu
+        ItemViewModel.InitializeProperties();
         GenerateId();
+        ItemViewModel.SlowInitializeProperties();
 
         if (IsFallback)
         {
