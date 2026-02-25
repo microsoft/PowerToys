@@ -19,6 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
         private readonly IQuickAccessLauncher _launcher;
         private readonly Func<ModuleType, bool> _isModuleGpoDisabled;
+        private readonly Func<ModuleType, bool> _isModuleGpoEnabled;
         private readonly ResourceLoader _resourceLoader;
         private readonly DispatcherQueue _dispatcherQueue;
         private GeneralSettings _generalSettings;
@@ -29,11 +30,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             ISettingsRepository<GeneralSettings> settingsRepository,
             IQuickAccessLauncher launcher,
             Func<ModuleType, bool> isModuleGpoDisabled,
+            Func<ModuleType, bool> isModuleGpoEnabled,
             ResourceLoader resourceLoader)
         {
             _settingsRepository = settingsRepository;
             _launcher = launcher;
             _isModuleGpoDisabled = isModuleGpoDisabled;
+            _isModuleGpoEnabled = isModuleGpoEnabled;
             _resourceLoader = resourceLoader;
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
@@ -85,7 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 Title = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType)),
                 Tag = moduleType,
-                Visible = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType),
+                Visible = _isModuleGpoEnabled(moduleType) || Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType),
                 Description = GetModuleToolTip(moduleType),
                 Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                 Command = new RelayCommand(() => _launcher.Launch(moduleType)),
@@ -111,7 +114,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 if (item.Tag is ModuleType moduleType)
                 {
-                    item.Visible = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType);
+                    item.Visible = _isModuleGpoEnabled(moduleType) || Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType);
                 }
             }
         }

@@ -124,6 +124,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _settingsRepository,
                 new Microsoft.PowerToys.Settings.UI.Controls.QuickAccessLauncher(App.IsElevated),
                 moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Enabled,
                 resourceLoader);
 
             BuildModuleList();
