@@ -495,7 +495,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             }
         }
 
-        _contextMenuFactory.UnsafeAddAndInitMoreTopLevelCommands(this, this.ProviderContext, contextItems);
+        _contextMenuFactory.AddMoreCommandsToTopLevel(this, this.ProviderContext, contextItems);
 
         return contextItems.ToArray();
     }
