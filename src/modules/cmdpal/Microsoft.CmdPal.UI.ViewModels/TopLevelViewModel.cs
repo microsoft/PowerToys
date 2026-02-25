@@ -8,7 +8,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
-using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
@@ -26,7 +25,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
-    private readonly DockViewModel? _dockViewModel;
+    private readonly IContextMenuFactory _contextMenuFactory;
 
     public ICommandProviderContext ProviderContext { get; private set; }
 
@@ -211,13 +210,16 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         SettingsModel settings,
         ProviderSettings providerSettings,
         IServiceProvider serviceProvider,
-        ICommandItem? commandItem)
+        ICommandItem? commandItem,
+        IContextMenuFactory? contextMenuFactory)
     {
         _serviceProvider = serviceProvider;
         _settings = settings;
         _providerSettings = providerSettings;
         ProviderContext = commandProviderContext;
         _commandItemViewModel = item;
+
+        _contextMenuFactory = contextMenuFactory ?? DefaultContextMenuFactory.Instance;
 
         IsFallback = topLevelType == TopLevelType.Fallback;
         IsDockBand = topLevelType == TopLevelType.DockBand;
@@ -228,8 +230,6 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
 
         item.PropertyChangedBackground += Item_PropertyChanged;
-
-        _dockViewModel = serviceProvider.GetService<DockViewModel>();
     }
 
     internal void InitializeProperties()
@@ -494,6 +494,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
                 contextItems.Add(commandItem.Model.Unsafe);
             }
         }
+
+        _contextMenuFactory.UnsafeAddAndInitMoreTopLevelCommands(this, this.ProviderContext, contextItems);
 
         return contextItems.ToArray();
     }

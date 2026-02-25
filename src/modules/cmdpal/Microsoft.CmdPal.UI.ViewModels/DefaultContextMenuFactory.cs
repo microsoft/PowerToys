@@ -40,4 +40,12 @@ public partial class DefaultContextMenuFactory : IContextMenuFactory
 
         return results;
     }
+
+    public void UnsafeAddAndInitMoreTopLevelCommands(
+        TopLevelViewModel topLevelItem,
+        ICommandProviderContext providerContext,
+        List<IContextItem?> contextItems)
+    {
+        // do nothing
+    }
 }
