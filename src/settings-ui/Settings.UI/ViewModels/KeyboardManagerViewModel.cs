@@ -180,7 +180,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                [ModuleName] = [ToggleShortcut],
+                [ModuleName] = [ToggleShortcut, EditorShortcut],
             };
 
             return hotkeysDict;
@@ -218,6 +218,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Settings.Properties.UseNewEditor = value;
                     OnPropertyChanged(nameof(UseNewEditor));
                     NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings EditorShortcut
+        {
+            get => Settings.Properties.EditorShortcut;
+            set
+            {
+                if (value != Settings.Properties.EditorShortcut)
+                {
+                    Settings.Properties.EditorShortcut = value == null ? Settings.Properties.DefaultEditorShortcut : value;
+
+                    OnPropertyChanged(nameof(EditorShortcut));
+                    NotifySettingsChanged();
+
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            KeyboardManagerSettings.ModuleName,
+                            JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.KeyboardManagerSettings)));
                 }
             }
         }

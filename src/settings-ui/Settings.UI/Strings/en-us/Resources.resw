@@ -1909,6 +1909,12 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
 	<data name="KeyboardManager_Editor_Shortcut.Header" xml:space="preserve">
     <value>Editor shortcut</value>
   </data>
+	<data name="KeyboardManager_Editor_Open_Shortcut.Header" xml:space="preserve">
+    <value>Open editor shortcut</value>
+  </data>
+	<data name="KeyboardManager_Editor_Open_Shortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to open the Keyboard Manager editor</value>
+  </data>
 	<data name="KeyboardManager_LaunchEditor_Button.Content" xml:space="preserve">
     <value>Open editor</value>
   </data>	

@@ -37,6 +37,7 @@ namespace
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ToggleShortcut";
+    const wchar_t JSON_KEY_EDITOR_SHORTCUT[] = L"EditorShortcut";
     const wchar_t JSON_KEY_USE_NEW_EDITOR[] = L"useNewEditor";
 }
 
@@ -56,6 +57,9 @@ private:
 
     // Hotkey for toggling the module
     Hotkey m_hotkey = { .key = 0 };
+
+    // Hotkey for opening the editor
+    Hotkey m_editorHotkey = { .key = 0 };
 
     // Whether to use the new WinUI3 editor
     bool m_useNewEditor = false;
@@ -178,6 +182,35 @@ private:
             m_hotkey.ctrl = false;
             m_hotkey.alt = false;
             m_hotkey.key = 'K';
+        }
+
+        // Parse editor shortcut
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                auto jsonEditorHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES)
+                                                  .GetNamedObject(JSON_KEY_EDITOR_SHORTCUT);
+                m_editorHotkey.win = jsonEditorHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                m_editorHotkey.alt = jsonEditorHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                m_editorHotkey.shift = jsonEditorHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                m_editorHotkey.ctrl = jsonEditorHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                m_editorHotkey.key = static_cast<unsigned char>(jsonEditorHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize Keyboard Manager editor shortcut");
+            }
+        }
+
+        if (!m_editorHotkey.key)
+        {
+            // Set default: Win+Shift+Q
+            m_editorHotkey.win = true;
+            m_editorHotkey.shift = true;
+            m_editorHotkey.ctrl = false;
+            m_editorHotkey.alt = false;
+            m_editorHotkey.key = 'Q';
         }
 
         // Parse useNewEditor setting
@@ -343,21 +376,32 @@ public:
         return false;
     }
 
-    // Return the invocation hotkey for toggling
+    // Return the invocation hotkeys for toggling and opening the editor
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
+        size_t count = 0;
+
+        // Hotkey 0: toggle engine
         if (m_hotkey.key)
         {
-            if (hotkeys && buffer_size >= 1)
+            if (hotkeys && buffer_size > count)
             {
-                hotkeys[0] = m_hotkey;
+                hotkeys[count] = m_hotkey;
             }
-            return 1;
+            count++;
         }
-        else
+
+        // Hotkey 1: open editor (only when using new editor)
+        if (m_useNewEditor && m_editorHotkey.key)
         {
-            return 0;
+            if (hotkeys && buffer_size > count)
+            {
+                hotkeys[count] = m_editorHotkey;
+            }
+            count++;
         }
+
+        return count;
     }
 
     bool launch_editor()
@@ -406,7 +450,7 @@ public:
     }
 
     // Process the hotkey event
-    virtual bool on_hotkey(size_t /*hotkeyId*/) override
+    virtual bool on_hotkey(size_t hotkeyId) override
     {
         if (!m_enabled)
         {
@@ -421,12 +465,9 @@ public:
         }
         m_lastHotkeyToggleTime = now;
 
-        if (m_useNewEditor)
+        if (hotkeyId == 0)
         {
-            launch_editor();
-        }
-        else
-        {
+            // Toggle engine on/off
             refresh_process_state();
             if (m_active)
             {
@@ -436,6 +477,11 @@ public:
             {
                 start_engine();
             }
+        }
+        else if (hotkeyId == 1)
+        {
+            // Open the new editor (only in new editor mode)
+            launch_editor();
         }
 
         return true;
