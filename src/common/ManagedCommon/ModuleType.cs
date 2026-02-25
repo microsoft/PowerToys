@@ -12,6 +12,7 @@ namespace ManagedCommon
         ColorPicker,
         CmdPal,
         CropAndLock,
+        CursorWrap,
         EnvironmentVariables,
         FancyZones,
         FileLocksmith,
@@ -29,11 +30,13 @@ namespace ManagedCommon
         PowerRename,
         PowerLauncher,
         PowerAccent,
+        PowerDisplay,
         RegistryPreview,
         MeasureTool,
         ShortcutGuide,
         PowerOCR,
         Workspaces,
         ZoomIt,
+        GeneralSettings,
     }
 }

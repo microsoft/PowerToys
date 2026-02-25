@@ -1,14 +1,14 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Models;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
-
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -22,6 +22,8 @@ public sealed class CommandProviderWrapper
     private readonly ExtensionObject<ICommandProvider> _commandProvider;
 
     private readonly TaskScheduler _taskScheduler;
+
+    private readonly ICommandProviderCache? _commandProviderCache;
 
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
@@ -43,13 +45,7 @@ public sealed class CommandProviderWrapper
 
     public bool IsActive { get; private set; }
 
-    public string ProviderId
-    {
-        get
-        {
-            return string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
-        }
-    }
+    public string ProviderId => string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
 
     public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
@@ -77,9 +73,11 @@ public sealed class CommandProviderWrapper
         Logger.LogDebug($"Initialized command provider {ProviderId}");
     }
 
-    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread)
+    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread, ICommandProviderCache commandProviderCache)
     {
         _taskScheduler = mainThread;
+        _commandProviderCache = commandProviderCache;
+
         Extension = extension;
         ExtensionHost = new CommandPaletteHost(extension);
         if (!Extension.IsRunning())
@@ -128,47 +126,58 @@ public sealed class CommandProviderWrapper
         if (!isValid)
         {
             IsActive = false;
+            RecallFromCache();
             return;
         }
 
         var settings = serviceProvider.GetService<SettingsModel>()!;
 
-        IsActive = GetProviderSettings(settings).IsEnabled;
+        var providerSettings = GetProviderSettings(settings);
+        IsActive = providerSettings.IsEnabled;
         if (!IsActive)
         {
+            RecallFromCache();
             return;
         }
 
-        ICommandItem[]? commands = null;
-        IFallbackCommandItem[]? fallbacks = null;
-
+        var displayInfoInitialized = false;
         try
         {
             var model = _commandProvider.Unsafe!;
 
-            Task<ICommandItem[]> t = new(model.TopLevelCommands);
-            t.Start();
-            commands = await t.ConfigureAwait(false);
+            Task<ICommandItem[]> loadTopLevelCommandsTask = new(model.TopLevelCommands);
+            loadTopLevelCommandsTask.Start();
+            var commands = await loadTopLevelCommandsTask.ConfigureAwait(false);
 
             // On a BG thread here
-            fallbacks = model.FallbackCommands();
+            var fallbacks = model.FallbackCommands();
 
             if (model is ICommandProvider2 two)
             {
                 UnsafePreCacheApiAdditions(two);
             }
 
+            // Load pinned commands from saved settings
+            var pinnedCommands = LoadPinnedCommands(model, providerSettings);
+
             Id = model.Id;
             DisplayName = model.DisplayName;
             Icon = new(model.Icon);
             Icon.InitializeProperties();
+            displayInfoInitialized = true;
+
+            // Update cached display name
+            if (_commandProviderCache is not null && Extension?.ExtensionUniqueId is not null)
+            {
+                _commandProviderCache.Memorize(Extension.ExtensionUniqueId, new CommandProviderCacheItem(model.DisplayName));
+            }
 
             // Note: explicitly not InitializeProperties()ing the settings here. If
             // we do that, then we'd regress GH #38321
             Settings = new(model.Settings, this, _taskScheduler);
 
             // We do need to explicitly initialize commands though
-            InitializeCommands(commands, fallbacks, serviceProvider, pageContext);
+            InitializeCommands(commands, fallbacks, pinnedCommands, serviceProvider, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -177,28 +186,55 @@ public sealed class CommandProviderWrapper
             Logger.LogError("Failed to load commands from extension");
             Logger.LogError($"Extension was {Extension!.PackageFamilyName}");
             Logger.LogError(e.ToString());
+
+            if (!displayInfoInitialized)
+            {
+                RecallFromCache();
+            }
         }
     }
 
-    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    private void RecallFromCache()
+    {
+        var cached = _commandProviderCache?.Recall(ProviderId);
+        if (cached is not null)
+        {
+            DisplayName = cached.DisplayName;
+        }
+
+        if (string.IsNullOrWhiteSpace(DisplayName))
+        {
+            DisplayName = Extension?.PackageDisplayName ?? Extension?.PackageFamilyName ?? ProviderId;
+        }
+    }
+
+    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, ICommandItem[] pinnedCommands, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
         var providerSettings = GetProviderSettings(settings);
-
-        Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
+        var ourContext = GetProviderContext();
+        var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ourContext, settings, providerSettings, serviceProvider, i);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
         };
+
+        var topLevelList = new List<TopLevelViewModel>();
+
         if (commands is not null)
         {
-            TopLevelItems = commands
-                .Select(c => makeAndAdd(c, false))
-                .ToArray();
+            topLevelList.AddRange(commands.Select(c => makeAndAdd(c, false)));
         }
+
+        if (pinnedCommands is not null)
+        {
+            topLevelList.AddRange(pinnedCommands.Select(c => makeAndAdd(c, false)));
+        }
+
+        TopLevelItems = topLevelList.ToArray();
 
         if (fallbacks is not null)
         {
@@ -206,6 +242,32 @@ public sealed class CommandProviderWrapper
                 .Select(c => makeAndAdd(c, true))
                 .ToArray();
         }
+    }
+
+    private ICommandItem[] LoadPinnedCommands(ICommandProvider model, ProviderSettings providerSettings)
+    {
+        var pinnedItems = new List<ICommandItem>();
+
+        if (model is ICommandProvider4 provider4)
+        {
+            foreach (var pinnedId in providerSettings.PinnedCommandIds)
+            {
+                try
+                {
+                    var commandItem = provider4.GetCommandItem(pinnedId);
+                    if (commandItem is not null)
+                    {
+                        pinnedItems.Add(commandItem);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError($"Failed to load pinned command {pinnedId}: {e.Message}");
+                }
+            }
+        }
+
+        return pinnedItems.ToArray();
     }
 
     private void UnsafePreCacheApiAdditions(ICommandProvider2 provider)
@@ -219,6 +281,26 @@ public sealed class CommandProviderWrapper
                 Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
             }
         }
+    }
+
+    public void PinCommand(string commandId, IServiceProvider serviceProvider)
+    {
+        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var providerSettings = GetProviderSettings(settings);
+
+        if (!providerSettings.PinnedCommandIds.Contains(commandId))
+        {
+            providerSettings.PinnedCommandIds.Add(commandId);
+            SettingsModel.SaveSettings(settings);
+
+            // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
+            this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        }
+    }
+
+    public CommandProviderContext GetProviderContext()
+    {
+        return new() { ProviderId = ProviderId };
     }
 
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;

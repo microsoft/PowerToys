@@ -5,14 +5,13 @@
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -25,10 +24,10 @@ public sealed partial class ToastWindow : WindowEx,
     IRecipient<QuitMessage>
 {
     private readonly HWND _hwnd;
+    private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+    private readonly HiddenOwnerWindowBehavior _hiddenOwnerWindowBehavior = new();
 
     public ToastViewModel ViewModel { get; } = new();
-
-    private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
 
     public ToastWindow()
     {
@@ -39,12 +38,7 @@ public sealed partial class ToastWindow : WindowEx,
         this.SetIcon();
         AppWindow.Title = RS_.GetString("ToastWindowTitle");
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
-
-        // Tool windows don't show up in ALT+TAB, and don't show up in the taskbar
-        // Since tool windows have smaller corner radii, we need to force the normal ones
-        // to visually match system toasts.
-        this.ToggleExtendedWindowStyle(WINDOW_EX_STYLE.WS_EX_TOOLWINDOW, true);
-        this.SetCornerPreference(DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND);
+        _hiddenOwnerWindowBehavior.ShowInTaskbar(this, false);
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
         PInvoke.EnableWindow(_hwnd, false);

@@ -75,9 +75,61 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE;
     }
+    hstring Constants::AdvancedPasteShowUIEvent()
+    {
+        return CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_EVENT;
+    }
     hstring Constants::AdvancedPasteTerminateAppMessage()
     {
         return CommonSharedConstants::ADVANCED_PASTE_TERMINATE_APP_MESSAGE;
+    }
+    hstring Constants::AlwaysOnTopPinEvent()
+    {
+        return CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT;
+    }
+    hstring Constants::FindMyMouseTriggerEvent()
+    {
+        return CommonSharedConstants::FIND_MY_MOUSE_TRIGGER_EVENT;
+    }
+    hstring Constants::MouseHighlighterTriggerEvent()
+    {
+        return CommonSharedConstants::MOUSE_HIGHLIGHTER_TRIGGER_EVENT;
+    }
+    hstring Constants::MouseCrosshairsTriggerEvent()
+    {
+        return CommonSharedConstants::MOUSE_CROSSHAIRS_TRIGGER_EVENT;
+    }
+    hstring Constants::CursorWrapTriggerEvent()
+    {
+        return CommonSharedConstants::CURSOR_WRAP_TRIGGER_EVENT;
+    }
+    hstring Constants::LightSwitchToggleEvent()
+    {
+        return CommonSharedConstants::LIGHTSWITCH_TOGGLE_EVENT;
+    }
+    hstring Constants::ZoomItZoomEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_ZOOM_EVENT;
+    }
+    hstring Constants::ZoomItDrawEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_DRAW_EVENT;
+    }
+    hstring Constants::ZoomItBreakEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_BREAK_EVENT;
+    }
+    hstring Constants::ZoomItLiveZoomEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_LIVEZOOM_EVENT;
+    }
+    hstring Constants::ZoomItSnipEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_SNIP_EVENT;
+    }
+    hstring Constants::ZoomItRecordEvent()
+    {
+        return CommonSharedConstants::ZOOMIT_RECORD_EVENT;
     }
     hstring Constants::ShowPowerOCRSharedEvent()
     {
@@ -171,6 +223,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT;
     }
+    hstring Constants::CropAndLockScreenshotEvent()
+    {
+        return CommonSharedConstants::CROP_AND_LOCK_SCREENSHOT_EVENT;
+    }
     hstring Constants::ShowEnvironmentVariablesSharedEvent()
     {
         return CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_EVENT;
@@ -194,5 +250,41 @@ namespace winrt::PowerToys::Interop::implementation
     hstring Constants::ShowCmdPalEvent()
     {
         return CommonSharedConstants::CMDPAL_SHOW_EVENT;
+    }
+    hstring Constants::TogglePowerDisplayEvent()
+    {
+        return CommonSharedConstants::TOGGLE_POWER_DISPLAY_EVENT;
+    }
+    hstring Constants::TerminatePowerDisplayEvent()
+    {
+        return CommonSharedConstants::TERMINATE_POWER_DISPLAY_EVENT;
+    }
+    hstring Constants::RefreshPowerDisplayMonitorsEvent()
+    {
+        return CommonSharedConstants::REFRESH_POWER_DISPLAY_MONITORS_EVENT;
+    }
+    hstring Constants::SettingsUpdatedPowerDisplayEvent()
+    {
+        return CommonSharedConstants::SETTINGS_UPDATED_POWER_DISPLAY_EVENT;
+    }
+    hstring Constants::PowerDisplaySendSettingsTelemetryEvent()
+    {
+        return CommonSharedConstants::POWER_DISPLAY_SEND_SETTINGS_TELEMETRY_EVENT;
+    }
+    hstring Constants::HotkeyUpdatedPowerDisplayEvent()
+    {
+        return CommonSharedConstants::HOTKEY_UPDATED_POWER_DISPLAY_EVENT;
+    }
+    hstring Constants::PowerDisplayToggleMessage()
+    {
+        return CommonSharedConstants::POWER_DISPLAY_TOGGLE_MESSAGE;
+    }
+    hstring Constants::PowerDisplayApplyProfileMessage()
+    {
+        return CommonSharedConstants::POWER_DISPLAY_APPLY_PROFILE_MESSAGE;
+    }
+    hstring Constants::PowerDisplayTerminateAppMessage()
+    {
+        return CommonSharedConstants::POWER_DISPLAY_TERMINATE_APP_MESSAGE;
     }
 }

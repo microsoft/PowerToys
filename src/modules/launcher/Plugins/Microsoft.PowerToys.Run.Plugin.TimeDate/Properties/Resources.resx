@@ -208,7 +208,7 @@
     <comment>'UTC' means here 'Universal Time Convention'</comment>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_description" xml:space="preserve">
-    <value>Provides time and date values for the system time or a custom time stamp (e.g.'{0}', '{1}', '{2}', '{3}')</value>
+    <value>Shows time and date values for the system time or a custom time stamp (e.g.'{0}', '{1}', '{2}', '{3}')</value>
     <comment>Do not translate the placeholders like '{0}' because it will be replaced in code.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_plugin_description_example_calendarWeek" xml:space="preserve">

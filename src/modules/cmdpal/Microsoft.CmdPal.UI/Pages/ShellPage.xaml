@@ -6,17 +6,16 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:h="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
-    xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -27,6 +26,7 @@
                 EmptyValue="Collapsed"
                 NotEmptyValue="Visible" />
 
+            <cmdpalUI:DetailsSizeToGridLengthConverter x:Key="SizeToWidthConverter" />
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
 
             <cmdpalUI:DetailsDataTemplateSelector
@@ -66,7 +66,7 @@
                 <Setter Property="TextWrapping" Value="WrapWholeWords" />
             </Style>
 
-            <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
+            <DataTemplate x:Key="TagTemplate" x:DataType="viewModels:TagViewModel">
                 <cpcontrols:Tag
                     HorizontalAlignment="Left"
                     AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
@@ -78,7 +78,7 @@
                     ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
             </DataTemplate>
 
-            <DataTemplate x:Key="CommandTemplate" x:DataType="coreViewModels:CommandViewModel">
+            <DataTemplate x:Key="CommandTemplate" x:DataType="viewModels:CommandViewModel">
                 <StackPanel Orientation="Vertical">
                     <Button
                         Name="Command"
@@ -92,14 +92,14 @@
                                 Height="16"
                                 Margin="0,3,8,0"
                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
                             <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind Name}" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
             </DataTemplate>
 
-            <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="coreViewModels:DetailsLinkViewModel">
+            <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="viewModels:DetailsLinkViewModel">
                 <StackPanel Orientation="Vertical">
                     <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <TextBlock
@@ -115,7 +115,7 @@
                     </HyperlinkButton>
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="coreViewModels:DetailsCommandsViewModel">
+            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="viewModels:DetailsCommandsViewModel">
                 <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <ItemsControl
@@ -124,21 +124,21 @@
                         Visibility="{x:Bind HasCommands, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="coreViewModels:DetailsSeparatorViewModel">
+            <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="viewModels:DetailsSeparatorViewModel">
                 <StackPanel Margin="0,8,8,0" Orientation="Vertical">
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Style="{StaticResource SeparatorKeyTextBlockStyle}"
+                        Text="{x:Bind Key, Mode=OneWay}"
+                        Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Key), Mode=OneWay, FallbackValue=Collapsed}" />
                     <Border
                         Margin="0,0,0,0"
                         BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                        BorderThickness="0,0,0,2">
-                        <TextBlock
-                            Margin="0,0,0,0"
-                            Style="{StaticResource SeparatorKeyTextBlockStyle}"
-                            Text="{x:Bind Key, Mode=OneWay}"
-                            Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Key), FallbackValue=Collapsed}" />
-                    </Border>
+                        BorderThickness="0,0,0,1"
+                        Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToVisible(Key), Mode=OneWay, FallbackValue=Collapsed}" />
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="coreViewModels:DetailsTagsViewModel">
+            <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="viewModels:DetailsTagsViewModel">
                 <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <ItemsControl
@@ -177,7 +177,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+        <Grid Grid.Row="0" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -190,7 +190,7 @@
                 Padding="0,12,0,12"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                BorderBrush="{ThemeResource CmdPal.TopBarBorderBrush}"
                 BorderThickness="0,0,0,1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -296,7 +296,7 @@
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         SourceKey="{x:Bind ViewModel.CurrentPage.Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}"
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
@@ -371,7 +371,7 @@
             <Grid x:Name="ContentGrid" Grid.Row="1">
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="{x:Bind ViewModel.Details.Size, Mode=OneWay, Converter={StaticResource SizeToWidthConverter}}" />
                     <ColumnDefinition x:Name="DetailsColumn" Width="Auto" />
                 </Grid.ColumnDefinitions>
 
@@ -390,7 +390,7 @@
                     HorizontalAlignment="Stretch"
                     ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="{StaticResource ControlCornerRadius}"
                     Visibility="Collapsed">
@@ -429,7 +429,7 @@
                             HorizontalAlignment="Left"
                             AutomationProperties.AccessibilityView="Raw"
                             SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested64}"
                             Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
 
                         <TextBlock
@@ -518,7 +518,7 @@
         <Grid
             Grid.Row="1"
             Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
-            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+            BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0">
             <cpcontrols:CommandBar CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
         </Grid>

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -17,65 +18,24 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
 internal sealed partial class SearchQuery : IDisposable
 {
-    private readonly Lock _lockObject = new(); // Lock object for synchronization
-    private readonly DBPROPIDSET dbPropIdSet;
+    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Indexing Service constant")]
+    private const int QUERY_E_ALLNOISE = unchecked((int)0x80041605);
 
-    private uint reuseWhereID;
-    private EventWaitHandle queryCompletedEvent;
-    private Timer queryTpTimer;
-    private IRowset currentRowset;
-    private IRowset reuseRowset;
+    private readonly Lock _lockObject = new();
 
-    public uint Cookie { get; set; }
+    private IRowset _currentRowset;
+
+    public QueryState State { get; private set; } = QueryState.NotStarted;
+
+    private int? LastHResult { get; set; }
+
+    private string LastErrorMessage { get; set; }
+
+    public uint Cookie { get; private set; }
 
     public string SearchText { get; private set; }
 
     public ConcurrentQueue<SearchResult> SearchResults { get; private set; } = [];
-
-    public SearchQuery()
-    {
-        dbPropIdSet = new DBPROPIDSET
-        {
-            rgPropertyIDs = Marshal.AllocCoTaskMem(sizeof(uint)), // Allocate memory for the property ID array
-            cPropertyIDs = 1,
-            guidPropertySet = new Guid("AA6EE6B0-E828-11D0-B23E-00AA0047FC01"), // DBPROPSET_MSIDXS_ROWSETEXT,
-        };
-
-        // Copy the property ID into the allocated memory
-        Marshal.WriteInt32(dbPropIdSet.rgPropertyIDs, 8); // MSIDXSPROP_WHEREID
-
-        Init();
-    }
-
-    private void Init()
-    {
-        // Create all the objects we will want cached
-        try
-        {
-            queryTpTimer = new Timer(QueryTimerCallback, this, Timeout.Infinite, Timeout.Infinite);
-            if (queryTpTimer is null)
-            {
-                Logger.LogError("Failed to create query timer");
-                return;
-            }
-
-            queryCompletedEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
-            if (queryCompletedEvent is null)
-            {
-                Logger.LogError("Failed to create query completed event");
-                return;
-            }
-
-            // Execute a synchronous query on file items to prime the index and keep that handle around
-            PrimeIndexAndCacheWhereId();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Exception at SearchUXQueryHelper Init", ex);
-        }
-    }
-
-    public void WaitForQueryCompletedEvent() => queryCompletedEvent.WaitOne();
 
     public void CancelOutstandingQueries()
     {
@@ -84,14 +44,7 @@ internal sealed partial class SearchQuery : IDisposable
         // Are we currently doing work? If so, let's cancel
         lock (_lockObject)
         {
-            if (queryTpTimer is not null)
-            {
-                queryTpTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                queryTpTimer.Dispose();
-                queryTpTimer = null;
-            }
-
-            Init();
+            State = QueryState.Cancelled;
         }
     }
 
@@ -102,39 +55,31 @@ internal sealed partial class SearchQuery : IDisposable
         ExecuteSyncInternal();
     }
 
-    public static void QueryTimerCallback(object state)
-    {
-        var pQueryHelper = (SearchQuery)state;
-        pQueryHelper.ExecuteSyncInternal();
-    }
-
     private void ExecuteSyncInternal()
     {
         lock (_lockObject)
         {
-            var queryStr = QueryStringBuilder.GenerateQuery(SearchText, reuseWhereID);
+            State = QueryState.Running;
+            LastHResult = null;
+            LastErrorMessage = null;
+
+            var queryStr = QueryStringBuilder.GenerateQuery(SearchText);
             try
             {
-                // We need to generate a search query string with the search text the user entered above
-                if (currentRowset is not null)
-                {
-                    // We have a previous rowset, this means the user is typing and we should store this
-                    // recapture the where ID from this so the next ExecuteSync call will be faster
-                    reuseRowset = currentRowset;
-                    reuseWhereID = GetReuseWhereId(reuseRowset);
-                }
-
-                currentRowset = ExecuteCommand(queryStr);
+                var result = ExecuteCommand(queryStr);
+                _currentRowset = result.Rowset;
+                State = result.State;
+                LastHResult = result.HResult;
+                LastErrorMessage = result.ErrorMessage;
 
                 SearchResults.Clear();
             }
             catch (Exception ex)
             {
+                State = QueryState.ExecuteFailed;
+                LastHResult = ex.HResult;
+                LastErrorMessage = ex.Message;
                 Logger.LogError("Error executing query", ex);
-            }
-            finally
-            {
-                queryCompletedEvent.Set();
             }
         }
     }
@@ -170,31 +115,68 @@ internal sealed partial class SearchQuery : IDisposable
 
     public bool FetchRows(int offset, int limit)
     {
-        if (currentRowset is null)
+        if (_currentRowset is null)
         {
-            Logger.LogError("No rowset to fetch rows from");
+            var message = $"No rowset to fetch rows from. State={State}, HResult={LastHResult}, Error='{LastErrorMessage}'";
+
+            switch (State)
+            {
+                case QueryState.NoResults:
+                case QueryState.AllNoise:
+                    Logger.LogDebug(message);
+                    break;
+                case QueryState.NotStarted:
+                case QueryState.Cancelled:
+                case QueryState.Running:
+                    Logger.LogInfo(message);
+                    break;
+                default:
+                    Logger.LogError(message);
+                    break;
+            }
+
             return false;
         }
 
-        IGetRow getRow = null;
+        IGetRow getRow;
 
         try
         {
-            getRow = (IGetRow)currentRowset;
+            getRow = (IGetRow)_currentRowset;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            Logger.LogInfo("Reset the current rowset");
+            Logger.LogInfo($"Reset the current rowset. State={State}, HResult={LastHResult}, Error='{LastErrorMessage}'");
+            Logger.LogError("Failed to cast current rowset to IGetRow", ex);
+
             ExecuteSyncInternal();
-            getRow = (IGetRow)currentRowset;
+
+            if (_currentRowset is null)
+            {
+                var message = $"Failed to reset rowset. State={State}, HResult={LastHResult}, Error='{LastErrorMessage}'";
+
+                switch (State)
+                {
+                    case QueryState.NoResults:
+                    case QueryState.AllNoise:
+                        Logger.LogDebug(message);
+                        break;
+                    default:
+                        Logger.LogError(message);
+                        break;
+                }
+
+                return false;
+            }
+
+            getRow = (IGetRow)_currentRowset;
         }
 
-        uint rowCountReturned;
         var prghRows = IntPtr.Zero;
 
         try
         {
-            currentRowset.GetNextRows(IntPtr.Zero, offset, limit, out rowCountReturned, out prghRows);
+            _currentRowset.GetNextRows(IntPtr.Zero, offset, limit, out var rowCountReturned, out prghRows);
 
             if (rowCountReturned == 0)
             {
@@ -215,7 +197,7 @@ internal sealed partial class SearchQuery : IDisposable
                 }
             }
 
-            currentRowset.ReleaseRows(rowCountReturned, rowHandles, IntPtr.Zero, null, null);
+            _currentRowset.ReleaseRows(rowCountReturned, rowHandles, IntPtr.Zero, null, null);
 
             Marshal.FreeCoTaskMem(prghRows);
             prghRows = IntPtr.Zero;
@@ -236,141 +218,91 @@ internal sealed partial class SearchQuery : IDisposable
         }
     }
 
-    private void PrimeIndexAndCacheWhereId()
-    {
-        var queryStr = QueryStringBuilder.GeneratePrimingQuery();
-        var rowset = ExecuteCommand(queryStr);
-        if (rowset is not null)
-        {
-            reuseRowset = rowset;
-            reuseWhereID = GetReuseWhereId(reuseRowset);
-        }
-    }
-
-    private unsafe IRowset ExecuteCommand(string queryStr)
+    private static ExecuteCommandResult ExecuteCommand(string queryStr)
     {
         if (string.IsNullOrEmpty(queryStr))
         {
-            return null;
+            return new ExecuteCommandResult(Rowset: null, State: QueryState.ExecuteFailed, HResult: null, ErrorMessage: "Query string was empty.");
         }
 
         try
         {
-            var session = (IDBCreateSession)DataSourceManager.GetDataSource();
+            var dataSource = DataSourceManager.GetDataSource();
+            if (dataSource is null)
+            {
+                Logger.LogError("GetDataSource returned null");
+                return new ExecuteCommandResult(Rowset: null, State: QueryState.NullDataSource, HResult: null, ErrorMessage: "GetDataSource returned null.");
+            }
+
+            var session = (IDBCreateSession)dataSource;
             var guid = typeof(IDBCreateCommand).GUID;
             session.CreateSession(IntPtr.Zero, ref guid, out var ppDBSession);
 
             if (ppDBSession is null)
             {
                 Logger.LogError("CreateSession failed");
-                return null;
+                return new ExecuteCommandResult(Rowset: null, State: QueryState.CreateSessionFailed, HResult: null, ErrorMessage: "CreateSession returned null session.");
             }
 
             var createCommand = (IDBCreateCommand)ppDBSession;
             guid = typeof(ICommandText).GUID;
-            createCommand.CreateCommand(IntPtr.Zero, ref guid, out ICommandText commandText);
+            createCommand.CreateCommand(IntPtr.Zero, ref guid, out var commandText);
 
             if (commandText is null)
             {
                 Logger.LogError("Failed to get ICommandText interface");
-                return null;
+                return new ExecuteCommandResult(Rowset: null, State: QueryState.CreateCommandFailed, HResult: null, ErrorMessage: "CreateCommand returned null command.");
             }
 
             var riid = NativeHelpers.OleDb.DbGuidDefault;
-
             var irowSetRiid = typeof(IRowset).GUID;
 
             commandText.SetCommandText(ref riid, queryStr);
-            commandText.Execute(null, ref irowSetRiid, null, out var pcRowsAffected, out var rowsetPointer);
+            commandText.Execute(null, ref irowSetRiid, null, out _, out var rowsetPointer);
 
-            return rowsetPointer;
+            return rowsetPointer is null
+                ? new ExecuteCommandResult(Rowset: null, State: QueryState.NoResults, HResult: null, ErrorMessage: null)
+                : new ExecuteCommandResult(Rowset: rowsetPointer, State: QueryState.Completed, HResult: null, ErrorMessage: null);
+        }
+        catch (COMException ex) when (ex.HResult == QUERY_E_ALLNOISE)
+        {
+            Logger.LogDebug($"Query returned all noise, no results. ({queryStr})");
+            return new ExecuteCommandResult(Rowset: null, State: QueryState.AllNoise, HResult: ex.HResult, ErrorMessage: ex.Message);
+        }
+        catch (COMException ex)
+        {
+            Logger.LogError($"Unexpected COM error for query '{queryStr}'.", ex);
+            return new ExecuteCommandResult(Rowset: null, State: QueryState.ExecuteFailed, HResult: ex.HResult, ErrorMessage: ex.Message);
         }
         catch (Exception ex)
         {
-            Logger.LogError("Unexpected error.", ex);
-            return null;
+            Logger.LogError($"Unexpected error for query '{queryStr}'.", ex);
+            return new ExecuteCommandResult(Rowset: null, State: QueryState.ExecuteFailed, HResult: ex.HResult, ErrorMessage: ex.Message);
         }
-    }
-
-    private unsafe DBPROP? GetPropset(IRowsetInfo rowsetInfo)
-    {
-        var prgPropSetsPtr = IntPtr.Zero;
-
-        try
-        {
-            ulong cPropertySets;
-            var res = rowsetInfo.GetProperties(1, [dbPropIdSet], out cPropertySets, out prgPropSetsPtr);
-            if (res != 0)
-            {
-                Logger.LogError($"Error getting properties: {res}");
-                return null;
-            }
-
-            if (cPropertySets == 0 || prgPropSetsPtr == IntPtr.Zero)
-            {
-                Logger.LogError("No property sets returned");
-                return null;
-            }
-
-            var firstPropSetPtr = (DBPROPSET*)prgPropSetsPtr.ToInt64();
-            var propSet = *firstPropSetPtr;
-            if (propSet.cProperties == 0 || propSet.rgProperties == IntPtr.Zero)
-            {
-                return null;
-            }
-
-            var propPtr = (DBPROP*)propSet.rgProperties.ToInt64();
-            return *propPtr;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Exception occurred while getting properties,", ex);
-            return null;
-        }
-        finally
-        {
-            // Free the property sets pointer returned by GetProperties, if necessary
-            if (prgPropSetsPtr != IntPtr.Zero)
-            {
-                Marshal.FreeCoTaskMem(prgPropSetsPtr);
-            }
-        }
-    }
-
-    private uint GetReuseWhereId(IRowset rowset)
-    {
-        var rowsetInfo = (IRowsetInfo)rowset;
-
-        if (rowsetInfo is null)
-        {
-            return 0;
-        }
-
-        var prop = GetPropset(rowsetInfo);
-        if (prop is null)
-        {
-            return 0;
-        }
-
-        if (prop?.vValue.VarType == VarEnum.VT_UI4)
-        {
-            var value = prop?.vValue._ulong;
-            return (uint)value;
-        }
-
-        return 0;
     }
 
     public void Dispose()
     {
         CancelOutstandingQueries();
-
-        // Free the allocated memory for rgPropertyIDs
-        if (dbPropIdSet.rgPropertyIDs != IntPtr.Zero)
-        {
-            Marshal.FreeCoTaskMem(dbPropIdSet.rgPropertyIDs);
-        }
-
-        queryCompletedEvent?.Dispose();
     }
+
+    internal enum QueryState
+    {
+        NotStarted = 0,
+        Running,
+        Completed,
+        NoResults,
+        AllNoise,
+        NullDataSource,
+        CreateSessionFailed,
+        CreateCommandFailed,
+        ExecuteFailed,
+        Cancelled,
+    }
+
+    private readonly record struct ExecuteCommandResult(
+        IRowset Rowset,
+        QueryState State,
+        int? HResult,
+        string ErrorMessage);
 }

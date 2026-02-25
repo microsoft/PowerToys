@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
     <RootNamespace>PowerOCR.UITests</RootNamespace>
 	<ImplicitUsings>enable</ImplicitUsings>
@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-	<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\PowerOCR.UITests\</OutputPath>
+	<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\PowerOCR.UITests\</OutputPath>
   </PropertyGroup>
 	
   <ItemGroup>

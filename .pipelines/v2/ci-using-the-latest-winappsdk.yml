@@ -1,3 +1,8 @@
+# NOTE: When using artifact mode (useArtifactSource: true), the pipeline needs
+# permission to access System.AccessToken. This is automatically handled by the
+# script if SYSTEM_ACCESSTOKEN environment variable is available.
+# If you encounter authentication errors, ensure the job has oauth access enabled.
+
 trigger: none
 pr: none
 schedules:
@@ -19,7 +24,7 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     displayName: "Enable MSBuild Caching"
-    default: true
+    default: false
   - name: runTests
     type: boolean
     displayName: "Run Tests"
@@ -33,10 +38,27 @@ parameters:
     default: true
   - name: winAppSDKVersionNumber
     type: string
-    default: 1.7
+    default: 1.8
   - name: useExperimentalVersion
     type: boolean
     default: false
+  # Artifact mode parameters (optional)
+  - name: useArtifactSource
+    type: boolean
+    displayName: "Use Artifact Source (instead of feed)"
+    default: false
+  - name: buildId
+    type: string
+    displayName: "Windows App SDK Build ID (required only if using artifact source)"
+    default: 'N/A'
+  - name: azureDevOpsProject
+    type: string
+    displayName: "Source Project (for artifact mode, default: ProjectReunion)"
+    default: 'ProjectReunion'
+  - name: artifactName
+    type: string
+    displayName: "Artifact Name (for artifact mode, default: WindowsAppSDK_Nuget_And_MSIX)"
+    default: 'WindowsAppSDK_Nuget_And_MSIX'
 
 extends:
   template: templates/pipeline-ci-build.yml
@@ -49,3 +71,7 @@ extends:
     useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
     winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
     useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+    useArtifactSource: ${{ parameters.useArtifactSource }}
+    buildId: ${{ parameters.buildId }}
+    azureDevOpsProject: ${{ parameters.azureDevOpsProject }}
+    artifactName: ${{ parameters.artifactName }}

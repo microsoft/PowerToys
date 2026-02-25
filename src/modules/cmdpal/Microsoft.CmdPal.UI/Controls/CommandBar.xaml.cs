@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -44,13 +44,14 @@ public sealed partial class CommandBar : UserControl,
 
     public void Receive(OpenContextMenuMessage message)
     {
-        if (!ViewModel.ShouldShowContextMenu)
-        {
-            return;
-        }
-
         if (message.Element is null)
         {
+            // This is invoked from the "More" button on the command bar
+            if (!ViewModel.ShouldShowContextMenu)
+            {
+                return;
+            }
+
             _ = DispatcherQueue.TryEnqueue(
                 () =>
                 {
@@ -65,6 +66,7 @@ public sealed partial class CommandBar : UserControl,
         }
         else
         {
+            // This is invoked from a specific element
             _ = DispatcherQueue.TryEnqueue(
             () =>
             {
@@ -126,7 +128,7 @@ public sealed partial class CommandBar : UserControl,
 
     private void SettingsIcon_Clicked(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
+        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage());
     }
 
     private void MoreCommandsButton_Clicked(object sender, RoutedEventArgs e)

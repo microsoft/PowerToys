@@ -76,7 +76,6 @@
                     x:Uid="Shell_Search_ShowAll"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
-                    Text="Show all results"
                     TextAlignment="Center" />
             </Grid>
         </DataTemplate>
@@ -94,6 +93,8 @@
         <controls:TitleBar
             x:Name="AppTitleBar"
             AutoConfigureCustomTitleBar="True"
+            CompactStateBreakpoint="900"
+            IsTabStop="False"
             PaneButtonClick="PaneToggleBtn_Click">
             <controls:TitleBar.Resources>
                 <x:Double x:Key="TitleBarContentMinWidth">516</x:Double>
@@ -210,7 +211,13 @@
                             x:Uid="Shell_LightSwitch"
                             helpers:NavHelper.NavigateTo="views:LightSwitchPage"
                             AutomationProperties.AutomationId="LightSwitchNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}">
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}" />
+                        <NavigationViewItem
+                            x:Name="PowerDisplayNavigationItem"
+                            x:Uid="Shell_PowerDisplay"
+                            helpers:NavHelper.NavigateTo="views:PowerDisplayPage"
+                            AutomationProperties.AutomationId="PowerDisplayNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}">
                             <NavigationViewItem.InfoBadge>
                                 <InfoBadge Style="{StaticResource NewInfoBadge}" />
                             </NavigationViewItem.InfoBadge>
@@ -251,7 +258,7 @@
                 <!--  Windowing & Layouts  -->
                 <NavigationViewItem
                     x:Name="WindowingAndLayoutsNavigationItem"
-                    x:Uid="Shell_TopLevelWindowsAndLayouts "
+                    x:Uid="Shell_TopLevelWindowsAndLayouts"
                     AutomationProperties.AutomationId="WindowingAndLayoutsNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}"
                     SelectsOnInvoked="False">
@@ -290,6 +297,9 @@
                     AutomationProperties.AutomationId="InputOutputNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/InputOutput.png}"
                     SelectsOnInvoked="False">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Name="KeyboardManagerNavigationItem"
@@ -304,7 +314,11 @@
                             x:Uid="Shell_MouseUtilities"
                             helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
                             AutomationProperties.AutomationId="MouseUtilitiesNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}" />
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                         <NavigationViewItem
                             x:Name="MouseWithoutBordersNavigationItem"
                             x:Uid="Shell_MouseWithoutBorders"

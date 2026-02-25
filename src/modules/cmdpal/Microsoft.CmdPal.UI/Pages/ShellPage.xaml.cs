@@ -8,20 +8,19 @@ using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -72,6 +71,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public IHostWindow? HostWindow { get; set; }
 
     public ShellPage()
     {
@@ -134,7 +135,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             if (!message.FromBackspace)
             {
                 // If we can't go back then we must be at the top and thus escape again should quit.
-                WeakReferenceMessenger.Default.Send<DismissMessage>();
+                WeakReferenceMessenger.Default.Send(new DismissMessage());
 
                 PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnEsc());
             }
@@ -160,7 +161,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 new AsyncNavigationRequest(message.Page, message.CancellationToken),
                 message.WithAnimation ? DefaultPageAnimation : _noAnimation);
 
-            PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
+            PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth, message.Page.Id));
+
+            // Telemetry: Send navigation depth for session max depth tracking
+            WeakReferenceMessenger.Default.Send(new NavigationDepthMessage(RootFrame.BackStackDepth));
 
             if (!ViewModel.IsNested)
             {
@@ -255,11 +259,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         _ = DispatcherQueue.TryEnqueue(() =>
         {
-            OpenSettings();
+            OpenSettings(message.SettingsPageTag);
         });
     }
 
-    public void OpenSettings()
+    public void OpenSettings(string pageTag)
     {
         if (_settingsWindow is null)
         {
@@ -268,6 +272,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _settingsWindow.Activate();
         _settingsWindow.BringToFront();
+        _settingsWindow.Navigate(pageTag);
     }
 
     public void Receive(ShowDetailsMessage message)
@@ -346,7 +351,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // Depending on the settings, either
             // * Go home, or
             // * Select the search text (if we should remain open on this page)
-            if (settings.HotkeyGoesHome)
+            if (settings.AutoGoHomeInterval == TimeSpan.Zero)
             {
                 GoHome(false);
             }
@@ -432,7 +437,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (!RootFrame.CanGoBack)
         {
-            ViewModel.GoHome();
+            ViewModel.GoHome(withAnimation, focusSearch);
         }
 
         if (focusSearch)
@@ -451,7 +456,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         while (RootFrame.CanGoBack)
         {
-            GoBack(withAnimation, focusSearch);
+            // don't focus on each step, just at the end
+            GoBack(withAnimation, focusSearch: false);
+        }
+
+        // focus search box, even if we were already home
+        if (focusSearch)
+        {
+            SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+            SearchBox.SelectSearch();
         }
     }
 
@@ -520,6 +533,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (shouldSearchBoxBeVisible || page is not ContentPage)
         {
+            if (HostWindow?.IsVisibleToUser != true)
+            {
+                return;
+            }
+
             ViewModel.IsSearchBoxVisible = shouldSearchBoxBeVisible;
             SearchBox.Focus(FocusState.Programmatic);
             SearchBox.SelectSearch();
@@ -536,6 +554,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
                     try
                     {
+                        if (HostWindow?.IsVisibleToUser != true)
+                        {
+                            return;
+                        }
+
                         await page.DispatcherQueue.EnqueueAsync(
                             async () =>
                             {
@@ -544,6 +567,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                                 for (var i = 0; i < 10; i++)
                                 {
                                     token.ThrowIfCancellationRequested();
+
+                                    if (HostWindow?.IsVisibleToUser != true)
+                                    {
+                                        break;
+                                    }
 
                                     if (FocusManager.FindFirstFocusableElement(page) is FrameworkElement frameworkElement)
                                     {
@@ -647,15 +675,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 e.Handled = true;
                 break;
             default:
-            {
-                // The CommandBar is responsible for handling all the item keybindings,
-                // since the bound context item may need to then show another
-                // context menu
-                TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
-                WeakReferenceMessenger.Default.Send(msg);
-                e.Handled = msg.Handled;
-                break;
-            }
+                {
+                    // The CommandBar is responsible for handling all the item keybindings,
+                    // since the bound context item may need to then show another
+                    // context menu
+                    TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+                    WeakReferenceMessenger.Default.Send(msg);
+                    e.Handled = msg.Handled;
+                    break;
+                }
         }
     }
 

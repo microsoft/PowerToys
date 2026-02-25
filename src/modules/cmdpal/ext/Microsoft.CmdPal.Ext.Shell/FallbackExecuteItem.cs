@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -11,6 +11,7 @@ namespace Microsoft.CmdPal.Ext.Shell;
 
 internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDisposable
 {
+    private const string _id = "com.microsoft.cmdpal.builtin.shell.fallback";
     private static readonly char[] _systemDirectoryRoots = ['\\', '/'];
 
     private readonly Action<string>? _addToHistory;
@@ -19,8 +20,9 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
 
     public FallbackExecuteItem(SettingsManager settings, Action<string>? addToHistory, ITelemetryService telemetryService)
         : base(
-            new NoOpCommand() { Id = "com.microsoft.run.fallback" },
-            ResourceLoaderInstance.GetString("shell_command_display_title"))
+            new NoOpCommand() { Id = _id },
+            ResourceLoaderInstance.GetString("shell_command_display_title"),
+            _id)
     {
         Title = string.Empty;
         Subtitle = ResourceLoaderInstance.GetString("generic_run_command");

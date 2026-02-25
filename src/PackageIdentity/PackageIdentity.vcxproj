@@ -17,7 +17,7 @@
       <CIBuildParam Condition="'$(CIBuild)' != 'true'"></CIBuildParam>
     </PropertyGroup>
     
-  <Exec Command="powershell -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)BuildSparsePackage.ps1&quot; -Platform $(Platform) -Configuration $(Configuration) $(NoSignParam) $(CIBuildParam)" 
+  <Exec Command="pwsh -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)BuildSparsePackage.ps1&quot; -Platform $(Platform) -Configuration $(Configuration) $(NoSignParam) $(CIBuildParam)" 
           ContinueOnError="false"
           WorkingDirectory="$(MSBuildThisFileDirectory)" />
   </Target>
@@ -55,26 +55,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
 

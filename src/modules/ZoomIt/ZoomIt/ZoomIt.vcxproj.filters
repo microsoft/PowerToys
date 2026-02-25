@@ -33,6 +33,9 @@
     <ClCompile Include="AudioSampleGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LoopbackCapture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="DemoType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,6 +55,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\common\sysinternals\WindowsVersions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GifRecordingSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -77,6 +83,9 @@
     <ClInclude Include="AudioSampleGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LoopbackCapture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="DemoType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -93,6 +102,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ZoomItSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GifRecordingSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

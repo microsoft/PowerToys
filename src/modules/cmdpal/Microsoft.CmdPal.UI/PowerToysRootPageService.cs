@@ -5,12 +5,11 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using WinRT;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -19,24 +18,24 @@ namespace Microsoft.CmdPal.UI;
 
 internal sealed class PowerToysRootPageService : IRootPageService
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly TopLevelCommandManager _tlcManager;
+
     private IExtensionWrapper? _activeExtension;
     private Lazy<MainListPage> _mainListPage;
 
-    public PowerToysRootPageService(IServiceProvider serviceProvider)
+    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, SettingsModel settings, AliasManager aliasManager, AppStateModel appStateModel, IFuzzyMatcherProvider fuzzyMatcherProvider)
     {
-        _serviceProvider = serviceProvider;
+        _tlcManager = topLevelCommandManager;
 
         _mainListPage = new Lazy<MainListPage>(() =>
         {
-            return new MainListPage(_serviceProvider);
+            return new MainListPage(_tlcManager, settings, aliasManager, appStateModel, fuzzyMatcherProvider);
         });
     }
 
     public async Task PreLoadAsync()
     {
-        var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
-        await tlcManager.LoadBuiltinsAsync();
+        await _tlcManager.LoadBuiltinsAsync();
     }
 
     public Microsoft.CommandPalette.Extensions.IPage GetRootPage()
@@ -46,13 +45,11 @@ internal sealed class PowerToysRootPageService : IRootPageService
 
     public async Task PostLoadRootPageAsync()
     {
-        var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
-
         // After loading built-ins, and starting navigation, kick off a thread to load extensions.
-        tlcManager.LoadExtensionsCommand.Execute(null);
+        _tlcManager.LoadExtensionsCommand.Execute(null);
 
-        await tlcManager.LoadExtensionsCommand.ExecutionTask!;
-        if (tlcManager.LoadExtensionsCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+        await _tlcManager.LoadExtensionsCommand.ExecutionTask!;
+        if (_tlcManager.LoadExtensionsCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
         {
             // TODO: Handle failure case
         }

@@ -5,11 +5,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -34,7 +34,7 @@
             </Style>
 
             <!--  Template for the filter items  -->
-            <DataTemplate x:Key="FilterItemViewModelTemplate" x:DataType="coreViewModels:FilterItemViewModel">
+            <DataTemplate x:Key="FilterItemViewModelTemplate" x:DataType="viewModels:FilterItemViewModel">
                 <Grid AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
@@ -46,7 +46,7 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         SourceKey="{x:Bind Icon}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
                     <TextBlock
                         Grid.Column="1"
                         VerticalAlignment="Center"
@@ -55,7 +55,7 @@
             </DataTemplate>
 
             <!--  Template for separators  -->
-            <DataTemplate x:Key="SeparatorViewModelTemplate" x:DataType="coreViewModels:SeparatorViewModel">
+            <DataTemplate x:Key="SeparatorViewModelTemplate" x:DataType="viewModels:SeparatorViewModel">
                 <Rectangle
                     Height="1"
                     Margin="-16,-12,-12,-12"
@@ -77,7 +77,7 @@
         SelectedValue="{x:Bind ViewModel.CurrentFilter, Mode=OneWay}"
         SelectionChanged="FiltersComboBox_SelectionChanged"
         Style="{StaticResource ComboBoxStyle}"
-        Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+        Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
         <ComboBox.ItemContainerStyle>
             <Style BasedOn="{StaticResource DefaultComboBoxItemStyle}" TargetType="ComboBoxItem">
                 <Setter Property="MinHeight" Value="0" />

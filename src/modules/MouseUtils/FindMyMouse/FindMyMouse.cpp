@@ -77,10 +77,8 @@ protected:
     int m_sonarRadius = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS;
     int m_sonarZoomFactor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
     DWORD m_fadeDuration = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
-    int m_finalAlphaNumerator = 100; // legacy (root now always animates to 1.0; kept for GDI fallback compatibility)
     std::vector<std::wstring> m_excludedApps;
     int m_shakeMinimumDistance = FIND_MY_MOUSE_DEFAULT_SHAKE_MINIMUM_DISTANCE;
-    static constexpr int FinalAlphaDenominator = 100;
     winrt::Microsoft::UI::Dispatching::DispatcherQueueController m_dispatcherQueueController{ nullptr };
 
     // Don't consider movements started past these milliseconds to detect shaking.
@@ -155,7 +153,7 @@ private:
     void DetectShake();
     bool KeyboardInputCanActivate();
 
-    void StartSonar();
+    void StartSonar(FindMyMouseActivationMethod activationMethod);
     void StopSonar();
 };
 
@@ -189,7 +187,7 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
         return false;
     }
 
-    DWORD exStyle = WS_EX_TOOLWINDOW | Shim()->GetExtendedStyle();
+    DWORD exStyle = WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW | Shim()->GetExtendedStyle();
     HWND created = CreateWindowExW(exStyle, className, windowTitle, WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, m_hwndOwner, nullptr, hinst, this);
     if (!created)
     {
@@ -269,17 +267,13 @@ LRESULT SuperSonar<D>::BaseWndProc(UINT message, WPARAM wParam, LPARAM lParam) n
 
     case WM_NCHITTEST:
         return HTTRANSPARENT;
-
-    case WM_SETCURSOR:
-        SetCursor(LoadCursor(nullptr, IDC_ARROW));
-        return TRUE;
     }
 
     if (message == WM_PRIV_SHORTCUT)
     {
         if (m_sonarStart == NoSonar)
         {
-            StartSonar();
+            StartSonar(FindMyMouseActivationMethod::Shortcut);
         }
         else
         {
@@ -388,7 +382,7 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
                 IsEqual(m_lastKeyPos, ptCursor))
             {
                 m_sonarState = SonarState::ControlDown2;
-                StartSonar();
+                StartSonar(m_activationMethod);
             }
             else
             {
@@ -455,7 +449,7 @@ void SuperSonar<D>::DetectShake()
     if (diagonal > 0 && distanceTravelled / diagonal > (m_shakeFactor / 100.f))
     {
         m_movementHistory.clear();
-        StartSonar();
+        StartSonar(m_activationMethod);
     }
 }
 
@@ -523,7 +517,7 @@ void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
 }
 
 template<typename D>
-void SuperSonar<D>::StartSonar()
+void SuperSonar<D>::StartSonar(FindMyMouseActivationMethod activationMethod)
 {
     // Don't activate if game mode is on.
     if (m_doNotActivateOnGameMode && detect_game_mode())
@@ -536,10 +530,10 @@ void SuperSonar<D>::StartSonar()
         return;
     }
 
-    Trace::MousePointerFocused();
+    Trace::MousePointerFocused(static_cast<int>(activationMethod));
     // Cover the entire virtual screen.
     // HACK: Draw with 1 pixel off. Otherwise, Windows glitches the task bar transparency when a transparent window fill the whole screen.
-    SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, SWP_NOACTIVATE);
+    SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
     m_sonarPos = ptNowhere;
     OnMouseTimer();
     UpdateMouseSnooping();
@@ -820,13 +814,16 @@ private:
         // Dim color (source)
         m_dimColorBrush = m_compositor.CreateColorBrush(m_backgroundColor);
         // Radial gradient mask (center transparent, outer opaque)
+        // Fixed feather width: 1px for radius < 300, 2px for radius >= 300
+        const float featherPixels = (m_sonarRadius >= 300) ? 2.0f : 1.0f;
+        const float featherOffset = 1.0f - featherPixels / (rDip * zoom);
         m_spotlightMaskGradient = m_compositor.CreateRadialGradientBrush();
         m_spotlightMaskGradient.MappingMode(muxc::CompositionMappingMode::Absolute);
         m_maskStopCenter = m_compositor.CreateColorGradientStop();
         m_maskStopCenter.Offset(0.0f);
         m_maskStopCenter.Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
         m_maskStopInner = m_compositor.CreateColorGradientStop();
-        m_maskStopInner.Offset(0.995f);
+        m_maskStopInner.Offset(featherOffset);
         m_maskStopInner.Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
         m_maskStopOuter = m_compositor.CreateColorGradientStop();
         m_maskStopOuter.Offset(1.0f);
@@ -856,23 +853,7 @@ private:
         m_root.ImplicitAnimations(collection);
 
         // 6) Spotlight radius shrinks as opacity increases (expression animation)
-        auto radiusExpression = m_compositor.CreateExpressionAnimation();
-        radiusExpression.SetReferenceParameter(L"Root", m_root);
-
-        wchar_t expressionText[256];
-        winrt::check_hresult(StringCchPrintfW(
-            expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius));
-
-        radiusExpression.Expression(expressionText);
-        m_spotlightMaskGradient.StartAnimation(L"EllipseRadius", radiusExpression);
-        // Also animate spotlight geometry radius for visual consistency
-        if (m_circleGeometry)
-        {
-            auto radiusExpression2 = m_compositor.CreateExpressionAnimation();
-            radiusExpression2.SetReferenceParameter(L"Root", m_root);
-            radiusExpression2.Expression(expressionText);
-            m_circleGeometry.StartAnimation(L"Radius", radiusExpression2);
-        }
+        SetupRadiusAnimations(rDip * zoom, rDip, featherPixels);
 
         // Composition created successfully
         return true;
@@ -888,6 +869,41 @@ private:
         if (m_root.Opacity() < 0.01f)
         {
             ShowWindow(m_hwnd, SW_HIDE);
+        }
+    }
+
+    // Helper to setup radius and feather expression animations
+    void SetupRadiusAnimations(float startRadiusDip, float endRadiusDip, float featherPixels)
+    {
+        // Radius expression: shrinks from startRadiusDip to endRadiusDip as opacity goes 0->1
+        auto radiusExpression = m_compositor.CreateExpressionAnimation();
+        radiusExpression.SetReferenceParameter(L"Root", m_root);
+        wchar_t expressionText[256];
+        winrt::check_hresult(StringCchPrintfW(
+            expressionText, ARRAYSIZE(expressionText),
+            L"Lerp(Vector2(%.1f, %.1f), Vector2(%.1f, %.1f), Root.Opacity)",
+            startRadiusDip, startRadiusDip, endRadiusDip, endRadiusDip));
+        radiusExpression.Expression(expressionText);
+        m_spotlightMaskGradient.StartAnimation(L"EllipseRadius", radiusExpression);
+
+        // Feather expression: maintains fixed pixel width as radius changes
+        auto featherExpression = m_compositor.CreateExpressionAnimation();
+        featherExpression.SetReferenceParameter(L"Root", m_root);
+        wchar_t featherExpressionText[256];
+        winrt::check_hresult(StringCchPrintfW(
+            featherExpressionText, ARRAYSIZE(featherExpressionText),
+            L"1.0f - %.1ff / Lerp(%.1ff, %.1ff, Root.Opacity)",
+            featherPixels, startRadiusDip, endRadiusDip));
+        featherExpression.Expression(featherExpressionText);
+        m_maskStopInner.StartAnimation(L"Offset", featherExpression);
+
+        // Circle geometry radius for visual consistency
+        if (m_circleGeometry)
+        {
+            auto radiusExpression2 = m_compositor.CreateExpressionAnimation();
+            radiusExpression2.SetReferenceParameter(L"Root", m_root);
+            radiusExpression2.Expression(expressionText);
+            m_circleGeometry.StartAnimation(L"Radius", radiusExpression2);
         }
     }
 
@@ -968,27 +984,21 @@ public:
                     const float scale = static_cast<float>(m_surface.XamlRoot().RasterizationScale());
                     const float rDip = m_sonarRadiusFloat / scale;
                     const float zoom = static_cast<float>(m_sonarZoomFactor);
+                    const float featherPixels = (m_sonarRadius >= 300) ? 2.0f : 1.0f;
+                    const float startRadiusDip = rDip * zoom;
                     m_spotlightMaskGradient.StopAnimation(L"EllipseRadius");
-                    m_spotlightMaskGradient.EllipseCenter({ rDip * zoom, rDip * zoom });
-                    if (m_spotlight)
-                    {
-                        m_spotlight.Size({ rDip * 2 * zoom, rDip * 2 * zoom });
-                        m_circleShape.Offset({ rDip * zoom, rDip * zoom });
-                    }
-                    auto radiusExpression = m_compositor.CreateExpressionAnimation();
-                    radiusExpression.SetReferenceParameter(L"Root", m_root);
-                    wchar_t expressionText[256];
-                    winrt::check_hresult(StringCchPrintfW(expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius));
-                    radiusExpression.Expression(expressionText);
-                    m_spotlightMaskGradient.StartAnimation(L"EllipseRadius", radiusExpression);
+                    m_maskStopInner.StopAnimation(L"Offset");
                     if (m_circleGeometry)
                     {
                         m_circleGeometry.StopAnimation(L"Radius");
-                        auto radiusExpression2 = m_compositor.CreateExpressionAnimation();
-                        radiusExpression2.SetReferenceParameter(L"Root", m_root);
-                        radiusExpression2.Expression(expressionText);
-                        m_circleGeometry.StartAnimation(L"Radius", radiusExpression2);
                     }
+                    m_spotlightMaskGradient.EllipseCenter({ startRadiusDip, startRadiusDip });
+                    if (m_spotlight)
+                    {
+                        m_spotlight.Size({ rDip * 2 * zoom, rDip * 2 * zoom });
+                        m_circleShape.Offset({ startRadiusDip, startRadiusDip });
+                    }
+                    SetupRadiusAnimations(startRadiusDip, rDip, featherPixels);
                 }
             });
             if (!enqueueSucceeded)
@@ -1020,202 +1030,6 @@ private:
     winrt::Windows::UI::Color m_backgroundColor = FIND_MY_MOUSE_DEFAULT_BACKGROUND_COLOR;
     winrt::Windows::UI::Color m_spotlightColor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_COLOR;
     muxc::ScalarKeyFrameAnimation m_animation{ nullptr };
-};
-
-template<typename D>
-struct GdiSonar : SuperSonar<D>
-{
-    LRESULT WndProc(UINT message, WPARAM wParam, LPARAM lParam) noexcept
-    {
-        switch (message)
-        {
-        case WM_CREATE:
-            SetLayeredWindowAttributes(this->m_hwnd, 0, 0, LWA_ALPHA);
-            break;
-
-        case WM_TIMER:
-            switch (wParam)
-            {
-            case TIMER_ID_FADE:
-                OnFadeTimer();
-                break;
-            }
-            break;
-
-        case WM_PAINT:
-            this->Shim()->OnPaint();
-            break;
-        }
-        return this->BaseWndProc(message, wParam, lParam);
-    }
-
-    void BeforeMoveSonar() { this->Shim()->InvalidateSonar(); }
-    void AfterMoveSonar() { this->Shim()->InvalidateSonar(); }
-
-    void SetSonarVisibility(bool visible)
-    {
-        m_alphaTarget = visible ? MaxAlpha : 0;
-        m_fadeStart = GetTickCount() - FadeFramePeriod;
-        SetTimer(this->m_hwnd, TIMER_ID_FADE, FadeFramePeriod, nullptr);
-        OnFadeTimer();
-    }
-
-    void OnFadeTimer()
-    {
-        auto now = GetTickCount();
-        auto step = (int)((now - m_fadeStart) * MaxAlpha / this->m_fadeDuration);
-
-        this->Shim()->InvalidateSonar();
-        if (m_alpha < m_alphaTarget)
-        {
-            m_alpha += step;
-            if (m_alpha > m_alphaTarget)
-                m_alpha = m_alphaTarget;
-        }
-        else if (m_alpha > m_alphaTarget)
-        {
-            m_alpha -= step;
-            if (m_alpha < m_alphaTarget)
-                m_alpha = m_alphaTarget;
-        }
-        SetLayeredWindowAttributes(this->m_hwnd, 0, (BYTE)m_alpha, LWA_ALPHA);
-        this->Shim()->InvalidateSonar();
-        if (m_alpha == m_alphaTarget)
-        {
-            KillTimer(this->m_hwnd, TIMER_ID_FADE);
-            if (m_alpha == 0)
-            {
-                ShowWindow(this->m_hwnd, SW_HIDE);
-            }
-        }
-        else
-        {
-            ShowWindow(this->m_hwnd, SW_SHOWNOACTIVATE);
-        }
-    }
-
-protected:
-    int CurrentSonarRadius()
-    {
-        int range = MaxAlpha - m_alpha;
-        int radius = this->m_sonarRadius + this->m_sonarRadius * range * (this->m_sonarZoomFactor - 1) / MaxAlpha;
-        return radius;
-    }
-
-private:
-    static constexpr DWORD FadeFramePeriod = 10;
-    int MaxAlpha = SuperSonar<D>::m_finalAlphaNumerator * 255 / SuperSonar<D>::FinalAlphaDenominator;
-    static constexpr DWORD TIMER_ID_FADE = 101;
-
-private:
-    int m_alpha = 0;
-    int m_alphaTarget = 0;
-    DWORD m_fadeStart = 0;
-};
-
-struct GdiSpotlight : GdiSonar<GdiSpotlight>
-{
-    void InvalidateSonar()
-    {
-        RECT rc;
-        auto radius = CurrentSonarRadius();
-        rc.left = this->m_sonarPos.x - radius;
-        rc.top = this->m_sonarPos.y - radius;
-        rc.right = this->m_sonarPos.x + radius;
-        rc.bottom = this->m_sonarPos.y + radius;
-        InvalidateRect(this->m_hwnd, &rc, FALSE);
-    }
-
-    void OnPaint()
-    {
-        PAINTSTRUCT ps;
-        BeginPaint(this->m_hwnd, &ps);
-
-        auto radius = CurrentSonarRadius();
-        auto spotlight = CreateRoundRectRgn(
-            this->m_sonarPos.x - radius, this->m_sonarPos.y - radius, this->m_sonarPos.x + radius, this->m_sonarPos.y + radius, radius * 2, radius * 2);
-
-        FillRgn(ps.hdc, spotlight, static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
-        Sleep(1000 / 60);
-        ExtSelectClipRgn(ps.hdc, spotlight, RGN_DIFF);
-        FillRect(ps.hdc, &ps.rcPaint, static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
-        DeleteObject(spotlight);
-
-        EndPaint(this->m_hwnd, &ps);
-    }
-};
-
-struct GdiCrosshairs : GdiSonar<GdiCrosshairs>
-{
-    void InvalidateSonar()
-    {
-        RECT rc;
-        auto radius = CurrentSonarRadius();
-        GetClientRect(m_hwnd, &rc);
-        rc.left = m_sonarPos.x - radius;
-        rc.right = m_sonarPos.x + radius;
-        InvalidateRect(m_hwnd, &rc, FALSE);
-
-        GetClientRect(m_hwnd, &rc);
-        rc.top = m_sonarPos.y - radius;
-        rc.bottom = m_sonarPos.y + radius;
-        InvalidateRect(m_hwnd, &rc, FALSE);
-    }
-
-    void OnPaint()
-    {
-        PAINTSTRUCT ps;
-        BeginPaint(this->m_hwnd, &ps);
-
-        auto radius = CurrentSonarRadius();
-        RECT rc;
-
-        HBRUSH white = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
-
-        rc.left = m_sonarPos.x - radius;
-        rc.top = ps.rcPaint.top;
-        rc.right = m_sonarPos.x + radius;
-        rc.bottom = ps.rcPaint.bottom;
-        FillRect(ps.hdc, &rc, white);
-
-        rc.left = ps.rcPaint.left;
-        rc.top = m_sonarPos.y - radius;
-        rc.right = ps.rcPaint.right;
-        rc.bottom = m_sonarPos.y + radius;
-        FillRect(ps.hdc, &rc, white);
-
-        HBRUSH black = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
-
-        // Top left
-        rc.left = ps.rcPaint.left;
-        rc.top = ps.rcPaint.top;
-        rc.right = m_sonarPos.x - radius;
-        rc.bottom = m_sonarPos.y - radius;
-        FillRect(ps.hdc, &rc, black);
-
-        // Top right
-        rc.left = m_sonarPos.x + radius;
-        rc.top = ps.rcPaint.top;
-        rc.right = ps.rcPaint.right;
-        rc.bottom = m_sonarPos.y - radius;
-        FillRect(ps.hdc, &rc, black);
-
-        // Bottom left
-        rc.left = ps.rcPaint.left;
-        rc.top = m_sonarPos.y + radius;
-        rc.right = m_sonarPos.x - radius;
-        rc.bottom = ps.rcPaint.bottom;
-        FillRect(ps.hdc, &rc, black);
-
-        // Bottom right
-        rc.left = m_sonarPos.x + radius;
-        rc.top = m_sonarPos.y + radius;
-        rc.right = ps.rcPaint.right;
-        rc.bottom = ps.rcPaint.bottom;
-        FillRect(ps.hdc, &rc, black);
-
-        EndPaint(this->m_hwnd, &ps);
-    }
 };
 
 #pragma endregion Super_Sonar_Base_Code

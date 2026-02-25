@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.CmdPal.Ext.Apps.Helpers;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CommandPalette.Extensions;
@@ -35,7 +37,6 @@ public partial class AllAppsCommandProvider : CommandProvider
 
         _listItem = new(_page)
         {
-            Subtitle = Resources.search_installed_apps,
             MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
         };
 
@@ -67,7 +68,71 @@ public partial class AllAppsCommandProvider : CommandProvider
 
     public override ICommandItem[] TopLevelCommands() => [_listItem, .. _page.GetPinnedApps()];
 
-    public ICommandItem? LookupApp(string displayName)
+    public ICommandItem? LookupAppByPackageFamilyName(string packageFamilyName, bool requireSingleMatch)
+    {
+        if (string.IsNullOrEmpty(packageFamilyName))
+        {
+            return null;
+        }
+
+        var items = _page.GetItems();
+        List<ICommandItem> matches = [];
+
+        foreach (var item in items)
+        {
+            if (item is AppListItem appItem && string.Equals(packageFamilyName, appItem.App.PackageFamilyName, StringComparison.OrdinalIgnoreCase))
+            {
+                matches.Add(item);
+                if (!requireSingleMatch)
+                {
+                    // Return early if we don't require uniqueness.
+                    return item;
+                }
+            }
+        }
+
+        return requireSingleMatch && matches.Count == 1 ? matches[0] : null;
+    }
+
+    public ICommandItem? LookupAppByProductCode(string productCode, bool requireSingleMatch)
+    {
+        if (string.IsNullOrEmpty(productCode))
+        {
+            return null;
+        }
+
+        if (!UninstallRegistryAppLocator.TryGetInstallInfo(productCode, out _, out var candidates) || candidates.Count <= 0)
+        {
+            return null;
+        }
+
+        var items = _page.GetItems();
+        List<ICommandItem> matches = [];
+
+        foreach (var item in items)
+        {
+            if (item is not AppListItem appListItem || string.IsNullOrEmpty(appListItem.App.FullExecutablePath))
+            {
+                continue;
+            }
+
+            foreach (var candidate in candidates)
+            {
+                if (string.Equals(appListItem.App.FullExecutablePath, candidate, StringComparison.OrdinalIgnoreCase))
+                {
+                    matches.Add(item);
+                    if (!requireSingleMatch)
+                    {
+                        return item;
+                    }
+                }
+            }
+        }
+
+        return requireSingleMatch && matches.Count == 1 ? matches[0] : null;
+    }
+
+    public ICommandItem? LookupAppByDisplayName(string displayName)
     {
         var items = _page.GetItems();
 
@@ -113,6 +178,20 @@ public partial class AllAppsCommandProvider : CommandProvider
             if (nameMatches[0] == bestAppMatch)
             {
                 return nameMatches[0];
+            }
+        }
+
+        return null;
+    }
+
+    public override ICommandItem? GetCommandItem(string id)
+    {
+        var items = _page.GetItems();
+        foreach (var item in items)
+        {
+            if (item.Command.Id == id)
+            {
+                return item;
             }
         }
 
