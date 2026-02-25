@@ -35,7 +35,7 @@ bool isExcluded(HWND window)
 }
 
 AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
-    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps}),
+    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps, SettingId::ShowInSystemMenu}),
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
     m_useCentralizedLLKH(useLLKH),
     m_mainThreadId(mainThreadId),
@@ -150,6 +150,12 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
         {
             m_topmostWindows.erase(window);
         }
+    }
+    break;
+    case SettingId::ShowInSystemMenu:
+    {
+        m_lastSystemMenuWindow = nullptr;
+        UpdateSystemMenuItem(GetForegroundWindow());
     }
     break;
     default:
@@ -442,6 +448,15 @@ void AlwaysOnTop::UpdateSystemMenuItem(HWND window) const noexcept
         return;
     }
 
+    if (!AlwaysOnTopSettings::settings().showInSystemMenu)
+    {
+        if (GetMenuState(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND) != static_cast<UINT>(-1))
+        {
+            RemoveMenu(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND);
+        }
+        return;
+    }
+
     auto text = GET_RESOURCE_STRING(IDS_SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP);
     MENUITEMINFOW menuItemInfo{};
     menuItemInfo.cbSize = sizeof(menuItemInfo);
@@ -543,7 +558,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     {
         if (data->idObject == OBJID_SYSMENU && data->hwnd)
         {
-            m_lastSystemMenuWindow = data->hwnd;
+            m_lastSystemMenuWindow = AlwaysOnTopSettings::settings().showInSystemMenu ? data->hwnd : nullptr;
             UpdateSystemMenuItem(data->hwnd);
         }
     }
@@ -558,6 +573,11 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     return;
     case EVENT_OBJECT_INVOKED:
     {
+        if (!AlwaysOnTopSettings::settings().showInSystemMenu)
+        {
+            return;
+        }
+
         if (data->idChild == static_cast<LONG>(NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND))
         {
             HWND commandWindow = m_lastSystemMenuWindow;

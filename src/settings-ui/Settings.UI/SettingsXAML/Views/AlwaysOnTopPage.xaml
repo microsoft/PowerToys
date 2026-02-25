@@ -43,6 +43,10 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_ContextMenuEnabled" HeaderIcon="{ui:FontIcon Glyph=&#xE700;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowInSystemMenu, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
                     <tkcontrols:SettingsExpander
                         Name="AlwaysOnTopFrameEnabled"
                         x:Uid="AlwaysOnTop_FrameEnabled"

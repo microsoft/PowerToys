@@ -2958,6 +2958,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="AlwaysOnTop_Behavior_GroupSettings.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
+  <data name="AlwaysOnTop_ContextMenuEnabled.Header" xml:space="preserve">
+    <value>Show in window title bar menu</value>
+  </data>
+  <data name="AlwaysOnTop_ContextMenuEnabled.Description" xml:space="preserve">
+    <value>Add a "Toggle always on top" command to each window's system menu</value>
+  </data>
   <data name="Shell_AlwaysOnTop.Content" xml:space="preserve">
     <value>Always On Top</value>
     <comment>{Locked}</comment>

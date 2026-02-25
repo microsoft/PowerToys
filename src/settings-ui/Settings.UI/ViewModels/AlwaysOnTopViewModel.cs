@@ -50,6 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Settings = moduleSettingsRepository.SettingsConfig;
 
             _hotkey = Settings.Properties.Hotkey.Value;
+            _showInSystemMenu = Settings.Properties.ShowInSystemMenu.Value;
             _frameEnabled = Settings.Properties.FrameEnabled.Value;
             _frameThickness = Settings.Properties.FrameThickness.Value;
             _frameColor = Settings.Properties.FrameColor.Value;
@@ -159,6 +160,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _frameEnabled = value;
                     Settings.Properties.FrameEnabled.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool ShowInSystemMenu
+        {
+            get => _showInSystemMenu;
+
+            set
+            {
+                if (value != _showInSystemMenu)
+                {
+                    _showInSystemMenu = value;
+                    Settings.Properties.ShowInSystemMenu.Value = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -336,6 +352,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private HotkeySettings _hotkey;
+        private bool _showInSystemMenu;
         private bool _frameEnabled;
         private int _frameThickness;
         private string _frameColor;
