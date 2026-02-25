@@ -26,12 +26,11 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         get;
         set
         {
-            // TODO: verify if we can safely return early (
+            // TODO: verify if we can safely return early
             // if (ReferenceEquals(field, value))
             // {
             //     return;
             // }
-
             if (field is not null)
             {
                 field.PropertyChanged -= SelectedItemPropertyChanged;
