@@ -294,15 +294,34 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // timer so the UI settles between updates. Use immediate=true for
         // the first show so the panel appears without delay; subsequent
         // updates during rapid navigation are coalesced.
-        _debounceTimer.Debounce(
-            () =>
+        _debounceTimer.Debounce(ShowDetails, interval: TimeSpan.FromMilliseconds(100), immediate: !wasVisible);
+
+        void ShowDetails()
+        {
+            // Since immediate=true means we're called synchronously from this method, we need to check
+            // if we're on the UI thread and re-queue if not.
+            if (!_queue.HasThreadAccess)
+            {
+                var enqueued = _queue.TryEnqueue(ShowDetails);
+                if (!enqueued)
+                {
+                    Logger.LogError("Failed to enqueue show details action on UI thread");
+                }
+
+                return;
+            }
+
+            try
             {
                 ViewModel.Details = details;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
                 ViewModel.IsDetailsVisible = true;
-            },
-            interval: TimeSpan.FromMilliseconds(100),
-            immediate: !wasVisible);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to show detail", ex);
+            }
+        }
     }
 
     public void Receive(HideDetailsMessage message)
