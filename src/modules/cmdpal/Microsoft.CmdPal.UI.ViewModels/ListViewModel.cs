@@ -511,8 +511,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _lastSelectedItem.PropertyChanged += SelectedItemPropertyChanged;
 
         WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
-        TextToSuggest = item.TextToSuggest;
-        WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(item.TextToSuggest));
 
         // Cancel any in-flight slow init from a previous selection and defer
         // the expensive work (extension IPC for MoreCommands, details) so
@@ -556,6 +554,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
                 }
+
+                TextToSuggest = item.TextToSuggest;
+                WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(item.TextToSuggest));
             },
             ct);
     }
