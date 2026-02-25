@@ -425,6 +425,18 @@ public:
         {
             launch_editor();
         }
+        else
+        {
+            refresh_process_state();
+            if (m_active)
+            {
+                stop_engine();
+            }
+            else
+            {
+                start_engine();
+            }
+        }
 
         return true;
     }
