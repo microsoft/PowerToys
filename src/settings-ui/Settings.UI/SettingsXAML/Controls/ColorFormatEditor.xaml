@@ -128,7 +128,7 @@
                 x:Uid="ColorFormatEditorHelpline4"
                 VerticalAlignment="Bottom"
                 Style="{StaticResource CaptionTextBlockStyle}" />
-            
+
         </StackPanel>
     </Grid>
 </UserControl>
