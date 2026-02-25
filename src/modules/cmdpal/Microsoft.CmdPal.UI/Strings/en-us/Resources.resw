@@ -350,6 +350,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Description" xml:space="preserve">
     <value>Selects the previous search text at launch</value>
   </data>
+  <data name="Settings_GeneralPage_KeepPreviousQuery_SettingsCard.Header" xml:space="preserve">
+    <value>Keep previous query</value>
+  </data>
+  <data name="Settings_GeneralPage_KeepPreviousQuery_SettingsCard.Description" xml:space="preserve">
+    <value>Preserves the last search text when Command Palette is reopened</value>
+  </data>
   <data name="Settings_GeneralPage_ShowAppDetails_SettingsCard.Header" xml:space="preserve">
     <value>Show app details</value>
   </data>
