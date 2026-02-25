@@ -110,8 +110,8 @@
 ^src/modules/cmdpal/doc/initial-sdk-spec/list-elements-mock-002\.pdn$
 ^src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage\.cs$
 ^src/modules/cmdpal/Microsoft\.CmdPal\.UI/Settings/InternalPage\.SampleData\.cs$
-^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Core\.Common\.UnitTests/.*\.TestData\.cs$
-^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Core\.Common\.UnitTests/Text/.*\.cs$
+^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Common\.UnitTests/.*\.TestData\.cs$
+^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Common\.UnitTests/Text/.*\.cs$
 ^src/modules/colorPicker/ColorPickerUI/Shaders/GridShader\.cso$
 ^src/modules/launcher/Plugins/Microsoft\.PowerToys\.Run\.Plugin\.TimeDate/Properties/
 ^src/modules/MouseUtils/MouseJumpUI/MainForm\.resx$
@@ -143,3 +143,5 @@ ignore$
 ^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
 ^src/common/CalculatorEngineCommon/exprtk\.hpp$
 src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage.cs
+^src/modules/powerrename/unittests/testdata/avif_test\.avif$
+^src/modules/powerrename/unittests/testdata/heif_test\.heic$

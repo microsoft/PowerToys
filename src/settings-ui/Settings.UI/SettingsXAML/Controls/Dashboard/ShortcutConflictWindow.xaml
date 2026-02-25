@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:hotkeyConflicts="using:Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:winuiex="using:WinUIEx"
@@ -93,25 +94,25 @@
                                 Orientation="Vertical">
                                 <!--  Hotkey Header  -->
                                 <Grid Margin="16,12,16,12">
-                                    <controls:ShortcutWithTextLabelControl
+                                    <ptcontrols:ShortcutWithTextLabelControl
                                         x:Uid="ShortcutConflictWindow_ModulesUsingShortcut"
                                         VerticalAlignment="Center"
                                         FontWeight="SemiBold"
                                         Keys="{x:Bind Hotkey.GetKeysList()}"
                                         LabelPlacement="Before" />
                                     <CheckBox
+                                        x:Uid="ShortcutConflictWindow_IgnoreShortcut"
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Center"
                                         Click="OnIgnoreConflictClicked"
-                                        Content="Ignore shortcut"
-                                        IsChecked="{x:Bind ConflictIgnored, Mode=OneWay}" />
+                                        IsChecked="{x:Bind ConflictIgnored, Mode=OneTime}" />
                                 </Grid>
 
                                 <!--  PowerToys Module Cards  -->
                                 <ItemsControl
                                     Grid.Row="1"
-                                    IsEnabled="{x:Bind ConflictVisible, Mode=OneWay}"
-                                    ItemsSource="{x:Bind Modules, Mode=OneWay}">
+                                    IsEnabled="{x:Bind ConflictVisible, Mode=OneTime}"
+                                    ItemsSource="{x:Bind Modules, Mode=OneTime}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="hotkeyConflicts:ModuleHotkeyData">
                                             <tkcontrols:SettingsCard
@@ -146,7 +147,7 @@
                                     Background="Transparent"
                                     BorderThickness="0,1,0,0"
                                     CornerRadius="0"
-                                    IsEnabled="{x:Bind ShouldShowSysConflict, Mode=OneWay}">
+                                    IsEnabled="{x:Bind ShouldShowSysConflict, Mode=OneTime}">
                                     <tkcontrols:SettingsCard.HeaderIcon>
                                         <PathIcon Data="M9 20H0V11H9V20ZM20 20H11V11H20V20ZM9 9H0V0H9V9ZM20 9H11V0H20V9Z" Foreground="{ThemeResource WindowsLogoGradient}" />
                                     </tkcontrols:SettingsCard.HeaderIcon>

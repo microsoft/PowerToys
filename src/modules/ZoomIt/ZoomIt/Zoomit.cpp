@@ -3840,6 +3840,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO,
             g_CaptureAudio ? BST_CHECKED: BST_UNCHECKED );
 
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX,
+            g_MicMonoMix ? BST_CHECKED: BST_UNCHECKED );
+
         //
         // The framerate drop down list is not used in the current version (might be added in the future)
         //
@@ -4260,6 +4263,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             g_ShowExpiredTime = IsDlgButtonChecked(  g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_SHOW_EXPIRED ) == BST_CHECKED;
             g_CaptureSystemAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO) == BST_CHECKED;
             g_CaptureAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO) == BST_CHECKED;
+            g_MicMonoMix = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX) == BST_CHECKED;
             GetDlgItemText( g_OptionsTabs[BREAK_PAGE].hPage, IDC_TIMER, text, 3 );
             text[2] = 0;
             newTimeout = _tstoi( text );
@@ -5140,7 +5144,7 @@ bool IsPenInverted( WPARAM wParam )
 // Captures the specified screen using the capture APIs
 //
 //----------------------------------------------------------------------------
-std::future<winrt::com_ptr<ID3D11Texture2D>> CaptureScreenshotAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
+wil::task<winrt::com_ptr<ID3D11Texture2D>> CaptureScreenshotAsync(winrt::IDirect3DDevice const& device, winrt::GraphicsCaptureItem const& item, winrt::DirectXPixelFormat const& pixelFormat)
 {
     auto d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(device);
     winrt::com_ptr<ID3D11DeviceContext> d3dContext;
@@ -5176,9 +5180,7 @@ std::future<winrt::com_ptr<ID3D11Texture2D>> CaptureScreenshotAsync(winrt::IDire
     framePool.Close();
 
     auto texture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame.Surface());
-    auto result = util::CopyD3DTexture(d3dDevice, texture, true);
-
-    co_return result;
+    co_return util::CopyD3DTexture(d3dDevice, texture, true);
 }
 
 //----------------------------------------------------------------------------
@@ -5205,10 +5207,7 @@ winrt::com_ptr<ID3D11Texture2D>CaptureScreenshot(winrt::DirectXPixelFormat const
 
     auto item = util::CreateCaptureItemForMonitor(hMon);
 
-    auto capture = CaptureScreenshotAsync(device, item, pixelFormat);
-    capture.wait();
-
-    return capture.get();
+    return CaptureScreenshotAsync(device, item, pixelFormat).get();
 }
 
 
@@ -5508,9 +5507,29 @@ auto GetUniqueRecordingFilename()
     return GetUniqueFilename(g_RecordingSaveLocation, defaultFile, FOLDERID_Videos);
 }
 
+//----------------------------------------------------------------------------
+//
+// GetUniqueScreenshotFilename
+//
+// Gets a unique file name for screenshot saves, using the current date and
+// time as a suffix. This reduces the chance that the user could overwrite an
+// existing file if they are saving multiple captures in the same folder, and
+// also ensures that ordering is correct when sorted by name.
+//
+//----------------------------------------------------------------------------
 auto GetUniqueScreenshotFilename()
 {
-    return GetUniqueFilename(g_ScreenshotSaveLocation, DEFAULT_SCREENSHOT_FILE, FOLDERID_Pictures);
+    SYSTEMTIME lt;
+    GetLocalTime(&lt);
+
+    // Format: "ZoomIt YYYY-MM-DD HHMMSS.png"
+    wchar_t buffer[MAX_PATH];
+    swprintf_s(buffer, L"%s %04d-%02d-%02d %02d%02d%02d.png",
+        APPNAME,
+        lt.wYear, lt.wMonth, lt.wDay,
+        lt.wHour, lt.wMinute, lt.wSecond);
+
+    return std::wstring(buffer);
 }
 
 //----------------------------------------------------------------------------
@@ -5610,6 +5629,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                                         g_RecordFrameRate,
                                         g_CaptureAudio,
                                         g_CaptureSystemAudio,
+                                        g_MicMonoMix,
                                         stream );
 
         recordingStarted = (g_RecordingSession != nullptr);
@@ -7296,7 +7316,8 @@ LRESULT APIENTRY MainWndProc(
     case WM_IME_CHAR:
     case WM_CHAR:
 
-        if( (g_TypeMode != TypeModeOff) && iswprint(static_cast<TCHAR>(wParam)) || (static_cast<TCHAR>(wParam) == L'&')) {
+        if( (g_TypeMode != TypeModeOff) &&
+            (iswprint(static_cast<TCHAR>(wParam)) || (static_cast<TCHAR>(wParam) == L'&')) ) {
             g_HaveTyped = TRUE;
 
             TCHAR	 vKey = static_cast<TCHAR>(wParam);
@@ -7404,9 +7425,8 @@ LRESULT APIENTRY MainWndProc(
 
     case WM_KEYDOWN:
 
-        if( (g_TypeMode != TypeModeOff) && g_HaveTyped && static_cast<char>(wParam) != VK_UP && static_cast<char>(wParam) != VK_DOWN &&
-            (isprint( static_cast<char>(wParam)) ||
-            wParam == VK_RETURN || wParam == VK_DELETE || wParam == VK_BACK )) {
+        if( (g_TypeMode != TypeModeOff) && g_HaveTyped &&
+            (wParam == VK_RETURN || wParam == VK_DELETE || wParam == VK_BACK) ) {
 
             if( wParam == VK_RETURN ) {
 
