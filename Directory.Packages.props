@@ -79,10 +79,10 @@
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Windows.ImplementationLibrary" Version="1.0.231216.1"/>
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.251106002" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="1.8.251104000" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="1.8.39" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="1.8.251106002" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="1.8.260203002" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="1.8.47" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="1.8.260209005" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />

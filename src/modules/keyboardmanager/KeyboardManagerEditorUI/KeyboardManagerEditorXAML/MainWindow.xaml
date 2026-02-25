@@ -26,13 +26,9 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TitleBar x:Name="titleBar" Title="Keyboard Manager">
-            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
-            <TitleBar.LeftHeader>
-                <ImageIcon
-                    Height="16"
-                    Margin="16,0,0,0"
-                    Source="/Assets/KeyboardManagerEditor/FluentIconsKeyboardManager.png" />
-            </TitleBar.LeftHeader>
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="/Assets/KeyboardManagerEditor/FluentIconsKeyboardManager.png" />
+            </TitleBar.IconSource>
         </TitleBar>
 
         <pages:MainPage
