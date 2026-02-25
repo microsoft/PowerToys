@@ -2492,6 +2492,26 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_WrapMode_Both.Content" xml:space="preserve">
     <value>Vertical and horizontal</value>
   </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode.Header" xml:space="preserve">
+    <value>Wrapping activation</value>
+    <comment>CursorWrap: Label for activation mode dropdown</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode.Description" xml:space="preserve">
+    <value>Control when cursor wrapping occurs as the pointer reaches the screen edge.</value>
+    <comment>CursorWrap: Description for activation mode dropdown</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode_Always.Content" xml:space="preserve">
+    <value>Always</value>
+    <comment>CursorWrap: Activation mode - always wrap</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode_HoldingCtrl.Content" xml:space="preserve">
+    <value>Holding Ctrl</value>
+    <comment>CursorWrap: Activation mode - disable wrap when Ctrl held</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode_HoldingShift.Content" xml:space="preserve">
+    <value>Holding Shift</value>
+    <comment>CursorWrap: Activation mode - disable wrap when Shift held</comment>
+  </data>		
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>

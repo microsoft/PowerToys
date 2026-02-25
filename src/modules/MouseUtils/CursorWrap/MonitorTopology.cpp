@@ -4,6 +4,7 @@
 
 #include "pch.h"
 #include "MonitorTopology.h"
+#include "CursorWrapCore.h" // For CursorDirection struct
 #include "../../../common/logger/logger.h"
 #include <algorithm>
 #include <cmath>
@@ -12,6 +13,7 @@ void MonitorTopology::Initialize(const std::vector<MonitorInfo>& monitors)
 {
     Logger::info(L"======= TOPOLOGY INITIALIZATION START =======");
     Logger::info(L"Initializing edge-based topology for {} monitors", monitors.size());
+
 
     m_monitors = monitors;
     m_outerEdges.clear();
@@ -163,10 +165,80 @@ bool MonitorTopology::EdgesAreAdjacent(const MonitorEdge& edge1, const MonitorEd
     int overlapStart = max(edge1.start, edge2.start);
     int overlapEnd = min(edge1.end, edge2.end);
 
+
     return overlapEnd > overlapStart + tolerance;
 }
 
-bool MonitorTopology::IsOnOuterEdge(HMONITOR monitor, const POINT& cursorPos, EdgeType& outEdgeType, WrapMode wrapMode) const
+EdgeType MonitorTopology::PrioritizeEdgeByDirection(const std::vector<EdgeType>& candidates, 
+                                                     const CursorDirection* direction) const
+{
+    if (candidates.empty())
+    {
+        return EdgeType::Left; // Should not happen, but return a default
+    }
+    
+    if (candidates.size() == 1 || direction == nullptr)
+    {
+        return candidates[0];
+    }
+    
+    // Prioritize based on movement direction
+    // If moving primarily horizontally, prefer horizontal edges (Left/Right)
+    // If moving primarily vertically, prefer vertical edges (Top/Bottom)
+    
+    if (direction->IsPrimarilyHorizontal())
+    {
+        // Prefer Left if moving left, Right if moving right
+        if (direction->IsMovingLeft())
+        {
+            for (EdgeType edge : candidates)
+            {
+                if (edge == EdgeType::Left) return edge;
+            }
+        }
+        else if (direction->IsMovingRight())
+        {
+            for (EdgeType edge : candidates)
+            {
+                if (edge == EdgeType::Right) return edge;
+            }
+        }
+        // Fall back to any horizontal edge
+        for (EdgeType edge : candidates)
+        {
+            if (edge == EdgeType::Left || edge == EdgeType::Right) return edge;
+        }
+    }
+    else
+    {
+        // Prefer Top if moving up, Bottom if moving down
+        if (direction->IsMovingUp())
+        {
+            for (EdgeType edge : candidates)
+            {
+                if (edge == EdgeType::Top) return edge;
+            }
+        }
+        else if (direction->IsMovingDown())
+        {
+            for (EdgeType edge : candidates)
+            {
+                if (edge == EdgeType::Bottom) return edge;
+            }
+        }
+        // Fall back to any vertical edge
+        for (EdgeType edge : candidates)
+        {
+            if (edge == EdgeType::Top || edge == EdgeType::Bottom) return edge;
+        }
+    }
+    
+    // Default to first candidate
+    return candidates[0];
+}
+
+bool MonitorTopology::IsOnOuterEdge(HMONITOR monitor, const POINT& cursorPos, EdgeType& outEdgeType, 
+                                     WrapMode wrapMode, const CursorDirection* direction) const
 {
     RECT monitorRect;
     if (!GetMonitorRect(monitor, monitorRect))
@@ -248,13 +320,40 @@ bool MonitorTopology::IsOnOuterEdge(HMONITOR monitor, const POINT& cursorPos, Ed
         return false;
     }
 
-    // Try each candidate edge and return first with valid wrap destination
+    // Prioritize candidates by movement direction at corners
+    EdgeType prioritizedEdge = PrioritizeEdgeByDirection(candidateEdges, direction);
+    
+    // Get the source edge info
+    auto sourceIt = m_edgeMap.find({monitorIndex, prioritizedEdge});
+    if (sourceIt == m_edgeMap.end())
+    {
+        return false;
+    }
+    
+    // Use the new FindNearestOppositeEdge which handles non-overlapping regions
+    int cursorCoord = (prioritizedEdge == EdgeType::Left || prioritizedEdge == EdgeType::Right) 
+                      ? cursorPos.y : cursorPos.x;
+    OppositeEdgeResult result = FindNearestOppositeEdge(prioritizedEdge, cursorCoord, sourceIt->second);
+    
+    if (result.found)
+    {
+        outEdgeType = prioritizedEdge;
+        return true;
+    }
+    
+    // If prioritized edge didn't work, try other candidates
     for (EdgeType candidate : candidateEdges)
     {
-        MonitorEdge oppositeEdge = FindOppositeOuterEdge(candidate,
-            (candidate == EdgeType::Left || candidate == EdgeType::Right) ? cursorPos.y : cursorPos.x);
-
-        if (oppositeEdge.monitorIndex >= 0)
+        if (candidate == prioritizedEdge) continue;
+        
+        auto it = m_edgeMap.find({monitorIndex, candidate});
+        if (it == m_edgeMap.end()) continue;
+        
+        int coord = (candidate == EdgeType::Left || candidate == EdgeType::Right) 
+                    ? cursorPos.y : cursorPos.x;
+        OppositeEdgeResult altResult = FindNearestOppositeEdge(candidate, coord, it->second);
+        
+        if (altResult.found)
         {
             outEdgeType = candidate;
             return true;
@@ -280,16 +379,14 @@ POINT MonitorTopology::GetWrapDestination(HMONITOR fromMonitor, const POINT& cur
     }
 
     const MonitorEdge& fromEdge = it->second;
+    
+    // Get cursor coordinate perpendicular to the edge
+    int cursorCoord = (edgeType == EdgeType::Left || edgeType == EdgeType::Right) ? cursorPos.y : cursorPos.x;
 
-    // Calculate relative position on current edge (0.0 to 1.0)
-    double relativePos = GetRelativePosition(fromEdge,
-        (edgeType == EdgeType::Left || edgeType == EdgeType::Right) ? cursorPos.y : cursorPos.x);
+    // Use the new FindNearestOppositeEdge which handles non-overlapping regions
+    OppositeEdgeResult oppositeResult = FindNearestOppositeEdge(edgeType, cursorCoord, fromEdge);
 
-    // Find opposite outer edge
-    MonitorEdge oppositeEdge = FindOppositeOuterEdge(edgeType,
-        (edgeType == EdgeType::Left || edgeType == EdgeType::Right) ? cursorPos.y : cursorPos.x);
-
-    if (oppositeEdge.monitorIndex < 0)
+    if (!oppositeResult.found)
     {
         // No opposite edge found, wrap within same monitor
         RECT monitorRect;
@@ -321,15 +418,35 @@ POINT MonitorTopology::GetWrapDestination(HMONITOR fromMonitor, const POINT& cur
 
     if (edgeType == EdgeType::Left || edgeType == EdgeType::Right)
     {
-        // Horizontal edge -> vertical movement
-        result.x = oppositeEdge.position;
-        result.y = GetAbsolutePosition(oppositeEdge, relativePos);
+        // Horizontal wrapping (Left<->Right edges)
+        result.x = oppositeResult.edge.position;
+        
+        if (oppositeResult.requiresProjection)
+        {
+            // Use the pre-calculated projected coordinate for non-overlapping regions
+            result.y = oppositeResult.projectedCoordinate;
+        }
+        else
+        {
+            // Overlapping region - preserve Y coordinate
+            result.y = cursorPos.y;
+        }
     }
     else
     {
-        // Vertical edge -> horizontal movement
-        result.y = oppositeEdge.position;
-        result.x = GetAbsolutePosition(oppositeEdge, relativePos);
+        // Vertical wrapping (Top<->Bottom edges)
+        result.y = oppositeResult.edge.position;
+        
+        if (oppositeResult.requiresProjection)
+        {
+            // Use the pre-calculated projected coordinate for non-overlapping regions
+            result.x = oppositeResult.projectedCoordinate;
+        }
+        else
+        {
+            // Overlapping region - preserve X coordinate
+            result.x = cursorPos.x;
+        }
     }
 
     return result;
@@ -387,6 +504,179 @@ MonitorEdge MonitorTopology::FindOppositeOuterEdge(EdgeType fromEdge, int relati
     return result;
 }
 
+OppositeEdgeResult MonitorTopology::FindNearestOppositeEdge(EdgeType fromEdge, int cursorCoordinate,
+                                                             const MonitorEdge& sourceEdge) const
+{
+    OppositeEdgeResult result;
+    result.found = false;
+    result.requiresProjection = false;
+    result.projectedCoordinate = 0;
+    result.edge.monitorIndex = -1;
+
+    EdgeType targetType;
+    bool findMax; // true = find max position (furthest right/bottom), false = find min (furthest left/top)
+
+    switch (fromEdge)
+    {
+    case EdgeType::Left:
+        targetType = EdgeType::Right;
+        findMax = true;
+        break;
+    case EdgeType::Right:
+        targetType = EdgeType::Left;
+        findMax = false;
+        break;
+    case EdgeType::Top:
+        targetType = EdgeType::Bottom;
+        findMax = true;
+        break;
+    case EdgeType::Bottom:
+        targetType = EdgeType::Top;
+        findMax = false;
+        break;
+    default:
+        return result; // Invalid edge type
+    }
+
+    // First, try to find an edge that directly overlaps the cursor coordinate
+    MonitorEdge directMatch = FindOppositeOuterEdge(fromEdge, cursorCoordinate);
+    if (directMatch.monitorIndex >= 0)
+    {
+        result.found = true;
+        result.requiresProjection = false;
+        result.edge = directMatch;
+        result.projectedCoordinate = cursorCoordinate; // Not used, but set for completeness
+        return result;
+    }
+
+    // No direct overlap - find the nearest opposite edge by coordinate distance
+    // This handles the "dead zone" case where cursor is in a non-overlapping region
+    
+    int bestDistance = INT_MAX;
+    MonitorEdge bestEdge = { .monitorIndex = -1 };
+    int bestProjectedCoord = 0;
+
+    for (const auto& edge : m_outerEdges)
+    {
+        if (edge.type != targetType)
+        {
+            continue;
+        }
+
+        // Calculate distance from cursor coordinate to this edge's range
+        int distance = 0;
+        int projectedCoord = 0;
+        
+        if (cursorCoordinate < edge.start)
+        {
+            // Cursor is before the edge's start - project to edge start with offset
+            distance = edge.start - cursorCoordinate;
+            projectedCoord = edge.start; // Clamp to edge start
+        }
+        else if (cursorCoordinate > edge.end)
+        {
+            // Cursor is after the edge's end - project to edge end with offset
+            distance = cursorCoordinate - edge.end;
+            projectedCoord = edge.end; // Clamp to edge end
+        }
+        else
+        {
+            // Cursor overlaps - this shouldn't happen since we checked direct match
+            distance = 0;
+            projectedCoord = cursorCoordinate;
+        }
+
+        // Choose the best edge: prefer closer edges, and among equals prefer extreme position
+        bool isBetter = false;
+        if (distance < bestDistance)
+        {
+            isBetter = true;
+        }
+        else if (distance == bestDistance && bestEdge.monitorIndex >= 0)
+        {
+            // Same distance - prefer the extreme position (furthest in wrap direction)
+            if ((findMax && edge.position > bestEdge.position) ||
+                (!findMax && edge.position < bestEdge.position))
+            {
+                isBetter = true;
+            }
+        }
+
+        if (isBetter)
+        {
+            bestDistance = distance;
+            bestEdge = edge;
+            bestProjectedCoord = projectedCoord;
+        }
+    }
+
+    if (bestEdge.monitorIndex >= 0)
+    {
+        result.found = true;
+        result.requiresProjection = true;
+        result.edge = bestEdge;
+        
+        // Calculate projected position using offset-from-boundary approach
+        result.projectedCoordinate = CalculateProjectedPosition(cursorCoordinate, sourceEdge, bestEdge);
+        
+        Logger::trace(L"FindNearestOppositeEdge: Non-overlapping wrap from {} to Mon {} edge, cursor={}, projected={}",
+            static_cast<int>(fromEdge), bestEdge.monitorIndex, cursorCoordinate, result.projectedCoordinate);
+    }
+
+    return result;
+}
+
+int MonitorTopology::CalculateProjectedPosition(int cursorCoordinate, const MonitorEdge& sourceEdge,
+                                                 const MonitorEdge& targetEdge) const
+{
+    // Implement Windows-like offset-from-boundary projection
+    // When cursor is in a non-shared region, calculate offset from the nearest shared boundary
+    // and apply that offset to the destination edge
+    
+    // Find the shared boundary region between source and target edges
+    int sharedStart = max(sourceEdge.start, targetEdge.start);
+    int sharedEnd = min(sourceEdge.end, targetEdge.end);
+    
+    if (cursorCoordinate >= sharedStart && cursorCoordinate <= sharedEnd)
+    {
+        // Cursor is in shared region - just return the coordinate (shouldn't happen here)
+        return cursorCoordinate;
+    }
+    
+    int projectedCoord;
+    
+    if (cursorCoordinate < sharedStart)
+    {
+        // Cursor is BEFORE the shared region (e.g., above shared area)
+        // Calculate offset from cursor to shared boundary
+        int offsetFromBoundary = sharedStart - cursorCoordinate;
+        
+        // Apply offset from target edge start
+        projectedCoord = targetEdge.start + (sharedStart - cursorCoordinate - 1);
+        
+        // Use offset from top of source non-shared region
+        int sourceNonSharedTop = sourceEdge.start;
+        int offsetFromSourceTop = cursorCoordinate - sourceNonSharedTop;
+        projectedCoord = targetEdge.start + offsetFromSourceTop;
+    }
+    else
+    {
+        // Cursor is AFTER the shared region (e.g., below shared area)
+        // Calculate offset from cursor to shared boundary
+        int offsetFromBoundary = cursorCoordinate - sharedEnd;
+        
+        // Use offset from bottom of source non-shared region
+        int sourceNonSharedBottom = sourceEdge.end;
+        int offsetFromSourceBottom = sourceNonSharedBottom - cursorCoordinate;
+        projectedCoord = targetEdge.end - offsetFromSourceBottom;
+    }
+    
+    // Clamp to target edge bounds
+    projectedCoord = max(targetEdge.start, min(projectedCoord, targetEdge.end));
+    
+    return projectedCoord;
+}
+
 double MonitorTopology::GetRelativePosition(const MonitorEdge& edge, int coordinate) const
 {
     if (edge.end == edge.start)
@@ -410,6 +700,7 @@ int MonitorTopology::GetAbsolutePosition(const MonitorEdge& edge, double relativ
     int64_t result = static_cast<int64_t>(edge.start) + offset;
     return static_cast<int>(result);
 }
+
 
 std::vector<MonitorTopology::GapInfo> MonitorTopology::DetectMonitorGaps() const
 {
