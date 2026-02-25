@@ -32,14 +32,23 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         List<IContextItem> moreCommands = [];
         var itemId = commandItem.Command.Id;
+        IPageContext? page = null;
+        var succeeded = commandItem.PageContext.TryGetTarget(out page);
+        if (!succeeded || page is null)
+        {
+            return results;
+        }
 
-        if (commandItem.PageContext.TryGetTarget(out var page) &&
-            page.ProviderContext.SupportsPinning &&
+        var isTopLevelItem = page is TopLevelItemPageContext;
+        var providerContext = page.ProviderContext;
+        var supportsPinning = providerContext.SupportsPinning;
+
+        if ((isTopLevelItem || supportsPinning) &&
             !string.IsNullOrEmpty(itemId))
         {
             // Add pin/unpin commands for pinning items to the top-level or to
             // the dock.
-            var providerId = page.ProviderContext.ProviderId;
+            var providerId = providerContext.ProviderId;
             if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
             {
                 var providerSettings = _settingsModel.GetProviderSettings(provider);
@@ -52,8 +61,6 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                 // We can't look up if this command item is in the top level
                 // items in the manager, because we are being called _before_ we
                 // get added to the manager's list of commands.
-                var isTopLevelItem = page is TopLevelItemPageContext;
-
                 if (!isTopLevelItem || alreadyPinnedToTopLevel)
                 {
                     var pinToTopLevelCommand = new PinToCommand(
