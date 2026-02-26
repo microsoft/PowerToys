@@ -128,10 +128,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(ColorFormatModel))]
     [JsonSerializable(typeof(ImageSize))]
     [JsonSerializable(typeof(KeysDataModel))]
+    [JsonSerializable(typeof(RemapKeysDataModel))]
+    [JsonSerializable(typeof(ShortcutsKeyDataModel))]
     [JsonSerializable(typeof(EnabledModules))]
     [JsonSerializable(typeof(GeneralSettingsCustomAction))]
     [JsonSerializable(typeof(OutGoingGeneralSettings))]
     [JsonSerializable(typeof(OutGoingLanguageSettings))]
+    [JsonSerializable(typeof(UpdatingSettings))]
     [JsonSerializable(typeof(AdvancedPasteCustomActions))]
     [JsonSerializable(typeof(AdvancedPasteAdditionalActions))]
     [JsonSerializable(typeof(AdvancedPasteCustomAction))]
@@ -158,6 +161,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(SettingsUILibrary.SettingEntry[]))]
     [JsonSerializable(typeof(SettingsUILibrary.EntryType))]
 
+    // IPC Message Types (for AOT compatibility)
+    [JsonSerializable(typeof(FindMyMouseSettingsIPCMessage))]
+    [JsonSerializable(typeof(MouseHighlighterSettingsIPCMessage))]
+    [JsonSerializable(typeof(MousePointerCrosshairsSettingsIPCMessage))]
+    [JsonSerializable(typeof(PowerRenameSettingsIPCMessage))]
+    [JsonSerializable(typeof(ShortcutGuideSettingsIPCMessage))]
+
+    // Collection Types (for AOT compatibility in backup/restore)
+    [JsonSerializable(typeof(List<object>))]
+    [JsonSerializable(typeof(Dictionary<string, object>))]
+
     // AdvancedPaste AI Provider Types (for AOT compatibility)
     [JsonSerializable(typeof(PasteAIConfiguration))]
     [JsonSerializable(typeof(PasteAIProviderDefinition))]
@@ -174,13 +188,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(SndAwakeSettings))]
     [JsonSerializable(typeof(SndCursorWrapSettings))]
     [JsonSerializable(typeof(SndFindMyMouseSettings))]
+    [JsonSerializable(typeof(SndImageResizerSettings))]
+    [JsonSerializable(typeof(SndKeyboardManagerSettings))]
     [JsonSerializable(typeof(SndLightSwitchSettings))]
     [JsonSerializable(typeof(SndMouseHighlighterSettings))]
     [JsonSerializable(typeof(SndMouseJumpSettings))]
     [JsonSerializable(typeof(SndMousePointerCrosshairsSettings))]
     [JsonSerializable(typeof(SndPowerAccentSettings))]
+    [JsonSerializable(typeof(SndPowerOcrSettings))]
     [JsonSerializable(typeof(SndPowerPreviewSettings))]
     [JsonSerializable(typeof(SndPowerRenameSettings))]
+    [JsonSerializable(typeof(SndRegistryPreviewSettings))]
     [JsonSerializable(typeof(SndShortcutGuideSettings))]
 
     // IPC Message Generic Wrapper Types (SndModuleSettings<T>)

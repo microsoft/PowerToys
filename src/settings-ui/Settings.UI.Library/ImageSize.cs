@@ -118,5 +118,5 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
     [JsonIgnore]
     public ImageSize AccessibleTextHelper => this;
 
-    public string ToJsonString() => JsonSerializer.Serialize(this);
+    public string ToJsonString() => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.ImageSize);
 }

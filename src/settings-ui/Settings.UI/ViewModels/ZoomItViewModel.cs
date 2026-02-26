@@ -52,17 +52,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public int DemoTypeMinTypingSpeed { get; } = 100;
 
-        public ObservableCollection<Tuple<string, string>> MicrophoneList { get; set; } = new ObservableCollection<Tuple<string, string>>();
+        public ObservableCollection<MicrophoneItem> MicrophoneList { get; set; } = new ObservableCollection<MicrophoneItem>();
 
         private async void LoadMicrophoneList()
         {
             ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
             string recordDefaultMicrophone = resourceLoader.GetString("ZoomIt_Record_Microphones_Default_Name");
-            MicrophoneList.Add(new Tuple<string, string>(string.Empty, recordDefaultMicrophone));
+            MicrophoneList.Add(new MicrophoneItem(string.Empty, recordDefaultMicrophone));
             var microphones = await DeviceInformation.FindAllAsync(DeviceClass.AudioCapture);
             foreach (var microphone in microphones)
             {
-                MicrophoneList.Add(new Tuple<string, string>(microphone.Id, microphone.Name));
+                MicrophoneList.Add(new MicrophoneItem(microphone.Id, microphone.Name));
             }
         }
 
