@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Text.Json.Serialization;
 using Microsoft.UI;
 using Windows.UI;
 
@@ -43,8 +44,7 @@ public class DockSettings
     public string? BackgroundImagePath { get; set; }
 
     // </Theme settings>
-    public List<string> PinnedCommands { get; set; } = [];
-
+    // public List<string> PinnedCommands { get; set; } = [];
     public List<DockBandSettings> StartBands { get; set; } = [];
 
     public List<DockBandSettings> CenterBands { get; set; } = [];
@@ -53,18 +53,40 @@ public class DockSettings
 
     public bool ShowLabels { get; set; } = true;
 
+    [JsonIgnore]
+    public IEnumerable<(string ProviderId, string CommandId)> AllPinnedCommands =>
+        StartBands.Select(b => (b.ProviderId, b.CommandId))
+        .Concat(CenterBands.Select(b => (b.ProviderId, b.CommandId)))
+        .Concat(EndBands.Select(b => (b.ProviderId, b.CommandId)));
+
     public DockSettings()
     {
         // Initialize with default values
-        PinnedCommands = [
-            "com.microsoft.cmdpal.winget"
-        ];
+        // PinnedCommands = [
+        //     "com.microsoft.cmdpal.winget"
+        // ];
+        StartBands.Add(new DockBandSettings
+        {
+            ProviderId = "com.microsoft.cmdpal.builtin.core",
+            CommandId = "com.microsoft.cmdpal.home",
+        });
+        StartBands.Add(new DockBandSettings
+        {
+            ProviderId = "WinGet",
+            CommandId = "com.microsoft.cmdpal.winget",
+            ShowLabels = false,
+        });
 
-        StartBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.home" });
-        StartBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.winget", ShowLabels = false });
-
-        EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.performanceWidget" });
-        EndBands.Add(new DockBandSettings { Id = "com.microsoft.cmdpal.timedate.dockBand" });
+        EndBands.Add(new DockBandSettings
+        {
+            ProviderId = "PerformanceMonitor",
+            CommandId = "com.microsoft.cmdpal.performanceWidget",
+        });
+        EndBands.Add(new DockBandSettings
+        {
+            ProviderId = "com.microsoft.cmdpal.builtin.datetime",
+            CommandId = "com.microsoft.cmdpal.timedate.dockBand",
+        });
     }
 }
 
@@ -74,7 +96,9 @@ public class DockSettings
 /// </summary>
 public class DockBandSettings
 {
-    public string Id { get; set; } = string.Empty;
+    public required string ProviderId { get; set; }
+
+    public required string CommandId { get; set; }
 
     /// <summary>
     /// Gets or sets whether titles are shown for items in this band.
@@ -111,6 +135,17 @@ public class DockBandSettings
     /// dock-wide setting (passed as <paramref name="defaultValue"/>).
     /// </summary>
     public bool ResolveShowSubtitles(bool defaultValue) => ShowSubtitles ?? defaultValue;
+
+    public DockBandSettings Clone()
+    {
+        return new()
+        {
+            ProviderId = this.ProviderId,
+            CommandId = this.CommandId,
+            ShowTitles = this.ShowTitles,
+            ShowSubtitles = this.ShowSubtitles,
+        };
+    }
 }
 
 public enum DockSide

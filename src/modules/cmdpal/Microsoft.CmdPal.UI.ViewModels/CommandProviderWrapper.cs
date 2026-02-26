@@ -6,6 +6,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed class CommandProviderWrapper
+public sealed class CommandProviderWrapper : ICommandProviderContext
 {
     public bool IsExtension => Extension is not null;
 
@@ -24,8 +25,6 @@ public sealed class CommandProviderWrapper
     private readonly TaskScheduler _taskScheduler;
 
     private readonly ICommandProviderCache? _commandProviderCache;
-
-    private readonly CommandProviderContext _providerContext;
 
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
@@ -51,12 +50,17 @@ public sealed class CommandProviderWrapper
 
     public string ProviderId => string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
 
+    public bool SupportsPinning { get; private set; }
+
+    public TopLevelItemPageContext TopLevelPageContext { get; }
+
     public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
         // This ctor is only used for in-proc builtin commands. So the Unsafe!
         // calls are pretty dang safe actually.
         _commandProvider = new(provider);
         _taskScheduler = mainThread;
+        TopLevelPageContext = new(this, _taskScheduler);
 
         // Hook the extension back into us
         ExtensionHost = new CommandPaletteHost(provider);
@@ -70,8 +74,6 @@ public sealed class CommandProviderWrapper
         Icon = new(provider.Icon);
         Icon.InitializeProperties();
 
-        _providerContext = new() { ProviderId = ProviderId };
-
         // Note: explicitly not InitializeProperties()ing the settings here. If
         // we do that, then we'd regress GH #38321
         Settings = new(provider.Settings, this, _taskScheduler);
@@ -83,10 +85,10 @@ public sealed class CommandProviderWrapper
     {
         _taskScheduler = mainThread;
         _commandProviderCache = commandProviderCache;
+        TopLevelPageContext = new(this, _taskScheduler);
 
         Extension = extension;
         ExtensionHost = new CommandPaletteHost(extension);
-        _providerContext = new() { ProviderId = ProviderId };
         if (!Extension.IsRunning())
         {
             throw new ArgumentException("You forgot to start the extension. This is a CmdPal error - we need to make sure to call StartExtensionAsync");
@@ -128,7 +130,7 @@ public sealed class CommandProviderWrapper
         return settings.GetProviderSettings(this);
     }
 
-    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider)
     {
         if (!isValid)
         {
@@ -178,8 +180,16 @@ public sealed class CommandProviderWrapper
                 }
             }
 
-            // Load pinned commands from saved settings
-            var pinnedCommands = LoadPinnedCommands(model, providerSettings);
+            ICommandItem[] pinnedCommands = [];
+            ICommandProvider4? four = null;
+            if (model is ICommandProvider4 defintelyFour)
+            {
+                four = defintelyFour; // stash this away so we don't need to QI again
+                SupportsPinning = true;
+
+                // Load pinned commands from saved settings
+                pinnedCommands = LoadPinnedCommands(four, providerSettings);
+            }
 
             Id = model.Id;
             DisplayName = model.DisplayName;
@@ -199,7 +209,7 @@ public sealed class CommandProviderWrapper
 
             // We do need to explicitly initialize commands though
             var objects = new TopLevelObjects(commands, fallbacks, pinnedCommands, dockBands);
-            InitializeCommands(objects, serviceProvider, pageContext);
+            InitializeCommands(objects, serviceProvider, four);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -239,16 +249,18 @@ public sealed class CommandProviderWrapper
     private void InitializeCommands(
         TopLevelObjects objects,
         IServiceProvider serviceProvider,
-        WeakReference<IPageContext> pageContext)
+        ICommandProvider4? four)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
+        var contextMenuFactory = serviceProvider.GetService<IContextMenuFactory>()!;
         var state = serviceProvider.GetService<AppStateModel>()!;
         var providerSettings = GetProviderSettings(settings);
-
+        var ourContext = GetProviderContext();
+        WeakReference<IPageContext> pageContext = new(this.TopLevelPageContext);
         var make = (ICommandItem? i, TopLevelType t) =>
         {
-            CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, _providerContext, settings, providerSettings, serviceProvider, i);
+            CommandItemViewModel commandItemViewModel = new(new(i), pageContext, contextMenuFactory: contextMenuFactory);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, ourContext, settings, providerSettings, serviceProvider, i, contextMenuFactory: contextMenuFactory);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
@@ -275,53 +287,103 @@ public sealed class CommandProviderWrapper
                 .ToArray();
         }
 
+        List<TopLevelViewModel> bands = new();
         if (objects.DockBands is not null)
         {
-            List<TopLevelViewModel> bands = new();
+            // Start by adding TopLevelViewModels for all the dock bands which
+            // are explicitly provided by the provider through the GetDockBands
+            // API.
             foreach (var b in objects.DockBands)
             {
                 var bandVm = make(b, TopLevelType.DockBand);
                 bands.Add(bandVm);
             }
+        }
 
-            foreach (var c in TopLevelItems)
+        var dockSettings = settings.DockSettings;
+        var allPinnedCommands = dockSettings.AllPinnedCommands;
+        var pinnedBandsForThisProvider = allPinnedCommands.Where(c => c.ProviderId == ProviderId);
+        foreach (var (providerId, commandId) in pinnedBandsForThisProvider)
+        {
+            Logger.LogDebug($"Looking for pinned dock band command {commandId} for provider {providerId}");
+
+            // First, try to lookup the command as one of this provider's
+            // top-level commands. If it's there, then we can skip a lot of
+            // work and just clone it as a band.
+            if (LookupTopLevelCommand(commandId) is TopLevelViewModel topLevelCommand)
             {
-                foreach (var pinnedId in settings.DockSettings.PinnedCommands)
-                {
-                    if (pinnedId == c.Id)
-                    {
-                        var bandModel = c.ToPinnedDockBandItem();
-                        var bandVm = make(bandModel, TopLevelType.DockBand);
-                        bands.Add(bandVm);
-                        break;
-                    }
-                }
+                Logger.LogDebug($"Found pinned dock band command {commandId} for provider {providerId} as a top-level command");
+                var bandModel = topLevelCommand.ToPinnedDockBandItem();
+                var bandVm = make(bandModel, TopLevelType.DockBand);
+                bands.Add(bandVm);
+                continue;
             }
 
-            DockBandItems = bands.ToArray();
-        }
-    }
-
-    private ICommandItem[] LoadPinnedCommands(ICommandProvider model, ProviderSettings providerSettings)
-    {
-        var pinnedItems = new List<ICommandItem>();
-
-        if (model is ICommandProvider4 provider4)
-        {
-            foreach (var pinnedId in providerSettings.PinnedCommandIds)
+            // If we didn't find it as a top-level command, then we need to
+            // try to get it directly from the provider and hope it supports
+            // being a dock band. This is the fallback for providers that
+            // don't explicitly support dock bands through GetDockBands, but
+            // do support pinning commands (ICommandProvider4)
+            if (four is not null)
             {
                 try
                 {
-                    var commandItem = provider4.GetCommandItem(pinnedId);
+                    var commandItem = four.GetCommandItem(commandId);
                     if (commandItem is not null)
                     {
-                        pinnedItems.Add(commandItem);
+                        Logger.LogDebug($"Found pinned dock band command {commandId} for provider {providerId} through ICommandProvider4 API");
+                        var bandVm = make(commandItem, TopLevelType.DockBand);
+                        bands.Add(bandVm);
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"Couldn't find pinned dock band command {commandId} for provider {providerId} through ICommandProvider4 API. This command won't be shown as a dock band.");
                     }
                 }
                 catch (Exception e)
                 {
-                    Logger.LogError($"Failed to load pinned command {pinnedId}: {e.Message}");
+                    Logger.LogError($"Failed to load pinned dock band command {commandId} for provider {providerId}: {e.Message}");
                 }
+            }
+            else
+            {
+                Logger.LogWarning($"Couldn't find pinned dock band command {commandId} for provider {providerId} as a top-level command, and provider doesn't support ICommandProvider4 API to get it directly. This command won't be shown as a dock band.");
+            }
+        }
+
+        DockBandItems = bands.ToArray();
+    }
+
+    private TopLevelViewModel? LookupTopLevelCommand(string commandId)
+    {
+        foreach (var c in TopLevelItems)
+        {
+            if (c.Id == commandId)
+            {
+                return c;
+            }
+        }
+
+        return null;
+    }
+
+    private ICommandItem[] LoadPinnedCommands(ICommandProvider4 model, ProviderSettings providerSettings)
+    {
+        var pinnedItems = new List<ICommandItem>();
+
+        foreach (var pinnedId in providerSettings.PinnedCommandIds)
+        {
+            try
+            {
+                var commandItem = model.GetCommandItem(pinnedId);
+                if (commandItem is not null)
+                {
+                    pinnedItems.Add(commandItem);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Failed to load pinned command {pinnedId}: {e.Message}");
             }
         }
 
@@ -353,17 +415,56 @@ public sealed class CommandProviderWrapper
         if (!providerSettings.PinnedCommandIds.Contains(commandId))
         {
             providerSettings.PinnedCommandIds.Add(commandId);
-            SettingsModel.SaveSettings(settings);
 
             // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
             this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+            SettingsModel.SaveSettings(settings, false);
         }
     }
 
-    public CommandProviderContext GetProviderContext()
+    public void UnpinCommand(string commandId, IServiceProvider serviceProvider)
     {
-        return _providerContext;
+        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var providerSettings = GetProviderSettings(settings);
+
+        if (providerSettings.PinnedCommandIds.Remove(commandId))
+        {
+            // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
+            this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+
+            SettingsModel.SaveSettings(settings, false);
+        }
     }
+
+    public void PinDockBand(string commandId, IServiceProvider serviceProvider)
+    {
+        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var bandSettings = new DockBandSettings
+        {
+            CommandId = commandId,
+            ProviderId = this.ProviderId,
+        };
+        settings.DockSettings.StartBands.Add(bandSettings);
+
+        // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
+        this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+
+        SettingsModel.SaveSettings(settings, false);
+    }
+
+    public void UnpinDockBand(string commandId, IServiceProvider serviceProvider)
+    {
+        var settings = serviceProvider.GetService<SettingsModel>()!;
+        settings.DockSettings.StartBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId);
+        settings.DockSettings.CenterBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId);
+        settings.DockSettings.EndBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId);
+
+        // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
+        this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        SettingsModel.SaveSettings(settings, false);
+    }
+
+    public ICommandProviderContext GetProviderContext() => this;
 
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;
 

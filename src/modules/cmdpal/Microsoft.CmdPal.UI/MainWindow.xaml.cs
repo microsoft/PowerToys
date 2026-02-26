@@ -210,7 +210,10 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings();
+    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    {
+        DispatcherQueue.TryEnqueue(HotReloadSettings);
+    }
 
     private void RootElementLoaded(object sender, RoutedEventArgs e)
     {

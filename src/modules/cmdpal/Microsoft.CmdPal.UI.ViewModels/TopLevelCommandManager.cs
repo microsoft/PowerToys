@@ -22,7 +22,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
     IRecipient<PinCommandItemMessage>,
-    IPageContext,
+    IRecipient<UnpinCommandItemMessage>,
+    IRecipient<PinToDockMessage>,
     IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
@@ -39,8 +40,6 @@ public partial class TopLevelCommandManager : ObservableObject,
     private readonly Lock _dockBandsLock = new();
     private readonly SupersedingAsyncGate _reloadCommandsGate;
 
-    TaskScheduler IPageContext.Scheduler => _taskScheduler;
-
     public TopLevelCommandManager(IServiceProvider serviceProvider, ICommandProviderCache commandProviderCache)
     {
         _serviceProvider = serviceProvider;
@@ -48,6 +47,8 @@ public partial class TopLevelCommandManager : ObservableObject,
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
         WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
     }
 
@@ -124,9 +125,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     // May be called from a background thread
     private async Task<TopLevelObjectSets> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
-        WeakReference<IPageContext> weakSelf = new(this);
-
-        await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
+        await commandProvider.LoadTopLevelCommands(_serviceProvider);
 
         var commands = await Task.Factory.StartNew(
             () =>
@@ -182,8 +181,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     /// <returns>an awaitable task</returns>
     private async Task UpdateCommandsForProvider(CommandProviderWrapper sender, IItemsChangedEventArgs args)
     {
-        WeakReference<IPageContext> weakSelf = new(this);
-        await sender.LoadTopLevelCommands(_serviceProvider, weakSelf);
+        await sender.LoadTopLevelCommands(_serviceProvider);
 
         List<TopLevelViewModel> newItems = [.. sender.TopLevelItems];
         foreach (var i in sender.FallbackItems)
@@ -380,8 +378,6 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         timer.Stop();
         Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms");
-
-        WeakReferenceMessenger.Default.Send<CommandsReloadedMessage>();
     }
 
     private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
@@ -527,19 +523,34 @@ public partial class TopLevelCommandManager : ObservableObject,
         wrapper?.PinCommand(message.CommandId, _serviceProvider);
     }
 
-    private CommandProviderWrapper? LookupProvider(string providerId)
+    public void Receive(UnpinCommandItemMessage message)
+    {
+        var wrapper = LookupProvider(message.ProviderId);
+        wrapper?.UnpinCommand(message.CommandId, _serviceProvider);
+    }
+
+    public void Receive(PinToDockMessage message)
+    {
+        if (LookupProvider(message.ProviderId) is CommandProviderWrapper wrapper)
+        {
+            if (message.Pin)
+            {
+                wrapper?.PinDockBand(message.CommandId, _serviceProvider);
+            }
+            else
+            {
+                wrapper?.UnpinDockBand(message.CommandId, _serviceProvider);
+            }
+        }
+    }
+
+    public CommandProviderWrapper? LookupProvider(string providerId)
     {
         lock (_commandProvidersLock)
         {
             return _builtInCommands.FirstOrDefault(w => w.ProviderId == providerId)
                    ?? _extensionCommandProviders.FirstOrDefault(w => w.ProviderId == providerId);
         }
-    }
-
-    void IPageContext.ShowException(Exception ex, string? extensionHint)
-    {
-        var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint ?? "TopLevelCommandManager");
-        CommandPaletteHost.Instance.Log(message);
     }
 
     internal bool IsProviderActive(string id)
@@ -594,9 +605,6 @@ public partial class TopLevelCommandManager : ObservableObject,
                 {
                     DockBands.Add(bandVm);
                 }
-
-                // Notify DockViewModel to update its collections
-                WeakReferenceMessenger.Default.Send<CommandsReloadedMessage>();
             }
         }
     }

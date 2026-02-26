@@ -297,15 +297,18 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Built-in.
         /// </summary>
-        public static string builtin_extension_name_fallback {
-            get {
-                return ResourceManager.GetString("builtin_extension_name_fallback", resourceCulture);
-            }
-        }
-
         public static string builtin_extension_name {
             get {
                 return ResourceManager.GetString("builtin_extension_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Built-in.
+        /// </summary>
+        public static string builtin_extension_name_fallback {
+            get {
+                return ResourceManager.GetString("builtin_extension_name_fallback", resourceCulture);
             }
         }
         
@@ -508,29 +511,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pin to dock.
-        /// </summary>
-        public static string dock_pin_command_name {
-            get {
-                return ResourceManager.GetString("dock_pin_command_name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Dock settings.
         /// </summary>
         public static string dock_settings_name {
             get {
                 return ResourceManager.GetString("dock_settings_name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unpin from dock.
-        /// </summary>
-        public static string dock_unpin_command_name {
-            get {
-                return ResourceManager.GetString("dock_unpin_command_name", resourceCulture);
             }
         }
         
@@ -544,6 +529,14 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pinned.
+        /// </summary>
+        public static string PinnedItemSuffix {
+            get {
+                return ResourceManager.GetString("PinnedItemSuffix", resourceCulture);
+            }
+        }
+
         ///   Looks up a localized string similar to Results.
         /// </summary>
         public static string results {

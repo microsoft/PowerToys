@@ -10,15 +10,15 @@ public class CommandPalettePageViewModelFactory
     : IPageViewModelFactoryService
 {
     private readonly TaskScheduler _scheduler;
-    private readonly IContextMenuFactory? _contextMenuFactory;
+    private readonly IContextMenuFactory _contextMenuFactory;
 
-    public CommandPalettePageViewModelFactory(TaskScheduler scheduler, IContextMenuFactory? contextMenuFactory)
+    public CommandPalettePageViewModelFactory(TaskScheduler scheduler, IContextMenuFactory contextMenuFactory)
     {
         _scheduler = scheduler;
         _contextMenuFactory = contextMenuFactory;
     }
 
-    public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host, CommandProviderContext providerContext)
+    public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host, ICommandProviderContext providerContext)
     {
         return page switch
         {

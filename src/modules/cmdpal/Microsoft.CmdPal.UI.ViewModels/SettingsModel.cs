@@ -237,7 +237,7 @@ public partial class SettingsModel : ObservableObject
         return false;
     }
 
-    public static void SaveSettings(SettingsModel model)
+    public static void SaveSettings(SettingsModel model, bool hotReload = true)
     {
         if (string.IsNullOrEmpty(FilePath))
         {
@@ -272,7 +272,10 @@ public partial class SettingsModel : ObservableObject
                     // TODO: Instead of just raising the event here, we should
                     // have a file change watcher on the settings file, and
                     // reload the settings then
-                    model.SettingsChanged?.Invoke(model, null);
+                    if (hotReload)
+                    {
+                        model.SettingsChanged?.Invoke(model, null);
+                    }
                 }
                 else
                 {
