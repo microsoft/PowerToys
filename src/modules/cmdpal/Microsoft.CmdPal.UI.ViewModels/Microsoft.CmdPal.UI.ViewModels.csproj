@@ -18,7 +18,7 @@
     <CsWinRTIncludes>AdaptiveCards.ObjectModel.WinUI3;AdaptiveCards.Rendering.WinUI3</CsWinRTIncludes>
     <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
   </PropertyGroup>
-	
+
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Common" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
@@ -40,21 +40,21 @@
     <PackageReference Include="WyHash" />
 
   </ItemGroup>
-	<!-- <AdaptiveCardsWorkaround> -->
-	<!-- Workaround for Adaptive Cards not supporting correct RIDs when using .NET 8.
+  <!-- <AdaptiveCardsWorkaround> -->
+  <!-- Workaround for Adaptive Cards not supporting correct RIDs when using .NET 8.
        Don't forget GeneratePathProperty on the AdaptiveCards PackageReference's above -->
-	<PropertyGroup>
-		<AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
-	</PropertyGroup>
-	<ItemGroup>
-		<CsWinRTInputs Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\lib\uap10.0\AdaptiveCards.ObjectModel.WinUI3.winmd" />
-		<None Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.ObjectModel.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
-	</ItemGroup>
-	<ItemGroup>
-		<CsWinRTInputs Include="$(PkgAdaptiveCards_Rendering_WinUI3)\lib\uap10.0\AdaptiveCards.Rendering.WinUI3.winmd" />
-		<Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
-	</ItemGroup>
-	
+  <PropertyGroup>
+    <AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
+  </PropertyGroup>
+  <ItemGroup>
+    <CsWinRTInputs Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\lib\uap10.0\AdaptiveCards.ObjectModel.WinUI3.winmd" />
+    <None Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.ObjectModel.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <CsWinRTInputs Include="$(PkgAdaptiveCards_Rendering_WinUI3)\lib\uap10.0\AdaptiveCards.Rendering.WinUI3.winmd" />
+    <Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
 

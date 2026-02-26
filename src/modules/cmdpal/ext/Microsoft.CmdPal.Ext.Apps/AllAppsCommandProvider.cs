@@ -16,6 +16,7 @@ namespace Microsoft.CmdPal.Ext.Apps;
 public partial class AllAppsCommandProvider : CommandProvider
 {
     public const string WellKnownId = "AllApps";
+    internal const int DefaultResultLimit = 10;
 
     public static readonly AllAppsPage Page = new();
 
@@ -44,27 +45,7 @@ public partial class AllAppsCommandProvider : CommandProvider
         PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
     }
 
-    public static int TopLevelResultLimit
-    {
-        get
-        {
-            var limitSetting = AllAppsSettings.Instance.SearchResultLimit;
-
-            if (limitSetting is null)
-            {
-                return 10;
-            }
-
-            var quantity = 10;
-
-            if (int.TryParse(limitSetting, out var result))
-            {
-                quantity = result < 0 ? quantity : result;
-            }
-
-            return quantity;
-        }
-    }
+    public static int TopLevelResultLimit => AllAppsSettings.Instance.SearchResultLimit ?? DefaultResultLimit;
 
     public override ICommandItem[] TopLevelCommands() => [_listItem, .. _page.GetPinnedApps()];
 

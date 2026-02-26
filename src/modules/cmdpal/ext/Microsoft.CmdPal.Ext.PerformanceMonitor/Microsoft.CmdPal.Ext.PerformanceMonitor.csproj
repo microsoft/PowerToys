@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
-  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
   <Import Project="..\Common.ExtDependencies.props" />
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.PerformanceMonitor</RootNamespace>
@@ -9,7 +9,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>Microsoft.CmdPal.Ext.PerformanceMonitor.pri</ProjectPriFileName>
-	  <nullable>enable</nullable>
+    <nullable>enable</nullable>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 

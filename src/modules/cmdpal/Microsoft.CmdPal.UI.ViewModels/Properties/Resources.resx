@@ -300,4 +300,8 @@
     <value>Pinned</value>
     <comment>Suffix shown for pinned items in the dock</comment>
   </data>
+  <data name="results" xml:space="preserve">
+    <value>Results</value>
+    <comment>Section title for list of all search results that doesn't fall into any other category</comment>
+  </data>
 </root>
