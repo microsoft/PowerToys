@@ -3,6 +3,5 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="ms-appx:///SettingsXAML/Controls/SettingsGroup/SettingsGroup.xaml" />
         <ResourceDictionary Source="ms-appx:///SettingsXAML/Controls/GPOInfoControl.xaml" />
-        <ResourceDictionary Source="ms-appx:///SettingsXAML/Controls/IsEnabledTextBlock.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

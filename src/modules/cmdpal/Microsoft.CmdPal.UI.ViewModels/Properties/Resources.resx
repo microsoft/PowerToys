@@ -126,6 +126,21 @@
   <data name="builtin_display_name" xml:space="preserve">
     <value>Built-in commands</value>
   </data>
+  <data name="builtin_extension_name" xml:space="preserve">
+    <value>Built-in</value>
+  </data>
+  <data name="builtin_extension_subtext" xml:space="preserve">
+    <value>{0}, {1} commands</value>
+    <comment>{0}=extension name, {1}=number of commands</comment>
+  </data>
+  <data name="builtin_extension_subtext_with_fallback" xml:space="preserve">
+    <value>{0}, {1} commands, {2} fallback commands</value>
+    <comment>{0}=extension name, {1}=number of commands, {2} number of fallback commands</comment>
+  </data>
+  <data name="builtin_extension_subtext_disabled" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>{0}=extension name, {1}=message</comment>
+  </data>
   <data name="builtin_log_subtitle" xml:space="preserve">
     <value>View log messages</value>
   </data>
@@ -244,5 +259,13 @@
   </data>
   <data name="fallbacks" xml:space="preserve">
     <value>Fallbacks</value>
+  </data>
+  <data name="ShowDetailsCommand" xml:space="preserve">
+    <value>Show details</value>
+    <comment>Name for the command that shows details of an item</comment>
+  </data>
+  <data name="results" xml:space="preserve">
+    <value>Results</value>
+    <comment>Section title for list of all search results that doesn't fall into any other category</comment>
   </data>
 </root>

@@ -1,4 +1,4 @@
-<local:NavigablePage
+﻿<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ZoomItPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -16,15 +16,6 @@
         <converters:ZoomItTypeSpeedSliderConverter x:Key="ZoomItTypeSpeedSliderConverter" />
         <converters:ZoomItOpacitySliderConverter x:Key="ZoomItOpacitySliderConverter" />
         <converters:HotkeySettingsToLocalizedStringConverter x:Key="HotkeySettingsToLocalizedStringConverter" />
-        <tkcontrols:MarkdownThemes
-            x:Key="ZoomItMarkdownThemeConfig"
-            InlineCodeBackground="{StaticResource ControlFillColorDefaultBrush}"
-            InlineCodeBorderBrush="{StaticResource ControlElevationBorderBrush}"
-            InlineCodeCornerRadius="2"
-            InlineCodeFontSize="12"
-            InlineCodeForeground="{StaticResource TextFillColorSecondaryBrush}"
-            InlineCodePadding="2,0,2,1" />
-        <tkcontrols:MarkdownConfig x:Key="ZoomItMarkdownConfig" Themes="{StaticResource ZoomItMarkdownThemeConfig}" />
     </local:NavigablePage.Resources>
     <controls:SettingsPageControl
         x:Uid="ZoomIt"
@@ -78,7 +69,7 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock x:Uid="ZoomIt_ZoomFAQ" Config="{StaticResource ZoomItMarkdownConfig}" />
+                                    <tkcontrols:MarkdownTextBlock x:Uid="ZoomIt_ZoomFAQ" Config="{StaticResource DescriptionTextMarkdownConfig}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -94,7 +85,7 @@
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind ViewModel.LiveZoomToggleKeyDraw, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_LiveZoom_Shortcut_Draw}" />
+                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.LiveZoomToggleKeyDraw, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_LiveZoom_Shortcut_Draw}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -110,7 +101,7 @@
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock x:Uid="ZoomIt_DrawFAQ" Config="{StaticResource ZoomItMarkdownConfig}" />
+                                    <tkcontrols:MarkdownTextBlock x:Uid="ZoomIt_DrawFAQ" Config="{StaticResource DescriptionTextMarkdownConfig}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -124,25 +115,24 @@
                         IsExpanded="True">
                         <tkcontrols:SettingsExpander.Description>
                             <TextBlock
+                                x:Uid="ZoomIt_Type_DemoSample"
                                 FontFamily="{x:Bind ViewModel.DemoSampleFontFamily, Mode=OneWay}"
                                 FontSize="{x:Bind ViewModel.DemoSampleFontSize, Mode=OneWay}"
                                 FontStyle="{x:Bind ViewModel.DemoSampleFontStyle, Mode=OneWay}"
                                 FontWeight="{x:Bind ViewModel.DemoSampleFontWeight, Mode=OneWay}"
-                                Text="Sample"
                                 TextDecorations="{x:Bind ViewModel.DemoSampleTextDecoration, Mode=OneWay}" />
                         </tkcontrols:SettingsExpander.Description>
                         <Button x:Uid="ZoomIt_Type_Font_Button" Command="{x:Bind ViewModel.SelectTypeFontCommand, Mode=OneWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock x:Uid="ZoomIt_TypeFAQ" Config="{StaticResource ZoomItMarkdownConfig}" />
+                                    <tkcontrols:MarkdownTextBlock x:Uid="ZoomIt_TypeFAQ" Config="{StaticResource DescriptionTextMarkdownConfig}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_DemoTypeGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-
                     <tkcontrols:SettingsExpander
                         Name="ZoomItDemoTypeShortcut"
                         x:Uid="ZoomIt_DemoType_Shortcut"
@@ -169,7 +159,7 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItDemoTypeShortcutReset">
                                 <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind ViewModel.DemoTypeToggleKeyReset, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_DemoTypeFAQ}" />
+                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.DemoTypeToggleKeyReset, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_DemoTypeFAQ}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -252,7 +242,7 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock x:Uid="ZoomIt_BreakFAQ" Config="{StaticResource ZoomItMarkdownConfig}" />
+                                    <tkcontrols:MarkdownTextBlock x:Uid="ZoomIt_BreakFAQ" Config="{StaticResource DescriptionTextMarkdownConfig}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -285,8 +275,17 @@
                                     <ComboBoxItem>MP4</ComboBoxItem>
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="ZoomItRecordCaptureSystemAudio" ContentAlignment="Left">
+                                <CheckBox x:Uid="ZoomIt_Record_CaptureSystemAudio" IsChecked="{x:Bind ViewModel.RecordCaptureSystemAudio, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItRecordCaptureAudio" ContentAlignment="Left">
                                 <CheckBox x:Uid="ZoomIt_Record_CaptureAudio" IsChecked="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="ZoomItRecordMicMonoMix" ContentAlignment="Left">
+                                <CheckBox
+                                    x:Uid="ZoomIt_Record_MicMonoMix"
+                                    IsChecked="{x:Bind ViewModel.RecordMicMonoMix, Mode=TwoWay}"
+                                    Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Name="ZoomItRecordMicrophone"
@@ -302,9 +301,9 @@
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
                                     <StackPanel Orientation="Vertical" Spacing="4">
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKey, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_FullScreen}" />
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKeyCrop, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Crop}" />
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKeyWindow, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Window}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKey, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_FullScreen}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKeyCrop, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Crop}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKeyWindow, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Window}" />
                                     </StackPanel>
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
@@ -321,7 +320,7 @@
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItSnipShortcutSave">
                                 <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource ZoomItMarkdownConfig}" Text="{x:Bind ViewModel.SnipToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Snip_Shortcut_Save}" />
+                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.SnipToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Snip_Shortcut_Save}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>

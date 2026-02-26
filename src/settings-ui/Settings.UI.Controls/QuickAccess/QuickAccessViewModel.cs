@@ -19,6 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
         private readonly IQuickAccessLauncher _launcher;
         private readonly Func<ModuleType, bool> _isModuleGpoDisabled;
+        private readonly Func<ModuleType, bool> _isModuleGpoEnabled;
         private readonly ResourceLoader _resourceLoader;
         private readonly DispatcherQueue _dispatcherQueue;
         private GeneralSettings _generalSettings;
@@ -29,11 +30,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             ISettingsRepository<GeneralSettings> settingsRepository,
             IQuickAccessLauncher launcher,
             Func<ModuleType, bool> isModuleGpoDisabled,
+            Func<ModuleType, bool> isModuleGpoEnabled,
             ResourceLoader resourceLoader)
         {
             _settingsRepository = settingsRepository;
             _launcher = launcher;
             _isModuleGpoDisabled = isModuleGpoDisabled;
+            _isModuleGpoEnabled = isModuleGpoEnabled;
             _resourceLoader = resourceLoader;
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
@@ -65,6 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AddFlyoutMenuItem(ModuleType.FancyZones);
             AddFlyoutMenuItem(ModuleType.Hosts);
             AddFlyoutMenuItem(ModuleType.LightSwitch);
+
+            // AddFlyoutMenuItem(ModuleType.PowerDisplay); // TEMPORARILY_DISABLED: PowerDisplay
             AddFlyoutMenuItem(ModuleType.PowerLauncher);
             AddFlyoutMenuItem(ModuleType.PowerOCR);
             AddFlyoutMenuItem(ModuleType.RegistryPreview);
@@ -84,7 +89,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 Title = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType)),
                 Tag = moduleType,
-                Visible = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType),
+                Visible = _isModuleGpoEnabled(moduleType) || Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType),
                 Description = GetModuleToolTip(moduleType),
                 Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                 Command = new RelayCommand(() => _launcher.Launch(moduleType)),
@@ -110,7 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 if (item.Tag is ModuleType moduleType)
                 {
-                    item.Visible = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType);
+                    item.Visible = _isModuleGpoEnabled(moduleType) || Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType);
                 }
             }
         }
@@ -121,6 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 ModuleType.ColorPicker => SettingsRepository<ColorPickerSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 ModuleType.FancyZones => SettingsRepository<FancyZonesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.ToString(),
+                ModuleType.PowerDisplay => SettingsRepository<PowerDisplaySettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 ModuleType.LightSwitch => SettingsRepository<LightSwitchSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ToggleThemeHotkey.Value.ToString(),
                 ModuleType.PowerLauncher => SettingsRepository<PowerLauncherSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.OpenPowerLauncher.ToString(),
                 ModuleType.PowerOCR => SettingsRepository<PowerOcrSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),

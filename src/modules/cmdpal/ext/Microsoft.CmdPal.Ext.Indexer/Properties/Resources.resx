@@ -211,4 +211,7 @@ You can try searching all files on this PC or adjust your indexing settings.</va
   <data name="Indexer_Command_Peek_Failed" xml:space="preserve">
     <value>Failed to launch Peek</value>
   </data>
+  <data name="Indexer_Fallback_MultipleResults_Subtitle" xml:space="preserve">
+    <value>The query matches multiple items</value>
+  </data>
 </root>

@@ -107,6 +107,12 @@ internal sealed partial class DevRibbonViewModel : ObservableObject
         WeakReferenceMessenger.Default.Send(new OpenSettingsMessage("Internal"));
     }
 
+    [RelayCommand]
+    private void ToggleDevRibbonVisibility()
+    {
+        WeakReferenceMessenger.Default.Send(new ToggleDevRibbonMessage());
+    }
+
     private sealed partial class DevRibbonTraceListener(DevRibbonViewModel viewModel) : TraceListener
     {
         private const string TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff";

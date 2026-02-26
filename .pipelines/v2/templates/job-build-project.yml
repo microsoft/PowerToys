@@ -74,6 +74,25 @@ parameters:
   - name: useExperimentalVersion
     type: boolean
     default: false
+  # Artifact mode parameters
+  - name: useArtifactSource
+    type: boolean
+    default: false
+  - name: azureDevOpsOrg
+    type: string
+    default: 'https://dev.azure.com/microsoft'
+  - name: azureDevOpsProject
+    type: string
+    default: 'ProjectReunion'
+  - name: buildId
+    type: string
+    default: ''
+  - name: artifactName
+    type: string
+    default: 'WindowsAppSDK_Nuget_And_MSIX'
+  - name: metaPackageName
+    type: string
+    default: 'Microsoft.WindowsAppSDK'
   - name: csProjectsToPublish
     type: object
     default:
@@ -226,6 +245,12 @@ jobs:
       parameters:
         versionNumber: ${{ parameters.winAppSDKVersionNumber }}
         useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+        useArtifactSource: ${{ parameters.useArtifactSource }}
+        azureDevOpsOrg: ${{ parameters.azureDevOpsOrg }}
+        azureDevOpsProject: ${{ parameters.azureDevOpsProject }}
+        buildId: ${{ parameters.buildId }}
+        artifactName: ${{ parameters.artifactName }}
+        metaPackageName: ${{ parameters.metaPackageName }}
   
   - ${{ if eq(parameters.useLatestWinAppSDK, false)}}:
     - template: .\steps-restore-nuget.yml
@@ -258,6 +283,7 @@ jobs:
         -restore -graph
         /p:RestorePackagesConfig=true
         /p:CIBuild=true
+        /p:BuildTests=${{ parameters.buildTests }}
         /bl:$(LogOutputDirectory)\build-0-main.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)

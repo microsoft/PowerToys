@@ -5,13 +5,180 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:winuiex="using:WinUIEx"
+    Width="1100"
+    Height="700"
     MinWidth="480"
     MinHeight="480"
+    Activated="Window_Activated"
     Closed="Window_Closed"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
-    <local:OobeShellPage x:Name="shellPage" />
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TitleBar
+            x:Name="AppTitleBar"
+            x:Uid="OobeWindow_TitleTxt"
+            IsBackButtonVisible="False"
+            IsPaneToggleButtonVisible="False"
+            PaneToggleRequested="TitleBar_PaneButtonClick">
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="/Assets/Settings/icon.ico" />
+            </TitleBar.IconSource>
+        </TitleBar>
+        <NavigationView
+            x:Name="navigationView"
+            Grid.Row="1"
+            CompactModeThresholdWidth="1007"
+            DisplayModeChanged="NavigationView_DisplayModeChanged"
+            ExpandedModeThresholdWidth="1007"
+            IsBackButtonVisible="Collapsed"
+            IsPaneOpen="True"
+            IsPaneToggleButtonVisible="False"
+            IsSettingsVisible="False"
+            Loaded="NavigationView_Loaded"
+            OpenPaneLength="296"
+            SelectionChanged="NavigationView_SelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem
+                    x:Uid="Shell_General"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToys.png}"
+                    Tag="Overview" />
+                <NavigationViewItem
+                    x:Uid="Shell_AdvancedPaste"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AdvancedPaste.png}"
+                    Tag="AdvancedPaste" />
+                <NavigationViewItem
+                    x:Uid="Shell_AlwaysOnTop"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}"
+                    Tag="AlwaysOnTop" />
+                <NavigationViewItem
+                    x:Uid="Shell_Awake"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
+                    Tag="Awake" />
+                <NavigationViewItem
+                    x:Uid="Shell_ColorPicker"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}"
+                    Tag="ColorPicker" />
+                <NavigationViewItem
+                    x:Uid="Shell_CmdPal"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}"
+                    Tag="CmdPal" />
+                <NavigationViewItem
+                    x:Uid="Shell_CmdNotFound"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}"
+                    Tag="CmdNotFound" />
+                <NavigationViewItem
+                    x:Uid="Shell_CropAndLock"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}"
+                    Tag="CropAndLock" />
+                <NavigationViewItem
+                    x:Uid="Shell_EnvironmentVariables"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/EnvironmentVariables.png}"
+                    Tag="EnvironmentVariables" />
+                <NavigationViewItem
+                    x:Uid="Shell_FancyZones"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}"
+                    Tag="FancyZones" />
+                <NavigationViewItem
+                    x:Uid="Shell_FileLocksmith"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileLocksmith.png}"
+                    Tag="FileLocksmith" />
+                <NavigationViewItem
+                    x:Uid="Shell_PowerPreview"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}"
+                    Tag="FileExplorer" />
+                <NavigationViewItem
+                    x:Uid="Shell_Hosts"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}"
+                    Tag="Hosts" />
+                <NavigationViewItem
+                    x:Uid="Shell_ImageResizer"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ImageResizer.png}"
+                    Tag="ImageResizer" />
+                <NavigationViewItem
+                    x:Uid="Shell_KeyboardManager"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}"
+                    Tag="KBM" />
+                <NavigationViewItem
+                    x:Uid="Shell_LightSwitch"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}"
+                    Tag="LightSwitch" />
+                <NavigationViewItem
+                    x:Uid="Shell_MouseUtilities"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}"
+                    Tag="MouseUtils" />
+                <NavigationViewItem
+                    x:Uid="Shell_MouseWithoutBorders"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
+                    Tag="MouseWithoutBorders" />
+                <NavigationViewItem
+                    x:Uid="NewPlus_Product_Name"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
+                    Tag="NewPlus" />
+                <NavigationViewItem
+                    x:Uid="Shell_Peek"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}"
+                    Tag="Peek" />
+                <!-- TEMPORARILY_DISABLED: PowerDisplay
+                <NavigationViewItem
+                    x:Uid="Shell_PowerDisplay"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}"
+                    Tag="PowerDisplay" />
+                -->
+                <NavigationViewItem
+                    x:Uid="Shell_PowerRename"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}"
+                    Tag="PowerRename" />
+                <NavigationViewItem
+                    x:Uid="Shell_PowerLauncher"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}"
+                    Tag="Run" />
+                <NavigationViewItem
+                    x:Uid="Shell_QuickAccent"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}"
+                    Tag="QuickAccent" />
+                <NavigationViewItem
+                    x:Uid="Shell_RegistryPreview"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}"
+                    Tag="RegistryPreview" />
+                <NavigationViewItem
+                    x:Uid="Shell_MeasureTool"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreenRuler.png}"
+                    Tag="MeasureTool" />
+                <NavigationViewItem
+                    x:Uid="Shell_ShortcutGuide"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}"
+                    Tag="ShortcutGuide" />
+                <NavigationViewItem
+                    x:Uid="Shell_TextExtractor"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}"
+                    Tag="TextExtractor" />
+                <NavigationViewItem
+                    x:Uid="Shell_Workspaces"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}"
+                    Tag="Workspaces" />
+                <NavigationViewItem
+                    x:Uid="Shell_ZoomIt"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}"
+                    Tag="ZoomIt" />
+            </NavigationView.MenuItems>
+            <NavigationView.PaneFooter>
+                <NavigationViewItem
+                    x:Uid="Shell_WhatsNew"
+                    AutomationProperties.AutomationId="WhatIsNewNavItem"
+                    Icon="{ui:FontIcon Glyph=&#xE789;}"
+                    Tapped="WhatIsNewItem_Tapped" />
+            </NavigationView.PaneFooter>
+            <NavigationView.Content>
+                <Frame x:Name="NavigationFrame" />
+            </NavigationView.Content>
+        </NavigationView>
+    </Grid>
 </winuiex:WindowEx>

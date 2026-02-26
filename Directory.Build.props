@@ -1,5 +1,8 @@
 <Project>
-  <Import Project="src\Version.props" />
+  <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
+  </PropertyGroup>
+  <Import Project="$(RepoRoot)src\Version.props" />
   <PropertyGroup>
     <Copyright>Copyright (C) Microsoft Corporation. All rights reserved.</Copyright>
     <AssemblyCopyright>Copyright (C) Microsoft Corporation. All rights reserved.</AssemblyCopyright>
@@ -17,6 +20,56 @@
     <NuGetAuditMode>direct</NuGetAuditMode>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>    <!-- Don't add source revision hash to the product version of binaries. -->
     <PlatformTarget>$(Platform)</PlatformTarget>
+
+    <!-- Enable Microsoft.Testing.Platform -->
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+    <TestingPlatformDotNetTestSupport>true</TestingPlatformDotNetTestSupport>
+    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --report-trx</TestingPlatformCommandLineArguments>
+    <!-- No arm64 agents to run the tests. -->
+    <TestingPlatformDisableCustomTestTarget Condition="'$(Platform)' == 'ARM64'">true</TestingPlatformDisableCustomTestTarget>
+  </PropertyGroup>
+
+  <!--
+    UI tests are run in dedicated UI test jobs/pipelines.
+    In CI, the main build uses `/t:Build;Test` across the full solution, so
+    prevent UI test projects from being executed in that pass.
+  -->
+  <PropertyGroup Condition="'$(TF_BUILD)' != '' and $(MSBuildProjectName.Contains('UITest'))">
+    <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
+  </PropertyGroup>
+
+  <!--
+    Completely skip building test projects when BuildTests=false (e.g., Release pipeline).
+    This avoids InternalsVisibleTo/signing issues by not compiling test code at all.
+    Match: projects ending in Test, Tests, UnitTests, UITests, FuzzTests, or in a folder named Tests.
+    Also matches projects starting with UnitTests- (e.g., UnitTests-CommonLib).
+    Also removes all PackageReference/ProjectReference to prevent NuGet restore and dependency builds.
+    Note: Checking both 'false' and 'False' to handle YAML boolean serialization.
+  -->
+  <PropertyGroup Condition="'$(BuildTests)' == 'false' or '$(BuildTests)' == 'False'">
+    <_ProjectName>$(MSBuildProjectName)</_ProjectName>
+    <!-- Match any project ending with "Test" or "Tests" (covers UnitTests, UITests, FuzzTests, etc.) -->
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('Test'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.EndsWith('Tests'))">true</_IsSkippedTestProject>
+    <!-- Match projects starting with UnitTests- or UITest- prefix -->
+    <_IsSkippedTestProject Condition="$(_ProjectName.StartsWith('UnitTests-'))">true</_IsSkippedTestProject>
+    <_IsSkippedTestProject Condition="$(_ProjectName.StartsWith('UITest-'))">true</_IsSkippedTestProject>
+    <!-- Match projects in a Tests folder -->
+    <_IsSkippedTestProject Condition="$(MSBuildProjectDirectory.Contains('\Tests\'))">true</_IsSkippedTestProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateGlobalUsings>false</GenerateGlobalUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Disable all code analysis for skipped test projects -->
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <RunAnalyzers>false</RunAnalyzers>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
@@ -28,15 +81,17 @@
 
   <PropertyGroup>
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
-    <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>
+    <ForceImportBeforeCppProps>$(RepoRoot)Cpp.Build.props</ForceImportBeforeCppProps>
   </PropertyGroup>
-  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+
+
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(_IsSkippedTestProject)' != 'true'">
     <PackageReference Include="StyleCop.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <Compile Include="$(MSBuildThisFileDirectory)\src\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-    <AdditionalFiles Include="$(MSBuildThisFileDirectory)\src\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
+    <Compile Include="$(RepoRoot)src\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+    <AdditionalFiles Include="$(RepoRoot)src\codeAnalysis\StyleCop.json" Link="StyleCop.json" />
 
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
@@ -44,7 +99,15 @@
     </PackageReference>
   </ItemGroup>
 
-  <!-- Add ability to run tests via "msbuild /t:Test" -->
+  <!-- In CI, we build and test with `/t:Build;Test` -->
+  <!-- So, for non-test projects, we want the target to be there and it's basically doing nothing -->
+  <!-- For C# test projects, Microsoft.Testing.Platform should inject Test target here: -->
+  <!-- https://github.com/microsoft/testfx/blob/5ad21909704db501f58f27d4a7ec241edd761af5/src/Platform/Microsoft.Testing.Platform.MSBuild/buildMultiTargeting/Microsoft.Testing.Platform.MSBuild.targets#L270-L273 -->
+  <!-- For C++ test projects, the RunVSTest SDK will do its job -->
+  <Target Name="Test" />
+
+  <!-- Add ability to run tests via "msbuild /t:Test" using the RunVSTest SDK -->
+  <!-- This is only needed for C++, as we use Microsoft.Testing.Platform for C# -->
   <!--
     Work around an MSBuild bug where Microsoft.Common.Test.targets is missing from the Arm64 installation.
     See: https://github.com/dotnet/msbuild/pull/9984
@@ -54,11 +117,11 @@
           Once the change referenced above is fixed, the ImportGroup below can be replaced with:
             <Sdk Name="Microsoft.Build.RunVSTest" Version="1.0.319" />
   -->
-  <ImportGroup Condition="'$(PROCESSOR_ARCHITECTURE)' != 'ARM64'">
+  <ImportGroup Condition="'$(PROCESSOR_ARCHITECTURE)' != 'ARM64' AND ('$(Language)' == 'C++' OR '$(MSBuildProjectExtension)' == '.vcxproj')">
     <Import Project="Sdk.props" Sdk="Microsoft.Build.RunVSTest" Version="1.0.319" />
     <Import Project="Sdk.targets" Sdk="Microsoft.Build.RunVSTest" Version="1.0.319" />
   </ImportGroup>
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(Language)' == 'C++' OR '$(MSBuildProjectExtension)' == '.vcxproj'">
     <VSTestLogger>trx</VSTestLogger>
     <!--
       RunVSTest by default uses %VSINSTALLDIR%\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe,
