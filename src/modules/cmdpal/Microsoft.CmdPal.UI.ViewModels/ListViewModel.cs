@@ -19,7 +19,6 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ListViewModel : PageViewModel, IDisposable
 {
-    // private readonly HashSet<ListItemViewModel> _itemCache = [];
     private readonly TaskFactory filterTaskFactory = new(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
 
     private readonly Dictionary<IListItem, ListItemViewModel> _vmCache = new(new ProxyReferenceEqualityComparer());
@@ -37,6 +36,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private readonly ExtensionObject<IListPage> _model;
 
     private readonly Lock _listLock = new();
+    private readonly IContextMenuFactory? _contextMenuFactory;
 
     private InterlockedBoolean _isLoading;
     private bool _isFetching;
@@ -98,11 +98,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, CommandProviderContext providerContext)
+    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, CommandProviderContext providerContext, IContextMenuFactory? contextMenuFactory)
         : base(model, scheduler, host, providerContext)
     {
         _model = new(model);
-        EmptyContent = new(new(null), PageContext);
+        _contextMenuFactory = contextMenuFactory;
+        EmptyContent = new(new(null), PageContext, _contextMenuFactory);
     }
 
     private void FiltersPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -513,8 +514,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _lastSelectedItem.PropertyChanged += SelectedItemPropertyChanged;
 
         WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
-        TextToSuggest = item.TextToSuggest;
-        WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(item.TextToSuggest));
 
         // Cancel any in-flight slow init from a previous selection and defer
         // the expensive work (extension IPC for MoreCommands, details) so
@@ -558,6 +557,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
                 }
+
+                TextToSuggest = item.TextToSuggest;
+                WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(item.TextToSuggest));
             },
             ct);
     }

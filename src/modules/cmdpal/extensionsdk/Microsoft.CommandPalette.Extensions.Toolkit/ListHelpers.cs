@@ -79,19 +79,29 @@ public partial class ListHelpers
         var newList = newContents as IList<T> ?? newContents.ToList();
         var numberOfNew = newList.Count;
 
+        // Detect if we can use Move() for better ObservableCollection performance
+        var observableCollection = original as ObservableCollection<T>;
+
         // Short circuit - new contents should just be empty
         if (numberOfNew == 0)
         {
-            while (original.Count > 0)
+            if (observableCollection is not null)
             {
-                original.RemoveAt(original.Count - 1);
+                // Clear() is observable collection causes a reset notification, which causes
+                // the ListView to discard all containers and recreate them, which is expensive and
+                // causes ListView to flash.
+                while (observableCollection.Count > 0)
+                {
+                    observableCollection.RemoveAt(observableCollection.Count - 1);
+                }
+            }
+            else
+            {
+                original.Clear();
             }
 
             return;
         }
-
-        // Detect if we can use Move() for better ObservableCollection performance
-        var observableCollection = original as ObservableCollection<T>;
 
         // Simple forward-scan merge. No HashSet needed because we don't track
         // removed items — the icon-bug guard is unnecessary, and items removed
