@@ -688,11 +688,13 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <!-- TEMPORARILY_DISABLED: PowerDisplay
     <Project Path="src/modules/powerdisplay/PowerDisplay/PowerDisplay.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/powerdisplay/PowerDisplayModuleInterface/PowerDisplayModuleInterface.vcxproj" Id="d1234567-8901-2345-6789-abcdef012345" />
+    -->
   </Folder>
   <Folder Name="/modules/PowerDisplay/Tests/">
     <Project Path="src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/PowerDisplay.Lib.UnitTests.csproj">

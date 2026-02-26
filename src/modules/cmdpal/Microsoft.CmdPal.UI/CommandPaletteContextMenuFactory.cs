@@ -200,7 +200,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         Dock,
     }
 
-    private sealed partial class PinToContextItem : CommandContextItem, IDisposable
+    private sealed partial class PinToContextItem : CommandContextItem
     {
         private readonly PinToCommand _command;
         private readonly CommandItemViewModel _commandItem;
@@ -219,9 +219,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             _commandItem.RefreshMoreCommands();
         }
 
-        public void Dispose()
+        ~PinToContextItem()
         {
-            GC.SuppressFinalize(this);
             _command.PinStateChanged -= this.OnPinStateChanged;
         }
     }

@@ -536,6 +536,14 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
                 return ResourceManager.GetString("PinnedItemSuffix", resourceCulture);
             }
         }
+
+        ///   Looks up a localized string similar to Results.
+        /// </summary>
+        public static string results {
+            get {
+                return ResourceManager.GetString("results", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Show details.

@@ -255,9 +255,9 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <Page Update="Controls\FallbackRankerDialog.xaml">
-		  <Generator>MSBuild:Compile</Generator>
-	  </Page>
+    <Page Update="Controls\FallbackRankerDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>
@@ -309,7 +309,7 @@
 
   <!-- Build information  -->
   <PropertyGroup Condition=" '$(PublishAot)' == 'true' ">
-	<DefineConstants>$(DefineConstants);BUILD_INFO_PUBLISH_AOT</DefineConstants>
+    <DefineConstants>$(DefineConstants);BUILD_INFO_PUBLISH_AOT</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(PublishTrimmed)' == 'true' ">
     <DefineConstants>$(DefineConstants);BUILD_INFO_PUBLISH_TRIMMED</DefineConstants>
