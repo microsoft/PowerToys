@@ -182,9 +182,9 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
             ICommandItem[] pinnedCommands = [];
             ICommandProvider4? four = null;
-            if (model is ICommandProvider4 defintelyFour)
+            if (model is ICommandProvider4 definitelyFour)
             {
-                four = defintelyFour; // stash this away so we don't need to QI again
+                four = definitelyFour; // stash this away so we don't need to QI again
                 SupportsPinning = true;
 
                 // Load pinned commands from saved settings
