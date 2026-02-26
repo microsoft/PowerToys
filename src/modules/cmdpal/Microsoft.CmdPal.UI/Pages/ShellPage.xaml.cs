@@ -277,49 +277,64 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowDetailsMessage message)
     {
-        if (ViewModel is not null &&
-            ViewModel.CurrentPage is not null)
+        if (ViewModel is null || ViewModel.CurrentPage is null)
         {
-            if (ViewModel.CurrentPage.PageContext.TryGetTarget(out var pageContext))
+            return;
+        }
+
+        var details = message.Details;
+        var wasVisible = ViewModel.IsDetailsVisible;
+
+        // GH #322:
+        // For inexplicable reasons, if you try to change the details too fast,
+        // we'll explode. This seemingly only happens if you change the details
+        // while we're also scrolling a new list view item into view.
+        //
+        // Always debounce through the DispatcherQueue
+        // timer so the UI settles between updates. Use immediate=true for
+        // the first show so the panel appears without delay; subsequent
+        // updates during rapid navigation are coalesced.
+        _debounceTimer.Debounce(ShowDetails, interval: TimeSpan.FromMilliseconds(100), immediate: !wasVisible);
+
+        void ShowDetails()
+        {
+            // Since immediate=true means we're called synchronously from this method, we need to check
+            // if we're on the UI thread and re-queue if not.
+            if (!_queue.HasThreadAccess)
             {
-                Task.Factory.StartNew(
-                    () =>
-                    {
-                        // TERRIBLE HACK TODO GH #245
-                        // There's weird wacky bugs with debounce currently.
-                        if (!ViewModel.IsDetailsVisible)
-                        {
-                            ViewModel.Details = message.Details;
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
-                            ViewModel.IsDetailsVisible = true;
-                            return;
-                        }
+                var enqueued = _queue.TryEnqueue(ShowDetails);
+                if (!enqueued)
+                {
+                    Logger.LogError("Failed to enqueue show details action on UI thread");
+                }
 
-                        // GH #322:
-                        // For inexplicable reasons, if you try to change the details too fast,
-                        // we'll explode. This seemingly only happens if you change the details
-                        // while we're also scrolling a new list view item into view.
-                        _debounceTimer.Debounce(
-                            () =>
-                            {
-                                ViewModel.Details = message.Details;
+                return;
+            }
 
-                                // Trigger a re-evaluation of whether we have a hero image based on
-                                // the current theme
-                                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
-                            },
-                            interval: TimeSpan.FromMilliseconds(50),
-                            immediate: ViewModel.IsDetailsVisible == false);
-                        ViewModel.IsDetailsVisible = true;
-                    },
-                    CancellationToken.None,
-                    TaskCreationOptions.None,
-                    pageContext.Scheduler);
+            try
+            {
+                ViewModel.Details = details;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
+                ViewModel.IsDetailsVisible = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to show detail", ex);
             }
         }
     }
 
-    public void Receive(HideDetailsMessage message) => HideDetails();
+    public void Receive(HideDetailsMessage message)
+    {
+        // Debounce the hide through the same timer used for show. If a
+        // ShowDetailsMessage arrives before this fires, it cancels the
+        // pending hide - preventing the panel from flickering closed and
+        // reopened during rapid item navigation.
+        _debounceTimer.Debounce(
+            () => HideDetails(),
+            interval: TimeSpan.FromMilliseconds(150),
+            immediate: false);
+    }
 
     public void Receive(LaunchUriMessage message) => _ = global::Windows.System.Launcher.LaunchUriAsync(message.Uri);
 
