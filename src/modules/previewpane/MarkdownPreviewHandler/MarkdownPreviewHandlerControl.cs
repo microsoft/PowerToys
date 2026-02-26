@@ -204,7 +204,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                                 args.Cancel = true;
 
                                 // Only allow http and https schemes to be opened externally.
-                                // Block all other URI schemes (e.g. calculator:, search-ms:, ms-appinstaller:)
+                                // Block all other URI schemes (e.g. calculator:, search-ms:, etc.)
                                 // to prevent arbitrary protocol handler execution from the preview pane.
                                 if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri uri) &&
                                     (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
