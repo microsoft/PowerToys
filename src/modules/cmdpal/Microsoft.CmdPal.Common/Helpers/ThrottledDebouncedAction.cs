@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Core.Common.Helpers;
 
-public sealed class ThrottledDebouncedAction : IDisposable
+public sealed partial class ThrottledDebouncedAction : IDisposable
 {
     private static readonly TimeSpan DefaultInterval = TimeSpan.FromMilliseconds(150);
 
