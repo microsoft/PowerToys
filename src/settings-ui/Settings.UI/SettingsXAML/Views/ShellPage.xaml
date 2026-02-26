@@ -212,6 +212,7 @@
                             helpers:NavHelper.NavigateTo="views:LightSwitchPage"
                             AutomationProperties.AutomationId="LightSwitchNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}" />
+                        <!-- TEMPORARILY_DISABLED: PowerDisplay
                         <NavigationViewItem
                             x:Name="PowerDisplayNavigationItem"
                             x:Uid="Shell_PowerDisplay"
@@ -222,6 +223,7 @@
                                 <InfoBadge Style="{StaticResource NewInfoBadge}" />
                             </NavigationViewItem.InfoBadge>
                         </NavigationViewItem>
+                        -->
                         <NavigationViewItem
                             x:Name="PowerLauncherNavigationItem"
                             x:Uid="Shell_PowerLauncher"

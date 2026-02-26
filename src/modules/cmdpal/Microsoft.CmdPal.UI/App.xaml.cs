@@ -220,6 +220,7 @@ public partial class App : Application, IDisposable
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<IContextMenuFactory, CommandPaletteContextMenuFactory>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
     }
 

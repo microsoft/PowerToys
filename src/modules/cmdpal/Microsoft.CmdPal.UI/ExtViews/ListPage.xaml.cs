@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -12,6 +13,7 @@ using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
@@ -35,6 +37,14 @@ public sealed partial class ListPage : Page,
 {
     private InputSource _lastInputSource;
 
+    private int _itemsUpdatedVersion;
+    private bool _suppressSelectionChanged;
+
+    private bool _scrollOnNextSelectionChange;
+
+    private ListItemViewModel? _stickySelectedItem;
+    private ListItemViewModel? _lastPushedToVm;
+
     internal ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
@@ -45,13 +55,7 @@ public sealed partial class ListPage : Page,
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListPage), new PropertyMetadata(null, OnViewModelChanged));
 
-    private ListViewBase ItemView
-    {
-        get
-        {
-            return ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
-        }
-    }
+    private ListViewBase ItemView => ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
 
     public ListPage()
     {
@@ -82,10 +86,17 @@ public sealed partial class ListPage : Page,
             // may return an incorrect index because item containers are not yet rendered.
             _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
             {
-                var firstUsefulIndex = GetFirstSelectableIndex();
-                if (firstUsefulIndex != -1)
+                // Only do this if we truly have no selection.
+                if (ItemView.SelectedItem is null)
                 {
-                    ItemView.SelectedIndex = firstUsefulIndex;
+                    var firstUsefulIndex = GetFirstSelectableIndex();
+                    if (firstUsefulIndex != -1)
+                    {
+                        using (SuppressSelectionChangedScope())
+                        {
+                            ItemView.SelectedIndex = firstUsefulIndex;
+                        }
+                    }
                 }
             });
         }
@@ -118,7 +129,6 @@ public sealed partial class ListPage : Page,
 
         if (ViewModel is not null)
         {
-            ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
             ViewModel.ItemsUpdated -= Page_ItemsUpdated;
         }
 
@@ -175,6 +185,9 @@ public sealed partial class ListPage : Page,
             }
             else
             {
+                // Click-driven selection should scroll into view (but only once).
+                _scrollOnNextSelectionChange = true;
+
                 ViewModel?.UpdateSelectedItemCommand.Execute(item);
                 WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
             }
@@ -196,51 +209,59 @@ public sealed partial class ListPage : Page,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void Items_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_suppressSelectionChanged)
+        {
+            return;
+        }
+
         var vm = ViewModel;
         var li = ItemView.SelectedItem as ListItemViewModel;
-        _ = Task.Run(() =>
+
+        // Transient null/separator selection can happen during in-place updates.
+        // Do not push null into the VM; Page_ItemsUpdated will repair selection.
+        if (li is null || IsSeparator(li))
         {
-            vm?.UpdateSelectedItemCommand.Execute(li);
-        });
+            return;
+        }
 
-        // There's mysterious behavior here, where the selection seemingly
-        // changes to _nothing_ when we're backspacing to a single character.
-        // And at that point, seemingly the item that's getting removed is not
-        // a member of FilteredItems. Very bizarre.
-        //
-        // Might be able to fix in the future by stashing the removed item
-        // here, then in Page_ItemsUpdated trying to select that cached item if
-        // it's in the list (otherwise, clear the cache), but that seems
-        // aggressively BODGY for something that mostly just works today.
-        if (ItemView.SelectedItem is not null && !IsSeparator(ItemView.SelectedItem))
+        _stickySelectedItem = li;
+
+        // Do not Task.Run (it reorders selection updates).
+        vm?.UpdateSelectedItemCommand.Execute(li);
+
+        // Only scroll when explicitly requested by navigation/click handlers.
+        if (_scrollOnNextSelectionChange)
         {
-            var items = ItemView.Items;
-            var firstUsefulIndex = GetFirstSelectableIndex();
-            var shouldScroll = false;
+            _scrollOnNextSelectionChange = false;
 
-            if (e.RemovedItems.Count > 0)
-            {
-                shouldScroll = true;
-            }
-            else if (ItemView.SelectedIndex > firstUsefulIndex)
-            {
-                shouldScroll = true;
-            }
+            var scrollTarget = li;
 
-            if (shouldScroll)
+            // If the previous item is a separator, also scroll it into view to provide
+            // better context for the user
+            var index = ItemView.Items.IndexOf(li);
+            if (index > 0)
             {
-                ItemView.ScrollIntoView(ItemView.SelectedItem);
+                var prevItem = ItemView.Items[index - 1] as ListItemViewModel;
+                if (prevItem?.Type == ListItemType.SectionHeader)
+                {
+                    scrollTarget = prevItem;
+                }
             }
 
-            // Automation notification for screen readers
-            var listViewPeer = Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer.CreatePeerForElement(ItemView);
-            if (listViewPeer is not null && li is not null)
+            if (scrollTarget is not null)
             {
-                UIHelper.AnnounceActionForAccessibility(
-                    ItemsList,
-                    li.Title,
-                    "CommandPaletteSelectedItemChanged");
+                ItemView.ScrollIntoView(scrollTarget);
             }
+        }
+
+        // Automation notification for screen readers
+        var listViewPeer = ListViewAutomationPeer.CreatePeerForElement(ItemView);
+        if (listViewPeer is not null)
+        {
+            UIHelper.AnnounceActionForAccessibility(
+                ItemsList,
+                li.Title,
+                "CommandPaletteSelectedItemChanged");
         }
     }
 
@@ -251,7 +272,12 @@ public sealed partial class ListPage : Page,
         {
             if (ItemView.SelectedItem != item)
             {
-                ItemView.SelectedItem = item;
+                _scrollOnNextSelectionChange = true;
+
+                using (SuppressSelectionChangedScope())
+                {
+                    ItemView.SelectedItem = item;
+                }
             }
 
             ViewModel?.UpdateSelectedItemCommand.Execute(item);
@@ -264,7 +290,7 @@ public sealed partial class ListPage : Page,
                     WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
                         new OpenContextMenuMessage(
                             element,
-                            Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                            FlyoutPlacementMode.BottomEdgeAlignedLeft,
                             pos,
                             ContextMenuFilterLocation.Top));
                 });
@@ -274,7 +300,7 @@ public sealed partial class ListPage : Page,
     private void Items_Loaded(object sender, RoutedEventArgs e)
     {
         // Find the ScrollViewer in the ItemView (ItemsList or ItemsGrid)
-        var listViewScrollViewer = FindScrollViewer(this.ItemView);
+        var listViewScrollViewer = FindScrollViewer(ItemView);
 
         if (listViewScrollViewer is not null)
         {
@@ -300,12 +326,37 @@ public sealed partial class ListPage : Page,
         }
     }
 
+    // Message-driven navigation should count as keyboard.
+    private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
+
+    private void PushSelectionToVm()
+    {
+        if (ViewModel is null)
+        {
+            return;
+        }
+
+        if (ItemView.SelectedItem is not ListItemViewModel li || IsSeparator(li))
+        {
+            ViewModel.UpdateSelectedItemCommand.Execute(null);
+            return;
+        }
+
+        if (ReferenceEquals(_lastPushedToVm, li))
+        {
+            return;
+        }
+
+        _lastPushedToVm = li;
+        _stickySelectedItem = li;
+        ViewModel.UpdateSelectedItemCommand.Execute(li);
+    }
+
     public void Receive(NavigateNextCommand message)
     {
-        // Note: We may want to just have the notion of a 'SelectedCommand' in our VM
-        // And then have these commands manipulate that state being bound to the UI instead
-        // We may want to see how other non-list UIs need to behave to make this decision
-        // At least it's decoupled from the SearchBox now :)
+        MarkKeyboardNavigation();
+        _scrollOnNextSelectionChange = true;
+
         if (ViewModel?.IsGridView == true)
         {
             // For grid views, use spatial navigation (down)
@@ -316,10 +367,15 @@ public sealed partial class ListPage : Page,
             // For list views, use simple linear navigation
             NavigateDown();
         }
+
+        PushSelectionToVm();
     }
 
     public void Receive(NavigatePreviousCommand message)
     {
+        MarkKeyboardNavigation();
+        _scrollOnNextSelectionChange = true;
+
         if (ViewModel?.IsGridView == true)
         {
             // For grid views, use spatial navigation (up)
@@ -329,14 +385,20 @@ public sealed partial class ListPage : Page,
         {
             NavigateUp();
         }
+
+        PushSelectionToVm();
     }
 
     public void Receive(NavigateLeftCommand message)
     {
+        MarkKeyboardNavigation();
+        _scrollOnNextSelectionChange = true;
+
         // For grid views, use spatial navigation. For list views, just move up.
         if (ViewModel?.IsGridView == true)
         {
             HandleGridArrowNavigation(VirtualKey.Left);
+            PushSelectionToVm();
         }
         else
         {
@@ -347,10 +409,14 @@ public sealed partial class ListPage : Page,
 
     public void Receive(NavigateRightCommand message)
     {
+        MarkKeyboardNavigation();
+        _scrollOnNextSelectionChange = true;
+
         // For grid views, use spatial navigation. For list views, just move down.
         if (ViewModel?.IsGridView == true)
         {
             HandleGridArrowNavigation(VirtualKey.Right);
+            PushSelectionToVm();
         }
         else
         {
@@ -385,6 +451,9 @@ public sealed partial class ListPage : Page,
 
     public void Receive(NavigatePageDownCommand message)
     {
+        MarkKeyboardNavigation();
+        _scrollOnNextSelectionChange = true;
+
         var indexes = CalculateTargetIndexPageUpDownScrollTo(true);
         if (indexes is null)
         {
@@ -394,15 +463,16 @@ public sealed partial class ListPage : Page,
         if (indexes.Value.CurrentIndex != indexes.Value.TargetIndex)
         {
             ItemView.SelectedIndex = indexes.Value.TargetIndex;
-            if (ItemView.SelectedItem is not null)
-            {
-                ItemView.ScrollIntoView(ItemView.SelectedItem);
-            }
         }
+
+        PushSelectionToVm();
     }
 
     public void Receive(NavigatePageUpCommand message)
     {
+        MarkKeyboardNavigation();
+        _scrollOnNextSelectionChange = true;
+
         var indexes = CalculateTargetIndexPageUpDownScrollTo(false);
         if (indexes is null)
         {
@@ -412,11 +482,9 @@ public sealed partial class ListPage : Page,
         if (indexes.Value.CurrentIndex != indexes.Value.TargetIndex)
         {
             ItemView.SelectedIndex = indexes.Value.TargetIndex;
-            if (ItemView.SelectedItem is not null)
-            {
-                ItemView.ScrollIntoView(ItemView.SelectedItem);
-            }
         }
+
+        PushSelectionToVm();
     }
 
     /// <summary>
@@ -519,8 +587,8 @@ public sealed partial class ListPage : Page,
         }
 
         var targetIndex = isPageDown
-                              ? Math.Min(itemCount - 1, currentIndex + Math.Max(1, itemsPerPage))
-                              : Math.Max(0, currentIndex - Math.Max(1, itemsPerPage));
+            ? Math.Min(itemCount - 1, currentIndex + Math.Max(1, itemsPerPage))
+            : Math.Max(0, currentIndex - Math.Max(1, itemsPerPage));
 
         return (currentIndex, targetIndex);
     }
@@ -531,13 +599,11 @@ public sealed partial class ListPage : Page,
         {
             if (e.OldValue is ListViewModel old)
             {
-                old.PropertyChanged -= @this.ViewModel_PropertyChanged;
                 old.ItemsUpdated -= @this.Page_ItemsUpdated;
             }
 
             if (e.NewValue is ListViewModel page)
             {
-                page.PropertyChanged += @this.ViewModel_PropertyChanged;
                 page.ItemsUpdated += @this.Page_ItemsUpdated;
             }
             else if (e.NewValue is null)
@@ -549,83 +615,141 @@ public sealed partial class ListPage : Page,
 
     // Called after we've finished updating the whole list for either a
     // GetItems or a change in the filter.
-    private void Page_ItemsUpdated(ListViewModel sender, object args)
+    private void Page_ItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args)
     {
-        // If for some reason, we don't have a selected item, fix that.
-        //
-        // It's important to do this here, because once there's no selection
-        // (which can happen as the list updates) we won't get an
-        // ItemView_SelectionChanged again to give us another chance to change
-        // the selection from null -> something. Better to just update the
-        // selection once, at the end of all the updating.
-        // The selection logic must be deferred to the DispatcherQueue
-        // to ensure the UI has processed the updated ItemsSource binding,
-        // preventing ItemView.Items from appearing empty/null immediately after update.
-        _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+        var version = Interlocked.Increment(ref _itemsUpdatedVersion);
+        var forceFirstItem = args.ForceFirstItem;
+
+        // Try to handle selection immediately — items should already be available
+        // since FilteredItems is a direct ObservableCollection bound as ItemsSource.
+        if (!TrySetSelectionAfterUpdate(sender, version, forceFirstItem))
         {
-            var items = ItemView.Items;
+            // Fallback: binding hasn't propagated yet, defer to next tick.
+            _ = DispatcherQueue.TryEnqueue(
+                Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+                () =>
+                {
+                    if (version != Volatile.Read(ref _itemsUpdatedVersion))
+                    {
+                        return;
+                    }
 
-            // If the list is null or empty, clears the selection and return
-            if (items is null || items.Count == 0)
+                    TrySetSelectionAfterUpdate(sender, version, forceFirstItem);
+                });
+        }
+    }
+
+    /// <summary>
+    /// Applies selection after an items update. Returns false if ItemView.Items
+    /// is not yet populated (caller should defer and retry).
+    /// </summary>
+    /// <param name="forceFirstItem">
+    /// When true, always select the first selectable item and scroll to top
+    /// (used for filter changes and top-level fetches).
+    /// </param>
+    private bool TrySetSelectionAfterUpdate(ListViewModel sender, long version, bool forceFirstItem)
+    {
+        if (version != Volatile.Read(ref _itemsUpdatedVersion))
+        {
+            return true; // superseded by a newer update, nothing to do
+        }
+
+        var vm = ViewModel;
+        if (vm is null)
+        {
+            return true;
+        }
+
+        // Use the stable source of truth, not ItemView.Items (which can be transiently empty)
+        if (vm.FilteredItems.Count == 0)
+        {
+            using (SuppressSelectionChangedScope())
             {
                 ItemView.SelectedIndex = -1;
-                return;
+                _stickySelectedItem = null;
+                _lastPushedToVm = null;
             }
 
-            // Finds the first item that is not a separator
-            var firstUsefulIndex = GetFirstSelectableIndex();
+            PushSelectionToVm();
+            return true;
+        }
 
-            // If there is only separators in the list, don't select anything.
-            if (firstUsefulIndex == -1)
+        // If ItemView.Items hasn't caught up with the ObservableCollection yet,
+        // signal the caller to defer and retry.
+        var items = ItemView.Items;
+        if (items is null || items.Count == 0)
+        {
+            return false;
+        }
+
+        var firstUsefulIndex = GetFirstSelectableIndex();
+        if (firstUsefulIndex == -1)
+        {
+            using (SuppressSelectionChangedScope())
             {
                 ItemView.SelectedIndex = -1;
-
-                return;
+                _stickySelectedItem = null;
+                _lastPushedToVm = null;
             }
 
-            var shouldUpdateSelection = false;
+            PushSelectionToVm();
+            return true;
+        }
 
-            // If it's a top level list update we force the reset to the top useful item
-            if (!sender.IsNested)
+        var shouldUpdateSelection = forceFirstItem;
+
+        if (!shouldUpdateSelection)
+        {
+            // Check if selection needs repair (item gone, null, or separator).
+            if (ItemView.SelectedItem is null)
             {
                 shouldUpdateSelection = true;
             }
-
-            // No current selection or current selection is null
-            else if (ItemView.SelectedItem is null)
-            {
-                shouldUpdateSelection = true;
-            }
-
-            // The current selected item is a separator
             else if (IsSeparator(ItemView.SelectedItem))
             {
                 shouldUpdateSelection = true;
             }
-
-            // The selected item does not exist in the new list
             else if (!items.Contains(ItemView.SelectedItem))
             {
                 shouldUpdateSelection = true;
             }
-
-            if (shouldUpdateSelection)
-            {
-                if (firstUsefulIndex != -1)
-                {
-                    ItemView.SelectedIndex = firstUsefulIndex;
-                }
-            }
-        });
-    }
-
-    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        var prop = e.PropertyName;
-        if (prop == nameof(ViewModel.FilteredItems))
-        {
-            Debug.WriteLine($"ViewModel.FilteredItems {ItemView.SelectedItem}");
         }
+
+        if (shouldUpdateSelection)
+        {
+            using (SuppressSelectionChangedScope())
+            {
+                if (!forceFirstItem &&
+                    _stickySelectedItem is not null &&
+                    items.Contains(_stickySelectedItem) &&
+                    !IsSeparator(_stickySelectedItem))
+                {
+                    // Preserve sticky selection for nested dynamic updates.
+                    ItemView.SelectedItem = _stickySelectedItem;
+                }
+                else
+                {
+                    // Select the first interactive item.
+                    ItemView.SelectedItem = items[firstUsefulIndex];
+                }
+
+                // Prevent any pending "scroll on selection" logic from fighting this.
+                _scrollOnNextSelectionChange = false;
+
+                _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    if (version != Volatile.Read(ref _itemsUpdatedVersion))
+                    {
+                        return;
+                    }
+
+                    ResetScrollToTop();
+                });
+            }
+        }
+
+        PushSelectionToVm();
+        return true;
     }
 
     private static ScrollViewer? FindScrollViewer(DependencyObject parent)
@@ -653,7 +777,6 @@ public sealed partial class ListPage : Page,
     {
         if (ItemView.Items.Count == 0)
         {
-            // No items, goodbye.
             return;
         }
 
@@ -750,7 +873,6 @@ public sealed partial class ListPage : Page,
                 if (bestIndex != currentIndex)
                 {
                     ItemView.SelectedIndex = bestIndex;
-                    ItemView.ScrollIntoView(ItemView.SelectedItem);
                 }
 
                 return;
@@ -773,7 +895,6 @@ public sealed partial class ListPage : Page,
         if (fallback != currentIndex)
         {
             ItemView.SelectedIndex = fallback;
-            ItemView.ScrollIntoView(ItemView.SelectedItem);
         }
     }
 
@@ -797,7 +918,12 @@ public sealed partial class ListPage : Page,
 
         if (ItemView.SelectedItem != item)
         {
-            ItemView.SelectedItem = item;
+            _scrollOnNextSelectionChange = true;
+
+            using (SuppressSelectionChangedScope())
+            {
+                ItemView.SelectedItem = item;
+            }
         }
 
         if (!e.TryGetPosition(element, out var pos))
@@ -811,7 +937,7 @@ public sealed partial class ListPage : Page,
                 WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
                     new OpenContextMenuMessage(
                         element,
-                        Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        FlyoutPlacementMode.BottomEdgeAlignedLeft,
                         pos,
                         ContextMenuFilterLocation.Top));
             });
@@ -844,6 +970,7 @@ public sealed partial class ListPage : Page,
                 case VirtualKey.Up:
                 case VirtualKey.Down:
                     _lastInputSource = InputSource.Keyboard;
+                    _scrollOnNextSelectionChange = true;
                     HandleGridArrowNavigation(e.Key);
                     e.Handled = true;
                     break;
@@ -1026,6 +1153,31 @@ public sealed partial class ListPage : Page,
     }
 
     private bool IsSeparator(object? item) => item is ListItemViewModel li && !li.IsInteractive;
+
+    private bool IsSectionHeader(object? item) => item is ListItemViewModel li && li.Type == ListItemType.SectionHeader;
+
+    private void ResetScrollToTop()
+    {
+        var scroll = FindScrollViewer(ItemView);
+        if (scroll is null)
+        {
+            return;
+        }
+
+        // disableAnimation: true prevents a visible jump animation
+        scroll.ChangeView(horizontalOffset: null, verticalOffset: 0, zoomFactor: null, disableAnimation: true);
+    }
+
+    private IDisposable SuppressSelectionChangedScope()
+    {
+        _suppressSelectionChanged = true;
+        return new ActionOnDispose(() => _suppressSelectionChanged = false);
+    }
+
+    private sealed partial class ActionOnDispose(Action action) : IDisposable
+    {
+        public void Dispose() => action();
+    }
 
     private enum InputSource
     {

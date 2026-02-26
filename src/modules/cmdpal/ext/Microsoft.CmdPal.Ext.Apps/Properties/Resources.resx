@@ -234,4 +234,8 @@
   <data name="limit_none" xml:space="preserve">
     <value>Unlimited</value>
   </data>
+  <data name="limit_default" xml:space="preserve">
+    <value>Default ({0})</value>
+    <comment>default option; {0} = number of items</comment>
+  </data>
 </root>
