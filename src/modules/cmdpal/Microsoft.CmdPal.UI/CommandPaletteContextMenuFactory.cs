@@ -107,13 +107,15 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     /// Called to create the context menu on TopLevelViewModels.
     ///
     /// These are handled differently from everyone else. With
-    /// TopLevelViewModels, the ID isn't on the Command, it is on the TLVM
-    /// itself. Basically, we can't figure out how to add pin/unpin commands
-    /// directly attached to the ICommandItems that we get from the API.
+    /// TopLevelViewModels, the ID isn't on the Command, it is on the
+    /// TopLevelViewModel itself. Basically, we can't figure out how to add
+    /// pin/unpin commands directly attached to the ICommandItems that we get
+    /// from the API.
     ///
     /// Instead, this method is used to extend the set of IContextItems that are
-    /// added to the TLVM itself. This lets us pin/unpin the generated ID of the
-    /// TLVM, even if the command didn't have one.
+    /// added to the TopLevelViewModel itself. This lets us pin/unpin the
+    /// generated ID of the TopLevelViewModel, even if the command didn't have
+    /// one.
     /// </summary>
     public void AddMoreCommandsToTopLevel(
         TopLevelViewModel topLevelItem,
