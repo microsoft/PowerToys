@@ -375,19 +375,6 @@ public sealed partial class DockWindow : WindowEx,
         // check settings changed
         if (msg == PInvoke.WM_SETTINGCHANGE)
         {
-            var isFullscreen = IsWindowFullscreen();
-
-            Logger.LogDebug($"WM_SETTINGCHANGE ({isFullscreen})");
-
-            if (isFullscreen)
-            {
-                this.Hide();
-            }
-            else
-            {
-                this.Show();
-            }
-
             if (wParam == (uint)SYSTEM_PARAMETERS_INFO_ACTION.SPI_SETWORKAREA)
             {
                 Logger.LogDebug($"WM_SETTINGCHANGE(SPI_SETWORKAREA)");
@@ -511,22 +498,6 @@ public sealed partial class DockWindow : WindowEx,
             PInvoke.SetWindowPos(_hwnd, onTop, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
             PInvoke.SetWindowPos(_hwnd, HWND.HWND_NOTOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
         });
-    }
-
-    public static bool IsWindowFullscreen()
-    {
-        // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ne-shellapi-query_user_notification_state
-        if (Marshal.GetExceptionForHR(PInvoke.SHQueryUserNotificationState(out var state)) is null)
-        {
-            if (state == QUERY_USER_NOTIFICATION_STATE.QUNS_RUNNING_D3D_FULL_SCREEN ||
-                state == QUERY_USER_NOTIFICATION_STATE.QUNS_BUSY ||
-                state == QUERY_USER_NOTIFICATION_STATE.QUNS_PRESENTATION_MODE)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public void Receive(QuitMessage message)

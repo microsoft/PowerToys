@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -32,6 +32,10 @@ public partial class TopLevelCommandManager : ObservableObject,
     private readonly List<CommandProviderWrapper> _builtInCommands = [];
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
     private readonly Lock _commandProvidersLock = new();
+
+    // watch out: if you add code that locks CommandProviders, be sure to always
+    // lock CommandProviders before locking DockBands, or you will cause a
+    // deadlock.
     private readonly Lock _dockBandsLock = new();
     private readonly SupersedingAsyncGate _reloadCommandsGate;
 
@@ -564,6 +568,10 @@ public partial class TopLevelCommandManager : ObservableObject,
             Logger.LogDebug($"Attempting to pin dock band '{bandVm.Id}' from provider '{bandVm.CommandProviderId}'.");
             var providerId = bandVm.CommandProviderId;
             var foundProvider = false;
+
+            // WATCH OUT: This locks CommandProviders. If you add code that
+            // locks CommandProviders first, before locking DockBands, you will
+            // cause a deadlock.
             foreach (var provider in CommandProviders)
             {
                 if (provider.Id == providerId)

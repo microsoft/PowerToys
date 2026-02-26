@@ -26,9 +26,23 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     [ObservableProperty]
     public partial string ErrorMessage { get; protected set; } = string.Empty;
 
+    /// <summary>
+    /// Explicitly: is this page, the VM for the root page. This is used
+    /// slightly differently than being "nested". When we open CmdPal as a
+    /// transient window, we want that page to not have a back button, but that
+    /// page is _not_ the root page.
+    ///
+    /// Later in ListViewModel, we will have logic that checks if it is the root
+    /// page, and modify how selection is handled when the list changes.
+    /// </summary>
     [ObservableProperty]
     public partial bool IsRootPage { get; set; } = true;
 
+    /// <summary>
+    /// This is used to determine whether to show the back button on this page.
+    /// When a nested page is opened for the transient "dock flyout" window,
+    /// then we don't want to show the back button.
+    /// </summary>
     [ObservableProperty]
     public partial bool HasBackButton { get; set; } = true;
 

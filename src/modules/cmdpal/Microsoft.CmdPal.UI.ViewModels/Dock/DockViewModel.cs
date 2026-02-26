@@ -86,13 +86,25 @@ public sealed partial class DockViewModel : IDisposable,
         var beforeCount = target.Count;
         var afterCount = newBands.Count;
 
-        List<DockBandViewModel> removed = new();
         DoOnUiThread(() =>
         {
+            List<DockBandViewModel> removed = new();
             ListHelpers.InPlaceUpdateList(target, newBands, out removed);
             var isStartBand = target == StartItems;
             var label = isStartBand ? "Start bands:" : "End bands:";
             Logger.LogDebug($"{label} ({beforeCount}) -> ({afterCount}), Removed {removed?.Count ?? 0} items");
+
+            // then, back to a BG thread:
+            Task.Run(() =>
+            {
+                if (removed is not null)
+                {
+                    foreach (var removedItem in removed)
+                    {
+                        removedItem.SafeCleanup();
+                    }
+                }
+            });
         });
 
         // Initialize properties on BG thread
@@ -103,10 +115,6 @@ public sealed partial class DockViewModel : IDisposable,
                 band.SafeInitializePropertiesSynchronous();
             }
         });
-        foreach (var removedItem in removed)
-        {
-            removedItem.SafeCleanup();
-        }
     }
 
     public void Dispose()

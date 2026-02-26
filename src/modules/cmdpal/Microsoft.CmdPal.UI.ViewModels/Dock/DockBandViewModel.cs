@@ -45,6 +45,8 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
                 {
                     item.ShowTitle = value;
                 }
+
+                UpdateProperty(nameof(ShowTitles));
             }
         }
     }
@@ -66,6 +68,8 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
                 {
                     item.ShowSubtitle = value;
                 }
+
+                UpdateProperty(nameof(ShowSubtitles));
             }
         }
     }
