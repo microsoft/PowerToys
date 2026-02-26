@@ -45,22 +45,7 @@ public partial class AllAppsCommandProvider : CommandProvider
         PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
     }
 
-    public static int TopLevelResultLimit
-    {
-        get
-        {
-            var limitSetting = AllAppsSettings.Instance.SearchResultLimit;
-
-            if (string.IsNullOrWhiteSpace(limitSetting)
-                || !int.TryParse(limitSetting, out var result)
-                || result < 0)
-            {
-                return DefaultResultLimit;
-            }
-
-            return result;
-        }
-    }
+    public static int TopLevelResultLimit => AllAppsSettings.Instance.SearchResultLimit ?? DefaultResultLimit;
 
     public override ICommandItem[] TopLevelCommands() => [_listItem, .. _page.GetPinnedApps()];
 

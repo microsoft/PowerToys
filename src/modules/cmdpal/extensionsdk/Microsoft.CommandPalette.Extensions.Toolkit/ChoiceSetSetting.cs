@@ -27,6 +27,8 @@ public sealed class ChoiceSetSetting : Setting<string>
 
     public List<Choice> Choices { get; set; }
 
+    public bool IgnoreUnknownValue { get; set; }
+
     private ChoiceSetSetting()
         : base()
     {
@@ -65,10 +67,21 @@ public sealed class ChoiceSetSetting : Setting<string>
     public override void Update(JsonObject payload)
     {
         // If the key doesn't exist in the payload, don't do anything
-        if (payload[Key] is not null)
+        if (payload[Key] is null)
         {
-            Value = payload[Key]?.GetValue<string>();
+            return;
         }
+
+        var value = payload[Key]?.GetValue<string>();
+
+        // if value doesn't match any of the choices, reset to default if IgnoreUnknownValue is true, otherwise ignore the update
+        var valueIsValid = Choices.Any(choice => choice.Value == value);
+        if (!valueIsValid && IgnoreUnknownValue)
+        {
+            return;
+        }
+
+        Value = value;
     }
 
     public override string ToState() => $"\"{Key}\": {JsonSerializer.Serialize(Value, JsonSerializationContext.Default.String)}";
