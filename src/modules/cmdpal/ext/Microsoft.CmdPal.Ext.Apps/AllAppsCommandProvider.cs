@@ -16,6 +16,7 @@ namespace Microsoft.CmdPal.Ext.Apps;
 public partial class AllAppsCommandProvider : CommandProvider
 {
     public const string WellKnownId = "AllApps";
+    internal const int DefaultResultLimit = 10;
 
     public static readonly AllAppsPage Page = new();
 
@@ -50,19 +51,14 @@ public partial class AllAppsCommandProvider : CommandProvider
         {
             var limitSetting = AllAppsSettings.Instance.SearchResultLimit;
 
-            if (limitSetting is null)
+            if (string.IsNullOrWhiteSpace(limitSetting)
+                || !int.TryParse(limitSetting, out var result)
+                || result < 0)
             {
-                return 10;
+                return DefaultResultLimit;
             }
 
-            var quantity = 10;
-
-            if (int.TryParse(limitSetting, out var result))
-            {
-                quantity = result < 0 ? quantity : result;
-            }
-
-            return quantity;
+            return result;
         }
     }
 

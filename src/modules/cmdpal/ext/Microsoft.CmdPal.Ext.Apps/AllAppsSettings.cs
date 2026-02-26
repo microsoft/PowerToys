@@ -14,12 +14,15 @@ namespace Microsoft.CmdPal.Ext.Apps;
 
 public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 {
+    private static readonly string DefaultLimitItemTitle = string.Format(Resources.limit_default, AllAppsCommandProvider.DefaultResultLimit);
+
     private static readonly string _namespace = "apps";
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
     private static readonly List<ChoiceSetSetting.Choice> _searchResultLimitChoices =
     [
+        new ChoiceSetSetting.Choice(DefaultLimitItemTitle, "-1"),
         new ChoiceSetSetting.Choice(Resources.limit_0, "0"),
         new ChoiceSetSetting.Choice(Resources.limit_1, "1"),
         new ChoiceSetSetting.Choice(Resources.limit_5, "5"),
