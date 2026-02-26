@@ -2,12 +2,19 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+/*
+ #define CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
+ #define CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
+*/
+
+using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.State;
@@ -28,8 +35,11 @@ public sealed partial class MainListPage : DynamicListPage,
     IRecipient<UpdateFallbackItemsMessage>,
     IDisposable
 {
-    // Throttle for raising items changed events.
+    // Throttle for raising items changed events from external sources
     private static readonly TimeSpan RaiseItemsChangedThrottle = TimeSpan.FromMilliseconds(100);
+
+    // Throttle for raising items changed events from user input - we want this to feel more responsive, so a shorter throttle.
+    private static readonly TimeSpan RaiseItemsChangedThrottleForUserInput = TimeSpan.FromMilliseconds(50);
 
     // For individual fallback item updates - if an item takes longer than this, we will detach it
     // and continue with others.
@@ -42,6 +52,23 @@ public sealed partial class MainListPage : DynamicListPage,
 
     // Initial number of workers to use for fallback updates.
     private const int InitialFallbackWorkers = 2;
+
+    // Upper limit of threads in case things go awry
+    private const int MaximumFallbackWorkersMaxThreads = 32;
+
+    // Per-command limit on concurrent in-flight COM calls. Prevents a single
+    // misbehaving extension from monopolizing the pool across overlapping query batches.
+    // Sized so worst-case saturation (all extensions slow simultaneously) fills the pool:
+    // ~8 providers × 4 = 32 == pool max.
+    private const int MaxInflightPerFallback = 4;
+
+    private readonly ConcurrentDictionary<string, InflightCounter> _inflightFallbacks = new();
+
+    // Dedicated background threads for fallback COM/RPC calls so they never block the
+    // ThreadPool. Stuck extensions consume a dedicated thread, not a pool thread.
+    // Max is intentionally above ProcessorCount: blocked threads consume no CPU, so
+    // core count is not the right ceiling. Pool expands on demand and shrinks when idle.
+    private readonly DedicatedThreadPool _fallbackThreadPool = new(minThreads: InitialFallbackWorkers, maxThreads: MaximumFallbackWorkersMaxThreads, name: "Fallbacks");
 
     private readonly ThrottledDebouncedAction _refreshThrottledDebouncedAction;
     private readonly TopLevelCommandManager _tlcManager;
@@ -108,34 +135,37 @@ public sealed partial class MainListPage : DynamicListPage,
         _refreshThrottledDebouncedAction = new ThrottledDebouncedAction(
             () =>
             {
+                try
+                {
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
-                var delta = DateTimeOffset.UtcNow - _last;
-                _last = DateTimeOffset.UtcNow;
-                Logger.LogDebug($"UpdateFallbacks: RaiseItemsChanged, delta {delta}");
+                    var delta = DateTimeOffset.UtcNow - _last;
+                    _last = DateTimeOffset.UtcNow;
+                    Logger.LogDebug($"UpdateFallbacks: RaiseItemsChanged, delta {delta}");
 
-                var sw = Stopwatch.StartNew();
+                    var sw = Stopwatch.StartNew();
 #endif
-                RaiseItemsChanged();
+                    RaiseItemsChanged();
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
-                Logger.LogInfo($"UpdateFallbacks: RaiseItemsChanged took {sw.Elapsed}");
+                    Logger.LogInfo($"UpdateFallbacks: RaiseItemsChanged took {sw.Elapsed}");
 #endif
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Unhandled exception in MainListPage refresh debounced action", ex);
+                }
             },
             RaiseItemsChangedThrottle);
-        _refreshThrottledDebouncedAction.UnhandledException += (_, exception) =>
-        {
-            Logger.LogError("Unhandled exception in MainListPage refresh debounced action", exception);
-        };
 
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
         var allApps = AllAppsCommandProvider.Page;
         allApps.PropChanged += (s, p) =>
+        {
+            if (p.PropertyName == nameof(allApps.IsLoading))
             {
-                if (p.PropertyName == nameof(allApps.IsLoading))
-                {
-                    IsLoading = ActuallyLoading();
-                }
-            };
+                IsLoading = ActuallyLoading();
+            }
+        };
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
@@ -195,7 +225,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
 
                 var currentSearchText = SearchText;
-                UpdateSearchText(currentSearchText, currentSearchText);
+                UpdateSearchTextCore(currentSearchText, currentSearchText, isUserInput: false);
             }
             while (_refreshRequested.Value);
         }
@@ -288,6 +318,11 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        UpdateSearchTextCore(oldSearch, newSearch, isUserInput: true);
+    }
+
+    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput)
+    {
         var stopwatch = Stopwatch.StartNew();
 
         _cancellationTokenSource?.Cancel();
@@ -360,7 +395,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            _ = UpdateFallbacksAsync(SearchText, [.. specialFallbacks, .. commonFallbacks], token);
+            BeginUpdateFallbacks(SearchText, [.. specialFallbacks, .. commonFallbacks], token);
 
             if (token.IsCancellationRequested)
             {
@@ -372,14 +407,8 @@ public sealed partial class MainListPage : DynamicListPage,
             {
                 _filteredItemsIncludesApps = _includeApps;
                 ClearResults();
-                if (string.IsNullOrWhiteSpace(oldSearch))
-                {
-                    _refreshThrottledDebouncedAction.Invoke();
-                }
-                else
-                {
-                    _refreshThrottledDebouncedAction.InvokeImmediately();
-                }
+                var wasAlreadyEmpty = string.IsNullOrWhiteSpace(oldSearch);
+                _refreshThrottledDebouncedAction.Invoke(wasAlreadyEmpty ? null : TimeSpan.Zero);
 
                 return;
             }
@@ -516,7 +545,7 @@ public sealed partial class MainListPage : DynamicListPage,
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
             var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
 #endif
-            _refreshThrottledDebouncedAction.Invoke();
+            _refreshThrottledDebouncedAction.Invoke(isUserInput ? RaiseItemsChangedThrottleForUserInput : null);
 
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
             var listPageUpdatedTimestamp = stopwatch.ElapsedMilliseconds;
@@ -527,7 +556,7 @@ public sealed partial class MainListPage : DynamicListPage,
         }
     }
 
-    private async Task UpdateFallbacksAsync(string query, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
+    private void BeginUpdateFallbacks(string query, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
     {
         if (commands.Count == 0 || string.IsNullOrWhiteSpace(query))
         {
@@ -536,70 +565,155 @@ public sealed partial class MainListPage : DynamicListPage,
 
 #if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
         var batchNumber = _updateBatchCounter++;
-        var batchStopwatch = Stopwatch.StartNew();
         Logger.LogDebug($"UpdateFallbacks: Batch start {batchNumber} for query '{query}'");
 #endif
-        try
-        {
-            var detachOptions = new ParallelHelper.AdaptiveOptions(
-                InitialWorkerCount: InitialFallbackWorkers,
-                ItemTimeout: FallbackItemSlowTimeout,
-                CancellationToken: cancellationToken);
-            await ParallelHelper.AdaptiveForEachAdaptiveAsync(commands, detachOptions, UpdateFallbackItem)
-                .ConfigureAwait(false);
-        }
-        finally
-        {
-#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
-            Logger.LogDebug($"UpdateFallbacks: Batch finished {batchNumber} for query '{query}' in {batchStopwatch.Elapsed}");
-#endif
-        }
 
-        return;
+        // Adaptive dispatch on dedicated threads — same semantics as the old
+        // ParallelHelper.AdaptiveForEachAdaptiveAsync, but without any ThreadPool involvement:
+        //   • Start 2 workers; each claims commands via a shared atomic index (FIFO, no double-work).
+        //   • If a command is slow (> FallbackItemSlowTimeout), the worker spawns a sibling so
+        //     remaining fast commands aren't blocked waiting in the worker's loop.
+        //   • _refreshThrottledDebouncedAction.Invoke() is called on the dedicated thread when a
+        //     result changes (ThrottledDebouncedAction is thread-safe).
+        var sharedIndex = 0;
+        var totalCommands = commands.Count;
 
-        ValueTask UpdateFallbackItem(TopLevelViewModel command, CancellationToken ct)
+        void Worker()
         {
-            if (ct.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                return ValueTask.CompletedTask;
-            }
-
-            try
-            {
-#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
-                var singleFallbackStopwatch = Stopwatch.StartNew();
-                Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updating with '{query}'");
-#endif
-                var changed = command.SafeUpdateFallbackTextSynchronous(query);
-#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
-                var elapsed = singleFallbackStopwatch.Elapsed;
-
-                var tail = elapsed > FallbackItemSlowTimeout ? " is slow" : string.Empty;
-                if (elapsed > FallbackItemUltraSlowTimeout)
+                var i = Interlocked.Increment(ref sharedIndex) - 1;
+                if (i >= totalCommands)
                 {
-                    tail += " <---------------- (ultra slow)";
+                    return;
                 }
 
-                Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updated with '{query}' processed in {elapsed}, has {(changed ? "changed" : "not changed")} and title is '{command.Title}'{tail}");
+                var command = commands[i];
+                var counter = _inflightFallbacks.GetOrAdd(command.Id, static _ => new InflightCounter());
+                if (!counter.TryClaim(MaxInflightPerFallback))
+                {
+                    // At capacity — store this query as a pending retry so it runs
+                    // when one of the in-flight calls finishes. Latest query wins.
+                    var pendingCommand = command;
+                    var pendingQuery = query;
+                    var pendingCt = cancellationToken;
+                    counter.SetPending(() => RetryFallbackUpdate(pendingCommand, pendingQuery, pendingCt, counter), pendingCt);
+                    continue;
+                }
+
+                // Arm a timer: if this item is still running after FallbackItemSlowTimeout,
+                // spawn a sibling worker WHILE we're blocked in the COM call so remaining
+                // commands don't have to wait for us to finish first.
+                // Linking to cancellationToken cancels the timer immediately when the outer
+                // query is abandoned — preventing stale siblings from being scheduled.
+                // Disposing the linked CTS at iteration end removes the link registration.
+                using var expandCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                expandCts.CancelAfter(FallbackItemSlowTimeout);
+                expandCts.Token.Register(() =>
+                {
+                    // Fires on timeout (slow item) OR on outer cancellation.
+                    // Only spawn a sibling on timeout — when the outer query is still active.
+                    if (!cancellationToken.IsCancellationRequested && Volatile.Read(ref sharedIndex) < totalCommands)
+                    {
+                        _ = _fallbackThreadPool.QueueAsync(Worker, cancellationToken);
+                    }
+                });
+
+                var changed = false;
+                try
+                {
+#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
+                    var sw = Stopwatch.StartNew();
+                    Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updating with '{query}'");
 #endif
-                if (changed && !ct.IsCancellationRequested)
+                    changed = command.SafeUpdateFallbackTextSynchronous(query);
+#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
+                    var elapsed = sw.Elapsed;
+                    var tail = elapsed > FallbackItemSlowTimeout ? " is slow" : string.Empty;
+                    if (elapsed > FallbackItemUltraSlowTimeout)
+                    {
+                        tail += " <---------------- (ultra slow)";
+                    }
+
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updated with '{query}' processed in {elapsed}, has {(changed ? "changed" : "not changed")} and title is '{command.Title}'{tail}");
+#endif
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' failed to update fallback text with '{query}'", ex);
+                }
+                finally
+                {
+                    counter.Release();
+                    DispatchPending(counter.TakePending());
+                }
+
+                // Guard against a stale refresh if the COM call returned after cancellation.
+                if (changed && !cancellationToken.IsCancellationRequested)
                 {
                     _refreshThrottledDebouncedAction.Invoke();
                 }
             }
-#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
+        }
+
+        // Dispatches a pending work item to the dedicated pool. The pending's
+        // own CT is forwarded so the pool can skip it at dequeue time when the
+        // originating query batch has been superseded by a newer keystroke.
+        void DispatchPending(PendingWork? pending)
+        {
+            if (pending == null)
+            {
+                return;
+            }
+
+            _ = _fallbackThreadPool.QueueAsync(pending.Work, pending.CancellationToken);
+        }
+
+        // One-shot retry for a command that was skipped due to MaxInflightPerFallback.
+        // Claims a slot, runs the COM call, releases, and propagates the next pending (if any).
+        void RetryFallbackUpdate(TopLevelViewModel cmd, string q, CancellationToken ct, InflightCounter ctr)
+        {
+            if (ct.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (!ctr.TryClaim(MaxInflightPerFallback))
+            {
+                // Still at capacity (a newer worker claimed the freed slot first).
+                // The pending was already consumed from TakePending, so it's dropped here.
+                return;
+            }
+
+            var changed = false;
+            try
+            {
+                changed = cmd.SafeUpdateFallbackTextSynchronous(q);
+            }
             catch (Exception ex)
             {
-                Logger.LogError($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' failed to update fallback text with '{query}'", ex);
+                Logger.LogError($"UpdateFallbacks: Pending retry: command id '{cmd.Id}', '{cmd.DisplayTitle}' failed with '{q}'", ex);
             }
-#else
-            catch (Exception ex)
+            finally
             {
-                // Swallow exceptions from individual items
-                Logger.LogError($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' failed to update fallback text with '{query}'", ex);
+                ctr.Release();
+                DispatchPending(ctr.TakePending());
             }
-#endif
-            return ValueTask.CompletedTask;
+
+            if (changed && !ct.IsCancellationRequested)
+            {
+                _refreshThrottledDebouncedAction.Invoke();
+            }
+        }
+
+        for (var i = 0; i < Math.Min(InitialFallbackWorkers, totalCommands); i++)
+        {
+            _ = _fallbackThreadPool.QueueAsync(Worker, cancellationToken);
         }
     }
 
@@ -751,6 +865,8 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
+        _fallbackThreadPool.Dispose();
+        _inflightFallbacks.Clear();
 
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
@@ -762,5 +878,62 @@ public sealed partial class MainListPage : DynamicListPage,
 
         WeakReferenceMessenger.Default.UnregisterAll(this);
         GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Thread-safe counter for tracking concurrent in-flight calls per command,
+    /// with a single pending retry slot for queries that couldn't claim immediately.
+    /// </summary>
+    /// <summary>
+    /// A pending work item paired with the cancellation token of the query
+    /// batch that created it, so the pool can skip it at dequeue time when
+    /// a newer keystroke has already superseded the query.
+    /// </summary>
+    private sealed record PendingWork(Action Work, CancellationToken CancellationToken);
+
+    /// <summary>
+    /// Thread-safe counter for tracking concurrent in-flight calls per command,
+    /// with a single pending retry slot for queries that couldn't claim immediately.
+    /// </summary>
+    private sealed class InflightCounter
+    {
+        private int _count;
+
+        // Latest pending work item. Only one is stored; newer queries overwrite older ones.
+        private PendingWork? _pendingWork;
+
+        /// <summary>
+        /// Try to claim a slot. Returns true if the count was below
+        /// <paramref name="max"/> and was incremented; false if at capacity.
+        /// </summary>
+        public bool TryClaim(int max)
+        {
+            while (true)
+            {
+                var current = Volatile.Read(ref _count);
+                if (current >= max)
+                {
+                    return false;
+                }
+
+                if (Interlocked.CompareExchange(ref _count, current + 1, current) == current)
+                {
+                    return true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Stores a pending work item to run when the next slot opens.
+        /// Overwrites any previously stored item — latest query always wins.
+        /// </summary>
+        public void SetPending(Action work, CancellationToken ct) => Interlocked.Exchange(ref _pendingWork, new PendingWork(work, ct));
+
+        /// <summary>
+        /// Atomically removes and returns any pending work item, or null if none.
+        /// </summary>
+        public PendingWork? TakePending() => Interlocked.Exchange(ref _pendingWork, null);
+
+        public void Release() => Interlocked.Decrement(ref _count);
     }
 }

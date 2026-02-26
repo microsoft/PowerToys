@@ -8,16 +8,15 @@ public sealed class ThrottledDebouncedAction : IDisposable
 {
     private static readonly TimeSpan DefaultInterval = TimeSpan.FromMilliseconds(150);
 
-    public event EventHandler<Exception>? UnhandledException;
-
     private readonly Lock _lock = new();
     private readonly Action _action;
-    private readonly TimeSpan _interval;
+    private readonly TimeSpan _defaultInterval;
     private readonly bool _runImmediately;
 
     private CancellationTokenSource? _cts;
     private bool _isRunning;
     private bool _isPending;
+    private TimeSpan _pendingInterval;
 
     public ThrottledDebouncedAction(Action action)
         : this(action, DefaultInterval)
@@ -30,7 +29,7 @@ public sealed class ThrottledDebouncedAction : IDisposable
         ArgumentOutOfRangeException.ThrowIfLessThan(interval, TimeSpan.Zero);
 
         _action = action;
-        _interval = interval;
+        _defaultInterval = interval;
         _runImmediately = runImmediately;
     }
 
@@ -39,29 +38,23 @@ public sealed class ThrottledDebouncedAction : IDisposable
         Cancel();
     }
 
-    private void SafeInvoke()
-    {
-        try
-        {
-            _action();
-        }
-        catch (Exception ex)
-        {
-            UnhandledException?.Invoke(this, ex);
-        }
-    }
+    public void Invoke() => Invoke(null);
 
-    public void Invoke()
+    public void Invoke(TimeSpan? interval)
     {
-        if (_interval == TimeSpan.Zero)
+        var effectiveInterval = interval ?? _defaultInterval;
+        ArgumentOutOfRangeException.ThrowIfLessThan(effectiveInterval, TimeSpan.Zero);
+
+        if (effectiveInterval == TimeSpan.Zero)
         {
+            Cancel();
             _action();
             return;
         }
 
         if (!_runImmediately)
         {
-            // Trailing-edge debounce
+            // Trailing-edge debounce: each call resets the delay with the new interval.
             CancellationTokenSource? oldCts;
             CancellationToken token;
 
@@ -80,13 +73,13 @@ public sealed class ThrottledDebouncedAction : IDisposable
                 {
                     try
                     {
-                        await Task.Delay(_interval, token).ConfigureAwait(false);
+                        await Task.Delay(effectiveInterval, token).ConfigureAwait(false);
                         if (token.IsCancellationRequested)
                         {
                             return;
                         }
 
-                        SafeInvoke();
+                        _action();
                     }
                     catch (OperationCanceledException)
                     {
@@ -103,19 +96,31 @@ public sealed class ThrottledDebouncedAction : IDisposable
                 if (_isRunning)
                 {
                     _isPending = true;
+                    _pendingInterval = effectiveInterval;
                     return;
                 }
 
                 _isRunning = true;
             }
 
-            SafeInvoke();
+            _action();
 
             _ = Task.Run(async () =>
             {
                 while (true)
                 {
-                    await Task.Delay(_interval).ConfigureAwait(false);
+                    TimeSpan delayInterval;
+                    lock (_lock)
+                    {
+                        // Snapshot the interval to use for this cooldown.
+                        // If no pending call yet, use the interval from the
+                        // leading invocation; otherwise use the most recent
+                        // pending interval (which may be updated by new calls
+                        // arriving during the delay).
+                        delayInterval = _isPending ? _pendingInterval : effectiveInterval;
+                    }
+
+                    await Task.Delay(delayInterval).ConfigureAwait(false);
 
                     bool shouldRun;
                     lock (_lock)
@@ -132,18 +137,14 @@ public sealed class ThrottledDebouncedAction : IDisposable
 
                     if (shouldRun)
                     {
-                        SafeInvoke();
+                        _action();
                     }
                 }
             });
         }
     }
 
-    public void InvokeImmediately()
-    {
-        Cancel();
-        SafeInvoke();
-    }
+    public void InvokeImmediately() => Invoke(TimeSpan.Zero);
 
     public void Cancel()
     {
@@ -153,6 +154,7 @@ public sealed class ThrottledDebouncedAction : IDisposable
             toCancel = _cts;
             _cts = null;
             _isPending = false;
+            _isRunning = false;
         }
 
         toCancel?.Cancel();

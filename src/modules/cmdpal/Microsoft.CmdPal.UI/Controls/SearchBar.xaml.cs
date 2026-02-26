@@ -353,17 +353,24 @@ public sealed partial class SearchBar : UserControl,
         }
 
         // TODO: We could encapsulate this in a Behavior if we wanted to bind to the Filter property.
-        _debounceTimer.Debounce(
-            () =>
-            {
-                DoFilterBoxUpdate();
-            },
-            //// Couldn't find a good recommendation/resource for value here. PT uses 50ms as default, so that is a reasonable default
-            //// This seems like a useful testing site for typing times: https://keyboardtester.info/keyboard-latency-test/
-            //// i.e. if another keyboard press comes in within 50ms of the last, we'll wait before we fire off the request
-            interval: TimeSpan.FromMilliseconds(50),
-            //// If we're not already waiting, and this is blanking out or the first character type, we'll start filtering immediately instead to appear more responsive and either clear the filter to get back home faster or at least chop to the first starting letter.
-            immediate: FilterBox.Text.Length <= 1);
+        var hasCustomDebounce = (CurrentPageViewModel as ListViewModel)?.HasCustomDebounceLogic == true;
+        if (hasCustomDebounce)
+        {
+            // Good, the page handles debouncing on its own
+            DoFilterBoxUpdate();
+        }
+        else
+        {
+            _debounceTimer.Debounce(
+                DoFilterBoxUpdate,
+                //// Couldn't find a good recommendation/resource for value here. PT uses 50ms as default, so that is a reasonable default
+                //// This seems like a useful testing site for typing times: https://keyboardtester.info/keyboard-latency-test/
+                //// i.e. if another keyboard press comes in within 50ms of the last, we'll wait before we fire off the request
+                interval: TimeSpan.FromMilliseconds(50),
+                //// If we're not already waiting, and this is blanking out or the first character type, we'll start filtering immediately
+                //// instead to appear more responsive and either clear the filter to get back home faster or at least chop to the first starting letter.
+                immediate: FilterBox.Text.Length <= 1);
+        }
     }
 
     private void DoFilterBoxUpdate()
