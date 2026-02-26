@@ -74,7 +74,11 @@ public partial class App : Application, IDisposable
         _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default, appInfoService);
 #endif
 
-        Services = ConfigureServices(appInfoService);
+        var preloadedSettings = SettingsModel.LoadSettings();
+        var languageService = new LanguageService();
+        var language = languageService.ApplyLanguageOverride(languageService.GetEffectiveLanguageTag(preloadedSettings.Language));
+        appInfoService.SetLanguageOverride(language);
+        Services = ConfigureServices(appInfoService, preloadedSettings, languageService);
 
         IconCacheProvider.Initialize(Services);
 
@@ -115,7 +119,7 @@ public partial class App : Application, IDisposable
     /// <summary>
     /// Configures the services for the application
     /// </summary>
-    private static ServiceProvider ConfigureServices(IApplicationInfoService appInfoService)
+    private ServiceProvider ConfigureServices(IApplicationInfoService appInfoService, SettingsModel preloadedSettings, ILanguageService languageService)
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
@@ -128,7 +132,9 @@ public partial class App : Application, IDisposable
 
         AddCoreServices(services, appInfoService);
 
-        AddUIServices(services, dispatcherQueue);
+        AddUIServices(services, dispatcherQueue, preloadedSettings);
+
+        services.AddSingleton<ILanguageService>(languageService);
 
         return services.BuildServiceProvider();
     }
@@ -180,11 +186,10 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, PerformanceMonitorCommandsProvider>();
     }
 
-    private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
+    private void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue, SettingsModel preloadedSettings)
     {
         // Models
-        var sm = SettingsModel.LoadSettings();
-        services.AddSingleton(sm);
+        services.AddSingleton(preloadedSettings);
         var state = AppStateModel.LoadState();
         services.AddSingleton(state);
 

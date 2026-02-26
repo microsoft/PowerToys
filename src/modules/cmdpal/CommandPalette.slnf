@@ -36,7 +36,6 @@
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Calc\\Microsoft.CmdPal.Ext.Calc.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.ClipboardHistory\\Microsoft.CmdPal.Ext.ClipboardHistory.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Indexer\\Microsoft.CmdPal.Ext.Indexer.csproj",
-      "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.PerformanceMonitor\\Microsoft.CmdPal.Ext.PerformanceMonitor.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Registry\\Microsoft.CmdPal.Ext.Registry.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.RemoteDesktop\\Microsoft.CmdPal.Ext.RemoteDesktop.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.Shell\\Microsoft.CmdPal.Ext.Shell.csproj",

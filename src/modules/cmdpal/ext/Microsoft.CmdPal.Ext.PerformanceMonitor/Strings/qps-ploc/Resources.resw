@@ -1,0 +1,253 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Widget_Template.Loading" xml:space="preserve">
+    <value>Ĺōåďīńğ...</value>
+    <comment>Shown in Widget, when loading config file content</comment>
+  </data>
+  <data name="Widget_Template_Tooltip.Submit" xml:space="preserve">
+    <value>Šūƀṁīť</value>
+    <comment>Shown in Widget, Tooltip text</comment>
+  </data>
+  <data name="SSH_Widget_Template.Name" xml:space="preserve">
+    <value>ŠŠĤ ķēŷčĥåīń</value>
+  </data>
+  <data name="SSH_Widget_Template.Target" xml:space="preserve">
+    <value>Ĺōčåĺ</value>
+  </data>
+  <data name="SSH_Widget_Template.ConfigFilePath" xml:space="preserve">
+    <value>Čōńƒīğ ƒīĺē ṗåťĥ</value>
+  </data>
+  <data name="SSH_Widget_Template.ConfigFileNotFound" xml:space="preserve">
+    <value>Ƒīĺē ńōť ƒōūńď</value>
+  </data>
+  <data name="SSH_Widget_Template.EmptyHosts" xml:space="preserve">
+    <value>Ťĥēŕē åŕē ńō ĥōšťš īń ťĥīš čōńƒīğ ƒīĺē.</value>
+  </data>
+  <data name="SSH_Widget_Template.NumOfHosts" xml:space="preserve">
+    <value>Ńūṁƀēŕ ōƒ ĥōšťš ƒōūńď</value>
+  </data>
+  <data name="SSH_Widget_Template.Connect" xml:space="preserve">
+    <value>Čōńńēčť</value>
+  </data>
+  <data name="SSH_Widget_Template.ErrorProcessingConfigFile" xml:space="preserve">
+    <value>Ṗŕōčēššīńğ čōńƒīğ ƒīĺē ƒåīĺēď</value>
+  </data>
+  <data name="Memory_Widget_Template.SystemMemory" xml:space="preserve">
+    <value>Šŷšťēṁ ṁēṁōŕŷ</value>
+  </data>
+  <data name="Memory_Widget_Template.MemoryUsage" xml:space="preserve">
+    <value>Ūťīĺīžåťīōń</value>
+  </data>
+  <data name="Memory_Widget_Template.AllMemory" xml:space="preserve">
+    <value>Åĺĺ ṁēṁōŕŷ</value>
+  </data>
+  <data name="Memory_Widget_Template.UsedMemory" xml:space="preserve">
+    <value>Īń ūšē (čōṁṗŕēššēď)</value>
+  </data>
+  <data name="Memory_Widget_Template.Committed" xml:space="preserve">
+    <value>Čōṁṁīťťēď</value>
+  </data>
+  <data name="Memory_Widget_Template.Cached" xml:space="preserve">
+    <value>Čåčĥēď</value>
+  </data>
+  <data name="Memory_Widget_Template.NonPagedPool" xml:space="preserve">
+    <value>Ńōń-ṗåğēď ṗōōĺ</value>
+  </data>
+  <data name="Memory_Widget_Template.PagedPool" xml:space="preserve">
+    <value>Ṗåğēď ṗōōĺ</value>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Network_Usage" xml:space="preserve">
+    <value>Ūťīĺīžåťīōń</value>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Sent" xml:space="preserve">
+    <value>Šēńď</value>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Received" xml:space="preserve">
+    <value>Ŕēčēīṽē</value>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Network_Name" xml:space="preserve">
+    <value>Ńåṁē</value>
+  </data>
+  <data name="Previous_Network_Title" xml:space="preserve">
+    <value>Ṗŕēṽīōūš ńēťŵōŕķ</value>
+  </data>
+  <data name="Next_Network_Title" xml:space="preserve">
+    <value>Ńēẋť ńēťŵōŕķ</value>
+  </data>
+  <data name="NetworkUsage_Widget_Template.Ethernet_Heading" xml:space="preserve">
+    <value>Ēťĥēŕńēť</value>
+  </data>
+  <data name="GPUUsage_Widget_Template.GPU_Usage" xml:space="preserve">
+    <value>Ūťīĺīžåťīōń</value>
+  </data>
+  <data name="GPUUsage_Widget_Template.GPU_Name" xml:space="preserve">
+    <value>Ńåṁē</value>
+  </data>
+  <data name="GPUUsage_Widget_Template.GPU_Temperature" xml:space="preserve">
+    <value>Ťēṁṗēŕåťūŕē</value>
+  </data>
+  <data name="Previous_GPU_Title" xml:space="preserve">
+    <value>Ṗŕēṽīōūš ĞṖŪ</value>
+  </data>
+  <data name="Next_GPU_Title" xml:space="preserve">
+    <value>Ńēẋť ĞṖŪ</value>
+  </data>
+  <data name="CPUUsage_Widget_Template.CPU_Usage" xml:space="preserve">
+    <value>Ūťīĺīžåťīōń</value>
+  </data>
+  <data name="CPUUsage_Widget_Template.CPU_Speed" xml:space="preserve">
+    <value>Šṗēēď</value>
+  </data>
+  <data name="CPUUsage_Widget_Template.Processes" xml:space="preserve">
+    <value>Ṗŕōčēššēš</value>
+  </data>
+  <data name="CPUUsage_Widget_Template.End_Process" xml:space="preserve">
+    <value>Ēńď ṗŕōčēšš</value>
+  </data>
+  <data name="Widget_Template_Button.Preview" xml:space="preserve">
+    <value>Ṗŕēṽīēŵ</value>
+    <comment>Shown in Widget, Button text</comment>
+  </data>
+  <data name="Widget_Template_Button.Save" xml:space="preserve">
+    <value>Šåṽē</value>
+    <comment>Shown in Widget, Button text</comment>
+  </data>
+  <data name="Widget_Template_Button.Cancel" xml:space="preserve">
+    <value>Čåńčēĺ</value>
+    <comment>Shown in Widget, Button text</comment>
+  </data>
+  <data name="CPU_Usage_Subtitle" xml:space="preserve">
+    <value>ČṖŪ</value>
+  </data>
+  <data name="Memory_Usage_Subtitle" xml:space="preserve">
+    <value>Ṁēṁōŕŷ</value>
+  </data>
+  <data name="Network_Usage_Subtitle" xml:space="preserve">
+    <value>Ńēťŵōŕķ</value>
+  </data>
+  <data name="GPU_Usage_Subtitle" xml:space="preserve">
+    <value>ĞṖŪ</value>
+  </data>
+  <data name="Performance_Monitor_Title" xml:space="preserve">
+    <value>Ṗēŕƒōŕṁåńčē ṁōńīťōŕ</value>
+  </data>
+  <data name="CPU_Usage_Title" xml:space="preserve">
+    <value>ČṖŪ Ūšåğē</value>
+  </data>
+  <data name="CPU_Usage_Label" xml:space="preserve">
+    <value>ČṖŪ Ūšåğē: {0}</value>
+    <comment>{0} is the CPU usage percentage</comment>
+  </data>
+  <data name="CPU_Usage_Unknown" xml:space="preserve">
+    <value>???</value>
+  </data>
+  <data name="CPU_Usage_Unknown_Label" xml:space="preserve">
+    <value>ČṖŪ Ūšåğē: ???</value>
+  </data>
+  <data name="Memory_Usage_Title" xml:space="preserve">
+    <value>Ṁēṁōŕŷ Ūšåğē</value>
+  </data>
+  <data name="Memory_Usage_Label" xml:space="preserve">
+    <value>Ṁēṁōŕŷ Ūšåğē: {0}</value>
+    <comment>{0} is the memory usage percentage</comment>
+  </data>
+  <data name="Memory_Usage_Unknown" xml:space="preserve">
+    <value>???</value>
+  </data>
+  <data name="Memory_Usage_Unknown_Label" xml:space="preserve">
+    <value>Ṁēṁōŕŷ Ūšåğē: ???</value>
+  </data>
+  <data name="Network_Usage_Title" xml:space="preserve">
+    <value>Ńēťŵōŕķ Ūšåğē</value>
+  </data>
+  <data name="Network_Usage_Label" xml:space="preserve">
+    <value>Ńēťŵōŕķ ({0}): {1}</value>
+    <comment>{0} is the network adapter name, {1} is the usage percentage</comment>
+  </data>
+  <data name="Network_Usage_Unknown" xml:space="preserve">
+    <value>???</value>
+  </data>
+  <data name="Network_Usage_Unknown_Label" xml:space="preserve">
+    <value>Ńēťŵōŕķ Ūšåğē: ???</value>
+  </data>
+  <data name="GPU_Usage_Title" xml:space="preserve">
+    <value>ĞṖŪ Ūšåğē</value>
+  </data>
+  <data name="GPU_Usage_Label" xml:space="preserve">
+    <value>ĞṖŪ ({0}): {1}</value>
+    <comment>{0} is the GPU name, {1} is the usage percentage</comment>
+  </data>
+  <data name="GPU_Usage_Unknown" xml:space="preserve">
+    <value>???</value>
+  </data>
+  <data name="GPU_Usage_Unknown_Label" xml:space="preserve">
+    <value>ĞṖŪ Ūšåğē: ???</value>
+  </data>
+  <data name="Open_Task_Manager_Title" xml:space="preserve">
+    <value>Ōṗēń Ťåšķ Ṁåńåğēŕ</value>
+  </data>
+  <data name="Network_Send_Subtitle" xml:space="preserve">
+    <value>Šēńď ↑</value>
+  </data>
+  <data name="Network_Receive_Subtitle" xml:space="preserve">
+    <value>Ŕēčēīṽē ↓</value>
+  </data>
+</root>

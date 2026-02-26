@@ -92,6 +92,8 @@ public partial class SettingsModel : ObservableObject
 
     public int BackdropOpacity { get; set; } = 100;
 
+    public string Language { get; set; } = string.Empty;
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 

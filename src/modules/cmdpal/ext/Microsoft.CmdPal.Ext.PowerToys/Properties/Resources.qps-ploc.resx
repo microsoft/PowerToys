@@ -1,0 +1,636 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- PowerToys CommandsProvider -->
+  <data name="PowerToys_DisplayName" xml:space="preserve">
+    <value>ṖōŵēŕŤōŷš</value>
+  </data>
+  <data name="PowerToys_Subtitle" xml:space="preserve">
+    <value>ṖōŵēŕŤōŷš čōṁṁåńďš åńď šēťťīńğš</value>
+  </data>
+  <data name="PowerToys_NoMatchingModule" xml:space="preserve">
+    <value>Ńō ṁåťčĥīńğ ṁōďūĺē ƒōūńď</value>
+  </data>
+  <!-- PowerToys Extension Page -->
+  <data name="PowerToysExtension_CommandsName" xml:space="preserve">
+    <value>ṖōŵēŕŤōŷš čōṁṁåńďš</value>
+  </data>
+  <data name="PowerToysExtension_OpenPowerToys_Title" xml:space="preserve">
+    <value>Ōṗēń ṖōŵēŕŤōŷš</value>
+  </data>
+  <data name="PowerToysExtension_OpenPowerToys_Subtitle" xml:space="preserve">
+    <value>Ĺåūńčĥ ťĥē ṖōŵēŕŤōŷš šĥēĺĺ</value>
+  </data>
+  <data name="PowerToysExtension_OpenSettings_Title" xml:space="preserve">
+    <value>Ōṗēń ṖōŵēŕŤōŷš šēťťīńğš</value>
+  </data>
+  <data name="PowerToysExtension_OpenSettings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń ťĥē ṁåīń ṖōŵēŕŤōŷš šēťťīńğš ŵīńďōŵ</value>
+  </data>
+  <data name="PowerToysExtension_OpenWorkspacesSettings_Title" xml:space="preserve">
+    <value>Ōṗēń Ŵōŕķšṗåčēš šēťťīńğš</value>
+  </data>
+  <data name="PowerToysExtension_OpenWorkspacesSettings_Subtitle" xml:space="preserve">
+    <value>Ĵūṁṗ ďīŕēčťĺŷ ťō Ŵōŕķšṗåčēš šēťťīńğš</value>
+  </data>
+  <data name="PowerToysExtension_OpenWorkspacesEditor_Title" xml:space="preserve">
+    <value>Ōṗēń Ŵōŕķšṗåčēš ēďīťōŕ</value>
+  </data>
+  <data name="PowerToysExtension_OpenWorkspacesEditor_Subtitle" xml:space="preserve">
+    <value>Ĺåūńčĥ ťĥē Ŵōŕķšṗåčēš ēďīťōŕ</value>
+  </data>
+  <!-- Advanced Paste Module -->
+  <data name="AdvancedPaste_Open_Title" xml:space="preserve">
+    <value>Ōṗēń Åďṽåńčēď Ṗåšťē</value>
+  </data>
+  <data name="AdvancedPaste_Open_Subtitle" xml:space="preserve">
+    <value>Ĺåūńčĥ ťĥē Åďṽåńčēď Ṗåšťē ŪĪ</value>
+  </data>
+  <data name="AdvancedPaste_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Åďṽåńčēď Ṗåšťē šēťťīńğš</value>
+  </data>
+  <!-- Always On Top Module -->
+  <data name="AlwaysOnTop_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Åĺŵåŷš Ōń Ťōṗ šēťťīńğš</value>
+  </data>
+  <!-- Awake Module -->
+  <data name="Awake_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Åŵåķē šēťťīńğš</value>
+  </data>
+  <data name="Awake_Status_Title" xml:space="preserve">
+    <value>Åŵåķē: Čūŕŕēńť šťåťūš</value>
+  </data>
+  <data name="Awake_KeepIndefinite_Title" xml:space="preserve">
+    <value>Åŵåķē: Ķēēṗ åŵåķē īńďēƒīńīťēĺŷ</value>
+  </data>
+  <data name="Awake_KeepIndefinite_Subtitle" xml:space="preserve">
+    <value>Ŕūń Åŵåķē īń īńďēƒīńīťē ṁōďē</value>
+  </data>
+  <data name="Awake_Keep30Min_Title" xml:space="preserve">
+    <value>Åŵåķē: Ķēēṗ åŵåķē ƒōŕ 30 ṁīńūťēš</value>
+  </data>
+  <data name="Awake_Keep30Min_Subtitle" xml:space="preserve">
+    <value>Ŕūń Åŵåķē ťīṁēď ƒōŕ 30 ṁīńūťēš</value>
+  </data>
+  <data name="Awake_Keep1Hour_Title" xml:space="preserve">
+    <value>Åŵåķē: Ķēēṗ åŵåķē ƒōŕ 1 ĥōūŕ</value>
+  </data>
+  <data name="Awake_Keep1Hour_Subtitle" xml:space="preserve">
+    <value>Ŕūń Åŵåķē ťīṁēď ƒōŕ 1 ĥōūŕ</value>
+  </data>
+  <data name="Awake_Keep2Hours_Title" xml:space="preserve">
+    <value>Åŵåķē: Ķēēṗ åŵåķē ƒōŕ 2 ĥōūŕš</value>
+  </data>
+  <data name="Awake_Keep2Hours_Subtitle" xml:space="preserve">
+    <value>Ŕūń Åŵåķē ťīṁēď ƒōŕ 2 ĥōūŕš</value>
+  </data>
+  <data name="Awake_TurnOff_Title" xml:space="preserve">
+    <value>Åŵåķē: Ťūŕń ōƒƒ</value>
+  </data>
+  <data name="Awake_TurnOff_Subtitle" xml:space="preserve">
+    <value>Šŵīťčĥ Åŵåķē ƀåčķ ťō Ōƒƒ</value>
+  </data>
+  <data name="Awake_SetIndefinite_Toast" xml:space="preserve">
+    <value>Åŵåķē šēť ťō īńďēƒīńīťē</value>
+  </data>
+  <data name="Awake_Set30Min_Toast" xml:space="preserve">
+    <value>Åŵåķē šēť ƒōŕ 30 ṁīńūťēš</value>
+  </data>
+  <data name="Awake_Set1Hour_Toast" xml:space="preserve">
+    <value>Åŵåķē šēť ƒōŕ 1 ĥōūŕ</value>
+  </data>
+  <data name="Awake_Set2Hours_Toast" xml:space="preserve">
+    <value>Åŵåķē šēť ƒōŕ 2 ĥōūŕš</value>
+  </data>
+  <!-- Color Picker Module -->
+  <data name="ColorPicker_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Čōĺōŕ Ṗīčķēŕ šēťťīńğš</value>
+  </data>
+  <data name="ColorPicker_Open_Title" xml:space="preserve">
+    <value>Ōṗēń Čōĺōŕ Ṗīčķēŕ</value>
+  </data>
+  <data name="ColorPicker_Open_Subtitle" xml:space="preserve">
+    <value>Šťåŕť å čōĺōŕ ṗīčķ šēššīōń</value>
+  </data>
+  <data name="ColorPicker_SavedColors_Title" xml:space="preserve">
+    <value>Šåṽēď čōĺōŕš</value>
+  </data>
+  <data name="ColorPicker_SavedColors_Subtitle" xml:space="preserve">
+    <value>Ɓŕōŵšē åńď čōṗŷ šåṽēď čōĺōŕš</value>
+  </data>
+  <data name="ColorPicker_NoSavedColors_Title" xml:space="preserve">
+    <value>Ńō šåṽēď čōĺōŕš</value>
+  </data>
+  <data name="ColorPicker_NoSavedColors_Subtitle" xml:space="preserve">
+    <value>Ṗīčķ å čōĺōŕ ƒīŕšť, ťĥēń ťŕŷ åğåīń.</value>
+  </data>
+  <data name="ColorPicker_NoMatchingSavedColors_Subtitle" xml:space="preserve">
+    <value>Ńō šåṽēď čōĺōŕš ṁåťčĥīńğ '{0}'</value>
+  </data>
+  <!-- Command Not Found Module -->
+  <data name="CommandNotFound_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Čōṁṁåńď Ńōť Ƒōūńď šēťťīńğš</value>
+  </data>
+  <!-- Crop And Lock Module -->
+  <data name="CropAndLock_Reparent_Title" xml:space="preserve">
+    <value>Čŕōṗ åńď Ĺōčķ (Ŕēṗåŕēńť)</value>
+  </data>
+  <data name="CropAndLock_Reparent_Subtitle" xml:space="preserve">
+    <value>Čŕēåťē å čŕōṗṗēď ŕēṗåŕēńťēď ŵīńďōŵ</value>
+  </data>
+  <data name="CropAndLock_Thumbnail_Title" xml:space="preserve">
+    <value>Čŕōṗ åńď Ĺōčķ (Ťĥūṁƀńåīĺ)</value>
+  </data>
+  <data name="CropAndLock_Thumbnail_Subtitle" xml:space="preserve">
+    <value>Čŕēåťē å čŕōṗṗēď ťĥūṁƀńåīĺ ŵīńďōŵ</value>
+  </data>
+  <data name="CropAndLock_Screenshot_Title" xml:space="preserve">
+    <value>Čŕōṗ åńď Ĺōčķ (Ščŕēēńšĥōť)</value>
+  </data>
+  <data name="CropAndLock_Screenshot_Subtitle" xml:space="preserve">
+    <value>Čŕēåťē å čŕōṗṗēď ščŕēēńšĥōť ŵīńďōŵ</value>
+  </data>
+  <data name="CropAndLock_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Čŕōṗ åńď Ĺōčķ šēťťīńğš</value>
+  </data>
+  <!-- Environment Variables Module -->
+  <data name="EnvironmentVariables_Open_Title" xml:space="preserve">
+    <value>Ōṗēń Ēńṽīŕōńṁēńť Ṽåŕīåƀĺēš</value>
+  </data>
+  <data name="EnvironmentVariables_Open_Subtitle" xml:space="preserve">
+    <value>Ĺåūńčĥ Ēńṽīŕōńṁēńť Ṽåŕīåƀĺēš ēďīťōŕ</value>
+  </data>
+  <data name="EnvironmentVariables_OpenAdmin_Title" xml:space="preserve">
+    <value>Ōṗēń Ēńṽīŕōńṁēńť Ṽåŕīåƀĺēš (Åďṁīń)</value>
+  </data>
+  <data name="EnvironmentVariables_OpenAdmin_Subtitle" xml:space="preserve">
+    <value>Ĺåūńčĥ Ēńṽīŕōńṁēńť Ṽåŕīåƀĺēš ēďīťōŕ åš åďṁīń</value>
+  </data>
+  <data name="EnvironmentVariables_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ēńṽīŕōńṁēńť Ṽåŕīåƀĺēš šēťťīńğš</value>
+  </data>
+  <!-- FancyZones Module -->
+  <data name="FancyZones_Layouts_Title" xml:space="preserve">
+    <value>ƑåńčŷŽōńēš: Ĺåŷōūťš</value>
+  </data>
+  <data name="FancyZones_Layouts_Subtitle" xml:space="preserve">
+    <value>Åṗṗĺŷ å ĺåŷōūť ťō åĺĺ ṁōńīťōŕš ōŕ å šṗēčīƒīč ṁōńīťōŕ</value>
+  </data>
+  <data name="FancyZones_Monitors_Title" xml:space="preserve">
+    <value>ƑåńčŷŽōńēš: Ṁōńīťōŕš</value>
+  </data>
+  <data name="FancyZones_Monitors_Subtitle" xml:space="preserve">
+    <value>Īďēńťīƒŷ ṁōńīťōŕš åńď åṗṗĺŷ ĺåŷōūťš</value>
+  </data>
+  <data name="FancyZones_OpenEditor_Title" xml:space="preserve">
+    <value>Ōṗēń ƑåńčŷŽōńēš Ēďīťōŕ</value>
+  </data>
+  <data name="FancyZones_OpenEditor_Subtitle" xml:space="preserve">
+    <value>Ĺåūńčĥ ĺåŷōūť ēďīťōŕ</value>
+  </data>
+  <data name="FancyZones_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń ƑåńčŷŽōńēš šēťťīńğš</value>
+  </data>
+  <data name="FancyZones_LayoutsPage_Title" xml:space="preserve">
+    <value>ƑåńčŷŽōńēš Ĺåŷōūťš</value>
+  </data>
+  <data name="FancyZones_NoLayoutsFound_Title" xml:space="preserve">
+    <value>Ńō ĺåŷōūťš ƒōūńď</value>
+  </data>
+  <data name="FancyZones_NoLayoutsFound_Subtitle" xml:space="preserve">
+    <value>Ōṗēń ƑåńčŷŽōńēš Ēďīťōŕ ōńčē ťō īńīťīåĺīžē ĺåŷōūťš.</value>
+  </data>
+  <data name="FancyZones_ApplyTo_Format" xml:space="preserve">
+    <value>Åṗṗĺŷ ťō {0}</value>
+  </data>
+  <data name="FancyZones_MonitorsPage_Title" xml:space="preserve">
+    <value>ƑåńčŷŽōńēš Ṁōńīťōŕš</value>
+  </data>
+  <data name="FancyZones_NoMonitorsFound_Title" xml:space="preserve">
+    <value>Ńō ṁōńīťōŕš ƒōūńď</value>
+  </data>
+  <data name="FancyZones_NoMonitorsFound_Subtitle" xml:space="preserve">
+    <value>Ōṗēń ƑåńčŷŽōńēš Ēďīťōŕ ōńčē ťō īńīťīåĺīžē ṁōńīťōŕ ďåťå.</value>
+  </data>
+  <data name="FancyZones_SetActiveLayout" xml:space="preserve">
+    <value>Šēť åčťīṽē ĺåŷōūť</value>
+  </data>
+  <data name="FancyZones_PickLayoutForMonitor" xml:space="preserve">
+    <value>Ṗīčķ å ĺåŷōūť ƒōŕ ťĥīš ṁōńīťōŕ</value>
+  </data>
+  <data name="FancyZones_SetActiveLayoutFor_Format" xml:space="preserve">
+    <value>Šēť åčťīṽē ĺåŷōūť ƒōŕ {0}</value>
+  </data>
+  <data name="FancyZones_CurrentLayout_Format" xml:space="preserve">
+    <value>Čūŕŕēńť ĺåŷōūť: {0}</value>
+  </data>
+  <data name="FancyZones_CurrentLayout_Unknown" xml:space="preserve">
+    <value>Čūŕŕēńť ĺåŷōūť: ūńķńōŵń</value>
+  </data>
+  <data name="FancyZones_Template_Format" xml:space="preserve">
+    <value>Ťēṁṗĺåťē: {0}</value>
+  </data>
+  <data name="FancyZones_Zones_Format" xml:space="preserve">
+    <value>{0} žōńēš</value>
+  </data>
+  <data name="FancyZones_CustomGrid_Zones_Format" xml:space="preserve">
+    <value>Čūšťōṁ ğŕīď • {0} žōńēš</value>
+  </data>
+  <data name="FancyZones_CustomCanvas_Zones_Format" xml:space="preserve">
+    <value>Čūšťōṁ čåńṽåš • {0} žōńēš</value>
+  </data>
+  <data name="FancyZones_Custom_Zones_Format" xml:space="preserve">
+    <value>Čūšťōṁ • {0} žōńēš</value>
+  </data>
+  <data name="FancyZones_LayoutApplied" xml:space="preserve">
+    <value>Ĺåŷōūť åṗṗĺīēď.</value>
+  </data>
+  <data name="FancyZones_LayoutAppliedNotifyFailed_Format" xml:space="preserve">
+    <value>Ĺåŷōūť åṗṗĺīēď, ƀūť ƑåńčŷŽōńēš čōūĺď ńōť ƀē ńōťīƒīēď: {0}</value>
+  </data>
+  <data name="FancyZones_WriteAppliedLayoutsFailed_Format" xml:space="preserve">
+    <value>Ƒåīĺēď ťō ŵŕīťē åṗṗĺīēď ĺåŷōūťš: {0}</value>
+  </data>
+  <data name="FancyZones_MonitorDataNotFound" xml:space="preserve">
+    <value>ƑåńčŷŽōńēš ṁōńīťōŕ ďåťå ńōť ƒōūńď. Ōṗēń ƑåńčŷŽōńēš Ēďīťōŕ ōńčē ťō īńīťīåĺīžē.</value>
+  </data>
+  <data name="FancyZones_NoFancyZonesMonitorsFound" xml:space="preserve">
+    <value>Ńō ƑåńčŷŽōńēš ṁōńīťōŕš ƒōūńď.</value>
+  </data>
+  <data name="FancyZones_ReadMonitorDataFailed_Format" xml:space="preserve">
+    <value>Ƒåīĺēď ťō ŕēåď ƑåńčŷŽōńēš ṁōńīťōŕ ďåťå: {0}</value>
+  </data>
+  <!-- File Explorer Addons Module -->
+  <data name="FileExplorerAddons_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ƒīĺē Ēẋṗĺōŕēŕ åďď-ōńš šēťťīńğš</value>
+  </data>
+  <!-- File Locksmith Module -->
+  <data name="FileLocksmith_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ƒīĺē Ĺōčķšṁīťĥ šēťťīńğš</value>
+  </data>
+  <!-- Hosts Module -->
+  <data name="Hosts_Open_Title" xml:space="preserve">
+    <value>Ōṗēń Ĥōšťš Ƒīĺē Ēďīťōŕ</value>
+  </data>
+  <data name="Hosts_Open_Subtitle" xml:space="preserve">
+    <value>Ĺåūńčĥ Ĥōšťš Ƒīĺē Ēďīťōŕ</value>
+  </data>
+  <data name="Hosts_OpenAdmin_Title" xml:space="preserve">
+    <value>Ōṗēń Ĥōšťš Ƒīĺē Ēďīťōŕ (Åďṁīń)</value>
+  </data>
+  <data name="Hosts_OpenAdmin_Subtitle" xml:space="preserve">
+    <value>Ĺåūńčĥ Ĥōšťš Ƒīĺē Ēďīťōŕ åš åďṁīń</value>
+  </data>
+  <data name="Hosts_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ĥōšťš Ƒīĺē Ēďīťōŕ šēťťīńğš</value>
+  </data>
+  <!-- Image Resizer Module -->
+  <data name="ImageResizer_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Īṁåğē Ŕēšīžēŕ šēťťīńğš</value>
+  </data>
+  <!-- Keyboard Manager Module -->
+  <data name="KeyboardManager_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ķēŷƀōåŕď Ṁåńåğēŕ šēťťīńğš</value>
+  </data>
+  <!-- Light Switch Module -->
+  <data name="LightSwitch_Toggle_Title" xml:space="preserve">
+    <value>Ĺīğĥť Šŵīťčĥ: Ťōğğĺē ťĥēṁē</value>
+  </data>
+  <data name="LightSwitch_Toggle_Subtitle" xml:space="preserve">
+    <value>Ťōğğĺē šŷšťēṁ/åṗṗš ťĥēṁē īṁṁēďīåťēĺŷ</value>
+  </data>
+  <data name="LightSwitch_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ĺīğĥť Šŵīťčĥ šēťťīńğš</value>
+  </data>
+  <!-- Mouse Utils Module -->
+  <data name="MouseUtils_FindMyMouse_Title" xml:space="preserve">
+    <value>Ťŕīğğēŕ Ƒīńď Ṁŷ Ṁōūšē</value>
+  </data>
+  <data name="MouseUtils_FindMyMouse_Subtitle" xml:space="preserve">
+    <value>Ƒōčūš ťĥē ṁōūšē ṗōīńťēŕ</value>
+  </data>
+  <data name="MouseUtils_Highlighter_Title" xml:space="preserve">
+    <value>Ťōğğĺē Ṁōūšē Ĥīğĥĺīğĥťēŕ</value>
+  </data>
+  <data name="MouseUtils_Highlighter_Subtitle" xml:space="preserve">
+    <value>Ĥīğĥĺīğĥť ṁōūšē čĺīčķš</value>
+  </data>
+  <data name="MouseUtils_Crosshairs_Title" xml:space="preserve">
+    <value>Ťōğğĺē Ṁōūšē Čŕōššĥåīŕš</value>
+  </data>
+  <data name="MouseUtils_Crosshairs_Subtitle" xml:space="preserve">
+    <value>Ēńåƀĺē ōŕ ďīšåƀĺē ṗōīńťēŕ čŕōššĥåīŕš</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_Title" xml:space="preserve">
+    <value>Ťōğğĺē Čūŕšōŕ Ŵŕåṗ</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_Subtitle" xml:space="preserve">
+    <value>Ŵŕåṗ ťĥē čūŕšōŕ åčŕōšš ṁōńīťōŕ ēďğēš</value>
+  </data>
+  <data name="MouseUtils_MouseJump_Title" xml:space="preserve">
+    <value>Šĥōŵ Ṁōūšē Ĵūṁṗ Ṗŕēṽīēŵ</value>
+  </data>
+  <data name="MouseUtils_MouseJump_Subtitle" xml:space="preserve">
+    <value>Ĵūṁṗ ťĥē ṗōīńťēŕ ťō å ťåŕğēť</value>
+  </data>
+  <data name="MouseUtils_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ṁōūšē Ūťīĺīťīēš šēťťīńğš</value>
+  </data>
+  <!-- Mouse Without Borders Module -->
+  <data name="MouseWithoutBorders_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ṁōūšē Ŵīťĥōūť Ɓōŕďēŕš šēťťīńğš</value>
+  </data>
+  <!-- New+ Module -->
+  <data name="NewPlus_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ńēŵ+ šēťťīńğš</value>
+  </data>
+  <!-- Peek Module -->
+  <data name="Peek_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ṗēēķ šēťťīńğš</value>
+  </data>
+  <!-- PowerRename Module -->
+  <data name="PowerRename_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń ṖōŵēŕŔēńåṁē šēťťīńğš</value>
+  </data>
+  <!-- PowerToys Run Module -->
+  <data name="PowerToysRun_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń ṖōŵēŕŤōŷš Ŕūń šēťťīńğš</value>
+  </data>
+  <!-- Quick Accent Module -->
+  <data name="QuickAccent_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Qūīčķ Åččēńť šēťťīńğš</value>
+  </data>
+  <!-- Registry Preview Module -->
+  <data name="RegistryPreview_Open_Title" xml:space="preserve">
+    <value>Ōṗēń Ŕēğīšťŕŷ Ṗŕēṽīēŵ</value>
+  </data>
+  <data name="RegistryPreview_Open_Subtitle" xml:space="preserve">
+    <value>Ĺåūńčĥ Ŕēğīšťŕŷ Ṗŕēṽīēŵ</value>
+  </data>
+  <data name="RegistryPreview_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ŕēğīšťŕŷ Ṗŕēṽīēŵ šēťťīńğš</value>
+  </data>
+  <!-- Screen Ruler Module -->
+  <data name="ScreenRuler_Toggle_Title" xml:space="preserve">
+    <value>Ťōğğĺē Ščŕēēń Ŕūĺēŕ</value>
+  </data>
+  <data name="ScreenRuler_Toggle_Subtitle" xml:space="preserve">
+    <value>Šťåŕť ōŕ čĺōšē Ščŕēēń Ŕūĺēŕ</value>
+  </data>
+  <data name="ScreenRuler_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ščŕēēń Ŕūĺēŕ šēťťīńğš</value>
+  </data>
+  <!-- Shortcut Guide Module -->
+  <data name="ShortcutGuide_Toggle_Title" xml:space="preserve">
+    <value>Ťōğğĺē Šĥōŕťčūť Ğūīďē</value>
+  </data>
+  <data name="ShortcutGuide_Toggle_Subtitle" xml:space="preserve">
+    <value>Šĥōŵ ōŕ ĥīďē Šĥōŕťčūť Ğūīďē</value>
+  </data>
+  <data name="ShortcutGuide_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Šĥōŕťčūť Ğūīďē šēťťīńğš</value>
+  </data>
+  <!-- Text Extractor Module -->
+  <data name="TextExtractor_Toggle_Title" xml:space="preserve">
+    <value>Ťōğğĺē Ťēẋť Ēẋťŕåčťōŕ</value>
+  </data>
+  <data name="TextExtractor_Toggle_Subtitle" xml:space="preserve">
+    <value>Šťåŕť ōŕ čĺōšē Ťēẋť Ēẋťŕåčťōŕ</value>
+  </data>
+  <data name="TextExtractor_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ťēẋť Ēẋťŕåčťōŕ šēťťīńğš</value>
+  </data>
+  <!-- Workspaces Module -->
+  <data name="Workspaces_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń Ŵōŕķšṗåčēš šēťťīńğš</value>
+  </data>
+  <data name="Workspaces_OpenEditor_Title" xml:space="preserve">
+    <value>Ŵōŕķšṗåčēš: Ōṗēń ēďīťōŕ</value>
+  </data>
+  <data name="Workspaces_OpenEditor_Subtitle" xml:space="preserve">
+    <value>Čŕēåťē ōŕ ēďīť ŵōŕķšṗåčēš</value>
+  </data>
+  <data name="Workspaces_NoApplications" xml:space="preserve">
+    <value>Ńō åṗṗĺīčåťīōńš</value>
+  </data>
+  <data name="Workspaces_Applications_Format" xml:space="preserve">
+    <value>{0} åṗṗĺīčåťīōńš</value>
+  </data>
+  <data name="Workspaces_LastLaunched_Format" xml:space="preserve">
+    <value>Ĺåšť ĺåūńčĥēď {0}</value>
+  </data>
+  <data name="Workspaces_NeverLaunched" xml:space="preserve">
+    <value>Ńēṽēŕ ĺåūńčĥēď</value>
+  </data>
+  <data name="Workspaces_NoApplicationsInWorkspace" xml:space="preserve">
+    <value>Ńō åṗṗĺīčåťīōńš īń ťĥīš ŵōŕķšṗåčē</value>
+  </data>
+  <data name="Workspaces_OneApplication" xml:space="preserve">
+    <value>1 åṗṗĺīčåťīōń</value>
+  </data>
+  <data name="Workspaces_ApplicationsCount_Format" xml:space="preserve">
+    <value>{0} åṗṗĺīčåťīōńš</value>
+  </data>
+  <data name="Workspaces_Workspace" xml:space="preserve">
+    <value>Ŵōŕķšṗåčē</value>
+  </data>
+  <data name="Workspaces_App" xml:space="preserve">
+    <value>Åṗṗ</value>
+  </data>
+  <data name="Workspaces_JustNow" xml:space="preserve">
+    <value>ĵūšť ńōŵ</value>
+  </data>
+  <data name="Workspaces_MinAgo_Format" xml:space="preserve">
+    <value>{0} ṁīń åğō</value>
+  </data>
+  <data name="Workspaces_HrAgo_Format" xml:space="preserve">
+    <value>{0} ĥŕ åğō</value>
+  </data>
+  <data name="Workspaces_DaysAgo_Format" xml:space="preserve">
+    <value>{0} ďåŷš åğō</value>
+  </data>
+  <!-- ZoomIt Module -->
+  <data name="ZoomIt_Zoom_Title" xml:space="preserve">
+    <value>ŽōōṁĪť: Žōōṁ</value>
+  </data>
+  <data name="ZoomIt_Zoom_Subtitle" xml:space="preserve">
+    <value>Ēńťēŕ žōōṁ ṁōďē</value>
+  </data>
+  <data name="ZoomIt_Draw_Title" xml:space="preserve">
+    <value>ŽōōṁĪť: Ďŕåŵ</value>
+  </data>
+  <data name="ZoomIt_Draw_Subtitle" xml:space="preserve">
+    <value>Ēńťēŕ ďŕåŵīńğ ṁōďē</value>
+  </data>
+  <data name="ZoomIt_Break_Title" xml:space="preserve">
+    <value>ŽōōṁĪť: Ɓŕēåķ</value>
+  </data>
+  <data name="ZoomIt_Break_Subtitle" xml:space="preserve">
+    <value>Ēńťēŕ ƀŕēåķ ťīṁēŕ</value>
+  </data>
+  <data name="ZoomIt_LiveZoom_Title" xml:space="preserve">
+    <value>ŽōōṁĪť: Ĺīṽē Žōōṁ</value>
+  </data>
+  <data name="ZoomIt_LiveZoom_Subtitle" xml:space="preserve">
+    <value>Ťōğğĺē ĺīṽē žōōṁ</value>
+  </data>
+  <data name="ZoomIt_Snip_Title" xml:space="preserve">
+    <value>ŽōōṁĪť: Šńīṗ</value>
+  </data>
+  <data name="ZoomIt_Snip_Subtitle" xml:space="preserve">
+    <value>Ēńťēŕ šńīṗ ṁōďē</value>
+  </data>
+  <data name="ZoomIt_Record_Title" xml:space="preserve">
+    <value>ŽōōṁĪť: Ŕēčōŕď</value>
+  </data>
+  <data name="ZoomIt_Record_Subtitle" xml:space="preserve">
+    <value>Šťåŕť ŕēčōŕďīńğ</value>
+  </data>
+  <data name="ZoomIt_Settings_Subtitle" xml:space="preserve">
+    <value>Ōṗēń ŽōōṁĪť šēťťīńğš</value>
+  </data>
+  <!-- FancyZones Monitor Details -->
+  <data name="FancyZones_Monitor" xml:space="preserve">
+    <value>Ṁōńīťōŕ</value>
+  </data>
+  <data name="FancyZones_Instance" xml:space="preserve">
+    <value>Īńšťåńčē</value>
+  </data>
+  <data name="FancyZones_Serial" xml:space="preserve">
+    <value>Šēŕīåĺ</value>
+  </data>
+  <data name="FancyZones_Number" xml:space="preserve">
+    <value>Ńūṁƀēŕ</value>
+  </data>
+  <data name="FancyZones_VirtualDesktop" xml:space="preserve">
+    <value>Ṽīŕťūåĺ ďēšķťōṗ</value>
+  </data>
+  <data name="FancyZones_WorkArea" xml:space="preserve">
+    <value>Ŵōŕķ åŕēå</value>
+  </data>
+  <data name="FancyZones_Resolution" xml:space="preserve">
+    <value>Ŕēšōĺūťīōń</value>
+  </data>
+  <data name="FancyZones_DPI" xml:space="preserve">
+    <value>ĎṖĪ</value>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>Ń/Å</value>
+  </data>
+</root>

@@ -1,0 +1,435 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Microsoft_plugin_timedate_CopyToClipboard" xml:space="preserve">
+    <value>Čōṗŷ ṽåĺūē (Čťŕĺ+Č)</value>
+    <comment>'Ctrl+C' is a shortcut</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_copy_failed" xml:space="preserve">
+    <value>Čōṗŷ ƒåīĺēď</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Date" xml:space="preserve">
+    <value>Ďåťē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DateAndTime" xml:space="preserve">
+    <value>Ďåťē åńď ťīṁē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DateAndTimeUtc" xml:space="preserve">
+    <value>Ďåťē åńď ťīṁē ŪŤČ</value>
+    <comment>'UTC' means here 'Universal Time Convention'</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Day" xml:space="preserve">
+    <value>Ďåŷ (Ŵēēķ ďåŷ)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DayMonth" xml:space="preserve">
+    <value>Ṁōńťĥ åńď ďåŷ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DayOfMonth" xml:space="preserve">
+    <value>Ďåŷ ōƒ ťĥē ṁōńťĥ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DayOfWeek" xml:space="preserve">
+    <value>Ďåŷ ōƒ ťĥē ŵēēķ (Ŵēēķ ďåŷ)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DayOfYear" xml:space="preserve">
+    <value>Ďåŷ ōƒ ťĥē ŷēåŕ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Era" xml:space="preserve">
+    <value>Ēŕå</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_EraAbbreviation" xml:space="preserve">
+    <value>Ēŕå åƀƀŕēṽīåťīōń</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidInput_DetailsHeader" xml:space="preserve">
+    <value>Šūṗṗōŕťēď īńṗūť</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Hour" xml:space="preserve">
+    <value>Ĥōūŕ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Iso8601" xml:space="preserve">
+    <value>ĪŠŌ 8601</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Iso8601Utc" xml:space="preserve">
+    <value>ĪŠŌ 8601 ŪŤČ</value>
+    <comment>'UTC' means here 'Universal Time Convention'</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Iso8601Zone" xml:space="preserve">
+    <value>ĪŠŌ 8601 ŵīťĥ ťīṁē žōńē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Iso8601ZoneUtc" xml:space="preserve">
+    <value>ĪŠŌ 8601 ŪŤČ ŵīťĥ ťīṁē žōńē</value>
+    <comment>'UTC' means here 'Universal Time Convention'</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_filename_compatible" xml:space="preserve">
+    <value>Ďåťē åńď ťīṁē īń ƒīĺēńåṁē-čōṁṗåťīƀĺē ƒōŕṁåť</value>
+    <comment>The format allows for embedding in filenames</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Millisecond" xml:space="preserve">
+    <value>Ṁīĺĺīšēčōńď</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Minute" xml:space="preserve">
+    <value>Ṁīńūťē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Month" xml:space="preserve">
+    <value>Ṁōńťĥ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_MonthOfYear" xml:space="preserve">
+    <value>Ṁōńťĥ ōƒ ťĥē ŷēåŕ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_MonthYear" xml:space="preserve">
+    <value>Ṁōńťĥ åńď ŷēåŕ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Now" xml:space="preserve">
+    <value>Ńōŵ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_NowUtc" xml:space="preserve">
+    <value>Ńōŵ ŪŤČ</value>
+    <comment>'UTC' means here 'Universal Time Convention'</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_description" xml:space="preserve">
+    <value>Šĥōŵ ťīṁē åńď ďåťē ṽåĺūēš īń ďīƒƒēŕēńť ƒōŕṁåťš</value>
+    <comment>Do not translate the placeholders like '{0}' because it will be replaced in code.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_description_example_calendarWeek" xml:space="preserve">
+    <value>Čåĺēńďåŕ ŵēēķ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_description_example_day" xml:space="preserve">
+    <value>Ďåŷ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_description_example_time" xml:space="preserve">
+    <value>Ťīṁē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_name" xml:space="preserve">
+    <value>Ťīṁē åńď ďåťē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Rfc1123" xml:space="preserve">
+    <value>ŔƑČ1123</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagDate" xml:space="preserve">
+    <value>Ďåťē</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagDateNow" xml:space="preserve">
+    <value>Čūŕŕēńť ďåťē; Ńōŵ</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagEra" xml:space="preserve">
+    <value>Ŷēåŕ; Čåĺēńďåŕ ēŕå; Ďåťē</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagEraNow" xml:space="preserve">
+    <value>Čūŕŕēńť ŷēåŕ; Čūŕŕēńť čåĺēńďåŕ ēŕå; Čūŕŕēńť ďåťē; Ńōŵ</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagFormat" xml:space="preserve">
+    <value>Ďåťē åńď ťīṁē; Ťīṁē åńď Ďåťē</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagFormatNow" xml:space="preserve">
+    <value>Čūŕŕēńť ďåťē åńď ťīṁē; Čūŕŕēńť ťīṁē åńď ďåťē; Ńōŵ</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagTime" xml:space="preserve">
+    <value>Ťīṁē</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagTimeNow" xml:space="preserve">
+    <value>Čūŕŕēńť Ťīṁē; Ńōŵ</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Second" xml:space="preserve">
+    <value>Šēčōńď</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingDateWithWeekday" xml:space="preserve">
+    <value>Šĥōŵ ďåťē ŵīťĥ ŵēēķďåŷ åńď ńåṁē ōƒ ṁōńťĥ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingDateWithWeekday_Description" xml:space="preserve">
+    <value>Ťĥīš šēťťīńğ åṗṗĺīēš ťō ťĥē 'Ďåťē' åńď 'Ńōŵ' ŕēšūĺť.</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingTimeWithSeconds" xml:space="preserve">
+    <value>Šĥōŵ ťīṁē ŵīťĥ šēčōńďš</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingTimeWithSeconds_Description" xml:space="preserve">
+    <value>Ťĥīš šēťťīńğ åṗṗĺīēš ťō ťĥē 'Ťīṁē' åńď 'Ńōŵ' ŕēšūĺť.</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SubTitleNote" xml:space="preserve">
+    <value>Šēĺēčť ōŕ ṗŕēšš Čťŕĺ+Č ťō čōṗŷ</value>
+    <comment>'Ctrl+C' is a shortcut</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Time" xml:space="preserve">
+    <value>Ťīṁē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_TimeUtc" xml:space="preserve">
+    <value>Ťīṁē ŪŤČ</value>
+    <comment>'UTC' means here 'Universal Time Convention'</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_ToolTipAlternativeSearchTag" xml:space="preserve">
+    <value>Åĺťēŕńåťīṽē šēåŕčĥ ťåğš:</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_UniversalTime" xml:space="preserve">
+    <value>Ūńīṽēŕšåĺ ťīṁē ƒōŕṁåť: ŶŶŶŶ-ṀṀ-ĎĎ ĥĥ:ṁṁ:šš</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Unix" xml:space="preserve">
+    <value>Ūńīẋ ēṗōčĥ ťīṁē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_WeekOfMonth" xml:space="preserve">
+    <value>Ŵēēķ ōƒ ťĥē ṁōńťĥ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_WeekOfYear" xml:space="preserve">
+    <value>Ŵēēķ ōƒ ťĥē ŷēåŕ (Čåĺēńďåŕ ŵēēķ, Ŵēēķ ńūṁƀēŕ)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_WindowsFileTime" xml:space="preserve">
+    <value>Ŵīńďōŵš ƒīĺē ťīṁē (Īńť64 ńūṁƀēŕ)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Year" xml:space="preserve">
+    <value>Ŷēåŕ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Unix_Milliseconds" xml:space="preserve">
+    <value>Ūńīẋ ēṗōčĥ ťīṁē īń ṁīĺĺīšēčōńďš</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek" xml:space="preserve">
+    <value>Ƒīŕšť ďåŷ ōƒ ťĥē ŵēēķ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Friday" xml:space="preserve">
+    <value>Ƒŕīďåŷ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Monday" xml:space="preserve">
+    <value>Ṁōńďåŷ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Saturday" xml:space="preserve">
+    <value>Šåťūŕďåŷ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Sunday" xml:space="preserve">
+    <value>Šūńďåŷ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Thursday" xml:space="preserve">
+    <value>Ťĥūŕšďåŷ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Tuesday" xml:space="preserve">
+    <value>Ťūēšďåŷ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Wednesday" xml:space="preserve">
+    <value>Ŵēďńēšďåŷ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule" xml:space="preserve">
+    <value>Ƒīŕšť ŵēēķ ōƒ ťĥē ŷēåŕ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_Description" xml:space="preserve">
+    <value>Čōńƒīğūŕē ťĥē čåĺēńďåŕ ŕūĺē ƒōŕ ťĥē ƒīŕšť ŵēēķ ōƒ ťĥē ŷēåŕ.</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay" xml:space="preserve">
+    <value>Ƒīŕšť ďåŷ ōƒ ŷēåŕ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFourDayWeek" xml:space="preserve">
+    <value>Ƒīŕšť ƒōūŕ ďåŷ ŵēēķ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek" xml:space="preserve">
+    <value>Ƒīŕšť ƒūĺĺ ŵēēķ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Setting_UseSystemSetting" xml:space="preserve">
+    <value>Ūšē šŷšťēṁ šēťťīńğ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_main_page_name" xml:space="preserve">
+    <value>Ōṗēń</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_placeholder_text" xml:space="preserve">
+    <value>Šēåŕčĥ ṽåĺūēš ōŕ ťŷṗē å čūšťōṁ ťīṁē šťåṁṗ...</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle" xml:space="preserve">
+    <value>Ēŕŕōŕ: Īńṽåĺīď īńṗūť</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_main_page_title" xml:space="preserve">
+    <value>Ťīṁē åńď ďåťē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidInput_SupportedInput" xml:space="preserve">
+    <value>Å {0}ƒōŕṁåť ńåṁē{0}, å {0}ṽåĺīď ďåťē ōŕ ťīṁē ṽåĺūē{0}, ōŕ å {0}ṗŕēƒīẋēď ńūṁƀēŕ{0}. Ťō šēåŕčĥ ƒōŕ å ƒōŕṁåť īń å šṗēčīƒīč ďåťē/ťīṁē ṗĺēåšē ūšē ťĥē šŷńťåẋ {0}ƒōŕṁåť::ďåťē/ťīṁē/ńūṁƀēŕ{0}.{1}Šūṗṗōŕťēď ṗŕēƒīẋēš:{2}'{0}ū{0}' ƒōŕ Ūńīẋ Ťīṁēšťåṁṗ{2}'{0}ūṁš{0}' ƒōŕ Ūńīẋ Ťīṁēšťåṁṗ īń ṁīĺĺīšēčōńďš{2}'{0}ƒť{0}' ƒōŕ Ŵīńďōŵš ƒīĺē ťīṁē{2}'{0}ōå{0}' ƒōŕ ŌĹĒ Åūťōṁåťīōń Ďåťē{2}'{0}ēẋč{0}' ƒōŕ Ēẋčēĺ'š 1900 ďåťē ṽåĺūē{2}'{0}ēẋƒ{0}' ƒōŕ Ēẋčēĺ'š 1904 ďåťē ṽåĺūē</value>
+    <comment>The placed holders are replaced with formatting syntax in code.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagCustom" xml:space="preserve">
+    <value>Ďåťē åńď ťīṁē; Ťīṁē åńď Ďåťē; Čūšťōṁ ƒōŕṁåť</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagCustomUtc" xml:space="preserve">
+    <value>Ďåťē åńď ťīṁē ŪŤČ; Ťīṁē ŪŤČ åńď Ďåťē; Čūšťōṁ ŪŤČ ƒōŕṁåť</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagCustomNow" xml:space="preserve">
+    <value>Čūŕŕēńť ďåťē åńď ťīṁē; Čūŕŕēńť ťīṁē åńď ďåťē; Ńōŵ; Čūšťōṁ ƒōŕṁåť</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagCustomUtcNow" xml:space="preserve">
+    <value>Čūŕŕēńť ďåťē åńď ťīṁē ŪŤČ; Čūŕŕēńť ťīṁē ŪŤČ åńď ďåťē; Ńōŵ ŪŤČ; Čūšťōṁ ŪŤČ ƒōŕṁåť</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidCustomFormat" xml:space="preserve">
+    <value>Īńṽåĺīď čūšťōṁ ƒōŕṁåť:</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Setting_CustomFormats" xml:space="preserve">
+    <value>Čūšťōṁ ƒōŕṁåťš</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Setting_CustomFormatsDescription" xml:space="preserve">
+    <value>Ūšē ďåťē åńď ťīṁē šťŕīńğ ƒōŕṁåť šŷńťåẋ åńď {0} (Ďåŷ ōƒ Ŵēēķ), {1} (Ďåŷš īń Ṁōńťĥ), {2} (Ŵēēķ ōƒ Ṁōńťĥ), {3} (Ŵēēķ ōƒ ťĥē ŷēåŕ), {4} (Ēŕå åƀƀŕēṽīåťīōń), {5} (Ŵīńďōŵš Ƒīĺē Ťīṁē), {6} (Ūńīẋ Ťīṁē), {7} (Ūńīẋ Ťīṁē īń ṁīĺĺīšēčōńďš), {8} (ŌĹĒ Åūťōṁåťīōń ďåťē), {9} (Ēẋčēĺ'š 1900 ƀåšēď ďåťē ṽåĺūē), {10} (Ēẋčēĺ'š 1904 ƀåšēď ďåťē ṽåĺūē). Īƒ ťĥē ƒōŕṁåť šťåŕťš ŵīťĥ {11}, ťĥēń Ūńīṽēŕšåĺ Ťīṁē (ŪŤČ) īš ūšēď. (Ūšē å ƀåčķšĺåšĥ ťō ēščåṗē ƒōŕṁåť šēqūēńčēš åńď ťĥē ƀåčķšĺåšĥ čĥåŕåčťēŕ åš ťēẋť.)</value>
+    <comment>The {n} parts are place holders and get replaced in the code.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_show_details" xml:space="preserve">
+    <value>Šēĺēčť ƒōŕ ṁōŕē ďēťåīĺš.</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_ErrorConvertCustomFormat" xml:space="preserve">
+    <value>Ƒåīĺēď ťō čōńṽēŕť īńťō čūšťōṁ ƒōŕṁåť</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_ErrorConvertWft" xml:space="preserve">
+    <value>Ńōť å ṽåĺīď Ŵīńďōŵš ƒīĺē ťīṁē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidInput_SupportedRange" xml:space="preserve">
+    <value>Ŷōūŕ īńṗūť ƒōŕ {0} īš ōūťšīďē ťĥē ŕåńğē **ƒŕōṁ {1} ťō {2}**.</value>
+    <comment>The placeholder will be replace in code.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidInput_FakeExcel1900" xml:space="preserve">
+    <value>Čåńńōť ṗåŕšē ťĥē īńṗūť åš Ēẋčēĺ'š 1900 ďåťē ṽåĺūē ƀēčåūšē īť īš å ƒåķē ďåťē. (Īń Ēẋčēĺ 0 šťåńďš ƒōŕ 0/1/1900 åńď ťĥīš ďåťē ďōēšń'ť ēẋīšť. Åńď 60 šťåńďš ƒōŕ 2/29/1900 åńď ťĥīš ďåťē ōńĺŷ ēẋīšťš īń Ēẋčēĺ ƒōŕ čōṁṗåťīƀīĺīťŷ ŵīťĥ Ĺōťūš 123.)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_OADate" xml:space="preserve">
+    <value>ŌĹĒ Åūťōṁåťīōń Ďåťē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Excel1900" xml:space="preserve">
+    <value>Ēẋčēĺ'š 1900 ďåťē ṽåĺūē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Excel1904" xml:space="preserve">
+    <value>Ēẋčēĺ'š 1904 ďåťē ṽåĺūē</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_LeapYear" xml:space="preserve">
+    <value>Ĺēåṗ ŷēåŕ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_NoLeapYear" xml:space="preserve">
+    <value>Ńōť å ĺēåṗ ŷēåŕ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DaysInMonth" xml:space="preserve">
+    <value>Ďåŷš īń ṁōńťĥ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_fallback_display_title" xml:space="preserve">
+    <value>Ōṗēń Ťīṁē Ďåťå Čōṁṁåńď</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagWeek" xml:space="preserve">
+    <value>Čūŕŕēńť Ŵēēķ; Čåĺēńďåŕ ŵēēķ; Ŵēēķ ōƒ ťĥē ŷēåŕ; Ŵēēķ</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingEnableFallbackItems" xml:space="preserve">
+    <value>Ēńåƀĺē ƒåĺĺƀåčķ īťēṁš ƒōŕ ŤīṁēĎåťē (ŵēēķ, ŷēåŕ, ńōŵ, ťīṁē, ďåťē)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingEnableFallbackItems_Description" xml:space="preserve">
+    <value>Šĥōŵ ťīṁē åńď ďåťē ŕēšūĺťš ŵĥēń ťŷṗīńğ ķēŷŵōŕďš ĺīķē "ŵēēķ", "ŷēåŕ", "ńōŵ", "ťīṁē", ōŕ "ďåťē"</value>
+  </data>
+</root>

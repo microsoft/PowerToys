@@ -21,7 +21,8 @@ public sealed partial class FallbackRanker : UserControl
         var settings = App.Current.Services.GetService<SettingsModel>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
-        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
+        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService, languageService);
     }
 
     private void ListView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)

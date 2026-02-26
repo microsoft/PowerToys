@@ -1,0 +1,237 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="run_command_action" xml:space="preserve">
+    <value>Ŕūń</value>
+    <comment>As in "run command"</comment>
+  </data>
+  <data name="installed_apps" xml:space="preserve">
+    <value>Īńšťåĺĺēď åṗṗš</value>
+  </data>
+  <data name="all_apps" xml:space="preserve">
+    <value>Šēåŕčĥ åṗṗš</value>
+  </data>
+  <data name="search_installed_apps_placeholder" xml:space="preserve">
+    <value>Šēåŕčĥ åṗṗš...</value>
+  </data>
+  <data name="open_path_in_console" xml:space="preserve">
+    <value>Ōṗēń ṗåťĥ īń čōńšōĺē</value>
+  </data>
+  <data name="packaged_application" xml:space="preserve">
+    <value>Ṗåčķåğēď åṗṗĺīčåťīōń</value>
+  </data>
+  <data name="open_containing_folder" xml:space="preserve">
+    <value>Ōṗēń čōńťåīńīńğ ƒōĺďēŕ</value>
+  </data>
+  <data name="application" xml:space="preserve">
+    <value>Åṗṗĺīčåťīōń</value>
+  </data>
+  <data name="internet_shortcut_application" xml:space="preserve">
+    <value>Īńťēŕńēť šĥōŕťčūť åṗṗĺīčåťīōń</value>
+  </data>
+  <data name="web_application" xml:space="preserve">
+    <value>Ŵēƀ åṗṗĺīčåťīōń</value>
+  </data>
+  <data name="run_command" xml:space="preserve">
+    <value>Ŕūń čōṁṁåńď</value>
+  </data>
+  <data name="folder" xml:space="preserve">
+    <value>Ƒōĺďēŕ</value>
+  </data>
+  <data name="file" xml:space="preserve">
+    <value>Ƒīĺē</value>
+  </data>
+  <data name="open_location" xml:space="preserve">
+    <value>Ōṗēń ƒīĺē ĺōčåťīōń</value>
+  </data>
+  <data name="copy_path" xml:space="preserve">
+    <value>Čōṗŷ ṗåťĥ</value>
+  </data>
+  <data name="run_as_administrator" xml:space="preserve">
+    <value>Ŕūń åš åďṁīńīšťŕåťōŕ</value>
+  </data>
+  <data name="run_as_different_user" xml:space="preserve">
+    <value>Ŕūń åš ďīƒƒēŕēńť ūšēŕ</value>
+  </data>
+  <data name="enable_start_menu_source" xml:space="preserve">
+    <value>Īńčĺūďē åṗṗš ƒōūńď īń ťĥē Šťåŕť Ṁēńū</value>
+  </data>
+  <data name="enable_desktop_source" xml:space="preserve">
+    <value>Īńčĺūďē åṗṗš ƒōūńď ōń ťĥē ďēšķťōṗ</value>
+  </data>
+  <data name="enable_registry_source" xml:space="preserve">
+    <value>Īńčĺūďē åṗṗš ŕēğīšťēŕēď īń ťĥē Ŕēğīšťŕŷ</value>
+  </data>
+  <data name="enable_path_environment_variable_source" xml:space="preserve">
+    <value>Īńčĺūďē åṗṗš åńŷŵĥēŕē ōń ťĥē %ṖÅŤĤ%</value>
+  </data>
+  <data name="use_thumbnails_setting_label" xml:space="preserve">
+    <value>Ūšē ťĥūṁƀńåīĺš ƒōŕ åṗṗš</value>
+    <comment>when enabled, we'll display thumbnails from the windows shell for programs</comment>
+  </data>
+  <data name="use_thumbnails_setting_description" xml:space="preserve">
+    <value>Ēẋṗēŕīṁēńťåĺ: Ŵĥēń ēńåƀĺēď, Čōṁṁåńď Ṗåĺēťťē ŵīĺĺ ĺōåď ťĥūṁƀńåīĺš ƒŕōṁ ťĥē Ŵīńďōŵš Šĥēĺĺ. Ūšīńğ ťĥūṁƀńåīĺš ṁåŷ čåūšē ťĥē åṗṗ ťō čŕåšĥ ōń ĺåūńčĥ</value>
+    <comment>A description for "use_thumbnails_setting_label"</comment>
+  </data>
+  <data name="pin_app" xml:space="preserve">
+    <value>Ṗīń</value>
+  </data>
+  <data name="unpin_app" xml:space="preserve">
+    <value>Ūńṗīń</value>
+  </data>
+  <data name="uninstall_application" xml:space="preserve">
+    <value>Ūńīńšťåĺĺ</value>
+  </data>
+  <data name="uninstall_application_successful" xml:space="preserve">
+    <value>'{0}' ĥåš ƀēēń šūččēššƒūĺĺŷ ūńīńšťåĺĺēď.</value>
+  </data>
+  <data name="uninstall_application_failed" xml:space="preserve">
+    <value>Ēŕŕōŕ ŵĥīĺē ūńīńšťåĺĺīńğ '{0}'</value>
+  </data>
+  <data name="uninstall_application_confirm_description" xml:space="preserve">
+    <value>Ťĥīš åṗṗ åńď īťš ŕēĺåťēď īńƒōŕṁåťīōń ŵīĺĺ ƀē ŕēṁōṽēď.</value>
+  </data>
+  <data name="uninstall_application_confirm_title" xml:space="preserve">
+    <value>Ūńīńšťåĺĺ "{0}"?</value>
+  </data>
+  <data name="limit_1" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="limit_5" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="limit_10" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="limit_20" xml:space="preserve">
+    <value>20</value>
+  </data>
+  <data name="limit_fallback_results_source" xml:space="preserve">
+    <value>Ĺīṁīť ťĥē ńūṁƀēŕ ōƒ åṗṗĺīčåťīōńš ŕēťūŕńēď ƒŕōṁ ťĥē ťōṗ ĺēṽēĺ</value>
+  </data>
+  <data name="limit_fallback_results_source_description" xml:space="preserve">
+    <value>Ĺīṁīť ƒåĺĺƀåčķ ŕēšūĺťš ťō ń åṗṗš</value>
+  </data>
+  <data name="limit_0" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="limit_none" xml:space="preserve">
+    <value>Ūńĺīṁīťēď</value>
+  </data>
+</root>
