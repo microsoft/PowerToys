@@ -392,19 +392,13 @@ namespace KeyboardManagerEditorUI.Pages
         private void DeleteShortcutMapping(List<string> originalKeys, string targetApp = "")
         {
             bool deleted = originalKeys.Count == 1
-                ? DeleteSingleKeyMapping(originalKeys[0])
+                ? DeleteSingleKeyToTextMapping(originalKeys[0])
                 : DeleteMultiKeyMapping(originalKeys, targetApp);
 
             if (deleted)
             {
                 _mappingService!.SaveSettings();
             }
-        }
-
-        private bool DeleteSingleKeyMapping(string keyName)
-        {
-            int originalKey = _mappingService!.GetKeyCodeFromName(keyName);
-            return originalKey != 0 && _mappingService.DeleteSingleKeyMapping(originalKey);
         }
 
         private bool DeleteMultiKeyMapping(List<string> originalKeys, string targetApp = "")
