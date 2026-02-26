@@ -68,7 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AddFlyoutMenuItem(ModuleType.FancyZones);
             AddFlyoutMenuItem(ModuleType.Hosts);
             AddFlyoutMenuItem(ModuleType.LightSwitch);
-            AddFlyoutMenuItem(ModuleType.PowerDisplay);
+
+            // AddFlyoutMenuItem(ModuleType.PowerDisplay); // TEMPORARILY_DISABLED: PowerDisplay
             AddFlyoutMenuItem(ModuleType.PowerLauncher);
             AddFlyoutMenuItem(ModuleType.PowerOCR);
             AddFlyoutMenuItem(ModuleType.RegistryPreview);

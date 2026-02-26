@@ -149,6 +149,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <!-- TEMPORARILY_DISABLED: PowerDisplay
     <policy name="ConfigureEnabledUtilityPowerDisplay" class="Both" displayName="$(string.ConfigureEnabledUtilityPowerDisplay)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityPowerDisplay">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_95_0" />
@@ -159,6 +160,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    -->
     <policy name="ConfigureEnabledUtilityEnvironmentVariables" class="Both" displayName="$(string.ConfigureEnabledUtilityEnvironmentVariables)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityEnvironmentVariables">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0" />
