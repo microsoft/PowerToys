@@ -315,16 +315,18 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,162,142,50,14
 END
 
-SNIP DIALOGEX 0, 0, 260, 80
+SNIP DIALOGEX 0, 0, 272, 105
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Copy a region of the screen to the clipboard or enter the hotkey with the Shift key in the opposite mode to save it to a file.",IDC_STATIC,7,7,230,19
-    LTEXT           "Snip Toggle:",IDC_STATIC,7,33,45,8
-    CONTROL         "",IDC_SNIP_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,67,32,80,12
-    LTEXT           "Copy text from the selected region to the clipboard:",IDC_STATIC,7,50,230,10
-    LTEXT           "Text Toggle:",IDC_STATIC,7,65,55,8
-    CONTROL         "",IDC_SNIP_OCR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,67,63,80,12
+    LTEXT           "Copy a region of the screen to the clipboard, or save it to a file using the save shortcut.",IDC_STATIC,7,7,230,18
+    RTEXT           "Snip Toggle:",IDC_STATIC,22,33,45,8
+    CONTROL         "",IDC_SNIP_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,71,32,80,12
+    RTEXT           "Snip Save Toggle:",IDC_STATIC,7,49,60,8
+    CONTROL         "",IDC_SNIP_SAVE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,71,48,80,12
+    LTEXT           "Copy text from the selected region to the clipboard:",IDC_STATIC,7,66,230,10
+    RTEXT           "Text Toggle:",IDC_STATIC,12,82,55,8
+    CONTROL         "",IDC_SNIP_OCR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,71,81,80,12
 END
 
 PANORAMA DIALOGEX 0, 0, 260, 105
@@ -456,7 +458,9 @@ BEGIN
     "SNIP", DIALOG
     BEGIN
         LEFTMARGIN, 7
+        RIGHTMARGIN, 265
         TOPMARGIN, 7
+        BOTTOMMARGIN, 98
     END
 
     "PANORAMA", DIALOG

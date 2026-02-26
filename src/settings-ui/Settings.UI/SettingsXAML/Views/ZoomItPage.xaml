@@ -404,10 +404,12 @@
                         Name="ZoomItSnipShortcut"
                         x:Uid="ZoomIt_Snip_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}">
-                        <tkcontrols:SettingsCard.Description>
-                            <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.SnipToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Snip_Shortcut_Save}" />
-                        </tkcontrols:SettingsCard.Description>
                         <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipToggleKey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="ZoomItSnipSaveShortcut"
+                        x:Uid="ZoomIt_SnipSave_Shortcut">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipSaveToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
                         Name="ZoomItSnipOcrShortcut"
