@@ -618,7 +618,7 @@ namespace KeyboardManagerEditorUI.Pages
         private void HandleShortcutDelete(IToggleableShortcut shortcut)
         {
             bool deleted = shortcut.Shortcut.Count == 1
-                ? DeleteSingleKeyShortcut(shortcut)
+                ? DeleteSingleKeyToTextMapping(shortcut.Shortcut[0]) // Remapping has its own handler, single key will always be text mapping
                 : DeleteMultiKeyShortcut(shortcut);
 
             if (deleted)
@@ -627,12 +627,6 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
-        }
-
-        private bool DeleteSingleKeyShortcut(IToggleableShortcut shortcut)
-        {
-            int originalKey = _mappingService!.GetKeyCodeFromName(shortcut.Shortcut[0]);
-            return originalKey != 0 && (_mappingService.DeleteSingleKeyMapping(originalKey) || _mappingService.DeleteSingleKeyToTextMapping(originalKey));
         }
 
         private bool DeleteMultiKeyShortcut(IToggleableShortcut shortcut)
