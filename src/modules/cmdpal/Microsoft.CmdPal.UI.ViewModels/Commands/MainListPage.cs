@@ -545,7 +545,22 @@ public sealed partial class MainListPage : DynamicListPage,
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
             var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
 #endif
-            _refreshThrottledDebouncedAction.Invoke(isUserInput ? RaiseItemsChangedThrottleForUserInput : null);
+            if (isUserInput)
+            {
+                // Make sure that the throttle delay is consistent from the user's perspective, even if filtering
+                // takes a long time. If we always use the full throttle duration, then a slow filter could make the UI feel sluggish.
+                var adjustedInterval = RaiseItemsChangedThrottleForUserInput - stopwatch.Elapsed;
+                if (adjustedInterval < TimeSpan.Zero)
+                {
+                    adjustedInterval = TimeSpan.Zero;
+                }
+
+                _refreshThrottledDebouncedAction.Invoke(adjustedInterval);
+            }
+            else
+            {
+                _refreshThrottledDebouncedAction.Invoke();
+            }
 
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
             var listPageUpdatedTimestamp = stopwatch.ElapsedMilliseconds;
