@@ -6,12 +6,12 @@ using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -19,6 +19,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ContextMenuViewModel : ObservableObject,
     IRecipient<UpdateCommandBarMessage>
 {
+    private readonly ILogger _logger;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
     public ICommandBarContext? SelectedItem
@@ -44,8 +45,11 @@ public partial class ContextMenuViewModel : ObservableObject,
 
     private string _lastSearchText = string.Empty;
 
-    public ContextMenuViewModel(IFuzzyMatcherProvider fuzzyMatcherProvider)
+    public ContextMenuViewModel(
+        IFuzzyMatcherProvider fuzzyMatcherProvider,
+        ILogger<ContextMenuViewModel> logger)
     {
+        _logger = logger;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
     }
@@ -158,7 +162,7 @@ public partial class ContextMenuViewModel : ObservableObject,
                 var added = result.TryAdd(key, cmd);
                 if (!added)
                 {
-                    CoreLogger.LogWarning($"Ignoring duplicate keyboard shortcut {KeyChordHelpers.FormatForDebug(key)} on command '{cmd.Title ?? cmd.Name ?? "(unknown)"}'");
+                    Log_DuplicateKeyboardShortcut(KeyChordHelpers.FormatForDebug(key), cmd.Title ?? cmd.Name ?? "(unknown)");
                 }
             }
         }
@@ -240,4 +244,7 @@ public partial class ContextMenuViewModel : ObservableObject,
             return ContextKeybindingResult.Hide;
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Ignoring duplicate keyboard shortcut {KeyChord} on command '{CommandName}'")]
+    partial void Log_DuplicateKeyboardShortcut(string keyChord, string commandName);
 }

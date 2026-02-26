@@ -94,6 +94,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     private readonly DispatcherQueue _uiDispatcher = DispatcherQueue.GetForCurrentThread();
 
     private SettingsModel _settings;
+
     private ElementTheme? _elementThemeOverride;
     private Color _currentSystemAccentColor;
 
@@ -441,9 +442,9 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     {
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
+
         _settingsService = settingsService;
         _settings = _settingsService.CurrentSettings;
-
         _settingsService.SettingsChanged += SettingsService_SettingsChanged;
 
         _uiSettings = new UISettings();

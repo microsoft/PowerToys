@@ -3,13 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common;
+using Microsoft.Extensions.Logging;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class AppStateService
 {
-    private readonly Extensions.Logging.ILogger _logger;
+    private readonly ILogger<AppStateService> _logger;
     private readonly string _filePath;
     private AppStateModel _appStateModel;
 
@@ -17,7 +18,7 @@ public partial class AppStateService
 
     public AppStateModel CurrentSettings => _appStateModel;
 
-    public AppStateService(Extensions.Logging.ILogger logger)
+    public AppStateService(ILogger<AppStateService> logger)
     {
         _logger = logger;
         _filePath = PersistenceService.SettingsJsonPath("state.json");

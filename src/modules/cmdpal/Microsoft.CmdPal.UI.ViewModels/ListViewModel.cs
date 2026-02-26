@@ -10,6 +10,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -88,11 +89,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, CommandProviderContext providerContext)
+    public ListViewModel(
+        IListPage model,
+        TaskScheduler scheduler,
+        AppExtensionHost host,
+        CommandProviderContext providerContext,
+        ILoggerFactory loggerFactory)
         : base(model, scheduler, host, providerContext)
     {
+        Logger = loggerFactory.CreateLogger<ListViewModel>();
         _model = new(model);
-        EmptyContent = new(new(null), PageContext);
+        EmptyContent = new(new(null), PageContext, loggerFactory);
     }
 
     private void FiltersPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

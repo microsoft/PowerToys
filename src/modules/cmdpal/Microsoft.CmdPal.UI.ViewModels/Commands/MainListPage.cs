@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
@@ -17,6 +16,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 
@@ -28,6 +28,7 @@ public sealed partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
     IRecipient<UpdateFallbackItemsMessage>, IDisposable
 {
+    private readonly ILogger<MainListPage> _logger;
     private readonly TopLevelCommandManager _tlcManager;
     private readonly AliasManager _aliasManager;
     private readonly SettingsService _settingsService;
@@ -45,7 +46,10 @@ public sealed partial class MainListPage : DynamicListPage,
     private IEnumerable<RoScored<IListItem>>? _scoredFallbackItems;
     private IEnumerable<RoScored<IListItem>>? _fallbackItems;
 
-    private SettingsModel _settings;
+    private SettingsModel Settings => _settingsService.CurrentSettings;
+
+    private AppStateModel AppState => _appStateService.CurrentSettings;
+
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
 
@@ -61,14 +65,15 @@ public sealed partial class MainListPage : DynamicListPage,
         SettingsService settingsService,
         AliasManager aliasManager,
         AppStateService appStateService,
-        IFuzzyMatcherProvider fuzzyMatcherProvider)
+        IFuzzyMatcherProvider fuzzyMatcherProvider,
+        ILogger<MainListPage> logger)
     {
         Title = Resources.builtin_home_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
         PlaceholderText = Properties.Resources.builtin_main_list_page_searchbar_placeholder;
 
+        _logger = logger;
         _settingsService = settingsService;
-        _settings = _settingsService.CurrentSettings;
         _appStateService = appStateService;
         _appStateModel = _appStateService.CurrentSettings;
 
@@ -76,7 +81,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
         _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateModel.RecentCommands, _fuzzyMatcherProvider.Current);
-        _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settings.FallbackRanks);
+        _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, Settings.FallbackRanks);
 
         _settingsService.SettingsChanged += SettingsChangedHandler;
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
@@ -97,7 +102,7 @@ public sealed partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
 
         _settingsService.SettingsChanged += SettingsChangedHandler;
-        HotReloadSettings(_settings);
+        HotReloadSettings(Settings);
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
 
         IsLoading = true;
@@ -157,7 +162,7 @@ public sealed partial class MainListPage : DynamicListPage,
         }
         catch (Exception e)
         {
-            Logger.LogError("Failed to reload search", e);
+            Log_SearchReloadFailed(e);
         }
         finally
         {
@@ -262,7 +267,7 @@ public sealed partial class MainListPage : DynamicListPage,
             }
 
             // prefilter fallbacks
-            var globalFallbacks = _settings.GetGlobalFallbacks();
+            var globalFallbacks = Settings.GetGlobalFallbacks();
             var specialFallbacks = new List<TopLevelViewModel>(globalFallbacks.Length);
             var commonFallbacks = new List<TopLevelViewModel>();
 
@@ -432,12 +437,12 @@ public sealed partial class MainListPage : DynamicListPage,
             }
 
             var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
-            Logger.LogDebug($"Filter with '{newSearch}' in {filterDoneTimestamp}ms");
+            Log_FilterFinished(newSearch, filterDoneTimestamp);
 
             RaiseItemsChanged();
 
             var listPageUpdatedTimestamp = stopwatch.ElapsedMilliseconds;
-            Logger.LogDebug($"Render items with '{newSearch}' in {listPageUpdatedTimestamp}ms /d {listPageUpdatedTimestamp - filterDoneTimestamp}ms");
+            Log_FilterCompleted(newSearch, listPageUpdatedTimestamp, listPageUpdatedTimestamp - filterDoneTimestamp);
 
             stopwatch.Stop();
         }
@@ -613,8 +618,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private void SettingsChangedHandler(SettingsModel sender, object? args)
     {
-        _settings = sender;
-        HotReloadSettings(sender);
+        HotReloadSettings(Settings);
     }
 
     private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
@@ -631,4 +635,13 @@ public sealed partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.UnregisterAll(this);
         GC.SuppressFinalize(this);
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to reload search results")]
+    partial void Log_SearchReloadFailed(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Filter completed for '{newSearch}' in {filterDoneTimestamp}ms")]
+    partial void Log_FilterFinished(string newSearch, long filterDoneTimestamp);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Render items with '{searchText}' in {listPageUpdatedTimestamp}ms /d {difference}")]
+    partial void Log_FilterCompleted(string searchText, long listPageUpdatedTimestamp, long difference);
 }

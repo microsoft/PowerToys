@@ -36,7 +36,9 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
-    public TopLevelCommandManager(IServiceProvider serviceProvider, ICommandProviderCache commandProviderCache)
+    public TopLevelCommandManager(
+        IServiceProvider serviceProvider,
+        ICommandProviderCache commandProviderCache)
     {
         _serviceProvider = serviceProvider;
         _commandProviderCache = commandProviderCache;

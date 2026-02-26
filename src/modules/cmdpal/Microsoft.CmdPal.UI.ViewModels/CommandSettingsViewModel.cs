@@ -2,16 +2,31 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Common;
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings, CommandProviderWrapper provider, TaskScheduler mainThread)
+public partial class CommandSettingsViewModel
 {
-    private readonly ExtensionObject<ICommandSettings> _model = new(_unsafeSettings);
+    private readonly ILogger _logger;
+    private readonly ExtensionObject<ICommandSettings> _model;
+    private readonly CommandProviderWrapper _provider;
+    private readonly TaskScheduler _mainThread;
+
+    public CommandSettingsViewModel(
+        ICommandSettings? unsafeSettings,
+        CommandProviderWrapper provider,
+        TaskScheduler mainThread,
+        ILogger? logger = null)
+    {
+        _model = new(unsafeSettings);
+        _provider = provider;
+        _mainThread = mainThread;
+        _logger = logger ?? NullLogger.Instance;
+    }
 
     public ContentPageViewModel? SettingsPage { get; private set; }
 
@@ -31,7 +46,11 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
 
         if (model.SettingsPage is not null)
         {
-            SettingsPage = new CommandPaletteContentPageViewModel(model.SettingsPage, mainThread, provider.ExtensionHost, provider.GetProviderContext());
+            SettingsPage = new CommandPaletteContentPageViewModel(
+                    model.SettingsPage,
+                    _mainThread,
+                    _provider.ExtensionHost,
+                    _provider.GetProviderContext());
             SettingsPage.InitializeProperties();
         }
     }
@@ -44,7 +63,7 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
         }
         catch (Exception ex)
         {
-            CoreLogger.LogError($"Failed to load settings page", ex: ex);
+            Log_FailedToLoadSettingsPage(ex);
         }
 
         Initialized = true;
@@ -56,6 +75,9 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
             action,
             CancellationToken.None,
             TaskCreationOptions.None,
-            mainThread);
+            _mainThread);
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to load settings page")]
+    partial void Log_FailedToLoadSettingsPage(Exception ex);
 }

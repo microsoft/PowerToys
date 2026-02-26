@@ -5,19 +5,26 @@
 using ManagedCommon;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.CmdPal.Common;
+namespace Microsoft.CmdPal.Common.Logging;
 
 // Adapter implementing Microsoft.Extensions.Logging.ILogger,
 // delegating to ManagedCommon.Logger.
-public sealed partial class CmdPalLogger : Extensions.Logging.ILogger
+public sealed partial class CmdPalLogger : ILogger
 {
     private static readonly AsyncLocal<Stack<object>> _scopeStack = new();
     private readonly LogLevel _minLevel;
+    private readonly string? _categoryName;
 
     public string CurrentVersionLogDirectoryPath => Logger.CurrentVersionLogDirectoryPath;
 
     public CmdPalLogger(LogLevel minLevel = LogLevel.Information)
+        : this(null, minLevel)
     {
+    }
+
+    internal CmdPalLogger(string? categoryName, LogLevel minLevel = LogLevel.Information)
+    {
+        _categoryName = categoryName;
         _minLevel = minLevel;
 
         // Ensure underlying logger initialized (idempotent if already done elsewhere).
@@ -59,9 +66,10 @@ public sealed partial class CmdPalLogger : Extensions.Logging.ILogger
             return;
         }
 
+        var categoryPrefix = !string.IsNullOrEmpty(_categoryName) ? $"[{_categoryName}] " : string.Empty;
         var scopeSuffix = BuildScopeSuffix();
         var eventPrefix = eventId.Id != 0 ? $"[{eventId.Id}/{eventId.Name}] " : string.Empty;
-        var finalMessage = $"{eventPrefix}{message}{scopeSuffix}";
+        var finalMessage = $"{categoryPrefix}{eventPrefix}{message}{scopeSuffix}";
 
         switch (logLevel)
         {
@@ -137,4 +145,29 @@ public sealed partial class CmdPalLogger : Extensions.Logging.ILogger
             _disposed = true;
         }
     }
+}
+
+// Generic logger adapter that includes the category name based on T.
+public sealed partial class CmdPalLogger<T> : ILogger<T>
+{
+    private readonly CmdPalLogger _logger;
+
+    public CmdPalLogger(LogLevel minLevel = LogLevel.Information)
+    {
+        _logger = new CmdPalLogger(typeof(T).FullName, minLevel);
+    }
+
+    public bool IsEnabled(LogLevel logLevel) => _logger.IsEnabled(logLevel);
+
+    public IDisposable? BeginScope<TState>(TState state)
+        where TState : notnull
+        => _logger.BeginScope(state);
+
+    public void Log<TState>(
+        LogLevel logLevel,
+        EventId eventId,
+        TState state,
+        Exception? exception,
+        Func<TState, Exception?, string> formatter)
+        => _logger.Log(logLevel, eventId, state, exception, formatter);
 }

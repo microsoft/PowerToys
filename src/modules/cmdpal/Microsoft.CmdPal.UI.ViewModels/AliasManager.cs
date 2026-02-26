@@ -8,23 +8,29 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class AliasManager : ObservableObject
+public partial class AliasManager : ObservableObject, IDisposable
 {
-    private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly SettingsService _settingsService;
 
     // REMEMBER, CommandAlias.SearchPrefix is what we use as keys
-    private readonly Dictionary<string, CommandAlias> _aliases;
+    private Dictionary<string, CommandAlias> _aliases;
 
-    public AliasManager(TopLevelCommandManager tlcManager, SettingsService settingsService)
+    public AliasManager(SettingsService settingsService)
     {
-        _topLevelCommandManager = tlcManager;
-        var settings = settingsService.CurrentSettings;
-        _aliases = settings.Aliases;
+        _settingsService = settingsService;
+        _aliases = _settingsService.CurrentSettings.Aliases;
+
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
 
         if (_aliases.Count == 0)
         {
             PopulateDefaultAliases();
         }
+    }
+
+    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    {
+        _aliases = sender.Aliases;
     }
 
     private void AddAlias(CommandAlias a) => _aliases.Add(a.SearchPrefix, a);
@@ -131,5 +137,11 @@ public partial class AliasManager : ObservableObject
         {
             AddAlias(newAlias);
         }
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 }

@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.Common;
 
 public partial class PersistenceService
 {
-    private static bool TryParseJsonObject(string json, Extensions.Logging.ILogger logger, [NotNullWhen(true)] out JsonObject? obj)
+    private static bool TryParseJsonObject(string json, ILogger logger, [NotNullWhen(true)] out JsonObject? obj)
     {
         obj = null;
         try
@@ -28,7 +28,7 @@ public partial class PersistenceService
         }
     }
 
-    private static bool TryReadSavedObject(string filePath, Extensions.Logging.ILogger logger, [NotNullWhen(true)] out JsonObject? saved)
+    private static bool TryReadSavedObject(string filePath, ILogger logger, [NotNullWhen(true)] out JsonObject? saved)
     {
         saved = null;
 
@@ -58,7 +58,7 @@ public partial class PersistenceService
         return TryParseJsonObject(oldContent, logger, out saved);
     }
 
-    public static T LoadObject<T>(string filePath, JsonTypeInfo<T> typeInfo, Extensions.Logging.ILogger logger)
+    public static T LoadObject<T>(string filePath, JsonTypeInfo<T> typeInfo, ILogger logger)
         where T : new()
     {
         if (string.IsNullOrEmpty(filePath))
@@ -92,7 +92,7 @@ public partial class PersistenceService
         JsonSerializerOptions optionsForWrite,
         Action<JsonObject>? beforeWriteMutation,
         Action<T>? afterWriteCallback,
-        Extensions.Logging.ILogger logger)
+        ILogger logger)
     {
         if (string.IsNullOrEmpty(filePath))
         {

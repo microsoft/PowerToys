@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Logging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
@@ -32,6 +32,7 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -45,7 +46,7 @@ namespace Microsoft.CmdPal.UI;
 /// </summary>
 public partial class App : Application, IDisposable
 {
-    private readonly GlobalErrorHandler _globalErrorHandler = new();
+    private readonly GlobalErrorHandler _globalErrorHandler = new(new());
 
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use.
@@ -91,11 +92,6 @@ public partial class App : Application, IDisposable
                 Environment.Exit(0);
             });
 
-        // Connect the PT logging to the core project's logging.
-        // This way, log statements from the core project will be captured by the PT logs
-        var logWrapper = new LogWrapper();
-        CoreLogger.InitializeLogger(logWrapper);
-
         // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
         appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
     }
@@ -104,11 +100,11 @@ public partial class App : Application, IDisposable
     /// Invoked when the application is launched.
     /// </summary>
     /// <param name="args">Details about the launch request and process.</param>
-    protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+    protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         AppWindow = new MainWindow();
 
-        var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+        var activatedEventArgs = Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
         ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
     }
 
@@ -117,18 +113,23 @@ public partial class App : Application, IDisposable
     /// </summary>
     private static ServiceProvider ConfigureServices(IApplicationInfoService appInfoService)
     {
-        // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
 
         // Root services
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
+        services.AddLogging(builder =>
+        {
+            builder.ClearProviders();
+            builder.AddProvider(new CmdPalLoggerProvider());
+        });
+
+        AddServices(services, dispatcherQueue, appInfoService);
+
+        AddPresentation(services);
+
         AddBuiltInCommands(services);
-
-        AddCoreServices(services, appInfoService);
-
-        AddUIServices(services, dispatcherQueue);
 
         return services.BuildServiceProvider();
     }
@@ -180,35 +181,29 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, PerformanceMonitorCommandsProvider>();
     }
 
-    private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
+    private static void AddPresentation(ServiceCollection services)
     {
-        // Models
-        Extensions.Logging.ILogger logger = new CmdPalLogger();
-        var settingsService = new SettingsService(logger);
-        services.AddSingleton(settingsService);
+        // Controls
 
-        var appStateService = new AppStateService(logger);
-        services.AddSingleton(appStateService);
+        // Pages
 
-        // Services
-        services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
-        services.AddSingleton<TopLevelCommandManager>();
-        services.AddSingleton<AliasManager>();
-        services.AddSingleton<HotkeyManager>();
-
-        services.AddSingleton<MainWindowViewModel>();
-        services.AddSingleton<TrayIconService>();
-
-        services.AddSingleton<IThemeService, ThemeService>();
-        services.AddSingleton<ResourceSwapper>();
-
-        services.AddIconServices(dispatcherQueue);
+        // ViewModels
+        services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
     }
 
-    private static void AddCoreServices(ServiceCollection services, IApplicationInfoService appInfoService)
+    private static void AddServices(
+        ServiceCollection services,
+        DispatcherQueue dispatcherQueue,
+        IApplicationInfoService appInfoService)
     {
-        // Core services
+        // Settings & State
+        services.AddSingleton<SettingsService>();
+        services.AddSingleton<AppStateService>();
+
+        // Services
         services.AddSingleton(appInfoService);
+        services.AddIconServices(dispatcherQueue);
 
         services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
@@ -220,9 +215,16 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IFuzzyMatcherProvider, FuzzyMatcherProvider>(
             _ => new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions(), new PinyinFuzzyMatcherOptions()));
 
-        // ViewModels
-        services.AddSingleton<ShellViewModel>();
-        services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
+        services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
+        services.AddSingleton<TopLevelCommandManager>();
+        services.AddSingleton<AliasManager>();
+        services.AddSingleton<HotkeyManager>();
+
+        services.AddSingleton<MainWindowViewModel>();
+        services.AddSingleton<TrayIconService>();
+
+        services.AddSingleton<IThemeService, ThemeService>();
+        services.AddSingleton<ResourceSwapper>();
     }
 
     public void Dispose()

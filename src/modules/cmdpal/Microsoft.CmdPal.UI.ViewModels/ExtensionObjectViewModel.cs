@@ -7,8 +7,8 @@ using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -19,6 +19,8 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
     // Raised on the background thread before UI notifications. It's raised on the background thread to prevent
     // blocking the COM proxy.
     public event PropertyChangedEventHandler? PropertyChangedBackground;
+
+    private readonly ILogger _logger;
 
     private readonly ConcurrentQueue<string> _pendingProps = [];
 
@@ -36,7 +38,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
 
     void IBatchUpdateTarget.ClearBatchQueued() => _batchQueued.Clear();
 
-    private protected ExtensionObjectViewModel(TaskScheduler scheduler)
+    private protected ExtensionObjectViewModel(TaskScheduler scheduler, ILogger logger)
     {
         if (this is not IPageContext)
         {
@@ -44,24 +46,28 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
         }
 
         _uiScheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         // Defer PageContext assignment - derived constructor MUST call InitializePageContext()
         // or we set it lazily on first access
     }
 
-    private protected ExtensionObjectViewModel(IPageContext context)
+    private protected ExtensionObjectViewModel(IPageContext context, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(logger);
 
         PageContext = new WeakReference<IPageContext>(context);
         _uiScheduler = context.Scheduler;
+        _logger = logger;
 
         LogIfDefaultScheduler();
     }
 
-    private protected ExtensionObjectViewModel(WeakReference<IPageContext> contextRef)
+    private protected ExtensionObjectViewModel(WeakReference<IPageContext> contextRef, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(contextRef);
+        ArgumentNullException.ThrowIfNull(logger);
 
         if (!contextRef.TryGetTarget(out var context))
         {
@@ -70,6 +76,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
 
         PageContext = contextRef;
         _uiScheduler = context.Scheduler;
+        _logger = logger;
 
         LogIfDefaultScheduler();
     }
@@ -88,7 +95,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
     {
         if (_uiScheduler == TaskScheduler.Default)
         {
-            CoreLogger.LogDebug($"ExtensionObjectViewModel created with TaskScheduler.Default. Type: {GetType().FullName}");
+            Log_ExtensionObjectViewModelCreatedWithDefaultScheduler(GetType().FullName);
         }
     }
 
@@ -134,7 +141,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
 
         // We should re-consider if this worth deduping
         _pendingProps.Enqueue(propertyName);
-        BatchUpdateManager.Queue(this);
+        BatchUpdateManager.Queue(this, _logger);
     }
 
     public void ApplyPendingUpdates()
@@ -178,7 +185,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
             // It would be lovely to do nothing if no one is actually listening on PropertyChanged,
             // but ObservableObject doesn't expose that information.
             _ = Task.Factory.StartNew(
-                static state =>
+                state =>
                 {
                     var p = (UiBatch)state!;
                     try
@@ -187,7 +194,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
                     }
                     catch (Exception ex)
                     {
-                        CoreLogger.LogError("Failed to raise property change notifications on UI thread.", ex);
+                        Log_FailedToRaisePropertyChangedOnUIThread(ex);
                     }
                     finally
                     {
@@ -203,7 +210,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
         }
         catch (Exception ex)
         {
-            CoreLogger.LogError("Failed to apply pending property updates.", ex);
+            Log_FailedToApplyPendingPropertyUpdates(ex);
         }
         finally
         {
@@ -222,7 +229,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
         }
     }
 
-    private static void RaiseBackground(PropertyChangedEventHandler handlers, object sender, string[] names, int count)
+    private void RaiseBackground(PropertyChangedEventHandler handlers, object sender, string[] names, int count)
     {
         try
         {
@@ -233,7 +240,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
         }
         catch (Exception ex)
         {
-            CoreLogger.LogError("Failed to raise PropertyChangedBackground notifications.", ex);
+            Log_FailedToRaisePropertyChangedBackground(ex);
         }
     }
 
@@ -247,7 +254,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
         }
         else
         {
-            CoreLogger.LogError("Failed to show exception because PageContext is no longer available.", ex);
+            Log_ShowExceptionFailedWithNoPageContext(ex);
         }
     }
 
@@ -279,7 +286,25 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
         }
         catch (Exception ex)
         {
-            CoreLogger.LogDebug(ex.ToString());
+            Log_CleanupException(ex);
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Exception during cleanup")]
+    partial void Log_CleanupException(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to show exception because PageContext is unavailable.")]
+    partial void Log_ShowExceptionFailedWithNoPageContext(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to raise background property changed notifications.")]
+    partial void Log_FailedToRaisePropertyChangedBackground(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to apply pending property updates.")]
+    partial void Log_FailedToApplyPendingPropertyUpdates(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to raise property changed notifications on UI thread.")]
+    partial void Log_FailedToRaisePropertyChangedOnUIThread(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "ExtensionObjectViewModel created with default TaskScheduler. Type: {typeName}")]
+    partial void Log_ExtensionObjectViewModelCreatedWithDefaultScheduler(string? typeName);
 }
