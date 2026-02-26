@@ -23,13 +23,18 @@ internal sealed class PowerToysRootPageService : IRootPageService
     private IExtensionWrapper? _activeExtension;
     private Lazy<MainListPage> _mainListPage;
 
-    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, SettingsModel settings, AliasManager aliasManager, AppStateModel appStateModel, IFuzzyMatcherProvider fuzzyMatcherProvider)
+    public PowerToysRootPageService(
+        TopLevelCommandManager topLevelCommandManager,
+        SettingsService settingsService,
+        AliasManager aliasManager,
+        AppStateService appStateService,
+        IFuzzyMatcherProvider fuzzyMatcherProvider)
     {
         _tlcManager = topLevelCommandManager;
 
         _mainListPage = new Lazy<MainListPage>(() =>
         {
-            return new MainListPage(_tlcManager, settings, aliasManager, appStateModel, fuzzyMatcherProvider);
+            return new MainListPage(_tlcManager, settingsService, aliasManager, appStateService, fuzzyMatcherProvider);
         });
     }
 

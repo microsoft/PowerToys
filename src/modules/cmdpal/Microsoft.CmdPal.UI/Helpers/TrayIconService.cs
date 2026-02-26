@@ -36,9 +36,9 @@ internal sealed partial class TrayIconService
     private DestroyIconSafeHandle? _largeIcon;
     private DestroyMenuSafeHandle? _popupMenu;
 
-    public TrayIconService(SettingsModel settingsModel)
+    public TrayIconService(SettingsService settingsService)
     {
-        _settingsModel = settingsModel;
+        _settingsModel = settingsService.CurrentSettings;
 
         // TaskbarCreated is the message that's broadcast when explorer.exe
         // restarts. We need to know when that happens to be able to bring our

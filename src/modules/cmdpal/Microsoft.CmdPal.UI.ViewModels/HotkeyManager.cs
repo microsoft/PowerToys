@@ -12,10 +12,10 @@ public partial class HotkeyManager : ObservableObject
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly List<TopLevelHotkey> _commandHotkeys;
 
-    public HotkeyManager(TopLevelCommandManager tlcManager, SettingsModel settings)
+    public HotkeyManager(TopLevelCommandManager tlcManager, SettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
-        _commandHotkeys = settings.CommandHotkeys;
+        _commandHotkeys = settingsService.CurrentSettings.CommandHotkeys;
     }
 
     public void UpdateHotkey(string commandId, HotkeySettings? hotkey)
