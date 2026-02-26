@@ -743,14 +743,16 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void LoadRemappings()
         {
-            if (_mappingService == null)
+            SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RemapShortcut, out var remapShortcutIds);
+
+            if (_mappingService == null || remapShortcutIds == null)
             {
                 return;
             }
 
             RemappingList.Clear();
 
-            foreach (var id in SettingsManager.EditorSettings.ShortcutsByOperationType[ShortcutOperationType.RemapShortcut])
+            foreach (var id in remapShortcutIds)
             {
                 ShortcutSettings shortcutSettings = SettingsManager.EditorSettings.ShortcutSettingsDictionary[id];
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
@@ -771,14 +773,16 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void LoadTextMappings()
         {
-            if (_mappingService == null)
+            SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RemapText, out var remapShortcutIds);
+
+            if (_mappingService == null || remapShortcutIds == null)
             {
                 return;
             }
 
             TextMappings.Clear();
 
-            foreach (var id in SettingsManager.EditorSettings.ShortcutsByOperationType[ShortcutOperationType.RemapText])
+            foreach (var id in remapShortcutIds)
             {
                 ShortcutSettings shortcutSettings = SettingsManager.EditorSettings.ShortcutSettingsDictionary[id];
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
@@ -798,14 +802,16 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void LoadProgramShortcuts()
         {
-            if (_mappingService == null)
+            SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RunProgram, out var remapShortcutIds);
+
+            if (_mappingService == null || remapShortcutIds == null)
             {
                 return;
             }
 
             ProgramShortcuts.Clear();
 
-            foreach (var id in SettingsManager.EditorSettings.ShortcutsByOperationType[ShortcutOperationType.RunProgram])
+            foreach (var id in remapShortcutIds)
             {
                 ShortcutSettings shortcutSettings = SettingsManager.EditorSettings.ShortcutSettingsDictionary[id];
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
@@ -830,14 +836,16 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void LoadUrlShortcuts()
         {
-            if (_mappingService == null)
+            SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.OpenUri, out var remapShortcutIds);
+
+            if (_mappingService == null || remapShortcutIds == null)
             {
                 return;
             }
 
             UrlShortcuts.Clear();
 
-            foreach (var id in SettingsManager.EditorSettings.ShortcutsByOperationType[ShortcutOperationType.OpenUri])
+            foreach (var id in remapShortcutIds)
             {
                 ShortcutSettings shortcutSettings = SettingsManager.EditorSettings.ShortcutSettingsDictionary[id];
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
