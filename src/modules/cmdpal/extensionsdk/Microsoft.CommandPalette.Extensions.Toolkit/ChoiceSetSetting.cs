@@ -74,7 +74,7 @@ public sealed class ChoiceSetSetting : Setting<string>
 
         var value = payload[Key]?.GetValue<string>();
 
-        // if value doesn't match any of the choices, reset to default if IgnoreUnknownValue is true, otherwise ignore the update
+        // if value doesn't match any of the choices, reset to default if IgnoreUnknownValue is true; otherwise ignore the update
         var valueIsValid = Choices.Any(choice => choice.Value == value);
         if (!valueIsValid && IgnoreUnknownValue)
         {
