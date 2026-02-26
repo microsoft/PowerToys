@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Helpers.h"
 #include <sstream>
+#include <thread>
 
 #include <common/interop/shared_constants.h>
 #include <common/utils/process_path.h>
@@ -325,12 +326,152 @@ namespace Helpers
         }
     }
 
+    // Helper to set clipboard text. Returns true on success.
+    static bool SetClipboardText(const std::wstring& text)
+    {
+        if (!OpenClipboard(nullptr))
+        {
+            return false;
+        }
+
+        EmptyClipboard();
+
+        size_t byteSize = (text.size() + 1) * sizeof(wchar_t);
+        HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, byteSize);
+        if (!hMem)
+        {
+            CloseClipboard();
+            return false;
+        }
+
+        wchar_t* pMem = static_cast<wchar_t*>(GlobalLock(hMem));
+        if (!pMem)
+        {
+            GlobalFree(hMem);
+            CloseClipboard();
+            return false;
+        }
+
+        wcscpy_s(pMem, text.size() + 1, text.c_str());
+        GlobalUnlock(hMem);
+
+        if (!SetClipboardData(CF_UNICODETEXT, hMem))
+        {
+            GlobalFree(hMem);
+            CloseClipboard();
+            return false;
+        }
+
+        CloseClipboard();
+        return true;
+    }
+
+    // Function to send text via clipboard + WM_PASTE message to the focused window.
+    // Saves the previous clipboard content and restores it synchronously after
+    // SendMessage(WM_PASTE) returns (WM_PASTE via SendMessage is synchronous).
+    bool SendTextViaWmPaste(const std::wstring& text)
+    {
+        // Snapshot current clipboard state
+        bool hadOriginalText = false;
+        std::wstring originalClipboardText;
+        if (OpenClipboard(nullptr))
+        {
+            if (IsClipboardFormatAvailable(CF_UNICODETEXT))
+            {
+                HANDLE hData = GetClipboardData(CF_UNICODETEXT);
+                if (hData)
+                {
+                    wchar_t* pText = static_cast<wchar_t*>(GlobalLock(hData));
+                    if (pText)
+                    {
+                        originalClipboardText = pText;
+                        hadOriginalText = true;
+                        GlobalUnlock(hData);
+                    }
+                }
+            }
+            CloseClipboard();
+        }
+
+        // Place our text on the clipboard
+        if (!SetClipboardText(text))
+        {
+            return false;
+        }
+
+        // Find the focused window and send WM_PASTE.
+        // We need to attach to the foreground thread to get the real focus window.
+        HWND foregroundWindow = GetForegroundWindow();
+        if (!foregroundWindow)
+        {
+            // No foreground window — restore clipboard and bail out
+            if (hadOriginalText)
+            {
+                SetClipboardText(originalClipboardText);
+            }
+            else if (OpenClipboard(nullptr))
+            {
+                EmptyClipboard();
+                CloseClipboard();
+            }
+            return false;
+        }
+
+        DWORD foregroundThreadId = GetWindowThreadProcessId(foregroundWindow, nullptr);
+        DWORD currentThreadId = GetCurrentThreadId();
+
+        HWND focusedWindow = nullptr;
+        bool attached = false;
+
+        if (foregroundThreadId != currentThreadId)
+        {
+            attached = AttachThreadInput(currentThreadId, foregroundThreadId, TRUE) != 0;
+        }
+
+        focusedWindow = GetFocus();
+
+        // If GetFocus returned NULL (no focused child), fall back to the foreground window itself
+        if (!focusedWindow)
+        {
+            focusedWindow = foregroundWindow;
+        }
+
+        // Send WM_PASTE to the focused control
+        SendMessage(focusedWindow, WM_PASTE, 0, 0);
+
+        if (attached)
+        {
+            AttachThreadInput(currentThreadId, foregroundThreadId, FALSE);
+        }
+
+        // Restore clipboard after a short delay on a background thread.
+        // Although SendMessage is synchronous for message delivery, some apps
+        // (e.g. Visual Studio, Word) read the clipboard asynchronously after
+        // their window procedure returns, so we must wait before restoring.
+        std::thread([originalClipboardText = std::move(originalClipboardText), hadOriginalText]() {
+            Sleep(200);
+            if (hadOriginalText)
+            {
+                SetClipboardText(originalClipboardText);
+            }
+            else
+            {
+                if (OpenClipboard(nullptr))
+                {
+                    EmptyClipboard();
+                    CloseClipboard();
+                }
+            }
+        }).detach();
+
+        return true;
+    }
+
     // Function to filter the key codes for artificial key codes
     int32_t FilterArtificialKeys(const int32_t& key)
     {
         switch (key)
         {
-        // If a key is remapped to VK_WIN_BOTH, we send VK_LWIN instead
         case CommonSharedConstants::VK_WIN_BOTH:
             return VK_LWIN;
         }

@@ -58,7 +58,8 @@ SingleKeyRemapControl::SingleKeyRemapControl(StackPanel table, StackPanel row, c
         textBoxMargin.Top = -EditorConstants::ShortcutTableDropDownSpacing; // compensate for a collapsed grid
         textBoxMargin.Bottom = EditorConstants::ShortcutTableDropDownSpacing;
         textInput.Margin(textBoxMargin);
-        textInput.AcceptsReturn(false);
+        textInput.AcceptsReturn(true);
+        textInput.TextWrapping(TextWrapping::Wrap);
         textInput.Visibility(Visibility::Collapsed);
         textInput.Width(EditorConstants::TableDropDownHeight);
         singleKeyRemapControlLayout.as<StackPanel>().Children().Append(textInput);
