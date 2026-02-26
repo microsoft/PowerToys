@@ -103,7 +103,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     public CommandItemViewModel(
         ExtensionObject<ICommandItem> item,
         WeakReference<IPageContext> errorContext,
-        IContextMenuFactory? contextMenuFactory = null)
+        IContextMenuFactory? contextMenuFactory)
         : base(errorContext)
     {
         _commandItemModel = item;
@@ -462,6 +462,30 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         freedItems.OfType<CommandContextItemViewModel>()
                   .ToList()
                   .ForEach(c => c.SafeCleanup());
+    }
+
+    public void RefreshMoreCommands()
+    {
+        Task.Run(RefreshMoreCommandsSynchronous);
+    }
+
+    private void RefreshMoreCommandsSynchronous()
+    {
+        try
+        {
+            BuildAndInitMoreCommands();
+            UpdateProperty(nameof(MoreCommands));
+            UpdateProperty(nameof(AllCommands));
+            UpdateProperty(nameof(SecondaryCommand));
+            UpdateProperty(nameof(SecondaryCommandName));
+            UpdateProperty(nameof(HasMoreCommands));
+        }
+        catch (Exception ex)
+        {
+            // Handle any exceptions that might occur during the refresh process
+            CoreLogger.LogError("Error refreshing MoreCommands in CommandItemViewModel", ex);
+            ShowException(ex, _commandItemModel?.Unsafe?.Title);
+        }
     }
 
     protected override void UnsafeCleanup()

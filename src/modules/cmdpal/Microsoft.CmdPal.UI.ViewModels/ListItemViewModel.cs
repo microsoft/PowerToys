@@ -63,7 +63,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         }
     }
 
-    public ListItemViewModel(IListItem model, WeakReference<IPageContext> context, IContextMenuFactory? contextMenuFactory = null)
+    public ListItemViewModel(IListItem model, WeakReference<IPageContext> context, IContextMenuFactory contextMenuFactory)
         : base(new(model), context, contextMenuFactory)
     {
         Model = new ExtensionObject<IListItem>(model);

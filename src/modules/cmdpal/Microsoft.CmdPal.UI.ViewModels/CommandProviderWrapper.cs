@@ -13,7 +13,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed class CommandProviderWrapper
+public sealed class CommandProviderWrapper : ICommandProviderContext
 {
     public bool IsExtension => Extension is not null;
 
@@ -47,12 +47,17 @@ public sealed class CommandProviderWrapper
 
     public string ProviderId => string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
 
+    public bool SupportsPinning { get; private set; }
+
+    public TopLevelItemPageContext TopLevelPageContext { get; }
+
     public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
         // This ctor is only used for in-proc builtin commands. So the Unsafe!
         // calls are pretty dang safe actually.
         _commandProvider = new(provider);
         _taskScheduler = mainThread;
+        TopLevelPageContext = new TopLevelItemPageContext(this, _taskScheduler);
 
         // Hook the extension back into us
         ExtensionHost = new CommandPaletteHost(provider);
@@ -77,6 +82,7 @@ public sealed class CommandProviderWrapper
     {
         _taskScheduler = mainThread;
         _commandProviderCache = commandProviderCache;
+        TopLevelPageContext = new TopLevelItemPageContext(this, _taskScheduler);
 
         Extension = extension;
         ExtensionHost = new CommandPaletteHost(extension);
@@ -121,7 +127,7 @@ public sealed class CommandProviderWrapper
         return settings.GetProviderSettings(this);
     }
 
-    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider)
     {
         if (!isValid)
         {
@@ -157,8 +163,14 @@ public sealed class CommandProviderWrapper
                 UnsafePreCacheApiAdditions(two);
             }
 
-            // Load pinned commands from saved settings
-            var pinnedCommands = LoadPinnedCommands(model, providerSettings);
+            ICommandItem[] pinnedCommands = [];
+            if (model is ICommandProvider4 four)
+            {
+                SupportsPinning = true;
+
+                // Load pinned commands from saved settings
+                pinnedCommands = LoadPinnedCommands(four, providerSettings);
+            }
 
             Id = model.Id;
             DisplayName = model.DisplayName;
@@ -177,7 +189,7 @@ public sealed class CommandProviderWrapper
             Settings = new(model.Settings, this, _taskScheduler);
 
             // We do need to explicitly initialize commands though
-            InitializeCommands(commands, fallbacks, pinnedCommands, serviceProvider, pageContext);
+            InitializeCommands(commands, fallbacks, pinnedCommands, serviceProvider);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -208,14 +220,20 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, ICommandItem[] pinnedCommands, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    private void InitializeCommands(
+        ICommandItem[] commands,
+        IFallbackCommandItem[] fallbacks,
+        ICommandItem[] pinnedCommands,
+        IServiceProvider serviceProvider)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
+        var contextMenuFactory = serviceProvider.GetService<IContextMenuFactory>()!;
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
+        var pageContext = new WeakReference<IPageContext>(TopLevelPageContext);
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
-            CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
+            CommandItemViewModel commandItemViewModel = new(new(i), pageContext, contextMenuFactory: contextMenuFactory);
             TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ourContext, settings, providerSettings, serviceProvider, i);
             topLevelViewModel.InitializeProperties();
 
@@ -244,26 +262,23 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private ICommandItem[] LoadPinnedCommands(ICommandProvider model, ProviderSettings providerSettings)
+    private ICommandItem[] LoadPinnedCommands(ICommandProvider4 model, ProviderSettings providerSettings)
     {
         var pinnedItems = new List<ICommandItem>();
 
-        if (model is ICommandProvider4 provider4)
+        foreach (var pinnedId in providerSettings.PinnedCommandIds)
         {
-            foreach (var pinnedId in providerSettings.PinnedCommandIds)
+            try
             {
-                try
+                var commandItem = model.GetCommandItem(pinnedId);
+                if (commandItem is not null)
                 {
-                    var commandItem = provider4.GetCommandItem(pinnedId);
-                    if (commandItem is not null)
-                    {
-                        pinnedItems.Add(commandItem);
-                    }
+                    pinnedItems.Add(commandItem);
                 }
-                catch (Exception e)
-                {
-                    Logger.LogError($"Failed to load pinned command {pinnedId}: {e.Message}");
-                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Failed to load pinned command {pinnedId}: {e.Message}");
             }
         }
 
@@ -298,10 +313,21 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    public CommandProviderContext GetProviderContext()
+    public void UnpinCommand(string commandId, IServiceProvider serviceProvider)
     {
-        return new() { ProviderId = ProviderId };
+        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var providerSettings = GetProviderSettings(settings);
+
+        if (providerSettings.PinnedCommandIds.Remove(commandId))
+        {
+            SettingsModel.SaveSettings(settings);
+
+            // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
+            this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        }
     }
+
+    public ICommandProviderContext GetProviderContext() => this;
 
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;
 

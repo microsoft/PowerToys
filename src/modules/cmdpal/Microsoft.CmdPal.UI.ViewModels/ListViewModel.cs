@@ -36,7 +36,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private readonly ExtensionObject<IListPage> _model;
 
     private readonly Lock _listLock = new();
-    private readonly IContextMenuFactory? _contextMenuFactory;
+    private readonly IContextMenuFactory _contextMenuFactory;
 
     private InterlockedBoolean _isLoading;
     private bool _isFetching;
@@ -96,12 +96,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, CommandProviderContext providerContext, IContextMenuFactory? contextMenuFactory)
+    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
         : base(model, scheduler, host, providerContext)
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
-        EmptyContent = new(new(null), PageContext, _contextMenuFactory);
+        EmptyContent = new(new(null), PageContext, contextMenuFactory: null);
     }
 
     private void FiltersPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -243,7 +243,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     continue;
                 }
 
-                var viewModel = new ListItemViewModel(item, new(this));
+                var viewModel = new ListItemViewModel(item, new(this), _contextMenuFactory);
 
                 // If an item fails to load, silently ignore it.
                 if (viewModel.SafeFastInit())
@@ -636,7 +636,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         UpdateProperty(nameof(SearchText));
         UpdateProperty(nameof(InitialSearchText));
 
-        EmptyContent = new(new(model.EmptyContent), PageContext);
+        EmptyContent = new(new(model.EmptyContent), PageContext, _contextMenuFactory);
         EmptyContent.SlowInitializeProperties();
 
         Filters?.PropertyChanged -= FiltersPropertyChanged;
@@ -732,7 +732,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 SearchText = model.SearchText;
                 break;
             case nameof(EmptyContent):
-                EmptyContent = new(new(model.EmptyContent), PageContext);
+                EmptyContent = new(new(model.EmptyContent), PageContext, contextMenuFactory: null);
                 EmptyContent.SlowInitializeProperties();
                 break;
             case nameof(Filters):
@@ -806,7 +806,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         base.UnsafeCleanup();
 
         EmptyContent?.SafeCleanup();
-        EmptyContent = new(new(null), PageContext); // necessary?
+        EmptyContent = new(new(null), PageContext, contextMenuFactory: null); // necessary?
 
         _cancellationTokenSource?.Cancel();
         filterCancellationTokenSource?.Cancel();
