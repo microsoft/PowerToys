@@ -629,9 +629,10 @@ OppositeEdgeResult MonitorTopology::FindNearestOppositeEdge(EdgeType fromEdge, i
 int MonitorTopology::CalculateProjectedPosition(int cursorCoordinate, const MonitorEdge& sourceEdge,
                                                  const MonitorEdge& targetEdge) const
 {
-    // Implement Windows-like offset-from-boundary projection
-    // When cursor is in a non-shared region, calculate offset from the nearest shared boundary
-    // and apply that offset to the destination edge
+    // Windows behavior for non-overlapping regions:
+    // When cursor is in a region that doesn't overlap with the target edge,
+    // clamp to the nearest boundary of the target edge.
+    // This matches observed Windows cursor transition behavior.
     
     // Find the shared boundary region between source and target edges
     int sharedStart = max(sourceEdge.start, targetEdge.start);
@@ -639,40 +640,30 @@ int MonitorTopology::CalculateProjectedPosition(int cursorCoordinate, const Moni
     
     if (cursorCoordinate >= sharedStart && cursorCoordinate <= sharedEnd)
     {
-        // Cursor is in shared region - just return the coordinate (shouldn't happen here)
+        // Cursor is in shared region - preserve the coordinate exactly
         return cursorCoordinate;
     }
     
+    // For non-overlapping regions, clamp to the nearest boundary of the target edge
+    // This matches Windows behavior where the cursor is projected to the closest
+    // valid point on the destination edge
     int projectedCoord;
     
     if (cursorCoordinate < sharedStart)
     {
         // Cursor is BEFORE the shared region (e.g., above shared area)
-        // Calculate offset from cursor to shared boundary
-        int offsetFromBoundary = sharedStart - cursorCoordinate;
-        
-        // Apply offset from target edge start
-        projectedCoord = targetEdge.start + (sharedStart - cursorCoordinate - 1);
-        
-        // Use offset from top of source non-shared region
-        int sourceNonSharedTop = sourceEdge.start;
-        int offsetFromSourceTop = cursorCoordinate - sourceNonSharedTop;
-        projectedCoord = targetEdge.start + offsetFromSourceTop;
+        // Clamp to the start of the target edge (with small offset to stay within bounds)
+        projectedCoord = targetEdge.start + 1;
     }
     else
     {
         // Cursor is AFTER the shared region (e.g., below shared area)
-        // Calculate offset from cursor to shared boundary
-        int offsetFromBoundary = cursorCoordinate - sharedEnd;
-        
-        // Use offset from bottom of source non-shared region
-        int sourceNonSharedBottom = sourceEdge.end;
-        int offsetFromSourceBottom = sourceNonSharedBottom - cursorCoordinate;
-        projectedCoord = targetEdge.end - offsetFromSourceBottom;
+        // Clamp to the end of the target edge (with small offset to stay within bounds)
+        projectedCoord = targetEdge.end - 1;
     }
     
-    // Clamp to target edge bounds
-    projectedCoord = max(targetEdge.start, min(projectedCoord, targetEdge.end));
+    // Final bounds check
+    projectedCoord = max(targetEdge.start, min(projectedCoord, targetEdge.end - 1));
     
     return projectedCoord;
 }
