@@ -29,6 +29,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static HotkeySettings DefaultSnipToggleKey => new HotkeySettings(false, true, false, false, '6'); // Ctrl+6
 
         [CmdConfigureIgnore]
+        public static HotkeySettings DefaultSnipSaveToggleKey => new HotkeySettings(false, true, false, true, '6'); // Ctrl+Shift+6
+
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultBreakTimerKey => new HotkeySettings(false, true, false, false, '3'); // Ctrl+3
 
         [CmdConfigureIgnore]
@@ -43,6 +46,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public KeyboardKeysProperty RecordToggleKey { get; set; }
 
         public KeyboardKeysProperty SnipToggleKey { get; set; }
+
+        public KeyboardKeysProperty SnipSaveToggleKey { get; set; }
 
         public KeyboardKeysProperty BreakTimerKey { get; set; }
 

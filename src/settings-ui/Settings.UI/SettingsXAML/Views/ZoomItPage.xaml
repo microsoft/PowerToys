@@ -318,10 +318,8 @@
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard Name="ZoomItSnipShortcutSave">
-                                <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.SnipToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Snip_Shortcut_Save}" />
-                                </tkcontrols:SettingsCard.Description>
+                            <tkcontrols:SettingsCard x:Uid="ZoomIt_SnipSave_Shortcut" Name="ZoomItSnipShortcutSave">
+                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipToggleKeySave, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>

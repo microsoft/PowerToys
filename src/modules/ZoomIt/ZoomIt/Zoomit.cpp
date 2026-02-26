@@ -152,6 +152,7 @@ DWORD	g_BreakToggleMod;
 DWORD	g_DemoTypeToggleMod;
 DWORD	g_RecordToggleMod;
 DWORD   g_SnipToggleMod;
+DWORD   g_SnipSaveToggleMod;
 
 BOOLEAN	g_ZoomOnLiveZoom = FALSE;
 DWORD	g_PenWidth = PEN_WIDTH;
@@ -2351,7 +2352,7 @@ void RegisterAllHotkeys(HWND hWnd)
     }
     if (g_SnipToggleKey) {
         RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF);
-        RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF);
+        RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF);
     }
     if (g_RecordToggleKey) {
         RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF);
@@ -3574,6 +3575,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     TCHAR			text[32];
     DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey;
     DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod;
+    DWORD			newSnipSaveToggleKey, newSnipSaveToggleMod;
     DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
     static std::vector<std::pair<std::wstring, std::wstring>>	microphones;
 
@@ -3808,6 +3810,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         if( g_DemoTypeToggleKey ) SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_SETHOTKEY, g_DemoTypeToggleKey, 0 );
         if( g_RecordToggleKey )	SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_SETHOTKEY, g_RecordToggleKey, 0 );
         if( g_SnipToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_SETHOTKEY, g_SnipToggleKey, 0 );
+        if( g_SnipSaveToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_SAVE_HOTKEY), HKM_SETHOTKEY, g_SnipSaveToggleKey, 0 );
         CheckDlgButton( hDlg, IDC_SHOW_TRAY_ICON,
             g_ShowTrayIcon ? BST_CHECKED: BST_UNCHECKED );
         CheckDlgButton( hDlg, IDC_AUTOSTART,
@@ -4248,6 +4251,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_GETHOTKEY, 0, 0 ));
             newRecordToggleKey = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_GETHOTKEY, 0, 0));
             newSnipToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipSaveToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_SAVE_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
 
             newToggleMod = GetKeyMod( newToggleKey );
             newLiveZoomToggleMod = GetKeyMod( newLiveZoomToggleKey );
@@ -4256,6 +4260,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleMod = GetKeyMod( newDemoTypeToggleKey );
             newRecordToggleMod = GetKeyMod(newRecordToggleKey);
             newSnipToggleMod = GetKeyMod( newSnipToggleKey );
+            newSnipSaveToggleMod = GetKeyMod( newSnipSaveToggleKey );
 
             g_SliderZoomLevel = static_cast<int>(SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_GETPOS, 0, 0 ));
             g_DemoTypeSpeedSlider = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_GETPOS, 0, 0 ));
@@ -4318,7 +4323,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             }
             else if (newSnipToggleKey &&
                 (!RegisterHotKey(GetParent(hDlg), SNIP_HOTKEY, newSnipToggleMod, newSnipToggleKey & 0xFF) ||
-                 !RegisterHotKey(GetParent(hDlg), SNIP_SAVE_HOTKEY, (newSnipToggleMod ^ MOD_SHIFT), newSnipToggleKey & 0xFF))) {
+                 !RegisterHotKey(GetParent(hDlg), SNIP_SAVE_HOTKEY, newSnipSaveToggleMod, newSnipSaveToggleKey & 0xFF))) {
 
                 MessageBox(hDlg, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.",
                     APPNAME, MB_ICONERROR);
@@ -4352,6 +4357,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_RecordToggleMod = newRecordToggleMod;
                 g_SnipToggleKey = newSnipToggleKey;
                 g_SnipToggleMod = newSnipToggleMod;
+                g_SnipSaveToggleKey = newSnipSaveToggleKey;
+                g_SnipSaveToggleMod = newSnipSaveToggleMod;
                 reg.WriteRegSettings( RegSettings );
                 EnableDisableTrayIcon( GetParent( hDlg ), g_ShowTrayIcon );
 
@@ -6208,6 +6215,7 @@ LRESULT APIENTRY MainWndProc(
         g_BreakToggleMod = GetKeyMod( g_BreakToggleKey );
         g_DemoTypeToggleMod = GetKeyMod( g_DemoTypeToggleKey );
         g_SnipToggleMod = GetKeyMod( g_SnipToggleKey );
+        g_SnipSaveToggleMod = GetKeyMod( g_SnipSaveToggleKey );
         g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
 
         if( !g_OptionsShown && !g_StartedByPowerToys ) {
@@ -6258,7 +6266,7 @@ LRESULT APIENTRY MainWndProc(
             }
             else if (g_SnipToggleKey &&
                 (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))) {
+                 !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF))) {
 
                 MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.",
                     APPNAME, MB_ICONERROR);
@@ -8548,6 +8556,7 @@ LRESULT APIENTRY MainWndProc(
         g_BreakToggleMod = GetKeyMod(g_BreakToggleKey);
         g_DemoTypeToggleMod = GetKeyMod(g_DemoTypeToggleKey);
         g_SnipToggleMod = GetKeyMod(g_SnipToggleKey);
+        g_SnipSaveToggleMod = GetKeyMod(g_SnipSaveToggleKey);
         g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
         BOOL showOptions = FALSE;
         if (g_ToggleKey)
@@ -8595,7 +8604,7 @@ LRESULT APIENTRY MainWndProc(
         if (g_SnipToggleKey)
         {
             if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))
+                !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF))
             {
                 MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.", APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
