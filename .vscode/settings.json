@@ -13,6 +13,5 @@
         {
             "file": ".github/prompts/create-pr-summary.prompt.md"
         }
-    ],
-    "snyk.advanced.autoSelectOrganization": true
+    ]
 }
