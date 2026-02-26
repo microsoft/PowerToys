@@ -202,7 +202,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                             if (args.Uri != null && args.Uri != _localFileURI?.ToString() && args.IsUserInitiated)
                             {
                                 args.Cancel = true;
-                                await Launcher.LaunchUriAsync(new Uri(args.Uri));
+
+                                // Only allow http and https schemes to be opened externally.
+                                // Block all other URI schemes (e.g. calculator:, search-ms:, ms-appinstaller:)
+                                // to prevent arbitrary protocol handler execution from the preview pane.
+                                if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri uri) &&
+                                    (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+                                {
+                                    await Launcher.LaunchUriAsync(uri);
+                                }
                             }
                         };
 
