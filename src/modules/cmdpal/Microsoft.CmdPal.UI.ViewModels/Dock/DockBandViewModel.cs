@@ -259,7 +259,7 @@ public partial class DockItemViewModel : CommandItemViewModel
 
     public override string Title => _showTitle ? ItemTitle : string.Empty;
 
-    public new string Subtitle => _showSubtitle ? base.Subtitle : string.Empty;
+    public override string Subtitle => _showSubtitle ? base.Subtitle : string.Empty;
 
     public override bool HasText => (_showTitle && !string.IsNullOrEmpty(ItemTitle)) || (_showSubtitle && !string.IsNullOrEmpty(base.Subtitle));
 

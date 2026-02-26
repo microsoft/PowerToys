@@ -170,7 +170,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
             return 0;
         }
 
-        return _bandViewModel!.Items.Count;
+        return bandVm.Items.Count;
     }
 
     private void Save()

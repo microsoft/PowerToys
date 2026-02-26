@@ -142,11 +142,8 @@ public sealed partial class SettingsWindow : WindowEx,
                 break;
         }
 
-        var actualPage = page ?? "General";
         if (pageType is not null)
         {
-            // BreadCrumbs.Clear();
-            // BreadCrumbs.Add(new(actualPage, actualPage));
             NavFrame.Navigate(pageType);
 
             // Now, make sure to actually select the correct menu item too

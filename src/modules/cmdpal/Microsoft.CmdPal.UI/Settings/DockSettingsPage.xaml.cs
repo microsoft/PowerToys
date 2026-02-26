@@ -162,7 +162,7 @@ public sealed partial class DockSettingsPage : Page
     {
         DockBackdrop.Transparent => 0,
         DockBackdrop.Acrylic => 1,
-        _ => 2,
+        _ => 1,
     };
 
     private static DockBackdrop SelectedIndexToBackdrop(int index) => index switch

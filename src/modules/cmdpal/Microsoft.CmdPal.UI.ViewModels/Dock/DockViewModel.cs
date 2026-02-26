@@ -125,7 +125,6 @@ public sealed partial class DockViewModel : IDisposable,
         CommandItemViewModel commandItem)
     {
         DockBandViewModel band = new(commandItem, new(this), bandSettings, _settings, SaveSettings);
-        band.InitializeProperties(); // TODO! make async
         return band;
     }
 
