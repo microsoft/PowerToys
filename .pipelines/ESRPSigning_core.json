@@ -211,9 +211,6 @@
             "PowerToys.PowerAccentModuleInterface.dll",
             "PowerToys.PowerAccentKeyboardService.dll",
 
-            "PowerToys.PowerDisplayModuleInterface.dll",
-            "WinUI3Apps\\PowerToys.PowerDisplay.dll",
-            "WinUI3Apps\\PowerToys.PowerDisplay.exe",
             "PowerDisplay.Lib.dll",
 
             "WinUI3Apps\\PowerToys.PowerRenameExt.dll",

@@ -234,6 +234,10 @@
   <data name="limit_none" xml:space="preserve">
     <value>Unlimited</value>
   </data>
+  <data name="limit_default" xml:space="preserve">
+    <value>Default ({0})</value>
+    <comment>default option; {0} = number of items</comment>
+  </data>
   <data name="hide_generic_files_on_desktop" xml:space="preserve">
     <value>Hide shortcuts to non-executable files on Desktop</value>
   </data>

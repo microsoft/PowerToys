@@ -4,7 +4,7 @@
 
 #pragma warning disable IDE0007 // Use implicit type
 
-using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -21,6 +21,8 @@ internal static class MainListPageResultFactory
         IList<RoScored<IListItem>>? scoredFallbackItems,
         IList<RoScored<IListItem>>? filteredApps,
         IList<RoScored<IListItem>>? fallbackItems,
+        IListItem resultsSeparator,
+        IListItem fallbacksSeparator,
         int appResultLimit)
     {
         if (appResultLimit < 0)
@@ -40,14 +42,25 @@ internal static class MainListPageResultFactory
         int nonEmptyFallbackCount = fallbackItems?.Count ?? 0;
 
         // Allocate the exact size of the result array.
-        // We'll add an extra slot for the fallbacks section header if needed.
-        int totalCount = len1 + len2 + len3 + nonEmptyFallbackCount + (nonEmptyFallbackCount > 0 ? 1 : 0);
+        // We'll add an extra slot for the fallbacks section header if needed,
+        // and another for the "Results" section header when merged results exist.
+        int mergedCount = len1 + len2 + len3;
+        bool needsResultsHeader = mergedCount > 0;
+        int totalCount = mergedCount + nonEmptyFallbackCount
+            + (needsResultsHeader ? 1 : 0)
+            + (nonEmptyFallbackCount > 0 ? 1 : 0);
 
         var result = new IListItem[totalCount];
 
         // Three-way stable merge of already-sorted lists.
         int idx1 = 0, idx2 = 0, idx3 = 0;
         int writePos = 0;
+
+        // Add "Results" section header when merged results will precede the fallbacks.
+        if (needsResultsHeader)
+        {
+            result[writePos++] = resultsSeparator;
+        }
 
         // Merge while all three lists have items. To maintain a stable sort, the
         // priority is: list1 > list2 > list3 when scores are equal.
@@ -132,7 +145,7 @@ internal static class MainListPageResultFactory
             // Create the fallbacks section header
             if (fallbackItems.Count > 0)
             {
-                result[writePos++] = new Separator(Properties.Resources.fallbacks);
+                result[writePos++] = fallbacksSeparator;
             }
 
             for (int i = 0; i < fallbackItems.Count; i++)

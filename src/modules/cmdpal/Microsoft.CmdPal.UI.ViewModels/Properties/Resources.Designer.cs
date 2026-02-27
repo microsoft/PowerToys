@@ -473,5 +473,23 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
                 return ResourceManager.GetString("fallbacks", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Results.
+        /// </summary>
+        public static string results {
+            get {
+                return ResourceManager.GetString("results", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show details.
+        /// </summary>
+        public static string ShowDetailsCommand {
+            get {
+                return ResourceManager.GetString("ShowDetailsCommand", resourceCulture);
+            }
+        }
     }
 }

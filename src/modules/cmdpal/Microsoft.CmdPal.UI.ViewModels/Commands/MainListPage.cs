@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,12 +7,10 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Text;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
-using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
@@ -36,6 +34,11 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ScoringFunction<IListItem> _scoringFunction;
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
+
+    // Stable separator instances so that the VM cache and InPlaceUpdateList
+    // recognise them across successive GetItems() calls
+    private readonly Separator _resultsSeparator = new(Resources.results);
+    private readonly Separator _fallbacksSeparator = new(Resources.fallbacks);
 
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
@@ -172,9 +175,40 @@ public sealed partial class MainListPage : DynamicListPage,
             // filtered results.
             if (string.IsNullOrWhiteSpace(SearchText))
             {
-                return _tlcManager.TopLevelCommands
-                    .Where(tlc => !tlc.IsFallback && !string.IsNullOrEmpty(tlc.Title))
-                    .ToArray();
+                var allCommands = _tlcManager.TopLevelCommands;
+
+                // First pass: count eligible commands
+                var eligibleCount = 0;
+                for (var i = 0; i < allCommands.Count; i++)
+                {
+                    var cmd = allCommands[i];
+                    if (!cmd.IsFallback && !string.IsNullOrEmpty(cmd.Title))
+                    {
+                        eligibleCount++;
+                    }
+                }
+
+                if (eligibleCount == 0)
+                {
+                    return [];
+                }
+
+                // +1 for the separator
+                var result = new IListItem[eligibleCount + 1];
+                result[0] = _resultsSeparator;
+
+                // Second pass: populate
+                var writeIndex = 1;
+                for (var i = 0; i < allCommands.Count; i++)
+                {
+                    var cmd = allCommands[i];
+                    if (!cmd.IsFallback && !string.IsNullOrEmpty(cmd.Title))
+                    {
+                        result[writeIndex++] = cmd;
+                    }
+                }
+
+                return result;
             }
             else
             {
@@ -191,6 +225,8 @@ public sealed partial class MainListPage : DynamicListPage,
                     validScoredFallbacks,
                     _filteredApps,
                     validFallbacks,
+                    _resultsSeparator,
+                    _fallbacksSeparator,
                     AppResultLimit);
             }
         }
@@ -372,11 +408,13 @@ public sealed partial class MainListPage : DynamicListPage,
                     var allNewApps = AllAppsCommandProvider.Page.GetItems().Cast<AppListItem>().ToList();
 
                     // We need to remove pinned apps from allNewApps so they don't show twice.
-                    var pinnedApps = PinnedAppsManager.Instance.GetPinnedAppIdentifiers();
+                    // Pinned app command IDs are stored in ProviderSettings.PinnedCommandIds.
+                    _settings.ProviderSettings.TryGetValue(AllAppsCommandProvider.WellKnownId, out var providerSettings);
+                    var pinnedCommandIds = providerSettings?.PinnedCommandIds;
 
-                    if (pinnedApps.Length > 0)
+                    if (pinnedCommandIds is not null && pinnedCommandIds.Count > 0)
                     {
-                        newApps = allNewApps.Where(w => pinnedApps.IndexOf(w.AppIdentifier) < 0);
+                        newApps = allNewApps.Where(li => li.Command != null && !pinnedCommandIds.Contains(li.Command.Id));
                     }
                     else
                     {

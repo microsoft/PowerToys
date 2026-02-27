@@ -2958,6 +2958,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="AlwaysOnTop_Behavior_GroupSettings.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
+  <data name="AlwaysOnTop_ContextMenuEnabled.Header" xml:space="preserve">
+    <value>Show Always on Top in the title bar context menu</value>
+  </data>
+  <data name="AlwaysOnTop_ContextMenuEnabled.Description" xml:space="preserve">
+    <value>Lets you turn Always on Top mode on or off from the window's title bar right-click menu</value>
+  </data>
   <data name="Shell_AlwaysOnTop.Content" xml:space="preserve">
     <value>Always On Top</value>
     <comment>{Locked}</comment>
@@ -2974,19 +2980,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Activation shortcut</value>
   </data>
   <data name="AlwaysOnTop_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to pin or unpin an app window and use the same modifier keys with + or − to adjust its transparency</value>
-  </data>
-  <data name="AlwaysOnTop_TransparencyInfo.Header" xml:space="preserve">
-    <value>Window transparency</value>
-  </data>
-  <data name="AlwaysOnTop_TransparencyInfo.Description" xml:space="preserve">
-    <value>Adjust the transparency of the focused window on top</value>
+    <value>Customize the shortcut to pin or unpin an app window</value>
   </data>
   <data name="AlwaysOnTop_IncreaseOpacity" xml:space="preserve">
-    <value>Press **{0}** to increase the window opacity</value>
+    <value>Press **{0}** to increase the opacity of the window</value>
   </data>
   <data name="AlwaysOnTop_DecreaseOpacity" xml:space="preserve">
-    <value>Press **{0}** to decrease the window opacity</value>
+    <value>Press **{0}** to decrease the opacity of the window</value>
   </data>
   <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>
@@ -4771,6 +4771,9 @@ The break timer font matches the text font.</value>
   </data>
   <data name="LanguageRestartInfoButton.Content" xml:space="preserve">
     <value>Restart</value>
+  </data>
+  <data name="Default_Language" xml:space="preserve">
+    <value>Windows default</value>
   </data>
   <data name="Arabic_Saudi_Arabia_Language" xml:space="preserve">
     <value>Arabic (Saudi Arabia)</value>

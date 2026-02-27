@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Text;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CommandPalette.Extensions;
@@ -87,7 +87,7 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
     public AppItem App => _app;
 
-    public AppListItem(AppItem app, bool useThumbnails, bool isPinned)
+    public AppListItem(AppItem app, bool useThumbnails)
     {
         Command = _appCommand = new AppCommand(app);
         _app = app;
@@ -95,7 +95,7 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         Subtitle = app.Subtitle;
         Icon = Icons.GenericAppIcon;
 
-        MoreCommands = AddPinCommands(_app.Commands!, isPinned);
+        MoreCommands = _app.Commands?.ToArray() ?? [];
 
         _detailsLoadTask = new Lazy<Task<Details>>(BuildDetails);
         _iconLoadTask = new Lazy<Task<IconInfo?>>(async () => await FetchIcon(useThumbnails).ConfigureAwait(false));
@@ -206,7 +206,7 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         {
             Title = this.Title,
             HeroImage = CoalesceIcon(CoalesceIcon(heroImage, this.Icon as IconInfo)),
-            Metadata = [..metadata],
+            Metadata = [.. metadata],
         };
     }
 
@@ -235,35 +235,6 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         icon ??= new IconInfo(_app.IcoPath);
 
         return icon;
-    }
-
-    private IContextItem[] AddPinCommands(List<IContextItem> commands, bool isPinned)
-    {
-        var newCommands = new List<IContextItem>();
-        newCommands.AddRange(commands);
-
-        newCommands.Add(new Separator());
-
-        if (isPinned)
-        {
-            newCommands.Add(
-                new CommandContextItem(
-                    new UnpinAppCommand(this.AppIdentifier))
-                {
-                    RequestedShortcut = KeyChords.TogglePin,
-                });
-        }
-        else
-        {
-            newCommands.Add(
-                new CommandContextItem(
-                    new PinAppCommand(this.AppIdentifier))
-                {
-                    RequestedShortcut = KeyChords.TogglePin,
-                });
-        }
-
-        return newCommands.ToArray();
     }
 
     private async Task<IconInfo?> TryLoadThumbnail(string path, bool jumbo, bool logOnFailure)

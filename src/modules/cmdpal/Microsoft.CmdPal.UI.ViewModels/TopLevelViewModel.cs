@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,10 +6,9 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Text;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -27,7 +26,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
 
-    public CommandProviderContext ProviderContext { get; private set; }
+    public ICommandProviderContext ProviderContext { get; private set; }
 
     private string IdFromModel => IsFallback && !string.IsNullOrWhiteSpace(_fallbackId) ? _fallbackId : _commandItemViewModel.Command.Id;
 
@@ -190,7 +189,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         CommandItemViewModel item,
         bool isFallback,
         CommandPaletteHost extensionHost,
-        CommandProviderContext commandProviderContext,
+        ICommandProviderContext commandProviderContext,
         SettingsModel settings,
         ProviderSettings providerSettings,
         IServiceProvider serviceProvider,
@@ -424,7 +423,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public PerformCommandMessage GetPerformCommandMessage()
     {
-        return new PerformCommandMessage(this.CommandViewModel.Model, new Core.ViewModels.Models.ExtensionObject<IListItem>(this));
+        return new PerformCommandMessage(this.CommandViewModel.Model, new Models.ExtensionObject<IListItem>(this));
     }
 
     public override string ToString()

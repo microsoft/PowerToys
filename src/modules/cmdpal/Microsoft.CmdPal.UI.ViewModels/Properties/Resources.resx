@@ -260,4 +260,12 @@
   <data name="fallbacks" xml:space="preserve">
     <value>Fallbacks</value>
   </data>
+  <data name="ShowDetailsCommand" xml:space="preserve">
+    <value>Show details</value>
+    <comment>Name for the command that shows details of an item</comment>
+  </data>
+  <data name="results" xml:space="preserve">
+    <value>Results</value>
+    <comment>Section title for list of all search results that doesn't fall into any other category</comment>
+  </data>
 </root>

@@ -223,6 +223,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Default ({0}).
+        /// </summary>
+        internal static string limit_default {
+            get {
+                return ResourceManager.GetString("limit_default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Limit the number of applications returned from the top level.
         /// </summary>
         internal static string limit_fallback_results_source {
