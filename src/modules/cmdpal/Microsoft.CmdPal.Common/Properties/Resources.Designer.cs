@@ -72,5 +72,14 @@ namespace Microsoft.CmdPal.Common.Properties {
                 return ResourceManager.GetString("ErrorReport_Global_Preamble", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pinned.
+        /// </summary>
+        internal static string PinnedItemSuffix {
+            get {
+                return ResourceManager.GetString("PinnedItemSuffix", resourceCulture);
+            }
+        }
     }
 }

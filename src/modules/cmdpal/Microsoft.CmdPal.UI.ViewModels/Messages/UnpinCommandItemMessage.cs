@@ -4,6 +4,4 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record UnpinCommandItemMessage(string ProviderId, string CommandId)
-{
-}
+public record UnpinCommandItemMessage(string ProviderId, string CommandId);

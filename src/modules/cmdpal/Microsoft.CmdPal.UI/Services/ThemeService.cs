@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,6 +7,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -36,10 +37,13 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
     private bool _isInitialized;
     private bool _disposed;
     private InternalThemeState _currentState;
+    private DockThemeSnapshot _currentDockState;
 
     public event EventHandler<ThemeChangedEventArgs>? ThemeChanged;
 
     public ThemeSnapshot Current => Volatile.Read(ref _currentState).Snapshot;
+
+    public DockThemeSnapshot CurrentDockTheme => Volatile.Read(ref _currentDockState);
 
     /// <summary>
     /// Initializes the theme service. Must be called after the application window is activated and on UI thread.
@@ -144,6 +148,60 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         // Atomic swap
         Interlocked.Exchange(ref _currentState, newState);
 
+        // Compute DockThemeSnapshot from DockSettings
+        var dockSettings = _settings.DockSettings;
+        var dockIntensity = Math.Clamp(dockSettings.CustomThemeColorIntensity, 0, 100);
+        IThemeProvider dockProvider = dockIntensity > 0 && dockSettings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image
+                ? _colorfulThemeProvider
+                : _normalThemeProvider;
+
+        var dockTint = dockSettings.ColorizationMode switch
+        {
+            ColorizationMode.CustomColor => dockSettings.CustomThemeColor,
+            ColorizationMode.WindowsAccentColor => _uiSettings.GetColorValue(UIColorType.Accent),
+            ColorizationMode.Image => dockSettings.CustomThemeColor,
+            _ => Colors.Transparent,
+        };
+        var dockEffectiveTheme = GetElementTheme((ElementTheme)dockSettings.Theme);
+        var dockImageSource = dockSettings.ColorizationMode == ColorizationMode.Image
+            ? LoadImageSafe(dockSettings.BackgroundImagePath)
+            : null;
+        var dockStretch = dockSettings.BackgroundImageFit switch
+        {
+            BackgroundImageFit.Fill => Stretch.Fill,
+            _ => Stretch.UniformToFill,
+        };
+        var dockOpacity = Math.Clamp(dockSettings.BackgroundImageOpacity, 0, 100) / 100.0;
+
+        var dockContext = new ThemeContext
+        {
+            Tint = dockTint,
+            ColorIntensity = dockIntensity,
+            Theme = dockEffectiveTheme,
+            BackgroundImageSource = dockImageSource,
+            BackgroundImageStretch = dockStretch,
+            BackgroundImageOpacity = dockOpacity,
+        };
+        var dockBackdrop = dockProvider.GetBackdropParameters(dockContext);
+        var dockBlur = dockSettings.BackgroundImageBlurAmount;
+        var dockBrightness = dockSettings.BackgroundImageBrightness;
+
+        var dockSnapshot = new DockThemeSnapshot
+        {
+            Tint = dockTint,
+            TintIntensity = dockIntensity / 100f,
+            Theme = dockEffectiveTheme,
+            Backdrop = dockSettings.Backdrop,
+            BackgroundImageSource = dockImageSource,
+            BackgroundImageStretch = dockStretch,
+            BackgroundImageOpacity = dockOpacity,
+            BackdropParameters = dockBackdrop,
+            BlurAmount = dockBlur,
+            BackgroundBrightness = dockBrightness / 100f,
+        };
+
+        Interlocked.Exchange(ref _currentDockState, dockSnapshot);
+
         _resourceSwapper.TryActivateTheme(provider.ThemeKey);
         ThemeChanged?.Invoke(this, new ThemeChangedEventArgs());
     }
@@ -222,6 +280,20 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
                 HasColorization = false,
             },
             Provider = _normalThemeProvider,
+        };
+
+        _currentDockState = new DockThemeSnapshot
+        {
+            Tint = Colors.Transparent,
+            TintIntensity = 1.0f,
+            Theme = ElementTheme.Light,
+            Backdrop = DockBackdrop.Acrylic,
+            BackdropParameters = new BackdropParameters(Colors.Black, Colors.Black, 0.5f, 0.5f),
+            BackgroundImageOpacity = 1,
+            BackgroundImageSource = null,
+            BackgroundImageStretch = Stretch.Fill,
+            BlurAmount = 0,
+            BackgroundBrightness = 0,
         };
     }
 

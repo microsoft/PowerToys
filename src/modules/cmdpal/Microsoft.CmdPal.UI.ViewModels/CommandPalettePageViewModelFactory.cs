@@ -22,7 +22,7 @@ public class CommandPalettePageViewModelFactory
     {
         return page switch
         {
-            IListPage listPage => new ListViewModel(listPage, _scheduler, host, providerContext, _contextMenuFactory) { IsNested = nested },
+            IListPage listPage => new ListViewModel(listPage, _scheduler, host, providerContext, _contextMenuFactory) { IsRootPage = !nested },
             IContentPage contentPage => new CommandPaletteContentPageViewModel(contentPage, _scheduler, host, providerContext),
             _ => null,
         };

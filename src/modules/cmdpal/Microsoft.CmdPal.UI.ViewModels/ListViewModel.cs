@@ -8,7 +8,6 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -371,7 +370,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     UpdateEmptyContent();
                 }
 
-                ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(!IsNested));
+                ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(IsRootPage));
                 _isLoading.Clear();
             });
     }
