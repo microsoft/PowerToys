@@ -13,6 +13,8 @@ public class Settings : ISettingsInterface
     private readonly bool enableDesktopSource;
     private readonly bool enableRegistrySource;
     private readonly bool enablePathEnvironmentVariableSource;
+    private readonly bool includeNonAppsOnDesktop;
+    private readonly bool includeNonAppsInStartMenu;
     private readonly List<string> programSuffixes;
     private readonly List<string> runCommandSuffixes;
 
@@ -21,6 +23,8 @@ public class Settings : ISettingsInterface
         bool enableDesktopSource = true,
         bool enableRegistrySource = true,
         bool enablePathEnvironmentVariableSource = true,
+        bool includeNonAppsOnDesktop = false,
+        bool includeNonAppsInStartMenu = true,
         List<string> programSuffixes = null,
         List<string> runCommandSuffixes = null)
     {
@@ -28,6 +32,8 @@ public class Settings : ISettingsInterface
         this.enableDesktopSource = enableDesktopSource;
         this.enableRegistrySource = enableRegistrySource;
         this.enablePathEnvironmentVariableSource = enablePathEnvironmentVariableSource;
+        this.includeNonAppsOnDesktop = includeNonAppsOnDesktop;
+        this.includeNonAppsInStartMenu = includeNonAppsInStartMenu;
         this.programSuffixes = programSuffixes ?? new List<string> { "bat", "appref-ms", "exe", "lnk", "url" };
         this.runCommandSuffixes = runCommandSuffixes ?? new List<string> { "bat", "appref-ms", "exe", "lnk", "url", "cpl", "msc" };
     }
@@ -39,6 +45,10 @@ public class Settings : ISettingsInterface
     public bool EnableRegistrySource => enableRegistrySource;
 
     public bool EnablePathEnvironmentVariableSource => enablePathEnvironmentVariableSource;
+
+    public bool IncludeNonAppsOnDesktop => includeNonAppsOnDesktop;
+
+    public bool IncludeNonAppsInStartMenu => includeNonAppsInStartMenu;
 
     public List<string> ProgramSuffixes => programSuffixes;
 
