@@ -120,6 +120,7 @@
 
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="CheckGPO" After="InstallInitialize" Condition="NOT Installed" />
+      <Custom Action="CheckInstallGuards" After="CheckGPO" Condition="NOT Installed" />
       <Custom Action="SetBundleInstallLocationData" Before="SetBundleInstallLocation" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
       <Custom Action="SetBundleInstallLocation" After="InstallFiles" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
@@ -257,6 +258,7 @@
     <CustomAction Id="UnRegisterCmdPalPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnRegisterCmdPalPackageCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="CheckGPO" Return="check" Impersonate="yes" DllEntry="CheckGPOCA" BinaryRef="PTCustomActions" />
+    <CustomAction Id="CheckInstallGuards" Return="check" Impersonate="yes" DllEntry="CheckInstallGuardsCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="InstallCmdPalPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallCmdPalPackageCA" BinaryRef="PTCustomActions" />
 
