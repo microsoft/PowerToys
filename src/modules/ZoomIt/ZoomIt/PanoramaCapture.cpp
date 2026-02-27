@@ -2672,7 +2672,8 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                     // candidate before it sees enough content to produce a fair
                     // average.
                     const unsigned __int64 earlyMinSamples = useFineMask ? 50 : ( useRgbFineSearch ? 800 : 200 );
-                    const bool isExpectedStepDy = highConstantFractionPair && expectedAbsStep > 0 &&
+                    const bool isExpectedStepDy = ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
+                        expectedAbsStep > 0 &&
                         abs( abs( dy ) - expectedAbsStep ) <= refineRadiusDy + 4;
                     if( !isExpectedStepDy &&
                         bestFineScore != ( std::numeric_limits<unsigned __int64>::max )() &&
@@ -2713,6 +2714,16 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                     continue;
 
                 unsigned __int64 rankScore = score;
+                if( expectedAbsStep > 0 && expectedAbsStep >= frameHeight / 4 &&
+                    absStep > 4 && absStep < expectedAbsStep * 2 / 3 )
+                {
+                    const int ratio = ( expectedAbsStep + absStep / 2 ) / absStep;
+                    const int residual = abs( expectedAbsStep - ratio * absStep );
+                    if( ratio >= 2 && residual < max( 5, absStep / 3 ) )
+                    {
+                        rankScore += static_cast<unsigned __int64>( min( ratio, 6 ) * 2 );
+                    }
+                }
                 if( expectedAbsStep > 0 && highConstantFractionPair )
                 {
                     // Ranking-only overlap penalty for periodic content.
@@ -2720,8 +2731,12 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                     // regions that happen to have lower average SAD.
                     // Keep the raw score for acceptance thresholds; use the
                     // penalty only for candidate ordering.
+                    // Exempt candidates near the expected step — the overlap
+                    // penalty is designed to catch unexpected large steps, not
+                    // penalize legitimately large expected motion.
+                    const bool nearExpectedStep = abs( absStep - expectedAbsStep ) <= refineRadiusDy + 4;
                     const int overlapPct = ( overlap * 100 ) / max( 1, frameHeight );
-                    if( overlapPct < 72 )
+                    if( !nearExpectedStep && overlapPct < 72 )
                     {
                         const unsigned __int64 overlapPenalty =
                             static_cast<unsigned __int64>( ( 72 - overlapPct ) * 6 );
@@ -2784,19 +2799,23 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                     const int absStep = abs( dy );
                     const int absDx = abs( dx );
                     const int expectedDelta = abs( absStep - expectedAbsStep );
-                    const bool preferExpectedStep = highConstantFractionPair && expectedAbsStep >= 8;
+                    const bool preferExpectedStep = ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
+                        expectedAbsStep >= 8;
 
                     // Sparse high-constant frames frequently produce shallow
                     // harmonic minima. Allow a wider near-tie band so a
                     // candidate materially closer to expected motion can win.
+                    // Use tiered slack: wider for HCF, moderate for non-HCF.
                     if( preferExpectedStep )
                     {
-                        scoreSlack = (std::max)( scoreSlack, bestFineRankScore / 12 );
+                        scoreSlack = (std::max)( scoreSlack, highConstantFractionPair
+                            ? bestFineRankScore / 12    // 8.3% for HCF
+                            : bestFineRankScore / 30 ); // 3.3% for non-HCF
                     }
 
                     // If score is nearly identical, prefer a materially more
                     // plausible step near expected motion.
-                    const int requiredExpectedGain = preferExpectedStep ? 0 : 2;
+                    const int requiredExpectedGain = highConstantFractionPair ? 0 : 1;
                     if( rankScore <= bestFineRankScore + scoreSlack && expectedDelta + requiredExpectedGain < bestExpectedDelta )
                     {
                         secondBestFineScore = min( secondBestFineScore, bestFineScore );
@@ -2824,7 +2843,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
     }
 
-    if( highConstantFractionPair &&
+    if( ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
         bestFineRankScore != ( std::numeric_limits<unsigned __int64>::max )() &&
         secondBestFineRankScore != ( std::numeric_limits<unsigned __int64>::max )() )
     {
@@ -5294,6 +5313,7 @@ bool RunPanoramaStitchSelfTest()
             const int expectedH = origins.back() + winH;
             const bool isStressScenario = wcsncmp( scenario, L"stress-", 7 ) == 0;
             const bool isStrictRangeScenario = wcsstr( scenario, L"legitjumps" ) != nullptr;
+            const bool isFastScrollScenario = wcsstr( scenario, L"fastscroll" ) != nullptr;
 
             std::vector<HBITMAP> frames;
             frames.reserve( origins.size() );
@@ -5312,6 +5332,23 @@ bool RunPanoramaStitchSelfTest()
                     const size_t srcOff = ( static_cast<size_t>( originY + row ) * imgW ) * 4;
                     const size_t dstOff = ( static_cast<size_t>( row ) * imgW ) * 4;
                     memcpy( fp.data() + dstOff, imgPx.data() + srcOff, static_cast<size_t>( imgW ) * 4 );
+                }
+
+                // Add small deterministic noise for fast-scroll scenarios to
+                // simulate real capture conditions (ClearType rendering, timing
+                // differences) that prevent exact pixel matches.
+                if( isFastScrollScenario )
+                {
+                    unsigned int noiseSeed = static_cast<unsigned int>( fi * 7919 + 12347 );
+                    const size_t totalBytes = static_cast<size_t>( imgW ) * static_cast<size_t>( winH ) * 4;
+                    for( size_t bi = 0; bi < totalBytes; ++bi )
+                    {
+                        if( ( bi & 3 ) == 3 ) continue; // skip alpha channel
+                        noiseSeed = noiseSeed * 1103515245u + 12345u;
+                        const int noise = static_cast<int>( ( noiseSeed >> 16 ) % 5 ) - 2; // -2..+2
+                        const int val = static_cast<int>( fp[bi] ) + noise;
+                        fp[bi] = static_cast<BYTE>( max( 0, min( 255, val ) ) );
+                    }
                 }
 
                 HBITMAP bmp = createBitmapFromPixels( fp, imgW, winH );
@@ -6318,7 +6355,7 @@ bool RunPanoramaStitchSelfTest()
                                     step = 0;
                                 }
                             }
-                            else
+                            else if( profile == 3 )
                             {
                                 // Legit-jump cadence: mostly moderate steps with
                                 // periodic larger (30-40% portal) jumps that are
@@ -6343,6 +6380,19 @@ bool RunPanoramaStitchSelfTest()
                                 {
                                     step = max( 1, min( maxStep, ( winH * 7 ) / 20 ) );
                                 }
+                            }
+                            else
+                            {
+                                // Fast-scroll cadence: large steps (40-60% of frame
+                                // height) simulating real fast-scroll captures of
+                                // text-heavy dark-themed pages. This creates harmonic
+                                // vulnerability: many sub-multiples of the true step
+                                // exist within the search range.
+                                const int minBigStep = max( 1, ( winH * 2 ) / 5 );
+                                const int bigStepRange = max( 1, ( winH * 3 ) / 5 - minBigStep );
+
+                                // Consistent large step with minor variation.
+                                step = min( maxStep, minBigStep + rand() % max( 1, bigStepRange ) );
                             }
 
                             const int nextY = y + step;
@@ -6413,6 +6463,17 @@ bool RunPanoramaStitchSelfTest()
                             swprintf_s( legitJumpName, L"stress-vertical-legitjumps-trial%d-w%d-n%zu-maxstep%d",
                                         trial, winH, legitJumpOrigins.size(), jumpyMaxStep );
                             if( !runVerticalScenario( legitJumpName, legitJumpOrigins, winH, jumpyMaxStep ) )
+                                break;
+                        }
+                        if( stressEarlyExit )
+                            break;
+                        {
+                            const int fastMaxStep = max( maxStep, winH * 3 / 5 );
+                            std::vector<int> fastOrigins = buildCadenceStressOrigins( winH, fastMaxStep, static_cast<unsigned>( 75000 + trial * 37 ), 4 );
+                            wchar_t fastName[256];
+                            swprintf_s( fastName, L"stress-vertical-fastscroll-trial%d-w%d-n%zu-maxstep%d",
+                                        trial, winH, fastOrigins.size(), fastMaxStep );
+                            if( !runVerticalScenario( fastName, fastOrigins, winH, fastMaxStep ) )
                                 break;
                         }
                     }
