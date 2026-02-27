@@ -22,20 +22,9 @@
                 Default="{StaticResource FilterItemViewModelTemplate}"
                 Separator="{StaticResource SeparatorViewModelTemplate}" />
 
-            <Style
-                x:Name="ComboBoxStyle"
-                BasedOn="{StaticResource DefaultComboBoxStyle}"
-                TargetType="ComboBox">
-                <Style.Setters>
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    <Setter Property="Margin" Value="0,0,12,0" />
-                    <Setter Property="Padding" Value="16,4" />
-                </Style.Setters>
-            </Style>
-
             <!--  Template for the filter items  -->
             <DataTemplate x:Key="FilterItemViewModelTemplate" x:DataType="viewModels:FilterItemViewModel">
-                <Grid AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
+                <Grid Padding="12,8,12,8" AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
                         <ColumnDefinition Width="*" />
@@ -58,34 +47,100 @@
             <DataTemplate x:Key="SeparatorViewModelTemplate" x:DataType="viewModels:SeparatorViewModel">
                 <Rectangle
                     Height="1"
-                    Margin="-16,-12,-12,-12"
+                    Margin="0,2,0,2"
                     Fill="{ThemeResource MenuFlyoutSeparatorBackground}" />
             </DataTemplate>
 
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <ComboBox
-        Name="FiltersComboBox"
-        x:Uid="FiltersComboBox"
+    <DropDownButton
+        x:Name="FilterDropDownButton"
+        x:Uid="FiltersDropDown"
         MinWidth="200"
+        Margin="0,0,12,0"
+        Padding="16,5,8,5"
         VerticalAlignment="Center"
-        ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
-        ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
-        PlaceholderText="Filters"
-        PreviewKeyDown="FiltersComboBox_PreviewKeyDown"
-        SelectedValue="{x:Bind ViewModel.CurrentFilter, Mode=OneWay}"
-        SelectionChanged="FiltersComboBox_SelectionChanged"
-        Style="{StaticResource ComboBoxStyle}"
+        HorizontalContentAlignment="Left"
+        PreviewKeyDown="FilterDropDownButton_PreviewKeyDown"
         Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
-        <ComboBox.ItemContainerStyle>
-            <Style BasedOn="{StaticResource DefaultComboBoxItemStyle}" TargetType="ComboBoxItem">
-                <Setter Property="MinHeight" Value="0" />
-                <Setter Property="Padding" Value="12,8" />
-            </Style>
-        </ComboBox.ItemContainerStyle>
-        <ComboBox.ItemContainerTransitions>
-            <TransitionCollection />
-        </ComboBox.ItemContainerTransitions>
-    </ComboBox>
+        <DropDownButton.Content>
+            <StackPanel Orientation="Horizontal">
+                <cpcontrols:IconBox
+                    x:Name="SelectedFilterIcon"
+                    Width="16"
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}"
+                    Visibility="Collapsed" />
+                <TextBlock x:Name="SelectedFilterText" VerticalAlignment="Center" />
+            </StackPanel>
+        </DropDownButton.Content>
+        <DropDownButton.Flyout>
+            <Flyout
+                x:Name="FilterFlyout"
+                Closed="FilterFlyout_Closed"
+                Opened="FilterFlyout_Opened"
+                Placement="BottomEdgeAlignedRight">
+                <Flyout.FlyoutPresenterStyle>
+                    <Style BasedOn="{StaticResource DefaultFlyoutPresenterStyle}" TargetType="FlyoutPresenter">
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                    </Style>
+                </Flyout.FlyoutPresenterStyle>
+                <Grid MinWidth="200">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBox
+                        x:Name="FilterSearchBox"
+                        x:Uid="FilterSearchBox"
+                        Margin="0"
+                        Padding="10,7,6,8"
+                        Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
+                        BorderThickness="0,0,0,2"
+                        CornerRadius="8,8,0,0"
+                        PreviewKeyDown="FilterSearchBox_PreviewKeyDown"
+                        Style="{StaticResource SearchTextBoxStyle}"
+                        TextChanged="FilterSearchBox_TextChanged" />
+                    <Border
+                        Grid.Row="1"
+                        BorderBrush="{ThemeResource MenuFlyoutSeparatorBackground}"
+                        BorderThickness="0,0,0,1" />
+                    <ListView
+                        x:Name="FilterListView"
+                        x:Uid="FilterListView"
+                        Grid.Row="2"
+                        MaxHeight="300"
+                        Margin="0,4,0,4"
+                        IsItemClickEnabled="True"
+                        ItemClick="FilterListView_ItemClick"
+                        ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
+                        SelectionMode="Single">
+                        <ListView.ItemContainerStyle>
+                            <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                <Setter Property="MinHeight" Value="0" />
+                                <Setter Property="Padding" Value="0" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemContainerTransitions>
+                            <TransitionCollection />
+                        </ListView.ItemContainerTransitions>
+                    </ListView>
+                    <TextBlock
+                        x:Name="NoResultsText"
+                        x:Uid="FiltersDropDown_NoResults"
+                        Grid.Row="2"
+                        Margin="0,16"
+                        HorizontalAlignment="Center"
+                        AutomationProperties.LiveSetting="Polite"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Visibility="Collapsed" />
+                </Grid>
+            </Flyout>
+        </DropDownButton.Flyout>
+    </DropDownButton>
 </UserControl>

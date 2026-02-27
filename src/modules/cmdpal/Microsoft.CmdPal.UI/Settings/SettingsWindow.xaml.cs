@@ -16,7 +16,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
-using Windows.UI.Core;
 using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 using TitleBar = Microsoft.UI.Xaml.Controls.TitleBar;
@@ -251,8 +250,7 @@ public sealed partial class SettingsWindow : WindowEx,
                 break;
 
             case VirtualKey.Left:
-                var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-                if (altPressed)
+                if (KeyModifiers.GetCurrent().Alt)
                 {
                     TryGoBack();
                 }
