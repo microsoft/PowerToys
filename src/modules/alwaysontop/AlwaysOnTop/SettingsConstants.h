@@ -4,6 +4,7 @@ enum class SettingId
 {
     Hotkey = 0,
     SoundEnabled,
+    ShowInSystemMenu,
     FrameEnabled,
     FrameThickness,
     FrameColor,
