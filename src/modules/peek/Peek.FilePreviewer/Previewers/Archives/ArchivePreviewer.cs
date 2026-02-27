@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,6 +24,7 @@ using Peek.FilePreviewer.Previewers.Interfaces;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using SharpCompress.Readers;
+using UtfUnknown;
 
 namespace Peek.FilePreviewer.Previewers.Archives
 {
@@ -93,6 +95,79 @@ namespace Peek.FilePreviewer.Previewers.Archives
                     await AddEntryAsync(reader.Entry, cancellationToken);
                 }
             }
+            else if (Item.Path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            {
+                // We use CP437 as a "probe" encoding to store the bytes of the entry name temporarily
+                // and detect their encoding later.
+                // In Zip files, if no explicit encoding is specified, it uses the native encoding
+                // of the creator's OS, which is unknown
+                // If SharpCompress detects a specific encoding (like UTF-8 via Bit 11), it will
+                // override this setting. Otherwise, it will fall back to our provided CP437.
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+                // Create a strict version of CP437 that throws exceptions on invalid characters.
+                // This allows us to detect if SharpCompress used our 'forced' CP437 or
+                // if it successfully identified a different encoding (e.g., UTF-8)
+                // that contains characters not present in the CP437 code page.
+                var cp437 = Encoding.GetEncoding(437);
+                var strictCp437 = Encoding.GetEncoding(
+                    437,
+                    new EncoderExceptionFallback(),
+                    new DecoderExceptionFallback());
+                var readerOptions = new ReaderOptions
+                {
+                    ArchiveEncoding = new ArchiveEncoding { Forced = cp437 },
+                };
+                using var archive = ArchiveFactory.Open(stream, readerOptions);
+                _extractedSize = (ulong)archive.TotalUncompressSize;
+                var encoding = Encoding.UTF8;
+                var encodingDetermined = false;
+                try
+                {
+                    // Attempt to 'round-trip' the entry keys through the strict CP437.
+                    // If this succeeds, it implies SharpCompress used CP437 (encoding unknown),
+                    // so we proceed to detect the real encoding using Utf.Unknown.
+                    var fileNameBytes = strictCp437.GetBytes(
+                        string.Join(
+                            "\n",
+                            archive.Entries
+                                .Select(e => e.Key)));
+                    var detectionResult = CharsetDetector.DetectFromBytes(fileNameBytes);
+                    if (detectionResult.Detected != null && detectionResult.Detected.Confidence > 0.5)
+                    {
+                        encoding = detectionResult.Detected.Encoding;
+                    }
+                }
+                catch (EncoderFallbackException)
+                {
+                    // If an exception occurs, it means the entry keys contain characters
+                    // invalid in CP437. This indicates SharpCompress has already correctly
+                    // identified the internal encoding (likely UTF-8), so we shouldn't
+                    // attempt manual re-decoding.
+                    encodingDetermined = true;
+                }
+
+                foreach (var entry in archive.Entries)
+                {
+                    if (entry.Key is null)
+                    {
+                        continue;
+                    }
+
+                    if (encodingDetermined)
+                    {
+                        // Use the key provided by SharpCompress directly.
+                        await AddEntryAsync(entry, cancellationToken);
+                    }
+                    else
+                    {
+                        // Re-decode the key from the raw CP437 bytes using the detected encoding.
+                        string decodedKey = encoding.GetString(cp437.GetBytes(entry.Key));
+                        cancellationToken.ThrowIfCancellationRequested();
+                        await AddEntryAsync(entry, cancellationToken, decodedKey);
+                    }
+                }
+            }
             else
             {
                 using var archive = ArchiveFactory.Open(stream);
@@ -123,16 +198,18 @@ namespace Peek.FilePreviewer.Previewers.Archives
             GC.SuppressFinalize(this);
         }
 
-        private async Task AddEntryAsync(IEntry entry, CancellationToken cancellationToken)
+        private async Task AddEntryAsync(IEntry entry, CancellationToken cancellationToken, string? decodedKey = null)
         {
             ArgumentNullException.ThrowIfNull(entry, nameof(entry));
 
-            if (entry.Key == null)
+            string? key = decodedKey ?? entry.Key;
+
+            if (key == null)
             {
                 return;
             }
 
-            var levels = entry.Key.Split(_keySeparators, StringSplitOptions.RemoveEmptyEntries);
+            var levels = key.Split(_keySeparators, StringSplitOptions.RemoveEmptyEntries);
 
             ArchiveItem? parent = null;
             for (var i = 0; i < levels.Length; i++)
@@ -141,7 +218,7 @@ namespace Peek.FilePreviewer.Previewers.Archives
 
                 var icon = type == ArchiveItemType.Directory
                     ? await _iconCache.GetDirectoryIconAsync(cancellationToken)
-                    : await _iconCache.GetFileExtIconAsync(entry.Key, cancellationToken);
+                    : await _iconCache.GetFileExtIconAsync(key, cancellationToken);
 
                 var item = new ArchiveItem(levels[i], type, icon);
 
