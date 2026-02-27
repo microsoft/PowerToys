@@ -58,19 +58,23 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="local:DockItemControl">
                         <Grid
-                            x:Name="PART_RootGrid"
-                            Padding="{TemplateBinding Padding}"
-                            VerticalAlignment="Stretch"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
+                            x:Name="PART_HitTestGrid"
+                            Background="Transparent"
                             ToolTipService.ToolTip="{TemplateBinding ToolTip}">
                             <Grid
-                                x:Name="ContentGrid"
-                                AutomationProperties.Name="{TemplateBinding Title}"
-                                Background="Transparent"
-                                ColumnSpacing="8">
+                                x:Name="PART_RootGrid"
+                                Margin="{TemplateBinding InnerMargin}"
+                                Padding="{TemplateBinding Padding}"
+                                VerticalAlignment="Stretch"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                                <Grid
+                                    x:Name="ContentGrid"
+                                    AutomationProperties.Name="{TemplateBinding Title}"
+                                    Background="Transparent"
+                                    ColumnSpacing="8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
@@ -113,7 +117,8 @@
                                         TextAlignment="Center"
                                         TextTrimming="CharacterEllipsis"
                                         TextWrapping="NoWrap" />
-                                </StackPanel>
+                                    </StackPanel>
+                                </Grid>
                             </Grid>
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
