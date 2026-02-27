@@ -227,32 +227,44 @@ public partial class ListViewModel : PageViewModel, IDisposable
             var reused = 0;
             foreach (var item in newItems)
             {
-                // Check for cancellation during item processing
-                if (cancellationToken.IsCancellationRequested)
+                try
                 {
-                    return;
+                    if (item is null)
+                    {
+                        continue;
+                    }
+
+                    // Check for cancellation during item processing
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    if (_vmCache.TryGetValue(item, out var existing))
+                    {
+                        existing.LayoutShowsTitle = showsTitle;
+                        existing.LayoutShowsSubtitle = showsSubtitle;
+                        newViewModels.Add(existing);
+                        reused++;
+                        continue;
+                    }
+
+                    var viewModel = new ListItemViewModel(item, new(this), _contextMenuFactory);
+
+                    // If an item fails to load, silently ignore it.
+                    if (viewModel.SafeFastInit())
+                    {
+                        viewModel.LayoutShowsTitle = showsTitle;
+                        viewModel.LayoutShowsSubtitle = showsSubtitle;
+
+                        _vmCache[item] = viewModel;
+                        newViewModels.Add(viewModel);
+                        created++;
+                    }
                 }
-
-                if (_vmCache.TryGetValue(item, out var existing))
+                catch (Exception ex)
                 {
-                    existing.LayoutShowsTitle = showsTitle;
-                    existing.LayoutShowsSubtitle = showsSubtitle;
-                    newViewModels.Add(existing);
-                    reused++;
-                    continue;
-                }
-
-                var viewModel = new ListItemViewModel(item, new(this), _contextMenuFactory);
-
-                // If an item fails to load, silently ignore it.
-                if (viewModel.SafeFastInit())
-                {
-                    viewModel.LayoutShowsTitle = showsTitle;
-                    viewModel.LayoutShowsSubtitle = showsSubtitle;
-
-                    _vmCache[item] = viewModel;
-                    newViewModels.Add(viewModel);
-                    created++;
+                    CoreLogger.LogError("Failed to load item:\n", ex + ToString());
                 }
             }
 

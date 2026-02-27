@@ -288,10 +288,34 @@ public sealed partial class DockWindow : WindowEx,
         var edgeWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXEDGE);
         var frameWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXFRAME);
 
-        UpdateAppBarDataForEdge(_settings.Side, _settings.DockSize, dpi / 96.0);
+        var scaleFactor = dpi / 96.0;
+        UpdateAppBarDataForEdge(_settings.Side, _settings.DockSize, scaleFactor);
 
         // Query and set position
         PInvoke.SHAppBarMessage(PInvoke.ABM_QUERYPOS, ref _appBarData);
+
+        // ABM_QUERYPOS adjusts our rect so we don't overlap other app bars,
+        // but it may have shifted our anchored edge without updating the
+        // opposite edge. We need to re-apply our desired thickness so the
+        // bar keeps its correct size. Without this, a second bar docked to
+        // the same side would get a zero-height/width rect and fail to
+        // reserve work-area space.
+        switch (_settings.Side)
+        {
+            case DockSide.Top:
+                _appBarData.rc.bottom = _appBarData.rc.top + (int)(DockSettingsToViews.HeightForSize(_settings.DockSize) * scaleFactor);
+                break;
+            case DockSide.Bottom:
+                _appBarData.rc.top = _appBarData.rc.bottom - (int)(DockSettingsToViews.HeightForSize(_settings.DockSize) * scaleFactor);
+                break;
+            case DockSide.Left:
+                _appBarData.rc.right = _appBarData.rc.left + (int)(DockSettingsToViews.WidthForSize(_settings.DockSize) * scaleFactor);
+                break;
+            case DockSide.Right:
+                _appBarData.rc.left = _appBarData.rc.right - (int)(DockSettingsToViews.WidthForSize(_settings.DockSize) * scaleFactor);
+                break;
+        }
+
         PInvoke.SHAppBarMessage(PInvoke.ABM_SETPOS, ref _appBarData);
 
         // TODO: investigate ABS_AUTOHIDE and auto hide bars.
