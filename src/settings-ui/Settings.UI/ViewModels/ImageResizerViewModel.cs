@@ -94,6 +94,7 @@ public partial class ImageResizerViewModel : Observable
         FileName = Settings.Properties.ImageresizerFileName.Value;
         KeepDateModified = Settings.Properties.ImageresizerKeepDateModified.Value;
         Encoder = GetEncoderIndex(Settings.Properties.ImageresizerFallbackEncoder.Value);
+        ExtendedContextMenuOnly = Settings.Properties.ExtendedContextMenuOnly.Value;
 
         _customSize = Settings.Properties.ImageresizerCustomSize.Value;
 
@@ -125,6 +126,7 @@ public partial class ImageResizerViewModel : Observable
     private string _fileName;
     private bool _keepDateModified;
     private int _encoderGuidId;
+    private bool _extendedContextMenuOnly;
 
     public bool IsListViewFocusRequested { get; set; }
 
@@ -292,6 +294,16 @@ public partial class ImageResizerViewModel : Observable
         set
         {
             SetProperty(ref _encoderGuidId, value, v => Settings.Properties.ImageresizerFallbackEncoder.Value = GetEncoderGuid(v));
+        }
+    }
+
+    public bool ExtendedContextMenuOnly
+    {
+        get => _extendedContextMenuOnly;
+
+        set
+        {
+            SetProperty(ref _extendedContextMenuOnly, value, v => Settings.Properties.ExtendedContextMenuOnly.Value = v);
         }
     }
 
