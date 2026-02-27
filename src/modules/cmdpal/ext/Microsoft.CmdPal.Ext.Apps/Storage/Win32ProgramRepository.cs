@@ -8,27 +8,38 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Win32Program = Microsoft.CmdPal.Ext.Apps.Programs.Win32Program;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
 
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-internal sealed partial class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository
+internal sealed partial class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository, IDisposable
 {
     private const string LnkExtension = ".lnk";
     private const string UrlExtension = ".url";
+    private static readonly Collection<string> ExtensionsToWatch = ["*.exe", $"*{LnkExtension}", "*.appref-ms", $"*{UrlExtension}"];
 
     private AllAppsSettings _settings;
     private IList<IFileSystemWatcherWrapper> _fileSystemWatcherHelpers;
     private string[] _pathsToWatch;
     private int _numberOfPathsToWatch;
-    private Collection<string> extensionsToWatch = new Collection<string> { "*.exe", $"*{LnkExtension}", "*.appref-ms", $"*{UrlExtension}" };
+
+    // Snapshot of source-toggle values so we can detect when a re-index is needed.
+    private bool _lastEnableStartMenu;
+    private bool _lastEnableDesktop;
+    private bool _lastEnableRegistry;
+    private bool _lastEnablePath;
 
     private bool _isDirty;
+    private volatile bool _isIndexing;
+    private CancellationTokenSource? _indexCts;
 
-    private static ConcurrentQueue<string> commonEventHandlingQueue = new ConcurrentQueue<string>();
+    public bool IsIndexing => _isIndexing;
+
+    private static ConcurrentQueue<string> commonEventHandlingQueue = [];
 
     public Win32ProgramRepository(IList<IFileSystemWatcherWrapper> fileSystemWatcherHelpers, AllAppsSettings settings, string[] pathsToWatch)
     {
@@ -36,7 +47,40 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
         _settings = settings ?? throw new ArgumentNullException(nameof(settings), "Win32ProgramRepository requires an initialized settings object");
         _pathsToWatch = pathsToWatch;
         _numberOfPathsToWatch = pathsToWatch.Length;
+        SnapshotSourceSettings();
         InitializeFileSystemWatchers();
+
+        _settings.Settings.SettingsChanged += (s, a) =>
+        {
+            if (HaveSourceSettingsChanged())
+            {
+                SnapshotSourceSettings();
+                _indexCts?.Cancel();
+                _indexCts?.Dispose();
+                _indexCts = new CancellationTokenSource();
+                var token = _indexCts.Token;
+                _isIndexing = true;
+                _isDirty = true;
+                _ = Task.Run(() =>
+                {
+                    try
+                    {
+                        IndexPrograms(token);
+                        _isIndexing = false;
+                        _isDirty = true;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Superseded by a newer indexing request.
+                    }
+                });
+            }
+            else
+            {
+                ApplyNonAppFilter();
+                _isDirty = true;
+            }
+        };
 
         // This task would always run in the background trying to dequeue file paths from the queue at regular intervals.
         _ = Task.Run(async () =>
@@ -83,7 +127,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
             _fileSystemWatcherHelpers[index].NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
 
             // filtering the app types that we want to monitor
-            _fileSystemWatcherHelpers[index].Filters = extensionsToWatch;
+            _fileSystemWatcherHelpers[index].Filters = ExtensionsToWatch;
 
             // Registering the event handlers
             _fileSystemWatcherHelpers[index].Created += OnAppCreated;
@@ -264,9 +308,50 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
         }
     }
 
-    public void IndexPrograms()
+    public void IndexPrograms() => IndexPrograms(CancellationToken.None);
+
+    public void IndexPrograms(CancellationToken cancellationToken)
     {
         var applications = Win32Program.All(_settings);
+        cancellationToken.ThrowIfCancellationRequested();
         SetList(applications);
+        ApplyNonAppFilter();
+    }
+
+    private void ApplyNonAppFilter()
+    {
+        var includeNonAppsOnDesktop = _settings.IncludeNonAppsOnDesktop;
+        var includeNonAppsInStartMenu = _settings.IncludeNonAppsInStartMenu;
+
+        foreach (var app in this)
+        {
+            if (app.AppType is Win32Program.ApplicationType.GenericFile or Win32Program.ApplicationType.Folder
+                && !string.IsNullOrEmpty(app.LnkFilePath))
+            {
+                app.Enabled = (includeNonAppsOnDesktop || !app.IsInDesktop)
+                           && (includeNonAppsInStartMenu || !app.IsInStartMenu);
+            }
+        }
+    }
+
+    private void SnapshotSourceSettings()
+    {
+        _lastEnableStartMenu = _settings.EnableStartMenuSource;
+        _lastEnableDesktop = _settings.EnableDesktopSource;
+        _lastEnableRegistry = _settings.EnableRegistrySource;
+        _lastEnablePath = _settings.EnablePathEnvironmentVariableSource;
+    }
+
+    private bool HaveSourceSettingsChanged()
+    {
+        return _settings.EnableStartMenuSource != _lastEnableStartMenu
+            || _settings.EnableDesktopSource != _lastEnableDesktop
+            || _settings.EnableRegistrySource != _lastEnableRegistry
+            || _settings.EnablePathEnvironmentVariableSource != _lastEnablePath;
+    }
+
+    public void Dispose()
+    {
+        _indexCts?.Dispose();
     }
 }

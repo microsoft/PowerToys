@@ -30,6 +30,11 @@ public class MockAppCache : IAppCache
     public IList<IUWPApplication> UWPs => _uwps.AsReadOnly();
 
     /// <summary>
+    /// Gets a value indicating whether a background re-index is in progress.
+    /// </summary>
+    public bool IsIndexing => false;
+
+    /// <summary>
     /// Determines whether the cache should be reloaded.
     /// </summary>
     /// <returns>True if cache should be reloaded, false otherwise.</returns>

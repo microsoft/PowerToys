@@ -21,13 +21,19 @@ public sealed partial class AllAppsPage : ListPage
     private readonly IAppCache _appCache;
 
     private AppListItem[] allAppListItems = [];
+    private volatile bool _isRebuilding;
 
     public AllAppsPage()
-        : this(AppCache.Instance.Value)
+        : this(AppCache.Instance.Value, AllAppsSettings.Instance.Settings)
     {
     }
 
     public AllAppsPage(IAppCache appCache)
+        : this(appCache, new Settings())
+    {
+    }
+
+    public AllAppsPage(IAppCache appCache, Settings settings)
     {
         _appCache = appCache ?? throw new ArgumentNullException(nameof(appCache));
         this.Name = Resources.all_apps;
@@ -43,12 +49,65 @@ public sealed partial class AllAppsPage : ListPage
                 BuildListItems();
             }
         });
+
+        settings.SettingsChanged += (s, a) =>
+        {
+            if (_appCache.IsIndexing && !_isRebuilding)
+            {
+                // A background re-index is in progress. Show a loading
+                // indicator and banner, then wait for it to finish.
+                _isRebuilding = true;
+                this.IsLoading = true;
+                RaiseItemsChanged();
+
+                _ = Task.Run(async () =>
+                {
+                    while (_appCache.IsIndexing)
+                    {
+                        await Task.Delay(200).ConfigureAwait(false);
+                    }
+
+                    lock (_listLock)
+                    {
+                        allAppListItems = GetPrograms();
+                        _appCache.ResetReloadFlag();
+                    }
+
+                    _isRebuilding = false;
+                    this.IsLoading = false;
+                    RaiseItemsChanged();
+                });
+            }
+            else
+            {
+                RaiseItemsChanged();
+            }
+        };
     }
 
     public override IListItem[] GetItems()
     {
-        // Build or update the list if needed
-        BuildListItems();
+        if (!_isRebuilding)
+        {
+            // Build or update the list if needed
+            BuildListItems();
+        }
+
+        if (_isRebuilding && allAppListItems.Length > 0)
+        {
+            var banner = new ListItem(new NoOpCommand())
+            {
+                Title = Resources.refreshing_app_list,
+                Icon = Icons.Reloading,
+            };
+
+            var result = new IListItem[allAppListItems.Length + 3];
+            result[0] = new Separator(Resources.section_status);
+            result[1] = banner;
+            result[2] = new Separator(Resources.section_all_apps);
+            allAppListItems.CopyTo(result, 3);
+            return result;
+        }
 
         return allAppListItems;
     }
@@ -84,7 +143,7 @@ public sealed partial class AllAppsPage : ListPage
         {
             if (uwpApp.Enabled)
             {
-                items.Add(new AppListItem(uwpApp.ToAppItem(), true));
+                items.Add(new AppListItem(uwpApp.ToAppItem(), useThumbnails: true));
             }
         }
 
@@ -92,7 +151,7 @@ public sealed partial class AllAppsPage : ListPage
         {
             if (win32App.Enabled && win32App.Valid)
             {
-                items.Add(new AppListItem(win32App.ToAppItem(), true));
+                items.Add(new AppListItem(win32App.ToAppItem(), useThumbnails: true));
             }
         }
 

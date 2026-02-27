@@ -33,4 +33,9 @@ public interface IAppCache : IDisposable
     /// Resets the reload flag.
     /// </summary>
     void ResetReloadFlag();
+
+    /// <summary>
+    /// Gets a value indicating whether a background re-index is in progress.
+    /// </summary>
+    bool IsIndexing { get; }
 }

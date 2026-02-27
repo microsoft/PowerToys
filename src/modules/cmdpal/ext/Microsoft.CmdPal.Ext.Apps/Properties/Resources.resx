@@ -238,6 +238,15 @@
     <value>Default ({0})</value>
     <comment>default option; {0} = number of items</comment>
   </data>
+  <data name="refreshing_app_list" xml:space="preserve">
+    <value>Refreshing app list...</value>
+  </data>
+  <data name="section_status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="section_all_apps" xml:space="preserve">
+    <value>All apps</value>
+  </data>
   <data name="include_non_apps_on_desktop" xml:space="preserve">
     <value>Also include non-app shortcuts from the desktop</value>
   </data>

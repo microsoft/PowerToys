@@ -83,6 +83,8 @@ public sealed partial class AppCache : IAppCache, IDisposable
         }
     }
 
+    public bool IsIndexing => _win32ProgramRepository.IsIndexing;
+
     public bool ShouldReload() => _packageRepository.ShouldReload() || _win32ProgramRepository.ShouldReload();
 
     public void ResetReloadFlag()

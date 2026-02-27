@@ -67,6 +67,10 @@ public class Win32Program : IProgram
 
     public bool Enabled { get; set; }
 
+    public bool IsInDesktop { get; set; }
+
+    public bool IsInStartMenu { get; set; }
+
     public bool HasArguments => !string.IsNullOrEmpty(Arguments);
 
     public string Arguments { get; set; } = string.Empty;
@@ -382,6 +386,8 @@ public class Win32Program : IProgram
                 }
 
                 program.LnkFilePath = program.FullPath;
+                program.IsInDesktop = StartsWithAnyFolder(program.LnkFilePath, Environment.SpecialFolder.Desktop, Environment.SpecialFolder.CommonDesktopDirectory);
+                program.IsInStartMenu = StartsWithAnyFolder(program.LnkFilePath, Environment.SpecialFolder.StartMenu, Environment.SpecialFolder.CommonStartMenu);
                 program.LnkResolvedExecutableName = Path.GetFileName(target);
                 program.LnkResolvedExecutableNameLocalized = Path.GetFileName(ShellLocalization.Instance.GetLocalizedPath(target));
 
@@ -409,37 +415,9 @@ public class Win32Program : IProgram
                         program.Description = info.FileDescription;
                     }
                 }
-
-                if (program.AppType is ApplicationType.GenericFile or ApplicationType.Folder)
-                {
-                    var includeNonAppsOnDesktop = AllAppsSettings.Instance.IncludeNonAppsOnDesktop;
-                    var includeNonAppsInStartMenu = AllAppsSettings.Instance.IncludeNonAppsInStartMenu;
-
-                    var lnk = program.LnkFilePath;
-                    if (!string.IsNullOrEmpty(lnk))
-                    {
-                        var isDesktop = StartsWithFolder(lnk, Environment.SpecialFolder.Desktop) ||
-                                        StartsWithFolder(lnk, Environment.SpecialFolder.CommonDesktopDirectory);
-
-                        var isStartMenu = StartsWithFolder(lnk, Environment.SpecialFolder.StartMenu) ||
-                                          StartsWithFolder(lnk, Environment.SpecialFolder.CommonStartMenu);
-
-                        if ((isDesktop && !includeNonAppsOnDesktop) || (isStartMenu && !includeNonAppsInStartMenu))
-                        {
-                            program.Enabled = false;
-                        }
-                    }
-                }
             }
 
             return program;
-
-            static bool StartsWithFolder(string path, Environment.SpecialFolder folder)
-            {
-                var folderPath = Environment.GetFolderPath(folder, Environment.SpecialFolderOption.DoNotVerify);
-                return !string.IsNullOrEmpty(folderPath)
-                       && path.StartsWith(folderPath, StringComparison.OrdinalIgnoreCase);
-            }
         }
         catch (System.IO.FileLoadException e)
         {
@@ -831,24 +809,6 @@ public class Win32Program : IProgram
     public override bool Equals(object? obj)
         => obj is Win32Program win32Program && Win32ProgramEqualityComparer.Default.Equals(this, win32Program);
 
-    private sealed class Win32ProgramEqualityComparer : IEqualityComparer<Win32Program>
-    {
-        public static readonly Win32ProgramEqualityComparer Default = new();
-
-        public bool Equals(Win32Program? app1, Win32Program? app2)
-        {
-            return app1 is null && app2 is null
-                ? true
-                : app1 is not null
-                    && app2 is not null
-                    && (app1.Name?.ToUpperInvariant(), app1.ExecutableName?.ToUpperInvariant(), app1.FullPath?.ToUpperInvariant())
-                    .Equals((app2.Name?.ToUpperInvariant(), app2.ExecutableName?.ToUpperInvariant(), app2.FullPath?.ToUpperInvariant()));
-        }
-
-        public int GetHashCode(Win32Program obj)
-            => (obj.Name?.ToUpperInvariant(), obj.ExecutableName?.ToUpperInvariant(), obj.FullPath?.ToUpperInvariant()).GetHashCode();
-    }
-
     public static List<Win32Program> DeduplicatePrograms(IEnumerable<Win32Program> programs)
     {
         // Create a HashSet with the custom equality comparer to automatically deduplicate programs
@@ -1092,5 +1052,45 @@ public class Win32Program : IProgram
             AppIdentifier = app.GetAppIdentifier(),
             FullExecutablePath = app.FullPath,
         };
+    }
+
+    private static bool StartsWithAnyFolder(string path, params Environment.SpecialFolder[] folders)
+    {
+        foreach (var folder in folders)
+        {
+            var folderPath = Environment.GetFolderPath(folder, Environment.SpecialFolderOption.DoNotVerify);
+            if (!string.IsNullOrEmpty(folderPath) && path.StartsWith(folderPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private sealed class Win32ProgramEqualityComparer : IEqualityComparer<Win32Program>
+    {
+        public static readonly Win32ProgramEqualityComparer Default = new();
+
+        public bool Equals(Win32Program? app1, Win32Program? app2)
+        {
+            if (app1 is null && app2 is null)
+            {
+                return true;
+            }
+
+            if (app1 is null || app2 is null)
+            {
+                return false;
+            }
+
+            return string.Equals(app1.Name, app2.Name, StringComparison.OrdinalIgnoreCase)
+                   && string.Equals(app1.ExecutableName, app2.ExecutableName, StringComparison.OrdinalIgnoreCase)
+                   && string.Equals(app1.FullPath, app2.FullPath, StringComparison.OrdinalIgnoreCase)
+                   && string.Equals(app1.Arguments, app2.Arguments, StringComparison.Ordinal);
+        }
+
+        public int GetHashCode(Win32Program app)
+            => (app.Name?.ToUpperInvariant(), app.ExecutableName?.ToUpperInvariant(), app.FullPath?.ToUpperInvariant(), app.Arguments).GetHashCode();
     }
 }
