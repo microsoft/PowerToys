@@ -9,6 +9,8 @@
 #include <shellapi.h>
 #include <common/utils/logger_helper.h>
 #include <common/interop/shared_constants.h>
+#include <thread>
+#include <atomic>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
@@ -70,6 +72,10 @@ private:
     HANDLE m_hEditorProcess = nullptr;
 
     HANDLE m_hTerminateEngineEvent = nullptr;
+    HANDLE m_open_new_editor_event_handle{ nullptr };
+    std::thread m_toggle_thread;
+    std::atomic<bool> m_toggle_thread_running{ false };
+
 
     void refresh_process_state()
     {
@@ -266,16 +272,24 @@ public:
             }
         }
 
+        m_open_new_editor_event_handle = CreateDefaultEvent(CommonSharedConstants::OPEN_NEW_KEYBOARD_MANAGER_EVENT);
+
         init_settings();
     };
 
     ~KeyboardManager()
     {
+        StopOpenEditorListener();
         stop_engine();
         if (m_hTerminateEngineEvent)
         {
             CloseHandle(m_hTerminateEngineEvent);
             m_hTerminateEngineEvent = nullptr;
+        }
+        if (m_open_new_editor_event_handle)
+        {
+            CloseHandle(m_open_new_editor_event_handle);
+            m_open_new_editor_event_handle = nullptr;
         }
         if (m_hEditorProcess)
         {
@@ -353,6 +367,7 @@ public:
         // Log telemetry
         Trace::EnableKeyboardManager(true);
         start_engine();
+        StartOpenEditorListener();
     }
 
     // Disable the powertoy
@@ -361,6 +376,7 @@ public:
         m_enabled = false;
         // Log telemetry
         Trace::EnableKeyboardManager(false);
+        StopOpenEditorListener();
         stop_engine();
     }
 
@@ -402,6 +418,50 @@ public:
         }
 
         return count;
+    }
+
+    void StartOpenEditorListener()
+    {
+        if (m_toggle_thread_running || !m_open_new_editor_event_handle)
+        {
+            return;
+        }
+
+        m_toggle_thread_running = true;
+        m_toggle_thread = std::thread([this]() {
+            while (m_toggle_thread_running)
+            {
+                const DWORD wait_result = WaitForSingleObject(m_open_new_editor_event_handle, 500);
+                if (!m_toggle_thread_running)
+                {
+                    break;
+                }
+
+                if (wait_result == WAIT_OBJECT_0)
+                {
+                    launch_editor();
+                    ResetEvent(m_open_new_editor_event_handle);
+                }
+            }
+        });
+    }
+
+    void StopOpenEditorListener()
+    {
+        if (!m_toggle_thread_running)
+        {
+            return;
+        }
+
+        m_toggle_thread_running = false;
+        if (m_open_new_editor_event_handle)
+        {
+            SetEvent(m_open_new_editor_event_handle);
+        }
+        if (m_toggle_thread.joinable())
+        {
+            m_toggle_thread.join();
+        }
     }
 
     bool launch_editor()
