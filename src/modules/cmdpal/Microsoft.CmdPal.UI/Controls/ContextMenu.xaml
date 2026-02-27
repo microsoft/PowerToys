@@ -53,7 +53,15 @@
                         TextTrimming="WordEllipsis"
                         TextWrapping="NoWrap">
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind Title, Mode=OneWay}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <ToolTip x:DataType="TextBlock" Content="{x:Bind Title, Mode=OneWay}">
+                                <ToolTip.Visibility>
+                                    <Binding
+                                        Converter="{StaticResource BoolToVisibilityConverter}"
+                                        ElementName="TitleTextBlock"
+                                        Mode="OneWay"
+                                        Path="IsTextTrimmed" />
+                                </ToolTip.Visibility>
+                            </ToolTip>
                         </ToolTipService.ToolTip>
                     </TextBlock>
                     <TextBlock
@@ -95,7 +103,15 @@
                         TextTrimming="WordEllipsis"
                         TextWrapping="NoWrap">
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind Title, Mode=OneWay}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <ToolTip Content="{x:Bind Title, Mode=OneWay}">
+                                <ToolTip.Visibility>
+                                    <Binding
+                                        Converter="{StaticResource BoolToVisibilityConverter}"
+                                        ElementName="TitleTextBlock"
+                                        Mode="OneWay"
+                                        Path="IsTextTrimmed" />
+                                </ToolTip.Visibility>
+                            </ToolTip>
                         </ToolTipService.ToolTip>
                     </TextBlock>
                     <TextBlock

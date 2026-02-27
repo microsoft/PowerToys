@@ -193,7 +193,11 @@
             SelectionMode="None">
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <controls:UniformGrid ui:FrameworkElementExtensions.AncestorType="local:ColorPalette" Columns="{Binding (ui:FrameworkElementExtensions.Ancestor).CustomPaletteColumnCount, RelativeSource={RelativeSource Self}}" />
+                    <controls:UniformGrid ui:FrameworkElementExtensions.AncestorType="local:ColorPalette">
+                        <controls:UniformGrid.Columns>
+                            <Binding Path="(ui:FrameworkElementExtensions.Ancestor).CustomPaletteColumnCount" RelativeSource="{RelativeSource Self}" />
+                        </controls:UniformGrid.Columns>
+                    </controls:UniformGrid>
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
             <GridView.ItemTemplate>
