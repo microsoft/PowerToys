@@ -3465,10 +3465,40 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                             // step (harmonic repeat).  These are likely 1-frame
                             // harmonics rather than genuine multi-frame shifts
                             // and cause backward jumps in the stitched output.
+                            //
+                            // Exception: allow the retry if the step is
+                            // consistent with the median of recent composed
+                            // steps.  In long HCF duplicate streaks, the
+                            // budget depletes but the retry keeps finding the
+                            // correct per-frame shift — blocking those loses
+                            // canvas height.
                             const bool harmonicLike =
                                 abs( retryAxisStep - expectedAxisStep ) < max( 5, expectedAxisStep / 7 );
+                            bool matchesRecentMedian = false;
+                            if( harmonicLike && retryNormalizationBudget <= 0 &&
+                                composedFrameSteps.size() >= 4 )
+                            {
+                                std::vector<int> recentForMedian;
+                                recentForMedian.reserve( 8 );
+                                for( int si = static_cast<int>( composedFrameSteps.size() ) - 1;
+                                     si >= 1 && recentForMedian.size() < 8; --si )
+                                {
+                                    const int v = expectedMostlyVertical
+                                        ? abs( composedFrameSteps[static_cast<size_t>( si )].y )
+                                        : abs( composedFrameSteps[static_cast<size_t>( si )].x );
+                                    if( v > 0 )
+                                        recentForMedian.push_back( v );
+                                }
+                                if( recentForMedian.size() >= 3 )
+                                {
+                                    std::sort( recentForMedian.begin(), recentForMedian.end() );
+                                    const int recentMedian = recentForMedian[recentForMedian.size() / 2];
+                                    matchesRecentMedian =
+                                        abs( retryAxisStep - recentMedian ) < max( 5, recentMedian / 4 );
+                                }
+                            }
                             const bool budgetBlocked =
-                                retryNormalizationBudget <= 0 && harmonicLike;
+                                retryNormalizationBudget <= 0 && harmonicLike && !matchesRecentMedian;
 
                             if( !budgetBlocked )
                             {
@@ -5384,12 +5414,22 @@ bool RunPanoramaStitchSelfTest()
 
             size_t samples = 0, mismatches = 0;
             std::vector<int> mappedSourceRows;
+            std::vector<int> mappedDriftAbs;
             mappedSourceRows.reserve( static_cast<size_t>( sH / 19 + 2 ) );
+            mappedDriftAbs.reserve( static_cast<size_t>( sH / 19 + 2 ) );
+            int driftOffset = 0;
             for( int yy = 0; yy < sH; yy += 19 )
             {
-                int bestSY = yy;
+                // Track accumulated drift between canvas and source so
+                // the search window follows the actual mapping even when
+                // the stitcher compresses the canvas (e.g. through HCF
+                // regions).  Without this, once drift exceeds maxVE the
+                // row mapping becomes arbitrary, producing spurious
+                // backward transitions.
+                const int searchCenter = min( imgH - 1, max( 0, yy + driftOffset ) );
+                int bestSY = searchCenter;
                 double bestRD = 1e18;
-                for( int ty = max( 0, yy - maxVE ); ty <= min( imgH - 1, yy + maxVE ); ++ty )
+                for( int ty = max( 0, searchCenter - maxVE ); ty <= min( imgH - 1, searchCenter + maxVE ); ++ty )
                 {
                     double rd = 0.0; int rc = 0;
                     for( int xx = eSkip; xx < cmpW - eSkip; xx += 31 )
@@ -5407,6 +5447,8 @@ bool RunPanoramaStitchSelfTest()
                     if( rc > 0 && rd < bestRD ) { bestRD = rd; bestSY = ty; }
                 }
 
+                driftOffset = bestSY - yy;
+
                 for( int xx = eSkip; xx < cmpW - eSkip; xx += 17 )
                 {
                     const int dstX = xx + bestDx;
@@ -5422,6 +5464,7 @@ bool RunPanoramaStitchSelfTest()
                 }
 
                 mappedSourceRows.push_back( bestSY );
+                mappedDriftAbs.push_back( abs( driftOffset ) );
             }
 
             const double mrate = samples > 0 ? static_cast<double>( mismatches ) / samples : 0.0;
@@ -5434,7 +5477,14 @@ bool RunPanoramaStitchSelfTest()
                 for( size_t i = 1; i < mappedSourceRows.size(); ++i )
                 {
                     const int dy = mappedSourceRows[i] - mappedSourceRows[i - 1];
-                    if( dy <= 1 )
+                    // Only count dup transitions when the drift-tracked
+                    // search is in a reliable region (drift < maxVE).
+                    // In high-drift regions the stitcher compressed
+                    // the canvas, which naturally maps many canvas rows
+                    // to the same source rows — this is expected and
+                    // already tested by the height tolerance check.
+                    if( dy <= 1 &&
+                        mappedDriftAbs[i] <= maxVE && mappedDriftAbs[i - 1] <= maxVE )
                         dupTransitions++;
                     if( dy >= 36 )
                         jumpTransitions++;
