@@ -73,8 +73,14 @@
                             </HyperlinkButton>
                         </tkcontrols:SettingsExpander.Description>
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard Name="ToggleShortcut" x:Uid="KeyboardManager_Toggle_Shortcut">
-                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ToggleShortcut, Mode=TwoWay}" />
+                            <tkcontrols:SettingsCard
+                                Name="ToggleShortcut"
+                                x:Uid="KeyboardManager_Toggle_Shortcut"
+                                IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
+                                <controls:ShortcutControl
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AllowDisable="True"
+                                    HotkeySettings="{x:Bind Path=ViewModel.ToggleShortcut, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
