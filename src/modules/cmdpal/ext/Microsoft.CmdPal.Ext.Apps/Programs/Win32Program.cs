@@ -412,8 +412,8 @@ public class Win32Program : IProgram
 
                 if (program.AppType is ApplicationType.GenericFile or ApplicationType.Folder)
                 {
-                    var hideNonAppsOnDesktop = AllAppsSettings.Instance.HideGenericFilesOnDesktop;
-                    var hideNonAppsInStartMenu = AllAppsSettings.Instance.HideGenericFilesInStartMenu;
+                    var includeNonAppsOnDesktop = AllAppsSettings.Instance.IncludeNonAppsOnDesktop;
+                    var includeNonAppsInStartMenu = AllAppsSettings.Instance.IncludeNonAppsInStartMenu;
 
                     var lnk = program.LnkFilePath;
                     if (!string.IsNullOrEmpty(lnk))
@@ -424,7 +424,7 @@ public class Win32Program : IProgram
                         var isStartMenu = StartsWithFolder(lnk, Environment.SpecialFolder.StartMenu) ||
                                           StartsWithFolder(lnk, Environment.SpecialFolder.CommonStartMenu);
 
-                        if ((isDesktop && hideNonAppsOnDesktop) || (isStartMenu && hideNonAppsInStartMenu))
+                        if ((isDesktop && !includeNonAppsOnDesktop) || (isStartMenu && !includeNonAppsInStartMenu))
                         {
                             program.Enabled = false;
                         }
@@ -436,7 +436,7 @@ public class Win32Program : IProgram
 
             static bool StartsWithFolder(string path, Environment.SpecialFolder folder)
             {
-                var folderPath = Environment.GetFolderPath(folder);
+                var folderPath = Environment.GetFolderPath(folder, Environment.SpecialFolderOption.DoNotVerify);
                 return !string.IsNullOrEmpty(folderPath)
                        && path.StartsWith(folderPath, StringComparison.OrdinalIgnoreCase);
             }

@@ -142,20 +142,20 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hide shortcuts to non-executable files in the Start menu.
+        ///   Looks up a localized string similar to Also include non-app shortcuts from the Start menu.
         /// </summary>
-        internal static string hide_generic_files_in_start_menu {
+        internal static string include_non_apps_in_start_menu {
             get {
-                return ResourceManager.GetString("hide_generic_files_in_start_menu", resourceCulture);
+                return ResourceManager.GetString("include_non_apps_in_start_menu", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hide shortcuts to non-executable files on Desktop.
+        ///   Looks up a localized string similar to Also include non-app shortcuts from the desktop.
         /// </summary>
-        internal static string hide_generic_files_on_desktop {
+        internal static string include_non_apps_on_desktop {
             get {
-                return ResourceManager.GetString("hide_generic_files_on_desktop", resourceCulture);
+                return ResourceManager.GetString("include_non_apps_on_desktop", resourceCulture);
             }
         }
         

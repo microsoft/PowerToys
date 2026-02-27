@@ -62,9 +62,9 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 
     public bool EnablePathEnvironmentVariableSource => _enablePathEnvironmentVariableSource.Value;
 
-    public bool HideGenericFilesOnDesktop => _hideGenericFilesOnDesktop.Value;
+    public bool IncludeNonAppsOnDesktop => _includeNonAppsOnDesktop.Value;
 
-    public bool HideGenericFilesInStartMenu => _hideGenericFilesInStartMenu.Value;
+    public bool IncludeNonAppsInStartMenu => _includeNonAppsInStartMenu.Value;
 
     private readonly ChoiceSetSetting _searchResultLimitSource = new(
         Namespaced(nameof(SearchResultLimit)),
@@ -125,17 +125,17 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         string.Empty,
         false); // this one is very VERY noisy
 
-    private readonly ToggleSetting _hideGenericFilesOnDesktop = new(
-        Namespaced(nameof(HideGenericFilesOnDesktop)),
-        "    " + Resources.hide_generic_files_on_desktop,
-        string.Empty,
-        true);
-
-    private readonly ToggleSetting _hideGenericFilesInStartMenu = new(
-        Namespaced(nameof(HideGenericFilesInStartMenu)),
-        "    " + Resources.hide_generic_files_in_start_menu,
+    private readonly ToggleSetting _includeNonAppsOnDesktop = new(
+        Namespaced(nameof(IncludeNonAppsOnDesktop)),
+        Resources.include_non_apps_on_desktop,
         string.Empty,
         false);
+
+    private readonly ToggleSetting _includeNonAppsInStartMenu = new(
+        Namespaced(nameof(IncludeNonAppsInStartMenu)),
+        Resources.include_non_apps_in_start_menu,
+        string.Empty,
+        true);
 
     public double MinScoreThreshold { get; set; } = 0.75;
 
@@ -155,9 +155,9 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         FilePath = SettingsJsonPath();
 
         Settings.Add(_enableStartMenuSource);
-        Settings.Add(_hideGenericFilesInStartMenu);
+        Settings.Add(_includeNonAppsInStartMenu);
         Settings.Add(_enableDesktopSource);
-        Settings.Add(_hideGenericFilesOnDesktop);
+        Settings.Add(_includeNonAppsOnDesktop);
         Settings.Add(_enableRegistrySource);
         Settings.Add(_enablePathEnvironmentVariableSource);
         Settings.Add(_searchResultLimitSource);
