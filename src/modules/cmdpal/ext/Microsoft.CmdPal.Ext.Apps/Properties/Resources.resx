@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -170,13 +170,13 @@
     <value>Run as different user</value>
   </data>
   <data name="enable_start_menu_source" xml:space="preserve">
-    <value>Include apps found in the Start Menu</value>
+    <value>Include apps found in the Start menu</value>
   </data>
   <data name="enable_desktop_source" xml:space="preserve">
     <value>Include apps found on the desktop</value>
   </data>
   <data name="enable_registry_source" xml:space="preserve">
-    <value>Include apps registered in the Registry</value>
+    <value>Include apps registered in the Windows Registry</value>
   </data>
   <data name="enable_path_environment_variable_source" xml:space="preserve">
     <value>Include apps anywhere on the %PATH%</value>
@@ -237,5 +237,20 @@
   <data name="limit_default" xml:space="preserve">
     <value>Default ({0})</value>
     <comment>default option; {0} = number of items</comment>
+  </data>
+  <data name="refreshing_app_list" xml:space="preserve">
+    <value>Refreshing app list...</value>
+  </data>
+  <data name="section_status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="section_all_apps" xml:space="preserve">
+    <value>All apps</value>
+  </data>
+  <data name="include_non_apps_on_desktop" xml:space="preserve">
+    <value>Also include non-app shortcuts from the desktop</value>
+  </data>
+  <data name="include_non_apps_in_start_menu" xml:space="preserve">
+    <value>Also include non-app shortcuts from the Start menu</value>
   </data>
 </root>

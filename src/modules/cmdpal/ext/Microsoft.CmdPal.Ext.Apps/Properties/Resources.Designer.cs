@@ -106,7 +106,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include apps registered in the Registry.
+        ///   Looks up a localized string similar to Include apps registered in the Windows Registry.
         /// </summary>
         internal static string enable_registry_source {
             get {
@@ -115,7 +115,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include apps found in the Start Menu.
+        ///   Looks up a localized string similar to Include apps found in the Start menu.
         /// </summary>
         internal static string enable_start_menu_source {
             get {
@@ -141,6 +141,42 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Also include non-app shortcuts from the Start menu.
+        /// </summary>
+        internal static string include_non_apps_in_start_menu {
+            get {
+                return ResourceManager.GetString("include_non_apps_in_start_menu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Also include non-app shortcuts from the desktop.
+        /// </summary>
+        internal static string include_non_apps_on_desktop {
+            get {
+                return ResourceManager.GetString("include_non_apps_on_desktop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        internal static string section_status {
+            get {
+                return ResourceManager.GetString("section_status", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to All apps.
+        /// </summary>
+        internal static string section_all_apps {
+            get {
+                return ResourceManager.GetString("section_all_apps", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Installed apps.
         /// </summary>
@@ -282,6 +318,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         internal static string pin_app {
             get {
                 return ResourceManager.GetString("pin_app", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refreshing app list....
+        /// </summary>
+        internal static string refreshing_app_list {
+            get {
+                return ResourceManager.GetString("refreshing_app_list", resourceCulture);
             }
         }
         
