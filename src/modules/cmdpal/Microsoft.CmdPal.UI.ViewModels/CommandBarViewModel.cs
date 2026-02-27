@@ -2,31 +2,54 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class CommandBarViewModel : ObservableObject,
+public sealed partial class CommandBarViewModel : ObservableObject,
     IRecipient<UpdateCommandBarMessage>
 {
+    private readonly DispatcherQueueTimer _debounceTimer;
+
+    private volatile ICommandBarContext? _pendingSelectedItem;
+
     public ICommandBarContext? SelectedItem
     {
-        get => field;
+        get;
         set
         {
-            if (field != null)
+            // TODO: verify if we can safely return early
+            // if (ReferenceEquals(field, value))
+            // {
+            //     return;
+            // }
+            if (field is not null)
             {
                 field.PropertyChanged -= SelectedItemPropertyChanged;
             }
 
             field = value;
-            SetSelectedItem(value);
 
-            OnPropertyChanged(nameof(SelectedItem));
+            if (field is not null)
+            {
+                PrimaryCommand = field.PrimaryCommand;
+                field.PropertyChanged += SelectedItemPropertyChanged;
+            }
+            else
+            {
+                PrimaryCommand = null;
+            }
+
+            UpdateContextItems();
+            OnPropertyChanged();
         }
     }
 
@@ -34,6 +57,8 @@ public partial class CommandBarViewModel : ObservableObject,
     [NotifyPropertyChangedFor(nameof(HasPrimaryCommand))]
     public partial CommandItemViewModel? PrimaryCommand { get; set; }
 
+    // TODO: PrimaryCommand.ShouldBeVisible is not observed, if it changes the bar won't refresh;
+    //       but at this moment CommandItemViewModel won't raise INPC for ShouldBeVisible anyway.
     public bool HasPrimaryCommand => PrimaryCommand is not null && PrimaryCommand.ShouldBeVisible;
 
     [ObservableProperty]
@@ -50,29 +75,31 @@ public partial class CommandBarViewModel : ObservableObject,
 
     public CommandBarViewModel()
     {
+        var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        if (dispatcherQueue is null)
+        {
+            throw new InvalidOperationException("DispatcherQueue is not available for the current thread.");
+        }
+
+        _debounceTimer = dispatcherQueue.CreateTimer();
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
     }
 
-    public void Receive(UpdateCommandBarMessage message) => SelectedItem = message.ViewModel;
-
-    private void SetSelectedItem(ICommandBarContext? value)
+    public void Receive(UpdateCommandBarMessage message)
     {
-        if (value is not null)
-        {
-            PrimaryCommand = value.PrimaryCommand;
-            value.PropertyChanged += SelectedItemPropertyChanged;
-        }
-        else
-        {
-            if (SelectedItem is not null)
-            {
-                SelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
-            }
+        _pendingSelectedItem = message.ViewModel;
 
-            PrimaryCommand = null;
-        }
+        // immediate: false is intentional — the timer tick always fires on the
+        // dispatcher queue thread, which guarantees ApplyPendingSelectedItem
+        // runs on the UI thread even if Receive is called from a background
+        // thread. Using immediate: true would invoke the delegate synchronously
+        // on the calling thread, bypassing the dispatcher.
+        _debounceTimer.Debounce(ApplyPendingSelectedItem, TimeSpan.FromMilliseconds(50));
+    }
 
-        UpdateContextItems();
+    private void ApplyPendingSelectedItem()
+    {
+        SelectedItem = _pendingSelectedItem;
     }
 
     private void SelectedItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -95,14 +122,10 @@ public partial class CommandBarViewModel : ObservableObject,
         }
 
         SecondaryCommand = SelectedItem.SecondaryCommand;
-
         ShouldShowContextMenu = SelectedItem.MoreCommands
             .OfType<CommandContextItemViewModel>()
-            .Count() > 1;
-
-        OnPropertyChanged(nameof(HasSecondaryCommand));
-        OnPropertyChanged(nameof(SecondaryCommand));
-        OnPropertyChanged(nameof(ShouldShowContextMenu));
+            .Skip(1)
+            .Any();
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
