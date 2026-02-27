@@ -8,6 +8,7 @@ using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -24,6 +25,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
+using Windows.UI.Core;
+using WinUIEx;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -46,6 +49,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
+    IRecipient<ShowHideDockMessage>,
     INotifyPropertyChanged,
     IDisposable
 {
@@ -63,6 +67,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
     private SettingsWindow? _settingsWindow;
+    private DockWindow? _dockWindow;
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
@@ -95,6 +100,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
 
+        WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
+
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
@@ -103,6 +110,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
+
+        if (App.Current.Services.GetService<SettingsModel>()!.EnableDock)
+        {
+            _dockWindow = new DockWindow();
+            _dockWindow.Show();
+        }
     }
 
     /// <summary>
@@ -144,7 +157,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     public void Receive(NavigateToPageMessage message)
     {
         // TODO GH #526 This needs more better locking too
-        _ = _queue.TryEnqueue(() =>
+        _ = _queue.TryEnqueue(DispatcherQueuePriority.High, () =>
         {
             // Also hide our details pane about here, if we had one
             HideDetails();
@@ -249,10 +262,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    private void InitializeConfirmationDialog(ConfirmResultViewModel vm)
-    {
-        vm.SafeInitializePropertiesSynchronous();
-    }
+    private void InitializeConfirmationDialog(ConfirmResultViewModel vm) => vm.SafeInitializePropertiesSynchronous();
 
     public void Receive(OpenSettingsMessage message)
     {
@@ -276,49 +286,64 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowDetailsMessage message)
     {
-        if (ViewModel is not null &&
-            ViewModel.CurrentPage is not null)
+        if (ViewModel is null || ViewModel.CurrentPage is null)
         {
-            if (ViewModel.CurrentPage.PageContext.TryGetTarget(out var pageContext))
+            return;
+        }
+
+        var details = message.Details;
+        var wasVisible = ViewModel.IsDetailsVisible;
+
+        // GH #322:
+        // For inexplicable reasons, if you try to change the details too fast,
+        // we'll explode. This seemingly only happens if you change the details
+        // while we're also scrolling a new list view item into view.
+        //
+        // Always debounce through the DispatcherQueue
+        // timer so the UI settles between updates. Use immediate=true for
+        // the first show so the panel appears without delay; subsequent
+        // updates during rapid navigation are coalesced.
+        _debounceTimer.Debounce(ShowDetails, interval: TimeSpan.FromMilliseconds(100), immediate: !wasVisible);
+
+        void ShowDetails()
+        {
+            // Since immediate=true means we're called synchronously from this method, we need to check
+            // if we're on the UI thread and re-queue if not.
+            if (!_queue.HasThreadAccess)
             {
-                Task.Factory.StartNew(
-                    () =>
-                    {
-                        // TERRIBLE HACK TODO GH #245
-                        // There's weird wacky bugs with debounce currently.
-                        if (!ViewModel.IsDetailsVisible)
-                        {
-                            ViewModel.Details = message.Details;
-                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
-                            ViewModel.IsDetailsVisible = true;
-                            return;
-                        }
+                var enqueued = _queue.TryEnqueue(ShowDetails);
+                if (!enqueued)
+                {
+                    Logger.LogError("Failed to enqueue show details action on UI thread");
+                }
 
-                        // GH #322:
-                        // For inexplicable reasons, if you try to change the details too fast,
-                        // we'll explode. This seemingly only happens if you change the details
-                        // while we're also scrolling a new list view item into view.
-                        _debounceTimer.Debounce(
-                            () =>
-                            {
-                                ViewModel.Details = message.Details;
+                return;
+            }
 
-                                // Trigger a re-evaluation of whether we have a hero image based on
-                                // the current theme
-                                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
-                            },
-                            interval: TimeSpan.FromMilliseconds(50),
-                            immediate: ViewModel.IsDetailsVisible == false);
-                        ViewModel.IsDetailsVisible = true;
-                    },
-                    CancellationToken.None,
-                    TaskCreationOptions.None,
-                    pageContext.Scheduler);
+            try
+            {
+                ViewModel.Details = details;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
+                ViewModel.IsDetailsVisible = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to show detail", ex);
             }
         }
     }
 
-    public void Receive(HideDetailsMessage message) => HideDetails();
+    public void Receive(HideDetailsMessage message)
+    {
+        // Debounce the hide through the same timer used for show. If a
+        // ShowDetailsMessage arrives before this fires, it cancels the
+        // pending hide - preventing the panel from flickering closed and
+        // reopened during rapid item navigation.
+        _debounceTimer.Debounce(
+            () => HideDetails(),
+            interval: TimeSpan.FromMilliseconds(150),
+            immediate: false);
+    }
 
     public void Receive(LaunchUriMessage message) => _ = global::Windows.System.Launcher.LaunchUriAsync(message.Uri);
 
@@ -330,10 +355,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ClearSearchMessage message) => SearchBox.ClearSearch();
 
-    public void Receive(HotkeySummonMessage message)
-    {
-        _ = DispatcherQueue.TryEnqueue(() => SummonOnUiThread(message));
-    }
+    public void Receive(HotkeySummonMessage message) => _ = DispatcherQueue.TryEnqueue(() => SummonOnUiThread(message));
 
     public void Receive(SettingsWindowClosedMessage message) => _settingsWindow = null;
 
@@ -402,10 +424,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
     }
 
-    public void Receive(GoBackMessage message)
-    {
-        _ = DispatcherQueue.TryEnqueue(() => GoBack(message.WithAnimation, message.FocusSearch));
-    }
+    public void Receive(GoBackMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoBack(message.WithAnimation, message.FocusSearch));
 
     private void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
@@ -446,10 +465,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    public void Receive(GoHomeMessage message)
-    {
-        _ = DispatcherQueue.TryEnqueue(() => GoHome(withAnimation: message.WithAnimation, focusSearch: message.FocusSearch));
-    }
+    public void Receive(GoHomeMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoHome(withAnimation: message.WithAnimation, focusSearch: message.FocusSearch));
 
     private void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
@@ -465,6 +481,27 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
             SearchBox.SelectSearch();
         }
+    }
+
+    public void Receive(ShowHideDockMessage message)
+    {
+        _ = DispatcherQueue.TryEnqueue(() =>
+        {
+            if (message.ShowDock)
+            {
+                if (_dockWindow is null)
+                {
+                    _dockWindow = new DockWindow();
+                }
+
+                _dockWindow.Show();
+            }
+            else if (_dockWindow is not null)
+            {
+                _dockWindow.Close();
+                _dockWindow = null;
+            }
+        });
     }
 
     private void ToggleFilterFocus()
@@ -753,5 +790,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _focusAfterLoadedCts?.Cancel();
         _focusAfterLoadedCts?.Dispose();
         _focusAfterLoadedCts = null;
+
+        _dockWindow?.Dispose();
     }
 }

@@ -395,6 +395,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_NavigationViewItem_Extensions.Content" xml:space="preserve">
     <value>Extensions</value>
   </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Dock.Content" xml:space="preserve">
+    <value>Dock (Preview)</value>
+  </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Command Palette settings</value>
   </data>
@@ -403,6 +406,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="BehaviorSettingsHeader.Text" xml:space="preserve">
     <value>Behavior</value>
+  </data>
+  <data name="DockAppearanceSettingsHeader.Text" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="DockBandsSettingsHeader.Text" xml:space="preserve">
+    <value>Bands</value>
   </data>
   <data name="ContextFilterBox.PlaceholderText" xml:space="preserve">
     <value>Search commands...</value>
@@ -418,6 +427,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Description" xml:space="preserve">
     <value>Disable animations when switching between pages</value>
+  </data>
+    <data name="Settings_GeneralPage_EnableDock_SettingsCard.Header" xml:space="preserve">
+    <value>Enable Dock</value>
+  </data>
+  <data name="Settings_GeneralPage_EnableDock_SettingsCard.Description" xml:space="preserve">
+    <value>Enable a toolbar with quick access to commands</value>
   </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
@@ -625,6 +640,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_PageTitles_ExtensionsPage" xml:space="preserve">
     <value>Extensions</value>
   </data>
+  <data name="Settings_PageTitles_DockPage" xml:space="preserve">
+    <value>Dock</value>
+  </data>
   <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_DismissEmptySearchOrGoBack.Content" xml:space="preserve">
     <value>Clear search first, then go back</value>
   </data>
@@ -739,6 +757,75 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_VersionNo" xml:space="preserve">
     <value>Version {0}</value>
   </data>
+  <data name="Settings_NavigationViewItem_DockAppearance.Content" xml:space="preserve">
+    <value>Dock Appearance</value>
+  </data>
+  <data name="Settings_PageTitles_DockAppearancePage" xml:space="preserve">
+    <value>Dock Appearance</value>
+  </data>
+  <data name="DockAppearance_ThemeSettingsHeader.Text" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="DockAppearance_AppTheme_SettingsCard.Header" xml:space="preserve">
+    <value>Dock theme mode</value>
+  </data>
+  <data name="DockAppearance_AppTheme_SettingsCard.Description" xml:space="preserve">
+    <value>Select which theme to display for the dock</value>
+  </data>
+  <data name="DockAppearance_Backdrop_SettingsCard.Header" xml:space="preserve">
+    <value>Material</value>
+  </data>
+  <data name="DockAppearance_Backdrop_SettingsCard.Description" xml:space="preserve">
+    <value>Select the visual material used for the dock</value>
+  </data>
+  <data name="DockAppearance_Backdrop_Mica.Content" xml:space="preserve">
+    <value>Mica</value>
+  </data>
+  <data name="DockAppearance_Backdrop_Transparent.Content" xml:space="preserve">
+    <value>Transparent</value>
+  </data>
+  <data name="DockAppearance_Backdrop_Acrylic.Content" xml:space="preserve">
+    <value>Acrylic</value>
+  </data>
+  <data name="DockAppearance_Background_SettingsExpander.Header" xml:space="preserve">
+    <value>Background</value>
+  </data>
+  <data name="DockAppearance_Background_SettingsExpander.Description" xml:space="preserve">
+    <value>Choose a custom background color or image for the dock</value>
+  </data>
+  <data name="DockAppearance_ColorizationMode.Header" xml:space="preserve">
+    <value>Colorization mode</value>
+  </data>
+  <data name="DockAppearance_NoBackground_SettingsCard.Header" xml:space="preserve">
+    <value>No background</value>
+  </data>
+  <data name="DockAppearance_NoBackground_DescriptionTextBlock.Text" xml:space="preserve">
+    <value>No settings</value>
+  </data>
+  <data name="DockAppearance_WindowsAccentColor_SettingsCard.Header" xml:space="preserve">
+    <value>System accent color</value>
+  </data>
+  <data name="DockAppearance_BackgroundImage_SettingsCard.Header" xml:space="preserve">
+    <value>Background image</value>
+  </data>
+  <data name="DockAppearance_BackgroundImageBrightness_SettingsCard.Header" xml:space="preserve">
+    <value>Background image brightness</value>
+  </data>
+  <data name="DockAppearance_BackgroundImageBlur_SettingsCard.Header" xml:space="preserve">
+    <value>Background image blur</value>
+  </data>
+  <data name="DockAppearance_BackgroundImageFit_SettingsCard.Header" xml:space="preserve">
+    <value>Background image fit</value>
+  </data>
+  <data name="DockAppearance_BackgroundTint_SettingsCard.Header" xml:space="preserve">
+    <value>Color tint</value>
+  </data>
+  <data name="DockAppearance_BackgroundTintIntensity_SettingsCard.Header" xml:space="preserve">
+    <value>Color intensity</value>
+  </data>
+  <data name="DockAppearance_BackgroundImage_ResetProperties_SettingsCard.Header" xml:space="preserve">
+    <value>Restore defaults</value>
+  </data>
   <data name="Settings_GeneralPage_BackdropOpacity_SettingsCard.Header" xml:space="preserve">
     <value>Opacity</value>
   </data>
@@ -801,11 +888,51 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>K</value>
     <comment>Keyboard key</comment>
   </data>
-  <data name="ConfigureShortcut" xml:space="preserve">
+    <data name="ConfigureShortcut" xml:space="preserve">
     <value>Configure shortcut</value>
   </data>
   <data name="ConfigureShortcutText.Text" xml:space="preserve">
     <value>Assign shortcut</value>
+  </data>
+  <data name="DockAppearance_DockPosition_SettingsExpander.Header" xml:space="preserve">
+    <value>Dock position and appearance</value>
+  </data>
+  <data name="DockAppearance_DockPosition_SettingsExpander.Description" xml:space="preserve">
+    <value>Choose where the dock appears on your screen</value>
+  </data>
+  <data name="DockAppearance_DockPosition_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="DockAppearance_DockPosition_Top.Content" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="DockAppearance_DockPosition_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="DockAppearance_DockPosition_Bottom.Content" xml:space="preserve">
+    <value>Bottom</value>
+  </data>
+  <data name="DockAppearance_ShowLabels_CheckBox.Header" xml:space="preserve">
+    <value>Show labels</value>
+  </data>
+  <data name="DockAppearance_ShowLabels_CheckBox.Description" xml:space="preserve">
+    <value>Show labels for dock items by default</value>
+  </data>
+  <data name="top_level_pin_command_name" xml:space="preserve">
+    <value>Pin to home</value>
+    <comment>Command name for pinning an item to the top level list of commands</comment>
+  </data>
+  <data name="top_level_unpin_command_name" xml:space="preserve">
+    <value>Unpin from home</value>
+    <comment>Command name for unpinning an item from the top level list of commands</comment>
+  </data>
+  <data name="dock_pin_command_name" xml:space="preserve">
+    <value>Pin to dock</value>
+    <comment>Command name for pinning an item to the dock</comment>
+  </data>
+  <data name="dock_unpin_command_name" xml:space="preserve">
+    <value>Unpin from dock</value>
+    <comment>Command name for unpinning an item from the dock</comment>
   </data>
   <data name="FiltersDropDown.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Filters</value>
