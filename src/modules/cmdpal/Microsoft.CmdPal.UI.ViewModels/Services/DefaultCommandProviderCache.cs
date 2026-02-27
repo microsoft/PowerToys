@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
-using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
@@ -19,8 +19,11 @@ public sealed partial class DefaultCommandProviderCache : ICommandProviderCache,
 
     private readonly SupersedingAsyncGate _saveGate;
 
-    public DefaultCommandProviderCache()
+    private readonly ILogger<DefaultCommandProviderCache> _logger;
+
+    public DefaultCommandProviderCache(ILogger<DefaultCommandProviderCache> logger)
     {
+        _logger = logger;
         _saveGate = new SupersedingAsyncGate(async _ => await TrySaveAsync().ConfigureAwait(false));
         TryLoad();
     }
@@ -90,7 +93,7 @@ public sealed partial class DefaultCommandProviderCache : ICommandProviderCache,
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to load command provider cache: ", ex);
+            Log_FailedLoadingCommandProviderCache(ex);
         }
     }
 
@@ -115,7 +118,7 @@ public sealed partial class DefaultCommandProviderCache : ICommandProviderCache,
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to save command provider cache: ", ex);
+            Log_FailedSavingCommandProviderCache(ex);
         }
     }
 
@@ -124,4 +127,10 @@ public sealed partial class DefaultCommandProviderCache : ICommandProviderCache,
         _saveGate.Dispose();
         GC.SuppressFinalize(this);
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to save command provider cache")]
+    partial void Log_FailedSavingCommandProviderCache(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to load command provider cache")]
+    partial void Log_FailedLoadingCommandProviderCache(Exception ex);
 }

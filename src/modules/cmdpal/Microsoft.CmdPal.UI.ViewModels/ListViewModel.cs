@@ -34,6 +34,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private readonly Lock _listLock = new();
 
+    private readonly ILoggerFactory _loggerFactory;
+
     private InterlockedBoolean _isLoading;
     private bool _isFetching;
 
@@ -95,9 +97,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         AppExtensionHost host,
         CommandProviderContext providerContext,
         ILoggerFactory loggerFactory)
-        : base(model, scheduler, host, providerContext)
+        : base(model, scheduler, host, providerContext, loggerFactory, loggerFactory.CreateLogger<ListViewModel>())
     {
-        Logger = loggerFactory.CreateLogger<ListViewModel>();
+        _loggerFactory = loggerFactory;
         _model = new(model);
         EmptyContent = new(new(null), PageContext, loggerFactory);
     }
@@ -239,7 +241,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     return;
                 }
 
-                ListItemViewModel viewModel = new(item, new(this));
+                ListItemViewModel viewModel = new(item, new(this), _loggerFactory);
 
                 // If an item fails to load, silently ignore it.
                 if (viewModel.SafeFastInit())
@@ -609,11 +611,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
         UpdateProperty(nameof(SearchText));
         UpdateProperty(nameof(InitialSearchText));
 
-        EmptyContent = new(new(model.EmptyContent), PageContext);
+        EmptyContent = new(new(model.EmptyContent), PageContext, _loggerFactory);
         EmptyContent.SlowInitializeProperties();
 
         Filters?.PropertyChanged -= FiltersPropertyChanged;
-        Filters = new(new(model.Filters), PageContext);
+        Filters = new(new(model.Filters), PageContext, _loggerFactory);
         Filters?.PropertyChanged += FiltersPropertyChanged;
 
         Filters?.InitializeProperties();
@@ -705,12 +707,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 SearchText = model.SearchText;
                 break;
             case nameof(EmptyContent):
-                EmptyContent = new(new(model.EmptyContent), PageContext);
+                EmptyContent = new(new(model.EmptyContent), PageContext, _loggerFactory);
                 EmptyContent.SlowInitializeProperties();
                 break;
             case nameof(Filters):
                 Filters?.PropertyChanged -= FiltersPropertyChanged;
-                Filters = new(new(model.Filters), PageContext);
+                Filters = new(new(model.Filters), PageContext, _loggerFactory);
                 Filters?.PropertyChanged += FiltersPropertyChanged;
                 Filters?.InitializeProperties();
                 break;
@@ -775,7 +777,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         base.UnsafeCleanup();
 
         EmptyContent?.SafeCleanup();
-        EmptyContent = new(new(null), PageContext); // necessary?
+        EmptyContent = new(new(null), PageContext, _loggerFactory); // necessary?
 
         _cancellationTokenSource?.Cancel();
         filterCancellationTokenSource?.Cancel();

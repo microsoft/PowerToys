@@ -6,10 +6,10 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -23,6 +23,7 @@ public partial class ShellViewModel : ObservableObject,
     private readonly TaskScheduler _scheduler;
     private readonly IPageViewModelFactoryService _pageViewModelFactory;
     private readonly Lock _invokeLock = new();
+    private readonly ILogger<ShellViewModel> _logger;
     private Task? _handleInvokeTask;
 
     // Cancellation token source for page loading/navigation operations
@@ -61,7 +62,7 @@ public partial class ShellViewModel : ObservableObject,
                     }
                     catch (Exception ex)
                     {
-                        CoreLogger.LogError(ex.ToString());
+                        Log_ErrorDisposingPageViewModel(ex);
                     }
                 }
             }
@@ -88,12 +89,14 @@ public partial class ShellViewModel : ObservableObject,
         TaskScheduler scheduler,
         IRootPageService rootPageService,
         IPageViewModelFactoryService pageViewModelFactory,
-        IAppHostService appHostService)
+        IAppHostService appHostService,
+        ILogger<ShellViewModel> logger)
     {
         _pageViewModelFactory = pageViewModelFactory;
         _scheduler = scheduler;
         _rootPageService = rootPageService;
         _appHostService = appHostService;
+        _logger = logger;
 
         NullPage = new NullPageViewModel(_scheduler, appHostService.GetDefaultHost());
         _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
@@ -163,7 +166,7 @@ public partial class ShellViewModel : ObservableObject,
                     {
                         if (viewModel.InitializeCommand.ExecutionTask.Exception is AggregateException ex)
                         {
-                            CoreLogger.LogError(ex.ToString());
+                            Log_ErrorInitializingCommand(ex);
                         }
                     }
                     else
@@ -181,7 +184,7 @@ public partial class ShellViewModel : ObservableObject,
                                         }
                                         catch (Exception ex)
                                         {
-                                            CoreLogger.LogError(ex.ToString());
+                                            Log_ErrorDisposingViewModel(ex);
                                         }
                                     }
 
@@ -211,7 +214,7 @@ public partial class ShellViewModel : ObservableObject,
                     }
                     catch (Exception ex)
                     {
-                        CoreLogger.LogError(ex.ToString());
+                        Log_ErrorDisposingViewModel(ex);
                     }
                 }
 
@@ -241,7 +244,7 @@ public partial class ShellViewModel : ObservableObject,
             }
             catch (Exception ex)
             {
-                CoreLogger.LogError(ex.ToString());
+                Log_ErrorCancelingTokenForPerformCommand(ex);
             }
             finally
             {
@@ -266,7 +269,7 @@ public partial class ShellViewModel : ObservableObject,
         {
             if (command is IPage page)
             {
-                CoreLogger.LogDebug($"Navigating to page");
+                Log_NavigatingToPage();
 
                 var isMainPage = command == _rootPage;
                 _isNested = !isMainPage;
@@ -285,7 +288,7 @@ public partial class ShellViewModel : ObservableObject,
                 var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host!, providerContext);
                 if (pageViewModel is null)
                 {
-                    CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
+                    Log_FailureCreatingViewModelForPage(page.GetType().Name);
                     throw new NotSupportedException();
                 }
 
@@ -315,7 +318,7 @@ public partial class ShellViewModel : ObservableObject,
             }
             else if (command is IInvokableCommand invokable)
             {
-                CoreLogger.LogDebug($"Invoking command");
+                Log_InvokingCommand();
 
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host);
@@ -401,7 +404,7 @@ public partial class ShellViewModel : ObservableObject,
         }
 
         var kind = result.Kind;
-        CoreLogger.LogDebug($"handling {kind.ToString()}");
+        Log_HandlingUnsafeCommand(kind.ToString());
 
         WeakReferenceMessenger.Default.Send<TelemetryInvokeResultMessage>(new(kind));
         switch (kind)
@@ -500,4 +503,28 @@ public partial class ShellViewModel : ObservableObject,
 
         GC.SuppressFinalize(this);
     }
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "handling {commandResultKind}")]
+    partial void Log_HandlingUnsafeCommand(string commandResultKind);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Invoking command")]
+    partial void Log_InvokingCommand();
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to create ViewModel for page {pageTypeName}")]
+    partial void Log_FailureCreatingViewModelForPage(string pageTypeName);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Navigating to page")]
+    partial void Log_NavigatingToPage();
+
+    [LoggerMessage(Level = LogLevel.Error)]
+    partial void Log_ErrorCancelingTokenForPerformCommand(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error)]
+    partial void Log_ErrorDisposingViewModel(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error)]
+    partial void Log_ErrorInitializingCommand(Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error)]
+    partial void Log_ErrorDisposingPageViewModel(Exception ex);
 }

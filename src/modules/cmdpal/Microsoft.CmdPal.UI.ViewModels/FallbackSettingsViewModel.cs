@@ -8,11 +8,11 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class FallbackSettingsViewModel : ObservableObject
+public partial class FallbackSettingsViewModel : ObservableObject, IDisposable
 {
     private readonly SettingsService _settingsService;
-    private readonly SettingsModel _settings;
     private readonly FallbackSettings _fallbackSettings;
+    private SettingsModel _settings;
 
     public string DisplayName { get; private set; } = string.Empty;
 
@@ -68,6 +68,8 @@ public partial class FallbackSettingsViewModel : ObservableObject
     {
         _settingsService = settingsService;
         _settings = _settingsService.CurrentSettings;
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+
         _fallbackSettings = fallbackSettings;
 
         Id = fallback.Id;
@@ -79,9 +81,20 @@ public partial class FallbackSettingsViewModel : ObservableObject
         Icon.InitializeProperties();
     }
 
+    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    {
+        _settings = sender;
+    }
+
     private void Save()
     {
         _settingsService.SaveSettings(_settings);
         WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 }

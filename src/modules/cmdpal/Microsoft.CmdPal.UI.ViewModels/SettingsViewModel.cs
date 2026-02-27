@@ -10,7 +10,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsViewModel : INotifyPropertyChanged
+public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
 {
     private static readonly List<TimeSpan> AutoGoHomeIntervals =
     [
@@ -25,9 +25,11 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         TimeSpan.FromSeconds(180),
     ];
 
-    private readonly SettingsModel _settings;
     private readonly SettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly TaskScheduler _scheduler;
+
+    private SettingsModel _settings;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -38,7 +40,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.Hotkey;
         set
         {
-            _settings.Hotkey = value ?? SettingsModel.DefaultActivationShortcut;
+            _settings = _settings with { Hotkey = value ?? SettingsModel.DefaultActivationShortcut };
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             Save();
         }
@@ -49,7 +51,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.UseLowLevelGlobalHotkey;
         set
         {
-            _settings.UseLowLevelGlobalHotkey = value;
+            _settings = _settings with { UseLowLevelGlobalHotkey = value };
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             Save();
         }
@@ -60,7 +62,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.AllowExternalReload;
         set
         {
-            _settings.AllowExternalReload = value;
+            _settings = _settings with { AllowExternalReload = value };
             Save();
         }
     }
@@ -70,7 +72,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.ShowAppDetails;
         set
         {
-            _settings.ShowAppDetails = value;
+            _settings = _settings with { ShowAppDetails = value };
             Save();
         }
     }
@@ -80,7 +82,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.BackspaceGoesBack;
         set
         {
-            _settings.BackspaceGoesBack = value;
+            _settings = _settings with { BackspaceGoesBack = value };
             Save();
         }
     }
@@ -90,7 +92,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.SingleClickActivates;
         set
         {
-            _settings.SingleClickActivates = value;
+            _settings = _settings with { SingleClickActivates = value };
             Save();
         }
     }
@@ -100,7 +102,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.HighlightSearchOnActivate;
         set
         {
-            _settings.HighlightSearchOnActivate = value;
+            _settings = _settings with { HighlightSearchOnActivate = value };
             Save();
         }
     }
@@ -110,7 +112,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.KeepPreviousQuery;
         set
         {
-            _settings.KeepPreviousQuery = value;
+            _settings = _settings with { KeepPreviousQuery = value };
             Save();
         }
     }
@@ -120,7 +122,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => (int)_settings.SummonOn;
         set
         {
-            _settings.SummonOn = (MonitorBehavior)value;
+            _settings = _settings with { SummonOn = (MonitorBehavior)value };
             Save();
         }
     }
@@ -130,7 +132,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.ShowSystemTrayIcon;
         set
         {
-            _settings.ShowSystemTrayIcon = value;
+            _settings = _settings with { ShowSystemTrayIcon = value };
             Save();
         }
     }
@@ -140,7 +142,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.IgnoreShortcutWhenFullscreen;
         set
         {
-            _settings.IgnoreShortcutWhenFullscreen = value;
+            _settings = _settings with { IgnoreShortcutWhenFullscreen = value };
             Save();
         }
     }
@@ -150,7 +152,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.DisableAnimations;
         set
         {
-            _settings.DisableAnimations = value;
+            _settings = _settings with { DisableAnimations = value };
             Save();
         }
     }
@@ -167,7 +169,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         {
             if (value >= 0 && value < AutoGoHomeIntervals.Count)
             {
-                _settings.AutoGoHomeInterval = AutoGoHomeIntervals[value];
+                _settings = _settings with { AutoGoHomeInterval = AutoGoHomeIntervals[value] };
             }
 
             Save();
@@ -179,7 +181,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => (int)_settings.EscapeKeyBehaviorSetting;
         set
         {
-            _settings.EscapeKeyBehaviorSetting = (EscapeKeyBehavior)value;
+            _settings = _settings with { EscapeKeyBehaviorSetting = (EscapeKeyBehavior)value };
             Save();
         }
     }
@@ -188,7 +190,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public ObservableCollection<FallbackSettingsViewModel> FallbackRankings { get; set; } = new();
 
-    public SettingsExtensionsViewModel Extensions { get; }
+    public SettingsExtensionsViewModel Extensions { get; set; }
 
     public SettingsViewModel(
         SettingsService settingsService,
@@ -198,10 +200,19 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     {
         _settingsService = settingsService;
         _settings = _settingsService.CurrentSettings;
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+        _scheduler = scheduler;
         _topLevelCommandManager = topLevelCommandManager;
 
         Appearance = new AppearanceSettingsViewModel(themeService, _settingsService);
 
+        PopulateCommandAndFallbackSettings();
+
+        Extensions = new SettingsExtensionsViewModel(CommandProviders, _scheduler);
+    }
+
+    private void PopulateCommandAndFallbackSettings()
+    {
         var activeProviders = GetCommandProviders();
         var allProviderSettings = _settings.ProviderSettings;
 
@@ -239,12 +250,18 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
 
         FallbackRankings = new ObservableCollection<FallbackSettingsViewModel>(fallbackRankings.OrderBy(o => o.Score).Select(fr => fr.Item));
-        Extensions = new SettingsExtensionsViewModel(CommandProviders, scheduler);
 
         if (needsSave)
         {
             ApplyFallbackSort();
         }
+    }
+
+    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    {
+        _settings = sender;
+        PopulateCommandAndFallbackSettings();
+        Extensions = new SettingsExtensionsViewModel(CommandProviders, _scheduler);
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()
@@ -255,10 +272,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public void ApplyFallbackSort()
     {
-        _settings.FallbackRanks = FallbackRankings.Select(s => s.Id).ToArray();
+        _settings = _settings with { FallbackRanks = FallbackRankings.Select(s => s.Id).ToArray() };
         Save();
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
     }
 
     private void Save() => _settingsService.SaveSettings(_settings);
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
+    }
 }

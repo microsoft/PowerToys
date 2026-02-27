@@ -10,9 +10,16 @@ namespace Microsoft.CmdPal.UI;
 
 internal sealed class PowerToysAppHostService : IAppHostService
 {
+    private readonly CommandPaletteHost _commandPaletteHost;
+
+    internal PowerToysAppHostService(CommandPaletteHost commandPaletteHost)
+    {
+        _commandPaletteHost = commandPaletteHost;
+    }
+
     public AppExtensionHost GetDefaultHost()
     {
-        return CommandPaletteHost.Instance;
+        return _commandPaletteHost;
     }
 
     public AppExtensionHost GetHostForCommand(object? context, AppExtensionHost? currentHost)
@@ -23,7 +30,7 @@ internal sealed class PowerToysAppHostService : IAppHostService
             topLevelHost = topLevelViewModel.ExtensionHost;
         }
 
-        return topLevelHost ?? currentHost ?? CommandPaletteHost.Instance;
+        return topLevelHost ?? currentHost ?? _commandPaletteHost;
     }
 
     public CommandProviderContext GetProviderContextForCommand(object? command, CommandProviderContext? currentContext)

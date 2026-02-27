@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ContextMenuViewModel : ObservableObject,
     IRecipient<UpdateCommandBarMessage>
 {
-    private readonly ILogger _logger;
+    private readonly ILogger<ContextMenuViewModel> _logger;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
     public ICommandBarContext? SelectedItem

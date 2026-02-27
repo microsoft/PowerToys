@@ -15,7 +15,7 @@ internal sealed class RunHistoryService : IRunHistoryService
     public RunHistoryService(AppStateService appStateService)
     {
         _appStateService = appStateService;
-        _appStateModel = _appStateService.CurrentSettings;
+        _appStateModel = _appStateService.CurrentState;
     }
 
     public IReadOnlyList<string> GetRunHistory()

@@ -5,14 +5,13 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
-using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Windows.Foundation;
 using WyHash;
 
@@ -21,11 +20,14 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem
 {
-    private readonly SettingsModel _settings;
     private readonly ProviderSettings _providerSettings;
-    private readonly IServiceProvider _serviceProvider;
     private readonly SettingsService _settingsService;
     private readonly CommandItemViewModel _commandItemViewModel;
+    private readonly HotkeyManager _hotkeyManager;
+    private readonly AliasManager _aliasManager;
+    private readonly ILogger<TopLevelViewModel> _logger;
+
+    private SettingsModel _settings;
 
     public CommandProviderContext ProviderContext { get; private set; }
 
@@ -107,7 +109,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         get => _hotkey;
         set
         {
-            _serviceProvider.GetService<HotkeyManager>()!.UpdateHotkey(Id, value);
+            _hotkeyManager.UpdateHotkey(Id, value);
             UpdateHotkey();
             UpdateTags();
             Save();
@@ -193,15 +195,19 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         CommandProviderContext commandProviderContext,
         SettingsService settingsService,
         ProviderSettings providerSettings,
-        IServiceProvider serviceProvider,
-        ICommandItem? commandItem)
+        HotkeyManager hotkeyManager,
+        AliasManager aliasManager,
+        ICommandItem? commandItem,
+        ILogger<TopLevelViewModel> logger)
     {
-        _serviceProvider = serviceProvider;
         _settingsService = settingsService;
         _settings = settingsService.CurrentSettings;
         _providerSettings = providerSettings;
+        _hotkeyManager = hotkeyManager;
         ProviderContext = commandProviderContext;
+        _aliasManager = aliasManager;
         _commandItemViewModel = item;
+        _logger = logger;
 
         IsFallback = isFallback;
         ExtensionHost = extensionHost;
@@ -306,21 +312,17 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
                 ? null
                 : new CommandAlias(Alias.Alias, Alias.CommandId, Alias.IsDirect);
 
-        _serviceProvider.GetService<AliasManager>()!.UpdateAlias(Id, commandAlias);
+        _aliasManager.UpdateAlias(Id, commandAlias);
         UpdateTags();
     }
 
     private void FetchAliasFromAliasManager()
     {
-        var am = _serviceProvider.GetService<AliasManager>();
-        if (am is not null)
+        var commandAlias = _aliasManager.AliasFromId(Id);
+        if (commandAlias is not null)
         {
-            var commandAlias = am.AliasFromId(Id);
-            if (commandAlias is not null)
-            {
-                // Decouple from the alias manager alias object
-                Alias = new CommandAlias(commandAlias.Alias, commandAlias.CommandId, commandAlias.IsDirect);
-            }
+            // Decouple from the alias manager alias object
+            Alias = new CommandAlias(commandAlias.Alias, commandAlias.CommandId, commandAlias.IsDirect);
         }
     }
 
@@ -393,7 +395,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex.ToString());
+            Log_ErrorInSafeUpdateFallbackText(ex);
         }
 
         return false;
@@ -454,4 +456,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         return ToString();
     }
+
+    [LoggerMessage(Level = LogLevel.Error)]
+    partial void Log_ErrorInSafeUpdateFallbackText(Exception ex);
 }

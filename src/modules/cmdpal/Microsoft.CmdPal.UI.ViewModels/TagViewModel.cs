@@ -4,10 +4,14 @@
 
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class TagViewModel(ITag _tag, WeakReference<IPageContext> context) : ExtensionObjectViewModel(context)
+public partial class TagViewModel(
+    ITag _tag,
+    WeakReference<IPageContext> context,
+    ILogger<TagViewModel> logger) : ExtensionObjectViewModel(context, logger)
 {
     private readonly ExtensionObject<ITag> _tagModel = new(_tag);
 

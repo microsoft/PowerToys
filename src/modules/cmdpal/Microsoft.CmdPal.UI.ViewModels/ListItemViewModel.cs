@@ -7,11 +7,14 @@ using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ListItemViewModel : CommandItemViewModel
 {
+    private readonly ILoggerFactory _loggerFactory;
+
     public new ExtensionObject<IListItem> Model { get; }
 
     public List<TagViewModel>? Tags { get; set; }
@@ -63,9 +66,13 @@ public partial class ListItemViewModel : CommandItemViewModel
         }
     }
 
-    public ListItemViewModel(IListItem model, WeakReference<IPageContext> context)
-        : base(new(model), context)
+    public ListItemViewModel(
+        IListItem model,
+        WeakReference<IPageContext> context,
+        ILoggerFactory loggerFactory)
+        : base(new(model), context, loggerFactory)
     {
+        _loggerFactory = loggerFactory;
         Model = new ExtensionObject<IListItem>(model);
     }
 
@@ -112,7 +119,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         var extensionDetails = model.Details;
         if (extensionDetails is not null)
         {
-            Details = new(extensionDetails, PageContext);
+            Details = new(extensionDetails, PageContext, _loggerFactory);
             Details.InitializeProperties();
             UpdateProperty(nameof(Details), nameof(HasDetails));
         }
@@ -153,7 +160,7 @@ public partial class ListItemViewModel : CommandItemViewModel
                 break;
             case nameof(Details):
                 var extensionDetails = model.Details;
-                Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
+                Details = extensionDetails is not null ? new(extensionDetails, PageContext, _loggerFactory) : null;
                 Details?.InitializeProperties();
                 UpdateProperty(nameof(Details), nameof(HasDetails));
                 UpdateShowDetailsCommand();

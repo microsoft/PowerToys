@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Windows.ApplicationModel;
 
 namespace Microsoft.CmdPal.Common.Helpers;
@@ -10,21 +11,21 @@ namespace Microsoft.CmdPal.Common.Helpers;
 /// <summary>
 /// Helper class for retrieving application version information safely.
 /// </summary>
-internal static class VersionHelper
+internal static partial class VersionHelper
 {
     /// <summary>
     /// Gets the application version as a string in the format "Major.Minor.Build.Revision".
     /// Falls back to assembly version if packaged version is unavailable, and returns a default value if both fail.
     /// </summary>
     /// <returns>The application version string, or a fallback value if retrieval fails.</returns>
-    public static string GetAppVersionSafe()
+    public static string GetAppVersionSafe(ILogger logger)
     {
-        if (TryGetPackagedVersion(out var version))
+        if (TryGetPackagedVersion(out var version, logger))
         {
             return version;
         }
 
-        if (TryGetAssemblyVersion(out version))
+        if (TryGetAssemblyVersion(out version, logger))
         {
             return version;
         }
@@ -37,7 +38,7 @@ internal static class VersionHelper
     /// </summary>
     /// <param name="version">The version string if successful, or an empty string if unsuccessful.</param>
     /// <returns>True if the version was retrieved successfully; otherwise, false.</returns>
-    private static bool TryGetPackagedVersion(out string version)
+    private static bool TryGetPackagedVersion(out string version, ILogger logger)
     {
         version = string.Empty;
         try
@@ -53,7 +54,7 @@ internal static class VersionHelper
         }
         catch (Exception ex)
         {
-            CoreLogger.LogError("Failed to get version from the package", ex);
+            Log_FailedToGetVersion(logger, ex);
             return false;
         }
     }
@@ -63,7 +64,7 @@ internal static class VersionHelper
     /// </summary>
     /// <param name="version">The version string if successful, or an empty string if unsuccessful.</param>
     /// <returns>True if the version was retrieved successfully; otherwise, false.</returns>
-    private static bool TryGetAssemblyVersion(out string version)
+    private static bool TryGetAssemblyVersion(out string version, ILogger logger)
     {
         version = string.Empty;
         try
@@ -80,8 +81,14 @@ internal static class VersionHelper
         }
         catch (Exception ex)
         {
-            CoreLogger.LogError("Failed to get version from the executable", ex);
+            Log_FailedToGetVersionFromExe(logger, ex);
             return false;
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to get version from the package")]
+    static partial void Log_FailedToGetVersion(ILogger logger, Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to get version from the executable")]
+    static partial void Log_FailedToGetVersionFromExe(ILogger logger, Exception ex);
 }

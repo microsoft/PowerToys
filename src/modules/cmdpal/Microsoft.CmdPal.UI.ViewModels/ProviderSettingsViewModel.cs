@@ -13,7 +13,7 @@ using Microsoft.CmdPal.UI.ViewModels.Properties;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ProviderSettingsViewModel : ObservableObject
+public partial class ProviderSettingsViewModel : ObservableObject, IDisposable
 {
     private static readonly IconInfoViewModel EmptyIcon = new(null);
     private static readonly CompositeFormat ExtensionSubtextFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext);
@@ -23,8 +23,8 @@ public partial class ProviderSettingsViewModel : ObservableObject
     private readonly CommandProviderWrapper _provider;
     private readonly SettingsService _settingsService;
     private readonly ProviderSettings _providerSettings;
-    private readonly SettingsModel _settings;
     private readonly Lock _initializeSettingsLock = new();
+    private SettingsModel _settings;
 
     private Task? _initializeSettingsTask;
 
@@ -35,12 +35,19 @@ public partial class ProviderSettingsViewModel : ObservableObject
     {
         _provider = provider;
         _providerSettings = providerSettings;
+
         _settingsService = settingsService;
         _settings = settingsService.CurrentSettings;
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
 
         LoadingSettings = _provider.Settings?.HasSettings ?? false;
 
         BuildFallbackViewModels();
+    }
+
+    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    {
+        _settings = sender;
     }
 
     public string DisplayName => _provider.DisplayName;
@@ -218,5 +225,11 @@ public partial class ProviderSettingsViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(ExtensionSubtext));
         OnPropertyChanged(nameof(TopLevelCommands));
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 }

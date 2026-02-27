@@ -7,13 +7,12 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed class CommandProviderWrapper
+public sealed partial class CommandProviderWrapper
 {
     private readonly ILogger<CommandProviderWrapper> _logger;
     private readonly ILoggerFactory _loggerFactory;
@@ -83,7 +82,7 @@ public sealed class CommandProviderWrapper
 
         // Note: explicitly not InitializeProperties()ing the settings here. If
         // we do that, then we'd regress GH #38321
-        Settings = new(provider.Settings, this, _taskScheduler);
+        Settings = new(provider.Settings, this, _taskScheduler, loggerFactory.CreateLogger<CommandSettingsViewModel>());
 
         Log_InitializedCommandProvider(ProviderId);
     }
@@ -144,7 +143,7 @@ public sealed class CommandProviderWrapper
         return settings.GetProviderSettings(this);
     }
 
-    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    public async Task LoadTopLevelCommands(SettingsService settingsService, WeakReference<IPageContext> pageContext)
     {
         if (!isValid)
         {
@@ -153,7 +152,6 @@ public sealed class CommandProviderWrapper
             return;
         }
 
-        var settingsService = serviceProvider.GetService<SettingsService>()!;
         var settings = settingsService.CurrentSettings;
 
         var providerSettings = GetProviderSettings(settings);
@@ -198,10 +196,10 @@ public sealed class CommandProviderWrapper
 
             // Note: explicitly not InitializeProperties()ing the settings here. If
             // we do that, then we'd regress GH #38321
-            Settings = new(model.Settings, this, _taskScheduler);
+            Settings = new(model.Settings, this, _taskScheduler, _loggerFactory.CreateLogger<CommandSettingsViewModel>());
 
             // We do need to explicitly initialize commands though
-            InitializeCommands(commands, fallbacks, pinnedCommands, serviceProvider, pageContext);
+            InitializeCommands(commands, fallbacks, pinnedCommands, settingsService, pageContext);
 
             Log_LoadedCommands(DisplayName, ProviderId);
         }
@@ -230,16 +228,15 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, ICommandItem[] pinnedCommands, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, ICommandItem[] pinnedCommands, SettingsService settingsService, WeakReference<IPageContext> pageContext)
     {
-        var settingsService = serviceProvider.GetService<SettingsService>()!;
         var settings = settingsService.CurrentSettings;
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext, _loggerFactory);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ourContext, settingsService, providerSettings, serviceProvider, i);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ourContext, settingsService, providerSettings, _hotkeyManager, _aliasManager, i);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
@@ -285,7 +282,7 @@ public sealed class CommandProviderWrapper
                 }
                 catch (Exception e)
                 {
-                    Logger.LogError($"Failed to load pinned command {pinnedId}: {e.Message}");
+                    Log_FailedToLoadPinnedCommand(pinnedId, e);
                 }
             }
         }
@@ -296,19 +293,19 @@ public sealed class CommandProviderWrapper
     private void UnsafePreCacheApiAdditions(ICommandProvider2 provider)
     {
         var apiExtensions = provider.GetApiExtensionStubs();
-        Logger.LogDebug($"Provider supports {apiExtensions.Length} extensions");
+
+        Log_ProviderExtensionCount(provider.Id, apiExtensions.Length);
         foreach (var a in apiExtensions)
         {
             if (a is IExtendedAttributesProvider command2)
             {
-                Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
+                Log_IExtendedAttributesProviderFound(ProviderId);
             }
         }
     }
 
-    public void PinCommand(string commandId, IServiceProvider serviceProvider)
+    public void PinCommand(string commandId, SettingsService settingsService)
     {
-        var settingsService = serviceProvider.GetService<SettingsService>()!;
         var settings = settingsService.CurrentSettings;
         var providerSettings = GetProviderSettings(settings);
 
@@ -361,4 +358,13 @@ public sealed class CommandProviderWrapper
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "{providerId}: Found an IExtendedAttributesProvider")]
     private partial void Log_FoundExtendedAttributesProvider(string providerId);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to load pinned command {commandId}")]
+    private partial void Log_FailedToLoadPinnedCommand(string commandId, Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "{providerId}: Found an IExtendedAttributesProvider")]
+    private partial void Log_IExtendedAttributesProviderFound(string providerId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Provider {providerId} has {extensionCount} extensions")]
+    private partial void Log_ProviderExtensionCount(string providerId, int extensionCount);
 }

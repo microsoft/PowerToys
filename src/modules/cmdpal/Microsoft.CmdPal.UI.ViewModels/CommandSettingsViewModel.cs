@@ -5,13 +5,12 @@
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class CommandSettingsViewModel
 {
-    private readonly ILogger _logger;
+    private readonly ILogger<CommandSettingsViewModel> _logger;
     private readonly ExtensionObject<ICommandSettings> _model;
     private readonly CommandProviderWrapper _provider;
     private readonly TaskScheduler _mainThread;
@@ -20,12 +19,12 @@ public partial class CommandSettingsViewModel
         ICommandSettings? unsafeSettings,
         CommandProviderWrapper provider,
         TaskScheduler mainThread,
-        ILogger? logger = null)
+        ILogger<CommandSettingsViewModel> logger)
     {
         _model = new(unsafeSettings);
         _provider = provider;
         _mainThread = mainThread;
-        _logger = logger ?? NullLogger.Instance;
+        _logger = logger;
     }
 
     public ContentPageViewModel? SettingsPage { get; private set; }

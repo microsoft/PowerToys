@@ -18,6 +18,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBarContext, IPrecomputedListItem
 {
     private readonly ILogger<CommandItemViewModel> _logger;
+    private readonly ILoggerFactory _loggerFactory;
 
     public ExtensionObject<ICommandItem> Model => _commandItemModel;
 
@@ -105,8 +106,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         : base(errorContext, loggerFactory.CreateLogger(typeof(CommandItemViewModel).FullName!))
     {
         _logger = loggerFactory.CreateLogger<CommandItemViewModel>();
+        _loggerFactory = loggerFactory;
         _commandItemModel = item;
-        Command = new(null, errorContext);
+        Command = new(null, errorContext, loggerFactory);
     }
 
     public void FastInitializeProperties()
@@ -122,7 +124,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        Command = new(model.Command, PageContext);
+        Command = new(model.Command, PageContext, _loggerFactory);
         Command.FastInitializeProperties();
 
         _itemTitle = model.Title;
@@ -257,7 +259,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         catch (Exception ex)
         {
             Log_FastInitError(ex);
-            Command = new(null, PageContext);
+            Command = new(null, PageContext, _loggerFactory);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
             MoreCommands = [];
@@ -296,7 +298,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         catch (Exception ex)
         {
             Log_InitError(ex);
-            Command = new(null, PageContext);
+            Command = new(null, PageContext, _loggerFactory);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
             MoreCommands = [];
@@ -333,7 +335,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         {
             case nameof(Command):
                 Command.PropertyChanged -= Command_PropertyChanged;
-                Command = new(model.Command, PageContext);
+                Command = new(model.Command, PageContext, _loggerFactory);
                 Command.InitializeProperties();
                 Command.PropertyChanged += Command_PropertyChanged;
 

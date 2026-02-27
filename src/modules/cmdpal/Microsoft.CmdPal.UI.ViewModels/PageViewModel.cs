@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -78,8 +79,14 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public CommandProviderContext ProviderContext { get; protected set; }
 
-    public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost, CommandProviderContext providerContext)
-        : base(scheduler)
+    public PageViewModel(
+        IPage? model,
+        TaskScheduler scheduler,
+        AppExtensionHost extensionHost,
+        CommandProviderContext providerContext,
+        ILoggerFactory loggerFactory,
+        ILogger? logger = null)
+        : base(scheduler, logger ?? loggerFactory.CreateLogger<PageViewModel>())
     {
         InitializeSelfAsPageContext();
         _pageModel = new(model);

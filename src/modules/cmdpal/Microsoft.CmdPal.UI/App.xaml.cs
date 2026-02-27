@@ -125,6 +125,8 @@ public partial class App : Application, IDisposable
             builder.AddProvider(new CmdPalLoggerProvider());
         });
 
+        BatchUpdateManager.Initialize();
+
         AddServices(services, dispatcherQueue, appInfoService);
 
         AddPresentation(services);
@@ -197,11 +199,10 @@ public partial class App : Application, IDisposable
         DispatcherQueue dispatcherQueue,
         IApplicationInfoService appInfoService)
     {
-        // Settings & State
+        // Services
+        services.AddSingleton<PersistenceService>();
         services.AddSingleton<SettingsService>();
         services.AddSingleton<AppStateService>();
-
-        // Services
         services.AddSingleton(appInfoService);
         services.AddIconServices(dispatcherQueue);
 

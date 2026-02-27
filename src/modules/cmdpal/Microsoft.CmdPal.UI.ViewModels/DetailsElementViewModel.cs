@@ -4,10 +4,15 @@
 
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public abstract partial class DetailsElementViewModel(IDetailsElement _detailsElement, WeakReference<IPageContext> context) : ExtensionObjectViewModel(context)
+public abstract partial class DetailsElementViewModel(
+    IDetailsElement _detailsElement,
+    WeakReference<IPageContext> context,
+    ILoggerFactory loggerFactory)
+    : ExtensionObjectViewModel(context, loggerFactory.CreateLogger<DetailsElementViewModel>())
 {
     private readonly ExtensionObject<IDetailsElement> _model = new(_detailsElement);
 

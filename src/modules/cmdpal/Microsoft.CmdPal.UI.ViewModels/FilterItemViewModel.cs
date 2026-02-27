@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -23,8 +24,8 @@ public partial class FilterItemViewModel : ExtensionObjectViewModel, IFilterItem
 
     public bool IsInErrorState => Initialized.HasFlag(InitializedState.Error);
 
-    public FilterItemViewModel(IFilter filter, WeakReference<IPageContext> context)
-        : base(context)
+    public FilterItemViewModel(IFilter filter, WeakReference<IPageContext> context, ILoggerFactory loggerFactory)
+        : base(context, loggerFactory.CreateLogger<FilterItemViewModel>())
     {
         _model = new(filter);
     }

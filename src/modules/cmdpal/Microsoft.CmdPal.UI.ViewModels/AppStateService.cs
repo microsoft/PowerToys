@@ -2,44 +2,44 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Common;
-using Microsoft.Extensions.Logging;
+using Microsoft.CmdPal.Common.Services;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class AppStateService
 {
-    private readonly ILogger<AppStateService> _logger;
     private readonly string _filePath;
-    private AppStateModel _appStateModel;
+    private readonly PersistenceService _persistenceService;
 
     public event TypedEventHandler<AppStateModel, object?>? StateChanged;
 
-    public AppStateModel CurrentSettings => _appStateModel;
+    private AppStateModel _appStateModel;
 
-    public AppStateService(ILogger<AppStateService> logger)
+    public AppStateModel CurrentState => _appStateModel;
+
+    public AppStateService(
+        PersistenceService persistenceService)
     {
-        _logger = logger;
-        _filePath = PersistenceService.SettingsJsonPath("state.json");
+        _persistenceService = persistenceService;
+        _filePath = _persistenceService.SettingsJsonPath("state.json");
         _appStateModel = LoadState();
     }
 
     private AppStateModel LoadState()
     {
-        return PersistenceService.LoadObject<AppStateModel>(_filePath, JsonSerializationContext.Default.AppStateModel!, _logger);
+        return _persistenceService.LoadObject<AppStateModel>(_filePath, JsonSerializationContext.Default.AppStateModel!);
     }
 
     public void SaveSettings(AppStateModel model)
     {
-        PersistenceService.SaveObject(
+        _persistenceService.SaveObject(
                         model,
                         _filePath,
                         JsonSerializationContext.Default.AppStateModel,
                         JsonSerializationContext.Default.Options,
                         null,
-                        afterWriteCallback: m => FinalizeStateSave(m),
-                        _logger);
+                        afterWriteCallback: m => FinalizeStateSave(m));
     }
 
     private void FinalizeStateSave(AppStateModel model)

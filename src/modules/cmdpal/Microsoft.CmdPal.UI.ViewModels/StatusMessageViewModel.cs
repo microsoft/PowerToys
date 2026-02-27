@@ -4,11 +4,14 @@
 
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class StatusMessageViewModel : ExtensionObjectViewModel
 {
+    private readonly ILoggerFactory _loggerFactory;
+
     public ExtensionObject<IStatusMessage> Model { get; }
 
     public string Message { get; private set; } = string.Empty;
@@ -19,10 +22,14 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
 
     public bool HasProgress => Progress is not null;
 
-    public StatusMessageViewModel(IStatusMessage message, WeakReference<IPageContext> context)
-        : base(context)
+    public StatusMessageViewModel(
+        IStatusMessage message,
+        WeakReference<IPageContext> context,
+        ILoggerFactory loggerFactory)
+        : base(context, loggerFactory.CreateLogger<StatusMessageViewModel>())
     {
         Model = new(message);
+        _loggerFactory = loggerFactory;
     }
 
     public override void InitializeProperties()
@@ -38,7 +45,7 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
         var modelProgress = model.Progress;
         if (modelProgress is not null)
         {
-            Progress = new(modelProgress, this.PageContext);
+            Progress = new(modelProgress, this.PageContext, _loggerFactory.CreateLogger<ProgressViewModel>());
             Progress.InitializeProperties();
             UpdateProperty(nameof(HasProgress));
         }
@@ -78,7 +85,7 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
                 var modelProgress = model.Progress;
                 if (modelProgress is not null)
                 {
-                    Progress = new(modelProgress, this.PageContext);
+                    Progress = new(modelProgress, this.PageContext, _loggerFactory.CreateLogger<ProgressViewModel>());
                     Progress.InitializeProperties();
                 }
                 else

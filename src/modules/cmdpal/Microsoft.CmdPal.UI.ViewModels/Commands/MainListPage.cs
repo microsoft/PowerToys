@@ -48,7 +48,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private SettingsModel Settings => _settingsService.CurrentSettings;
 
-    private AppStateModel AppState => _appStateService.CurrentSettings;
+    private AppStateModel AppState => _appStateService.CurrentState;
 
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
@@ -75,7 +75,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _logger = logger;
         _settingsService = settingsService;
         _appStateService = appStateService;
-        _appStateModel = _appStateService.CurrentSettings;
+        _appStateModel = _appStateService.CurrentState;
 
         _aliasManager = aliasManager;
         _tlcManager = topLevelCommandManager;

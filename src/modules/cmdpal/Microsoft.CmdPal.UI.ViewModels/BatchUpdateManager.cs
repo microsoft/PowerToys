@@ -5,10 +5,11 @@
 using System.Collections.Concurrent;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-internal static partial class BatchUpdateManager
+public static partial class BatchUpdateManager
 {
     private const int ExpectedBatchSize = 32;
 
@@ -17,14 +18,20 @@ internal static partial class BatchUpdateManager
     // - Still allows multiple COM/background events to be coalesced into a single batch.
     private static readonly TimeSpan BatchDelay = TimeSpan.FromMilliseconds(30);
     private static readonly ConcurrentQueue<IBatchUpdateTarget> DirtyQueue = [];
-    private static readonly Timer Timer = new(static state => Flush((ILogger)state), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+    private static readonly Timer Timer = new(static _ => Flush(), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+    private static ILogger _logger = NullLogger.Instance;
 
     private static InterlockedBoolean _isFlushScheduled;
+
+    public static void Initialize(ILoggerFactory loggerFactory)
+    {
+        _logger = loggerFactory.CreateLogger(typeof(BatchUpdateManager).FullName!);
+    }
 
     /// <summary>
     /// Enqueue a target for batched processing. Safe to call from any thread (including COM callbacks).
     /// </summary>
-    public static void Queue(IBatchUpdateTarget target, ILogger logger)
+    public static void Queue(IBatchUpdateTarget target)
     {
         if (!target.TryMarkBatchQueued())
         {
@@ -32,10 +39,10 @@ internal static partial class BatchUpdateManager
         }
 
         DirtyQueue.Enqueue(target);
-        TryScheduleFlush(logger);
+        TryScheduleFlush();
     }
 
-    private static void TryScheduleFlush(ILogger logger)
+    private static void TryScheduleFlush()
     {
         if (!_isFlushScheduled.Set())
         {
@@ -64,11 +71,11 @@ internal static partial class BatchUpdateManager
         catch (Exception ex)
         {
             _isFlushScheduled.Clear();
-            Log_ArmBatchTimerFailure(logger, ex);
+            Log_ArmBatchTimerFailure(_logger, ex);
         }
     }
 
-    private static void Flush(ILogger logger)
+    private static void Flush()
     {
         try
         {
@@ -86,21 +93,21 @@ internal static partial class BatchUpdateManager
             // LOAD BEARING:
             // ApplyPendingUpdates must run on a background thread.
             // The VM itself is responsible for marshaling UI notifications to its _uiScheduler.
-            ApplyBatch(drained, logger);
+            ApplyBatch(drained);
         }
         catch (Exception ex)
         {
             // Don't kill the timer thread.
-            Log_BatchFlushFailure(logger, ex);
+            Log_BatchFlushFailure(_logger, ex);
         }
         finally
         {
             _isFlushScheduled.Clear();
-            TryScheduleFlush(logger);
+            TryScheduleFlush();
         }
     }
 
-    private static void ApplyBatch(List<IBatchUpdateTarget> items, ILogger logger)
+    private static void ApplyBatch(List<IBatchUpdateTarget> items)
     {
         // Runs on the Timer callback thread (ThreadPool). That's fine: background work only.
         foreach (var item in items)
@@ -114,7 +121,7 @@ internal static partial class BatchUpdateManager
             }
             catch (Exception ex)
             {
-                Log_FailureApplyingUpdate(logger, ex);
+                Log_FailureApplyingUpdate(_logger, ex);
             }
         }
     }
@@ -135,7 +142,7 @@ internal static partial class BatchUpdateManager
     static partial void Log_ArmBatchTimerFailure(ILogger logger, Exception ex);
 }
 
-internal interface IBatchUpdateTarget
+public interface IBatchUpdateTarget
 {
     /// <summary>Gets UI scheduler (used by targets internally for UI marshaling). Kept here for diagnostics / consistency.</summary>
     TaskScheduler UIScheduler { get; }

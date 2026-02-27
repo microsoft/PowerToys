@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 using Windows.ApplicationModel;
 
 namespace Microsoft.CmdPal.Common.Services;
@@ -14,8 +15,9 @@ namespace Microsoft.CmdPal.Common.Services;
 /// <summary>
 /// Implementation of IApplicationInfoService providing application-wide information.
 /// </summary>
-public sealed class ApplicationInfoService : IApplicationInfoService
+public sealed partial class ApplicationInfoService : IApplicationInfoService
 {
+    private readonly ILogger<ApplicationInfoService> _logger;
     private readonly Lazy<string> _configDirectory = new(() => Utilities.BaseSettingsPath("Microsoft.CmdPal"));
     private readonly Lazy<bool> _isElevated;
     private readonly Lazy<string> _logDirectory;
@@ -26,8 +28,9 @@ public sealed class ApplicationInfoService : IApplicationInfoService
     /// Initializes a new instance of the <see cref="ApplicationInfoService"/> class.
     /// The log directory delegate can be set later via <see cref="SetLogDirectory(Func{string})"/>.
     /// </summary>
-    public ApplicationInfoService()
+    public ApplicationInfoService(ILogger<ApplicationInfoService> logger)
     {
+        _logger = logger;
         _packagingFlavor = new Lazy<AppPackagingFlavor>(DeterminePackagingFlavor);
         _isElevated = new Lazy<bool>(DetermineElevationStatus);
         _logDirectory = new Lazy<string>(() => _getLogDirectory?.Invoke() ?? "Not available");
@@ -37,8 +40,8 @@ public sealed class ApplicationInfoService : IApplicationInfoService
     /// Initializes a new instance of the <see cref="ApplicationInfoService"/> class with an optional log directory provider.
     /// </summary>
     /// <param name="getLogDirectory">Optional delegate to retrieve the log directory path. If not provided, the log directory will be unavailable.</param>
-    public ApplicationInfoService(Func<string>? getLogDirectory)
-        : this()
+    public ApplicationInfoService(Func<string>? getLogDirectory, ILogger<ApplicationInfoService> logger)
+        : this(logger)
     {
         _getLogDirectory = getLogDirectory;
     }
@@ -54,7 +57,7 @@ public sealed class ApplicationInfoService : IApplicationInfoService
         _getLogDirectory = getLogDirectory;
     }
 
-    public string AppVersion => VersionHelper.GetAppVersionSafe();
+    public string AppVersion => VersionHelper.GetAppVersionSafe(_logger);
 
     public AppPackagingFlavor PackagingFlavor => _packagingFlavor.Value;
 
@@ -87,7 +90,7 @@ public sealed class ApplicationInfoService : IApplicationInfoService
                 """;
     }
 
-    private static AppPackagingFlavor DeterminePackagingFlavor()
+    private AppPackagingFlavor DeterminePackagingFlavor()
     {
         // Try to determine if running as packaged
         try
@@ -105,12 +108,12 @@ public sealed class ApplicationInfoService : IApplicationInfoService
         }
         catch (Exception ex)
         {
-            CoreLogger.LogError("Failed to determine packaging flavor", ex);
+            Log_FailureDeterminingPackagingFlavor(ex);
             return AppPackagingFlavor.Unpackaged;
         }
     }
 
-    private static bool DetermineElevationStatus()
+    private bool DetermineElevationStatus()
     {
         try
         {
@@ -122,4 +125,7 @@ public sealed class ApplicationInfoService : IApplicationInfoService
             return false;
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Failed to determine packaging flavor")]
+    partial void Log_FailureDeterminingPackagingFlavor(Exception ex);
 }

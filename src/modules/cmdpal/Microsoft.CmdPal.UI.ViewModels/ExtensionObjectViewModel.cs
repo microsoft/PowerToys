@@ -141,7 +141,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
 
         // We should re-consider if this worth deduping
         _pendingProps.Enqueue(propertyName);
-        BatchUpdateManager.Queue(this, _logger);
+        BatchUpdateManager.Queue(this);
     }
 
     public void ApplyPendingUpdates()

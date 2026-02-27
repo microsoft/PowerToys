@@ -5,11 +5,14 @@
 using System.Collections.Frozen;
 using System.Text.RegularExpressions;
 using Microsoft.CmdPal.Common.Services.Sanitizer.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.Common.Services.Sanitizer;
 
-internal sealed class ProfilePathAndUsernameRuleProvider : ISanitizationRuleProvider
+internal sealed partial class ProfilePathAndUsernameRuleProvider : ISanitizationRuleProvider
 {
+    private readonly ILogger<ProfilePathAndUsernameRuleProvider> _logger;
+
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(SanitizerDefaults.DefaultMatchTimeoutMs);
 
     private readonly Dictionary<string, string> _profilePaths = new(StringComparer.OrdinalIgnoreCase);
@@ -28,8 +31,9 @@ internal sealed class ProfilePathAndUsernameRuleProvider : ISanitizationRuleProv
         "default", "temp", "local", "shared", "common", "data", "config",
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-    public ProfilePathAndUsernameRuleProvider()
+    public ProfilePathAndUsernameRuleProvider(ILogger<ProfilePathAndUsernameRuleProvider> logger)
     {
+        _logger = logger;
         DetectSystemPaths();
     }
 
@@ -144,7 +148,7 @@ internal sealed class ProfilePathAndUsernameRuleProvider : ISanitizationRuleProv
         }
         catch (Exception ex)
         {
-            CoreLogger.LogError("Error detecting system profile paths and usernames", ex);
+            LogErrorDetectingPaths(ex);
         }
     }
 
@@ -152,4 +156,7 @@ internal sealed class ProfilePathAndUsernameRuleProvider : ISanitizationRuleProv
         !CommonWords.Contains(username) &&
         username.Length is >= 3 and <= 50 &&
         !username.All(char.IsDigit);
+
+    [LoggerMessage(EventId = 0, Level = LogLevel.Error, Message = "Error detecting system profile paths and usernames")]
+    partial void LogErrorDetectingPaths(Exception ex);
 }

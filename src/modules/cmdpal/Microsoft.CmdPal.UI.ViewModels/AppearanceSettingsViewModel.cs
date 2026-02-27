@@ -113,7 +113,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.Theme != value)
             {
-                _settings.Theme = value;
+                _settings = _settings with { Theme = value };
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ThemeIndex));
                 Save();
@@ -128,7 +128,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.ColorizationMode != value)
             {
-                _settings.ColorizationMode = value;
+                _settings = _settings with { ColorizationMode = value };
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ColorizationModeIndex));
                 OnPropertyChanged(nameof(IsCustomTintVisible));
@@ -165,7 +165,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.CustomThemeColor != value)
             {
-                _settings.CustomThemeColor = value;
+                _settings = _settings with { CustomThemeColor = value };
 
                 OnPropertyChanged();
 
@@ -184,7 +184,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         get => _settings.CustomThemeColorIntensity;
         set
         {
-            _settings.CustomThemeColorIntensity = value;
+            _settings = _settings with { CustomThemeColorIntensity = value };
             OnPropertyChanged();
             OnPropertyChanged(nameof(EffectiveTintIntensity));
             Save();
@@ -196,7 +196,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         get => _settings.BackgroundImageTintIntensity;
         set
         {
-            _settings.BackgroundImageTintIntensity = value;
+            _settings = _settings with { BackgroundImageTintIntensity = value };
             OnPropertyChanged();
             OnPropertyChanged(nameof(EffectiveTintIntensity));
             Save();
@@ -210,7 +210,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.BackgroundImagePath != value)
             {
-                _settings.BackgroundImagePath = value;
+                _settings = _settings with { BackgroundImagePath = value };
                 OnPropertyChanged();
 
                 if (BackgroundImageOpacity == 0)
@@ -230,7 +230,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.BackgroundImageOpacity != value)
             {
-                _settings.BackgroundImageOpacity = value;
+                _settings = _settings with { BackgroundImageOpacity = value };
                 OnPropertyChanged();
                 Save();
             }
@@ -244,7 +244,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.BackgroundImageBrightness != value)
             {
-                _settings.BackgroundImageBrightness = value;
+                _settings = _settings with { BackgroundImageBrightness = value };
                 OnPropertyChanged();
                 Save();
             }
@@ -258,7 +258,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.BackgroundImageBlurAmount != value)
             {
-                _settings.BackgroundImageBlurAmount = value;
+                _settings = _settings with { BackgroundImageBlurAmount = value };
                 OnPropertyChanged();
                 Save();
             }
@@ -272,7 +272,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.BackgroundImageFit != value)
             {
-                _settings.BackgroundImageFit = value;
+                _settings = _settings with { BackgroundImageFit = value };
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(BackgroundImageFitIndex));
                 Save();
@@ -306,7 +306,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.BackdropOpacity != value)
             {
-                _settings.BackdropOpacity = value;
+                _settings = _settings with { BackdropOpacity = value };
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(EffectiveBackdropStyle));
                 OnPropertyChanged(nameof(EffectiveImageOpacity));
@@ -323,7 +323,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
             var newStyle = (BackdropStyle)value;
             if (_settings.BackdropStyle != newStyle)
             {
-                _settings.BackdropStyle = newStyle;
+                _settings = _settings with { BackdropStyle = newStyle };
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsBackdropOpacityVisible));

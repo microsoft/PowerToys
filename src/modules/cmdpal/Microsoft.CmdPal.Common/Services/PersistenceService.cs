@@ -6,14 +6,24 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.CmdPal.Common;
+namespace Microsoft.CmdPal.Common.Services;
 
-public partial class PersistenceService
+public sealed partial class PersistenceService
 {
-    private static bool TryParseJsonObject(string json, ILogger logger, [NotNullWhen(true)] out JsonObject? obj)
+    private readonly ILogger<PersistenceService> _logger;
+    private readonly IApplicationInfoService _applicationInfoService;
+
+    public PersistenceService(
+        ILogger<PersistenceService> logger,
+        IApplicationInfoService applicationInfoService)
+    {
+        _logger = logger;
+        _applicationInfoService = applicationInfoService;
+    }
+
+    private bool TryParseJsonObject(string json, [NotNullWhen(true)] out JsonObject? obj)
     {
         obj = null;
         try
@@ -23,12 +33,12 @@ public partial class PersistenceService
         }
         catch (Exception ex)
         {
-            Log_PersistenceParseFailure(logger, ex);
+            Log_PersistenceParseFailure(ex);
             return false;
         }
     }
 
-    private static bool TryReadSavedObject(string filePath, ILogger logger, [NotNullWhen(true)] out JsonObject? saved)
+    private bool TryReadSavedObject(string filePath, [NotNullWhen(true)] out JsonObject? saved)
     {
         saved = null;
 
@@ -45,30 +55,32 @@ public partial class PersistenceService
         }
         catch (Exception ex)
         {
-            Log_PersistenceReadFileFailure(logger, filePath, ex);
+            Log_PersistenceReadFileFailure(filePath, ex);
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(oldContent))
         {
-            Log_FileEmpty(logger, filePath);
+            Log_FileEmpty(filePath);
             return false;
         }
 
-        return TryParseJsonObject(oldContent, logger, out saved);
+        return TryParseJsonObject(oldContent, out saved);
     }
 
-    public static T LoadObject<T>(string filePath, JsonTypeInfo<T> typeInfo, ILogger logger)
+    public T LoadObject<T>(string fileName, JsonTypeInfo<T> typeInfo)
         where T : new()
     {
-        if (string.IsNullOrEmpty(filePath))
+        if (string.IsNullOrEmpty(fileName))
         {
-            throw new InvalidOperationException($"You must set a valid file path before loading {typeof(T).Name}");
+            throw new InvalidOperationException($"You must set a valid file name before loading {typeof(T).Name}");
         }
+
+        var filePath = SettingsJsonPath(fileName);
 
         if (!File.Exists(filePath))
         {
-            Log_FileDoesntExist(logger, typeof(T).Name, filePath);
+            Log_FileDoesntExist(typeof(T).Name, filePath);
             return new T();
         }
 
@@ -80,19 +92,18 @@ public partial class PersistenceService
         }
         catch (Exception ex)
         {
-            Log_PersistenceReadFailure(logger, typeof(T).Name, filePath, ex);
+            Log_PersistenceReadFailure(typeof(T).Name, filePath, ex);
             return new T();
         }
     }
 
-    public static void SaveObject<T>(
+    public void SaveObject<T>(
         T model,
         string filePath,
         JsonTypeInfo<T> typeInfo,
         JsonSerializerOptions optionsForWrite,
         Action<JsonObject>? beforeWriteMutation,
-        Action<T>? afterWriteCallback,
-        ILogger logger)
+        Action<T>? afterWriteCallback)
     {
         if (string.IsNullOrEmpty(filePath))
         {
@@ -103,13 +114,13 @@ public partial class PersistenceService
         {
             var json = JsonSerializer.Serialize(model, typeInfo);
 
-            if (!TryParseJsonObject(json, logger, out var newObj))
+            if (!TryParseJsonObject(json, out var newObj))
             {
-                Log_SerializationError(logger, typeof(T).Name);
+                Log_SerializationError(typeof(T).Name);
                 return;
             }
 
-            if (!TryReadSavedObject(filePath, logger, out var savedObj))
+            if (!TryReadSavedObject(filePath, out var savedObj))
             {
                 savedObj = new JsonObject();
             }
@@ -128,13 +139,13 @@ public partial class PersistenceService
         }
         catch (Exception ex)
         {
-            Log_PersistenceSaveFailure(logger, typeof(T).Name, filePath, ex);
+            Log_PersistenceSaveFailure(typeof(T).Name, filePath, ex);
         }
     }
 
-    public static string SettingsJsonPath(string fileName)
+    public string SettingsJsonPath(string fileName)
     {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CommandPalette");
+        var directory = _applicationInfoService.ConfigDirectory;
         Directory.CreateDirectory(directory);
 
         // now, the settings is just next to the exe
@@ -142,23 +153,23 @@ public partial class PersistenceService
     }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to save {typeName} to '{filePath}'.")]
-    static partial void Log_PersistenceSaveFailure(Extensions.Logging.ILogger logger, string typeName, string filePath, Exception exception);
+    partial void Log_PersistenceSaveFailure(string typeName, string filePath, Exception exception);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to read {typeName} from '{filePath}'.")]
-    static partial void Log_PersistenceReadFailure(Extensions.Logging.ILogger logger, string typeName, string filePath, Exception exception);
+    partial void Log_PersistenceReadFailure(string typeName, string filePath, Exception exception);
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Failed to serialize {typeName} to JsonObject.")]
-    static partial void Log_SerializationError(Extensions.Logging.ILogger logger, string typeName);
+    partial void Log_SerializationError(string typeName);
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "The provided {typeName} file does not exist ({filePath})")]
-    static partial void Log_FileDoesntExist(Extensions.Logging.ILogger logger, string typeName, string filePath);
+    partial void Log_FileDoesntExist(string typeName, string filePath);
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "The file at '{filePath}' is empty.")]
-    static partial void Log_FileEmpty(Extensions.Logging.ILogger logger, string filePath);
+    partial void Log_FileEmpty(string filePath);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to read file at '{filePath}'.")]
-    static partial void Log_PersistenceReadFileFailure(Extensions.Logging.ILogger logger, string filePath, Exception exception);
+    partial void Log_PersistenceReadFileFailure(string filePath, Exception exception);
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to parse persisted JSON.")]
-    static partial void Log_PersistenceParseFailure(Extensions.Logging.ILogger logger, Exception exception);
+    partial void Log_PersistenceParseFailure(Exception exception);
 }

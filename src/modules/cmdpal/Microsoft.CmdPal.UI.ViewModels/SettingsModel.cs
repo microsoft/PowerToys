@@ -9,73 +9,73 @@ using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsModel : ObservableObject
+public partial record SettingsModel
 {
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
-    public HotkeySettings? Hotkey { get; set; } = DefaultActivationShortcut;
+    public HotkeySettings? Hotkey { get; init; } = DefaultActivationShortcut;
 
-    public bool UseLowLevelGlobalHotkey { get; set; }
+    public bool UseLowLevelGlobalHotkey { get; init; }
 
-    public bool ShowAppDetails { get; set; }
+    public bool ShowAppDetails { get; init; }
 
-    public bool BackspaceGoesBack { get; set; }
+    public bool BackspaceGoesBack { get; init; }
 
-    public bool SingleClickActivates { get; set; }
+    public bool SingleClickActivates { get; init; }
 
-    public bool HighlightSearchOnActivate { get; set; } = true;
+    public bool HighlightSearchOnActivate { get; init; } = true;
 
-    public bool KeepPreviousQuery { get; set; }
+    public bool KeepPreviousQuery { get; init; }
 
-    public bool ShowSystemTrayIcon { get; set; } = true;
+    public bool ShowSystemTrayIcon { get; init } = true;
 
-    public bool IgnoreShortcutWhenFullscreen { get; set; }
+    public bool IgnoreShortcutWhenFullscreen { get; init; }
 
-    public bool AllowExternalReload { get; set; }
+    public bool AllowExternalReload { get; init; }
 
-    public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
+    public Dictionary<string, ProviderSettings> ProviderSettings { get; init; } = [];
 
-    public string[] FallbackRanks { get; set; } = [];
+    public string[] FallbackRanks { get; init; } = [];
 
-    public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
+    public Dictionary<string, CommandAlias> Aliases { get; init; } = [];
 
-    public List<TopLevelHotkey> CommandHotkeys { get; set; } = [];
+    public List<TopLevelHotkey> CommandHotkeys { get; init; } = [];
 
-    public MonitorBehavior SummonOn { get; set; } = MonitorBehavior.ToMouse;
+    public MonitorBehavior SummonOn { get; init; } = MonitorBehavior.ToMouse;
 
-    public bool DisableAnimations { get; set; } = true;
+    public bool DisableAnimations { get; init; } = true;
 
-    public WindowPosition? LastWindowPosition { get; set; }
+    public WindowPosition? LastWindowPosition { get; init; }
 
-    public TimeSpan AutoGoHomeInterval { get; set; } = Timeout.InfiniteTimeSpan;
+    public TimeSpan AutoGoHomeInterval { get; init; } = Timeout.InfiniteTimeSpan;
 
-    public EscapeKeyBehavior EscapeKeyBehaviorSetting { get; set; } = EscapeKeyBehavior.ClearSearchFirstThenGoBack;
+    public EscapeKeyBehavior EscapeKeyBehaviorSetting { get; init; } = EscapeKeyBehavior.ClearSearchFirstThenGoBack;
 
-    public UserTheme Theme { get; set; } = UserTheme.Default;
+    public UserTheme Theme { get; init; } = UserTheme.Default;
 
-    public ColorizationMode ColorizationMode { get; set; }
+    public ColorizationMode ColorizationMode { get; init; }
 
-    public Color CustomThemeColor { get; set; } = Colors.Transparent;
+    public Color CustomThemeColor { get; init; } = Colors.Transparent;
 
-    public int CustomThemeColorIntensity { get; set; } = 100;
+    public int CustomThemeColorIntensity { get; init; } = 100;
 
-    public int BackgroundImageTintIntensity { get; set; }
+    public int BackgroundImageTintIntensity { get; init; }
 
-    public int BackgroundImageOpacity { get; set; } = 20;
+    public int BackgroundImageOpacity { get; init; } = 20;
 
-    public int BackgroundImageBlurAmount { get; set; }
+    public int BackgroundImageBlurAmount { get; init; }
 
-    public int BackgroundImageBrightness { get; set; }
+    public int BackgroundImageBrightness { get; init; }
 
-    public BackgroundImageFit BackgroundImageFit { get; set; }
+    public BackgroundImageFit BackgroundImageFit { get; init; }
 
-    public string? BackgroundImagePath { get; set; }
+    public string? BackgroundImagePath { get; init; }
 
-    public BackdropStyle BackdropStyle { get; set; }
+    public BackdropStyle BackdropStyle { get; init; }
 
-    public int BackdropOpacity { get; set; } = 100;
+    public int BackdropOpacity { get; init; } = 100;
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////

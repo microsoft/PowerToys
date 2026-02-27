@@ -4,11 +4,12 @@
 
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ConfirmResultViewModel(IConfirmationArgs _args, WeakReference<IPageContext> context) :
-    ExtensionObjectViewModel(context)
+public partial class ConfirmResultViewModel(IConfirmationArgs _args, WeakReference<IPageContext> context, ILoggerFactory loggerFactory) :
+    ExtensionObjectViewModel(context, loggerFactory.CreateLogger(typeof(ConfirmResultViewModel).FullName!))
 {
     public ExtensionObject<IConfirmationArgs> Model { get; } = new(_args);
 
@@ -20,7 +21,7 @@ public partial class ConfirmResultViewModel(IConfirmationArgs _args, WeakReferen
 
     public bool IsPrimaryCommandCritical { get; private set; }
 
-    public CommandViewModel PrimaryCommand { get; private set; } = new(null, context);
+    public CommandViewModel PrimaryCommand { get; private set; } = new(null, context, loggerFactory);
 
     public override void InitializeProperties()
     {
@@ -33,7 +34,7 @@ public partial class ConfirmResultViewModel(IConfirmationArgs _args, WeakReferen
         Title = model.Title;
         Description = model.Description;
         IsPrimaryCommandCritical = model.IsPrimaryCommandCritical;
-        PrimaryCommand = new(model.PrimaryCommand, PageContext);
+        PrimaryCommand = new(model.PrimaryCommand, PageContext, loggerFactory);
         PrimaryCommand.InitializeProperties();
 
         UpdateProperty(nameof(Title));

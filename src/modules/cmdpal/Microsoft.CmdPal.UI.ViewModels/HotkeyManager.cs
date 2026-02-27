@@ -9,13 +9,19 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class HotkeyManager : ObservableObject
 {
-    private readonly TopLevelCommandManager _topLevelCommandManager;
-    private readonly List<TopLevelHotkey> _commandHotkeys;
+    private readonly SettingsService _settingsService;
+    private List<TopLevelHotkey> _commandHotkeys;
 
-    public HotkeyManager(TopLevelCommandManager tlcManager, SettingsService settingsService)
+    public HotkeyManager(SettingsService settingsService)
     {
-        _topLevelCommandManager = tlcManager;
+        _settingsService = settingsService;
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
         _commandHotkeys = settingsService.CurrentSettings.CommandHotkeys;
+    }
+
+    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    {
+        _commandHotkeys = sender.CommandHotkeys;
     }
 
     public void UpdateHotkey(string commandId, HotkeySettings? hotkey)

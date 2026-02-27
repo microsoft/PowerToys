@@ -3,23 +3,30 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common.Services.Sanitizer.Abstraction;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.Common.Services.Sanitizer;
 
 /// <summary>
 /// Specific sanitizer used for error report content. Builds on top of the generic TextSanitizer.
 /// </summary>
-public sealed class ErrorReportSanitizer
+public sealed partial class ErrorReportSanitizer
 {
-    private readonly TextSanitizer _sanitizer = new(BuildProviders(), onGuardrailTriggered: OnGuardrailTriggered);
+    private readonly ILogger<ErrorReportSanitizer> _logger;
+    private readonly TextSanitizer _sanitizer;
 
-    private static void OnGuardrailTriggered(GuardrailEventArgs eventArgs)
+    public ErrorReportSanitizer(ILogger<ErrorReportSanitizer> logger, ILoggerFactory loggerFactory)
     {
-        var msg = $"Sanitization guardrail triggered for rule '{eventArgs.RuleDescription}': original length={eventArgs.OriginalLength}, result length={eventArgs.ResultLength}, ratio={eventArgs.Ratio:F2}, threshold={eventArgs.Threshold:F2}";
-        CoreLogger.LogDebug(msg);
+        _logger = logger;
+        _sanitizer = new TextSanitizer(BuildProviders(loggerFactory), onGuardrailTriggered: OnGuardrailTriggered);
     }
 
-    private static IEnumerable<ISanitizationRuleProvider> BuildProviders()
+    private void OnGuardrailTriggered(GuardrailEventArgs eventArgs)
+    {
+        Log_LogSanitizationGuardrailTriggered(eventArgs.RuleDescription, eventArgs.OriginalLength, eventArgs.ResultLength, eventArgs.Ratio, eventArgs.Threshold);
+    }
+
+    private static IEnumerable<ISanitizationRuleProvider> BuildProviders(ILoggerFactory loggerFactory)
     {
         // Order matters
         return
@@ -32,7 +39,7 @@ public sealed class ErrorReportSanitizer
             new SecretKeyValueRulesProvider(),
             new EnvironmentPropertiesRuleProvider(),
             new FilenameMaskRuleProvider(),
-            new ProfilePathAndUsernameRuleProvider()
+            new ProfilePathAndUsernameRuleProvider(loggerFactory.CreateLogger<ProfilePathAndUsernameRuleProvider>())
         ];
     }
 
@@ -82,4 +89,9 @@ public sealed class ErrorReportSanitizer
 
     public string TestRule(string input, string ruleDescription)
         => _sanitizer.TestRule(input, ruleDescription);
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "Sanitization guardrail triggered for rule '{ruleDescription}': original length={originalLength}, result length={resultLength}, ratio={ratio:F2}, threshold={threshold:F2}")]
+    partial void Log_LogSanitizationGuardrailTriggered(string ruleDescription, int originalLength, int resultLength, double ratio, double threshold);
 }

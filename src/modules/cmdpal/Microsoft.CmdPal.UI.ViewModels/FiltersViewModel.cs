@@ -4,12 +4,14 @@
 
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class FiltersViewModel : ExtensionObjectViewModel
 {
     private readonly ExtensionObject<IFilters> _filtersModel;
+    private readonly ILoggerFactory _loggerFactory;
 
     public string CurrentFilterId { get; private set; } = string.Empty;
 
@@ -19,10 +21,14 @@ public partial class FiltersViewModel : ExtensionObjectViewModel
 
     public bool ShouldShowFilters => Filters.Length > 0;
 
-    public FiltersViewModel(ExtensionObject<IFilters> filters, WeakReference<IPageContext> context)
-        : base(context)
+    public FiltersViewModel(
+        ExtensionObject<IFilters> filters,
+        WeakReference<IPageContext> context,
+        ILoggerFactory loggerFactory)
+        : base(context, loggerFactory.CreateLogger<FiltersViewModel>())
     {
         _filtersModel = filters;
+        _loggerFactory = loggerFactory;
     }
 
     public override void InitializeProperties()
@@ -69,7 +75,7 @@ public partial class FiltersViewModel : ExtensionObjectViewModel
         {
             if (filter is IFilter filterItem)
             {
-                var filterItemViewModel = new FilterItemViewModel(filterItem, PageContext);
+                var filterItemViewModel = new FilterItemViewModel(filterItem, PageContext, _loggerFactory);
                 filterItemViewModel.InitializeProperties();
 
                 if (firstFilterItem is null)

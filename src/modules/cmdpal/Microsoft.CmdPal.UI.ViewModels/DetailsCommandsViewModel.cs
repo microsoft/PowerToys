@@ -4,19 +4,30 @@
 
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class DetailsCommandsViewModel(
-    IDetailsElement _detailsElement,
-    WeakReference<IPageContext> context) : DetailsElementViewModel(_detailsElement, context)
+public partial class DetailsCommandsViewModel : DetailsElementViewModel
 {
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly IDetailsElement _detailsElement;
+    private readonly ExtensionObject<IDetailsCommands> _dataModel;
+
     public List<CommandViewModel> Commands { get; private set; } = [];
 
     public bool HasCommands => Commands.Count > 0;
 
-    private readonly ExtensionObject<IDetailsCommands> _dataModel =
-        new(_detailsElement.Data as IDetailsCommands);
+    public DetailsCommandsViewModel(
+        IDetailsElement detailsElement,
+        WeakReference<IPageContext> context,
+        ILoggerFactory loggerFactory)
+        : base(detailsElement, context, loggerFactory)
+    {
+        _detailsElement = detailsElement;
+        _loggerFactory = loggerFactory;
+        _dataModel = new(detailsElement.Data as IDetailsCommands);
+    }
 
     public override void InitializeProperties()
     {
@@ -31,7 +42,7 @@ public partial class DetailsCommandsViewModel(
             .Commands?
             .Select(c =>
             {
-                var vm = new CommandViewModel(c, PageContext);
+                var vm = new CommandViewModel(c, PageContext, _loggerFactory);
                 vm.InitializeProperties();
                 return vm;
             })

@@ -8,14 +8,13 @@ using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -25,10 +24,17 @@ public partial class TopLevelCommandManager : ObservableObject,
     IPageContext,
     IDisposable
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly ICommandProviderCache _commandProviderCache;
     private readonly TaskScheduler _taskScheduler;
+    private readonly AliasManager _aliasManager;
+    private readonly HotkeyManager _hotkeyManager;
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly IExtensionService _extensionService;
+    private readonly SettingsService _settingsService;
+    private readonly CommandPaletteHost _commandPaletteHost;
+    private readonly ILogger<TopLevelCommandManager> _logger;
 
+    private readonly List<ICommandProvider> _builtInCommandProviders = [];
     private readonly List<CommandProviderWrapper> _builtInCommands = [];
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
     private readonly Lock _commandProvidersLock = new();
@@ -37,12 +43,27 @@ public partial class TopLevelCommandManager : ObservableObject,
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
     public TopLevelCommandManager(
-        IServiceProvider serviceProvider,
-        ICommandProviderCache commandProviderCache)
+        List<ICommandProvider> builtInCommandProviders,
+        ICommandProviderCache commandProviderCache,
+        TaskScheduler taskScheduler,
+        AliasManager aliasManager,
+        HotkeyManager hotkeyManager,
+        SettingsService settingsService,
+        IExtensionService extensionService,
+        CommandPaletteHost commandPaletteHost,
+        ILogger<TopLevelCommandManager> logger,
+        ILoggerFactory loggerFactory)
     {
-        _serviceProvider = serviceProvider;
         _commandProviderCache = commandProviderCache;
-        _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
+        _builtInCommandProviders = builtInCommandProviders;
+        _taskScheduler = taskScheduler;
+        _loggerFactory = loggerFactory;
+        _extensionService = extensionService;
+        _aliasManager = aliasManager;
+        _settingsService = settingsService;
+        _hotkeyManager = hotkeyManager;
+        _commandPaletteHost = commandPaletteHost;
+        _logger = logger;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
         WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
@@ -76,10 +97,9 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         // Load built-In commands first. These are all in-proc, and
         // owned by our ServiceProvider.
-        var builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
-        foreach (var provider in builtInCommands)
+        foreach (var provider in _builtInCommandProviders)
         {
-            CommandProviderWrapper wrapper = new(provider, _taskScheduler);
+            CommandProviderWrapper wrapper = new(provider, _taskScheduler, _hotkeyManager, _aliasManager, _loggerFactory);
             lock (_commandProvidersLock)
             {
                 _builtInCommands.Add(wrapper);
@@ -97,7 +117,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         s.Stop();
 
-        Logger.LogDebug($"Loading built-ins took {s.ElapsedMilliseconds}ms");
+        Log_LoadingBuiltinsFinished(s.ElapsedMilliseconds);
 
         return true;
     }
@@ -107,7 +127,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         WeakReference<IPageContext> weakSelf = new(this);
 
-        await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
+        await commandProvider.LoadTopLevelCommands(_settingsService, weakSelf);
 
         var commands = await Task.Factory.StartNew(
             () =>
@@ -155,7 +175,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     private async Task UpdateCommandsForProvider(CommandProviderWrapper sender, IItemsChangedEventArgs args)
     {
         WeakReference<IPageContext> weakSelf = new(this);
-        await sender.LoadTopLevelCommands(_serviceProvider, weakSelf);
+        await sender.LoadTopLevelCommands(_settingsService, weakSelf);
 
         List<TopLevelViewModel> newItems = [.. sender.TopLevelItems];
         foreach (var i in sender.FallbackItems)
@@ -222,8 +242,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     private async Task ReloadAllCommandsAsyncCore(CancellationToken cancellationToken)
     {
         IsLoading = true;
-        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
-        await extensionService.SignalStopExtensionsAsync();
+        await _extensionService.SignalStopExtensionsAsync();
 
         lock (TopLevelCommands)
         {
@@ -244,12 +263,10 @@ public partial class TopLevelCommandManager : ObservableObject,
     [RelayCommand]
     public async Task<bool> LoadExtensionsAsync()
     {
-        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
+        _extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
+        _extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
 
-        extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
-        extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
-
-        var extensions = (await extensionService.GetInstalledExtensionsAsync()).ToImmutableList();
+        var extensions = (await _extensionService.GetInstalledExtensionsAsync()).ToImmutableList();
         lock (_commandProvidersLock)
         {
             _extensionCommandProviders.Clear();
@@ -260,8 +277,8 @@ public partial class TopLevelCommandManager : ObservableObject,
             await StartExtensionsAndGetCommands(extensions);
         }
 
-        extensionService.OnExtensionAdded += ExtensionService_OnExtensionAdded;
-        extensionService.OnExtensionRemoved += ExtensionService_OnExtensionRemoved;
+        _extensionService.OnExtensionAdded += ExtensionService_OnExtensionAdded;
+        _extensionService.OnExtensionRemoved += ExtensionService_OnExtensionRemoved;
 
         IsLoading = false;
 
@@ -316,20 +333,22 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
 
         timer.Stop();
-        Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms");
+
+        Log_LoadingExtensionsCompleted(timer.ElapsedMilliseconds);
     }
 
     private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
     {
-        Logger.LogDebug($"Starting {extension.PackageFullName}");
+        Log_StartingExtension(extension.PackageFullName);
+
         try
         {
             await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10));
-            return new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
+            return new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache, _hotkeyManager, _aliasManager, _loggerFactory);
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to start extension {extension.PackageFullName}: {ex}");
+            Log_ErrorStartingExtension(extension.PackageFullName, ex);
             return null; // Return null for failed extensions
         }
     }
@@ -342,11 +361,11 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
         catch (TimeoutException)
         {
-            Logger.LogError($"Loading commands from {wrapper!.ExtensionHost?.Extension?.PackageFullName} timed out");
+            Log_TimeoutLoadingCommands(wrapper!.ExtensionHost?.Extension?.PackageFullName);
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to load commands for extension {wrapper!.ExtensionHost?.Extension?.PackageFullName}: {ex}");
+            Log_ErrorLoadingCommands(wrapper.ExtensionHost?.Extension?.PackageFullName, ex);
         }
 
         return null;
@@ -420,7 +439,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     public void Receive(PinCommandItemMessage message)
     {
         var wrapper = LookupProvider(message.ProviderId);
-        wrapper?.PinCommand(message.CommandId, _serviceProvider);
+        wrapper?.PinCommand(message.CommandId, _settingsService);
     }
 
     private CommandProviderWrapper? LookupProvider(string providerId)
@@ -435,7 +454,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     void IPageContext.ShowException(Exception ex, string? extensionHint)
     {
         var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint ?? "TopLevelCommandManager");
-        CommandPaletteHost.Instance.Log(message);
+        _commandPaletteHost.Log(message);
     }
 
     internal bool IsProviderActive(string id)
@@ -452,4 +471,34 @@ public partial class TopLevelCommandManager : ObservableObject,
         _reloadCommandsGate.Dispose();
         GC.SuppressFinalize(this);
     }
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "Finished loading built-in commands in {elapsedMs} ms.")]
+    partial void Log_LoadingBuiltinsFinished(long elapsedMs);
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "Loading extensions took {elapsedMs} ms")]
+    partial void Log_LoadingExtensionsCompleted(long elapsedMs);
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "Starting extension {extensionName}")]
+    partial void Log_StartingExtension(string extensionName);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Error starting extension {extensionName}")]
+    partial void Log_ErrorStartingExtension(string extensionName, Exception exception);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Timeout loading commands for extension {extensionName}")]
+    partial void Log_TimeoutLoadingCommands(string? extensionName);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Error loading commands for extension {extensionName}")]
+    partial void Log_ErrorLoadingCommands(string? extensionName, Exception exception);
 }

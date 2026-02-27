@@ -5,34 +5,38 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.Extensions.Logging;
 using Windows.Foundation;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class SettingsService
 {
-    private readonly ILogger _logger;
     private readonly string _filePath;
+    private readonly ILogger<SettingsService> _logger;
+    private readonly PersistenceService _persistenceService;
     private const string DeprecatedHotkeyGoesHomeKey = "HotkeyGoesHome";
-    private SettingsModel _settingsModel;
 
     public event TypedEventHandler<SettingsModel, object?>? SettingsChanged;
 
+    private SettingsModel _settingsModel;
+
     public SettingsModel CurrentSettings => _settingsModel;
 
-    public SettingsService(ILogger logger)
+    public SettingsService(
+        PersistenceService persistenceService,
+        ILogger<SettingsService> logger)
     {
-        this._logger = logger;
-        _filePath = PersistenceService.SettingsJsonPath("settings.json");
+        _logger = logger;
+        _persistenceService = persistenceService;
+        _filePath = _persistenceService.SettingsJsonPath("settings.json");
         _settingsModel = LoadSettings();
     }
 
     private SettingsModel LoadSettings()
     {
-        var settings = PersistenceService.LoadObject<SettingsModel>(_filePath, JsonSerializationContext.Default.SettingsModel!, _logger);
+        var settings = _persistenceService.LoadObject<SettingsModel>(_filePath, JsonSerializationContext.Default.SettingsModel!);
 
         var migratedAny = false;
         try
@@ -58,14 +62,13 @@ public partial class SettingsService
 
     public void SaveSettings(SettingsModel model)
     {
-        PersistenceService.SaveObject(
+        _persistenceService.SaveObject(
                         model,
                         _filePath,
                         JsonSerializationContext.Default.SettingsModel,
                         JsonSerializationContext.Default.Options,
                         beforeWriteMutation: obj => obj.Remove(DeprecatedHotkeyGoesHomeKey),
-                        afterWriteCallback: m => FinalizeSettingsSave(m),
-                        _logger);
+                        afterWriteCallback: m => FinalizeSettingsSave(m));
     }
 
     private void FinalizeSettingsSave(SettingsModel model)

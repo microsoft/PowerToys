@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -15,8 +16,11 @@ public partial class ProgressViewModel : ExtensionObjectViewModel
 
     public uint ProgressPercent { get; private set; }
 
-    public ProgressViewModel(IProgressState progress, WeakReference<IPageContext> context)
-        : base(context)
+    public ProgressViewModel(
+        IProgressState progress,
+        WeakReference<IPageContext> context,
+        ILogger<ProgressViewModel> logger)
+        : base(context, logger)
     {
         Model = new(progress);
     }

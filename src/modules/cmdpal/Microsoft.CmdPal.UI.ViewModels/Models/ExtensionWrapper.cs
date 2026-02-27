@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
-using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
 using Windows.Win32;
@@ -14,8 +14,10 @@ using WinRT;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
-public class ExtensionWrapper : IExtensionWrapper
+public partial class ExtensionWrapper : IExtensionWrapper
 {
+    private readonly ILogger<ExtensionWrapper> _logger;
+
     private const int HResultRpcServerNotRunning = -2147023174;
 
     private readonly string _appUserModelId;
@@ -31,7 +33,7 @@ public class ExtensionWrapper : IExtensionWrapper
 
     private IExtension? _extensionObject;
 
-    public ExtensionWrapper(AppExtension appExtension, string classId)
+    public ExtensionWrapper(AppExtension appExtension, string classId, ILogger<ExtensionWrapper> logger)
     {
         PackageDisplayName = appExtension.Package.DisplayName;
         ExtensionDisplayName = appExtension.DisplayName;
@@ -43,6 +45,7 @@ public class ExtensionWrapper : IExtensionWrapper
         Version = appExtension.Package.Id.Version;
         _appUserModelId = appExtension.AppInfo.AppUserModelId;
         _extensionId = appExtension.Id;
+        _logger = logger;
     }
 
     public string PackageDisplayName { get; }
@@ -104,7 +107,7 @@ public class ExtensionWrapper : IExtensionWrapper
             {
                 if (!IsRunning())
                 {
-                    Logger.LogDebug($"Starting {ExtensionDisplayName} ({ExtensionClassId})");
+                    Log_StartingExtension(ExtensionDisplayName, ExtensionClassId);
 
                     unsafe
                     {
@@ -120,7 +123,7 @@ public class ExtensionWrapper : IExtensionWrapper
 
                             if (hr.Value == -2147024893)
                             {
-                                Logger.LogError($"Failed to find {ExtensionDisplayName}: {hr}. It may have been uninstalled or deleted.");
+                                Log_FailedToFindExtensionUninstalled(ExtensionDisplayName, hr);
 
                                 // We don't really need to throw this exception.
                                 // We'll just return out nothing.
@@ -128,7 +131,7 @@ public class ExtensionWrapper : IExtensionWrapper
                             }
                             else if (hr.Value != 0)
                             {
-                                Logger.LogError($"Failed to find {ExtensionDisplayName}: {hr.Value}");
+                                Log_FailedToFindExtension(ExtensionDisplayName, hr);
                             }
 
                             // Marshal.ThrowExceptionForHR(hr);
@@ -136,7 +139,7 @@ public class ExtensionWrapper : IExtensionWrapper
                         }
                         catch (Exception e)
                         {
-                            Logger.LogDebug($"Failed to start {ExtensionDisplayName}. ex: {e.Message}");
+                            Log_FailedToStartExtension(ExtensionDisplayName, e);
                         }
                         finally
                         {
@@ -201,4 +204,24 @@ public class ExtensionWrapper : IExtensionWrapper
     public void AddProviderType(ProviderType providerType) => _providerTypes.Add(providerType);
 
     public bool HasProviderType(ProviderType providerType) => _providerTypes.Contains(providerType);
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "Starting extension {extensionDisplayName} with class id {extensionClassId}.")]
+    partial void Log_StartingExtension(string extensionDisplayName, string extensionClassId);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Failed to find {extensionDisplayName}: {hResult}. It may have been uninstalled or deleted.")]
+    partial void Log_FailedToFindExtensionUninstalled(string extensionDisplayName, int hResult);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Failed to find {extensionDisplayName}: {hResult}. It may have been uninstalled or deleted.")]
+    partial void Log_FailedToFindExtension(string extensionDisplayName, int hResult);
+
+    [LoggerMessage(
+        Level = LogLevel.Debug,
+        Message = "Failed to start extension {extensionDisplayName}.")]
+    partial void Log_FailedToStartExtension(string extensionDisplayName, Exception ex);
 }
