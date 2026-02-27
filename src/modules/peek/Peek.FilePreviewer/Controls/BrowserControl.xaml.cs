@@ -43,9 +43,13 @@ namespace Peek.FilePreviewer.Controls
 
         public delegate void DOMContentLoadedHandler(CoreWebView2? sender, CoreWebView2DOMContentLoadedEventArgs? args);
 
+        public delegate void FullScreenChangedHandler(bool isFullScreen);
+
         public event NavigationCompletedHandler? NavigationCompleted;
 
         public event DOMContentLoadedHandler? DOMContentLoaded;
+
+        public event FullScreenChangedHandler? FullScreenChanged;
 
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
                 nameof(Source),
@@ -111,6 +115,7 @@ namespace Peek.FilePreviewer.Controls
             {
                 PreviewBrowser.CoreWebView2.DOMContentLoaded -= CoreWebView2_DOMContentLoaded;
                 PreviewBrowser.CoreWebView2.ContextMenuRequested -= CoreWebView2_ContextMenuRequested;
+                PreviewBrowser.CoreWebView2.ContainsFullScreenElementChanged -= CoreWebView2_ContainsFullScreenElementChanged;
                 RemoveResourceFilter();
             }
         }
@@ -211,6 +216,7 @@ namespace Peek.FilePreviewer.Controls
                 PreviewBrowser.CoreWebView2.DOMContentLoaded += CoreWebView2_DOMContentLoaded;
                 PreviewBrowser.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
                 PreviewBrowser.CoreWebView2.ContextMenuRequested += CoreWebView2_ContextMenuRequested;
+                PreviewBrowser.CoreWebView2.ContainsFullScreenElementChanged += CoreWebView2_ContainsFullScreenElementChanged;
             }
             catch (Exception ex)
             {
@@ -437,6 +443,12 @@ namespace Peek.FilePreviewer.Controls
             var dataPackage = new DataPackage();
             dataPackage.SetText(OpenUriDialogContent.Text);
             Clipboard.SetContent(dataPackage);
+        }
+
+        private void CoreWebView2_ContainsFullScreenElementChanged(CoreWebView2 sender, object args)
+        {
+            // Notify listeners about fullscreen state change
+            FullScreenChanged?.Invoke(sender.ContainsFullScreenElement);
         }
     }
 }
