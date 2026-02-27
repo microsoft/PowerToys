@@ -32,9 +32,8 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         return _commands;
     }
 
-    // Soon...
-    // public override ICommandItem[]? GetDockBands()
-    // {
-    //     return new ICommandItem[] { _band };
-    // }
+    public override ICommandItem[]? GetDockBands()
+    {
+        return new ICommandItem[] { _band };
+    }
 }

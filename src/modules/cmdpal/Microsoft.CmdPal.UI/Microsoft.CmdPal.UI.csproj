@@ -19,6 +19,9 @@
 
     <Version>$(CmdPalVersion)</Version>
 
+    <!-- For MVVM Toolkit Partial Properties/AOT support -->
+    <LangVersion>preview</LangVersion>
+    
     <!-- OutputPath is set in CmdPal.Branding.props  -->
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -36,10 +39,10 @@
   </PropertyGroup>
 
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
-  <!--<PropertyGroup>
+	<!-- <PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
     <GeneratePackageLocally>true</GeneratePackageLocally>
-  </PropertyGroup>-->
+  </PropertyGroup> -->
 
   <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
     <SelfContained>true</SelfContained>
@@ -48,13 +51,13 @@
     <PublishAot>true</PublishAot>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(CIBuild)' == 'true' or '$(GeneratePackageLocally)' == 'true'">
-    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
-    <AppxBundle>Never</AppxBundle>
-    <AppxPackageTestDir>$(OutputPath)\AppPackages\Microsoft.CmdPal.UI_$(Version)_Test\</AppxPackageTestDir>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(CIBuild)' == 'true' or '$(GeneratePackageLocally)' == 'true'">
+		<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+		<AppxBundle>Never</AppxBundle>
+		<AppxPackageTestDir>$(OutputPath)\AppPackages\Microsoft.CmdPal.UI_$(Version)_Test\</AppxPackageTestDir>
+	</PropertyGroup>
 
-  <PropertyGroup>
+	<PropertyGroup>
     <!-- This lets us actually reference types from Microsoft.Terminal.UI and CmdPalKeyboardService -->
     <CsWinRTIncludes>Microsoft.Terminal.UI;CmdPalKeyboardService</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
@@ -82,6 +85,7 @@
     <None Remove="Controls\DevRibbon.xaml" />
     <None Remove="Controls\FallbackRankerDialog.xaml" />
     <None Remove="Controls\ScreenPreview.xaml" />
+    <None Remove="Controls\ScrollContainer.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
     <None Remove="ListDetailPage.xaml" />
     <None Remove="LoadingPage.xaml" />
@@ -92,8 +96,8 @@
     <None Remove="Settings\AppearancePage.xaml" />
     <None Remove="Settings\InternalPage.xaml" />
     <None Remove="ShellPage.xaml" />
-    <None Remove="Styles\Colors.xaml" />
     <None Remove="Styles\Settings.xaml" />
+    <None Remove="Styles\TeachingTip.xaml" />
     <None Remove="Styles\TextBox.xaml" />
     <None Remove="Styles\Theme.Normal.xaml" />
   </ItemGroup>
@@ -221,6 +225,24 @@
     <Content Update="Assets\WinGetLogo.svg">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Styles\TeachingTip.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Dock\DockItemControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\ScrollContainer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

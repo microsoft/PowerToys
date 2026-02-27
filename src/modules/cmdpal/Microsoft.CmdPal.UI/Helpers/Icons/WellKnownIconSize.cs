@@ -6,6 +6,7 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 internal enum WellKnownIconSize
 {
+    Size16 = 16,
     Size20 = 20,
     Size32 = 32,
     Size64 = 64,

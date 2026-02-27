@@ -254,15 +254,43 @@
   <data name="builtin_settings_extension_n_extensions_installed" xml:space="preserve">
     <value>{0} extensions installed</value>
   </data>
+  <data name="builtin_extension_name_fallback" xml:space="preserve">
+    <value>Built-in</value>
+    <comment>Fallback name for built-in extensions</comment>
+  </data>
+  <data name="dock_item_count_singular" xml:space="preserve">
+    <value>1 item</value>
+    <comment>Singular form for item count in dock band</comment>
+  </data>
+  <data name="dock_item_count_plural" xml:space="preserve">
+    <value>{0} items</value>
+    <comment>Plural form for item count in dock band</comment>
+  </data>
+  <data name="builtin_command_palette_title" xml:space="preserve">
+    <value>Open Command Palette</value>
+    <comment>Title for the command to open the command palette</comment>
+  </data>
   <data name="builtin_settings_appearance_pick_background_image_title" xml:space="preserve">
     <value>Pick background image</value>
   </data>
   <data name="fallbacks" xml:space="preserve">
     <value>Fallbacks</value>
   </data>
+  <data name="dock_edit_dock_name" xml:space="preserve">
+    <value>Edit dock</value>
+    <comment>Command name for editing the dock</comment>
+  </data>
+  <data name="dock_settings_name" xml:space="preserve">
+    <value>Dock settings</value>
+    <comment>Command name for opening dock settings</comment>
+  </data> 
   <data name="ShowDetailsCommand" xml:space="preserve">
     <value>Show details</value>
     <comment>Name for the command that shows details of an item</comment>
+  </data>
+  <data name="PinnedItemSuffix" xml:space="preserve">
+    <value>Pinned</value>
+    <comment>Suffix shown for pinned items in the dock</comment>
   </data>
   <data name="results" xml:space="preserve">
     <value>Results</value>

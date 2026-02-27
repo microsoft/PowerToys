@@ -15,7 +15,6 @@ using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
-using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
@@ -83,6 +82,7 @@ public sealed partial class MainListPage : DynamicListPage,
         AppStateModel appStateModel,
         IFuzzyMatcherProvider fuzzyMatcherProvider)
     {
+        Id = "com.microsoft.cmdpal.home";
         Title = Resources.builtin_home_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
         PlaceholderText = Properties.Resources.builtin_main_list_page_searchbar_placeholder;
@@ -456,11 +456,13 @@ public sealed partial class MainListPage : DynamicListPage,
                     var allNewApps = AllAppsCommandProvider.Page.GetItems().Cast<AppListItem>().ToList();
 
                     // We need to remove pinned apps from allNewApps so they don't show twice.
-                    var pinnedApps = PinnedAppsManager.Instance.GetPinnedAppIdentifiers();
+                    // Pinned app command IDs are stored in ProviderSettings.PinnedCommandIds.
+                    _settings.ProviderSettings.TryGetValue(AllAppsCommandProvider.WellKnownId, out var providerSettings);
+                    var pinnedCommandIds = providerSettings?.PinnedCommandIds;
 
-                    if (pinnedApps.Length > 0)
+                    if (pinnedCommandIds is not null && pinnedCommandIds.Count > 0)
                     {
-                        newApps = allNewApps.Where(w => pinnedApps.IndexOf(w.AppIdentifier) < 0);
+                        newApps = allNewApps.Where(li => li.Command != null && !pinnedCommandIds.Contains(li.Command.Id));
                     }
                     else
                     {

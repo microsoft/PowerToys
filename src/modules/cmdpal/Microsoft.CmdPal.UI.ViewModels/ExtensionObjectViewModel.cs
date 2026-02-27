@@ -59,7 +59,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
         LogIfDefaultScheduler();
     }
 
-    private protected ExtensionObjectViewModel(WeakReference<IPageContext> contextRef)
+    protected ExtensionObjectViewModel(WeakReference<IPageContext> contextRef)
     {
         ArgumentNullException.ThrowIfNull(contextRef);
 
