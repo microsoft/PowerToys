@@ -313,5 +313,44 @@ namespace ViewModelTests
             Assert.AreEqual(50, imageSize.Width);
             Assert.AreEqual(50, imageSize.Height);
         }
+
+        [TestMethod]
+        public void ImageSizeNameShouldNotBeSetToEmptyOrNull()
+        {
+            // arrange
+            ImageSize imageSize = new ImageSize()
+            {
+                Id = 0,
+                Name = "Original Name",
+                Fit = ResizeFit.Fit,
+                Width = 100,
+                Height = 100,
+                Unit = ResizeUnit.Pixel,
+            };
+
+            // Act - try to set name to empty string
+            imageSize.Name = string.Empty;
+
+            // Assert - name should remain unchanged
+            Assert.AreEqual("Original Name", imageSize.Name);
+
+            // Act - try to set name to null
+            imageSize.Name = null;
+
+            // Assert - name should remain unchanged
+            Assert.AreEqual("Original Name", imageSize.Name);
+
+            // Act - try to set name to whitespace only
+            imageSize.Name = "   ";
+
+            // Assert - name should remain unchanged
+            Assert.AreEqual("Original Name", imageSize.Name);
+
+            // Act - set name to valid value
+            imageSize.Name = "New Valid Name";
+
+            // Assert - name should be updated
+            Assert.AreEqual("New Valid Name", imageSize.Name);
+        }
     }
 }
