@@ -69,7 +69,6 @@ namespace ImageResizer.ViewModels
             Settings = settings;
             if (settings != null)
             {
-                settings.CustomSize.PropertyChanged += (sender, e) => settings.SelectedSize = (CustomSize)sender;
                 settings.AiSize.PropertyChanged += (sender, e) =>
                 {
                     if (e.PropertyName == nameof(AiSize.Scale))
