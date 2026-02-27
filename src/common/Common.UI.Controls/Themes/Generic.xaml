@@ -1,0 +1,8 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyVisual.xaml" />
+        <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyCharPresenter.xaml" />
+        <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/IsEnabledTextBlock/IsEnabledTextBlock.xaml" />
+        <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/ShortcutWithTextLabelControl/ShortcutWithTextLabelControl.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

@@ -28,6 +28,7 @@ internal static class ModuleGpoHelper
             ModuleType.Hosts => GPOWrapper.GetConfiguredHostsFileEditorEnabledValue(),
             ModuleType.ImageResizer => GPOWrapper.GetConfiguredImageResizerEnabledValue(),
             ModuleType.KeyboardManager => GPOWrapper.GetConfiguredKeyboardManagerEnabledValue(),
+            ModuleType.LightSwitch => GPOWrapper.GetConfiguredLightSwitchEnabledValue(),
             ModuleType.MouseHighlighter => GPOWrapper.GetConfiguredMouseHighlighterEnabledValue(),
             ModuleType.MouseJump => GPOWrapper.GetConfiguredMouseJumpEnabledValue(),
             ModuleType.MousePointerCrosshairs => GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue(),

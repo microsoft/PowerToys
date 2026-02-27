@@ -18,15 +18,16 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeAdvancedPaste()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.AdvancedPaste]);
+
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.AdvancedPaste);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(AdvancedPastePage));
+                OobeWindow.OpenMainWindowCallback(typeof(AdvancedPastePage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

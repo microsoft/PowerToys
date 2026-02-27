@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
@@ -14,16 +16,28 @@ namespace Microsoft.CmdPal.Ext.Apps;
 
 public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 {
+    // "none" instead of "0": the original default was accidentally "0", so existing
+    // users may have "0" stored. Using "none" lets us distinguish intentional "show
+    // no results" from the old accidental default (which is now treated as "use default").
+    private const string NoneResultLimitValue = "none";
+
+    private static readonly CompositeFormat DefaultLimitItemTitleFormat = CompositeFormat.Parse(Resources.limit_default);
+    private static readonly string DefaultLimitItemTitle = string.Format(
+        CultureInfo.CurrentCulture,
+        DefaultLimitItemTitleFormat.Format,
+        AllAppsCommandProvider.DefaultResultLimit);
+
     private static readonly string _namespace = "apps";
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
     private static readonly List<ChoiceSetSetting.Choice> _searchResultLimitChoices =
     [
-        new ChoiceSetSetting.Choice(Resources.limit_0, "0"),
-        new ChoiceSetSetting.Choice(Resources.limit_1, "1"),
-        new ChoiceSetSetting.Choice(Resources.limit_5, "5"),
-        new ChoiceSetSetting.Choice(Resources.limit_10, "10"),
+        new(DefaultLimitItemTitle, "-1"),
+        new(Resources.limit_0, NoneResultLimitValue),
+        new(Resources.limit_1, "1"),
+        new(Resources.limit_5, "5"),
+        new(Resources.limit_10, "10"),
     ];
 
 #pragma warning disable SA1401 // Fields should be private
@@ -52,9 +66,36 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         Namespaced(nameof(SearchResultLimit)),
         Resources.limit_fallback_results_source,
         Resources.limit_fallback_results_source_description,
-        _searchResultLimitChoices);
+        _searchResultLimitChoices)
+    {
+        IgnoreUnknownValue = true,
+    };
 
-    public string SearchResultLimit => _searchResultLimitSource.Value ?? string.Empty;
+    /// <summary>
+    /// Parsed search result limit. Returns <see langword="null"/> when the caller should
+    /// use its own default (unrecognized value, empty, or old stored "0").
+    /// </summary>
+    public int? SearchResultLimit
+    {
+        get
+        {
+            var raw = _searchResultLimitSource.Value ?? string.Empty;
+
+            if (string.Equals(raw, NoneResultLimitValue, StringComparison.Ordinal))
+            {
+                return 0;
+            }
+
+            if (string.IsNullOrWhiteSpace(raw)
+                || !int.TryParse(raw, out var result)
+                || result <= 0) //// <= 0: treats old stored "0" as "use default"
+            {
+                return null;
+            }
+
+            return result;
+        }
+    }
 
     private readonly ToggleSetting _enableStartMenuSource = new(
         Namespaced(nameof(EnableStartMenuSource)),

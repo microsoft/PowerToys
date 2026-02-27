@@ -38,7 +38,7 @@ Runs the full setup process.
 Runs setup but skips Visual Studio component installation.
 
 .EXAMPLE
-.\tools\build\setup-dev-environment.ps1 -VSInstallPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+.\tools\build\setup-dev-environment.ps1 -VSInstallPath "C:\Program Files\Microsoft Visual Studio\18\Enterprise"
 Runs setup with a custom Visual Studio installation path.
 
 .NOTES
@@ -170,6 +170,9 @@ if (-not $SkipVSComponents) {
 
         if (-not $VSInstallPath) {
             $commonPaths = @(
+                "${env:ProgramFiles}\Microsoft Visual Studio\18\Enterprise",
+                "${env:ProgramFiles}\Microsoft Visual Studio\18\Professional",
+                "${env:ProgramFiles}\Microsoft Visual Studio\18\Community",
                 "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise",
                 "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional",
                 "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community"
@@ -183,8 +186,8 @@ if (-not $SkipVSComponents) {
         }
 
         if (-not $VSInstallPath -or -not (Test-Path $VSInstallPath)) {
-            Write-Warning "  Could not find Visual Studio 2022 installation"
-            Write-Warning "  Please install Visual Studio 2022 and try again, or import .vsconfig manually"
+            Write-Warning "  Could not find Visual Studio installation"
+            Write-Warning "  Please install Visual Studio 2026 (or 2022 17.4+) and try again, or import .vsconfig manually"
         } else {
             Write-Host "  Found: $VSInstallPath" -ForegroundColor DarkGray
 
@@ -282,7 +285,7 @@ Write-Host ""
 Write-Host "Setup complete" -ForegroundColor Green
 Write-Host ""
 Write-Host "Next steps:"
-Write-Host "  1. Open PowerToys.slnx in Visual Studio 2022"
+Write-Host "  1. Open PowerToys.slnx in Visual Studio"
 Write-Host "  2. If prompted to install additional components, click Install"
 Write-Host "  3. Build the solution (Ctrl+Shift+B)"
 Write-Host ""

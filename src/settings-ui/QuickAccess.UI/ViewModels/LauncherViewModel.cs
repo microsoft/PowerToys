@@ -40,6 +40,7 @@ public sealed class LauncherViewModel : Observable
             _settingsRepository,
             new Microsoft.PowerToys.QuickAccess.Services.QuickAccessLauncher(_coordinator),
             moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == GpoRuleConfigured.Disabled,
+            moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == GpoRuleConfigured.Enabled,
             _resourceLoader);
         var updatingSettings = UpdatingSettings.LoadSettings() ?? new UpdatingSettings();
         IsUpdateAvailable = updatingSettings.State is UpdatingSettings.UpdatingState.ReadyToInstall or UpdatingSettings.UpdatingState.ReadyToDownload;

@@ -117,17 +117,37 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Filters_All_Name" xml:space="preserve">
+    <value>All Services</value>
+  </data>
+  <data name="Filters_Paused_Name" xml:space="preserve">
+    <value>Paused</value>
+  </data>
+  <data name="Filters_Running_Name" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="Filters_Stopped_Name" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
+  <data name="ManageWindowsServicesCommand_Title" xml:space="preserve">
+    <value>Manage Windows services</value>
+  </data>
+  <data name="ServicesListPage_Name" xml:space="preserve">
+    <value>Windows Services</value>
+  </data>
   <data name="WindowsServicesProvider_DisplayName" xml:space="preserve">
     <value>Windows Services</value>
   </data>
   <data name="wox_plugin_service_continue_pending" xml:space="preserve">
     <value>Continue</value>
+    <comment>Verb, stop selected service</comment>
   </data>
   <data name="wox_plugin_service_name" xml:space="preserve">
     <value>Name</value>
   </data>
   <data name="wox_plugin_service_open_services" xml:space="preserve">
     <value>Open services</value>
+    <comment>Verb (to open Windows Services MSC)</comment>
   </data>
   <data name="wox_plugin_service_paused" xml:space="preserve">
     <value>Paused</value>
@@ -143,6 +163,7 @@
   </data>
   <data name="wox_plugin_service_restart" xml:space="preserve">
     <value>Restart</value>
+    <comment>Verb, restart selected service</comment>
   </data>
   <data name="wox_plugin_service_restarted_notification" xml:space="preserve">
     <value>The service has been restarted</value>
@@ -154,7 +175,8 @@
     <value>Running</value>
   </data>
   <data name="wox_plugin_service_start" xml:space="preserve">
-    <value>Start (Enter)</value>
+    <value>Start</value>
+    <comment>Verb, start selected service</comment>
   </data>
   <data name="wox_plugin_service_started" xml:space="preserve">
     <value>Started</value>
@@ -193,7 +215,8 @@
     <value>Status</value>
   </data>
   <data name="wox_plugin_service_stop" xml:space="preserve">
-    <value>Stop (Enter)</value>
+    <value>Stop</value>
+    <comment>Verb, stop selected service</comment>
   </data>
   <data name="wox_plugin_service_stopped" xml:space="preserve">
     <value>Stopped</value>

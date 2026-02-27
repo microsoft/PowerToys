@@ -6,7 +6,6 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:h="using:Microsoft.CmdPal.UI.Helpers"
@@ -16,6 +15,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -66,7 +66,7 @@
                 <Setter Property="TextWrapping" Value="WrapWholeWords" />
             </Style>
 
-            <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
+            <DataTemplate x:Key="TagTemplate" x:DataType="viewModels:TagViewModel">
                 <cpcontrols:Tag
                     HorizontalAlignment="Left"
                     AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
@@ -78,7 +78,7 @@
                     ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
             </DataTemplate>
 
-            <DataTemplate x:Key="CommandTemplate" x:DataType="coreViewModels:CommandViewModel">
+            <DataTemplate x:Key="CommandTemplate" x:DataType="viewModels:CommandViewModel">
                 <StackPanel Orientation="Vertical">
                     <Button
                         Name="Command"
@@ -99,7 +99,7 @@
                 </StackPanel>
             </DataTemplate>
 
-            <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="coreViewModels:DetailsLinkViewModel">
+            <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="viewModels:DetailsLinkViewModel">
                 <StackPanel Orientation="Vertical">
                     <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <TextBlock
@@ -115,7 +115,7 @@
                     </HyperlinkButton>
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="coreViewModels:DetailsCommandsViewModel">
+            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="viewModels:DetailsCommandsViewModel">
                 <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <ItemsControl
@@ -124,7 +124,7 @@
                         Visibility="{x:Bind HasCommands, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="coreViewModels:DetailsSeparatorViewModel">
+            <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="viewModels:DetailsSeparatorViewModel">
                 <StackPanel Margin="0,8,8,0" Orientation="Vertical">
                     <TextBlock
                         Margin="0,8,0,0"
@@ -138,7 +138,7 @@
                         Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToVisible(Key), Mode=OneWay, FallbackValue=Collapsed}" />
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="coreViewModels:DetailsTagsViewModel">
+            <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="viewModels:DetailsTagsViewModel">
                 <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <ItemsControl

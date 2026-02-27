@@ -4,6 +4,7 @@
 
 using System.Runtime.InteropServices;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
@@ -65,6 +66,25 @@ internal sealed class Program
         }
 
         Logger.LogDebug($"Starting at {DateTime.UtcNow}");
+
+        // Log application startup information
+        try
+        {
+            var appInfoService = new ApplicationInfoService(() => Logger.CurrentVersionLogDirectoryPath);
+            var startupMessage = $"""
+                ============================================================
+                Hello World! Command Palette is starting.
+
+                {appInfoService.GetApplicationInfoSummary()}
+                ============================================================
+                """;
+            Logger.LogInfo(startupMessage);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to log application startup information", ex);
+        }
+
         PowerToysTelemetry.Log.WriteEvent(new CmdPalProcessStarted());
 
         WinRT.ComWrappersSupport.InitializeComWrappers();

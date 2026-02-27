@@ -3,7 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Services.Reports;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Common.Services.Reports;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -17,19 +18,20 @@ namespace Microsoft.CmdPal.UI.Helpers;
 /// </summary>
 internal sealed partial class GlobalErrorHandler : IDisposable
 {
-    private readonly ErrorReportBuilder _errorReportBuilder = new();
+    private ErrorReportBuilder? _errorReportBuilder;
     private Options? _options;
     private App? _app;
 
     // GlobalErrorHandler is designed to be self-contained; it can be registered and invoked before a service provider is available.
-    internal void Register(App app, Options options)
+    internal void Register(App app, Options options, IApplicationInfoService? appInfoService = null)
     {
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(options);
 
         _options = options;
-
         _app = app;
+        _errorReportBuilder = new ErrorReportBuilder(appInfoService);
+
         _app.UnhandledException += App_UnhandledException;
         TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -68,7 +70,7 @@ internal sealed partial class GlobalErrorHandler : IDisposable
 
         if (context == Context.MainThreadException)
         {
-            var report = _errorReportBuilder.BuildReport(ex, context.ToString(), _options?.RedactPii ?? true);
+            var report = _errorReportBuilder!.BuildReport(ex, context.ToString(), _options?.RedactPii ?? true);
 
             StoreReport(report, storeOnDesktop: _options?.StoreReportOnUserDesktop == true);
 

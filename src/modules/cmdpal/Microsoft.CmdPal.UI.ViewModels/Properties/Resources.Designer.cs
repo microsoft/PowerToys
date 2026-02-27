@@ -286,6 +286,42 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Built-in.
+        /// </summary>
+        public static string builtin_extension_name {
+            get {
+                return ResourceManager.GetString("builtin_extension_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}, {1} commands.
+        /// </summary>
+        public static string builtin_extension_subtext {
+            get {
+                return ResourceManager.GetString("builtin_extension_subtext", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}, {1}.
+        /// </summary>
+        public static string builtin_extension_subtext_disabled {
+            get {
+                return ResourceManager.GetString("builtin_extension_subtext_disabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}, {1} commands, {2} fallback commands.
+        /// </summary>
+        public static string builtin_extension_subtext_with_fallback {
+            get {
+                return ResourceManager.GetString("builtin_extension_subtext_with_fallback", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Home.
         /// </summary>
         public static string builtin_home_name {
@@ -435,6 +471,24 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string fallbacks {
             get {
                 return ResourceManager.GetString("fallbacks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Results.
+        /// </summary>
+        public static string results {
+            get {
+                return ResourceManager.GetString("results", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show details.
+        /// </summary>
+        public static string ShowDetailsCommand {
+            get {
+                return ResourceManager.GetString("ShowDetailsCommand", resourceCulture);
             }
         }
     }
