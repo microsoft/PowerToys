@@ -106,7 +106,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include apps registered in the Registry.
+        ///   Looks up a localized string similar to Include apps registered in the Windows Registry.
         /// </summary>
         internal static string enable_registry_source {
             get {
@@ -115,7 +115,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include apps found in the Start Menu.
+        ///   Looks up a localized string similar to Include apps found in the Start menu.
         /// </summary>
         internal static string enable_start_menu_source {
             get {
@@ -142,7 +142,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hide shortcuts to non-executable files in Start menu.
+        ///   Looks up a localized string similar to Hide shortcuts to non-executable files in the Start menu.
         /// </summary>
         internal static string hide_generic_files_in_start_menu {
             get {

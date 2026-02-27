@@ -170,13 +170,13 @@
     <value>Run as different user</value>
   </data>
   <data name="enable_start_menu_source" xml:space="preserve">
-    <value>Include apps found in the Start Menu</value>
+    <value>Include apps found in the Start menu</value>
   </data>
   <data name="enable_desktop_source" xml:space="preserve">
     <value>Include apps found on the desktop</value>
   </data>
   <data name="enable_registry_source" xml:space="preserve">
-    <value>Include apps registered in the Registry</value>
+    <value>Include apps registered in the Windows Registry</value>
   </data>
   <data name="enable_path_environment_variable_source" xml:space="preserve">
     <value>Include apps anywhere on the %PATH%</value>
@@ -238,6 +238,6 @@
     <value>Hide shortcuts to non-executable files on Desktop</value>
   </data>
   <data name="hide_generic_files_in_start_menu" xml:space="preserve">
-    <value>Hide shortcuts to non-executable files in Start menu</value>
+    <value>Hide shortcuts to non-executable files in the Start menu</value>
   </data>
 </root>
