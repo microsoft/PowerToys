@@ -18,7 +18,7 @@ using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
 using PowerDisplay.ViewModels;
 using Windows.Graphics;
-using WinUIEx;
+using WinRT.Interop;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay
@@ -27,11 +27,14 @@ namespace PowerDisplay
     /// PowerDisplay main window
     /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)]
-    public sealed partial class MainWindow : WindowEx, IDisposable
+    public sealed partial class MainWindow : Window, IDisposable
     {
         private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
         private MainViewModel? _viewModel;
         private HotkeyService? _hotkeyService;
+        private nint _hWnd;
+        private bool _isWindowCloaked;
+        private DispatcherTimer? _resizeDebounceTimer;
 
         // Expose ViewModel as property for x:Bind
         public MainViewModel ViewModel => _viewModel ?? throw new InvalidOperationException("ViewModel not initialized");
@@ -49,7 +52,12 @@ namespace PowerDisplay
 
                 Logger.LogTrace("MainWindow constructor: Calling InitializeComponent");
                 this.InitializeComponent();
-                Logger.LogTrace("MainWindow constructor: InitializeComponent completed");
+                _hWnd = WindowNative.GetWindowHandle(this);
+
+                // Cloak window immediately to prevent any visual artifacts during setup.
+                // The window stays cloaked until the first ShowWindow() call.
+                _isWindowCloaked = WindowHelper.CloakWindow(_hWnd);
+                Logger.LogTrace("MainWindow constructor: InitializeComponent completed, window cloaked");
 
                 // 2. Configure window immediately (synchronous, no data dependency)
                 Logger.LogTrace("MainWindow constructor: Configuring window");
@@ -110,7 +118,7 @@ namespace PowerDisplay
         {
             _hasInitialized = true;
             Logger.LogInfo("MainWindow: Initialization completed via ViewModel event, _hasInitialized=true");
-            AdjustWindowSizeToContent();
+            ScheduleAdjustWindowSize();
         }
 
         private bool _hasInitialized;
@@ -125,7 +133,9 @@ namespace PowerDisplay
             Logger.LogTrace($"OnWindowActivated: WindowActivationState={args.WindowActivationState}");
 
             // Auto-hide window when it loses focus (deactivated)
-            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            // Only hide if window is actually visible (not cloaked), to avoid
+            // spurious hide events when the window is activated while cloaked during setup.
+            if (args.WindowActivationState == WindowActivationState.Deactivated && !_isWindowCloaked)
             {
                 Logger.LogInfo("OnWindowActivated: Window deactivated, hiding window");
                 HideWindow();
@@ -150,49 +160,46 @@ namespace PowerDisplay
                     Logger.LogWarning("ShowWindow: Window not fully initialized yet, showing anyway");
                 }
 
-                // Adjust size BEFORE showing to prevent flicker
-                // This measures content and positions window at correct size
-                Logger.LogTrace("ShowWindow: Adjusting window size to content");
+                // Ensure window is cloaked during setup to prevent flicker.
+                // All positioning, DPI transitions, and layout happen invisibly.
+                if (!_isWindowCloaked)
+                {
+                    _isWindowCloaked = WindowHelper.CloakWindow(_hWnd);
+                }
+
+                // Adjust size and position while cloaked.
+                // Two-phase positioning in PositionWindowBottomRight handles cross-monitor
+                // DPI transitions correctly (Move to target monitor first, then MoveAndResize).
+                Logger.LogTrace("ShowWindow: Adjusting window size to content (cloaked)");
                 AdjustWindowSizeToContent();
 
-                // CRITICAL: WinUI3 windows must be Activated at least once to display properly.
-                // In PowerToys mode, window is created but never activated until first show.
-                // Without Activate(), Show() may not actually render the window on screen.
-                Logger.LogTrace("ShowWindow: Calling this.Activate()");
+                // Activate and show window (still cloaked - invisible to user)
+                Logger.LogTrace("ShowWindow: Activating window (cloaked)");
                 this.Activate();
-
-                // Now show the window - it should appear at the correct size
-                Logger.LogTrace("ShowWindow: Calling this.Show()");
-                this.Show();
-
-                // Ensure window stays on top of other windows
-                this.IsAlwaysOnTop = true;
-                Logger.LogTrace("ShowWindow: IsAlwaysOnTop set to true");
-
-                // Ensure window gets keyboard focus using WinUIEx's BringToFront
-                // This is necessary for Tab navigation to work without clicking first
-                this.BringToFront();
-                Logger.LogTrace("ShowWindow: BringToFront called");
+                WindowHelper.ShowWindow(_hWnd, true);
+                WindowHelper.SetWindowTopmost(_hWnd, true);
+                WindowHelper.BringToFront(_hWnd);
 
                 // Clear focus from any interactive element (e.g., Slider) to prevent
                 // showing the value tooltip when the window opens
                 RootGrid.Focus(FocusState.Programmatic);
 
-                // Verify window is visible
-                bool isVisible = IsWindowVisible();
-                Logger.LogInfo($"ShowWindow: Window visibility after show: {isVisible}");
-                if (!isVisible)
+                // Uncloak to reveal the window at its final position and size.
+                // All DPI transitions and layout are already complete.
+                if (_isWindowCloaked)
                 {
-                    Logger.LogError("ShowWindow: Window not visible after show attempt, forcing visibility");
-                    this.Activate();
-                    this.Show();
-                    this.BringToFront();
-                    Logger.LogInfo($"ShowWindow: After forced show, visibility: {IsWindowVisible()}");
+                    if (WindowHelper.UncloakWindow(_hWnd))
+                    {
+                        _isWindowCloaked = false;
+                        Logger.LogTrace("ShowWindow: Window uncloaked");
+                    }
+                    else
+                    {
+                        Logger.LogError("ShowWindow: Failed to uncloak window");
+                    }
                 }
-                else
-                {
-                    Logger.LogInfo("ShowWindow: Window shown successfully");
-                }
+
+                Logger.LogInfo("ShowWindow: Window shown successfully");
             }
             catch (Exception ex)
             {
@@ -205,20 +212,26 @@ namespace PowerDisplay
         {
             Logger.LogInfo("HideWindow: Hiding window");
 
-            // Hide window
-            this.Hide();
+            // Cloak the window to make it instantly invisible at the DWM level.
+            // The window stays "shown" so the XAML rendering pipeline remains warm,
+            // avoiding cold-start flicker on the next ShowWindow() call.
+            if (!_isWindowCloaked)
+            {
+                _isWindowCloaked = WindowHelper.CloakWindow(_hWnd);
+            }
 
-            Logger.LogTrace($"HideWindow: Window hidden, visibility now: {IsWindowVisible()}");
+            Logger.LogTrace("HideWindow: Window cloaked (hidden)");
         }
 
         /// <summary>
-        /// Check if window is currently visible
+        /// Check if window is currently visible (not cloaked)
         /// </summary>
-        /// <returns>True if window is visible, false otherwise</returns>
+        /// <returns>True if window is visible and not cloaked, false otherwise</returns>
         public bool IsWindowVisible()
         {
-            bool visible = this.Visible;
-            Logger.LogTrace($"IsWindowVisible: Returning {visible}");
+            // Window is only truly visible when it's not cloaked
+            bool visible = !_isWindowCloaked && WindowHelper.IsWindowVisible(_hWnd);
+            Logger.LogTrace($"IsWindowVisible: Returning {visible} (cloaked={_isWindowCloaked})");
             return visible;
         }
 
@@ -254,17 +267,13 @@ namespace PowerDisplay
         private void OnUIRefreshRequested(object? sender, EventArgs e)
         {
             // Adjust window size when UI configuration changes (feature visibility toggles)
-            DispatcherQueue.TryEnqueue(() => AdjustWindowSizeToContent());
+            ScheduleAdjustWindowSize();
         }
 
         private void OnMonitorsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             // Adjust window size when monitors collection changes (event-driven!)
-            // The UI binding will update first, then we adjust size
-            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-            {
-                AdjustWindowSizeToContent();
-            });
+            ScheduleAdjustWindowSize();
         }
 
         private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -274,11 +283,7 @@ namespace PowerDisplay
                 e.PropertyName == nameof(_viewModel.HasMonitors) ||
                 e.PropertyName == nameof(_viewModel.ShowNoMonitorsMessage))
             {
-                // Use Low priority to ensure UI bindings update first
-                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-                {
-                    AdjustWindowSizeToContent();
-                });
+                ScheduleAdjustWindowSize();
             }
         }
 
@@ -316,8 +321,8 @@ namespace PowerDisplay
         {
             try
             {
-                // Window properties (IsResizable, IsMaximizable, IsMinimizable,
-                // IsTitleBarVisible, IsShownInSwitchers) are set in XAML
+                // Base popup window configuration (presenter, taskbar, title bar collapse)
+                WindowHelper.ConfigureAsPopupWindow(this, _hWnd);
 
                 // Set minimal initial window size - will be adjusted before showing
                 // Using minimal height to prevent "large window shrinking" flicker
@@ -329,17 +334,10 @@ namespace PowerDisplay
                 // Set window title
                 this.AppWindow.Title = "PowerDisplay";
 
-                // Custom title bar - completely remove all buttons
+                // Additional title bar customization: make all buttons fully transparent
                 var titleBar = this.AppWindow.TitleBar;
                 if (titleBar != null)
                 {
-                    // Extend content into title bar area
-                    titleBar.ExtendsContentIntoTitleBar = true;
-
-                    // Completely remove title bar height
-                    titleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
-
-                    // Set all button colors to transparent
                     titleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
                     titleBar.ButtonInactiveBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
                     titleBar.ButtonForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
@@ -354,14 +352,36 @@ namespace PowerDisplay
                 }
 
                 // Use Win32 API to further disable window moving (removes WS_CAPTION, WS_SYSMENU, etc.)
-                var hWnd = this.GetWindowHandle();
-                WindowHelper.DisableWindowMovingAndResizing(hWnd);
+                WindowHelper.DisableWindowMovingAndResizing(_hWnd);
             }
             catch (Exception ex)
             {
                 // Ignore window setup errors
                 Logger.LogWarning($"Window configuration error: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Schedule a debounced window size adjustment. Multiple calls within the
+        /// debounce interval (50ms) are coalesced into a single resize, preventing
+        /// flicker when multiple events fire in quick succession (e.g., monitors
+        /// being added one by one, property changes during scan completion).
+        /// </summary>
+        private void ScheduleAdjustWindowSize()
+        {
+            if (_resizeDebounceTimer == null)
+            {
+                _resizeDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+                _resizeDebounceTimer.Tick += (s, e) =>
+                {
+                    _resizeDebounceTimer.Stop();
+                    AdjustWindowSizeToContent();
+                };
+            }
+
+            // Restart the timer on each call - only the last one fires
+            _resizeDebounceTimer.Stop();
+            _resizeDebounceTimer.Start();
         }
 
         private void AdjustWindowSizeToContent()
@@ -378,7 +398,7 @@ namespace PowerDisplay
                 MainContainer?.Measure(new Windows.Foundation.Size(AppConstants.UI.WindowWidth, double.PositiveInfinity));
                 var contentHeight = (int)Math.Ceiling(MainContainer?.DesiredSize.Height ?? 0);
 
-                // Apply min/max height limits and reposition (WindowEx handles DPI automatically)
+                // Apply min/max height limits and reposition
                 // Min height ensures window is visible even if content hasn't loaded yet
                 var finalHeight = Math.Max(AppConstants.UI.MinWindowHeight, Math.Min(contentHeight, AppConstants.UI.MaxWindowHeight));
                 Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, finalHeight={finalHeight}");
@@ -394,11 +414,16 @@ namespace PowerDisplay
         {
             try
             {
+                // AppWindow.Size returns physical pixels, but PositionWindowBottomRight
+                // expects DIU and will scale internally. Convert back to DIU to avoid
+                // double-scaling.
                 var windowSize = this.AppWindow.Size;
+                double dpiScale = WindowHelper.GetDpiScale(this);
+                int heightDiu = (int)(windowSize.Height / dpiScale);
                 WindowHelper.PositionWindowBottomRight(
-                    this,  // MainWindow inherits from WindowEx
+                    this,
                     AppConstants.UI.WindowWidth,
-                    windowSize.Height,
+                    heightDiu,
                     AppConstants.UI.WindowRightMargin);
             }
             catch (Exception)
@@ -699,6 +724,7 @@ namespace PowerDisplay
 
         public void Dispose()
         {
+            _resizeDebounceTimer?.Stop();
             _hotkeyService?.Dispose();
             _viewModel?.Dispose();
             GC.SuppressFinalize(this);

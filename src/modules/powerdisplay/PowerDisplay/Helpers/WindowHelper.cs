@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
-using WinUIEx;
+using Microsoft.UI.Xaml;
+using Windows.Graphics;
+using WinRT.Interop;
 
 namespace PowerDisplay.Helpers
 {
@@ -77,6 +79,19 @@ namespace PowerDisplay.Helpers
         [LibraryImport("user32.dll", EntryPoint = "IsWindowVisible")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool IsWindowVisibleNative(nint hWnd);
+
+        [LibraryImport("user32.dll", EntryPoint = "GetDpiForWindow")]
+        private static partial uint GetDpiForWindowNative(nint hWnd);
+
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool SetForegroundWindow(nint hWnd);
+
+        // DWM Window Cloaking - hides window at compositor level while keeping it fully functional
+        private const int DwmwaCloak = 13;
+
+        [LibraryImport("dwmapi.dll", EntryPoint = "DwmSetWindowAttribute")]
+        private static partial int DwmSetWindowAttributeNative(nint hwnd, int attr, ref int attrValue, int attrSize);
 
         /// <summary>
         /// Check if window is visible
@@ -172,13 +187,58 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
+        /// Configure a window as a borderless popup (no title bar, no taskbar entry,
+        /// not resizable/maximizable/minimizable). Both MainWindow and IdentifyWindow
+        /// share this base configuration.
+        /// </summary>
+        /// <param name="window">WinUI window to configure</param>
+        /// <param name="hWnd">Window handle</param>
+        /// <param name="alwaysOnTop">Whether the window should stay on top of other windows</param>
+        public static void ConfigureAsPopupWindow(Window window, nint hWnd, bool alwaysOnTop = false)
+        {
+            // Disable maximize, minimize, resize
+            if (window.AppWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.IsMaximizable = false;
+                presenter.IsMinimizable = false;
+                presenter.IsResizable = false;
+                if (alwaysOnTop)
+                {
+                    presenter.IsAlwaysOnTop = true;
+                }
+            }
+
+            // Hide from Alt+Tab / taskbar
+            HideFromTaskbar(hWnd);
+
+            // Collapse title bar completely
+            var titleBar = window.AppWindow.TitleBar;
+            if (titleBar != null)
+            {
+                titleBar.ExtendsContentIntoTitleBar = true;
+                titleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// Get the DPI value for a window
+        /// </summary>
+        /// <param name="window">WinUI window</param>
+        /// <returns>DPI value (96 = 100%, 120 = 125%, 144 = 150%, 192 = 200%)</returns>
+        public static uint GetDpiForWindow(Window window)
+        {
+            var hWnd = WindowNative.GetWindowHandle(window);
+            return GetDpiForWindowNative(hWnd);
+        }
+
+        /// <summary>
         /// Get the DPI scale factor for a window (relative to standard 96 DPI)
         /// </summary>
-        /// <param name="window">WinUIEx window</param>
+        /// <param name="window">WinUI window</param>
         /// <returns>DPI scale factor (1.0 = 100%, 1.25 = 125%, 1.5 = 150%, 2.0 = 200%)</returns>
-        public static double GetDpiScale(WindowEx window)
+        public static double GetDpiScale(Window window)
         {
-            return (float)window.GetDpiForWindow() / 96.0;
+            return GetDpiForWindow(window) / 96.0;
         }
 
         /// <summary>
@@ -193,69 +253,120 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
+        /// Bring a window to the foreground
+        /// </summary>
+        public static void BringToFront(nint hWnd)
+        {
+            SetForegroundWindow(hWnd);
+        }
+
+        /// <summary>
+        /// Cloak a window using DWM. The window is invisible at the compositor level
+        /// but remains fully functional (processes messages, layout, DPI changes).
+        /// </summary>
+        /// <returns>True if cloaking succeeded</returns>
+        public static bool CloakWindow(nint hWnd)
+        {
+            int cloak = 1;
+            return DwmSetWindowAttributeNative(hWnd, DwmwaCloak, ref cloak, sizeof(int)) == 0;
+        }
+
+        /// <summary>
+        /// Uncloak a previously cloaked window, making it visible again.
+        /// </summary>
+        /// <returns>True if uncloaking succeeded</returns>
+        public static bool UncloakWindow(nint hWnd)
+        {
+            int cloak = 0;
+            return DwmSetWindowAttributeNative(hWnd, DwmwaCloak, ref cloak, sizeof(int)) == 0;
+        }
+
+        /// <summary>
         /// Position a window at the bottom-right corner of the monitor where the mouse cursor is located.
         /// Correctly handles all edge cases:
         /// - Multi-monitor setups
         /// - Taskbar at any position (top/bottom/left/right)
         /// - Different DPI settings
         /// </summary>
-        /// <param name="window">WinUIEx window to position</param>
+        /// <param name="window">WinUI window to position</param>
         /// <param name="width">Window width in device-independent units (DIU)</param>
         /// <param name="height">Window height in device-independent units (DIU)</param>
         /// <param name="rightMargin">Right margin in device-independent units (DIU)</param>
         public static void PositionWindowBottomRight(
-            WindowEx window,
+            Window window,
             int width,
             int height,
             int rightMargin = 0)
         {
-            // RectWork already includes correct offsets for taskbar position
-            var monitors = MonitorInfo.GetDisplayMonitors();
-            if (monitors == null || monitors.Count == 0)
+            var displayAreas = DisplayArea.FindAll();
+            if (displayAreas == null || displayAreas.Count == 0)
             {
-                ManagedCommon.Logger.LogWarning("PositionWindowBottomRight: No monitors found, skipping positioning");
+                ManagedCommon.Logger.LogWarning("PositionWindowBottomRight: No display areas found, skipping positioning");
                 return;
             }
 
-            // Find the monitor where the mouse cursor is located
-            var targetMonitor = GetMonitorAtCursor(monitors);
-            var workArea = targetMonitor.RectWork;
+            // Find the display area where the mouse cursor is located
+            var targetArea = GetDisplayAreaAtCursor(displayAreas);
+            var workArea = targetArea.WorkArea;
+
+            // Only move to the target monitor if the window is not already on it.
+            // This avoids a visible jump to the monitor center on every resize.
+            // The move is needed for cross-monitor DPI transitions: without it,
+            // GetDpiScale returns the wrong DPI and WM_DPICHANGED auto-scaling
+            // breaks the bottom-right alignment.
+            var windowPos = window.AppWindow.Position;
+            if (windowPos.X < workArea.X || windowPos.X >= workArea.X + workArea.Width ||
+                windowPos.Y < workArea.Y || windowPos.Y >= workArea.Y + workArea.Height)
+            {
+                window.AppWindow.Move(new PointInt32(
+                    workArea.X + (workArea.Width / 2),
+                    workArea.Y + (workArea.Height / 2)));
+            }
+
+            // Now the window is on the target monitor, DPI is correct.
+            // No DPI change will occur during MoveAndResize, so no auto-scaling.
             double dpiScale = GetDpiScale(window);
 
-            // Calculate bottom-right position
-            // RectWork.Right/Bottom already account for taskbar position
-            double x = workArea.Right - (dpiScale * (width + rightMargin));
-            double y = workArea.Bottom - (dpiScale * height);
+            // Convert DIU to physical pixels
+            int physWidth = (int)Math.Ceiling(width * dpiScale);
+            int physHeight = (int)Math.Ceiling(height * dpiScale);
+            int physMargin = (int)Math.Ceiling(rightMargin * dpiScale);
 
-            window.MoveAndResize(x, y, width, height);
+            // Calculate bottom-right position in physical pixels
+            // WorkArea already accounts for taskbar position
+            int x = workArea.X + workArea.Width - physWidth - physMargin;
+            int y = workArea.Y + workArea.Height - physHeight;
+
+            window.AppWindow.MoveAndResize(new RectInt32(x, y, physWidth, physHeight));
         }
 
         /// <summary>
-        /// Get the monitor where the mouse cursor is currently located.
-        /// Falls back to primary monitor if cursor position cannot be determined.
+        /// Get the display area where the mouse cursor is currently located.
+        /// Falls back to primary display area if cursor position cannot be determined.
         /// </summary>
-        /// <param name="monitors">List of available monitors</param>
-        /// <returns>MonitorInfo of the monitor containing the cursor</returns>
-        private static MonitorInfo GetMonitorAtCursor(IList<MonitorInfo> monitors)
+        /// <param name="displayAreas">List of available display areas</param>
+        /// <returns>DisplayArea containing the cursor</returns>
+        private static DisplayArea GetDisplayAreaAtCursor(IReadOnlyList<DisplayArea> displayAreas)
         {
             // Try to get cursor position using Win32 API
             if (GetCursorPos(out var cursorPos))
             {
-                // Find the monitor that contains the cursor point
-                foreach (var monitor in monitors)
+                // Find the display area that contains the cursor point
+                foreach (var area in displayAreas)
                 {
-                    if (cursorPos.X >= monitor.RectMonitor.Left &&
-                        cursorPos.X < monitor.RectMonitor.Right &&
-                        cursorPos.Y >= monitor.RectMonitor.Top &&
-                        cursorPos.Y < monitor.RectMonitor.Bottom)
+                    var bounds = area.OuterBounds;
+                    if (cursorPos.X >= bounds.X &&
+                        cursorPos.X < bounds.X + bounds.Width &&
+                        cursorPos.Y >= bounds.Y &&
+                        cursorPos.Y < bounds.Y + bounds.Height)
                     {
-                        return monitor;
+                        return area;
                     }
                 }
             }
 
-            // Fallback to first monitor (typically primary)
-            return monitors[0];
+            // Fallback to first display area (typically primary)
+            return displayAreas[0];
         }
     }
 }
