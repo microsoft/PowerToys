@@ -21,21 +21,21 @@ internal sealed class CropAndLockModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new CropAndLockReparentCommand())
+            yield return new ListItem(new CropAndLockReparentCommand() { Id = "com.microsoft.powertoys.cropAndLock.reparent" })
             {
                 Title = Resources.CropAndLock_Reparent_Title,
                 Subtitle = Resources.CropAndLock_Reparent_Subtitle,
                 Icon = icon,
             };
 
-            yield return new ListItem(new CropAndLockThumbnailCommand())
+            yield return new ListItem(new CropAndLockThumbnailCommand() { Id = "com.microsoft.powertoys.cropAndLock.thumbnail" })
             {
                 Title = Resources.CropAndLock_Thumbnail_Title,
                 Subtitle = Resources.CropAndLock_Thumbnail_Subtitle,
                 Icon = icon,
             };
 
-            yield return new ListItem(new CropAndLockScreenshotCommand())
+            yield return new ListItem(new CropAndLockScreenshotCommand() { Id = "com.microsoft.powertoys.cropAndLock.screenshot" })
             {
                 Title = Resources.CropAndLock_Screenshot_Title,
                 Subtitle = Resources.CropAndLock_Screenshot_Subtitle,
@@ -43,7 +43,7 @@ internal sealed class CropAndLockModuleCommandProvider : ModuleCommandProvider
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.cropAndLock.openSettings" })
         {
             Title = title,
             Subtitle = Resources.CropAndLock_Settings_Subtitle,
