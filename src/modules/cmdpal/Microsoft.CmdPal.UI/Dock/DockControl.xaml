@@ -182,7 +182,7 @@
         <Grid
             x:Name="ContentGrid"
             Margin="4"
-            Padding="4,0,4,0"
+            Padding="0,0,0,0"
             Background="Transparent"
             RightTapped="RootGrid_RightTapped">
             <Grid.ColumnDefinitions>

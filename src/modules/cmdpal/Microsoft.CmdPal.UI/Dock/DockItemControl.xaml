@@ -75,48 +75,48 @@
                                     AutomationProperties.Name="{TemplateBinding Title}"
                                     Background="Transparent"
                                     ColumnSpacing="8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
 
-                                <!--  Icon  -->
-                                <ContentPresenter
-                                    x:Name="IconPresenter"
-                                    VerticalAlignment="Center"
-                                    Content="{TemplateBinding Icon}" />
+                                    <!--  Icon  -->
+                                    <ContentPresenter
+                                        x:Name="IconPresenter"
+                                        VerticalAlignment="Center"
+                                        Content="{TemplateBinding Icon}" />
 
-                                <!--  Text (Title + Subtitle)  -->
-                                <StackPanel
-                                    x:Name="TextPanel"
-                                    Grid.Column="1"
-                                    VerticalAlignment="Center"
-                                    Visibility="{TemplateBinding TextVisibility}">
-                                    <TextBlock
-                                        x:Name="TitleText"
-                                        MinWidth="24"
-                                        MaxWidth="100"
-                                        HorizontalAlignment="Left"
+                                    <!--  Text (Title + Subtitle)  -->
+                                    <StackPanel
+                                        x:Name="TextPanel"
+                                        Grid.Column="1"
                                         VerticalAlignment="Center"
-                                        FontFamily="Segoe UI"
-                                        FontSize="12"
-                                        Text="{TemplateBinding Title}"
-                                        TextAlignment="Left"
-                                        TextTrimming="CharacterEllipsis"
-                                        TextWrapping="NoWrap" />
-                                    <TextBlock
-                                        x:Name="SubtitleText"
-                                        MaxWidth="100"
-                                        Margin="0,-4,0,0"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center"
-                                        FontFamily="Segoe UI"
-                                        FontSize="10"
-                                        Foreground="{ThemeResource TextFillColorTertiary}"
-                                        Text="{TemplateBinding Subtitle}"
-                                        TextAlignment="Center"
-                                        TextTrimming="CharacterEllipsis"
-                                        TextWrapping="NoWrap" />
+                                        Visibility="{TemplateBinding TextVisibility}">
+                                        <TextBlock
+                                            x:Name="TitleText"
+                                            MinWidth="24"
+                                            MaxWidth="100"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            FontFamily="Segoe UI"
+                                            FontSize="12"
+                                            Text="{TemplateBinding Title}"
+                                            TextAlignment="Left"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="NoWrap" />
+                                        <TextBlock
+                                            x:Name="SubtitleText"
+                                            MaxWidth="100"
+                                            Margin="0,-4,0,0"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            FontFamily="Segoe UI"
+                                            FontSize="10"
+                                            Foreground="{ThemeResource TextFillColorTertiary}"
+                                            Text="{TemplateBinding Subtitle}"
+                                            TextAlignment="Center"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="NoWrap" />
                                     </StackPanel>
                                 </Grid>
                             </Grid>
