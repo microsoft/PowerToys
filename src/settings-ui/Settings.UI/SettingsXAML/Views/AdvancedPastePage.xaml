@@ -198,6 +198,15 @@
                             <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard
+                            Name="PasteAsPlainTextTrimmedShortcut"
+                            x:Uid="PasteAsPlainTextTrimmed_Shortcut"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
+                            <controls:ShortcutControl
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                AllowDisable="True"
+                                HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextTrimmedShortcut, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard
                             Name="PasteAsMarkdownShortcut"
                             x:Uid="PasteAsMarkdown_Shortcut"
                             HeaderIcon="{ui:FontIcon Glyph=&#xe8a5;}">
