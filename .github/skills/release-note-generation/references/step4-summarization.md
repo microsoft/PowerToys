@@ -16,7 +16,7 @@ For each CSV in `Generated Files/ReleaseNotes/grouped_csv/`, create a markdown f
 - Use the “Verb-ed + Scenario + Impact” sentence structure—make readers think, “That’s exactly what I need” or “Yes, that’s an awesome fix.”; The "impact" can be end-user focused (written to convey user excitement) or technical (performance/stability) when user-facing impact is minimal.
 - If nothing special on impact or unclear impact, mark as needing human summary
 - Source from Title, Body, and CopilotSummary (prefer CopilotSummary when available)
-- If the column `NeedThanks` in CSV is `True`, append: `Thanks [@Author](https://github.com/Author)!`
+- The `NeedThanks` column contains a comma-separated list of external contributor usernames who should be thanked (empty = no thanks needed, all authors are core team). For each non-empty `NeedThanks` value, append thanks for **every** listed contributor: `Thanks [@user1](https://github.com/user1)!` for a single contributor, or `Thanks [@user1](https://github.com/user1) and [@user2](https://github.com/user2)!` for two, or `Thanks [@user1](https://github.com/user1), [@user2](https://github.com/user2), and [@user3](https://github.com/user3)!` for three or more.
 - Do NOT include PR numbers in bullet lines
 - Do NOT mention “security” or “privacy” issues, since these are not known and could be leveraged by attackers in earlier versions. Instead, describe the user-facing scenario, usage, or impact.
 - If confidence < 70%, write: `Human Summary Needed: <PR full link>`

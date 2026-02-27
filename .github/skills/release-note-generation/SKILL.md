@@ -33,7 +33,7 @@ Generated Files/ReleaseNotes/
 
 ## Prerequisites
 
-- GitHub CLI (`gh`) installed and authenticated
+- **GitHub CLI (`gh`) installed and authenticated** — The collection script uses `gh pr view` and `gh api graphql` to fetch PR metadata and co-author information. Run `gh auth status` to verify; if not logged in, run `gh auth login` first. See [Step 1.0.0](./references/step1-collection.md) for details.
 - MCP Server: github-mcp-server installed
 - GitHub Copilot code review enabled for the org/repo
 
@@ -48,6 +48,10 @@ Generated Files/ReleaseNotes/
 ## Workflow Overview
 
 ```
+┌────────────────────────────────┐
+│ 1.0 Verify gh auth + MemberList │
+└────────────────────────────────┘
+              ↓
 ┌────────────────────────────────┐
 │ 1.1 Collect PRs (stable range) │
 └────────────────────────────────┘
@@ -85,6 +89,7 @@ Generated Files/ReleaseNotes/
 
 | Step | Action | Details |
 |------|--------|---------|
+| 1.0 | Verify prerequisites | `gh auth status` must pass; generate MemberList.md |
 | 1.1 | Collect PRs | From previous release tag on `stable` branch → `sorted_prs.csv` |
 | 1.2 | Assign Milestones | Ensure all PRs have correct milestone |
 | 2.1–2.4 | Label PRs | Auto-suggest + human label low-confidence |
