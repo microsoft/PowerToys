@@ -20,6 +20,8 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     private static readonly TimeDateExtensionPage _timeDateExtensionPage = new(_settingsManager);
     private readonly FallbackTimeDateItem _fallbackTimeDateItem = new(_settingsManager);
 
+    private readonly ListItem _bandItem;
+
     public TimeDateCommandsProvider()
     {
         DisplayName = Resources.Microsoft_plugin_timedate_plugin_name;
@@ -33,6 +35,8 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 
         Icon = _timeDateExtensionPage.Icon;
         Settings = _settingsManager.Settings;
+
+        _bandItem = new NowDockBand();
     }
 
     private string GetTranslatedPluginDescription()
@@ -47,4 +51,85 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     public override ICommandItem[] TopLevelCommands() => [_command];
 
     public override IFallbackCommandItem[] FallbackCommands() => [_fallbackTimeDateItem];
+
+    public override ICommandItem[] GetDockBands()
+    {
+        var wrappedBand = new WrappedDockItem(
+            [_bandItem],
+            "com.microsoft.cmdpal.timedate.dockBand",
+            Resources.Microsoft_plugin_timedate_dock_band_title);
+
+        return new ICommandItem[] { wrappedBand };
+    }
 }
+#pragma warning disable SA1402 // File may only contain a single type
+
+internal sealed partial class NowDockBand : ListItem
+{
+    private static readonly TimeSpan UpdateInterval = TimeSpan.FromSeconds(60);
+    private CopyTextCommand _copyTimeCommand;
+    private CopyTextCommand _copyDateCommand;
+
+    public NowDockBand()
+    {
+        Command = new NoOpCommand() { Id = "com.microsoft.cmdpal.timedate.dockBand" };
+        _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_time_command_name };
+        _copyDateCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_date_command_name };
+        MoreCommands = [
+            new CommandContextItem(_copyTimeCommand),
+            new CommandContextItem(_copyDateCommand)
+        ];
+        UpdateText();
+
+        // Create a timer to update the time every minute
+        System.Timers.Timer timer = new(UpdateInterval.TotalMilliseconds);
+
+        // but we want it to tick on the minute, so calculate the initial delay
+        var now = DateTime.Now;
+        timer.Interval = UpdateInterval.TotalMilliseconds - ((now.Second * 1000) + now.Millisecond);
+
+        // then after the first tick, set it to 60 seconds
+        timer.Elapsed += Timer_ElapsedFirst;
+        timer.Start();
+    }
+
+    private void Timer_ElapsedFirst(object sender, System.Timers.ElapsedEventArgs e)
+    {
+        // After the first tick, set the interval to 60 seconds
+        if (sender is System.Timers.Timer timer)
+        {
+            timer.Interval = UpdateInterval.TotalMilliseconds;
+            timer.Elapsed -= Timer_ElapsedFirst;
+            timer.Elapsed += Timer_Elapsed;
+
+            // Still call the callback, so that we update the clock
+            Timer_Elapsed(sender, e);
+        }
+    }
+
+    private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+    {
+        UpdateText();
+    }
+
+    private void UpdateText()
+    {
+        var timeExtended = false; // timeLongFormat ?? settings.TimeWithSecond;
+        var dateExtended = false; // dateLongFormat ?? settings.DateWithWeekday;
+        var dateTimeNow = DateTime.Now;
+
+        var timeString = dateTimeNow.ToString(
+            TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended),
+            CultureInfo.CurrentCulture);
+        var dateString = dateTimeNow.ToString(
+            TimeAndDateHelper.GetStringFormat(FormatStringType.Date, timeExtended, dateExtended),
+            CultureInfo.CurrentCulture);
+
+        Title = timeString;
+        Subtitle = dateString;
+
+        _copyDateCommand.Text = dateString;
+        _copyTimeCommand.Text = timeString;
+    }
+}
+#pragma warning restore SA1402 // File may only contain a single type

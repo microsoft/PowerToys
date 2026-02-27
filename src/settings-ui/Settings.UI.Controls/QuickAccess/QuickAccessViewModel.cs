@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private readonly SettingsRepository<KeyboardManagerSettings> _kbmSettingsRepository;
         private readonly IQuickAccessLauncher _launcher;
         private readonly Func<ModuleType, bool> _isModuleGpoDisabled;
+        private readonly Func<ModuleType, bool> _isModuleGpoEnabled;
         private readonly ResourceLoader _resourceLoader;
         private readonly DispatcherQueue _dispatcherQueue;
         private GeneralSettings _generalSettings;
@@ -33,11 +34,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             ISettingsRepository<GeneralSettings> settingsRepository,
             IQuickAccessLauncher launcher,
             Func<ModuleType, bool> isModuleGpoDisabled,
+            Func<ModuleType, bool> isModuleGpoEnabled,
             ResourceLoader resourceLoader)
         {
             _settingsRepository = settingsRepository;
             _launcher = launcher;
             _isModuleGpoDisabled = isModuleGpoDisabled;
+            _isModuleGpoEnabled = isModuleGpoEnabled;
             _resourceLoader = resourceLoader;
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
@@ -73,7 +76,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AddFlyoutMenuItem(ModuleType.Hosts);
             AddFlyoutMenuItem(ModuleType.KeyboardManager);
             AddFlyoutMenuItem(ModuleType.LightSwitch);
-            AddFlyoutMenuItem(ModuleType.PowerDisplay);
+
+            // AddFlyoutMenuItem(ModuleType.PowerDisplay); // TEMPORARILY_DISABLED: PowerDisplay
             AddFlyoutMenuItem(ModuleType.PowerLauncher);
             AddFlyoutMenuItem(ModuleType.PowerOCR);
             AddFlyoutMenuItem(ModuleType.RegistryPreview);
@@ -119,13 +123,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 if (item.Tag is ModuleType moduleType)
                 {
-                    bool visible = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType);
-
-                    // KeyboardManager Quick Access item is only shown when using the new editor
-                    if (moduleType == ModuleType.KeyboardManager)
-                    {
-                        visible = visible && _kbmSettingsRepository.SettingsConfig.Properties.UseNewEditor;
-                    }
+                    bool visible = GetItemVisibility(moduleType);
 
                     item.Visible = visible;
                 }
@@ -145,8 +143,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private bool GetItemVisibility(ModuleType moduleType)
         {
-            // Generally, if module enabled, then quick access item is visible.
-            bool visible = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType);
+            // Generally, if gpo is enabled or if module enabled, then quick access item is visible.
+            bool visible = _isModuleGpoEnabled(moduleType) || Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType);
 
             // For KeyboardManager Quick Access item is only shown when using the new editor
             if (moduleType == ModuleType.KeyboardManager)

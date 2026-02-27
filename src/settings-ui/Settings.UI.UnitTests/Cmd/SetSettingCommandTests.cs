@@ -43,6 +43,7 @@ public class SetSettingCommandTests
     [DataRow(typeof(FancyZonesSettings), nameof(FZConfigProperties.FancyzonesBorderColor), "#00FF00")]
     [DataRow(typeof(MeasureToolSettings), nameof(MeasureToolProperties.ActivationShortcut), "Ctrl+Alt+Delete")]
     [DataRow(typeof(AlwaysOnTopSettings), nameof(AlwaysOnTopProperties.SoundEnabled), "False")]
+    [DataRow(typeof(AlwaysOnTopSettings), nameof(AlwaysOnTopProperties.ShowInSystemMenu), "true")]
     [DataRow(typeof(PowerAccentSettings), nameof(PowerAccentProperties.ShowUnicodeDescription), "true")]
     [DataRow(typeof(AwakeSettings), nameof(AwakeProperties.Mode), "EXPIRABLE")]
     [DataRow(typeof(AwakeSettings), nameof(AwakeProperties.ExpirationDateTime), "March 31, 2020 15:00 +00:00")]

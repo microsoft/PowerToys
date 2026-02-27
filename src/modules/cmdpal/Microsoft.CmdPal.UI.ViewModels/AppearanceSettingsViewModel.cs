@@ -18,9 +18,9 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDisposable
 {
-    private static readonly Color DefaultTintColor = Color.FromArgb(255, 0, 120, 212);
+    internal static readonly Color DefaultTintColor = Color.FromArgb(255, 0, 120, 212);
 
-    private static readonly ObservableCollection<Color> WindowsColorSwatches = [
+    internal static readonly ObservableCollection<Color> WindowsColorSwatches = [
 
         // row 0
         Color.FromArgb(255, 255, 185, 0), // #ffb900

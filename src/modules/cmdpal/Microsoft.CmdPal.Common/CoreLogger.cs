@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-
 namespace Microsoft.CmdPal.Common;
 
 public static class CoreLogger
@@ -14,6 +12,8 @@ public static class CoreLogger
     }
 
     private static ILogger? _logger;
+
+    public static ILogger? Instance => _logger;
 
     public static void LogError(string message, Exception ex, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
     {

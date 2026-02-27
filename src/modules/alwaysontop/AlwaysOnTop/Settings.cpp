@@ -14,6 +14,7 @@ namespace NonLocalizable
 
     const static wchar_t* HotkeyID = L"hotkey";
     const static wchar_t* SoundEnabledID = L"sound-enabled";
+    const static wchar_t* ShowInSystemMenuID = L"show-in-system-menu";
     const static wchar_t* FrameEnabledID = L"frame-enabled";
     const static wchar_t* FrameThicknessID = L"frame-thickness";
     const static wchar_t* FrameColorID = L"frame-color";
@@ -112,6 +113,16 @@ void AlwaysOnTopSettings::LoadSettings()
             {
                 m_settings.enableSound = val;
                 NotifyObservers(SettingId::SoundEnabled);
+            }
+        }
+
+        if (const auto jsonVal = values.get_bool_value(NonLocalizable::ShowInSystemMenuID))
+        {
+            auto val = *jsonVal;
+            if (m_settings.showInSystemMenu != val)
+            {
+                m_settings.showInSystemMenu = val;
+                NotifyObservers(SettingId::ShowInSystemMenu);
             }
         }
 

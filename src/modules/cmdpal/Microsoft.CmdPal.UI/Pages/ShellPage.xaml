@@ -200,14 +200,19 @@
 
                 <!--  Back button  -->
                 <StackPanel Orientation="Horizontal">
+                    <!--
+                        This border is to hold a bit of padding we need when
+                        the back button is hidden
+                    -->
+                    <Border Margin="20,0,0,0" Visibility="{x:Bind ViewModel.CurrentPage.HasBackButton, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                     <Image
                         Width="20"
-                        Margin="20,0,6,0"
+                        Margin="0,0,6,0"
                         HorizontalAlignment="Center"
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                         AutomationProperties.AccessibilityView="Raw"
                         Source="ms-appx:///Assets/icon.svg"
-                        Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                        Visibility="{x:Bind ViewModel.CurrentPage.IsRootPage, Mode=OneWay}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
                                 EasingMode="EaseIn"
@@ -250,7 +255,7 @@
                                               FontSize=14}"
                         FontSize="16"
                         Style="{StaticResource SubtleButtonStyle}"
-                        Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
+                        Visibility="{x:Bind ViewModel.CurrentPage.HasBackButton, Mode=OneWay}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
                                 EasingMode="EaseIn"
@@ -297,7 +302,7 @@
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         SourceKey="{x:Bind ViewModel.CurrentPage.Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}"
-                        Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
+                        Visibility="{x:Bind ViewModel.CurrentPage.IsRootPage, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
                                 From="0"
