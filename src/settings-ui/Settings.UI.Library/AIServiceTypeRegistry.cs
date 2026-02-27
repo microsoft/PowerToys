@@ -97,6 +97,18 @@ public static class AIServiceTypeRegistry
             PrivacyLabel = "AdvancedPaste_Ollama_PrivacyLabel",
             PrivacyUri = new Uri("https://ollama.org/privacy"),
         },
+        [AIServiceType.Bedrock] = new AIServiceTypeMetadata
+        {
+            ServiceType = AIServiceType.Bedrock,
+            DisplayName = "Bedrock",
+            IconPath = "ms-appx:///Assets/Settings/Icons/Models/AzureAI.svg",
+            IsOnlineService = true,
+            LegalDescription = "AdvancedPaste_Bedrock_LegalDescription",
+            TermsLabel = "AdvancedPaste_Bedrock_TermsLabel",
+            TermsUri = new Uri("https://aws.amazon.com/bedrock/"),
+            PrivacyLabel = "AdvancedPaste_Bedrock_PrivacyLabel",
+            PrivacyUri = new Uri("https://aws.amazon.com/privacy/"),
+        },
         [AIServiceType.Onnx] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.Onnx,

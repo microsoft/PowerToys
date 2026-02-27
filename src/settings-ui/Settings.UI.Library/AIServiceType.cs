@@ -19,5 +19,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         Google,
         AzureAIInference,
         Ollama,
+        Bedrock,
     }
 }
