@@ -5,6 +5,7 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -26,6 +27,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinRT.Interop;
 using WinUIEx;
+using WindowExtensions = Microsoft.CmdPal.UI.Helpers.WindowExtensions;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -45,6 +47,7 @@ public sealed partial class DockWindow : WindowEx,
 
     private readonly IThemeService _themeService;
     private readonly DockWindowViewModel _windowViewModel;
+    private readonly HiddenOwnerWindowBehavior _hiddenOwnerWindowBehavior = new();
 
     private HWND _hwnd = HWND.Null;
     private APPBARDATA _appBarData;
@@ -80,7 +83,7 @@ public sealed partial class DockWindow : WindowEx,
         Root.Children.Add(_dock);
         ExtendsContentIntoTitleBar = true;
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
-        AppWindow.IsShownInSwitchers = false;
+        _hiddenOwnerWindowBehavior.ShowInTaskbar(this, false);
         if (AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
         {
             overlappedPresenter.SetBorderAndTitleBar(false, false);
