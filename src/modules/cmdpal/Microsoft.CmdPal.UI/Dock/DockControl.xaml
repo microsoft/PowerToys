@@ -29,7 +29,10 @@
             </ItemsPanelTemplate>
 
             <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
-                <ItemsRepeater ItemsSource="{x:Bind Items, Mode=OneWay}" Layout="{StaticResource ItemsOrientationLayout}">
+                <ItemsRepeater
+                    ItemsSource="{x:Bind Items, Mode=OneWay}"
+                    Layout="{StaticResource ItemsOrientationLayout}"
+                    TabFocusNavigation="Local">
                     <ItemsRepeater.Transitions>
                         <TransitionCollection />
                     </ItemsRepeater.Transitions>
@@ -63,10 +66,12 @@
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="IsItemClickEnabled" Value="False" />
                 <Setter Property="SelectionMode" Value="None" />
+                <Setter Property="IsTabStop" Value="False" />
                 <!--  Drag properties controlled by code-behind based on IsEditMode  -->
                 <Setter Property="CanDragItems" Value="False" />
                 <Setter Property="CanReorderItems" Value="False" />
                 <Setter Property="AllowDrop" Value="False" />
+                <Setter Property="TabFocusNavigation" Value="Local" />
             </Style>
 
             <Style x:Key="DockBandListViewItemStyle" TargetType="ListViewItem">
@@ -76,6 +81,7 @@
                 <Setter Property="MinWidth" Value="0" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                 <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                <Setter Property="IsTabStop" Value="False" />
             </Style>
 
             <Style
@@ -225,7 +231,8 @@
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
                         ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
                         SelectionMode="None"
-                        Style="{StaticResource DockBandListViewStyle}" />
+                        Style="{StaticResource DockBandListViewStyle}"
+                        TabIndex="0" />
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
 
@@ -260,7 +267,8 @@
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
                         ItemsSource="{x:Bind ViewModel.CenterItems, Mode=OneWay}"
                         SelectionMode="None"
-                        Style="{StaticResource DockBandListViewStyle}" />
+                        Style="{StaticResource DockBandListViewStyle}"
+                        TabIndex="1" />
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
 
@@ -294,7 +302,8 @@
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
                         ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
                         SelectionMode="None"
-                        Style="{StaticResource DockBandListViewStyle}">
+                        Style="{StaticResource DockBandListViewStyle}"
+                        TabIndex="2">
                         <ListView.ItemContainerTransitions>
                             <TransitionCollection />
                         </ListView.ItemContainerTransitions>

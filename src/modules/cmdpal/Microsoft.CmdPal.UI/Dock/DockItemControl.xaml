@@ -54,6 +54,9 @@
             <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
             <Setter Property="CornerRadius" Value="{StaticResource DockItemCornerRadius}" />
             <Setter Property="TextVisibility" Value="Visible" />
+            <Setter Property="IsTabStop" Value="True" />
+            <Setter Property="UseSystemFocusVisuals" Value="True" />
+            <Setter Property="FocusVisualMargin" Value="-2" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:DockItemControl">
