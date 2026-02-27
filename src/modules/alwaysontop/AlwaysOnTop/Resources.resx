@@ -132,6 +132,6 @@
     <value>Don't show again</value>
   </data>
   <data name="System_Menu_Toggle_Always_On_Top" xml:space="preserve">
-    <value>Toggle always on top</value>
+    <value>Always on top</value>
   </data>
 </root>
