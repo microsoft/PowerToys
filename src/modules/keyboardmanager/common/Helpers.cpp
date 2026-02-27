@@ -362,14 +362,58 @@ namespace Helpers
             return false;
         }
 
+        // Exclude this entry from clipboard history and cloud clipboard so the
+        // temporary paste text does not pollute the user's clipboard history.
+        static const UINT excludeFromHistory = RegisterClipboardFormat(L"ExcludeClipboardContentFromMonitorProcessing");
+        if (excludeFromHistory != 0)
+        {
+            HGLOBAL hExclude = GlobalAlloc(GMEM_MOVEABLE, sizeof(DWORD));
+            if (hExclude)
+            {
+                SetClipboardData(excludeFromHistory, hExclude);
+            }
+        }
+
         CloseClipboard();
         return true;
     }
 
-    // Function to send text via clipboard + WM_PASTE message to the focused window.
-    // Saves the previous clipboard content and restores it synchronously after
-    // SendMessage(WM_PASTE) returns (WM_PASTE via SendMessage is synchronous).
-    bool SendTextViaWmPaste(const std::wstring& text)
+    // Simulate Ctrl+V paste keystroke, tagged with KBM flag so our own hook
+    // passes it through without re-intercepting.
+    static void SendPasteKeystroke()
+    {
+        INPUT pasteInputs[4]{};
+
+        pasteInputs[0].type = INPUT_KEYBOARD;
+        pasteInputs[0].ki.wVk = VK_CONTROL;
+        pasteInputs[0].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_CONTROL, MAPVK_VK_TO_VSC));
+        pasteInputs[0].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+
+        pasteInputs[1].type = INPUT_KEYBOARD;
+        pasteInputs[1].ki.wVk = 'V';
+        pasteInputs[1].ki.wScan = static_cast<WORD>(MapVirtualKey('V', MAPVK_VK_TO_VSC));
+        pasteInputs[1].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+
+        pasteInputs[2].type = INPUT_KEYBOARD;
+        pasteInputs[2].ki.wVk = 'V';
+        pasteInputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+        pasteInputs[2].ki.wScan = static_cast<WORD>(MapVirtualKey('V', MAPVK_VK_TO_VSC));
+        pasteInputs[2].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+
+        pasteInputs[3].type = INPUT_KEYBOARD;
+        pasteInputs[3].ki.wVk = VK_CONTROL;
+        pasteInputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+        pasteInputs[3].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_CONTROL, MAPVK_VK_TO_VSC));
+        pasteInputs[3].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+
+        SendInput(ARRAYSIZE(pasteInputs), pasteInputs, sizeof(INPUT));
+    }
+
+    // Function to send text via clipboard paste (Ctrl+V).
+    // Saves the previous clipboard content and restores it asynchronously.
+    // The clipboard entry is excluded from clipboard history via
+    // ExcludeClipboardContentFromMonitorProcessing (set in SetClipboardText).
+    bool SendTextViaClipboard(const std::wstring& text)
     {
         // Snapshot current clipboard state
         bool hadOriginalText = false;
@@ -393,63 +437,20 @@ namespace Helpers
             CloseClipboard();
         }
 
-        // Place our text on the clipboard
+        // Place our text on the clipboard (with history exclusion)
         if (!SetClipboardText(text))
         {
             return false;
         }
 
-        // Find the focused window and send WM_PASTE.
-        // We need to attach to the foreground thread to get the real focus window.
-        HWND foregroundWindow = GetForegroundWindow();
-        if (!foregroundWindow)
-        {
-            // No foreground window — restore clipboard and bail out
-            if (hadOriginalText)
-            {
-                SetClipboardText(originalClipboardText);
-            }
-            else if (OpenClipboard(nullptr))
-            {
-                EmptyClipboard();
-                CloseClipboard();
-            }
-            return false;
-        }
+        // Send Ctrl+V
+        SendPasteKeystroke();
 
-        DWORD foregroundThreadId = GetWindowThreadProcessId(foregroundWindow, nullptr);
-        DWORD currentThreadId = GetCurrentThreadId();
-
-        HWND focusedWindow = nullptr;
-        bool attached = false;
-
-        if (foregroundThreadId != currentThreadId)
-        {
-            attached = AttachThreadInput(currentThreadId, foregroundThreadId, TRUE) != 0;
-        }
-
-        focusedWindow = GetFocus();
-
-        // If GetFocus returned NULL (no focused child), fall back to the foreground window itself
-        if (!focusedWindow)
-        {
-            focusedWindow = foregroundWindow;
-        }
-
-        // Send WM_PASTE to the focused control
-        SendMessage(focusedWindow, WM_PASTE, 0, 0);
-
-        if (attached)
-        {
-            AttachThreadInput(currentThreadId, foregroundThreadId, FALSE);
-        }
-
-        // Restore clipboard after a short delay on a background thread.
-        // Although SendMessage is synchronous for message delivery, some apps
-        // (e.g. Visual Studio, Word) read the clipboard asynchronously after
-        // their window procedure returns, so we must wait before restoring.
+        // Restore clipboard after a delay on a background thread.
+        // Ctrl+V is asynchronous (SendInput queues the input), so the target
+        // app needs time to process the keystroke and read the clipboard.
         std::thread([originalClipboardText = std::move(originalClipboardText), hadOriginalText]() {
-            Sleep(200);
+            Sleep(500);
             if (hadOriginalText)
             {
                 SetClipboardText(originalClipboardText);

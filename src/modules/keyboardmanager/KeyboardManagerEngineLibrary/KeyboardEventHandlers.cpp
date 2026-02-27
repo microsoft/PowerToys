@@ -541,7 +541,7 @@ namespace KeyboardEventHandlers
                         // Send modifier release events first, then paste text via clipboard
                         ii.SendVirtualInput(keyEventList);
                         keyEventList.clear();
-                        Helpers::SendTextViaWmPaste(remapping);
+                        Helpers::SendTextViaClipboard(remapping);
                     }
 
                     it->second.isShortcutInvoked = true;
@@ -722,7 +722,7 @@ namespace KeyboardEventHandlers
                         else if (remapToText)
                         {
                             auto& remapping = std::get<std::wstring>(it->second.targetShortcut);
-                            Helpers::SendTextViaWmPaste(remapping);
+                            Helpers::SendTextViaClipboard(remapping);
                             return 1;
                         }
 
@@ -1797,7 +1797,7 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
-        Helpers::SendTextViaWmPaste(*remapping);
+        Helpers::SendTextViaClipboard(*remapping);
 
         return 1;
     }
