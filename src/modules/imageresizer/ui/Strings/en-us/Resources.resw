@@ -123,6 +123,9 @@
   <data name="Open_settings.Text" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="Open_settings_button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Settings</value>
+  </data>
 
   <!-- AI Super Resolution -->
   <data name="Input_AiSuperResolution" xml:space="preserve">

@@ -17,5 +17,8 @@ namespace ImageResizer.Utilities
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool SetProcessDPIAware();
+
+        [DllImport("user32.dll")]
+        internal static extern int GetDpiForWindow(IntPtr hwnd);
     }
 }

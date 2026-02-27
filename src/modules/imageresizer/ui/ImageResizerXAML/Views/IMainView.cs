@@ -4,12 +4,13 @@
 // Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ImageResizer.Views
 {
     public interface IMainView
     {
-        IEnumerable<string> OpenPictureFiles();
+        Task<IEnumerable<string>> OpenPictureFilesAsync();
 
         void Close();
     }

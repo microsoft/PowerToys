@@ -11,21 +11,15 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
             </ResourceDictionary.MergedDictionaries>
 
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Default" />
-                <ResourceDictionary x:Key="Light" />
-                <ResourceDictionary x:Key="Dark" />
-            </ResourceDictionary.ThemeDictionaries>
-
             <!--  Converters  -->
             <converters:AutoDoubleConverter x:Key="AutoDoubleConverter" />
-            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <tkconverters:BoolToVisibilityConverter
+                x:Key="BoolToVisibilityConverter"
+                FalseValue="Collapsed"
+                TrueValue="Visible" />
             <converters:EnumToIntConverter x:Key="EnumToIntConverter" />
             <converters:EnumValueConverter x:Key="EnumValueConverter" />
-            <converters:NumberBoxValueConverter x:Key="NumberBoxValueConverter" />
-            <converters:SizeTypeToHelpTextConverter x:Key="SizeTypeToHelpTextConverter" />
-            <converters:SizeTypeToVisibilityConverter x:Key="SizeTypeToVisibilityConverter" />
-            <converters:TimeRemainingConverter x:Key="TimeRemainingConverter" />
+
             <tkconverters:BoolToVisibilityConverter
                 x:Key="InvertedBoolToVisibilityConverter"
                 FalseValue="Visible"

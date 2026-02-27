@@ -112,6 +112,8 @@ namespace ImageResizer.ViewModels
 
         public string AiScaleDisplay => Settings?.AiSize?.ScaleDisplay ?? string.Empty;
 
+        public bool IsCustomSizeSelected => Settings?.SelectedSize is CustomSize;
+
         public bool ShowAiSizeDescriptions => Settings?.SelectedSize is AiSize && !_hasMultipleFiles;
 
         public bool ShowModelDownloadPrompt =>
@@ -338,6 +340,7 @@ namespace ImageResizer.ViewModels
 
         private void NotifyAiStateChanged()
         {
+            OnPropertyChanged(nameof(IsCustomSizeSelected));
             OnPropertyChanged(nameof(IsDownloadingModel));
             OnPropertyChanged(nameof(ShowModelDownloadPrompt));
             OnPropertyChanged(nameof(ShowAiControls));

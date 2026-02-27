@@ -4,15 +4,10 @@
     x:Class="ImageResizer.Views.InputPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="using:ImageResizer.Converters"
-    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:local="using:ImageResizer.Views"
     xmlns:m="using:ImageResizer.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:vm="using:ImageResizer.ViewModels"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -32,7 +27,7 @@
                         Text="{x:Bind Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" />
                     <TextBlock
                         Margin="4,0,0,0"
-                        Foreground="{StaticResource TextFillColorSecondaryBrush}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Text="×"
                         Visibility="{x:Bind ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <TextBlock
@@ -97,8 +92,8 @@
 
             <Border
                 Grid.RowSpan="5"
-                Background="{StaticResource LayerFillColorDefaultBrush}"
-                BorderBrush="{StaticResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0" />
 
             <!--  AI Configuration Panel  -->
@@ -116,7 +111,7 @@
                         HorizontalAlignment="Stretch"
                         Command="{Binding DownloadModelCommand}"
                         Style="{StaticResource AccentButtonStyle}"
-                        Visibility="{Binding IsModelDownloading, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}, ConverterParameter=Inverted}">
+                        Visibility="{Binding IsModelDownloading, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
                         <TextBlock x:Uid="Input_AiModelDownloadButton" />
                     </Button>
 
@@ -146,10 +141,10 @@
 
                     <StackPanel Margin="0,16,0,0" Visibility="{Binding ShowAiSizeDescriptions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <Grid>
-                            <TextBlock x:Uid="Input_AiCurrentLabel" Foreground="{StaticResource TextFillColorSecondaryBrush}" />
+                            <TextBlock x:Uid="Input_AiCurrentLabel" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             <TextBlock
                                 HorizontalAlignment="Right"
-                                Foreground="{StaticResource TextFillColorSecondaryBrush}"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="{Binding CurrentResolutionDescription, Mode=OneWay}" />
                         </Grid>
                         <Grid Margin="0,8,0,0">
@@ -164,7 +159,7 @@
             <Grid
                 Grid.Row="0"
                 Margin="16"
-                Visibility="{Binding Settings.SelectedSize, Mode=OneWay, Converter={StaticResource SizeTypeToVisibilityConverter}}">
+                Visibility="{Binding IsCustomSizeSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="24" />
                     <ColumnDefinition Width="*" />
@@ -181,7 +176,7 @@
                 <FontIcon
                     VerticalAlignment="Center"
                     FontSize="20"
-                    Foreground="{StaticResource TextFillColorSecondaryBrush}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE799;" />
                 <NumberBox
                     x:Name="WidthNumberBox"
@@ -197,7 +192,7 @@
                     Grid.Column="3"
                     VerticalAlignment="Center"
                     FontSize="20"
-                    Foreground="{StaticResource TextFillColorSecondaryBrush}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE7A0;"
                     Visibility="{Binding Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <NumberBox
@@ -215,7 +210,7 @@
                     Grid.Row="2"
                     VerticalAlignment="Center"
                     FontSize="20"
-                    Foreground="{StaticResource TextFillColorSecondaryBrush}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE7A8;" />
                 <ComboBox
                     Grid.Row="2"
@@ -236,7 +231,7 @@
                     Grid.Column="3"
                     VerticalAlignment="Center"
                     FontSize="20"
-                    Foreground="{StaticResource TextFillColorSecondaryBrush}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xECC6;" />
                 <ComboBox
                     Grid.Row="2"
@@ -282,7 +277,7 @@
                 Margin="0,8"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
-                Background="{StaticResource DividerStrokeColorDefaultBrush}" />
+                Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
 
             <InfoBar
                 Grid.Row="3"
@@ -302,6 +297,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Button
+                    x:Uid="Open_settings_button"
                     Padding="8"
                     Background="Transparent"
                     BorderBrush="Transparent"

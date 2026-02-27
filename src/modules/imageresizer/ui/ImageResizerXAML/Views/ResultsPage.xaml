@@ -7,7 +7,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:m="using:ImageResizer.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:vm="using:ImageResizer.ViewModels"
     mc:Ignorable="d">
 
     <StackPanel>
@@ -37,8 +36,8 @@
         <Border
             Margin="0,12,0,0"
             Padding="12"
-            Background="{StaticResource LayerFillColorDefaultBrush}"
-            BorderBrush="{StaticResource DividerStrokeColorDefaultBrush}"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0">
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                 <Button MinWidth="76" Command="{Binding CloseCommand}">

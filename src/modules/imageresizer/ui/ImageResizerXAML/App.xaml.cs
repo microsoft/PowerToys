@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ImageResizer.Models;
@@ -100,9 +101,32 @@ namespace ImageResizer
             // Create batch from command line
             var batch = ResizeBatch.FromCommandLine(Console.In, commandLineArgs);
 
-            // Create and show main window
-            _window = new MainWindow(new MainViewModel(batch, Settings.Default));
-            _window.Activate();
+            // Create main window (not yet visible – HWND is available for the file picker)
+            var mainWindow = new MainWindow(new MainViewModel(batch, Settings.Default));
+            _window = mainWindow;
+
+            mainWindow.DispatcherQueue.TryEnqueue(async () =>
+            {
+                if (batch.Files.Count == 0)
+                {
+                    // Show file picker before the window is visible
+                    var files = await mainWindow.OpenPictureFilesAsync();
+                    if (!files.Any())
+                    {
+                        Environment.Exit(0);
+                        return;
+                    }
+
+                    foreach (var file in files)
+                    {
+                        batch.Files.Add(file);
+                    }
+                }
+
+                // Load ViewModel (sets page content) then activate so the window appears with content ready
+                await mainWindow.LoadViewModelAsync();
+                mainWindow.Activate();
+            });
         }
 
         private void InitializeAiAvailability()

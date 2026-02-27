@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ImageResizer.Models;
@@ -28,11 +29,11 @@ namespace ImageResizer.ViewModels
         }
 
         [RelayCommand]
-        public void Load(IMainView view)
+        public async Task LoadAsync(IMainView view)
         {
             if (_batch.Files.Count == 0)
             {
-                foreach (var file in view.OpenPictureFiles())
+                foreach (var file in await view.OpenPictureFilesAsync())
                 {
                     _batch.Files.Add(file);
                 }

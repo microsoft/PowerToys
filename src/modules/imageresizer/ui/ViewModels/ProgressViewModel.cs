@@ -5,11 +5,14 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ImageResizer.Views;
 using Microsoft.UI.Dispatching;
@@ -31,7 +34,37 @@ namespace ImageResizer.ViewModels
         private double _progress;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(TimeRemainingDisplay))]
         private TimeSpan _timeRemaining;
+
+        private static CompositeFormat _progressTimeRemainingFormat;
+
+        private static CompositeFormat ProgressTimeRemainingFormat
+        {
+            get
+            {
+                if (_progressTimeRemainingFormat == null)
+                {
+                    var formatString = ResourceLoaderInstance.ResourceLoader.GetString("Progress_TimeRemaining");
+                    _progressTimeRemainingFormat = CompositeFormat.Parse(formatString);
+                }
+
+                return _progressTimeRemainingFormat;
+            }
+        }
+
+        public string TimeRemainingDisplay
+        {
+            get
+            {
+                if (TimeRemaining == TimeSpan.MaxValue || TimeRemaining.TotalSeconds < 1)
+                {
+                    return string.Empty;
+                }
+
+                return string.Format(CultureInfo.CurrentCulture, ProgressTimeRemainingFormat, TimeRemaining);
+            }
+        }
 
         public ProgressViewModel(
             ResizeBatch batch,

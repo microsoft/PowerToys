@@ -7,27 +7,27 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using ImageResizer.Helpers;
+using ImageResizer.Utilities;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Graphics;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
-using WinUIEx;
 
 namespace ImageResizer
 {
-    public sealed partial class MainWindow : WindowEx, IMainView
+    public sealed partial class MainWindow : Window, IMainView
     {
         public MainViewModel ViewModel { get; }
 
         private PropertyChangedEventHandler _selectedSizeChangedHandler;
         private InputViewModel _currentInputViewModel;
-
-        // Window chrome height (title bar)
-        private const double WindowChromeHeight = 32;
 
         public MainWindow(MainViewModel viewModel)
         {
@@ -36,11 +36,26 @@ namespace ImageResizer
             InitializeComponent();
 
             var loader = ResourceLoaderInstance.ResourceLoader;
-            var title = loader.GetString("ImageResizer");
-            Title = title;
+            Title = loader.GetString("ImageResizer");
+
+            // Disable maximize/minimize/resize
+            if (AppWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.IsMaximizable = false;
+                presenter.IsMinimizable = false;
+                presenter.IsResizable = false;
+            }
+
+            // Set initial window size (scale logical pixels for DPI)
+            var hwnd = WindowNative.GetWindowHandle(this);
+            var dpi = NativeMethods.GetDpiForWindow(hwnd);
+            var scale = dpi / 96.0;
+            AppWindow.Resize(new SizeInt32(
+                (int)(400 * scale),
+                (int)(506 * scale)));
 
             // Center the window on screen
-            this.CenterOnScreen();
+            CenterOnScreen();
 
             // Set window icon
             try
@@ -48,7 +63,7 @@ namespace ImageResizer
                 var iconPath = System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "ImageResizer", "ImageResizer.ico");
                 if (System.IO.File.Exists(iconPath))
                 {
-                    this.SetIcon(iconPath);  // WinUIEx extension method
+                    AppWindow.SetIcon(iconPath);
                 }
             }
             catch
@@ -64,9 +79,24 @@ namespace ImageResizer
 
             // Listen to ViewModel property changes
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
 
-            // Load the ViewModel after window is ready
-            ViewModel.Load(this);
+        public async Task LoadViewModelAsync()
+        {
+            await ViewModel.LoadAsync(this);
+        }
+
+        private void CenterOnScreen()
+        {
+            var area = DisplayArea.GetFromWindowId(
+                AppWindow.Id, DisplayAreaFallback.Nearest)?.WorkArea;
+            if (area != null)
+            {
+                var size = AppWindow.Size;
+                AppWindow.Move(new PointInt32(
+                    (area.Value.Width - size.Width) / 2,
+                    (area.Value.Height - size.Height) / 2));
+            }
         }
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -134,20 +164,23 @@ namespace ImageResizer
 
             inputVM.Settings.PropertyChanged += _selectedSizeChangedHandler;
 
-            // Set initial height after layout
-            DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => SizeToContent());
+            // Size immediately so the window is correct before Activate
+            SizeToContent();
+            CenterOnScreen();
         }
 
+        /// <summary>
+        /// WinUI3 has no built-in SizeToContent (unlike WPF).
+        /// Measure content, then use ResizeClient to set the client area directly.
+        /// </summary>
         private void SizeToContent()
         {
-            // Get the content element
             var content = contentPresenter.Content as FrameworkElement;
             if (content == null)
             {
                 return;
             }
 
-            // Measure the content to get its desired size
             content.Measure(new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
             var desiredHeight = content.DesiredSize.Height;
 
@@ -156,20 +189,15 @@ namespace ImageResizer
                 return;
             }
 
-            // Add window chrome height and extra padding for safety
-            var totalHeight = desiredHeight + WindowChromeHeight + 16;
+            var hwnd = WindowNative.GetWindowHandle(this);
+            var scale = NativeMethods.GetDpiForWindow(hwnd) / 96.0;
+            var clientWidth = AppWindow.ClientSize.Width;
+            var clientHeight = (int)Math.Ceiling(desiredHeight * scale);
 
-            var appWindow = this.AppWindow;
-            if (appWindow != null)
-            {
-                var scaleFactor = Content?.XamlRoot?.RasterizationScale ?? 1.0;
-                var currentSize = appWindow.Size;
-                var newHeightInPixels = (int)(totalHeight * scaleFactor);
-                appWindow.Resize(new Windows.Graphics.SizeInt32(currentSize.Width, newHeightInPixels));
-            }
+            AppWindow.ResizeClient(new SizeInt32(clientWidth, clientHeight));
         }
 
-        public IEnumerable<string> OpenPictureFiles()
+        public async Task<IEnumerable<string>> OpenPictureFilesAsync()
         {
             var picker = new FileOpenPicker();
 
@@ -194,7 +222,7 @@ namespace ImageResizer
             picker.FileTypeFilter.Add(".tiff");
             picker.FileTypeFilter.Add(".wdp");
 
-            var files = picker.PickMultipleFilesAsync().AsTask().GetAwaiter().GetResult();
+            var files = await picker.PickMultipleFilesAsync();
             if (files != null && files.Count > 0)
             {
                 return files.Select(f => f.Path);
