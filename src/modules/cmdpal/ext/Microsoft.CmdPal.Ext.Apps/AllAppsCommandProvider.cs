@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
-using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -40,14 +39,11 @@ public partial class AllAppsCommandProvider : CommandProvider
         {
             MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
         };
-
-        // Subscribe to pin state changes to refresh the command provider
-        PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
     }
 
     public static int TopLevelResultLimit => AllAppsSettings.Instance.SearchResultLimit ?? DefaultResultLimit;
 
-    public override ICommandItem[] TopLevelCommands() => [_listItem, .. _page.GetPinnedApps()];
+    public override ICommandItem[] TopLevelCommands() => [_listItem];
 
     public ICommandItem? LookupAppByPackageFamilyName(string packageFamilyName, bool requireSingleMatch)
     {
@@ -177,10 +173,5 @@ public partial class AllAppsCommandProvider : CommandProvider
         }
 
         return null;
-    }
-
-    private void OnPinStateChanged(object? sender, System.EventArgs e)
-    {
-        RaiseItemsChanged(0);
     }
 }

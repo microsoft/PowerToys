@@ -71,6 +71,12 @@
                     x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"
                     Icon="{ui:FontIcon Glyph=&#xEA86;}"
                     Tag="Extensions" />
+                <!--  xF596 is HolePunchLandscapeTop  -->
+                <NavigationViewItem
+                    x:Name="DockSettingsPageNavItem"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Dock"
+                    Icon="{ui:FontIcon Glyph=&#xF596;}"
+                    Tag="Dock" />
                 <!--  "Internal Tools" page item is added dynamically from code  -->
             </NavigationView.MenuItems>
             <Grid>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<winuiex:WindowEx
+    x:Class="Microsoft.CmdPal.UI.Dock.DockWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:local="using:Microsoft.CmdPal.UI.Dock"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:winuiex="using:WinUIEx"
+    Title="PowerDock"
+    Closed="DockWindow_Closed"
+    mc:Ignorable="d">
+
+    <Grid
+        x:Name="Root"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+
+        <!--  Colorization overlay for transparent backdrop  -->
+        <Border
+            x:Name="ColorizationOverlay"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            IsHitTestVisible="False"
+            Opacity="{x:Bind WindowViewModel.ColorizationOpacity, Mode=OneWay}"
+            Visibility="{x:Bind WindowViewModel.ShowColorizationOverlay, Mode=OneWay}">
+            <Border.Background>
+                <SolidColorBrush Color="{x:Bind WindowViewModel.ColorizationColor, Mode=OneWay}" />
+            </Border.Background>
+        </Border>
+
+        <cpcontrols:BlurImageControl
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            BlurAmount="{x:Bind WindowViewModel.BackgroundImageBlurAmount, Mode=OneWay}"
+            ImageBrightness="{x:Bind WindowViewModel.BackgroundImageBrightness, Mode=OneWay}"
+            ImageOpacity="{x:Bind WindowViewModel.BackgroundImageOpacity, Mode=OneWay}"
+            ImageSource="{x:Bind WindowViewModel.BackgroundImageSource, Mode=OneWay}"
+            ImageStretch="{x:Bind WindowViewModel.BackgroundImageStretch, Mode=OneWay}"
+            IsHitTestVisible="False"
+            IsHoldingEnabled="False"
+            TintColor="{x:Bind WindowViewModel.BackgroundImageTint, Mode=OneWay}"
+            TintIntensity="{x:Bind WindowViewModel.BackgroundImageTintIntensity, Mode=OneWay}"
+            Visibility="{x:Bind WindowViewModel.ShowBackgroundImage, Mode=OneWay}" />
+    </Grid>
+</winuiex:WindowEx>

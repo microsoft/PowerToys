@@ -18,6 +18,8 @@ public record PerformCommandMessage
 
     public bool WithAnimation { get; set; } = true;
 
+    public bool TransientPage { get; set; }
+
     public PerformCommandMessage(ExtensionObject<ICommand> command)
     {
         Command = command;

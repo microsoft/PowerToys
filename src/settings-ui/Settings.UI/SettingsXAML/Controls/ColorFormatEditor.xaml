@@ -108,7 +108,7 @@
                 Style="{StaticResource CaptionTextBlockStyle}" />
 
             <ItemsControl
-                x:Name="ColorParametersItemsControl"
+                x:Name="RGBAColorParametersItemsControl"
                 IsTabStop="False"
                 ItemTemplate="{StaticResource ColorParameterTemplate}"
                 ItemsPanel="{StaticResource ItemPanelTemplate}" />
@@ -117,6 +117,18 @@
                 x:Uid="ColorFormatEditorHelpline3"
                 VerticalAlignment="Bottom"
                 Style="{StaticResource CaptionTextBlockStyle}" />
+
+            <ItemsControl
+                x:Name="CIELabColorParametersItemsControl"
+                IsTabStop="False"
+                ItemTemplate="{StaticResource ColorParameterTemplate}"
+                ItemsPanel="{StaticResource ItemPanelTemplate}" />
+
+            <TextBlock
+                x:Uid="ColorFormatEditorHelpline4"
+                VerticalAlignment="Bottom"
+                Style="{StaticResource CaptionTextBlockStyle}" />
+
         </StackPanel>
     </Grid>
 </UserControl>

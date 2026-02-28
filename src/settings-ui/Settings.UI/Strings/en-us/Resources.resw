@@ -1727,7 +1727,13 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Help_floatWithout" xml:space="preserve">
     <value>float without leading zero</value>
   </data>
-  <data name="ColorFormatEditorHelpline3.Text" xml:space="preserve">
+   <data name="ColorFormatEditorHelpline3.Text" xml:space="preserve">
+    <value>The lightness (CIE), chromaticity A (CIE Lab) and chromaticity B (CIE Lab) values can be formatted to the following formats:</value>
+  </data>
+  <data name="Help_integer" xml:space="preserve">
+    <value>rounded to the nearest integer</value>
+  </data>
+  <data name="ColorFormatEditorHelpline4.Text" xml:space="preserve">
     <value>Example:  %ReX means red value in hex uppercase two digits format.</value>
   </data>
   <data name="ColorPicker_ShowColorName.Header" xml:space="preserve">
@@ -2958,6 +2964,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="AlwaysOnTop_Behavior_GroupSettings.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
+  <data name="AlwaysOnTop_ContextMenuEnabled.Header" xml:space="preserve">
+    <value>Show Always on Top in the title bar context menu</value>
+  </data>
+  <data name="AlwaysOnTop_ContextMenuEnabled.Description" xml:space="preserve">
+    <value>Lets you turn Always on Top mode on or off from the window's title bar right-click menu</value>
+  </data>
   <data name="Shell_AlwaysOnTop.Content" xml:space="preserve">
     <value>Always On Top</value>
     <comment>{Locked}</comment>
@@ -2974,19 +2986,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Activation shortcut</value>
   </data>
   <data name="AlwaysOnTop_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to pin or unpin an app window and use the same modifier keys with + or − to adjust its transparency</value>
-  </data>
-  <data name="AlwaysOnTop_TransparencyInfo.Header" xml:space="preserve">
-    <value>Window transparency</value>
-  </data>
-  <data name="AlwaysOnTop_TransparencyInfo.Description" xml:space="preserve">
-    <value>Adjust the transparency of the focused window on top</value>
+    <value>Customize the shortcut to pin or unpin an app window</value>
   </data>
   <data name="AlwaysOnTop_IncreaseOpacity" xml:space="preserve">
-    <value>Press **{0}** to increase the window opacity</value>
+    <value>Press **{0}** to increase the opacity of the window</value>
   </data>
   <data name="AlwaysOnTop_DecreaseOpacity" xml:space="preserve">
-    <value>Press **{0}** to decrease the window opacity</value>
+    <value>Press **{0}** to decrease the opacity of the window</value>
   </data>
   <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>
