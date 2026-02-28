@@ -2,6 +2,7 @@
 #include "NativeMethods.h"
 #include "FileLocksmith.h"
 #include "../FileLocksmithLib/Constants.h"
+#include <sstream>
 
 namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
 {
@@ -93,6 +94,89 @@ namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
                 line += ch;
             }
         }
+        return com_array<hstring>{ result_cpp.begin(), result_cpp.end() };
+    }
+
+    com_array<hstring> NativeMethods::ReadPathsFromPipe(hstring const& pipeName)
+    {
+        std::vector<std::wstring> result_cpp;
+        
+        if (pipeName.empty())
+        {
+            return com_array<hstring>{ result_cpp.begin(), result_cpp.end() };
+        }
+
+        std::wstring pipe_name_str = pipeName.c_str();
+        HANDLE hPipe = INVALID_HANDLE_VALUE;
+
+        // Try to connect to the pipe for up to 5 seconds
+        for (int attempts = 0; attempts < 50 && hPipe == INVALID_HANDLE_VALUE; attempts++)
+        {
+            hPipe = CreateFile(
+                pipe_name_str.c_str(),
+                GENERIC_READ | GENERIC_WRITE,
+                0,
+                NULL,
+                OPEN_EXISTING,
+                0,
+                NULL);
+
+            if (hPipe != INVALID_HANDLE_VALUE)
+                break;
+
+            if (GetLastError() != ERROR_PIPE_BUSY)
+                break;
+
+            if (!WaitNamedPipe(pipe_name_str.c_str(), 100))
+                break;
+        }
+
+        if (hPipe == INVALID_HANDLE_VALUE)
+        {
+            // Fall back to file-based reading
+            return ReadPathsFromFile();
+        }
+
+        // Read from pipe - collect all data first
+        const DWORD BUFSIZE = 4096;
+        std::wstring allData;
+        WCHAR chBuf[BUFSIZE];
+        DWORD dwRead;
+        BOOL bSuccess;
+
+        // Read with timeout protection
+        int read_attempts = 0;
+        const int max_read_attempts = 30; // Maximum 30 read attempts
+
+        for (;;)
+        {
+            bSuccess = ReadFile(hPipe, chBuf, BUFSIZE * sizeof(WCHAR), &dwRead, NULL);
+            
+            if (!bSuccess || dwRead == 0 || ++read_attempts > max_read_attempts)
+                break;
+
+            // Append to accumulated data
+            allData.append(chBuf, dwRead / sizeof(WCHAR));
+        }
+
+        CloseHandle(hPipe);
+
+        // Parse all data using delimiter
+        if (!allData.empty())
+        {
+            std::wstringstream ss(allData);
+            std::wstring item;
+            wchar_t delimiter = L'?';
+            
+            while (std::getline(ss, item, delimiter))
+            {
+                if (!item.empty())
+                {
+                    result_cpp.push_back(item);
+                }
+            }
+        }
+
         return com_array<hstring>{ result_cpp.begin(), result_cpp.end() };
     }
  
