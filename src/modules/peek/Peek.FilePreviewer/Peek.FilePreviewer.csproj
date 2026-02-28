@@ -19,6 +19,7 @@
     <None Remove="Controls\BrowserControl.xaml" />
     <None Remove="Controls\DriveControl.xaml" />
     <None Remove="Controls\ShellPreviewHandlerControl.xaml" />
+    <None Remove="Controls\SQLiteControl.xaml" />
     <None Remove="Controls\SpecialFolderPreview\SpecialFolderInformationalPreviewControl.xaml" />
     <None Remove="Controls\SpecialFolderPreview\SpecialFolderPreview.xaml" />
     <None Remove="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml" />
@@ -30,6 +31,8 @@
   <ItemGroup>
       <PackageReference Include="CommunityToolkit.Mvvm" />
       <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+      <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" />
+      <PackageReference Include="Microsoft.Data.Sqlite" />
       <PackageReference Include="Microsoft.WindowsAppSDK" />
       <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
       <PackageReference Include="SharpCompress" />
@@ -90,6 +93,9 @@
 
   <ItemGroup>
     <Page Update="Controls\ArchiveControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\SQLiteControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\SpecialFolderPreview\SpecialFolderInformationalPreviewControl.xaml">

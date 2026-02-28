@@ -101,6 +101,13 @@
             Source="{x:Bind ArchivePreviewer.Tree, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(ArchivePreviewer, Previewer.State), Mode=OneWay}" />
 
+        <controls:SQLiteControl
+            x:Name="SQLitePreview"
+            LoadingState="{x:Bind SQLitePreviewer.State, Mode=OneWay}"
+            Tables="{x:Bind SQLitePreviewer.Tables, Mode=OneWay}"
+            TableCount="{x:Bind SQLitePreviewer.TableCountText, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(SQLitePreviewer, Previewer.State), Mode=OneWay}" />
+
         <controls:DriveControl
             x:Name="DrivePreview"
             Source="{x:Bind DrivePreviewer.Preview, Mode=OneWay}"
