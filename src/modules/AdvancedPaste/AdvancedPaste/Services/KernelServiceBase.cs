@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
@@ -319,19 +321,30 @@ public abstract class KernelServiceBase(
         }
     }
 
-    private static string SanitizeFunctionName(string name)
+    internal static string SanitizeFunctionName(string name)
     {
-        // Remove invalid characters and ensure the function name is valid for kernel
-        var sanitized = new string(name.Where(c => char.IsLetterOrDigit(c) || c == '_').ToArray());
+        // Semantic Kernel only accepts ASCII letters, digits, and underscores
+        var sanitized = new string(name.Where(c => (c >= 'a' && c <= 'z') ||
+                                                   (c >= 'A' && c <= 'Z') ||
+                                                   (c >= '0' && c <= '9') ||
+                                                   c == '_').ToArray());
 
-        // Ensure it starts with a letter or underscore
-        if (sanitized.Length > 0 && !char.IsLetter(sanitized[0]) && sanitized[0] != '_')
+        // If all characters were stripped (pure non-ASCII name), use a SHA256 hash-based fallback
+        // for stronger uniqueness guarantee compared to GetHashCode
+        if (string.IsNullOrEmpty(sanitized))
+        {
+            var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(name));
+            var hashHex = Convert.ToHexString(hashBytes, 0, 4); // First 8 hex chars (4 bytes)
+            sanitized = $"CustomAction_{hashHex}";
+        }
+
+        // Ensure it starts with a letter or underscore (not a digit)
+        if (sanitized.Length > 0 && char.IsAsciiDigit(sanitized[0]))
         {
             sanitized = "_" + sanitized;
         }
 
-        // Ensure it's not empty
-        return string.IsNullOrEmpty(sanitized) ? "_CustomAction" : sanitized;
+        return sanitized;
     }
 
     private Task<string> ExecuteCustomActionAsync(Kernel kernel, string fixedPrompt) =>
