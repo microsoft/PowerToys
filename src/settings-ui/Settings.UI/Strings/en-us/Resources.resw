@@ -2189,6 +2189,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="ScoobeWindow_TitleTxt.Title" xml:space="preserve">
     <value>What's new in PowerToys</value>
   </data>
+  <data name="ScoobeReleaseNotes_ViewOnGitHub" xml:space="preserve">
+    <value>View on GitHub</value>
+  </data>
   <data name="SettingsWindow_Title" xml:space="preserve">
     <value>PowerToys Settings</value>
     <comment>Title of the settings window when running as user</comment>
