@@ -177,25 +177,14 @@ public partial class IconBox : ContentControl
                 break;
             case FontIconSource fontIcon:
                 self.UpdateLastFontSize();
+                fontIcon.FontSize = self._lastFontSize;
                 if (self.Content is IconSourceElement iconSourceElement)
                 {
-                    fontIcon.FontSize = self._lastFontSize;
                     iconSourceElement.IconSource = fontIcon;
                 }
                 else
                 {
-                    fontIcon.FontSize = self._lastFontSize;
-
-                    // For inexplicable reasons, FontIconSource.CreateIconElement
-                    // doesn't work, so do it ourselves
-                    // TODO: File platform bug?
-                    IconSourceElement elem = new()
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        IconSource = fontIcon,
-                    };
-                    self.Content = elem;
+                    self.Content = fontIcon.CreateIconElement();
                 }
 
                 self.UpdatePaddingForFontIcon();
