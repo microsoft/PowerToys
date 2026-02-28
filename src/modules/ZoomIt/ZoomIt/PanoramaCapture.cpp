@@ -1136,6 +1136,100 @@ static void BuildDownsampledLumaFromFullLuma( const std::vector<BYTE>& fullLuma,
     }
 }
 
+// Compute per-row sum of horizontal gradient magnitudes.
+// This is a 1D "edge density" signal: rows with text/edges have high values,
+// constant rows (dark background) have ~0.  NCC on these signals discriminates
+// offsets by structural content alignment rather than pixel identity.
+static void BuildRowEdgeDensity( const std::vector<BYTE>& luma,
+                                 int width, int height, int marginX,
+                                 std::vector<int>& density )
+{
+    density.resize( height, 0 );
+    for( int y = 0; y < height; ++y )
+    {
+        int sum = 0;
+        const int row = y * width;
+        for( int x = marginX; x < width - marginX - 1; ++x )
+        {
+            sum += abs( static_cast<int>( luma[row + x + 1] ) -
+                        static_cast<int>( luma[row + x] ) );
+        }
+        density[y] = sum;
+    }
+}
+
+// 1D Normalized Cross-Correlation between two int signals.
+// Returns NCC in [-1.0, 1.0].  Returns 0.0 if either signal has zero variance.
+static double NCC1D( const int* a, const int* b, int n )
+{
+    if( n <= 0 ) return 0.0;
+
+    double sumA = 0, sumB = 0, sumAB = 0, sumA2 = 0, sumB2 = 0;
+    for( int i = 0; i < n; ++i )
+    {
+        const double ai = static_cast<double>( a[i] );
+        const double bi = static_cast<double>( b[i] );
+        sumA  += ai;
+        sumB  += bi;
+        sumAB += ai * bi;
+        sumA2 += ai * ai;
+        sumB2 += bi * bi;
+    }
+    const double N = static_cast<double>( n );
+    const double varA = sumA2 / N - ( sumA / N ) * ( sumA / N );
+    const double varB = sumB2 / N - ( sumB / N ) * ( sumB / N );
+    if( varA <= 0.0 || varB <= 0.0 ) return 0.0;
+    const double cov = sumAB / N - ( sumA / N ) * ( sumB / N );
+    return cov / sqrt( varA * varB );
+}
+
+// Masked Zero-Mean Normalized Cross-Correlation over 2D overlap region.
+// Only scores pixels where the mask is set (informative/edge pixels).
+// Returns ZNCC in [-1.0, 1.0].  Returns 0.0 if fewer than minSamples
+// masked pixels, or if either signal has zero variance.
+static double ComputeMaskedZNCC( const BYTE* prevLuma, const BYTE* currLuma,
+                                 const BYTE* maskPrev, const BYTE* maskCurr,
+                                 int width, int overlap, int absStep,
+                                 int direction, int dx,
+                                 int marginX, int minSamples )
+{
+    double sumA = 0, sumB = 0, sumAB = 0, sumA2 = 0, sumB2 = 0;
+    int n = 0;
+    const int xStart = max( marginX, marginX + max( 0, -dx ) );
+    const int xEnd = min( width - marginX, width - marginX - max( 0, dx ) );
+
+    for( int y = 0; y < overlap; ++y )
+    {
+        const int pY = ( direction < 0 ) ? ( y + absStep ) : y;
+        const int cY = ( direction < 0 ) ? y : ( y + absStep );
+        const int prevRow = pY * width;
+        const int currRow = cY * width;
+
+        for( int x = xStart; x < xEnd; ++x )
+        {
+            if( !maskPrev[prevRow + x] && !maskCurr[currRow + x + dx] )
+                continue;
+
+            const double a = static_cast<double>( prevLuma[prevRow + x] );
+            const double b = static_cast<double>( currLuma[currRow + x + dx] );
+            sumA  += a;
+            sumB  += b;
+            sumAB += a * b;
+            sumA2 += a * a;
+            sumB2 += b * b;
+            n++;
+        }
+    }
+
+    if( n < minSamples ) return 0.0;
+    const double N = static_cast<double>( n );
+    const double varA = sumA2 / N - ( sumA / N ) * ( sumA / N );
+    const double varB = sumB2 / N - ( sumB / N ) * ( sumB / N );
+    if( varA <= 0.0 || varB <= 0.0 ) return 0.0;
+    const double cov = sumAB / N - ( sumA / N ) * ( sumB / N );
+    return cov / sqrt( varA * varB );
+}
+
 static bool FindBestSmallShiftDownsampledLuma( const std::vector<BYTE>& previousPixels,
                                                const std::vector<BYTE>& currentPixels,
                                                int frameWidth,
@@ -2001,39 +2095,28 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
             useMaskedFallback = true;
 
-            // Row-projection coarse search at full resolution.
-            // Instead of pixel-level SAD (which fails when sparse text
-            // characters are too similar to discriminate at sampled
-            // positions), collapse each row to a count of informative
-            // pixels.  Cross-correlating these 1D projections finds
-            // shifts that align the structural layout of text lines —
-            // even when the pixel content is nearly identical.
+            // Edge-density coarse search at full resolution.
+            // Instead of counting informative pixels per row (fragile on periodic
+            // content), sum horizontal gradient magnitudes per row.  This "edge
+            // density" signal captures the structural layout of text lines.
+            // Cross-correlate using NCC (not L1) for scale-invariant matching.
             candidateCount = 0;
-            // Sparse numbered-list captures keep informative pixels close to the
-            // left edge. Use a small fallback margin so we do not crop them out.
             const int fullMarginX = 4;
             const int fullMinStep = max( 4, downsampleScale );
             const int fullMaxStep = frameHeight - max( 2, frameHeight / 6 );
 
-            // Build row projections: count of informative pixels per row
-            // (union of both masks so we see the same coverage at each shift).
-            std::vector<int> projPrev( frameHeight, 0 );
-            std::vector<int> projCurr( frameHeight, 0 );
-            for( int y = 0; y < frameHeight; ++y )
-            {
-                const int row = y * frameWidth;
-                for( int x = fullMarginX; x < frameWidth - fullMarginX; ++x )
-                {
-                    if( fallbackMaskPrev[row + x] )
-                        projPrev[y]++;
-                    if( fallbackMaskCurr[row + x] )
-                        projCurr[y]++;
-                }
-            }
+            // Build edge density signals.
+            std::vector<int> edgePrev, edgeCurr;
+            BuildRowEdgeDensity( prevFull, frameWidth, frameHeight, fullMarginX, edgePrev );
+            BuildRowEdgeDensity( currFull, frameWidth, frameHeight, fullMarginX, edgeCurr );
 
-            // Convert search window from dsUnits to full-resolution pixels.
+            // Convert search window to full-resolution.
             const int searchMinDyFull = searchMinDy * downsampleScale;
             const int searchMaxDyFull = searchMaxDy * downsampleScale;
+
+            struct EdgeCandidate { int dyFull; double ncc; };
+            EdgeCandidate edgeCands[kMaxCandidates];
+            int edgeCandCount = 0;
 
             for( int absStep = fullMinStep; absStep <= fullMaxStep; absStep += 2 )
             {
@@ -2044,51 +2127,46 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                         continue;
 
                     const int overlap = frameHeight - absStep;
-                    unsigned __int64 totalDiff = 0;
+                    const int* aSig = ( direction < 0 ) ? &edgePrev[absStep] : &edgePrev[0];
+                    const int* bSig = ( direction < 0 ) ? &edgeCurr[0] : &edgeCurr[absStep];
+                    const double ncc = NCC1D( aSig, bSig, overlap );
 
-                    for( int y = 0; y < overlap; ++y )
+                    // Insert into top-K by NCC (descending).
+                    if( edgeCandCount < kMaxCandidates || ncc > edgeCands[edgeCandCount - 1].ncc )
                     {
-                        const int pY = ( direction < 0 ) ? ( y + absStep ) : y;
-                        const int cY = ( direction < 0 ) ? y : ( y + absStep );
-                        totalDiff += static_cast<unsigned __int64>(
-                            abs( projPrev[pY] - projCurr[cY] ) );
-                    }
-
-                    // Normalize by overlap length so shorter overlaps
-                    // don't get artificially lower scores.
-                    unsigned __int64 score = totalDiff / static_cast<unsigned __int64>( overlap );
-
-                    // Store candidate in dsUnits so the fine search can
-                    // refine around it with ±refineRadius.
-                    const int dyDs = dyFull / downsampleScale;
-                    if( candidateCount < kMaxCandidates || score < candidates[candidateCount - 1].score )
-                    {
-                        int insertPos = candidateCount < kMaxCandidates ? candidateCount : candidateCount - 1;
-                        for( int j = insertPos; j > 0 && candidates[j - 1].score > score; --j )
+                        int insertPos = edgeCandCount < kMaxCandidates ? edgeCandCount : edgeCandCount - 1;
+                        for( int j = insertPos; j > 0 && edgeCands[j - 1].ncc < ncc; --j )
                         {
                             if( j < kMaxCandidates )
-                                candidates[j] = candidates[j - 1];
+                                edgeCands[j] = edgeCands[j - 1];
                             insertPos = j - 1;
                         }
                         if( insertPos < kMaxCandidates )
                         {
-                            candidates[insertPos] = { dyDs, score };
-                            if( candidateCount < kMaxCandidates )
-                                candidateCount++;
+                            edgeCands[insertPos] = { dyFull, ncc };
+                            if( edgeCandCount < kMaxCandidates )
+                                edgeCandCount++;
                         }
                     }
                 }
             }
+
+            // Transfer edge projection candidates to the main candidate array.
+            // Convert full-resolution dy to downsampled units for the fine search.
+            for( int ei = 0; ei < edgeCandCount; ++ei )
+            {
+                const int dyDs = edgeCands[ei].dyFull / downsampleScale;
+                candidates[candidateCount++] = { dyDs, 0 };
+            }
             if( candidateCount > 0 )
                 useMaskedFallback = true;
 
-            // When all row-projection candidates score 0 (periodic
-            // content where cross-correlation can't discriminate),
-            // redistribute them evenly across the search range so
-            // the fine search samples the full window instead of
-            // clustering at the smallest shifts.
-            if( useMaskedFallback && candidateCount >= 2 &&
-                candidates[0].score == 0 && candidates[candidateCount - 1].score == 0 )
+            // When all edge NCC candidates scored <= 0 (no meaningful
+            // correlation found on periodic content), redistribute them
+            // evenly across the search range so the fine search samples
+            // the full window instead of clustering at small shifts.
+            if( useMaskedFallback && edgeCandCount >= 2 &&
+                edgeCands[0].ncc <= 0.0 )
             {
                 const int rangeSpan = searchMaxDy - searchMinDy;
                 const int stride = max( 1, rangeSpan / ( kMaxCandidates - 1 ) );
@@ -2129,6 +2207,28 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     {
         prunedCount = 1;
     }
+
+    // Pre-compute full-resolution luma arrays.  Hoisted before probe
+    // injection so that edge-projection injection (HCF) can use them.
+    // Use caller-provided full-resolution luma if available; reuse
+    // fallback-computed luma if the masked coarse ran; otherwise compute locally.
+    std::vector<BYTE> previousFullLumaOwned;
+    std::vector<BYTE> currentFullLumaOwned;
+    if( !hasPrecomputedLuma )
+    {
+        if( !fallbackPrevLuma.empty() )
+        {
+            previousFullLumaOwned = std::move( fallbackPrevLuma );
+            currentFullLumaOwned = std::move( fallbackCurrLuma );
+        }
+        else
+        {
+            BuildFullLumaFrame( previousPixels, frameWidth, frameHeight, previousFullLumaOwned );
+            BuildFullLumaFrame( currentPixels, frameWidth, frameHeight, currentFullLumaOwned );
+        }
+    }
+    const std::vector<BYTE>& previousFullLuma = hasPrecomputedLuma ? precomputedPrevLuma : previousFullLumaOwned;
+    const std::vector<BYTE>& currentFullLuma = hasPrecomputedLuma ? precomputedCurrLuma : currentFullLumaOwned;
 
     // Inject probe candidates near the expected shift.  Content with regular
     // vertical structure (e.g. code text at ~13 px line height) produces many
@@ -2311,6 +2411,69 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
     }
 
+    // Edge-projection candidate injection for HCF content.
+    // When the standard downsampled coarse search works (some non-zero scores)
+    // but may have missed the correct shift among harmonic alternatives,
+    // edge-density NCC provides structurally-informed candidates.
+    if( highConstantFractionPair && !useMaskedFallback && candidateCount > 0 )
+    {
+        std::vector<int> edgePrevInj, edgeCurrInj;
+        BuildRowEdgeDensity( previousFullLuma, frameWidth, frameHeight, 4, edgePrevInj );
+        BuildRowEdgeDensity( currentFullLuma, frameWidth, frameHeight, 4, edgeCurrInj );
+
+        // Find top 8 edge-density NCC candidates.
+        struct EdgeCandidate { int dyFull; double ncc; };
+        constexpr int kEdgeInject = 8;
+        EdgeCandidate edgeInj[kEdgeInject];
+        int eiCount = 0;
+
+        const int searchMinFull = searchMinDy * downsampleScale;
+        const int searchMaxFull = searchMaxDy * downsampleScale;
+        for( int absStep = max( 4, downsampleScale ); absStep <= frameHeight - max( 2, frameHeight / 6 ); absStep += 2 )
+        {
+            for( int dir = -1; dir <= 1; dir += 2 )
+            {
+                const int dyF = dir * absStep;
+                if( dyF < searchMinFull || dyF > searchMaxFull ) continue;
+                const int overlap = frameHeight - absStep;
+                const int* aS = ( dir < 0 ) ? &edgePrevInj[absStep] : &edgePrevInj[0];
+                const int* bS = ( dir < 0 ) ? &edgeCurrInj[0] : &edgeCurrInj[absStep];
+                const double ncc = NCC1D( aS, bS, overlap );
+
+                if( eiCount < kEdgeInject || ncc > edgeInj[eiCount - 1].ncc )
+                {
+                    int ip = eiCount < kEdgeInject ? eiCount : eiCount - 1;
+                    for( int j = ip; j > 0 && edgeInj[j - 1].ncc < ncc; --j )
+                    {
+                        if( j < kEdgeInject )
+                            edgeInj[j] = edgeInj[j - 1];
+                        ip = j - 1;
+                    }
+                    if( ip < kEdgeInject )
+                    {
+                        edgeInj[ip] = { dyF, ncc };
+                        if( eiCount < kEdgeInject )
+                            eiCount++;
+                    }
+                }
+            }
+        }
+
+        // Inject into candidate array (avoid duplicates).
+        for( int ei = 0; ei < eiCount && prunedCount < kMaxCandidatesWithProbes; ++ei )
+        {
+            const int dyDs = edgeInj[ei].dyFull / downsampleScale;
+            bool dup = false;
+            for( int ci = 0; ci < prunedCount; ++ci )
+                if( candidates[ci].dyDs == dyDs ) { dup = true; break; }
+            if( !dup )
+                candidates[prunedCount++] = { dyDs, coarsePruneThreshold };
+        }
+
+        StitchLog( L"[Panorama/Stitch] EdgeProjectionInject injected=%d topNCC=%.4f\n",
+                     eiCount, eiCount > 0 ? edgeInj[0].ncc : 0.0 );
+    }
+
     // Debug: log coarse candidates for HCF frames to diagnose harmonic issues.
     if( highConstantFractionPair && bestCoarseScore <= 2 )
     {
@@ -2346,26 +2509,6 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         : normalRefineRadius;
     const int refineRadiusDx = 1;
 
-    // Use caller-provided full-resolution luma if available; reuse
-    // fallback-computed luma if the masked coarse ran; otherwise compute locally.
-    std::vector<BYTE> previousFullLumaOwned;
-    std::vector<BYTE> currentFullLumaOwned;
-    if( !hasPrecomputedLuma )
-    {
-        if( !fallbackPrevLuma.empty() )
-        {
-            previousFullLumaOwned = std::move( fallbackPrevLuma );
-            currentFullLumaOwned = std::move( fallbackCurrLuma );
-        }
-        else
-        {
-            BuildFullLumaFrame( previousPixels, frameWidth, frameHeight, previousFullLumaOwned );
-            BuildFullLumaFrame( currentPixels, frameWidth, frameHeight, currentFullLumaOwned );
-        }
-    }
-    const std::vector<BYTE>& previousFullLuma = hasPrecomputedLuma ? precomputedPrevLuma : previousFullLumaOwned;
-    const std::vector<BYTE>& currentFullLuma = hasPrecomputedLuma ? precomputedCurrLuma : currentFullLumaOwned;
-
     // Build full-resolution informative masks for very-low-entropy pairs.
     // The masked fine search restricts scoring to content pixels (text
     // edges) which is essential for low-contrast terminal-style content
@@ -2380,6 +2523,8 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     std::vector<BYTE> fullMaskCurr;
     const bool useFineMask = veryLowEntropyPair || useMaskedFallback;
     const bool useRgbFineSearch = false;
+    const bool useZnccFineSearch = highConstantFractionPair && useFineMask;
+    constexpr unsigned __int64 kZnccScoreBase = 12800;
     if( useFineMask )
     {
         if( !fallbackMaskPrev.empty() )
@@ -2493,6 +2638,28 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 {
                     continue;
                 }
+
+                unsigned __int64 score;
+
+                if( useZnccFineSearch )
+                {
+                    // ZNCC fine scoring: uses only informative (masked) pixels.
+                    // Constant regions have σ=0 and contribute nothing, avoiding
+                    // the "everything scores 0" problem that SAD has on HCF content.
+                    const double zncc = ComputeMaskedZNCC(
+                        previousFullLuma.data(), currentFullLuma.data(),
+                        fullMaskPrev.data(), fullMaskCurr.data(),
+                        frameWidth, overlap, absStep,
+                        ( dy < 0 ) ? -1 : 1, dx,
+                        fineMarginX, 50 /*minSamples*/ );
+
+                    // Convert ZNCC to integer score compatible with SAD pipeline.
+                    // ZNCC=1.0 → score=0 (perfect), ZNCC=0.5 → score=kZnccScoreBase/2.
+                    score = static_cast<unsigned __int64>(
+                        max( 0.0, ( 1.0 - zncc ) * static_cast<double>( kZnccScoreBase ) ) );
+                }
+                else
+                {
 
                 unsigned __int64 totalDiff = 0;
                 unsigned __int64 samples = 0;
@@ -2689,10 +2856,15 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                     continue;
                 }
 
-                const unsigned __int64 score = totalDiff * kFineScoreScale / samples;
+                score = totalDiff * kFineScoreScale / samples;
+
+                } // !useZnccFineSearch
 
                 // Harmonic-fallback tracking.
-                if( harmonicFallback && score == 0 )
+                // For ZNCC, "perfect" means score near 0 (within kZnccMinPerfect
+                // due to floating-point rounding) rather than exactly 0.
+                const unsigned __int64 harmonicPerfectThreshold = useZnccFineSearch ? 64 : 0;
+                if( harmonicFallback && score <= harmonicPerfectThreshold )
                 {
                     if( ci < preHarmonicProbeCount )
                         foundOriginalZero = true;
@@ -2705,12 +2877,12 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 }
 
                 // Skip harmonic-fallback probes that didn't achieve a
-                // perfect pixel match -- only score==0 probes can win.
+                // perfect pixel match -- only score<=threshold probes can win.
                 // Also skip probes entirely when an original candidate
-                // already found score==0 (the correct shift is already in
+                // already found a perfect score (the correct shift is already in
                 // the candidate list and probes can only cause harm).
                 if( harmonicFallback && ci >= preHarmonicProbeCount &&
-                    ( score > 0 || foundOriginalZero ) )
+                    ( score > harmonicPerfectThreshold || foundOriginalZero ) )
                     continue;
 
                 unsigned __int64 rankScore = score;
@@ -2902,7 +3074,10 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // certainly spurious — the constant-fraction region (dark background)
     // makes any small offset look identical.  Prefer the expected-step
     // candidate even with a non-zero score, as long as it was evaluated.
-    if( highConstantFractionPair && bestFineScore == 0 && expectedAbsStep > 0 &&
+    // For ZNCC, a "perfect" match scores near 0 but not exactly 0 due
+    // to floating-point rounding.  Use a small threshold instead.
+    const unsigned __int64 kZnccMinPerfect = useZnccFineSearch ? 64 : 0;
+    if( highConstantFractionPair && bestFineScore <= kZnccMinPerfect && expectedAbsStep > 0 &&
         bestAbsStep > 4 && bestAbsStep < expectedAbsStep * 2 / 3 &&
         scoreAtExpectedStep != ( std::numeric_limits<unsigned __int64>::max )() )
     {
@@ -3012,7 +3187,21 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // because only content pixels contribute) so use a more generous
     // threshold.
     unsigned __int64 fineThreshold;
-    if( useFineMask )
+    if( useZnccFineSearch )
+    {
+        // ZNCC scores: kZnccScoreBase / 4 = 3200 corresponds to ZNCC >= 0.75.
+        fineThreshold = kZnccScoreBase / 4;
+
+        const int relaxDeltaTolerance = max( refineRadiusDy, 8 );
+        if( expectedAbsStep > 0 &&
+            bestExpectedDelta <= relaxDeltaTolerance &&
+            bestFineScore != ( std::numeric_limits<unsigned __int64>::max )() )
+        {
+            // Relax to ZNCC >= 0.60 for candidates near expected step.
+            fineThreshold = ( std::max )( fineThreshold, kZnccScoreBase * 2 / 5 );
+        }
+    }
+    else if( useFineMask )
     {
         fineThreshold = ( maskedStationaryScore > 15 ) ? 30 * kFineScoreScale : 20 * kFineScoreScale;
     }
@@ -3077,6 +3266,12 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                  static_cast<unsigned long long>( scoreAtExpectedStep ),
                  dyAtExpectedStep,
                  highConstantFractionPair ? 1 : 0 );
+    // Clamp cross-axis shift to zero.  The fine search evaluates dx=±1
+    // for better score discrimination (ClearType subpixel effects), but
+    // screen captures scroll perfectly along one axis — there is never
+    // real cross-axis motion.  Allowing dx≠0 would accumulate drift.
+    bestDx = 0;
+
     if( outMaskedStationaryScore )
         *outMaskedStationaryScore = maskedStationaryScore;
     return true;
@@ -3101,11 +3296,11 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     const bool axisEstablished = ( expectedDx != 0 || expectedDy != 0 );
     const bool preferVerticalAxis = !axisEstablished || ( abs( expectedDy ) >= abs( expectedDx ) );
 
-    // ── Fast path: once the scroll axis is established, only run the
-    // preferred-axis search.  This avoids the expensive transpose +
-    // second FindBestFrameShiftVerticalOnly call for ~97% of frames.
-    // Fall through to the dual-search path only if the preferred axis
-    // search fails (rare: content anomaly or direction reversal).
+    // ── Once the scroll axis is established, only search along that axis.
+    // Never fall back to the cross-axis — a perpendicular match is always
+    // spurious (screen captures scroll perfectly along one axis).  If the
+    // preferred axis fails, reject the frame; the caller will advance to
+    // the next frame.
     if( axisEstablished )
     {
         if( preferVerticalAxis )
@@ -3124,28 +3319,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                 bestDx = directDx;
                 bestDy = directDy;
                 return true;
-            }
-            // Preferred axis failed — try the transposed axis as fallback.
-            // Note: pre-computed luma is not transposed, so don't pass it here.
-            std::vector<BYTE> previousTransposed, currentTransposed;
-            if( TransposePixels32( previousPixels, frameWidth, frameHeight, previousTransposed ) &&
-                TransposePixels32( currentPixels, frameWidth, frameHeight, currentTransposed ) )
-            {
-                int tDx = 0, tDy = 0;
-                if( FindBestFrameShiftVerticalOnly( previousTransposed, currentTransposed,
-                                                    frameHeight, frameWidth,
-                                                    expectedDy, expectedDx,
-                                                    tDx, tDy, lowContrastMode,
-                                                    {}, {},
-                                                    precomputedVeryLowEntropy,
-                                                    outNearStationaryOverride,
-                                                    allowHighConstStationaryRelax,
-                                                    outMaskedStationaryScore ) )
-                {
-                    bestDx = tDy;  // transposed mapping
-                    bestDy = tDx;
-                    return true;
-                }
             }
             return false;
         }
@@ -3171,22 +3344,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                     bestDy = tDx;
                     return true;
                 }
-            }
-            // Transposed axis failed — try direct as fallback.
-            int directDx = 0, directDy = 0;
-            if( FindBestFrameShiftVerticalOnly( previousPixels, currentPixels,
-                                                frameWidth, frameHeight,
-                                                expectedDx, expectedDy,
-                                                directDx, directDy, lowContrastMode,
-                                                precomputedPrevLuma, precomputedCurrLuma,
-                                                precomputedVeryLowEntropy,
-                                                outNearStationaryOverride,
-                                                allowHighConstStationaryRelax,
-                                                outMaskedStationaryScore ) )
-            {
-                bestDx = directDx;
-                bestDy = directDy;
-                return true;
             }
             return false;
         }
@@ -4246,6 +4403,13 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     size_t duplicateFrameCount = 0;
     size_t captureIteration = 0;
 
+    // Resolve DwmFlush once for the capture loop.  Used to synchronize
+    // with the DWM composition cycle so BitBlt captures fully-composed
+    // frames instead of mid-scroll torn content.
+    using pfnDwmFlush_t = HRESULT( WINAPI* )();
+    const auto pfnDwmFlush = reinterpret_cast<pfnDwmFlush_t>(
+        GetProcAddress( GetModuleHandleW( L"dwmapi.dll" ), "DwmFlush" ) );
+
     while( !g_PanoramaStopRequested )
     {
         captureIteration++;
@@ -4266,7 +4430,17 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             break;
         }
 
-        Sleep( 16 );
+        // Synchronize with the DWM composition cycle instead of a blind
+        // sleep.  DwmFlush blocks until the next vsync + composition
+        // completes, so the subsequent BitBlt captures a fully-composed
+        // frame.  This avoids torn captures where the application is
+        // mid-scroll (e.g. ScrollWindowEx shifted pixels but the app
+        // has not yet repainted the newly-exposed region).
+        // Fall back to Sleep(16) if DWM is unavailable.
+        if( !pfnDwmFlush || FAILED( pfnDwmFlush() ) )
+        {
+            Sleep( 16 );
+        }
 
         HBITMAP frame = CaptureAbsoluteScreenRectToBitmap( hdcSource.get(), absoluteRect );
         if( frame == nullptr )
