@@ -197,7 +197,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <returns>Theme that should be used.</returns>
         public static string GetTheme()
         {
-            return Common.UI.ThemeManager.GetWindowsBaseColor().ToLowerInvariant();
+            return Common.UI.ThemeManager.GetMonacoTheme();
         }
     }
 }
