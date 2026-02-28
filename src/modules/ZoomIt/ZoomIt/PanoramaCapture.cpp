@@ -1545,6 +1545,127 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
     return duplicate;
 }
 
+// Detect torn/corrupted frames captured mid-scroll.
+// A torn frame has its top and bottom halves at different scroll offsets
+// because the application was mid-update when the BitBlt fired (e.g.
+// ScrollWindowEx shifted pixels but repaint hadn't completed).
+//
+// Method: find the best vertical scroll offset for the top band and
+// bottom band of the frame independently.  If they disagree by more
+// than a small tolerance, the frame is torn.
+static bool IsFrameTorn( HBITMAP currentFrame, HBITMAP previousFrame )
+{
+    std::vector<BYTE> currPx, prevPx;
+    int cW = 0, cH = 0, pW = 0, pH = 0;
+    if( !ReadBitmapPixels32( currentFrame, currPx, cW, cH ) ||
+        !ReadBitmapPixels32( previousFrame, prevPx, pW, pH ) )
+        return false;
+    if( cW != pW || cH != pH || cH < 32 )
+        return false;
+
+    const int width = cW;
+    const int height = cH;
+
+    // Build downsampled luma for speed.
+    const int scale = ( min( width, height ) >= 240 ) ? 4 : 2;
+    const int dsW = width / scale;
+    const int dsH = height / scale;
+    if( dsW < 8 || dsH < 16 )
+        return false;
+
+    std::vector<BYTE> prevLuma( dsW * dsH );
+    std::vector<BYTE> currLuma( dsW * dsH );
+    for( int y = 0; y < dsH; ++y )
+    {
+        for( int x = 0; x < dsW; ++x )
+        {
+            const int srcIdx = ( y * scale * width + x * scale ) * 4;
+            prevLuma[y * dsW + x] = static_cast<BYTE>(
+                ( prevPx[srcIdx + 2] * 77 + prevPx[srcIdx + 1] * 150 + prevPx[srcIdx + 0] * 29 ) >> 8 );
+            currLuma[y * dsW + x] = static_cast<BYTE>(
+                ( currPx[srcIdx + 2] * 77 + currPx[srcIdx + 1] * 150 + currPx[srcIdx + 0] * 29 ) >> 8 );
+        }
+    }
+
+    // Score a vertical shift over a horizontal band [bandY0, bandY0+bandH).
+    // Returns average absolute luma difference in the overlap.
+    auto scoreBand = [&]( int dy, int bandY0, int bandH ) -> double
+    {
+        const int absDy = abs( dy );
+        const int marginX = max( 2, dsW / 20 );
+        const int overlapH = bandH - absDy;
+        if( overlapH < bandH / 3 )
+            return 1e9;
+
+        unsigned __int64 total = 0;
+        unsigned __int64 n = 0;
+        for( int y = 0; y < overlapH; y += 2 )
+        {
+            const int pY = bandY0 + ( dy < 0 ? y + absDy : y );
+            const int cY = bandY0 + ( dy < 0 ? y : y + absDy );
+            if( pY >= dsH || cY >= dsH )
+                break;
+            for( int x = marginX; x < dsW - marginX; x += 2 )
+            {
+                total += static_cast<unsigned __int64>(
+                    abs( static_cast<int>( prevLuma[pY * dsW + x] ) -
+                         static_cast<int>( currLuma[cY * dsW + x] ) ) );
+                n++;
+            }
+        }
+        if( n < 50 )
+            return 1e9;
+        return static_cast<double>( total ) / static_cast<double>( n );
+    };
+
+    // Search range: up to half the frame height in downsampled units.
+    const int maxDy = min( dsH / 2, dsH - 4 );
+
+    // Find best shift for top band and bottom band.
+    const int bandH = dsH / 2;
+    const int topY0 = 0;
+    const int botY0 = dsH - bandH;
+
+    int bestTopDy = 0, bestBotDy = 0;
+    double bestTopScore = scoreBand( 0, topY0, bandH );
+    double bestBotScore = scoreBand( 0, botY0, bandH );
+
+    for( int dy = -maxDy; dy <= maxDy; ++dy )
+    {
+        if( dy == 0 )
+            continue;
+
+        const double ts = scoreBand( dy, topY0, bandH );
+        if( ts < bestTopScore )
+        {
+            bestTopScore = ts;
+            bestTopDy = dy;
+        }
+
+        const double bs = scoreBand( dy, botY0, bandH );
+        if( bs < bestBotScore )
+        {
+            bestBotScore = bs;
+            bestBotDy = dy;
+        }
+    }
+
+    // If both bands found stationary (dy=0), no scroll happened — not torn.
+    if( bestTopDy == 0 && bestBotDy == 0 )
+        return false;
+
+    // Torn if top and bottom disagree by more than 2 downsampled pixels.
+    const int dyDiff = abs( bestTopDy - bestBotDy );
+    if( dyDiff > 2 )
+    {
+        OutputDebug( L"[Panorama/Capture] Torn frame detected: topDy=%d botDy=%d diff=%d (ds scale=%d)\n",
+                     bestTopDy * scale, bestBotDy * scale, dyDiff * scale, scale );
+        return true;
+    }
+
+    return false;
+}
+
 static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
                                         const std::vector<BYTE>& currentPixels,
                                         int frameWidth,
@@ -4401,6 +4522,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 #endif
 
     size_t duplicateFrameCount = 0;
+    size_t tornFrameCount = 0;
     size_t captureIteration = 0;
 
     // Resolve DwmFlush once for the capture loop.  Used to synchronize
@@ -4466,6 +4588,21 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             continue;
         }
 
+        // Discard torn frames captured mid-scroll.  A torn frame has
+        // its top and bottom halves at different scroll offsets (e.g.
+        // ScrollWindowEx shifted pixels but repaint hadn't completed).
+        // Discarding n+1 is safe: the next clean frame n+2 will be
+        // compared against the last accepted frame n.
+        if( IsFrameTorn( frame, frames.back() ) )
+        {
+            tornFrameCount++;
+            OutputDebug( L"[Panorama/Capture] Torn frame discarded (count=%zu iteration=%zu)\n",
+                         tornFrameCount,
+                         captureIteration );
+            DeleteObject( frame );
+            continue;
+        }
+
         frames.push_back( frame );
         frame = nullptr;
         OutputDebug( L"[Panorama/Capture] Captured moving frame #%zu at iteration=%zu\n",
@@ -4478,10 +4615,11 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         }
     }
 
-    OutputDebug( L"[Panorama/Capture] Loop exited stopRequested=%d frames=%zu duplicates=%zu iterations=%zu\n",
+    OutputDebug( L"[Panorama/Capture] Loop exited stopRequested=%d frames=%zu duplicates=%zu torn=%zu iterations=%zu\n",
                  g_PanoramaStopRequested ? 1 : 0,
                  frames.size(),
                  duplicateFrameCount,
+                 tornFrameCount,
                  captureIteration );
 
 #ifdef _DEBUG
@@ -4489,9 +4627,10 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     {
         wchar_t statsText[256]{};
         swprintf_s( statsText,
-                    L"framesAccepted=%zu\nduplicates=%zu\niterations=%zu\nstopRequested=%d\n",
+                    L"framesAccepted=%zu\nduplicates=%zu\ntorn=%zu\niterations=%zu\nstopRequested=%d\n",
                     frames.size(),
                     duplicateFrameCount,
+                    tornFrameCount,
                     captureIteration,
                     g_PanoramaStopRequested ? 1 : 0 );
         DumpPanoramaText( debugDumpDirectory, L"capture_stats.txt", statsText );
