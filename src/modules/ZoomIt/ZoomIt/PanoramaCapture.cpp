@@ -4982,6 +4982,14 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 //
 bool RunPanoramaStitchSelfTest()
 {
+    // Allocate a console so stdout output is visible when running from
+    // a terminal.  GUI subsystem apps have no console by default.
+    if( AllocConsole() )
+    {
+        FILE* fp = nullptr;
+        freopen_s( &fp, "CONOUT$", "w", stdout );
+    }
+
     // Write test progress to both OutputDebugString and stdout so the
     // user can watch progress in a terminal window.
     auto TestLog = []( const wchar_t* format, ... )
