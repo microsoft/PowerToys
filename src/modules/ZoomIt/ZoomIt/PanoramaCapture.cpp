@@ -719,6 +719,11 @@ static bool RunPanoramaStitchFromDumpDirectory( const std::filesystem::path& dum
                  useGrabbedFrames ? L"grabbed" : L"accepted",
                  framePaths.size(),
                  dumpDirectory.c_str() );
+    wprintf( L"[Replay] Loading %zu %s frames from %s\n",
+             framePaths.size(),
+             useGrabbedFrames ? L"grabbed" : L"accepted",
+             dumpDirectory.c_str() );
+    fflush( stdout );
 
     std::vector<HBITMAP> frames;
     frames.reserve( framePaths.size() );
@@ -744,7 +749,21 @@ static bool RunPanoramaStitchFromDumpDirectory( const std::filesystem::path& dum
         g_StitchLogFile = fopen( logPath.string().c_str(), "w" );
     }
 
-    HBITMAP stitched = StitchPanoramaFrames( frames, false );
+    wprintf( L"[Replay] Stitching %zu frames ...\n", frames.size() );
+    fflush( stdout );
+    int lastPercent = -1;
+    HBITMAP stitched = StitchPanoramaFrames( frames, false, [&]( int percent ) -> bool
+    {
+        if( percent != lastPercent )
+        {
+            lastPercent = percent;
+            wprintf( L"\r[Replay] Stitching ... %d%%", percent );
+            fflush( stdout );
+        }
+        return true;
+    } );
+    wprintf( L"\r[Replay] Stitching ... done    \n" );
+    fflush( stdout );
 
     if( g_StitchLogFile != nullptr )
     {
@@ -759,6 +778,7 @@ static bool RunPanoramaStitchFromDumpDirectory( const std::filesystem::path& dum
 
     if( stitched == nullptr )
     {
+        wprintf( L"[Replay] FAILED: stitcher returned null\n" );
         StitchLog( L"[Panorama/Replay] StitchPanoramaFrames failed for %s\n", dumpDirectory.c_str() );
         return false;
     }
@@ -768,10 +788,13 @@ static bool RunPanoramaStitchFromDumpDirectory( const std::filesystem::path& dum
     DeleteObject( stitched );
     if( !saved )
     {
+        wprintf( L"[Replay] FAILED: could not save output\n" );
         StitchLog( L"[Panorama/Replay] Failed to save stitched replay: %s\n", outputPath.c_str() );
         return false;
     }
 
+    wprintf( L"[Replay] Saved: %s\n", outputPath.c_str() );
+    fflush( stdout );
     StitchLog( L"[Panorama/Replay] Saved stitched replay: %s\n", outputPath.c_str() );
     return true;
 }
@@ -2088,8 +2111,14 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         // non-zero average luma diff at informative pixels indicates
         // real movement even when the full-frame score is diluted by
         // the constant background.
-        if( highConstantFractionPair &&
-            ( maskedStationaryScore >= 1 || highConstStationaryRelax ) )
+        // For VLE pairs, informative pixels are so sparse that
+        // maskedStationary can round to 0 even on real shifts.  Let
+        // the coarse/fine search determine the shift; if the frame is
+        // truly stationary the search returns a near-zero shift which
+        // the low-movement filter catches later.
+        if( veryLowEntropyPair ||
+            ( highConstantFractionPair &&
+              ( maskedStationaryScore >= 1 || highConstStationaryRelax ) ) )
         {
             // Fall through to the coarse search.
         }
@@ -7585,12 +7614,22 @@ bool RunPanoramaStitchSelfTest()
 
 bool RunPanoramaStitchDumpDirectory( const wchar_t* path )
 {
+    if( AllocConsole() )
+    {
+        FILE* fp = nullptr;
+        freopen_s( &fp, "CONOUT$", "w", stdout );
+    }
     std::filesystem::path outputPath;
     return RunPanoramaStitchFromDumpDirectory( std::filesystem::path( path ), outputPath );
 }
 
 bool RunPanoramaStitchLatestDebugDump()
 {
+    if( AllocConsole() )
+    {
+        FILE* fp = nullptr;
+        freopen_s( &fp, "CONOUT$", "w", stdout );
+    }
     const auto debugRoot = GetPanoramaDebugRootDirectory();
     if( debugRoot.empty() )
     {
