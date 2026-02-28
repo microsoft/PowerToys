@@ -72,13 +72,13 @@ Some items in the Development section may overlap and should be moved to the Mod
 
 ## Advanced Paste
 
-- Wrapped paste option lists in a single ScrollViewer in #5678
-- Added image input handling for AI-powered transformations in #5679
+- Wrapped paste option lists in a single ScrollViewer in [#5678](https://github.com/microsoft/PowerToys/pull/5678)
+- Added image input handling for AI-powered transformations in [#5679](https://github.com/microsoft/PowerToys/pull/5679)
 ...
 
 ## Awake
 
-- Fixed timed mode expiration in #5680 by [@daverayment](https://github.com/daverayment)
+- Fixed timed mode expiration in [#5680](https://github.com/microsoft/PowerToys/pull/5680) by [@daverayment](https://github.com/daverayment)
 ...
 
 ---
