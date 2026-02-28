@@ -3811,6 +3811,12 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Description" xml:space="preserve">
     <value>Preview the output of AI formats and Image to text before pasting</value>
   </data>
+  <data name="AdvancedPaste_ShowAIPasteSettingsCard.Header" xml:space="preserve">
+    <value>Show AI paste section</value>
+  </data>
+  <data name="AdvancedPaste_ShowAIPasteSettingsCard.Description" xml:space="preserve">
+    <value>Show the AI paste input box in the Advanced Paste window</value>
+  </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Text" xml:space="preserve">
     <value>Advanced AI</value>
   </data>
