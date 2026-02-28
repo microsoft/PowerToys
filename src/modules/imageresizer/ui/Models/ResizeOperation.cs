@@ -1,26 +1,24 @@
-﻿#pragma warning disable IDE0073
+#pragma warning disable IDE0073
 // Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 #pragma warning restore IDE0073
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-
-using ImageResizer.Extensions;
+using System.Threading.Tasks;
+using Windows.Foundation;
+using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
+using ImageResizer.Helpers;
 using ImageResizer.Properties;
 using ImageResizer.Services;
 using ImageResizer.Utilities;
 using Microsoft.VisualBasic.FileIO;
-
 using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
 namespace ImageResizer.Models
@@ -35,7 +33,20 @@ namespace ImageResizer.Models
         private readonly IAISuperResolutionService _aiSuperResolutionService;
 
         // Cache CompositeFormat for AI error message formatting (CA1863)
-        private static readonly CompositeFormat _aiErrorFormat = CompositeFormat.Parse(Resources.Error_AiProcessingFailed);
+        private static CompositeFormat _aiErrorFormat;
+
+        private static CompositeFormat AiErrorFormat
+        {
+            get
+            {
+                if (_aiErrorFormat == null)
+                {
+                    _aiErrorFormat = CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("Error_AiProcessingFailed"));
+                }
+
+                return _aiErrorFormat;
+            }
+        }
 
         // Filenames to avoid according to https://learn.microsoft.com/windows/win32/fileio/naming-a-file#file-and-directory-names
         private static readonly string[] _avoidFilenames =
@@ -53,78 +64,134 @@ namespace ImageResizer.Models
             _aiSuperResolutionService = aiSuperResolutionService ?? NoOpAiSuperResolutionService.Instance;
         }
 
-        public void Execute()
+        public async Task ExecuteAsync()
         {
             string path;
+
             using (var inputStream = _fileSystem.File.OpenRead(_file))
             {
-                var decoder = BitmapDecoder.Create(
-                    inputStream,
-                    BitmapCreateOptions.PreservePixelFormat,
-                    BitmapCacheOption.None);
+                var winrtInputStream = inputStream.AsRandomAccessStream();
+                var decoder = await BitmapDecoder.CreateAsync(winrtInputStream);
 
-                var containerFormat = decoder.CodecInfo.ContainerFormat;
-
-                var encoder = CreateEncoder(containerFormat);
-
-                if (decoder.Metadata != null)
+                // Determine encoder ID from decoder
+                var encoderId = CodecHelper.GetEncoderIdForDecoder(decoder);
+                if (encoderId == null || !CodecHelper.CanEncode(encoderId.Value))
                 {
-                    try
-                    {
-                        encoder.Metadata = decoder.Metadata;
-                    }
-                    catch (InvalidOperationException)
-                    {
-                    }
+                    encoderId = CodecHelper.GetEncoderIdFromLegacyGuid(_settings.FallbackEncoder);
                 }
 
-                if (decoder.Palette != null)
+                var encoderGuid = encoderId.Value;
+
+                if (_settings.SelectedSize is AiSize)
                 {
-                    encoder.Palette = decoder.Palette;
+                    // AI super resolution path
+                    path = await ExecuteAiAsync(decoder, winrtInputStream, encoderGuid);
                 }
-
-                foreach (var originalFrame in decoder.Frames)
+                else
                 {
-                    var transformedBitmap = Transform(originalFrame);
+                    // Standard resize path
+                    var originalWidth = (int)decoder.PixelWidth;
+                    var originalHeight = (int)decoder.PixelHeight;
+                    var dpiX = decoder.DpiX;
+                    var dpiY = decoder.DpiY;
 
-                    // if the frame was not modified, we should not replace the metadata
-                    if (transformedBitmap == originalFrame)
+                    var (scaledWidth, scaledHeight, cropBounds, noTransformNeeded) =
+                        CalculateDimensions(originalWidth, originalHeight, dpiX, dpiY);
+
+                    // For destination path, calculate final output dimensions
+                    int outputWidth, outputHeight;
+                    if (noTransformNeeded)
                     {
-                        encoder.Frames.Add(originalFrame);
+                        outputWidth = originalWidth;
+                        outputHeight = originalHeight;
+                    }
+                    else if (cropBounds.HasValue)
+                    {
+                        outputWidth = (int)cropBounds.Value.Width;
+                        outputHeight = (int)cropBounds.Value.Height;
                     }
                     else
                     {
-                        BitmapMetadata originalMetadata = (BitmapMetadata)originalFrame.Metadata;
-
-#if DEBUG
-                        Debug.WriteLine($"### Processing metadata of file {_file}");
-                        originalMetadata.PrintsAllMetadataToDebugOutput();
-#endif
-
-                        var metadata = GetValidMetadata(originalMetadata, transformedBitmap, containerFormat);
-
-                        if (_settings.RemoveMetadata && metadata != null)
-                        {
-                            // strip any metadata that doesn't affect rendering
-                            var newMetadata = new BitmapMetadata(metadata.Format);
-
-                            metadata.CopyMetadataPropertyTo(newMetadata, "System.Photo.Orientation");
-                            metadata.CopyMetadataPropertyTo(newMetadata, "System.Image.ColorSpace");
-
-                            metadata = newMetadata;
-                        }
-
-                        var frame = CreateBitmapFrame(transformedBitmap, metadata);
-
-                        encoder.Frames.Add(frame);
+                        outputWidth = (int)scaledWidth;
+                        outputHeight = (int)scaledHeight;
                     }
-                }
 
-                path = GetDestinationPath(encoder);
-                _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(path));
-                using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.Write))
-                {
-                    encoder.Save(outputStream);
+                    path = GetDestinationPath(encoderGuid, outputWidth, outputHeight);
+                    _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(path));
+
+                    using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.Write))
+                    {
+                        var winrtOutputStream = outputStream.AsRandomAccessStream();
+
+                        if (!_settings.RemoveMetadata)
+                        {
+                            // Transcode path: preserves all metadata automatically
+                            winrtInputStream.Seek(0);
+                            var encoder = await BitmapEncoder.CreateForTranscodingAsync(winrtOutputStream, decoder);
+
+                            if (!noTransformNeeded)
+                            {
+                                encoder.BitmapTransform.ScaledWidth = scaledWidth;
+                                encoder.BitmapTransform.ScaledHeight = scaledHeight;
+                                encoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Fant;
+
+                                if (cropBounds.HasValue)
+                                {
+                                    encoder.BitmapTransform.Bounds = cropBounds.Value;
+                                }
+                            }
+
+                            await ConfigureEncoderPropertiesAsync(encoder, encoderGuid);
+                            await encoder.FlushAsync();
+                        }
+                        else
+                        {
+                            // Strip metadata path: fresh encoder = no old metadata
+                            var propertySet = GetEncoderPropertySet(encoderGuid);
+                            var encoder = propertySet != null
+                                ? await BitmapEncoder.CreateAsync(encoderGuid, winrtOutputStream, propertySet)
+                                : await BitmapEncoder.CreateAsync(encoderGuid, winrtOutputStream);
+
+                            var transform = new BitmapTransform();
+                            if (!noTransformNeeded)
+                            {
+                                transform.ScaledWidth = scaledWidth;
+                                transform.ScaledHeight = scaledHeight;
+                                transform.InterpolationMode = BitmapInterpolationMode.Fant;
+
+                                if (cropBounds.HasValue)
+                                {
+                                    transform.Bounds = cropBounds.Value;
+                                }
+                            }
+                            else
+                            {
+                                transform.ScaledWidth = (uint)originalWidth;
+                                transform.ScaledHeight = (uint)originalHeight;
+                            }
+
+                            // Handle multi-frame images (e.g., GIF)
+                            for (uint i = 0; i < decoder.FrameCount; i++)
+                            {
+                                if (i > 0)
+                                {
+                                    await encoder.GoToNextFrameAsync();
+                                }
+
+                                var frame = await decoder.GetFrameAsync(i);
+                                var bitmap = await frame.GetSoftwareBitmapAsync(
+                                    frame.BitmapPixelFormat,
+                                    BitmapAlphaMode.Premultiplied,
+                                    transform,
+                                    ExifOrientationMode.IgnoreExifOrientation,
+                                    ColorManagementMode.DoNotColorManage);
+
+                                encoder.SetSoftwareBitmap(bitmap);
+                            }
+
+                            await encoder.FlushAsync();
+                        }
+                    }
                 }
             }
 
@@ -141,54 +208,74 @@ namespace ImageResizer.Models
             }
         }
 
-        private BitmapEncoder CreateEncoder(Guid containerFormat)
+        private async Task<string> ExecuteAiAsync(BitmapDecoder decoder, IRandomAccessStream winrtInputStream, Guid encoderGuid)
         {
-            var createdEncoder = BitmapEncoder.Create(containerFormat);
-            if (!createdEncoder.CanEncode())
+            try
             {
-                createdEncoder = BitmapEncoder.Create(_settings.FallbackEncoder);
-            }
+                // Get the source bitmap for AI processing
+                var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+                    BitmapPixelFormat.Bgra8,
+                    BitmapAlphaMode.Premultiplied);
 
-            ConfigureEncoder(createdEncoder);
+                var aiResult = _aiSuperResolutionService.ApplySuperResolution(
+                    softwareBitmap,
+                    _settings.AiSize.Scale,
+                    _file);
 
-            return createdEncoder;
-
-            void ConfigureEncoder(BitmapEncoder encoder)
-            {
-                switch (encoder)
+                if (aiResult == null)
                 {
-                    case JpegBitmapEncoder jpegEncoder:
-                        jpegEncoder.QualityLevel = MathHelpers.Clamp(_settings.JpegQualityLevel, 1, 100);
-                        break;
-
-                    case PngBitmapEncoder pngBitmapEncoder:
-                        pngBitmapEncoder.Interlace = _settings.PngInterlaceOption;
-                        break;
-
-                    case TiffBitmapEncoder tiffEncoder:
-                        tiffEncoder.Compression = _settings.TiffCompressOption;
-                        break;
+                    throw new InvalidOperationException(ResourceLoaderInstance.ResourceLoader.GetString("Error_AiConversionFailed"));
                 }
+
+                var outputWidth = aiResult.PixelWidth;
+                var outputHeight = aiResult.PixelHeight;
+
+                var path = GetDestinationPath(encoderGuid, outputWidth, outputHeight);
+                _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(path));
+
+                using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.Write))
+                {
+                    var winrtOutputStream = outputStream.AsRandomAccessStream();
+
+                    if (!_settings.RemoveMetadata)
+                    {
+                        // Transcode path: preserves metadata
+                        winrtInputStream.Seek(0);
+                        var encoder = await BitmapEncoder.CreateForTranscodingAsync(winrtOutputStream, decoder);
+                        encoder.SetSoftwareBitmap(aiResult);
+                        await ConfigureEncoderPropertiesAsync(encoder, encoderGuid);
+                        await encoder.FlushAsync();
+                    }
+                    else
+                    {
+                        // Strip metadata path
+                        var propertySet = GetEncoderPropertySet(encoderGuid);
+                        var encoder = propertySet != null
+                            ? await BitmapEncoder.CreateAsync(encoderGuid, winrtOutputStream, propertySet)
+                            : await BitmapEncoder.CreateAsync(encoderGuid, winrtOutputStream);
+
+                        encoder.SetSoftwareBitmap(aiResult);
+                        await encoder.FlushAsync();
+                    }
+                }
+
+                return path;
+            }
+            catch (Exception ex) when (ex is not InvalidOperationException)
+            {
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, AiErrorFormat, ex.Message);
+                throw new InvalidOperationException(errorMessage, ex);
             }
         }
 
-        private BitmapSource Transform(BitmapSource source)
+        private (uint ScaledWidth, uint ScaledHeight, BitmapBounds? CropBounds, bool NoTransformNeeded) CalculateDimensions(
+            int originalWidth, int originalHeight, double dpiX, double dpiY)
         {
-            if (_settings.SelectedSize is AiSize)
-            {
-                return TransformWithAi(source);
-            }
-
-            int originalWidth = source.PixelWidth;
-            int originalHeight = source.PixelHeight;
-
             // Convert from the chosen size unit to pixels, if necessary.
-            double width = _settings.SelectedSize.GetPixelWidth(originalWidth, source.DpiX);
-            double height = _settings.SelectedSize.GetPixelHeight(originalHeight, source.DpiY);
+            double width = _settings.SelectedSize.GetPixelWidth(originalWidth, dpiX);
+            double height = _settings.SelectedSize.GetPixelHeight(originalHeight, dpiY);
 
             // Swap target width/height dimensions if orientation correction is required.
-            // Ensures that we don't try to fit a landscape image into a portrait box by
-            // distorting it, unless specific Auto/Percent rules are applied.
             bool canSwapDimensions = _settings.IgnoreOrientation &&
                 !_settings.SelectedSize.HasAuto &&
                 _settings.SelectedSize.Unit != ResizeUnit.Percent;
@@ -214,15 +301,11 @@ namespace ImageResizer.Models
             // Normalize scales based on the chosen Fit/Fill mode.
             if (_settings.SelectedSize.Fit == ResizeFit.Fit)
             {
-                // Fit: use the smaller scale to ensure the image fits within the target.
                 scaleX = Math.Min(scaleX, scaleY);
                 scaleY = scaleX;
             }
             else if (_settings.SelectedSize.Fit == ResizeFit.Fill)
             {
-                // Fill: use the larger scale to ensure the target area is fully covered.
-                // This often results in one dimension overflowing, which is handled by
-                // cropping later.
                 scaleX = Math.Max(scaleX, scaleY);
                 scaleY = scaleX;
             }
@@ -230,177 +313,107 @@ namespace ImageResizer.Models
             // Handle Shrink Only mode.
             if (_settings.ShrinkOnly && _settings.SelectedSize.Unit != ResizeUnit.Percent)
             {
-                // Shrink Only mode should never return an image larger than the original.
                 if (scaleX > 1 || scaleY > 1)
                 {
-                    return source;
+                    return ((uint)originalWidth, (uint)originalHeight, null, true);
                 }
 
-                // Allow for crop-only when in Fill mode.
-                // At this point, the scale is <= 1.0. In Fill mode, it is possible for
-                // the scale to be 1.0 (no resize needed) while the target dimensions are
-                // smaller than the originals, requiring a crop.
                 bool isFillCropRequired = _settings.SelectedSize.Fit == ResizeFit.Fill &&
                     (originalWidth > width || originalHeight > height);
 
-                // If the scale is exactly 1.0 and a crop isn't required, we return the
-                // original image to prevent a re-encode.
                 if (scaleX == 1 && scaleY == 1 && !isFillCropRequired)
                 {
-                    return source;
+                    return ((uint)originalWidth, (uint)originalHeight, null, true);
                 }
             }
 
-            // Apply the scaling.
-            var scaledBitmap = new TransformedBitmap(source, new ScaleTransform(scaleX, scaleY));
+            // Calculate scaled dimensions
+            uint scaledWidth = (uint)Math.Max(1, (int)Math.Round(originalWidth * scaleX));
+            uint scaledHeight = (uint)Math.Max(1, (int)Math.Round(originalHeight * scaleY));
 
-            // Apply the centered crop for Fill mode, if necessary. Applies when Fill
-            // mode caused the scaled image to exceed the target dimensions.
+            // Apply the centered crop for Fill mode, if necessary.
             if (_settings.SelectedSize.Fit == ResizeFit.Fill
-                && (scaledBitmap.PixelWidth > width
-                || scaledBitmap.PixelHeight > height))
+                && (scaledWidth > (uint)width || scaledHeight > (uint)height))
             {
-                int x = (int)(((originalWidth * scaleX) - width) / 2);
-                int y = (int)(((originalHeight * scaleY) - height) / 2);
+                uint cropX = (uint)(((originalWidth * scaleX) - width) / 2);
+                uint cropY = (uint)(((originalHeight * scaleY) - height) / 2);
 
-                return new CroppedBitmap(scaledBitmap, new Int32Rect(x, y, (int)width, (int)height));
-            }
-
-            return scaledBitmap;
-        }
-
-        private BitmapSource TransformWithAi(BitmapSource source)
-        {
-            try
-            {
-                var result = _aiSuperResolutionService.ApplySuperResolution(
-                    source,
-                    _settings.AiSize.Scale,
-                    _file);
-
-                if (result == null)
+                var cropBounds = new BitmapBounds
                 {
-                    throw new InvalidOperationException(Properties.Resources.Error_AiConversionFailed);
-                }
+                    X = cropX,
+                    Y = cropY,
+                    Width = (uint)width,
+                    Height = (uint)height,
+                };
 
-                return result;
+                return (scaledWidth, scaledHeight, cropBounds, false);
             }
-            catch (Exception ex)
+
+            return (scaledWidth, scaledHeight, null, false);
+        }
+
+        private async Task ConfigureEncoderPropertiesAsync(BitmapEncoder encoder, Guid encoderGuid)
+        {
+            if (encoderGuid == BitmapEncoder.JpegEncoderId)
             {
-                // Wrap the exception with a localized message
-                // This will be caught by ResizeBatch.Process() and displayed to the user
-                var errorMessage = string.Format(CultureInfo.CurrentCulture, _aiErrorFormat, ex.Message);
-                throw new InvalidOperationException(errorMessage, ex);
+                await encoder.BitmapProperties.SetPropertiesAsync(new BitmapPropertySet
+                {
+                    { "ImageQuality", new BitmapTypedValue((float)MathHelpers.Clamp(_settings.JpegQualityLevel, 1, 100) / 100f, PropertyType.Single) },
+                });
             }
         }
 
-        /// <summary>
-        /// Checks original metadata by writing an image containing the given metadata into a memory stream.
-        /// In case of errors, we try to rebuild the metadata object and check again.
-        /// We return null if we were not able to get hold of valid metadata.
-        /// </summary>
-        private BitmapMetadata GetValidMetadata(BitmapMetadata originalMetadata, BitmapSource transformedBitmap, Guid containerFormat)
+        private BitmapPropertySet GetEncoderPropertySet(Guid encoderGuid)
         {
-            if (originalMetadata == null)
+            if (encoderGuid == BitmapEncoder.JpegEncoderId)
             {
-                return null;
+                return new BitmapPropertySet
+                {
+                    { "ImageQuality", new BitmapTypedValue((float)MathHelpers.Clamp(_settings.JpegQualityLevel, 1, 100) / 100f, PropertyType.Single) },
+                };
             }
 
-            // Check if the original metadata is valid
-            var frameWithOriginalMetadata = CreateBitmapFrame(transformedBitmap, originalMetadata);
-            if (EnsureFrameIsValid(frameWithOriginalMetadata))
+            if (encoderGuid == BitmapEncoder.TiffEncoderId)
             {
-                return originalMetadata;
+                var compressionMethod = MapTiffCompression(_settings.TiffCompressOption);
+                if (compressionMethod.HasValue)
+                {
+                    return new BitmapPropertySet
+                    {
+                        { "TiffCompressionMethod", new BitmapTypedValue(compressionMethod.Value, PropertyType.UInt8) },
+                    };
+                }
             }
 
-            // Original metadata was invalid. We try to rebuild the metadata object from the scratch and discard invalid metadata fields
-            var recreatedMetadata = BuildMetadataFromTheScratch(originalMetadata);
-            var frameWithRecreatedMetadata = CreateBitmapFrame(transformedBitmap, recreatedMetadata);
-            if (EnsureFrameIsValid(frameWithRecreatedMetadata))
-            {
-                return recreatedMetadata;
-            }
-
-            // Seems like we have an invalid metadata object. ImageResizer will fail when trying to write the image to disk. We discard all metadata to be able to save the image.
             return null;
-
-            // The safest way to check if the metadata object is valid is to call Save() on the encoder.
-            // I tried other ways to check if metadata is valid (like calling Clone() on the metadata object) but this was not reliable resulting in a few github issues.
-            bool EnsureFrameIsValid(BitmapFrame frameToBeChecked)
-            {
-                try
-                {
-                    var encoder = CreateEncoder(containerFormat);
-                    encoder.Frames.Add(frameToBeChecked);
-                    using (var testStream = new MemoryStream())
-                    {
-                        encoder.Save(testStream);
-                    }
-
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
         }
 
-        /// <summary>
-        /// Read all metadata and build up metadata object from the scratch. Discard invalid (unreadable/unwritable) metadata.
-        /// </summary>
-        private static BitmapMetadata BuildMetadataFromTheScratch(BitmapMetadata originalMetadata)
+        private static byte? MapTiffCompression(TiffCompressOption option)
         {
-            try
+            return option switch
             {
-                var metadata = new BitmapMetadata(originalMetadata.Format);
-                var listOfMetadata = originalMetadata.GetListOfMetadata();
-                foreach (var (metadataPath, value) in listOfMetadata)
-                {
-                    if (value is BitmapMetadata bitmapMetadata)
-                    {
-                        var innerMetadata = new BitmapMetadata(bitmapMetadata.Format);
-                        metadata.SetQuerySafe(metadataPath, innerMetadata);
-                    }
-                    else
-                    {
-                        metadata.SetQuerySafe(metadataPath, value);
-                    }
-                }
-
-                return metadata;
-            }
-            catch (ArgumentException ex)
-            {
-                Debug.WriteLine(ex);
-
-                return null;
-            }
+                TiffCompressOption.None => 1,
+                TiffCompressOption.Ccitt3 => 2,
+                TiffCompressOption.Ccitt4 => 3,
+                TiffCompressOption.Lzw => 4,
+                TiffCompressOption.Rle => 5,
+                TiffCompressOption.Zip => 6,
+                _ => null, // Default: let the encoder decide
+            };
         }
 
-        private static BitmapFrame CreateBitmapFrame(BitmapSource transformedBitmap, BitmapMetadata metadata)
-        {
-            return BitmapFrame.Create(
-                transformedBitmap,
-                thumbnail: null, /* should be null, see #15413 */
-                metadata,
-                colorContexts: null /* should be null, see #14866 */ );
-        }
-
-        private string GetDestinationPath(BitmapEncoder encoder)
+        private string GetDestinationPath(Guid encoderGuid, int outputPixelWidth, int outputPixelHeight)
         {
             var directory = _destinationDirectory ?? _fileSystem.Path.GetDirectoryName(_file);
             var originalFileName = _fileSystem.Path.GetFileNameWithoutExtension(_file);
 
-            var supportedExtensions = encoder.CodecInfo.FileExtensions.Split(',');
+            var supportedExtensions = CodecHelper.GetSupportedExtensions(encoderGuid);
             var extension = _fileSystem.Path.GetExtension(_file);
             if (!supportedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
             {
-                extension = supportedExtensions.FirstOrDefault();
+                extension = CodecHelper.GetDefaultExtension(encoderGuid);
             }
 
-            // Remove directory characters from the size's name.
-            // For AI Size, use the scale display (e.g., "2×") instead of the full name
             string sizeName = _settings.SelectedSize is AiSize aiSize
                 ? aiSize.ScaleDisplay
                 : _settings.SelectedSize.Name;
@@ -408,9 +421,8 @@ namespace ImageResizer.Models
                 .Replace('\\', '_')
                 .Replace('/', '_');
 
-            // Using CurrentCulture since this is user facing
-            var selectedWidth = _settings.SelectedSize is AiSize ? encoder.Frames[0].PixelWidth : _settings.SelectedSize.Width;
-            var selectedHeight = _settings.SelectedSize is AiSize ? encoder.Frames[0].PixelHeight : _settings.SelectedSize.Height;
+            var selectedWidth = _settings.SelectedSize is AiSize ? outputPixelWidth : _settings.SelectedSize.Width;
+            var selectedHeight = _settings.SelectedSize is AiSize ? outputPixelHeight : _settings.SelectedSize.Height;
             var fileName = string.Format(
                 CultureInfo.CurrentCulture,
                 _settings.FileNameFormat,
@@ -418,10 +430,9 @@ namespace ImageResizer.Models
                 sizeNameSanitized,
                 selectedWidth,
                 selectedHeight,
-                encoder.Frames[0].PixelWidth,
-                encoder.Frames[0].PixelHeight);
+                outputPixelWidth,
+                outputPixelHeight);
 
-            // Remove invalid characters from the final file name.
             fileName = fileName
                 .Replace(':', '_')
                 .Replace('*', '_')
@@ -431,7 +442,6 @@ namespace ImageResizer.Models
                 .Replace('>', '_')
                 .Replace('|', '_');
 
-            // Avoid creating not recommended filenames
             if (_avoidFilenames.Contains(fileName.ToUpperInvariant()))
             {
                 fileName = fileName + "_";

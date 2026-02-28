@@ -82,4 +82,4 @@ IDR_CONTEXTMENUHANDLER  REGISTRY                "ContextMenuHandler.rgs"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_RESIZE_PICTURES ICON "..\ui\Resources\ImageResizer.ico"
+IDI_RESIZE_PICTURES ICON "..\\ui\\Assets\\ImageResizer\\ImageResizer.ico"

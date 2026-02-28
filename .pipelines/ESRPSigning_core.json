@@ -135,13 +135,13 @@
             "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",
             "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
 
-            "PowerToys.ImageResizer.exe",
-            "PowerToys.ImageResizer.dll",
+            "WinUI3Apps\\PowerToys.ImageResizer.exe",
+            "WinUI3Apps\\PowerToys.ImageResizer.dll",
             "WinUI3Apps\\PowerToys.ImageResizerCLI.exe",
             "WinUI3Apps\\PowerToys.ImageResizerCLI.dll",
-            "PowerToys.ImageResizerExt.dll",
-            "PowerToys.ImageResizerContextMenu.dll",
-            "ImageResizerContextMenuPackage.msix",
+            "WinUI3Apps\\PowerToys.ImageResizerExt.dll",
+            "WinUI3Apps\\PowerToys.ImageResizerContextMenu.dll",
+            "WinUI3Apps\\ImageResizerContextMenuPackage.msix",
 
             "PowerToys.LightSwitchModuleInterface.dll",
             "LightSwitchService\\PowerToys.LightSwitchService.exe",

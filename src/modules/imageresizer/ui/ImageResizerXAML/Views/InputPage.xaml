@@ -1,0 +1,332 @@
+﻿<!--  Copyright (c) Microsoft Corporation. All rights reserved.  -->
+<!--  Licensed under the MIT License.  -->
+<Page
+    x:Class="ImageResizer.Views.InputPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:ImageResizer.Views"
+    xmlns:m="using:ImageResizer.Models"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <!--  Template for normal ResizeSize presets (Small, Medium, Large, Phone)  -->
+        <DataTemplate x:Key="ResizeSizeTemplate" x:DataType="m:ResizeSize">
+            <Grid VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <TextBlock Text="{x:Bind Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="×"
+                        Visibility="{x:Bind ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
+                        Visibility="{x:Bind ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock Margin="4,0,0,0" Text="{x:Bind Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <!--  Template for CustomSize - shows only name  -->
+        <DataTemplate x:Key="CustomSizeTemplate" x:DataType="m:CustomSize">
+            <Grid VerticalAlignment="Center">
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
+            </Grid>
+        </DataTemplate>
+
+        <!--  Template for AiSize - shows name and description  -->
+        <DataTemplate x:Key="AiSizeTemplate" x:DataType="m:AiSize">
+            <StackPanel VerticalAlignment="Center" Orientation="Vertical">
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
+                <TextBlock x:Uid="Input_AiSuperResolutionDescription" />
+            </StackPanel>
+        </DataTemplate>
+
+        <!--  DataTemplateSelector to choose the right template based on item type  -->
+        <local:SizeDataTemplateSelector
+            x:Key="SizeTemplateSelector"
+            AiSizeTemplate="{StaticResource AiSizeTemplate}"
+            CustomSizeTemplate="{StaticResource CustomSizeTemplate}"
+            ResizeSizeTemplate="{StaticResource ResizeSizeTemplate}" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="16">
+            <ComboBox
+                x:Name="SizeComboBox"
+                Height="64"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                ItemTemplateSelector="{StaticResource SizeTemplateSelector}"
+                ItemsSource="{Binding Settings.AllSizes, Mode=OneWay}"
+                SelectedItem="{Binding Settings.SelectedSize, Mode=TwoWay}" />
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border
+                Grid.RowSpan="5"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0" />
+
+            <!--  AI Configuration Panel  -->
+            <Grid Grid.Row="0" Margin="16">
+                <!--  AI Model Download Prompt  -->
+                <StackPanel Visibility="{Binding ShowModelDownloadPrompt, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <InfoBar
+                        IsClosable="False"
+                        IsOpen="True"
+                        Message="{Binding ModelStatusMessage, Mode=OneWay}"
+                        Severity="Informational" />
+
+                    <Button
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding DownloadModelCommand}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Visibility="{Binding IsModelDownloading, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
+                        <TextBlock x:Uid="Input_AiModelDownloadButton" />
+                    </Button>
+
+                    <StackPanel Margin="0,8,0,0" Visibility="{Binding IsModelDownloading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <!--  TODO: Add ProgressRing here  -->
+                        <TextBlock
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Center"
+                            Text="{Binding ModelStatusMessage, Mode=OneWay}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!--  AI Scale Controls  -->
+                <StackPanel Visibility="{Binding ShowAiControls, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid>
+                        <TextBlock x:Uid="Input_AiCurrentLabel" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding AiScaleDisplay, Mode=OneWay}" />
+                    </Grid>
+
+                    <Slider
+                        Margin="0,8,0,0"
+                        Maximum="8"
+                        Minimum="1"
+                        TickFrequency="1"
+                        TickPlacement="BottomRight"
+                        Value="{Binding AiSuperResolutionScale, Mode=TwoWay}" />
+
+                    <StackPanel Margin="0,16,0,0" Visibility="{Binding ShowAiSizeDescriptions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid>
+                            <TextBlock x:Uid="Input_AiCurrentLabel" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{Binding CurrentResolutionDescription, Mode=OneWay}" />
+                        </Grid>
+                        <Grid Margin="0,8,0,0">
+                            <TextBlock x:Uid="Input_AiNewLabel" />
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding NewResolutionDescription, Mode=OneWay}" />
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!--  Custom input matrix  -->
+            <Grid
+                Grid.Row="0"
+                Margin="16"
+                Visibility="{Binding IsCustomSizeSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="24" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="24" />
+                    <ColumnDefinition Width="24" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <FontIcon
+                    VerticalAlignment="Center"
+                    FontSize="20"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xE799;" />
+                <NumberBox
+                    x:Name="WidthNumberBox"
+                    Grid.Column="1"
+                    Margin="8,0,0,0"
+                    HorizontalAlignment="Stretch"
+                    KeyDown="NumberBox_KeyDown"
+                    Minimum="0"
+                    SpinButtonPlacementMode="Inline"
+                    Value="{Binding Settings.SelectedSize.Width, Mode=TwoWay}" />
+
+                <FontIcon
+                    Grid.Column="3"
+                    VerticalAlignment="Center"
+                    FontSize="20"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xE7A0;"
+                    Visibility="{Binding Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <NumberBox
+                    x:Name="HeightNumberBox"
+                    Grid.Column="4"
+                    Margin="8,0,0,0"
+                    HorizontalAlignment="Stretch"
+                    KeyDown="NumberBox_KeyDown"
+                    Minimum="0"
+                    SpinButtonPlacementMode="Inline"
+                    Visibility="{Binding Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Value="{Binding Settings.SelectedSize.Height, Mode=TwoWay}" />
+
+                <FontIcon
+                    Grid.Row="2"
+                    VerticalAlignment="Center"
+                    FontSize="20"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xE7A8;" />
+                <ComboBox
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Margin="8,0,0,0"
+                    HorizontalAlignment="Stretch"
+                    ItemsSource="{Binding ResizeFitValues, Mode=OneWay}"
+                    SelectedIndex="{Binding Settings.SelectedSize.Fit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="m:ResizeFit">
+                            <TextBlock Padding="2,0" Text="{x:Bind Converter={StaticResource EnumValueConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <FontIcon
+                    Grid.Row="2"
+                    Grid.Column="3"
+                    VerticalAlignment="Center"
+                    FontSize="20"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xECC6;" />
+                <ComboBox
+                    Grid.Row="2"
+                    Grid.Column="4"
+                    Margin="8,0,0,0"
+                    HorizontalAlignment="Stretch"
+                    ItemsSource="{Binding ResizeUnitValues, Mode=OneWay}"
+                    SelectedIndex="{Binding Settings.SelectedSize.Unit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="m:ResizeUnit">
+                            <TextBlock Padding="2,0" Text="{x:Bind Converter={StaticResource EnumValueConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+
+            <!--  CheckBoxes  -->
+            <StackPanel
+                Grid.Row="1"
+                Margin="16"
+                Orientation="Vertical">
+                <CheckBox IsChecked="{Binding Settings.ShrinkOnly, Mode=TwoWay}">
+                    <TextBlock x:Uid="Input_ShrinkOnly" TextWrapping="Wrap" />
+                </CheckBox>
+
+                <CheckBox IsChecked="{Binding Settings.IgnoreOrientation, Mode=TwoWay}">
+                    <TextBlock x:Uid="Input_IgnoreOrientation" TextWrapping="Wrap" />
+                </CheckBox>
+
+                <CheckBox IsChecked="{Binding Settings.Replace, Mode=TwoWay}">
+                    <TextBlock x:Uid="Input_Replace" TextWrapping="Wrap" />
+                </CheckBox>
+
+                <CheckBox IsChecked="{Binding Settings.RemoveMetadata, Mode=TwoWay}">
+                    <TextBlock x:Uid="Input_RemoveMetadata" TextWrapping="Wrap" />
+                </CheckBox>
+            </StackPanel>
+
+            <!--  Separator line  -->
+            <Border
+                Grid.Row="2"
+                Height="1"
+                Margin="0,8"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Top"
+                Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+            <InfoBar
+                Grid.Row="3"
+                Margin="16,0"
+                IsClosable="False"
+                IsOpen="{Binding TryingToResizeGifFiles, Mode=OneWay}"
+                Severity="Warning">
+                <TextBlock x:Uid="Input_GifWarning" />
+            </InfoBar>
+
+            <!--  Buttons  -->
+            <Grid Grid.Row="4" Margin="16,8,16,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button
+                    x:Uid="Open_settings_button"
+                    Padding="8"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    Command="{Binding OpenSettingsCommand}">
+                    <FontIcon FontSize="20" Glyph="&#xE713;" />
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Uid="Open_settings" />
+                    </ToolTipService.ToolTip>
+                </Button>
+
+                <Button
+                    Grid.Column="1"
+                    MinWidth="76"
+                    Command="{Binding ResizeCommand}"
+                    Style="{StaticResource AccentButtonStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <FontIcon FontSize="16" Glyph="&#xE740;" />
+                        <TextBlock x:Uid="Input_Resize" Margin="8,0,0,0" />
+                    </StackPanel>
+                </Button>
+
+                <Button
+                    Grid.Column="2"
+                    MinWidth="76"
+                    Margin="8,0,0,0"
+                    Command="{Binding CancelCommand}">
+                    <TextBlock x:Uid="Cancel" />
+                </Button>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>

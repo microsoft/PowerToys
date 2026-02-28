@@ -1,8 +1,6 @@
-﻿#pragma warning disable IDE0073
-// Copyright (c) Brice Lambson
-// The Brice Lambson licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
-#pragma warning restore IDE0073
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
@@ -10,10 +8,10 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
+using Windows.Graphics.Imaging;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Common.UI;
 using ImageResizer.Helpers;
 using ImageResizer.Models;
@@ -23,24 +21,11 @@ using ImageResizer.Views;
 
 namespace ImageResizer.ViewModels
 {
-    public class InputViewModel : Observable
+    public partial class InputViewModel : ObservableObject
     {
         public const int DefaultAiScale = 2;
         private const int MinAiScale = 1;
         private const int MaxAiScale = 8;
-
-        private readonly ResizeBatch _batch;
-        private readonly MainViewModel _mainViewModel;
-        private readonly IMainView _mainView;
-        private readonly bool _hasMultipleFiles;
-        private bool _originalDimensionsLoaded;
-        private int? _originalWidth;
-        private int? _originalHeight;
-        private string _currentResolutionDescription;
-        private string _newResolutionDescription;
-        private bool _isDownloadingModel;
-        private string _modelStatusMessage;
-        private double _modelDownloadProgress;
 
         public enum Dimension
         {
@@ -54,6 +39,29 @@ namespace ImageResizer.ViewModels
 
             public Dimension Dimension { get; set; }
         }
+
+        private readonly ResizeBatch _batch;
+        private readonly MainViewModel _mainViewModel;
+        private readonly IMainView _mainView;
+        private readonly bool _hasMultipleFiles;
+        private bool _originalDimensionsLoaded;
+        private int? _originalWidth;
+        private int? _originalHeight;
+
+        [ObservableProperty]
+        private string _currentResolutionDescription;
+
+        [ObservableProperty]
+        private string _newResolutionDescription;
+
+        [ObservableProperty]
+        private bool _isDownloadingModel;
+
+        [ObservableProperty]
+        private string _modelStatusMessage;
+
+        [ObservableProperty]
+        private double _modelDownloadProgress;
 
         public InputViewModel(
             Settings settings,
@@ -80,13 +88,6 @@ namespace ImageResizer.ViewModels
                 settings.PropertyChanged += HandleSettingsPropertyChanged;
             }
 
-            ResizeCommand = new RelayCommand(Resize, () => CanResize);
-            CancelCommand = new RelayCommand(Cancel);
-            OpenSettingsCommand = new RelayCommand(OpenSettings);
-            EnterKeyPressedCommand = new RelayCommand<KeyPressParams>(HandleEnterKeyPress);
-            DownloadModelCommand = new RelayCommand(async () => await DownloadModelAsync());
-
-            // Initialize AI UI state based on Settings availability
             InitializeAiState();
         }
 
@@ -111,94 +112,43 @@ namespace ImageResizer.ViewModels
 
         public string AiScaleDisplay => Settings?.AiSize?.ScaleDisplay ?? string.Empty;
 
-        public string CurrentResolutionDescription
-        {
-            get => _currentResolutionDescription;
-            private set => Set(ref _currentResolutionDescription, value);
-        }
+        public bool IsCustomSizeSelected => Settings?.SelectedSize is CustomSize;
 
-        public string NewResolutionDescription
-        {
-            get => _newResolutionDescription;
-            private set => Set(ref _newResolutionDescription, value);
-        }
-
-        // ==================== UI State Properties ====================
-
-        // Show AI size descriptions only when AI size is selected and not multiple files
         public bool ShowAiSizeDescriptions => Settings?.SelectedSize is AiSize && !_hasMultipleFiles;
 
-        // Helper property: Is model currently being downloaded?
-        public bool IsModelDownloading => _isDownloadingModel;
-
-        public string ModelStatusMessage
-        {
-            get => _modelStatusMessage;
-            private set => Set(ref _modelStatusMessage, value);
-        }
-
-        public double ModelDownloadProgress
-        {
-            get => _modelDownloadProgress;
-            private set => Set(ref _modelDownloadProgress, value);
-        }
-
-        // Show download prompt when: AI size is selected and model is not ready (including downloading)
         public bool ShowModelDownloadPrompt =>
             Settings?.SelectedSize is AiSize &&
-            (App.AiAvailabilityState == Properties.AiAvailabilityState.ModelNotReady || _isDownloadingModel);
+            (App.AiAvailabilityState == AiAvailabilityState.ModelNotReady || IsDownloadingModel);
 
-        // Show AI controls when: AI size is selected and AI is ready
         public bool ShowAiControls =>
             Settings?.SelectedSize is AiSize &&
-            App.AiAvailabilityState == Properties.AiAvailabilityState.Ready;
+            App.AiAvailabilityState == AiAvailabilityState.Ready;
 
-        /// <summary>
-        /// Gets a value indicating whether the resize operation can proceed.
-        /// For AI resize: only enabled when AI is fully ready.
-        /// For non-AI resize: always enabled.
-        /// </summary>
         public bool CanResize
         {
             get
             {
-                // If AI size is selected, only allow resize when AI is fully ready
                 if (Settings?.SelectedSize is AiSize)
                 {
-                    return App.AiAvailabilityState == Properties.AiAvailabilityState.Ready;
+                    return App.AiAvailabilityState == AiAvailabilityState.Ready;
                 }
 
-                // Non-AI resize can always proceed
                 return true;
             }
         }
 
-        public ICommand ResizeCommand { get; }
-
-        public ICommand CancelCommand { get; }
-
-        public ICommand OpenSettingsCommand { get; }
-
-        public ICommand EnterKeyPressedCommand { get; private set; }
-
-        public ICommand DownloadModelCommand { get; private set; }
-
-        // Any of the files is a gif
         public bool TryingToResizeGifFiles =>
-                _batch?.Files.Any(filename => filename.EndsWith(".gif", System.StringComparison.InvariantCultureIgnoreCase)) == true;
+            _batch?.Files.Any(filename => filename.EndsWith(".gif", StringComparison.InvariantCultureIgnoreCase)) == true;
 
+        [RelayCommand(CanExecute = nameof(CanResize))]
         public void Resize()
         {
             Settings.Save();
             _mainViewModel.CurrentPage = new ProgressViewModel(_batch, _mainViewModel, _mainView);
         }
 
-        public static void OpenSettings()
-        {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ImageResizer);
-        }
-
-        private void HandleEnterKeyPress(KeyPressParams parameters)
+        [RelayCommand]
+        private void EnterKeyPressed(KeyPressParams parameters)
         {
             switch (parameters.Dimension)
             {
@@ -211,8 +161,69 @@ namespace ImageResizer.ViewModels
             }
         }
 
+        [RelayCommand]
         public void Cancel()
             => _mainView.Close();
+
+        [RelayCommand]
+        public static void OpenSettings()
+        {
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ImageResizer);
+        }
+
+        [RelayCommand]
+        public async Task DownloadModelAsync()
+        {
+            try
+            {
+                IsDownloadingModel = true;
+                ModelStatusMessage = ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelDownloading");
+                ModelDownloadProgress = 0;
+                NotifyAiStateChanged();
+
+                var progress = new Progress<double>(value =>
+                {
+                    ModelDownloadProgress = value > 1 ? value : value * 100;
+                });
+
+                var result = await WinAiSuperResolutionService.EnsureModelReadyAsync(progress);
+
+                if (result?.Status == Microsoft.Windows.AI.AIFeatureReadyResultState.Success)
+                {
+                    ModelDownloadProgress = 100;
+                    App.AiAvailabilityState = AiAvailabilityState.Ready;
+                    UpdateStatusMessage();
+
+                    var aiService = await WinAiSuperResolutionService.CreateAsync();
+                    if (aiService != null)
+                    {
+                        ResizeBatch.SetAiSuperResolutionService(aiService);
+                    }
+                    else
+                    {
+                        ResizeBatch.SetAiSuperResolutionService(NoOpAiSuperResolutionService.Instance);
+                    }
+                }
+                else
+                {
+                    ModelStatusMessage = ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelDownloadFailed");
+                }
+            }
+            catch (Exception)
+            {
+                ModelStatusMessage = ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelDownloadFailed");
+            }
+            finally
+            {
+                IsDownloadingModel = false;
+                if (App.AiAvailabilityState != AiAvailabilityState.Ready)
+                {
+                    ModelDownloadProgress = 0;
+                }
+
+                NotifyAiStateChanged();
+            }
+        }
 
         private void HandleSettingsPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -220,16 +231,9 @@ namespace ImageResizer.ViewModels
             {
                 case nameof(Settings.SelectedSizeIndex):
                 case nameof(Settings.SelectedSize):
-                    // Notify UI state properties that depend on SelectedSize
                     NotifyAiStateChanged();
                     UpdateAiDetails();
-
-                    // Trigger CanExecuteChanged for ResizeCommand
-                    if (ResizeCommand is RelayCommand cmd)
-                    {
-                        cmd.OnCanExecuteChanged();
-                    }
-
+                    ResizeCommand.NotifyCanExecuteChanged();
                     break;
             }
         }
@@ -238,16 +242,12 @@ namespace ImageResizer.ViewModels
         {
             if (Settings?.AiSize != null)
             {
-                Settings.AiSize.Scale = Math.Clamp(
-                    Settings.AiSize.Scale,
-                    MinAiScale,
-                    MaxAiScale);
+                Settings.AiSize.Scale = Math.Clamp(Settings.AiSize.Scale, MinAiScale, MaxAiScale);
             }
         }
 
-        private void UpdateAiDetails()
+        private async void UpdateAiDetails()
         {
-            // Clear AI details if AI size not selected
             if (Settings == null || Settings.SelectedSize is not AiSize)
             {
                 CurrentResolutionDescription = string.Empty;
@@ -264,25 +264,25 @@ namespace ImageResizer.ViewModels
                 return;
             }
 
-            EnsureOriginalDimensionsLoaded();
+            await EnsureOriginalDimensionsLoadedAsync();
 
             var hasConcreteSize = _originalWidth.HasValue && _originalHeight.HasValue;
             CurrentResolutionDescription = hasConcreteSize
                 ? FormatDimensions(_originalWidth!.Value, _originalHeight!.Value)
-                : Resources.Input_AiUnknownSize;
+                : ResourceLoaderInstance.ResourceLoader.GetString("Input_AiUnknownSize");
 
             var scale = Settings.AiSize.Scale;
             NewResolutionDescription = hasConcreteSize
                 ? FormatDimensions((long)_originalWidth!.Value * scale, (long)_originalHeight!.Value * scale)
-                : Resources.Input_AiUnknownSize;
+                : ResourceLoaderInstance.ResourceLoader.GetString("Input_AiUnknownSize");
         }
 
         private static string FormatDimensions(long width, long height)
         {
-            return string.Format(CultureInfo.CurrentCulture, "{0} × {1}", width, height);
+            return string.Format(CultureInfo.CurrentCulture, "{0} x {1}", width, height);
         }
 
-        private void EnsureOriginalDimensionsLoaded()
+        private async Task EnsureOriginalDimensionsLoadedAsync()
         {
             if (_originalDimensionsLoaded)
             {
@@ -298,18 +298,14 @@ namespace ImageResizer.ViewModels
 
             try
             {
-                using var stream = File.OpenRead(file);
-                var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
-                var frame = decoder.Frames.FirstOrDefault();
-                if (frame != null)
-                {
-                    _originalWidth = frame.PixelWidth;
-                    _originalHeight = frame.PixelHeight;
-                }
+                using var fileStream = File.OpenRead(file);
+                using var stream = fileStream.AsRandomAccessStream();
+                var decoder = await BitmapDecoder.CreateAsync(stream);
+                _originalWidth = (int)decoder.PixelWidth;
+                _originalHeight = (int)decoder.PixelHeight;
             }
             catch (Exception)
             {
-                // Failed to load image dimensions - clear values
                 _originalWidth = null;
                 _originalHeight = null;
             }
@@ -319,128 +315,44 @@ namespace ImageResizer.ViewModels
             }
         }
 
-        /// <summary>
-        /// Initializes AI UI state based on App's cached availability state.
-        /// Subscribe to state change event to update UI when background initialization completes.
-        /// </summary>
         private void InitializeAiState()
         {
-            // Subscribe to initialization completion event to refresh UI
             App.AiInitializationCompleted += OnAiInitializationCompleted;
-
-            // Set initial status message based on current state
             UpdateStatusMessage();
         }
 
-        /// <summary>
-        /// Handles AI initialization completion event from App.
-        /// Refreshes UI when background initialization finishes.
-        /// </summary>
-        private void OnAiInitializationCompleted(object sender, Properties.AiAvailabilityState finalState)
+        private void OnAiInitializationCompleted(object sender, AiAvailabilityState finalState)
         {
             UpdateStatusMessage();
             NotifyAiStateChanged();
         }
 
-        /// <summary>
-        /// Updates status message based on current App availability state.
-        /// </summary>
         private void UpdateStatusMessage()
         {
             ModelStatusMessage = App.AiAvailabilityState switch
             {
-                Properties.AiAvailabilityState.Ready => string.Empty,
-                Properties.AiAvailabilityState.ModelNotReady => Resources.Input_AiModelNotAvailable,
-                Properties.AiAvailabilityState.NotSupported => Resources.Input_AiModelNotSupported,
+                AiAvailabilityState.Ready => string.Empty,
+                AiAvailabilityState.ModelNotReady => ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelNotAvailable"),
+                AiAvailabilityState.NotSupported => ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelNotSupported"),
                 _ => string.Empty,
             };
         }
 
-        /// <summary>
-        /// Notifies UI when AI state changes (model availability, download status).
-        /// </summary>
         private void NotifyAiStateChanged()
         {
-            OnPropertyChanged(nameof(IsModelDownloading));
+            OnPropertyChanged(nameof(IsCustomSizeSelected));
+            OnPropertyChanged(nameof(IsDownloadingModel));
             OnPropertyChanged(nameof(ShowModelDownloadPrompt));
             OnPropertyChanged(nameof(ShowAiControls));
             OnPropertyChanged(nameof(ShowAiSizeDescriptions));
             OnPropertyChanged(nameof(CanResize));
-
-            // Trigger CanExecuteChanged for ResizeCommand
-            if (ResizeCommand is RelayCommand resizeCommand)
-            {
-                resizeCommand.OnCanExecuteChanged();
-            }
         }
 
-        /// <summary>
-        /// Notifies UI when AI scale changes (slider value).
-        /// </summary>
         private void NotifyAiScaleChanged()
         {
             OnPropertyChanged(nameof(AiSuperResolutionScale));
             OnPropertyChanged(nameof(AiScaleDisplay));
             UpdateAiDetails();
-        }
-
-        private async Task DownloadModelAsync()
-        {
-            try
-            {
-                // Set downloading flag and show progress
-                _isDownloadingModel = true;
-                ModelStatusMessage = Resources.Input_AiModelDownloading;
-                ModelDownloadProgress = 0;
-                NotifyAiStateChanged();
-
-                // Create progress reporter to update UI
-                var progress = new Progress<double>(value =>
-                {
-                    // progressValue could be 0-1 or 0-100, normalize to 0-100
-                    ModelDownloadProgress = value > 1 ? value : value * 100;
-                });
-
-                // Call EnsureReadyAsync to download and prepare the AI model
-                var result = await WinAiSuperResolutionService.EnsureModelReadyAsync(progress);
-
-                if (result?.Status == Microsoft.Windows.AI.AIFeatureReadyResultState.Success)
-                {
-                    // Model successfully downloaded and ready
-                    ModelDownloadProgress = 100;
-
-                    // Update App's cached state
-                    App.AiAvailabilityState = Properties.AiAvailabilityState.Ready;
-                    UpdateStatusMessage();
-
-                    // Initialize the AI service now that model is ready
-                    var aiService = await WinAiSuperResolutionService.CreateAsync();
-                    ResizeBatch.SetAiSuperResolutionService(aiService ?? (Services.IAISuperResolutionService)NoOpAiSuperResolutionService.Instance);
-                }
-                else
-                {
-                    // Download failed
-                    ModelStatusMessage = Resources.Input_AiModelDownloadFailed;
-                }
-            }
-            catch (Exception)
-            {
-                // Exception during download
-                ModelStatusMessage = Resources.Input_AiModelDownloadFailed;
-            }
-            finally
-            {
-                // Clear downloading flag
-                _isDownloadingModel = false;
-
-                // Reset progress if not successful
-                if (App.AiAvailabilityState != Properties.AiAvailabilityState.Ready)
-                {
-                    ModelDownloadProgress = 0;
-                }
-
-                NotifyAiStateChanged();
-            }
         }
     }
 }

@@ -2,81 +2,91 @@
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
-  
+
   <PropertyGroup>
     <AssemblyTitle>PowerToys.ImageResizer</AssemblyTitle>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <UseWPF>true</UseWPF>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <ProjectGuid>{2BE46397-4DFA-414C-9BD4-41E4BBF8CB34}</ProjectGuid>
+    <AssemblyDescription>PowerToys Image Resizer</AssemblyDescription>
     <OutputType>WinExe</OutputType>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <RootNamespace>ImageResizer</RootNamespace>
     <AssemblyName>PowerToys.ImageResizer</AssemblyName>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <UseWinUI>true</UseWinUI>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <ApplicationIcon>Assets\ImageResizer\ImageResizer.ico</ApplicationIcon>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>CA1863</NoWarn>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.ImageResizer.pri</ProjectPriFileName>
+    <!-- Custom Main entry point -->
+    <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
   </PropertyGroup>
-  
+
+  <ItemGroup>
+    <Page Remove="ImageResizerXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="ImageResizerXAML\App.xaml" />
+  </ItemGroup>
+
   <PropertyGroup>
-    <ApplicationIcon>Resources\ImageResizer.ico</ApplicationIcon>
+    <NoWarn>0436;SA1210;SA1516;CA1305;CA1863;CA1852</NoWarn>
   </PropertyGroup>
 
-  <!-- <PropertyGroup>
-    <ApplicationManifest>ImageResizerUI.dev.manifest</ApplicationManifest>
+  <!-- Allow test project to access internal types -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="ImageResizer.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\ImageResizer\ImageResizer.ico" />
+  </ItemGroup>
+
+  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(CIBuild)'=='true'">
-    <ApplicationManifest>ImageResizerUI.prod.manifest</ApplicationManifest>
-  </PropertyGroup> -->
-
   <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\ImageResizer.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\ImageResizer.png" />
-  </ItemGroup>
-  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.IO.Abstractions" />
-    <PackageReference Include="WPF-UI" />
+
+    <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->
+    <PackageReference Include="CommunityToolkit.Common" />
+    <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
+
+  <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+       Tools extension to be activated for this project even if the Windows App SDK Nuget
+       package has not yet been restored -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
-    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  
-  <!-- Ensure Resources directory and ImageResizer.png are available for dependent projects -->
-  <Target Name="CopyResourcesToSharedLocation" AfterTargets="Build">
-    <ItemGroup>
-      <ResourceFiles Include="$(MSBuildProjectDirectory)\Resources\ImageResizer.png" />
-    </ItemGroup>
-    <MakeDir Directories="$(OutputPath)Resources" Condition="!Exists('$(OutputPath)Resources')" />
-    <Copy SourceFiles="@(ResourceFiles)" DestinationFolder="$(OutputPath)Resources" SkipUnchangedFiles="true" />
-  </Target>
-
 </Project>
