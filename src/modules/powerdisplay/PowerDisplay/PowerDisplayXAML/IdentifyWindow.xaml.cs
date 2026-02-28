@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using PowerDisplay.Helpers;
 using Windows.Graphics;
@@ -51,28 +50,19 @@ namespace PowerDisplay.PowerDisplayXAML
             WindowHelper.ConfigureAsPopupWindow(this, _hWnd, alwaysOnTop: true);
 
             // Note: Window size is NOT set here. PositionOnDisplay will set the
-            // correct size based on the target monitor's DPI using the two-phase approach.
+            // correct size based on the target monitor's DPI.
         }
 
         /// <summary>
-        /// Position the window at the center of the specified display area.
-        /// Uses a two-phase approach to handle cross-monitor DPI differences correctly.
+        /// Position the window at the center of the specified work area.
+        /// DPI is provided by the caller (from GetDpiForMonitor), so no two-phase
+        /// move is needed — single MoveAndResize call, same pattern as CmdPal.
         /// </summary>
-        public void PositionOnDisplay(DisplayArea displayArea)
+        /// <param name="workArea">Work area bounds in physical pixels (excludes taskbar)</param>
+        /// <param name="dpi">Target monitor's effective DPI (from GetDpiForMonitor)</param>
+        public void PositionOnDisplay(RectInt32 workArea, int dpi)
         {
-            var workArea = displayArea.WorkArea;
-
-            // Phase 1: Move to the target display to get the correct DPI.
-            // The window may have been created on a different monitor (e.g., primary)
-            // with a different DPI. Moving first ensures GetDpiForWindow returns
-            // the target monitor's DPI, not the creation monitor's DPI.
-            this.AppWindow.Move(new PointInt32(
-                workArea.X + (workArea.Width / 2),
-                workArea.Y + (workArea.Height / 2)));
-
-            // Phase 2: Now on the target monitor, DPI is accurate.
-            // No DPI change will occur during MoveAndResize, so no auto-scaling.
-            double dpiScale = WindowHelper.GetDpiForWindow(this) / 96.0;
+            double dpiScale = dpi / 96.0;
             int physicalWidth = (int)(WindowWidthDiu * dpiScale);
             int physicalHeight = (int)(WindowHeightDiu * dpiScale);
 
@@ -80,6 +70,7 @@ namespace PowerDisplay.PowerDisplayXAML
             int x = workArea.X + ((workArea.Width - physicalWidth) / 2);
             int y = workArea.Y + ((workArea.Height - physicalHeight) / 2);
 
+            // Single call — DPI is already known, no need for two-phase move
             this.AppWindow.MoveAndResize(new RectInt32(x, y, physicalWidth, physicalHeight));
 
             // Uncloak: window is correctly sized and positioned for the target monitor.

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -86,6 +85,13 @@ namespace PowerDisplay.Helpers
         [LibraryImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool SetForegroundWindow(nint hWnd);
+
+        // DPI for monitor (same pattern as CmdPal's WindowPositionHelper)
+        private const int MdtEffectiveDpi = 0;
+        private const int DefaultDpi = 96;
+
+        [LibraryImport("shcore.dll")]
+        private static partial int GetDpiForMonitor(nint hMonitor, int dpiType, out uint dpiX, out uint dpiY);
 
         // DWM Window Cloaking - hides window at compositor level while keeping it fully functional
         private const int DwmwaCloak = 13;
@@ -282,11 +288,27 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Position a window at the bottom-right corner of the monitor where the mouse cursor is located.
-        /// Correctly handles all edge cases:
-        /// - Multi-monitor setups
-        /// - Taskbar at any position (top/bottom/left/right)
-        /// - Different DPI settings
+        /// Get DPI for a DisplayArea by querying its monitor.
+        /// Same pattern as CmdPal's WindowPositionHelper.GetDpiForDisplay().
+        /// </summary>
+        private static int GetDpiForDisplay(DisplayArea displayArea)
+        {
+            var hMonitor = Win32Interop.GetMonitorFromDisplayId(displayArea.DisplayId);
+            if (hMonitor == IntPtr.Zero)
+            {
+                return DefaultDpi;
+            }
+
+            int hr = GetDpiForMonitor(hMonitor, MdtEffectiveDpi, out uint dpiX, out _);
+            return hr == 0 && dpiX > 0 ? (int)dpiX : DefaultDpi;
+        }
+
+        /// <summary>
+        /// Position a window at the bottom-right corner of the monitor where the mouse cursor
+        /// is located. Follows the CmdPal pattern:
+        /// - DisplayArea.GetFromPoint() instead of FindAll() (WinUI#6454)
+        /// - GetDpiForMonitor() to query target DPI directly (no two-phase move needed)
+        /// - Single AppWindow.MoveAndResize() call for final positioning
         /// </summary>
         /// <param name="window">WinUI window to position</param>
         /// <param name="width">Window width in device-independent units (DIU)</param>
@@ -298,75 +320,39 @@ namespace PowerDisplay.Helpers
             int height,
             int rightMargin = 0)
         {
-            var displayAreas = DisplayArea.FindAll();
-            if (displayAreas == null || displayAreas.Count == 0)
+            // Find the display area at the cursor position (single-object API, not FindAll).
+            // See: https://github.com/microsoft/microsoft-ui-xaml/issues/6454
+            DisplayArea? targetArea = null;
+            if (GetCursorPos(out var cursorPos))
             {
-                ManagedCommon.Logger.LogWarning("PositionWindowBottomRight: No display areas found, skipping positioning");
+                targetArea = DisplayArea.GetFromPoint(
+                    new PointInt32(cursorPos.X, cursorPos.Y),
+                    DisplayAreaFallback.Nearest);
+            }
+
+            targetArea ??= DisplayArea.Primary;
+
+            if (targetArea == null)
+            {
                 return;
             }
 
-            // Find the display area where the mouse cursor is located
-            var targetArea = GetDisplayAreaAtCursor(displayAreas);
             var workArea = targetArea.WorkArea;
 
-            // Only move to the target monitor if the window is not already on it.
-            // This avoids a visible jump to the monitor center on every resize.
-            // The move is needed for cross-monitor DPI transitions: without it,
-            // GetDpiScale returns the wrong DPI and WM_DPICHANGED auto-scaling
-            // breaks the bottom-right alignment.
-            var windowPos = window.AppWindow.Position;
-            if (windowPos.X < workArea.X || windowPos.X >= workArea.X + workArea.Width ||
-                windowPos.Y < workArea.Y || windowPos.Y >= workArea.Y + workArea.Height)
-            {
-                window.AppWindow.Move(new PointInt32(
-                    workArea.X + (workArea.Width / 2),
-                    workArea.Y + (workArea.Height / 2)));
-            }
-
-            // Now the window is on the target monitor, DPI is correct.
-            // No DPI change will occur during MoveAndResize, so no auto-scaling.
-            double dpiScale = GetDpiScale(window);
+            // Get target monitor's DPI directly (same as CmdPal's GetDpiForDisplay).
+            // No need to move the window first — we query the monitor, not the window.
+            double dpiScale = GetDpiForDisplay(targetArea) / 96.0;
 
             // Convert DIU to physical pixels
             int physWidth = (int)Math.Ceiling(width * dpiScale);
             int physHeight = (int)Math.Ceiling(height * dpiScale);
             int physMargin = (int)Math.Ceiling(rightMargin * dpiScale);
 
-            // Calculate bottom-right position in physical pixels
-            // WorkArea already accounts for taskbar position
+            // Calculate bottom-right position and apply in a single call
             int x = workArea.X + workArea.Width - physWidth - physMargin;
             int y = workArea.Y + workArea.Height - physHeight;
 
             window.AppWindow.MoveAndResize(new RectInt32(x, y, physWidth, physHeight));
-        }
-
-        /// <summary>
-        /// Get the display area where the mouse cursor is currently located.
-        /// Falls back to primary display area if cursor position cannot be determined.
-        /// </summary>
-        /// <param name="displayAreas">List of available display areas</param>
-        /// <returns>DisplayArea containing the cursor</returns>
-        private static DisplayArea GetDisplayAreaAtCursor(IReadOnlyList<DisplayArea> displayAreas)
-        {
-            // Try to get cursor position using Win32 API
-            if (GetCursorPos(out var cursorPos))
-            {
-                // Find the display area that contains the cursor point
-                foreach (var area in displayAreas)
-                {
-                    var bounds = area.OuterBounds;
-                    if (cursorPos.X >= bounds.X &&
-                        cursorPos.X < bounds.X + bounds.Width &&
-                        cursorPos.Y >= bounds.Y &&
-                        cursorPos.Y < bounds.Y + bounds.Height)
-                    {
-                        return area;
-                    }
-                }
-            }
-
-            // Fallback to first display area (typically primary)
-            return displayAreas[0];
         }
     }
 }

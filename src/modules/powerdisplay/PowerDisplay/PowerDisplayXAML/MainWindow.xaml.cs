@@ -406,7 +406,7 @@ namespace PowerDisplay
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Error adjusting window size: {ex.Message}");
+                Logger.LogError($"Error adjusting window size: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -414,9 +414,7 @@ namespace PowerDisplay
         {
             try
             {
-                // AppWindow.Size returns physical pixels, but PositionWindowBottomRight
-                // expects DIU and will scale internally. Convert back to DIU to avoid
-                // double-scaling.
+                // AppWindow.Size returns physical pixels; convert to DIU for PositionWindowBottomRight
                 var windowSize = this.AppWindow.Size;
                 double dpiScale = WindowHelper.GetDpiScale(this);
                 int heightDiu = (int)(windowSize.Height / dpiScale);

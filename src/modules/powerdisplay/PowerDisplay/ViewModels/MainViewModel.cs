@@ -15,9 +15,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.UI;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Windowing;
 using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Drivers.DDC;
 using PowerDisplay.Common.Models;
@@ -40,6 +38,18 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW", StringMarshalling = StringMarshalling.Utf16)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfoEx lpmi);
+
+    private delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, IntPtr lprcMonitor, IntPtr dwData);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
+
+    private const int MdtEffectiveDpi = 0;
+    private const int DefaultDpi = 96;
+
+    [LibraryImport("shcore.dll")]
+    private static partial int GetDpiForMonitor(IntPtr hMonitor, int dpiType, out uint dpiX, out uint dpiY);
 
     private readonly MonitorManager _monitorManager;
     private readonly DispatcherQueue _dispatcherQueue;
@@ -219,9 +229,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         try
         {
-            // Get all display areas (virtual desktop regions)
-            var displayAreas = DisplayArea.FindAll();
-
             // Get all monitor info from QueryDisplayConfig
             var allDisplayInfo = DdcCiNative.GetAllMonitorDisplayInfo().Values.ToList();
 
@@ -235,20 +242,25 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                     g => g.Select(info => info.MonitorNumber).Distinct().OrderBy(n => n).ToList(),
                     StringComparer.OrdinalIgnoreCase);
 
-            // For each DisplayArea, get its HMONITOR, then get GDI device name to find MonitorNumber(s)
-            int windowsCreated = 0;
-            for (int i = 0; i < displayAreas.Count; i++)
-            {
-                var displayArea = displayAreas[i];
-
-                // Convert DisplayId to HMONITOR
-                var hMonitor = Win32Interop.GetMonitorFromDisplayId(displayArea.DisplayId);
-                if (hMonitor == IntPtr.Zero)
+            // Enumerate all HMONITORs using Win32 EnumDisplayMonitors.
+            // This avoids DisplayArea.FindAll() which can throw InvalidCastException
+            // due to WinRT IVectorView→IReadOnlyList projection issues.
+            var hMonitors = new List<IntPtr>();
+            EnumDisplayMonitors(
+                IntPtr.Zero,
+                IntPtr.Zero,
+                (hMonitor, _, _, _) =>
                 {
-                    continue;
-                }
+                    hMonitors.Add(hMonitor);
+                    return true;
+                },
+                IntPtr.Zero);
 
-                // Get GDI device name from HMONITOR
+            // For each HMONITOR, get GDI device name to find MonitorNumber(s)
+            int windowsCreated = 0;
+            foreach (var hMonitor in hMonitors)
+            {
+                // Get GDI device name and work area from HMONITOR
                 var monitorInfo = new MonitorInfoEx { CbSize = (uint)sizeof(MonitorInfoEx) };
                 if (!GetMonitorInfo(hMonitor, ref monitorInfo))
                 {
@@ -266,9 +278,17 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 // Format display text: single number for normal mode, "1|2" for mirror mode
                 var displayText = string.Join("|", monitorNumbers);
 
+                // Convert Win32 RECT work area to WinUI RectInt32
+                var rcWork = monitorInfo.RcWork;
+                var workArea = new Windows.Graphics.RectInt32(rcWork.Left, rcWork.Top, rcWork.Width, rcWork.Height);
+
+                // Get DPI for this monitor (same pattern as CmdPal's GetDpiForDisplay)
+                int hr = GetDpiForMonitor(hMonitor, MdtEffectiveDpi, out uint dpiX, out _);
+                int dpi = (hr == 0 && dpiX > 0) ? (int)dpiX : DefaultDpi;
+
                 // Create and position identify window
                 var identifyWindow = new IdentifyWindow(displayText);
-                identifyWindow.PositionOnDisplay(displayArea);
+                identifyWindow.PositionOnDisplay(workArea, dpi);
                 identifyWindow.Activate();
                 windowsCreated++;
             }
