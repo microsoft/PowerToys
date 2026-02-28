@@ -34,7 +34,7 @@
 //    between each consecutive accepted pair.  Displacement detection uses a
 //    two-phase search in FindBestFrameShift:
 //
-//    Phase 1 â€“ Windowed coarse search on downsampled luma
+//    Phase 1 - Windowed coarse search on downsampled luma
 //      Each frame is converted to single-channel luma and downsampled by
 //      4x (or 2x for small frames < 240 px).  The downsampled images are
 //      compared at every candidate vertical shift within a search window
@@ -42,7 +42,7 @@
 //      searches in both directions; subsequent pairs search only in the
 //      established direction across the full feasible range (minStep to
 //      maxStep).  This full-range search handles variable scroll speeds
-//      (e.g. 40 px â†’ 202 px between consecutive frames).
+//      (e.g. 40 px -> 202 px between consecutive frames).
 //
 //      Each candidate computes the mean absolute difference (MAD) of luma
 //      values across the overlapping region (skipping x-margins of ~5%).
@@ -53,7 +53,7 @@
 //      stationary score is <= 2, the frames are considered identical and
 //      the pair is rejected.
 //
-//    Phase 2 â€“ Full-resolution refinement
+//    Phase 2 - Full-resolution refinement
 //      The top-12 coarse candidates (pruned to those within 30 MAD of the
 //      best) are refined at pixel resolution.  For each candidate, a
 //      neighborhood of +/- (downsampleScale+1) pixels vertically and +/-1
@@ -81,7 +81,7 @@
 //      (stepX, stepY) offsets.  The output is normalized so the first
 //      frame appears at the top.  In overlapping regions, a vertical
 //      feather blend (configurable, ~frameHeight/18 pixels wide,
-//      clamped to 4â€“28) linearly crossfades between the old and new
+//      clamped to 4-28) linearly crossfades between the old and new
 //      frame content using per-pixel alpha weighting.
 //
 //    Output
@@ -973,9 +973,9 @@ static bool IsLowContrastSeedFrame( HBITMAP frame,
     return definitelyLowContrast || likelyDarkLowContrast;
 }
 
-// â”€â”€ Per-frame "very low entropy" detection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Per-frame "very low entropy" detection
 // Returns the fraction of pixels in a frame that sit in constant/uniform
-// regions (local max-luma-deviation within a 5x5 block â‰¤ 3).  Sampled
+// regions (local max-luma-deviation within a 5x5 block <= 3).  Sampled
 // every 4th pixel in both axes for speed.  A pair of frames is "very
 // low entropy" if both frames have constantFraction > 0.58.
 static double ComputeConstantContentFraction( const std::vector<BYTE>& pixels,
@@ -1030,7 +1030,7 @@ static bool IsVeryLowEntropyPair( const std::vector<BYTE>& previousPixels,
     return ( prevConstant > 0.58 && currConstant > 0.58 );
 }
 
-// â”€â”€ Informative pixel difference â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Informative pixel difference
 // Computes the average pixel difference ONLY at "informative" locations
 // (pixels where the local luma gradient exceeds a threshold, i.e. edges
 // and text, not flat background).  Used to rescue frames that look like
@@ -1506,11 +1506,11 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
     // Sub-pixel shift detection: the frame passed the duplicate checks
     // (pixel differences above noise floor) but the differences may be
     // ClearType / anti-aliasing jitter rather than real scrolling.  Test
-    // whether any Â±1..2 px integer shift produces a meaningfully better
+    // whether any +/-1..2 px integer shift produces a meaningfully better
     // match than stationary.  Uses raw per-channel comparison to preserve
     // ClearType's per-channel R/G/B sub-pixel shifts.
     //
-    // Only run this when the stationary MAD is small â€” genuine scrolls
+    // Only run this when the stationary MAD is small -- genuine scrolls
     // produce large MAD values that can't be explained by sub-pixel
     // jitter.  The threshold (avgDiffThreshold * 3) catches frames that
     // just barely escaped the duplicate detector.
@@ -1575,7 +1575,7 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
             }
 
             // If no integer shift meaningfully improves the match, the
-            // differences are sub-pixel noise â†’ treat as duplicate.
+            // differences are sub-pixel noise -> treat as duplicate.
             if( !( bestShiftMAD + 2 < mad0 && bestShiftMAD * 100 < mad0 * 85 ) )
             {
                 // In lowContrastMode, mad0 is typically 2-4 and the
@@ -1770,7 +1770,7 @@ static bool IsFrameTorn( HBITMAP currentFrame, HBITMAP previousFrame )
         }
     }
 
-    // If both bands found stationary (dy=0), no scroll happened â€” not torn.
+    // If both bands found stationary (dy=0), no scroll happened -- not torn.
     if( bestTopDy == 0 && bestBotDy == 0 )
         return false;
 
@@ -1921,7 +1921,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // stationary check, consumed by the post-search validation).
     unsigned __int64 hcfInfDiff = 0, hcfInfCount = 0;
 
-    // â”€â”€ Phase 1 â”€â”€ Windowed coarse search on downsampled luma â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Phase 1 -- Windowed coarse search on downsampled luma
     // Search a LIMITED range around the expected shift to avoid harmonic
     // matches on repetitive content.  For the first frame pair
     // (expectedDy == 0) search outward from the smallest step.
@@ -1972,7 +1972,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
     }
 
-    // â”€â”€ Very-low-entropy detection and informative mask â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Very-low-entropy detection and informative mask
     // For frames that are mostly constant (>58% uniform pixels in both
     // frames), build a boolean mask of "informative" downsampled pixels
     // (those near edges/text).  Scoring limited to these pixels avoids
@@ -2065,7 +2065,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
 
         // For high-constant-fraction pairs, the 4x downsampled comparison
-        // averages away small scrolls (3â€“10px).  Re-check at full resolution
+        // averages away small scrolls (3-10px).  Re-check at full resolution
         // using ComputeInformativePixelDifference which examines gradient
         // positions in the raw pixel data, detecting sub-downsample movement.
         if( highConstantFractionPair && maskedStationaryScore < 2 )
@@ -2105,7 +2105,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         // masked score (informative pixels only) shows movement, the
         // frame moved but the background diluted the signal.  Use >= so
         // that borderline cases (maskedStationary at threshold) are
-        // rescued â€” these frames already passed the duplicate check, so
+        // rescued -- these frames already passed the duplicate check, so
         // a non-zero masked score indicates real content change.
         // For HCF pairs, maskedStationaryScore >= 1 is sufficient: a
         // non-zero average luma diff at informative pixels indicates
@@ -2113,7 +2113,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         // the constant background.
         // For VLE pairs, informative pixels are so sparse that the
         // downsampled stationary score can be 0 even with real movement.
-        // Rescue unconditionally â€" the full-resolution masked coarse
+        // Rescue unconditionally -- the full-resolution masked coarse
         // fallback will determine the correct shift or legitimately
         // fail downstream.  Truly-stationary frames are already
         // filtered by the capture loop's duplicate check.
@@ -2140,7 +2140,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
     // Determine the search window in downsampled space.
     // Use full range in the known scroll direction.  Scroll speed
-    // can vary dramatically between frames (e.g. 40â†’202â†’213â†’38)
+    // can vary dramatically between frames (e.g. 40->202->213->38)
     // so a narrow window around the expected step misses large jumps.
     // The candidate-shortlist + fine-resolution ranking below handles
     // disambiguation among many coarse candidates.
@@ -2262,7 +2262,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
     }
 
-    // â”€â”€ Full-resolution masked coarse fallback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Full-resolution masked coarse fallback 
     // When all coarse candidates have score 0 (or the coarse search
     // produced zero candidates because VLE masking left < 20 samples
     // at every offset), the downsampled search can't discriminate
@@ -2303,7 +2303,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
             // Build full-resolution luma.
             if( hasPrecomputedLuma )
             {
-                // Reference precomputed â€” avoid copying.
+                // Reference precomputed -- avoid copying.
             }
             else
             {
@@ -2595,7 +2595,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // coarse row-projection search may cluster candidates around a few
     // harmonics, missing the correct shift.  Since the masked fine search
     // scores only informative (text/edge) pixels, wrong shifts produce
-    // non-zero scores while the correct shift scores â‰ˆ 0.  Injecting
+    // non-zero scores while the correct shift scores ~ 0.  Injecting
     // every candidate is safe: early termination after the first score=0
     // hit makes subsequent evaluations trivially cheap.
     if( useMaskedFallback && prunedCount < kMaxCandidatesWithProbes )
@@ -2745,18 +2745,18 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         StitchLog( L"\n" );
     }
 
-    // â”€â”€ Phase 2 â”€â”€ Rank candidates by full-resolution comparison â”€â”€â”€â”€â”€â”€
+    // Phase 2: Rank candidates by full-resolution comparison 
     // For each coarse candidate, compute a fine score at full resolution.
     // This resolves ambiguity from harmonic matches on repetitive content
     // since the full-resolution comparison sees fine text details that
     // the downsampled comparison misses.
     //
     // Pre-compute full-resolution luma arrays so the inner loop uses
-    // cheap byte lookups instead of per-pixel RGBâ†’luma multiplies.
+    // cheap byte lookups instead of per-pixel RGB->luma multiplies.
     //
     // When the masked-fallback created evenly-distributed candidates,
     // the gap between adjacent candidates can be much larger than the
-    // normal refine radius (e.g. 96 full-res pixels vs Â±5).  Widen
+    // normal refine radius (e.g. 96 full-res pixels vs +/-5).  Widen
     // refineRadiusDy to half the distribution stride so that adjacent
     // candidate refinement ranges overlap, guaranteeing full coverage.
     const int normalRefineRadius = max( 3, downsampleScale + 1 );
@@ -2834,9 +2834,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // Scale fine scores by 256 to preserve sub-integer precision.
     // For sparse content (< 1% non-background pixels), the per-pixel
     // average difference at wrong shifts is < 1.0, which integer
-    // division truncates to 0 â€” making correct and wrong shifts
-    // indistinguishable.  The 256Ã— scale gives 8 bits of fractional
-    // precision without risk of u64 overflow (max totalDiffÃ—256 â‰ˆ 20B).
+    // division truncates to 0 -- making correct and wrong shifts
+    // indistinguishable.  The 256x scale gives 8 bits of fractional
+    // precision without risk of u64 overflow (max totalDiff*256 ~ 20B).
     constexpr unsigned __int64 kFineScoreScale = 256;
     unsigned __int64 bestFineScore = ( std::numeric_limits<unsigned __int64>::max )();
     unsigned __int64 secondBestFineScore = ( std::numeric_limits<unsigned __int64>::max )();
@@ -2852,7 +2852,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     const int expectedAbsStep = max( abs( expectedDy ), abs( expectedDx ) );
     int bestExpectedDelta = ( std::numeric_limits<int>::max )();
     // Track best fine score seen at a candidate near expectedAbsStep
-    // (within Â±4 px). Used both for diagnostics and for harmonic-override
+    // (within +/-4 px). Used both for diagnostics and for harmonic-override
     // logic that prefers expected-step candidates over far-away harmonics.
     unsigned __int64 scoreAtExpectedStep = ( std::numeric_limits<unsigned __int64>::max )();
     int dxAtExpectedStep = 0;
@@ -2901,7 +2901,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 if( useZnccFineSearch )
                 {
                     // ZNCC fine scoring: uses only informative (masked) pixels.
-                    // Constant regions have Ïƒ=0 and contribute nothing, avoiding
+                    // Constant regions have sigma=0 and contribute nothing, avoiding
                     // the "everything scores 0" problem that SAD has on HCF content.
                     const double zncc = ComputeMaskedZNCC(
                         previousFullLuma.data(), currentFullLuma.data(),
@@ -2911,7 +2911,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                         fineMarginX, 50 /*minSamples*/ );
 
                     // Convert ZNCC to integer score compatible with SAD pipeline.
-                    // ZNCC=1.0 â†’ score=0 (perfect), ZNCC=0.5 â†’ score=kZnccScoreBase/2.
+                    // ZNCC=1.0 -> score=0 (perfect), ZNCC=0.5 -> score=kZnccScoreBase/2.
                     score = static_cast<unsigned __int64>(
                         max( 0.0, ( 1.0 - zncc ) * static_cast<double>( kZnccScoreBase ) ) );
                 }
@@ -3058,7 +3058,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                         const uint8x16_t a = vld1q_u8( pBase + xi );
                         const uint8x16_t b = vld1q_u8( cBase + xi );
                         const uint8x16_t absDiff = vabdq_u8( a, b );
-                        // Widen 8â†’16â†’32â†’64 with pairwise adds.
+                        // Widen 8->16->32->64 with pairwise adds.
                         const uint16x8_t sum16 = vpaddlq_u8( absDiff );
                         const uint32x4_t sum32 = vpaddlq_u16( sum16 );
                         const uint64x2_t sum64 = vpaddlq_u32( sum32 );
@@ -3160,7 +3160,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                     // regions that happen to have lower average SAD.
                     // Keep the raw score for acceptance thresholds; use the
                     // penalty only for candidate ordering.
-                    // Exempt candidates near the expected step â€” the overlap
+                    // Exempt candidates near the expected step -- the overlap
                     // penalty is designed to catch unexpected large steps, not
                     // penalize legitimately large expected motion.
                     const bool nearExpectedStep = abs( absStep - expectedAbsStep ) <= refineRadiusDy + 4;
@@ -3336,7 +3336,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
     // HCF harmonic-zero override: when the best candidate has score=0 at
     // a step much smaller than expected, the "perfect" match is almost
-    // certainly spurious â€” the constant-fraction region (dark background)
+    // certainly spurious -- the constant-fraction region (dark background)
     // makes any small offset look identical.  Prefer the expected-step
     // candidate, but only when that candidate also has a plausible score.
     // A high scoreAtExpectedStep indicates the expected step is wrong
@@ -3426,7 +3426,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     }
 
     // Near-stationary flag: when the fine score per-pixel is no better
-    // than the stationary score, the "best" match is unreliable â€” likely
+    // than the stationary score, the "best" match is unreliable -- likely
     // a harmonic on periodic content.  Signal this to the stitch loop
     // via the outNearStationaryOverride flag so it can clamp the step
     // to a conservative minimum while preserving expectedDy for the
@@ -3535,10 +3535,10 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                  static_cast<unsigned long long>( scoreAtExpectedStep ),
                  dyAtExpectedStep,
                  highConstantFractionPair ? 1 : 0 );
-    // Clamp cross-axis shift to zero.  The fine search evaluates dx=Â±1
+    // Clamp cross-axis shift to zero.  The fine search evaluates dx=+/-1
     // for better score discrimination (ClearType subpixel effects), but
-    // screen captures scroll perfectly along one axis â€” there is never
-    // real cross-axis motion.  Allowing dxâ‰ 0 would accumulate drift.
+    // screen captures scroll perfectly along one axis -- there is never
+    // real cross-axis motion.  Allowing dx!=0 would accumulate drift.
     bestDx = 0;
 
     if( outMaskedStationaryScore )
@@ -3565,8 +3565,8 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     const bool axisEstablished = ( expectedDx != 0 || expectedDy != 0 );
     const bool preferVerticalAxis = !axisEstablished || ( abs( expectedDy ) >= abs( expectedDx ) );
 
-    // â”€â”€ Once the scroll axis is established, only search along that axis.
-    // Never fall back to the cross-axis â€” a perpendicular match is always
+    // -- Once the scroll axis is established, only search along that axis.
+    // Never fall back to the cross-axis -- a perpendicular match is always
     // spurious (screen captures scroll perfectly along one axis).  If the
     // preferred axis fails, reject the frame; the caller will advance to
     // the next frame.
@@ -3618,7 +3618,7 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
         }
     }
 
-    // â”€â”€ First frame pair: axis unknown â€” run both searches and pick best.
+    // First frame pair: axis unknown run both searches and pick best.
     int directDx = 0;
     int directDy = 0;
     const bool directOk = FindBestFrameShiftVerticalOnly( previousPixels,
@@ -3795,7 +3795,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
     }
 
     // Pre-compute full-resolution luma for every frame so that
-    // FindBestFrameShift can skip redundant BGRAâ†’luma conversions.
+    // FindBestFrameShift can skip redundant BGRA->luma conversions.
     std::vector<std::vector<BYTE>> frameLuma( frames.size() );
     for( size_t i = 0; i < frames.size(); i++ )
     {
@@ -3939,7 +3939,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                             // consistent with the median of recent composed
                             // steps.  In long HCF duplicate streaks, the
                             // budget depletes but the retry keeps finding the
-                            // correct per-frame shift â€” blocking those loses
+                            // correct per-frame shift -- blocking those loses
                             // canvas height.
                             const bool harmonicLike =
                                 abs( retryAxisStep - expectedAxisStep ) < max( 5, expectedAxisStep / 7 );
@@ -4043,7 +4043,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
         // After establishing a predominantly vertical or horizontal scroll
         // direction, clamp the perpendicular component to zero.  Subpixel
         // rendering noise (e.g. ClearType) causes the fine refinement to
-        // report Â±1 px cross-axis drift per frame, which accumulates into
+        // report +/-1 px cross-axis drift per frame, which accumulates into
         // visible slanting over many composed frames.
         //
         // Cap each step's contribution to the direction vote so that one
@@ -4094,7 +4094,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
         }
 
         // Cap the low-movement threshold so large frames don't reject
-        // real slow-scroll steps (e.g. 1071px → minProgress/2=17 drops
+        // real slow-scroll steps (e.g. 1071px -> minProgress/2=17 drops
         // genuine 4-16 px scrolls).
         if( !nearStationaryZeroStep && abs( stepX ) + abs( stepY ) < min( minProgress / 2, 4 ) )
         {
@@ -4174,7 +4174,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
 
                 // Step-range outlier guard: on periodic content the fine
                 // search can pick a harmonic that is only moderately above
-                // normal â€” not enough for the 4Ã— median guard â€” but well
+                // normal -- not enough for the 4x median guard -- but well
                 // above the observed step range.  Use the 75th percentile
                 // of recent steps as a tighter reference.
                 //
@@ -5050,7 +5050,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 // -------------------------
 // How to run:
 //   1. Build the ARM64 Debug configuration.
-//   2. Place test images (image1.png â€¦ image5.png) in the Debug\ directory
+//   2. Place test images (image1.png ... image5.png) in the Debug\ directory
 //      next to the solution root (i.e. <repo>\Debug\).
 //   3. Run:  ZoomIt64a.exe /panorama-selftest
 //      Optional stress targeting:
@@ -5551,7 +5551,7 @@ bool RunPanoramaStitchSelfTest()
                         const size_t idx = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( x ) ) * 4;
                         framePixels[idx + 0] = 0;       // B
                         framePixels[idx + 1] = 0;       // G
-                        framePixels[idx + 2] = 255;     // R â€” bright red marker
+                        framePixels[idx + 2] = 255;     // R -- bright red marker
                         framePixels[idx + 3] = 0xFF;
                     }
                 }
@@ -5643,7 +5643,7 @@ bool RunPanoramaStitchSelfTest()
             if( !selfTestDumpDirectory.empty() )
             {
                 DumpPanoramaText( selfTestDumpDirectory, L"scenario_fail_detail.txt",
-                                  L"OVERWRITE: small-step-no-overwrite â€” red markers visible in overlap" );
+                                  L"OVERWRITE: small-step-no-overwrite -- red markers visible in overlap" );
             }
             return false;
         }
@@ -5808,7 +5808,7 @@ bool RunPanoramaStitchSelfTest()
         TestLog( L"  [%d/5] repro-realcapture-variable-large-steps PASSED\n", basicTestsRun );
     }
 
-    // ----- Drop-logic test: exercise AreFramesNearDuplicate directly -----
+    // Drop-logic test: exercise AreFramesNearDuplicate directly
     basicTestsRun++;
     TestLog( L"  [%d/5] drop-logic-near-duplicate ...\n", basicTestsRun );
     {
@@ -5830,7 +5830,7 @@ bool RunPanoramaStitchSelfTest()
             }
         }
 
-        // Case 1: identical frames → must be detected as duplicate.
+        // Case 1: identical frames -> must be detected as duplicate.
         {
             HBITMAP frameA = createBitmapFromPixels( basePixels, dW, dH );
             HBITMAP frameB = createBitmapFromPixels( basePixels, dW, dH );
@@ -5845,7 +5845,7 @@ bool RunPanoramaStitchSelfTest()
             }
         }
 
-        // Case 2: frame shifted by large amount → must NOT be duplicate.
+        // Case 2: frame shifted by large amount -> must NOT be duplicate.
         {
             // Shift base down by 20 pixels.
             std::vector<BYTE> shifted( pixelBytes, 0 );
@@ -5865,7 +5865,7 @@ bool RunPanoramaStitchSelfTest()
             }
         }
 
-        // Case 3: low-contrast frame with ±1 px shift that improves MAD —
+        // Case 3: low-contrast frame with +/-1 px shift that improves MAD --
         // must NOT be duplicate (tests the lowContrastMode rescue).
         {
             // Create a low-contrast frame: mostly flat with subtle variation.
@@ -5908,7 +5908,7 @@ bool RunPanoramaStitchSelfTest()
             }
         }
 
-        // Case 4: truly identical low-contrast frames → must be duplicate.
+        // Case 4: truly identical low-contrast frames -> must be duplicate.
         {
             std::vector<BYTE> flat( pixelBytes );
             for( size_t i = 0; i < pixelBytes; i += 4 )
@@ -6094,7 +6094,7 @@ bool RunPanoramaStitchSelfTest()
                     {
                         const size_t bi = pi * 4;
                         const int luma = ( fp[bi + 2] * 77 + fp[bi + 1] * 150 + fp[bi + 0] * 29 ) >> 8;
-                        if( luma < 40 ) continue; // dark pixel â€” keep identical
+                        if( luma < 40 ) continue; // dark pixel -- keep identical
                         for( int ch = 0; ch < 3; ++ch )
                         {
                             noiseSeed = noiseSeed * 1103515245u + 12345u;
@@ -6138,7 +6138,7 @@ bool RunPanoramaStitchSelfTest()
             if( sH < expectedH - htol || sH > expectedH + htol )
             {
                 // Check if the source image is low-contrast.
-                // Low-contrast images can't be stitched by correlation â€” the stitcher
+                // Low-contrast images can't be stitched by correlation -- the stitcher
                 // correctly rejects frames as stationary or partially correlates.
                 // Verify it didn't crash and count as a graceful-degradation pass.
                 {
@@ -6159,7 +6159,7 @@ bool RunPanoramaStitchSelfTest()
 
                     if( avgVertDiff <= 10.0 )
                     {
-                        TestLog( L"[Panorama/Test] %s: low-contrast (avgDiff=%.1f), graceful degradation â€” PASS\n",
+                        TestLog( L"[Panorama/Test] %s: low-contrast (avgDiff=%.1f), graceful degradation -- PASS\n",
                                      scenario, avgVertDiff );
                         return 1;
                     }
@@ -6273,7 +6273,7 @@ bool RunPanoramaStitchSelfTest()
                     // search is in a reliable region (drift < maxVE).
                     // In high-drift regions the stitcher compressed
                     // the canvas, which naturally maps many canvas rows
-                    // to the same source rows â€” this is expected and
+                    // to the same source rows -- this is expected and
                     // already tested by the height tolerance check.
                     if( dy <= 1 &&
                         mappedDriftAbs[i] <= maxVE && mappedDriftAbs[i - 1] <= maxVE )
@@ -6286,7 +6286,7 @@ bool RunPanoramaStitchSelfTest()
 
                 // Enforce continuity only for stress scenarios.
                 // HCF-dark scenarios have relaxed backtrack tolerance because
-                // the mostly-dark content makes row mapping unreliable â€”
+                // the mostly-dark content makes row mapping unreliable --
                 // indistinguishable dark rows cause the source-row search to
                 // wander, producing false backward transitions.
                 const bool isStressScenario = wcsncmp( scenario, L"stress-", 7 ) == 0;
@@ -6330,7 +6330,7 @@ bool RunPanoramaStitchSelfTest()
                     ? static_cast<double>( directMismatches ) / directSamples : 0.0;
                 if( directSamples > 0 && directRate < 0.15 )
                 {
-                    TestLog( L"[Panorama/Test] %s: direct comparison passed (%.2f%% vs row-match %.2f%%) â€” PASS\n",
+                    TestLog( L"[Panorama/Test] %s: direct comparison passed (%.2f%% vs row-match %.2f%%) -- PASS\n",
                                  scenario, directRate * 100.0, mrate * 100.0 );
                     return 1;
                 }
@@ -6688,7 +6688,7 @@ bool RunPanoramaStitchSelfTest()
         //
         // Each trial generates ~100 overlapping frames with random step sizes
         // from 0 (duplicate) up to 25% of the portal size.  This exercises
-        // all four content regimes (high/low entropy Ã— high/low contrast),
+        // all four content regimes (high/low entropy x high/low contrast),
         // duplicate detection, variable-speed scrolling, and near-zero motion.
         // ====================================================================
 
@@ -6845,7 +6845,7 @@ bool RunPanoramaStitchSelfTest()
 
                 if( avgHorizDiff <= 10.0 )
                 {
-                    TestLog( L"[Panorama/Test] %s: low-contrast horizontal (avgDiff=%.1f), graceful degradation â€” PASS\n",
+                    TestLog( L"[Panorama/Test] %s: low-contrast horizontal (avgDiff=%.1f), graceful degradation -- PASS\n",
                                  scenario, avgHorizDiff );
                     return 1;
                 }
@@ -6862,7 +6862,7 @@ bool RunPanoramaStitchSelfTest()
                 return 0;
             }
 
-            // ---- Column-luminance profile correlation ----
+            // Column-luminance profile correlation
             //
             // Instead of per-pixel comparison (which breaks down due to
             // feather-blend artifacts), verify structure correctness:
@@ -6908,7 +6908,7 @@ bool RunPanoramaStitchSelfTest()
             for( int x = 0; x < srcEnd; x += kColStep )
                 srcProf.push_back( columnLuma( imgPx, imgW, imgH, x, yMargin, cmpH - yMargin ) );
 
-            // Find best linear mapping: stitchProf[i] â†” srcProf[offset + i*scale].
+            // Find best linear mapping: stitchProf[i] <-> srcProf[offset + i*scale].
             // Search a range of offsets and scales.
             const int nS = static_cast<int>( stitchProf.size() );
             const int nSrc = static_cast<int>( srcProf.size() );
@@ -6939,7 +6939,7 @@ bool RunPanoramaStitchSelfTest()
                 return ( sxy / n - mx * my ) / sqrt( vx * vy );
             };
 
-            // Coarse search: scale from 0.5Ã— to 2.5Ã— in steps of 0.05,
+            // Coarse search: scale from 0.5x to 2.5x in steps of 0.05,
             // offset from -nSrc/4 to nSrc/4 in steps of 2.
             for( double sc = 0.5; sc <= 2.5; sc += 0.05 )
             {
@@ -6960,7 +6960,7 @@ bool RunPanoramaStitchSelfTest()
                 }
             }
 
-            // A correlation â‰¥ 0.60 indicates the structure strongly matches.
+            // A correlation >= 0.60 indicates the structure strongly matches.
             // This is generous enough to accept feather-blend distortion and
             // sparse content bands (whose flat column profiles naturally
             // produce lower correlation) while still catching wrong-image,
@@ -6982,7 +6982,7 @@ bool RunPanoramaStitchSelfTest()
             return ok ? 1 : 0;
         };
 
-        // --- Vertical stress test: ~100 frames per trial, steps 0..25% of portal ---
+        // Vertical stress test: ~100 frames per trial, steps 0..25% of portal
         {
             const auto vPath = stressDir / L"vertical_stress.png";
             if( std::filesystem::exists( vPath ) )
@@ -7292,7 +7292,7 @@ bool RunPanoramaStitchSelfTest()
             }
         }
 
-        // --- HCF-dark stress test: synthetic dark-background image with sparse text ---
+        // HCF-dark stress test: synthetic dark-background image with sparse text
         // Tests the HCF harmonic-zero override: on dark-themed pages, the constant
         // background region produces score=0 at any small offset, tricking the
         // stitcher into picking harmonic sub-multiples of the true scroll step.
@@ -7317,7 +7317,7 @@ bool RunPanoramaStitchSelfTest()
             // Very sparse content ensures that the downsampled coarse
             // search sees near-zero scores at many offsets, triggering
             // the masked fine-scoring path where integer truncation can
-            // produce fineScore=0 at wrong alignments â€” the exact
+            // produce fineScore=0 at wrong alignments -- the exact
             // condition that the HCF harmonic-zero override fixes.
             {
                 unsigned int bandSeed = 54321u;
@@ -7365,7 +7365,7 @@ bool RunPanoramaStitchSelfTest()
                 // Portal height: 250-450 (larger portals make HCF more
                 // likely and give room for moderate steps).
                 const int winH = 250 + rand() % 201;
-                // Steps 15-25% of portal height â€” matches real captures.
+                // Steps 15-25% of portal height -- matches real captures.
                 const int hcfMaxStep = max( 20, winH / 4 );
 
                 // Generate origins with consistent moderate steps.
@@ -7449,7 +7449,7 @@ bool RunPanoramaStitchSelfTest()
             }
         }
 
-        // --- Horizontal stress test: ~100 frames per trial, steps 0..25% of portal ---
+        // Horizontal stress test: ~100 frames per trial, steps 0..25% of portal
         {
             const auto hPath = stressDir / L"horizontal_stress.png";
             if( std::filesystem::exists( hPath ) )
