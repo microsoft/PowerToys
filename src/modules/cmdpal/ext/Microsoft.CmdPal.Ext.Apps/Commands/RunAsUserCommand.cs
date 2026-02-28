@@ -4,11 +4,13 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
+// cspell:ignore runasuser
 namespace Microsoft.CmdPal.Ext.Apps.Commands;
 
 internal sealed partial class RunAsUserCommand : InvokableCommand
@@ -29,9 +31,38 @@ internal sealed partial class RunAsUserCommand : InvokableCommand
     {
         await Task.Run(() =>
         {
-            var info = ShellCommand.GetProcessStartInfo(target, parentDir, string.Empty, ShellCommand.RunAsType.OtherUser);
+            // Use ActionRunner helper process to work around WinUI3/MSIX packaging limitation.
+            // When running from a packaged app, ShellExecute with the "runas user" verb causes
+            // CredentialUIBroker.exe to spawn infinitely without showing the credential dialog.
+            // ActionRunner runs outside the MSIX container, so it can properly invoke the credential UI.
+            var actionRunnerPath = ActionRunnerHelper.GetActionRunnerPath();
 
-            Process.Start(info);
+            if (string.IsNullOrEmpty(actionRunnerPath))
+            {
+                // Fallback to direct Process.Start if ActionRunner is not found
+                // This may not work in packaged context, but provides a fallback for development
+                ExtensionHost.LogMessage($"ActionRunner not found, falling back to direct Process.Start for '{target}'");
+                var info = ShellCommand.GetProcessStartInfo(target, parentDir, string.Empty, ShellCommand.RunAsType.OtherUser);
+                Process.Start(info);
+                return;
+            }
+
+            var args = $"-run-as-user -target \"{target}\"";
+            if (!string.IsNullOrEmpty(parentDir))
+            {
+                args += $" -workingDir \"{parentDir}\"";
+            }
+
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = actionRunnerPath,
+                Arguments = args,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+
+            ExtensionHost.LogMessage($"Launching '{target}' as different user via ActionRunner");
+            Process.Start(processInfo);
         });
     }
 
