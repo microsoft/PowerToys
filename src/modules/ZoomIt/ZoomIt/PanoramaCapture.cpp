@@ -3175,7 +3175,15 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                     // closest to expected motion. Repeating patterns often
                     // produce harmonic ties where smallest-|dy| collapses
                     // height and drops real content ranges.
+                    //
+                    // First frame pair (expectedAbsStep==0): prefer smaller
+                    // shift.  On VLE content all offsets score identically
+                    // (fineScore=0), so picking the smallest avoids locking
+                    // onto a randomly-large harmonic that makes the alignment
+                    // score fail the overlap check and causes wrong axis
+                    // selection.
                     if( ( expectedAbsStep > 0 && expectedDelta < bestExpectedDelta ) ||
+                        ( expectedAbsStep == 0 && absStep < bestAbsStep ) ||
                         ( expectedDelta == bestExpectedDelta &&
                           ( absStep < bestAbsStep || ( absStep == bestAbsStep && absDx < bestAbsDx ) ) ) )
                     {
@@ -4050,7 +4058,10 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
             }
         }
 
-        if( !nearStationaryZeroStep && abs( stepX ) + abs( stepY ) < minProgress / 2 )
+        // Cap the low-movement threshold so large frames don't reject
+        // real slow-scroll steps (e.g. 1071px → minProgress/2=17 drops
+        // genuine 4-16 px scrolls).
+        if( !nearStationaryZeroStep && abs( stepX ) + abs( stepY ) < min( minProgress / 2, 4 ) )
         {
             StitchLog( L"[Panorama/Stitch] Frame %zu rejected: low movement step=(%d,%d)\n", i, stepX, stepY );
             continue;
@@ -4160,12 +4171,13 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                 // VLE continuity guard: on very-low-entropy content, ZNCC
                 // scoring is unreliable because near-uniform pixels match
                 // at essentially random offsets.  Use a tighter step ceiling
-                // derived from the recent median without the large frame-size
-                // floor that allows legitimate fast-scroll jumps on normal
-                // (discriminable) content.
+                // than the standard outlier guard, but still allow legitimate
+                // fast-scroll jumps up to 45% of frame height.
                 if( veryLowEntropy != 0 )
                 {
-                    const int vleStepCeiling = max( medianAxisStep * 3, minProgress * 4 );
+                    const int vleMedianCeiling = max( medianAxisStep * 3, minProgress * 4 );
+                    const int vleLegitFloor = ( axisFrame * 9 ) / 20; // 45% of frame
+                    const int vleStepCeiling = max( vleMedianCeiling, vleLegitFloor );
                     if( axisStep > vleStepCeiling )
                     {
                         StitchLog( L"[Panorama/Stitch] Frame %zu rejected: vle-outlier step=(%d,%d) axisStep=%d median=%d ceiling=%d\n",
@@ -6611,7 +6623,7 @@ bool RunPanoramaStitchSelfTest()
                     else if( result == 1 )
                     {
                         captureReplayPassed++;
-                        TestLog( L"  [%d/%d] %s PASSED\n", captureReplayPassed, captureReplayRun, scenarioName );
+                        TestLog( L"  [%d] %s PASSED\n", captureReplayRun, scenarioName );
                     }
                     else
                     {
@@ -6989,7 +7001,7 @@ bool RunPanoramaStitchSelfTest()
                             else if( result == 1 )
                             {
                                 stressTestsPassed++;
-                                TestLog( L"  [%d/%d] %s PASSED\n", stressTestsPassed, stressTestsRun, scenarioName );
+                                TestLog( L"  [%d] %s PASSED\n", stressTestsRun, scenarioName );
                                 swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winH, originsY.size(), maxStep );
                             }
                             else
@@ -7374,7 +7386,7 @@ bool RunPanoramaStitchSelfTest()
                     else if( result == 1 )
                     {
                         stressTestsPassed++;
-                        TestLog( L"  [%d/%d] %s PASSED\n", stressTestsPassed, stressTestsRun, scenarioName );
+                        TestLog( L"  [%d] %s PASSED\n", stressTestsRun, scenarioName );
                         swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winH, originsY.size(), hcfMaxStep );
                     }
                     else
@@ -7485,7 +7497,7 @@ bool RunPanoramaStitchSelfTest()
                             else if( result == 1 )
                             {
                                 stressTestsPassed++;
-                                TestLog( L"  [%d/%d] %s PASSED\n", stressTestsPassed, stressTestsRun, scenarioName );
+                                TestLog( L"  [%d] %s PASSED\n", stressTestsRun, scenarioName );
                                 swprintf_s( msg, L"PASS: %s (winW=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winW, originsX.size(), maxStep );
                             }
                             else
