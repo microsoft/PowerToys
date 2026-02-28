@@ -760,7 +760,7 @@ static bool RunPanoramaStitchFromDumpDirectory( const std::filesystem::path& dum
             wprintf( L"\r[Replay] Stitching ... %d%%", percent );
             fflush( stdout );
         }
-        return true;
+        return false;  // false = not cancelled
     } );
     wprintf( L"\r[Replay] Stitching ... done    \n" );
     fflush( stdout );
@@ -2111,11 +2111,12 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         // non-zero average luma diff at informative pixels indicates
         // real movement even when the full-frame score is diluted by
         // the constant background.
-        // For VLE pairs, informative pixels are so sparse that
-        // maskedStationary can round to 0 even on real shifts.  Let
-        // the coarse/fine search determine the shift; if the frame is
-        // truly stationary the search returns a near-zero shift which
-        // the low-movement filter catches later.
+        // For VLE pairs, informative pixels are so sparse that the
+        // downsampled stationary score can be 0 even with real movement.
+        // Rescue unconditionally â€" the full-resolution masked coarse
+        // fallback will determine the correct shift or legitimately
+        // fail downstream.  Truly-stationary frames are already
+        // filtered by the capture loop's duplicate check.
         if( veryLowEntropyPair ||
             ( highConstantFractionPair &&
               ( maskedStationaryScore >= 1 || highConstStationaryRelax ) ) )
@@ -2262,11 +2263,12 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     }
 
     // â”€â”€ Full-resolution masked coarse fallback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    // When all coarse candidates have score 0, the downsampled search
-    // can't discriminate offsets because constant (background) pixels
-    // dominate.  For high-constant-fraction pairs with sparse text,
-    // even a masked downsampled search fails because at 4x downsample
-    // thin characters become indistinguishable blobs.
+    // When all coarse candidates have score 0 (or the coarse search
+    // produced zero candidates because VLE masking left < 20 samples
+    // at every offset), the downsampled search can't discriminate
+    // offsets.  For high-constant-fraction or very-low-entropy pairs
+    // with sparse text, even a masked downsampled search fails because
+    // at 4x downsample thin characters become indistinguishable blobs.
     //
     // The fix: re-run the coarse search at full resolution, scoring
     // only informative pixels (those near edges/text).  Full-resolution
@@ -2280,19 +2282,23 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     std::vector<BYTE> fallbackCurrLuma;
     std::vector<BYTE> fallbackMaskPrev;
     std::vector<BYTE> fallbackMaskCurr;
-    if( highConstantFractionPair && candidateCount > 0 )
+    if( highConstantFractionPair || veryLowEntropyPair )
     {
-        bool allZeroCoarse = true;
-        for( int ci = 0; ci < candidateCount; ++ci )
+        bool allZeroOrEmpty = ( candidateCount == 0 );
+        if( !allZeroOrEmpty )
         {
-            if( candidates[ci].score > 0 )
+            allZeroOrEmpty = true;
+            for( int ci = 0; ci < candidateCount; ++ci )
             {
-                allZeroCoarse = false;
-                break;
+                if( candidates[ci].score > 0 )
+                {
+                    allZeroOrEmpty = false;
+                    break;
+                }
             }
         }
 
-        if( allZeroCoarse )
+        if( allZeroOrEmpty )
         {
             // Build full-resolution luma.
             if( hasPrecomputedLuma )
