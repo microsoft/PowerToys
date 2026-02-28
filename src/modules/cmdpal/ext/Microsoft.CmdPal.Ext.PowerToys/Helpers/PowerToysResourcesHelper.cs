@@ -13,7 +13,11 @@ internal static class PowerToysResourcesHelper
 
     internal static IconInfo IconFromSettingsIcon(string fileName) => IconHelpers.FromRelativePath($"{SettingsIconRoot}{fileName}");
 
+#if DEBUG
+    public static IconInfo ProviderIcon() => IconFromSettingsIcon("PowerToys.dark.png");
+#else
     public static IconInfo ProviderIcon() => IconFromSettingsIcon("PowerToys.png");
+#endif
 
     public static IconInfo ModuleIcon(this SettingsWindow module)
     {

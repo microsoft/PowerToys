@@ -30,6 +30,10 @@
 		<Content Include="..\..\..\..\settings-ui\Settings.UI\Assets\Settings\Icons\*.png" Link="WinUI3Apps\Assets\Settings\Icons\%(Filename)%(Extension)">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+		<!-- Monochrome icons from PowerToys Run Plugin for debug mode differentiation -->
+		<Content Include="..\..\..\launcher\Plugins\Microsoft.PowerToys.Run.Plugin.PowerToys\Images\PowerToys.dark.png" Link="WinUI3Apps\Assets\Settings\Icons\PowerToys.dark.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
