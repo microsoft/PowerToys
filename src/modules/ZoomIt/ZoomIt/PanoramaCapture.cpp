@@ -1555,11 +1555,21 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
             // differences are sub-pixel noise â†’ treat as duplicate.
             if( !( bestShiftMAD + 2 < mad0 && bestShiftMAD * 100 < mad0 * 85 ) )
             {
-                duplicate = true;
-                if( outSubPixelDrop )
-                    *outSubPixelDrop = true;
-                StitchLog( L"[Panorama/Capture] Sub-pixel shift detected: mad0=%llu bestMAD=%llu best=(%d,%d)\n",
-                             mad0, bestShiftMAD, bestDx, bestDy );
+                // In lowContrastMode, mad0 is typically 2-4 and the
+                // absolute floor of 2 blocks genuine scrolls.  Rescue
+                // those frames when a shift produces any measurable MAD
+                // improvement and the proportional gain exceeds 15%.
+                const bool rescued = lowContrastMode &&
+                    bestShiftMAD < mad0 &&
+                    bestShiftMAD * 100 < mad0 * 85;
+                if( !rescued )
+                {
+                    duplicate = true;
+                    if( outSubPixelDrop )
+                        *outSubPixelDrop = true;
+                    StitchLog( L"[Panorama/Capture] Sub-pixel shift detected: mad0=%llu bestMAD=%llu best=(%d,%d)\n",
+                                 mad0, bestShiftMAD, bestDx, bestDy );
+                }
             }
         }
     }
@@ -4147,6 +4157,27 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                     }
                 }
 
+                // VLE continuity guard: on very-low-entropy content, ZNCC
+                // scoring is unreliable because near-uniform pixels match
+                // at essentially random offsets.  Use a tighter step ceiling
+                // derived from the recent median without the large frame-size
+                // floor that allows legitimate fast-scroll jumps on normal
+                // (discriminable) content.
+                if( veryLowEntropy != 0 )
+                {
+                    const int vleStepCeiling = max( medianAxisStep * 3, minProgress * 4 );
+                    if( axisStep > vleStepCeiling )
+                    {
+                        StitchLog( L"[Panorama/Stitch] Frame %zu rejected: vle-outlier step=(%d,%d) axisStep=%d median=%d ceiling=%d\n",
+                                     i,
+                                     stepX,
+                                     stepY,
+                                     axisStep,
+                                     medianAxisStep,
+                                     vleStepCeiling );
+                        continue;
+                    }
+                }
 
             }
         }
@@ -5300,6 +5331,13 @@ bool RunPanoramaStitchSelfTest()
         return passed;
     };
 
+    // ====================================================================
+    // Phase 1: Basic stitching scenarios
+    // ====================================================================
+    TestLog( L"\n==== Phase 1: Basic stitching scenarios ====\n" );
+    int basicTestsRun = 0;
+    int basicTestsPassed = 0;
+
     {
         constexpr int frameWidth = 420;
         constexpr int frameHeight = 320;
@@ -5348,6 +5386,8 @@ bool RunPanoramaStitchSelfTest()
             originsY.push_back( frameIndex * stepY );
         }
 
+        basicTestsRun++;
+        TestLog( L"  [%d/5] baseline-uniform-scroll ...\n", basicTestsRun );
         if( !runScenario( L"baseline-uniform-scroll",
                           frameWidth,
                           frameHeight,
@@ -5358,8 +5398,11 @@ bool RunPanoramaStitchSelfTest()
                           0,
                           false ) )
         {
+            TestLog( L"***** FAIL: baseline-uniform-scroll *****\n" );
             return false;
         }
+        basicTestsPassed++;
+        TestLog( L"  [%d/5] baseline-uniform-scroll PASSED\n", basicTestsRun );
     }
 
     // Test: small-step frames must not overwrite previously composed content.
@@ -5371,6 +5414,8 @@ bool RunPanoramaStitchSelfTest()
     // overwriting already-composed canvas content.  This scenario verifies
     // the fix: a tampered small-step frame's overlap markers must NOT
     // appear in the output.
+    basicTestsRun++;
+    TestLog( L"  [%d/5] small-step-no-overwrite ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 420;
         constexpr int frameHeight = 320;
@@ -5547,7 +5592,7 @@ bool RunPanoramaStitchSelfTest()
                      markerPixels, markerPresent, markerVisible ? 1 : 0 );
         if( markerVisible )
         {
-            TestLog( L"[Panorama/Test] small-step-no-overwrite FAILED: overlap was overwritten\n" );
+            TestLog( L"[Panorama/Test] ***** FAIL: small-step-no-overwrite: overlap was overwritten *****\n" );
             if( !selfTestDumpDirectory.empty() )
             {
                 DumpPanoramaText( selfTestDumpDirectory, L"scenario_fail_detail.txt",
@@ -5556,9 +5601,12 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
 
-        TestLog( L"[Panorama/Test] small-step-no-overwrite PASSED\n" );
+        TestLog( L"  [%d/5] small-step-no-overwrite PASSED\n", basicTestsRun );
+        basicTestsPassed++;
     }
 
+    basicTestsRun++;
+    TestLog( L"  [%d/5] repro-1099x336-variable-steps-tail ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 1099;
         constexpr int frameHeight = 336;
@@ -5639,10 +5687,15 @@ bool RunPanoramaStitchSelfTest()
                           6,
                           false ) )
         {
+            TestLog( L"***** FAIL: repro-1099x336-variable-steps-tail *****\n" );
             return false;
         }
+        basicTestsPassed++;
+        TestLog( L"  [%d/5] repro-1099x336-variable-steps-tail PASSED\n", basicTestsRun );
     }
 
+    basicTestsRun++;
+    TestLog( L"  [%d/5] repro-realcapture-variable-large-steps ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 1079;
         constexpr int frameHeight = 341;
@@ -5701,8 +5754,137 @@ bool RunPanoramaStitchSelfTest()
                           8,
                           false ) )
         {
+            TestLog( L"***** FAIL: repro-realcapture-variable-large-steps *****\n" );
             return false;
         }
+        basicTestsPassed++;
+        TestLog( L"  [%d/5] repro-realcapture-variable-large-steps PASSED\n", basicTestsRun );
+    }
+
+    // ----- Drop-logic test: exercise AreFramesNearDuplicate directly -----
+    basicTestsRun++;
+    TestLog( L"  [%d/5] drop-logic-near-duplicate ...\n", basicTestsRun );
+    {
+        constexpr int dW = 200;
+        constexpr int dH = 200;
+        const size_t pixelBytes = static_cast<size_t>( dW ) * dH * 4;
+
+        // Build a base frame with a simple gradient so it has some texture.
+        std::vector<BYTE> basePixels( pixelBytes );
+        for( int y = 0; y < dH; y++ )
+        {
+            for( int x = 0; x < dW; x++ )
+            {
+                const size_t off = ( static_cast<size_t>( y ) * dW + x ) * 4;
+                basePixels[off + 0] = static_cast<BYTE>( ( x * 47 + y * 13 ) & 0xFF );  // B
+                basePixels[off + 1] = static_cast<BYTE>( ( x * 31 + y * 7 ) & 0xFF );   // G
+                basePixels[off + 2] = static_cast<BYTE>( ( x * 17 + y * 23 ) & 0xFF );  // R
+                basePixels[off + 3] = 0xFF;
+            }
+        }
+
+        // Case 1: identical frames → must be detected as duplicate.
+        {
+            HBITMAP frameA = createBitmapFromPixels( basePixels, dW, dH );
+            HBITMAP frameB = createBitmapFromPixels( basePixels, dW, dH );
+            bool subPix = false;
+            bool dup = AreFramesNearDuplicate( frameA, frameB, false, &subPix );
+            DeleteObject( frameA );
+            DeleteObject( frameB );
+            if( !dup )
+            {
+                TestLog( L"***** FAIL: drop-logic-near-duplicate case 1 (identical frames not detected) *****\n" );
+                return false;
+            }
+        }
+
+        // Case 2: frame shifted by large amount → must NOT be duplicate.
+        {
+            // Shift base down by 20 pixels.
+            std::vector<BYTE> shifted( pixelBytes, 0 );
+            constexpr int shiftY = 20;
+            memcpy( shifted.data() + static_cast<size_t>( shiftY ) * dW * 4,
+                    basePixels.data(),
+                    static_cast<size_t>( dH - shiftY ) * dW * 4 );
+            HBITMAP frameA = createBitmapFromPixels( basePixels, dW, dH );
+            HBITMAP frameB = createBitmapFromPixels( shifted, dW, dH );
+            bool dup = AreFramesNearDuplicate( frameB, frameA, false );
+            DeleteObject( frameA );
+            DeleteObject( frameB );
+            if( dup )
+            {
+                TestLog( L"***** FAIL: drop-logic-near-duplicate case 2 (scrolled frame falsely dropped) *****\n" );
+                return false;
+            }
+        }
+
+        // Case 3: low-contrast frame with ±1 px shift that improves MAD —
+        // must NOT be duplicate (tests the lowContrastMode rescue).
+        {
+            // Create a low-contrast frame: mostly flat with subtle variation.
+            std::vector<BYTE> lowBase( pixelBytes );
+            for( int y = 0; y < dH; y++ )
+            {
+                for( int x = 0; x < dW; x++ )
+                {
+                    const size_t off = ( static_cast<size_t>( y ) * dW + x ) * 4;
+                    BYTE val = static_cast<BYTE>( 128 + ( ( y * 3 + x ) % 5 ) );
+                    lowBase[off + 0] = val;
+                    lowBase[off + 1] = val;
+                    lowBase[off + 2] = val;
+                    lowBase[off + 3] = 0xFF;
+                }
+            }
+
+            // Create shifted-by-1-pixel version (real 1px scroll).
+            std::vector<BYTE> lowShifted( pixelBytes, 128 );
+            for( int y = 1; y < dH; y++ )
+            {
+                memcpy( lowShifted.data() + static_cast<size_t>( y ) * dW * 4,
+                        lowBase.data() + static_cast<size_t>( y - 1 ) * dW * 4,
+                        static_cast<size_t>( dW ) * 4 );
+            }
+            // Fill top row with the pattern that would wrap.
+            memcpy( lowShifted.data(), lowBase.data() + static_cast<size_t>( dH - 1 ) * dW * 4,
+                    static_cast<size_t>( dW ) * 4 );
+
+            HBITMAP frameA = createBitmapFromPixels( lowBase, dW, dH );
+            HBITMAP frameB = createBitmapFromPixels( lowShifted, dW, dH );
+            bool subPix = false;
+            bool dup = AreFramesNearDuplicate( frameB, frameA, true, &subPix );
+            DeleteObject( frameA );
+            DeleteObject( frameB );
+            if( dup )
+            {
+                TestLog( L"***** FAIL: drop-logic-near-duplicate case 3 (low-contrast 1px scroll falsely dropped, subPix=%d) *****\n", subPix ? 1 : 0 );
+                return false;
+            }
+        }
+
+        // Case 4: truly identical low-contrast frames → must be duplicate.
+        {
+            std::vector<BYTE> flat( pixelBytes );
+            for( size_t i = 0; i < pixelBytes; i += 4 )
+            {
+                flat[i + 0] = 130;
+                flat[i + 1] = 130;
+                flat[i + 2] = 130;
+                flat[i + 3] = 0xFF;
+            }
+            HBITMAP frameA = createBitmapFromPixels( flat, dW, dH );
+            HBITMAP frameB = createBitmapFromPixels( flat, dW, dH );
+            bool dup = AreFramesNearDuplicate( frameA, frameB, true );
+            DeleteObject( frameA );
+            DeleteObject( frameB );
+            if( !dup )
+            {
+                TestLog( L"***** FAIL: drop-logic-near-duplicate case 4 (identical low-contrast not detected) *****\n" );
+                return false;
+            }
+        }
+
+        basicTestsPassed++;
+        TestLog( L"  [%d/5] drop-logic-near-duplicate PASSED\n", basicTestsRun );
     }
 
     // Random-slice tests using real images.
@@ -5938,6 +6120,7 @@ bool RunPanoramaStitchSelfTest()
 
                 TestLog( L"[Panorama/Test] %s FAILED: height stitched=%d expected=%d tol=%d\n",
                              scenario, sH, expectedH, htol );
+                TestLog( L"***** FAIL: %s *****\n", scenario );
                 if( !selfTestDumpDirectory.empty() )
                 {
                     wchar_t msg[512]{};
@@ -6130,8 +6313,10 @@ bool RunPanoramaStitchSelfTest()
 
         if( !selfTestStressOnly )
         {
+            TestLog( L"\n==== Phase 2: Image-slice tests ====\n" );
             const int kTrialsPerImage = selfTestTrials;
             int imageSliceTestsPassed = 0;
+            int imageSliceTestsRun = 0;
 
             for( const wchar_t* imageFile : imageFiles )
             {
@@ -6192,19 +6377,22 @@ bool RunPanoramaStitchSelfTest()
                     swprintf_s( scenarioName, L"image-slice-%s-trial%d-w%d-n%zu",
                                 imageFile, trial, windowH, originsY.size() );
 
+                    imageSliceTestsRun++;
                     const int result = stitchAndCompare( scenarioName, imagePixels, imageWidth, imageHeight, originsY, windowH );
                     if( result < 0 )
                     {
-                        TestLog( L"[Panorama/Test] %s infrastructure error\n", scenarioName );
+                        TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", scenarioName );
                         CoUninitialize();
                         return false;
                     }
                     if( result == 0 )
                     {
+                        TestLog( L"***** FAIL: %s *****\n", scenarioName );
                         CoUninitialize();
                         return false;
                     }
                     imageSliceTestsPassed++;
+                    TestLog( L"  [%d] %s PASSED\n", imageSliceTestsRun, scenarioName );
                 }
             }
 
@@ -6275,19 +6463,22 @@ bool RunPanoramaStitchSelfTest()
                     swprintf_s( scenarioName, L"fixed15-%s-trial%d-w%d",
                                 imageFile, trial, windowH );
 
+                    imageSliceTestsRun++;
                     const int result = stitchAndCompare( scenarioName, imagePixels, imageWidth, imageHeight, originsY, windowH );
                     if( result < 0 )
                     {
-                        TestLog( L"[Panorama/Test] %s infrastructure error\n", scenarioName );
+                        TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", scenarioName );
                         CoUninitialize();
                         return false;
                     }
                     if( result == 0 )
                     {
+                        TestLog( L"***** FAIL: %s *****\n", scenarioName );
                         CoUninitialize();
                         return false;
                     }
                     imageSliceTestsPassed++;
+                    TestLog( L"  [%d] %s PASSED\n", imageSliceTestsRun, scenarioName );
                 }
             }
 
@@ -6297,7 +6488,7 @@ bool RunPanoramaStitchSelfTest()
             const int requiredImageTests = 12 * selfTestTrials;
             if( imageSliceTestsPassed < requiredImageTests )
             {
-                TestLog( L"[Panorama/Test] Insufficient image tests: %d (need %d)\n", imageSliceTestsPassed, requiredImageTests );
+                TestLog( L"***** FAIL: Insufficient image tests: %d (need %d) *****\n", imageSliceTestsPassed, requiredImageTests );
                 if( !selfTestDumpDirectory.empty() )
                 {
                     wchar_t summary[128]{};
@@ -6323,6 +6514,7 @@ bool RunPanoramaStitchSelfTest()
             // against real-world scrolling patterns captured from actual use.
             // ====================================================================
             {
+                TestLog( L"\n==== Phase 3: Capture-replay tests ====\n" );
                 int captureReplayRun = 0;
                 int captureReplayPassed = 0;
 
@@ -6414,15 +6606,16 @@ bool RunPanoramaStitchSelfTest()
 
                     if( result < 0 )
                     {
-                        TestLog( L"[Panorama/Test] %s INFRASTRUCTURE ERROR\n", scenarioName );
+                        TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", scenarioName );
                     }
                     else if( result == 1 )
                     {
                         captureReplayPassed++;
+                        TestLog( L"  [%d/%d] %s PASSED\n", captureReplayPassed, captureReplayRun, scenarioName );
                     }
                     else
                     {
-                        TestLog( L"[Panorama/Test] %s COMPARISON FAILED\n", scenarioName );
+                        TestLog( L"***** FAIL: %s COMPARISON FAILED *****\n", scenarioName );
                     }
                 }
             }
@@ -6431,7 +6624,7 @@ bool RunPanoramaStitchSelfTest()
 
                 if( captureReplayRun > 0 && captureReplayPassed < captureReplayRun )
                 {
-                    TestLog( L"[Panorama/Test] Capture replay failures: %d/%d â€” aborting\n",
+                    TestLog( L"***** FAIL: Capture replay failures: %d/%d *****\n",
                                  captureReplayRun - captureReplayPassed, captureReplayRun );
                     CoUninitialize();
                     return false;
@@ -6578,6 +6771,7 @@ bool RunPanoramaStitchSelfTest()
                             scenario, sW, sH );
                 stressFailLog += msg;
                 TestLog( L"[Panorama/Test] %s FAILED: wrong axis stitched=%dx%d\n", scenario, sW, sH );
+                TestLog( L"***** FAIL: %s wrong axis *****\n", scenario );
                 return 0;
             }
 
@@ -6611,6 +6805,7 @@ bool RunPanoramaStitchSelfTest()
 
                 TestLog( L"[Panorama/Test] %s FAILED: width stitched=%d expected=%d tol=%d\n",
                              scenario, sW, expectedW, wtol );
+                TestLog( L"***** FAIL: %s *****\n", scenario );
                 {
                     wchar_t msg[512]{};
                     swprintf_s( msg, L"WIDTH: %s stitched=%dx%d expected=%dx%d tol=%d\n",
@@ -6787,18 +6982,19 @@ bool RunPanoramaStitchSelfTest()
                             wchar_t msg[512]{};
                             if( result < 0 )
                             {
-                                TestLog( L"[Panorama/Test] %s INFRASTRUCTURE ERROR\n", scenarioName );
+                                TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", scenarioName );
                                 swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu)\n", scenarioName, winH, originsY.size() );
                                 stressFailLog += msg;
                             }
                             else if( result == 1 )
                             {
                                 stressTestsPassed++;
+                                TestLog( L"  [%d/%d] %s PASSED\n", stressTestsPassed, stressTestsRun, scenarioName );
                                 swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winH, originsY.size(), maxStep );
                             }
                             else
                             {
-                                TestLog( L"[Panorama/Test] %s COMPARISON FAILED\n", scenarioName );
+                                TestLog( L"***** FAIL: %s COMPARISON FAILED *****\n", scenarioName );
                                 swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winH, originsY.size(), maxStep );
                                 stressFailLog += msg;
                             }
@@ -7171,17 +7367,19 @@ bool RunPanoramaStitchSelfTest()
                     wchar_t msg[512]{};
                     if( result < 0 )
                     {
-                        TestLog( L"[Panorama/Test] %s INFRASTRUCTURE ERROR\n", scenarioName );
+                        TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", scenarioName );
                         swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu)\n", scenarioName, winH, originsY.size() );
                         stressFailLog += msg;
                     }
                     else if( result == 1 )
                     {
                         stressTestsPassed++;
+                        TestLog( L"  [%d/%d] %s PASSED\n", stressTestsPassed, stressTestsRun, scenarioName );
                         swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winH, originsY.size(), hcfMaxStep );
                     }
                     else
                     {
+                        TestLog( L"***** FAIL: %s *****\n", scenarioName );
                         swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winH, originsY.size(), hcfMaxStep );
                     }
                     stressLog += msg;
@@ -7280,18 +7478,19 @@ bool RunPanoramaStitchSelfTest()
                             wchar_t msg[512]{};
                             if( result < 0 )
                             {
-                                TestLog( L"[Panorama/Test] %s INFRASTRUCTURE ERROR\n", scenarioName );
+                                TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", scenarioName );
                                 swprintf_s( msg, L"INFRA: %s (winW=%d, nFrames=%zu)\n", scenarioName, winW, originsX.size() );
                                 stressFailLog += msg;
                             }
                             else if( result == 1 )
                             {
                                 stressTestsPassed++;
+                                TestLog( L"  [%d/%d] %s PASSED\n", stressTestsPassed, stressTestsRun, scenarioName );
                                 swprintf_s( msg, L"PASS: %s (winW=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winW, originsX.size(), maxStep );
                             }
                             else
                             {
-                                TestLog( L"[Panorama/Test] %s COMPARISON FAILED\n", scenarioName );
+                                TestLog( L"***** FAIL: %s COMPARISON FAILED *****\n", scenarioName );
                                 swprintf_s( msg, L"FAIL: %s (winW=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winW, originsX.size(), maxStep );
                                 stressFailLog += msg;
                             }
@@ -7323,7 +7522,7 @@ bool RunPanoramaStitchSelfTest()
 
         if( stressFocusEnabled && !stressFocusMatched )
         {
-            TestLog( L"[Panorama/Test] Stress focus did not match any scenario: \"%s\"\n",
+            TestLog( L"***** FAIL: Stress focus did not match any scenario: \"%s\" *****\n",
                          stressFocusScenario.c_str() );
             if( !selfTestDumpDirectory.empty() )
             {
@@ -7352,7 +7551,7 @@ bool RunPanoramaStitchSelfTest()
 
         if( stressTestsRun > 0 && stressTestsPassed < stressTestsRun )
         {
-            TestLog( L"[Panorama/Test] Stress test failures: %d/%d\n",
+            TestLog( L"***** FAIL: Stress test failures: %d/%d *****\n",
                          stressTestsRun - stressTestsPassed, stressTestsRun );
             if( !selfTestDumpDirectory.empty() )
             {
