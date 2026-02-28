@@ -57,11 +57,40 @@ namespace AdvancedPaste.Helpers
         {
             Logger.LogTrace();
 
+            // Unwrap Google Sheets wrapper element (preserve children, remove wrapper)
+            foreach (var googleSheetsWrapper in node.DescendantsAndSelf("google-sheets-html-origin").ToArray())
+            {
+                var parent = googleSheetsWrapper.ParentNode;
+                if (parent == null)
+                {
+                    continue;
+                }
+
+                foreach (var child in googleSheetsWrapper.ChildNodes.ToArray())
+                {
+                    parent.InsertBefore(child, googleSheetsWrapper);
+                }
+
+                googleSheetsWrapper.Remove();
+            }
+
             // Remove specific elements by tag name, CSS class, or other attributes
             // Example: Remove all <script> elements
             foreach (var scriptNode in node.DescendantsAndSelf("script").ToArray())
             {
                 scriptNode.Remove();
+            }
+
+            // Remove style elements (CSS not relevant for Markdown)
+            foreach (var styleNode in node.DescendantsAndSelf("style").ToArray())
+            {
+                styleNode.Remove();
+            }
+
+            // Remove colgroup elements (column width info not needed for Markdown)
+            foreach (var colgroupNode in node.DescendantsAndSelf("colgroup").ToArray())
+            {
+                colgroupNode.Remove();
             }
 
             // Ignore specific elements like <sup> elements
