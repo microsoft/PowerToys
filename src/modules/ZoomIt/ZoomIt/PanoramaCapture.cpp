@@ -2074,8 +2074,12 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         // that borderline cases (maskedStationary at threshold) are
         // rescued â€” these frames already passed the duplicate check, so
         // a non-zero masked score indicates real content change.
+        // For HCF pairs, maskedStationaryScore >= 1 is sufficient: a
+        // non-zero average luma diff at informative pixels indicates
+        // real movement even when the full-frame score is diluted by
+        // the constant background.
         if( highConstantFractionPair &&
-            ( maskedStationaryScore >= stationaryRejectThreshold || highConstStationaryRelax ) )
+            ( maskedStationaryScore >= 1 || highConstStationaryRelax ) )
         {
             // Fall through to the coarse search.
         }
