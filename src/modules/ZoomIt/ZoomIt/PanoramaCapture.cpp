@@ -2897,6 +2897,30 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
     }
 
+    // HCF harmonic-zero override: when the best candidate has score=0 at
+    // a step much smaller than expected, the "perfect" match is almost
+    // certainly spurious — the constant-fraction region (dark background)
+    // makes any small offset look identical.  Prefer the expected-step
+    // candidate even with a non-zero score, as long as it was evaluated.
+    if( highConstantFractionPair && bestFineScore == 0 && expectedAbsStep > 0 &&
+        bestAbsStep > 4 && bestAbsStep < expectedAbsStep * 2 / 3 &&
+        scoreAtExpectedStep != ( std::numeric_limits<unsigned __int64>::max )() )
+    {
+        StitchLog( L"[Panorama/Stitch] FindBestFrameShift hcf-harmonic-zero override: "
+                     L"expected=(%d,%d) harmonic=(%d,%d) score=0 "
+                     L"expectedStep=(%d,%d) expectedScore=%llu\n",
+                     expectedDx, expectedDy, bestDx, bestDy,
+                     dxAtExpectedStep, dyAtExpectedStep,
+                     static_cast<unsigned long long>( scoreAtExpectedStep ) );
+        bestDx = dxAtExpectedStep;
+        bestDy = dyAtExpectedStep;
+        bestFineScore = scoreAtExpectedStep;
+        bestFineRankScore = scoreAtExpectedStep;
+        bestAbsStep = abs( bestDy );
+        bestAbsDx = abs( bestDx );
+        bestExpectedDelta = abs( bestAbsStep - expectedAbsStep );
+    }
+
     // Harmonic-fallback override: if the original candidates all had
     // fineScore > 0 but a newly-injected probe found fineScore == 0,
     // the correct pixel-aligned shift was missing from the original list.
@@ -5314,6 +5338,7 @@ bool RunPanoramaStitchSelfTest()
             const bool isStressScenario = wcsncmp( scenario, L"stress-", 7 ) == 0;
             const bool isStrictRangeScenario = wcsstr( scenario, L"legitjumps" ) != nullptr;
             const bool isFastScrollScenario = wcsstr( scenario, L"fastscroll" ) != nullptr;
+            const bool isHcfDarkScenario = wcsstr( scenario, L"hcfdark" ) != nullptr;
 
             std::vector<HBITMAP> frames;
             frames.reserve( origins.size() );
@@ -5348,6 +5373,30 @@ bool RunPanoramaStitchSelfTest()
                         const int noise = static_cast<int>( ( noiseSeed >> 16 ) % 5 ) - 2; // -2..+2
                         const int val = static_cast<int>( fp[bi] ) + noise;
                         fp[bi] = static_cast<BYTE>( max( 0, min( 255, val ) ) );
+                    }
+                }
+
+                // HCF-dark noise: add noise ONLY to bright (text) pixels,
+                // leaving the dark background pixel-identical between frames.
+                // This models real captures where dark background regions
+                // produce score=0 at any small offset while text content
+                // has per-frame ClearType rendering variation.
+                if( isHcfDarkScenario )
+                {
+                    unsigned int noiseSeed = static_cast<unsigned int>( fi * 7919 + 12347 );
+                    const size_t totalPixels = static_cast<size_t>( imgW ) * static_cast<size_t>( winH );
+                    for( size_t pi = 0; pi < totalPixels; ++pi )
+                    {
+                        const size_t bi = pi * 4;
+                        const int luma = ( fp[bi + 2] * 77 + fp[bi + 1] * 150 + fp[bi + 0] * 29 ) >> 8;
+                        if( luma < 40 ) continue; // dark pixel — keep identical
+                        for( int ch = 0; ch < 3; ++ch )
+                        {
+                            noiseSeed = noiseSeed * 1103515245u + 12345u;
+                            const int noise = static_cast<int>( ( noiseSeed >> 16 ) % 5 ) - 2;
+                            const int val = static_cast<int>( fp[bi + ch] ) + noise;
+                            fp[bi + ch] = static_cast<BYTE>( max( 0, min( 255, val ) ) );
+                        }
                     }
                 }
 
@@ -5530,13 +5579,18 @@ bool RunPanoramaStitchSelfTest()
                 }
 
                 // Enforce continuity only for stress scenarios.
+                // HCF-dark scenarios have relaxed backtrack tolerance because
+                // the mostly-dark content makes row mapping unreliable —
+                // indistinguishable dark rows cause the source-row search to
+                // wander, producing false backward transitions.
                 const bool isStressScenario = wcsncmp( scenario, L"stress-", 7 ) == 0;
                 if( isStressScenario )
                 {
                     const size_t transitions = mappedSourceRows.size() - 1;
                     const bool tooManyDups = dupTransitions > transitions / 2;
                     const bool tooManyJumps = jumpTransitions > transitions / 6;
-                    const bool tooManyBacktracks = backwardTransitions > transitions / 30;
+                    const size_t backtrackLimit = isHcfDarkScenario ? transitions / 6 : transitions / 30;
+                    const bool tooManyBacktracks = backwardTransitions > backtrackLimit;
                     continuityOk = !( tooManyDups || tooManyJumps || tooManyBacktracks );
                 }
             }
@@ -6482,6 +6536,161 @@ bool RunPanoramaStitchSelfTest()
             else
             {
                 OutputDebug( L"[Panorama/Test] Skipping vertical_stress.png (not found at %s)\n", vPath.c_str() );
+            }
+        }
+
+        // --- HCF-dark stress test: synthetic dark-background image with sparse text ---
+        // Tests the HCF harmonic-zero override: on dark-themed pages, the constant
+        // background region produces score=0 at any small offset, tricking the
+        // stitcher into picking harmonic sub-multiples of the true scroll step.
+        if( !stressEarlyExit )
+        {
+            // Generate synthetic HCF source image: mostly dark background with
+            // sparse bright horizontal bands simulating text on a dark page.
+            const int hcfW = 500;
+            const int hcfH = 8000;
+            std::vector<BYTE> hcfPx( static_cast<size_t>( hcfW ) * hcfH * 4, 0 );
+
+            // Fill with dark background (R=15, G=15, B=15, A=255).
+            for( size_t pi = 0; pi < static_cast<size_t>( hcfW ) * hcfH; ++pi )
+            {
+                hcfPx[pi * 4 + 0] = 15;  // B
+                hcfPx[pi * 4 + 1] = 15;  // G
+                hcfPx[pi * 4 + 2] = 15;  // R
+                hcfPx[pi * 4 + 3] = 255; // A
+            }
+
+            // Draw sparse text-like bright bands every 80-150 rows.
+            // Very sparse content ensures that the downsampled coarse
+            // search sees near-zero scores at many offsets, triggering
+            // the masked fine-scoring path where integer truncation can
+            // produce fineScore=0 at wrong alignments — the exact
+            // condition that the HCF harmonic-zero override fixes.
+            {
+                unsigned int bandSeed = 54321u;
+                int bandY = 30;
+                while( bandY < hcfH - 3 )
+                {
+                    bandSeed = bandSeed * 1103515245u + 12345u;
+                    const int bandHeight = 2 + static_cast<int>( ( bandSeed >> 16 ) % 2 ); // 2-3px
+                    bandSeed = bandSeed * 1103515245u + 12345u;
+                    const int brightness = 170 + static_cast<int>( ( bandSeed >> 16 ) % 50 ); // 170-219
+                    bandSeed = bandSeed * 1103515245u + 12345u;
+                    const int bandStart = 20 + static_cast<int>( ( bandSeed >> 16 ) % 40 ); // column 20-59
+                    bandSeed = bandSeed * 1103515245u + 12345u;
+                    const int bandEnd = bandStart + 80 + static_cast<int>( ( bandSeed >> 16 ) % 120 ); // 80-199px wide
+
+                    for( int by = bandY; by < min( bandY + bandHeight, hcfH ); ++by )
+                    {
+                        for( int bx = bandStart; bx < min( bandEnd, hcfW ); ++bx )
+                        {
+                            const size_t idx = ( static_cast<size_t>( by ) * hcfW + bx ) * 4;
+                            bandSeed = bandSeed * 1103515245u + 12345u;
+                            const int pxVar = static_cast<int>( ( bandSeed >> 16 ) % 11 ) - 5; // -5..+5
+                            const int val = max( 0, min( 255, brightness + pxVar ) );
+                            hcfPx[idx + 0] = static_cast<BYTE>( val );
+                            hcfPx[idx + 1] = static_cast<BYTE>( val );
+                            hcfPx[idx + 2] = static_cast<BYTE>( val );
+                        }
+                    }
+
+                    bandSeed = bandSeed * 1103515245u + 12345u;
+                    const int gap = 80 + static_cast<int>( ( bandSeed >> 16 ) % 71 ); // 80-150 rows
+                    bandY += bandHeight + gap;
+                }
+            }
+
+            OutputDebug( L"[Panorama/Test] Generated HCF-dark synthetic image %dx%d\n", hcfW, hcfH );
+
+            constexpr int kHcfTrials = 5;
+            for( int trial = 0; trial < kHcfTrials; ++trial )
+            {
+                if( stressEarlyExit )
+                    break;
+                srand( static_cast<unsigned>( 80000 + trial * 41 ) );
+
+                // Portal height: 250-450 (larger portals make HCF more
+                // likely and give room for moderate steps).
+                const int winH = 250 + rand() % 201;
+                // Steps 15-25% of portal height — matches real captures.
+                const int hcfMaxStep = max( 20, winH / 4 );
+
+                // Generate origins with consistent moderate steps.
+                std::vector<int> originsY;
+                originsY.push_back( 0 );
+                int y = 0;
+                for( int f = 1; f < 80; ++f )
+                {
+                    const int minStep = max( 10, winH / 7 );
+                    const int stepRange = max( 1, hcfMaxStep - minStep );
+                    const int step = minStep + rand() % stepRange;
+                    const int nextY = y + step;
+                    if( nextY + winH > hcfH )
+                        break;
+                    y = nextY;
+                    originsY.push_back( y );
+                }
+
+                if( originsY.size() < 5 )
+                    continue;
+
+                wchar_t scenarioName[256];
+                swprintf_s( scenarioName, L"stress-vertical-hcfdark-trial%d-w%d-n%zu-maxstep%d",
+                            trial, winH, originsY.size(), hcfMaxStep );
+
+                if( !stressScenarioMatches( scenarioName ) )
+                    continue;
+                if( stressFocusEnabled )
+                    stressFocusMatched = true;
+
+                // Log frame origins for diagnostics.
+                {
+                    std::wstring origStr;
+                    for( size_t oi = 0; oi < originsY.size() && oi < 20; ++oi )
+                    {
+                        if( oi > 0 ) origStr += L",";
+                        origStr += std::to_wstring( originsY[oi] );
+                    }
+                    if( originsY.size() > 20 ) origStr += L",...";
+                    OutputDebug( L"[Panorama/Test] Running %s origins=[%s]\n", scenarioName, origStr.c_str() );
+                }
+
+                stressTestsRun++;
+                const int result = stitchAndCompare( scenarioName, hcfPx, hcfW, hcfH, originsY, winH );
+                {
+                    wchar_t msg[512]{};
+                    if( result < 0 )
+                    {
+                        OutputDebug( L"[Panorama/Test] %s INFRASTRUCTURE ERROR\n", scenarioName );
+                        swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu)\n", scenarioName, winH, originsY.size() );
+                        stressFailLog += msg;
+                    }
+                    else if( result == 1 )
+                    {
+                        stressTestsPassed++;
+                        swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winH, originsY.size(), hcfMaxStep );
+                    }
+                    else
+                    {
+                        swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winH, originsY.size(), hcfMaxStep );
+                    }
+                    stressLog += msg;
+
+                    if( stressFocusEnabled )
+                    {
+                        const wchar_t* focusResult = L"FAIL";
+                        if( result < 0 ) focusResult = L"INFRA";
+                        else if( result == 1 ) focusResult = L"PASS";
+                        OutputDebug( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                     scenarioName,
+                                     focusResult );
+                        if( stressStopAfterFocus )
+                        {
+                            stressEarlyExit = true;
+                            break;
+                        }
+                    }
+                }
             }
         }
 
