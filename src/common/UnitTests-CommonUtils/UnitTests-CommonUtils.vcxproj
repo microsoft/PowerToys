@@ -27,7 +27,7 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\;..\utils;..\Telemetry;..\..\;..\..\..\deps\;..\..\..\deps\spdlog\include;..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\include;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;..\utils;..\Telemetry;..\..\;..\..\..\deps\;..\..\..\deps\spdlog\include;..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\include;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_HEADER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
