@@ -208,5 +208,103 @@ namespace AdvancedPaste.Pages
                 Clipboard.SetHistoryItemAsContent(item.Item);
             }
         }
+
+        /// <summary>
+        /// Sets initial focus to the paste options list when AI is disabled.
+        /// </summary>
+        public void SetInitialFocusToPasteOptions()
+        {
+            try
+            {
+                if (PasteOptionsListView.Items.Count > 0)
+                {
+                    PasteOptionsListView.SelectedIndex = 0;
+                    PasteOptionsListView.Focus(FocusState.Programmatic);
+                    Logger.LogTrace("Focus set to PasteOptionsListView");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to set focus to paste options", ex);
+            }
+        }
+
+        /// <summary>
+        /// Gets the appropriate arrow key for "forward" direction based on RTL settings.
+        /// </summary>
+        private VirtualKey GetForwardKey()
+        {
+            return FlowDirection == FlowDirection.RightToLeft ? VirtualKey.Left : VirtualKey.Right;
+        }
+
+        /// <summary>
+        /// Gets the appropriate arrow key for "backward" direction based on RTL settings.
+        /// </summary>
+        private VirtualKey GetBackwardKey()
+        {
+            return FlowDirection == FlowDirection.RightToLeft ? VirtualKey.Right : VirtualKey.Left;
+        }
+
+        /// <summary>
+        /// Handles keyboard navigation on the paste options ListViews.
+        /// Enter key invokes the selected item.
+        /// </summary>
+        private async void PasteOptionsListView_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (sender is ListView listView && e.Key == VirtualKey.Enter)
+            {
+                if (listView.SelectedItem is PasteFormat format)
+                {
+                    e.Handled = true;
+                    await ViewModel.ExecutePasteFormatAsync(format, PasteActionSource.InAppKeyboardShortcut);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles keyboard navigation on the clipboard history button.
+        /// Right arrow (or Left in RTL) opens the flyout.
+        /// </summary>
+        private void ClipboardHistoryButton_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key == GetForwardKey())
+            {
+                e.Handled = true;
+                if (ClipboardHistoryButton.Flyout is Flyout flyout)
+                {
+                    flyout.ShowAt(ClipboardHistoryButton);
+                    Logger.LogTrace("Clipboard history flyout opened via keyboard");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles keyboard navigation within the clipboard history flyout.
+        /// Escape or Left arrow (Right in RTL) closes the flyout and returns focus to the button.
+        /// </summary>
+        private void ClipboardHistoryItemsView_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Escape || e.Key == GetBackwardKey())
+            {
+                e.Handled = true;
+                ClipboardHistoryFlyout.Hide();
+            }
+        }
+
+        /// <summary>
+        /// Handles the clipboard history flyout closing event.
+        /// Returns focus to the clipboard history button.
+        /// </summary>
+        private void ClipboardHistoryFlyout_Closed(object sender, object e)
+        {
+            try
+            {
+                ClipboardHistoryButton.Focus(FocusState.Programmatic);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to return focus to clipboard history button", ex);
+            }
+        }
     }
 }
