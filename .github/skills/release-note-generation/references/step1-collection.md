@@ -1,6 +1,7 @@
 # Step 1: Collection and Milestones
 
 ## 1.0 To-do
+- 1.0.0 Verify GitHub CLI authentication (REQUIRED)
 - 1.0.1 Generate MemberList.md (REQUIRED)
 - 1.1 Collect PRs
 - 1.2 Assign Milestones (REQUIRED)
@@ -17,6 +18,34 @@
 **If user hasn't specified `{{ReleaseVersion}}`, ASK:** "What release version are we generating notes for? (e.g., 0.97)"
 
 **`{{PreviousReleaseTag}}` is derived from the releases page, not user input.** Use the latest published release tag (top of the page). You will use its tag name and tag commit SHA in Step 1.
+
+---
+
+## 1.0.0 Verify GitHub CLI Authentication (REQUIRED)
+
+⚠️ **BLOCKING:** The collection script requires an authenticated `gh` CLI to fetch PR metadata and co-author information via GitHub's GraphQL API. Without authentication, PR data and `NeedThanks` attribution will be incomplete.
+
+### Check authentication status
+
+```powershell
+gh auth status
+```
+
+**If authenticated:** You'll see `Logged in to github.com account <username>`. Proceed to 1.0.1.
+
+**If NOT authenticated:** Run the login flow before continuing:
+
+```powershell
+# Interactive login (opens browser for OAuth)
+gh auth login --hostname github.com --web
+
+# Or use a personal access token
+gh auth login --with-token <<< "YOUR_GITHUB_TOKEN"
+```
+
+**Required scopes:** `repo` (for reading PR data and assigning milestones)
+
+After login, verify again with `gh auth status` and confirm exit code 0.
 
 ---
 
@@ -80,6 +109,8 @@ The script detects both merge commits (`Merge pull request #12345`) and squash c
 **Output** (in `Generated Files/ReleaseNotes/`):
 - `milestone_prs.json` - raw PR data
 - `sorted_prs.csv` - sorted PR list with columns: Id, Title, Labels, Author, Url, Body, CopilotSummary, NeedThanks
+  - `Author`: Comma-separated list of all contributors (PR opener + co-authors from commit trailers)
+  - `NeedThanks`: Comma-separated list of external contributors to thank (excludes core team members from MemberList.md). Empty string means no thanks needed.
 
 ---
 
