@@ -104,8 +104,7 @@
                                 </ItemsControl>
                             </ToggleButton.Content>
                         </ToggleButton>
-                        <CheckBox x:Uid="AllowChordsCheckBox" IsChecked="True" />
-                        <CheckBox x:Uid="ExactMatchCheckBox" IsChecked="True" />
+                        <CheckBox x:Uid="AllowChordsCheckBox" x:Name="AllowChordsCheckBox" Click="AllowChordsCheckBox_Click" IsChecked="True" />
                     </StackPanel>
                 </tkcontrols:Case>
                 <!--  Mouse Button Trigger  -->

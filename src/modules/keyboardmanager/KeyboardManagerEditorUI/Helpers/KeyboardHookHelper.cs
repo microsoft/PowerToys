@@ -143,6 +143,7 @@ namespace KeyboardManagerEditorUI.Helpers
             List<string> keyList = new List<string>();
             List<VirtualKey> modifierKeys = new List<VirtualKey>();
             VirtualKey? actionKey = null;
+            VirtualKey? actionKeyChord = null;
 
             foreach (var key in _keyPressOrder)
             {
@@ -158,6 +159,10 @@ namespace KeyboardManagerEditorUI.Helpers
                         modifierKeys.Add(key);
                     }
                 }
+                else if (actionKey.HasValue && _activeTarget.AllowChords)
+                {
+                    actionKeyChord = key;
+                }
                 else
                 {
                     actionKey = key;
@@ -172,6 +177,11 @@ namespace KeyboardManagerEditorUI.Helpers
             if (actionKey.HasValue)
             {
                 keyList.Add(_mappingService.GetKeyDisplayName((int)actionKey.Value));
+            }
+
+            if (actionKeyChord.HasValue && _activeTarget.AllowChords)
+            {
+                keyList.Add(_mappingService.GetKeyDisplayName((int)actionKeyChord.Value));
             }
 
             return keyList;
@@ -226,6 +236,8 @@ namespace KeyboardManagerEditorUI.Helpers
 
     public interface IKeyboardHookTarget
     {
+        bool AllowChords { get; }
+
         void OnKeyDown(VirtualKey key, List<string> formattedKeys);
 
         void OnKeyUp(VirtualKey key, List<string> formattedKeys)

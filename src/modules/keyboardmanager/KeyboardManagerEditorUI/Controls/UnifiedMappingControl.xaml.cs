@@ -43,6 +43,8 @@ namespace KeyboardManagerEditorUI.Controls
         private bool _urlPathDirty;
         private bool _programPathDirty;
 
+        public bool AllowChords { get; set; } = true;
+
         #endregion
 
         #region Events
@@ -983,6 +985,11 @@ namespace KeyboardManagerEditorUI.Controls
         }
 
         #endregion
+
+        private void AllowChordsCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            AllowChords = AllowChordsCheckBox.IsChecked == true;
+        }
     }
 }
 
