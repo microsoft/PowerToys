@@ -68,6 +68,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public bool IsMainPage { get; init; }
 
+    public bool HasCustomDebounceLogic => IsMainPage;
+
     private bool _isDynamic;
 
     private Task? _initializeItemsTask;

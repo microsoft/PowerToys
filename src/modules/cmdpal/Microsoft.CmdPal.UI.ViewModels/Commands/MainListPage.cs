@@ -2,13 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Immutable;
+/*
+ #define CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
+*/
+
 using System.Collections.Specialized;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
@@ -25,8 +29,17 @@ namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 /// </summary>
 public sealed partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
-    IRecipient<UpdateFallbackItemsMessage>, IDisposable
+    IRecipient<UpdateFallbackItemsMessage>,
+    IDisposable
 {
+    // Throttle for raising items changed events from external sources
+    private static readonly TimeSpan RaiseItemsChangedThrottle = TimeSpan.FromMilliseconds(100);
+
+    // Throttle for raising items changed events from user input - we want this to feel more responsive, so a shorter throttle.
+    private static readonly TimeSpan RaiseItemsChangedThrottleForUserInput = TimeSpan.FromMilliseconds(50);
+
+    private readonly FallbackUpdateManager _fallbackUpdateManager;
+    private readonly ThrottledDebouncedAction _refreshThrottledDebouncedAction;
     private readonly TopLevelCommandManager _tlcManager;
     private readonly AliasManager _aliasManager;
     private readonly SettingsModel _settings;
@@ -58,6 +71,10 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private CancellationTokenSource? _cancellationTokenSource;
 
+#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
+    private DateTimeOffset _last = DateTimeOffset.UtcNow;
+#endif
+
     public MainListPage(
         TopLevelCommandManager topLevelCommandManager,
         SettingsModel settings,
@@ -81,16 +98,42 @@ public sealed partial class MainListPage : DynamicListPage,
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
 
+        _refreshThrottledDebouncedAction = new ThrottledDebouncedAction(
+            () =>
+            {
+                try
+                {
+#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
+                    var delta = DateTimeOffset.UtcNow - _last;
+                    _last = DateTimeOffset.UtcNow;
+                    Logger.LogDebug($"UpdateFallbacks: RaiseItemsChanged, delta {delta}");
+
+                    var sw = Stopwatch.StartNew();
+#endif
+                    RaiseItemsChanged();
+#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
+                    Logger.LogInfo($"UpdateFallbacks: RaiseItemsChanged took {sw.Elapsed}");
+#endif
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Unhandled exception in MainListPage refresh debounced action", ex);
+                }
+            },
+            RaiseItemsChangedThrottle);
+
+        _fallbackUpdateManager = new FallbackUpdateManager(() => _refreshThrottledDebouncedAction.Invoke());
+
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
         var allApps = AllAppsCommandProvider.Page;
         allApps.PropChanged += (s, p) =>
+        {
+            if (p.PropertyName == nameof(allApps.IsLoading))
             {
-                if (p.PropertyName == nameof(allApps.IsLoading))
-                {
-                    IsLoading = ActuallyLoading();
-                }
-            };
+                IsLoading = ActuallyLoading();
+            }
+        };
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
@@ -119,7 +162,7 @@ public sealed partial class MainListPage : DynamicListPage,
         }
         else
         {
-            RaiseItemsChanged();
+            _refreshThrottledDebouncedAction.Invoke();
         }
     }
 
@@ -150,7 +193,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
 
                 var currentSearchText = SearchText;
-                UpdateSearchText(currentSearchText, currentSearchText);
+                UpdateSearchTextCore(currentSearchText, currentSearchText, isUserInput: false);
             }
             while (_refreshRequested.Value);
         }
@@ -243,6 +286,11 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        UpdateSearchTextCore(oldSearch, newSearch, isUserInput: true);
+    }
+
+    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput)
+    {
         var stopwatch = Stopwatch.StartNew();
 
         _cancellationTokenSource?.Cancel();
@@ -296,7 +344,7 @@ public sealed partial class MainListPage : DynamicListPage,
             // prefilter fallbacks
             var globalFallbacks = _settings.GetGlobalFallbacks();
             var specialFallbacks = new List<TopLevelViewModel>(globalFallbacks.Length);
-            var commonFallbacks = new List<TopLevelViewModel>();
+            var commonFallbacks = new List<TopLevelViewModel>(commands.Count - globalFallbacks.Length);
 
             foreach (var s in commands)
             {
@@ -315,10 +363,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            // start update of fallbacks; update special fallbacks separately,
-            // so they can finish faster
-            UpdateFallbacks(SearchText, specialFallbacks, token);
-            UpdateFallbacks(SearchText, commonFallbacks, token);
+            _fallbackUpdateManager.BeginUpdate(SearchText, [.. specialFallbacks, .. commonFallbacks], token);
 
             if (token.IsCancellationRequested)
             {
@@ -326,11 +371,13 @@ public sealed partial class MainListPage : DynamicListPage,
             }
 
             // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
-            if (string.IsNullOrEmpty(newSearch))
+            if (string.IsNullOrWhiteSpace(newSearch))
             {
                 _filteredItemsIncludesApps = _includeApps;
                 ClearResults();
-                RaiseItemsChanged(commands.Count);
+                var wasAlreadyEmpty = string.IsNullOrWhiteSpace(oldSearch);
+                _refreshThrottledDebouncedAction.Invoke(wasAlreadyEmpty ? null : TimeSpan.Zero);
+
                 return;
             }
 
@@ -465,47 +512,33 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
+#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
             var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
-            Logger.LogDebug($"Filter with '{newSearch}' in {filterDoneTimestamp}ms");
+#endif
+            if (isUserInput)
+            {
+                // Make sure that the throttle delay is consistent from the user's perspective, even if filtering
+                // takes a long time. If we always use the full throttle duration, then a slow filter could make the UI feel sluggish.
+                var adjustedInterval = RaiseItemsChangedThrottleForUserInput - stopwatch.Elapsed;
+                if (adjustedInterval < TimeSpan.Zero)
+                {
+                    adjustedInterval = TimeSpan.Zero;
+                }
 
-            RaiseItemsChanged();
+                _refreshThrottledDebouncedAction.Invoke(adjustedInterval);
+            }
+            else
+            {
+                _refreshThrottledDebouncedAction.Invoke();
+            }
 
+#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
             var listPageUpdatedTimestamp = stopwatch.ElapsedMilliseconds;
             Logger.LogDebug($"Render items with '{newSearch}' in {listPageUpdatedTimestamp}ms /d {listPageUpdatedTimestamp - filterDoneTimestamp}ms");
+#endif
 
             stopwatch.Stop();
         }
-    }
-
-    private void UpdateFallbacks(string newSearch, IReadOnlyList<TopLevelViewModel> commands, CancellationToken token)
-    {
-        _ = Task.Run(
-            () =>
-        {
-            var needsToUpdate = false;
-
-            foreach (var command in commands)
-            {
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                var changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
-                needsToUpdate = needsToUpdate || changedVisibility;
-            }
-
-            if (needsToUpdate)
-            {
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                RaiseItemsChanged();
-            }
-        },
-            token);
     }
 
     private bool ActuallyLoading()
@@ -643,7 +676,10 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public void Receive(ClearSearchMessage message) => SearchText = string.Empty;
 
-    public void Receive(UpdateFallbackItemsMessage message) => RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
+    public void Receive(UpdateFallbackItemsMessage message)
+    {
+        _refreshThrottledDebouncedAction.Invoke();
+    }
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
 
@@ -653,6 +689,7 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
+        _fallbackUpdateManager.Dispose();
 
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
