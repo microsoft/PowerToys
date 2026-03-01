@@ -35,6 +35,7 @@
       <string id="SUPPORTED_POWERTOYS_0_90_0">PowerToys version 0.90.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_96_0">PowerToys version 0.96.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_97_0">PowerToys version 0.97.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_98_0">PowerToys version 0.98.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
@@ -238,7 +239,7 @@ If you disable this policy, the setting is disabled and variables in filenames w
 
 If you don't configure this policy, the user will be able to control the setting and can enable or disable it.
 </string>
-
+        
       <string id="ConfigureAllUtilityGlobalEnabledState">Configure global utility enabled state</string>
       <string id="ConfigureEnabledUtilityAdvancedPaste">Advanced Paste: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
@@ -356,6 +357,15 @@ If you disable this policy, users will not be able to select or use Foundry Loca
       <string id="AllowDiagnosticData">Allow sending diagnostic data</string>
       <string id="ConfigureRunAtStartup">Configure the run at startup setting</string>
       <string id="NewPlusReplaceVariablesInTemplateFilenames">Replace variables in template filenames</string>
+      <string id="NewPlusHideBuiltInNewContextMenu">Hide the built-in "New" context menu</string>
+      <string id="NewPlusHideBuiltInNewContextMenuDescription">This policy configures if Windows' built-in New context menu should be hidden on the context menu.
+
+If you enable this policy, then the built-in New context menu will be hidden, and user can only create new files and folders using New+ and the explorer toolbar New button.
+
+If you disable this policy, then the build-in New context menu will be displayed as normal in Windows.
+
+If you don't configure this policy, the user will be able to control the setting and can enable or disable it.
+</string>        
     </stringTable>
 
     <presentationTable>
@@ -369,4 +379,3 @@ If you disable this policy, users will not be able to select or use Foundry Loca
 
   </resources>
 </policyDefinitionResources>
-

@@ -4382,6 +4382,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Ignores digits, spaces, and dots at the start of filenames—useful for sorting templates without showing those characters</value>
     <comment>Template filename starting digits settings toggle</comment>
   </data>
+  <data name="NewPlusHideBuiltInNewToggle.Header" xml:space="preserve">
+    <value>Hide the built-in "New" context menu</value>
+    <comment>Localize New in accordance with Windows New</comment>
+  </data>
   <data name="NewPlus_behavior.Header" xml:space="preserve">
     <value>Behavior</value>
     <comment>New+ behavior related settings label</comment>
