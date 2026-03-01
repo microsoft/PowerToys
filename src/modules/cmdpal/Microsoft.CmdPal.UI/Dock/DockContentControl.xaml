@@ -9,7 +9,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
-    <Grid x:Name="ContentGrid">
+    <Grid x:Name="ContentGrid" Background="Transparent">
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="StartColumn" Width="*" />
             <ColumnDefinition x:Name="CenterColumn" Width="Auto" />
@@ -44,8 +44,8 @@
             Grid.Column="2"
             HorizontalAlignment="Right"
             VerticalAlignment="Stretch"
-            ContentAlignment="End"
             ActionButton="{x:Bind EndActionButton, Mode=OneWay}"
+            ContentAlignment="End"
             Source="{x:Bind EndSource, Mode=OneWay}" />
 
         <VisualStateManager.VisualStateGroups>

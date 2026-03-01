@@ -231,6 +231,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             if (item.HasMoreCommands)
             {
                 ContextControl.ViewModel.SelectedItem = item;
+                ContextControl.ShowFilterBox = true;
                 ContextMenuFlyout.ShowAt(
                     dockItem,
                     new FlyoutShowOptions()
