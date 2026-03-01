@@ -52,7 +52,7 @@
                         </controls:SettingsCard.HeaderIcon>
                         <ComboBox
                             x:Name="DockPositionComboBox"
-                            MinWidth="120"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SelectedIndex="{x:Bind SelectedSideIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="DockAppearance_DockPosition_Left" />
                             <ComboBoxItem x:Uid="DockAppearance_DockPosition_Top" />
