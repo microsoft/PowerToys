@@ -3693,23 +3693,88 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     // range to find which direction has a true alignment minimum.  This is
     // far more robust than scoring two potentially-spurious ZNCC peaks,
     // especially on mostly-constant content where ZNCC produces noise peaks.
+    //
+    // Optimization: use precomputed luma arrays (already available from the
+    // caller) and build a gradient mask once, rather than recomputing
+    // RGB->luma and gradient per pixel in each of the ~200 calls.
     constexpr int kAxisScanRange = 50;
     constexpr int kAxisMargin = 4;
     constexpr int kAxisStep = 2;
+
+    // Reference or build full-resolution luma for both frames.
+    std::vector<BYTE> prevLumaOwned, currLumaOwned;
+    const BYTE* prevLuma;
+    const BYTE* currLuma;
+    if( !precomputedPrevLuma.empty() && !precomputedCurrLuma.empty() )
+    {
+        prevLuma = precomputedPrevLuma.data();
+        currLuma = precomputedCurrLuma.data();
+    }
+    else
+    {
+        BuildFullLumaFrame( previousPixels, frameWidth, frameHeight, prevLumaOwned );
+        BuildFullLumaFrame( currentPixels, frameWidth, frameHeight, currLumaOwned );
+        prevLuma = prevLumaOwned.data();
+        currLuma = currLumaOwned.data();
+    }
+
+    // Precompute gradient mask for both frames.  A pixel has gradient if
+    // abs(luma - luma_right) + abs(luma - luma_below) >= 4.  Last row and
+    // last column have no gradient (matching ComputeShiftAlignmentScore).
+    const size_t pixelCount = static_cast<size_t>( frameWidth ) * frameHeight;
+    std::vector<BYTE> gradMask( pixelCount * 2, 0 );
+    BYTE* prevGrad = gradMask.data();
+    BYTE* currGrad = gradMask.data() + pixelCount;
+    for( int y = 0; y < frameHeight - 1; y++ )
+    {
+        const int rowOff = y * frameWidth;
+        for( int x = 0; x < frameWidth - 1; x++ )
+        {
+            const int idx = rowOff + x;
+            const int lp = prevLuma[idx];
+            prevGrad[idx] = ( abs( lp - prevLuma[idx + 1] ) + abs( lp - prevLuma[idx + frameWidth] ) >= 4 ) ? 1 : 0;
+            const int lc = currLuma[idx];
+            currGrad[idx] = ( abs( lc - currLuma[idx + 1] ) + abs( lc - currLuma[idx + frameWidth] ) >= 4 ) ? 1 : 0;
+        }
+    }
 
     unsigned __int64 bestVertScore = ULLONG_MAX;
     unsigned __int64 bestHorizScore = ULLONG_MAX;
     int bestVertDy = 0;
     int bestHorizDx = 0;
 
+    // Vertical scan (dx=0, varying dy).
     for( int dy = -kAxisScanRange; dy <= kAxisScanRange; dy++ )
     {
         if( dy == 0 )
             continue;
-        unsigned __int64 score = 0;
-        if( ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight,
-                                        0, dy, score, /*ignoreConst=*/true, kAxisMargin, kAxisStep ) )
+        const int absDy = abs( dy );
+        const int overlapW = frameWidth - 2 * kAxisMargin;
+        const int overlapH = frameHeight - absDy - 2 * kAxisMargin;
+        if( overlapW < frameWidth / 4 || overlapH < frameHeight / 4 )
+            continue;
+        const int pY0 = kAxisMargin + max( 0, -dy );
+        const int cY0 = kAxisMargin + max( 0, dy );
+        unsigned __int64 totalDiff = 0;
+        unsigned __int64 samples = 0;
+        for( int y = 0; y < overlapH; y += kAxisStep )
         {
+            const int pRow = ( pY0 + y ) * frameWidth;
+            const int cRow = ( cY0 + y ) * frameWidth;
+            for( int x = 0; x < overlapW; x += kAxisStep )
+            {
+                const int px = kAxisMargin + x;
+                const int pIdx = pRow + px;
+                const int cIdx = cRow + px;
+                if( !prevGrad[pIdx] && !currGrad[cIdx] )
+                    continue;
+                totalDiff += static_cast<unsigned __int64>( abs( static_cast<int>( prevLuma[pIdx] ) - static_cast<int>( currLuma[cIdx] ) ) );
+                samples++;
+            }
+        }
+        if( samples >= 20 )
+        {
+            const unsigned __int64 score = totalDiff / samples;
             if( score < bestVertScore )
             {
                 bestVertScore = score;
@@ -3718,14 +3783,36 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
         }
     }
 
+    // Horizontal scan (dy=0, varying dx).
     for( int dx = -kAxisScanRange; dx <= kAxisScanRange; dx++ )
     {
         if( dx == 0 )
             continue;
-        unsigned __int64 score = 0;
-        if( ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight,
-                                        dx, 0, score, /*ignoreConst=*/true, kAxisMargin, kAxisStep ) )
+        const int absDx = abs( dx );
+        const int overlapW = frameWidth - absDx - 2 * kAxisMargin;
+        const int overlapH = frameHeight - 2 * kAxisMargin;
+        if( overlapW < frameWidth / 4 || overlapH < frameHeight / 4 )
+            continue;
+        const int pX0 = kAxisMargin + max( 0, -dx );
+        const int cX0 = kAxisMargin + max( 0, dx );
+        unsigned __int64 totalDiff = 0;
+        unsigned __int64 samples = 0;
+        for( int y = 0; y < overlapH; y += kAxisStep )
         {
+            const int rowOff = ( kAxisMargin + y ) * frameWidth;
+            for( int x = 0; x < overlapW; x += kAxisStep )
+            {
+                const int pIdx = rowOff + pX0 + x;
+                const int cIdx = rowOff + cX0 + x;
+                if( !prevGrad[pIdx] && !currGrad[cIdx] )
+                    continue;
+                totalDiff += static_cast<unsigned __int64>( abs( static_cast<int>( prevLuma[pIdx] ) - static_cast<int>( currLuma[cIdx] ) ) );
+                samples++;
+            }
+        }
+        if( samples >= 20 )
+        {
+            const unsigned __int64 score = totalDiff / samples;
             if( score < bestHorizScore )
             {
                 bestHorizScore = score;
@@ -3734,18 +3821,37 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
         }
     }
 
-    // If ignoring constant regions fails for one or both axes, retry
-    // without the constant-region filter.
+    // If ignoring constant regions yields no valid score for one or both
+    // axes, retry without the gradient mask filter.
     if( bestVertScore == ULLONG_MAX || bestHorizScore == ULLONG_MAX )
     {
         for( int dy = -kAxisScanRange; dy <= kAxisScanRange; dy++ )
         {
             if( dy == 0 )
                 continue;
-            unsigned __int64 score = 0;
-            if( ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight,
-                                            0, dy, score, false, kAxisMargin, kAxisStep ) )
+            const int absDy = abs( dy );
+            const int overlapW = frameWidth - 2 * kAxisMargin;
+            const int overlapH = frameHeight - absDy - 2 * kAxisMargin;
+            if( overlapW < frameWidth / 4 || overlapH < frameHeight / 4 )
+                continue;
+            const int pY0 = kAxisMargin + max( 0, -dy );
+            const int cY0 = kAxisMargin + max( 0, dy );
+            unsigned __int64 totalDiff = 0;
+            unsigned __int64 samples = 0;
+            for( int y = 0; y < overlapH; y += kAxisStep )
             {
+                const int pRow = ( pY0 + y ) * frameWidth;
+                const int cRow = ( cY0 + y ) * frameWidth;
+                for( int x = 0; x < overlapW; x += kAxisStep )
+                {
+                    const int px = kAxisMargin + x;
+                    totalDiff += static_cast<unsigned __int64>( abs( static_cast<int>( prevLuma[pRow + px] ) - static_cast<int>( currLuma[cRow + px] ) ) );
+                    samples++;
+                }
+            }
+            if( samples >= 100 && bestVertScore == ULLONG_MAX )
+            {
+                const unsigned __int64 score = totalDiff / samples;
                 if( score < bestVertScore )
                 {
                     bestVertScore = score;
@@ -3757,10 +3863,27 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
         {
             if( dx == 0 )
                 continue;
-            unsigned __int64 score = 0;
-            if( ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight,
-                                            dx, 0, score, false, kAxisMargin, kAxisStep ) )
+            const int absDx = abs( dx );
+            const int overlapW = frameWidth - absDx - 2 * kAxisMargin;
+            const int overlapH = frameHeight - 2 * kAxisMargin;
+            if( overlapW < frameWidth / 4 || overlapH < frameHeight / 4 )
+                continue;
+            const int pX0 = kAxisMargin + max( 0, -dx );
+            const int cX0 = kAxisMargin + max( 0, dx );
+            unsigned __int64 totalDiff = 0;
+            unsigned __int64 samples = 0;
+            for( int y = 0; y < overlapH; y += kAxisStep )
             {
+                const int rowOff = ( kAxisMargin + y ) * frameWidth;
+                for( int x = 0; x < overlapW; x += kAxisStep )
+                {
+                    totalDiff += static_cast<unsigned __int64>( abs( static_cast<int>( prevLuma[rowOff + pX0 + x] ) - static_cast<int>( currLuma[rowOff + cX0 + x] ) ) );
+                    samples++;
+                }
+            }
+            if( samples >= 100 && bestHorizScore == ULLONG_MAX )
+            {
+                const unsigned __int64 score = totalDiff / samples;
                 if( score < bestHorizScore )
                 {
                     bestHorizScore = score;
