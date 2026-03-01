@@ -796,9 +796,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="DockAppearance_ColorizationMode.Header" xml:space="preserve">
     <value>Colorization mode</value>
   </data>
-  <data name="DockAppearance_NoBackground_SettingsCard.Header" xml:space="preserve">
-    <value>No background</value>
-  </data>
   <data name="DockAppearance_NoBackground_DescriptionTextBlock.Text" xml:space="preserve">
     <value>No settings</value>
   </data>
