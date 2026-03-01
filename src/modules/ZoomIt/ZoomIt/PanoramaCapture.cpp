@@ -1456,6 +1456,110 @@ static bool LooksLikeSmallShiftNotDuplicate( const std::vector<BYTE>& previousPi
     return true;
 }
 
+// Core pixel-based duplicate detection used by both the HBITMAP and pixel-array
+// entry points.  Returns true if the frames should be treated as duplicates.
+static bool ArePixelFramesNearDuplicateCore( const std::vector<BYTE>& currentPixels,
+                                             const std::vector<BYTE>& previousPixels,
+                                             int frameWidth,
+                                             int frameHeight,
+                                             bool lowContrastMode,
+                                             bool verbose )
+{
+    static unsigned s_phase = 0;
+    unsigned __int64 avgDiff = 0;
+    double changedFraction = 0.0;
+
+    const int coarseSampleStep = lowContrastMode ? 4 : 6;
+    if( !ComputeAveragePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight,
+                                        avgDiff, changedFraction, coarseSampleStep, ++s_phase ) )
+    {
+        return false;
+    }
+
+    const unsigned __int64 avgDiffThreshold = lowContrastMode ? 2 : 6;
+    const double changedThreshold = lowContrastMode ? 0.0005 : 0.005;
+    const bool coarseDuplicate = ( avgDiff < avgDiffThreshold && changedFraction < changedThreshold );
+    bool duplicate = coarseDuplicate;
+
+    // Low-content captures (e.g. mostly blank editors where only line numbers
+    // change) can be under-sampled by the coarse pass.  Recheck with denser
+    // sampling before dropping a frame.
+    if( lowContrastMode )
+    {
+        unsigned __int64 fineAvgDiff = 0;
+        double fineChangedFraction = 0.0;
+        if( ComputeAveragePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight,
+                                           fineAvgDiff, fineChangedFraction, 1, ++s_phase ) )
+        {
+            const bool fineDuplicate = ( fineAvgDiff < 1 && fineChangedFraction < 0.00008 );
+            duplicate = coarseDuplicate && fineDuplicate;
+            if( verbose && coarseDuplicate && !fineDuplicate )
+            {
+                StitchLog( L"[Panorama/Capture] Fine-pass rescued frame avgDiff=%llu changedPct=%.3f%% fineAvg=%llu fineChangedPct=%.3f%%\n",
+                             avgDiff,
+                             changedFraction * 100.0,
+                             fineAvgDiff,
+                             fineChangedFraction * 100.0 );
+            }
+        }
+    }
+
+    // Guard: if it "looks duplicate" by RGB stats but a small translation aligns notably better,
+    // treat it as movement (prevents false drops during slow scrolling / low-texture content).
+    if( duplicate )
+    {
+        int guardDx = 0, guardDy = 0;
+        unsigned __int64 s0 = 0, best = 0;
+        if( LooksLikeSmallShiftNotDuplicate( previousPixels, currentPixels, frameWidth, frameHeight,
+                            /*maxAbsDyFull=*/lowContrastMode ? 24 : 16,
+                            /*maxAbsDxFull=*/lowContrastMode ? 12 : 8,
+                            lowContrastMode,
+                                            &guardDx, &guardDy, &s0, &best ) )
+        {
+            duplicate = false;
+            if( verbose )
+            {
+                StitchLog( L"[Panorama/Capture] Duplicate-guard: avgDiff=%llu changedPct=%.2f%% smallShift=(%d,%d) stationary=%llu best=%llu\n",
+                             avgDiff, changedFraction * 100.0, guardDx, guardDy,
+                             static_cast<unsigned long long>( s0 ),
+                             static_cast<unsigned long long>( best ) );
+            }
+        }
+    }
+
+    // Informative-pixel rescue: if the frame still looks like a duplicate but
+    // the edge/text pixels show real differences, keep it.  This catches slow
+    // scrolls of very-low-entropy content where overall avgDiff is diluted
+    // by the overwhelmingly constant background.
+    if( duplicate && lowContrastMode )
+    {
+        unsigned __int64 infDiff = 0, infCount = 0;
+        if( ComputeInformativePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight, infDiff, infCount ) &&
+            infCount > 0 )
+        {
+            const unsigned __int64 avgInfDiff = infDiff / ( infCount * 3 );
+            if( avgInfDiff >= 8 )
+            {
+                duplicate = false;
+                if( verbose )
+                {
+                    StitchLog( L"[Panorama/Capture] Informative-pixel rescued frame avgInfDiff=%llu infCount=%llu\n",
+                                 static_cast<unsigned long long>( avgInfDiff ),
+                                 static_cast<unsigned long long>( infCount ) );
+                }
+            }
+        }
+    }
+
+    if( verbose )
+    {
+        StitchLog( L"[Panorama/Capture] Frame compare avgDiff=%llu changedPct=%.1f%% size=%dx%d identical=%d lowContrast=%d\n",
+                   avgDiff, changedFraction * 100.0, frameWidth, frameHeight, duplicate ? 1 : 0, lowContrastMode ? 1 : 0 );
+    }
+
+    return duplicate;
+}
+
 static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame, bool lowContrastMode, bool* outSubPixelDrop = nullptr )
 {
     if( outSubPixelDrop )
@@ -1475,85 +1579,7 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
     if( currentWidth != previousWidth || currentHeight != previousHeight )
         return false;
 
-    static unsigned s_phase = 0;
-    unsigned __int64 avgDiff = 0;
-    double changedFraction = 0.0;
-
-    const int coarseSampleStep = lowContrastMode ? 4 : 6;
-    if( !ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight,
-                                        avgDiff, changedFraction, coarseSampleStep, ++s_phase ) )
-    {
-        return false;
-    }
-
-    const unsigned __int64 avgDiffThreshold = lowContrastMode ? 2 : 6;
-    const double changedThreshold = lowContrastMode ? 0.0005 : 0.005;
-    const bool coarseDuplicate = ( avgDiff < avgDiffThreshold && changedFraction < changedThreshold );
-    bool duplicate = coarseDuplicate;
-
-    // Low-content captures (e.g. mostly blank editors where only line numbers
-    // change) can be under-sampled by the coarse pass.  Recheck with denser
-    // sampling before dropping a frame.
-    if( lowContrastMode )
-    {
-        unsigned __int64 fineAvgDiff = 0;
-        double fineChangedFraction = 0.0;
-        if( ComputeAveragePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight,
-                                           fineAvgDiff, fineChangedFraction, 1, ++s_phase ) )
-        {
-            const bool fineDuplicate = ( fineAvgDiff < 1 && fineChangedFraction < 0.00008 );
-            duplicate = coarseDuplicate && fineDuplicate;
-            if( coarseDuplicate && !fineDuplicate )
-            {
-                StitchLog( L"[Panorama/Capture] Fine-pass rescued frame avgDiff=%llu changedPct=%.3f%% fineAvg=%llu fineChangedPct=%.3f%%\n",
-                             avgDiff,
-                             changedFraction * 100.0,
-                             fineAvgDiff,
-                             fineChangedFraction * 100.0 );
-            }
-        }
-    }
-
-    // Guard: if it "looks duplicate" by RGB stats but a small translation aligns notably better,
-    // treat it as movement (prevents false drops during slow scrolling / low-texture content).
-    if( duplicate )
-    {
-        int guardDx = 0, guardDy = 0;
-        unsigned __int64 s0 = 0, best = 0;
-        if( LooksLikeSmallShiftNotDuplicate( previousPixels, currentPixels, currentWidth, currentHeight,
-                            /*maxAbsDyFull=*/lowContrastMode ? 24 : 16,
-                            /*maxAbsDxFull=*/lowContrastMode ? 12 : 8,
-                            lowContrastMode,
-                                            &guardDx, &guardDy, &s0, &best ) )
-        {
-            duplicate = false;
-            StitchLog( L"[Panorama/Capture] Duplicate-guard: avgDiff=%llu changedPct=%.2f%% smallShift=(%d,%d) stationary=%llu best=%llu\n",
-                         avgDiff, changedFraction * 100.0, guardDx, guardDy,
-                         static_cast<unsigned long long>( s0 ),
-                         static_cast<unsigned long long>( best ) );
-        }
-    }
-
-    // Informative-pixel rescue: if the frame still looks like a duplicate but
-    // the edge/text pixels show real differences, keep it.  This catches slow
-    // scrolls of very-low-entropy content where overall avgDiff is diluted
-    // by the overwhelmingly constant background.
-    if( duplicate && lowContrastMode )
-    {
-        unsigned __int64 infDiff = 0, infCount = 0;
-        if( ComputeInformativePixelDifference( currentPixels, previousPixels, currentWidth, currentHeight, infDiff, infCount ) &&
-            infCount > 0 )
-        {
-            const unsigned __int64 avgInfDiff = infDiff / ( infCount * 3 );
-            if( avgInfDiff >= 8 )
-            {
-                duplicate = false;
-                StitchLog( L"[Panorama/Capture] Informative-pixel rescued frame avgInfDiff=%llu infCount=%llu\n",
-                             static_cast<unsigned long long>( avgInfDiff ),
-                             static_cast<unsigned long long>( infCount ) );
-            }
-        }
-    }
+    bool duplicate = ArePixelFramesNearDuplicateCore( currentPixels, previousPixels, currentWidth, currentHeight, lowContrastMode, /*verbose=*/true );
 
     // Sub-pixel shift detection: the frame passed the duplicate checks
     // (pixel differences above noise floor) but the differences may be
@@ -1568,6 +1594,7 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
     // just barely escaped the duplicate detector.
     if( !duplicate )
     {
+        const unsigned __int64 avgDiffThreshold = lowContrastMode ? 2 : 6;
         const int w = currentWidth, h = currentHeight;
         const int marginX = max( 4, w / 20 );
         const int marginY = max( 4, h / 20 );
@@ -1649,8 +1676,6 @@ static bool AreFramesNearDuplicate( HBITMAP currentFrame, HBITMAP previousFrame,
         }
     }
 
-    StitchLog( L"[Panorama/Capture] Frame compare avgDiff=%llu changedPct=%.1f%% size=%dx%d identical=%d lowContrast=%d\n",
-               avgDiff, changedFraction * 100.0, currentWidth, currentHeight, duplicate ? 1 : 0, lowContrastMode ? 1 : 0 );
     return duplicate;
 }
 
@@ -1660,61 +1685,7 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
                                          int frameHeight,
                                          bool lowContrastMode )
 {
-    static unsigned s_phase = 0;
-    unsigned __int64 avgDiff = 0;
-    double changedFraction = 0.0;
-
-    const int coarseSampleStep = lowContrastMode ? 4 : 6;
-    if( !ComputeAveragePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight,
-                                        avgDiff, changedFraction, coarseSampleStep, ++s_phase ) )
-    {
-        return false;
-    }
-
-    const unsigned __int64 avgDiffThreshold = lowContrastMode ? 2 : 6;
-    const double changedThreshold = lowContrastMode ? 0.0005 : 0.005;
-    const bool coarseDuplicate = ( avgDiff < avgDiffThreshold && changedFraction < changedThreshold );
-    bool duplicate = coarseDuplicate;
-
-    if( lowContrastMode )
-    {
-        unsigned __int64 fineAvgDiff = 0;
-        double fineChangedFraction = 0.0;
-        if( ComputeAveragePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight,
-                                           fineAvgDiff, fineChangedFraction, 1, ++s_phase ) )
-        {
-            const bool fineDuplicate = ( fineAvgDiff < 1 && fineChangedFraction < 0.00008 );
-            duplicate = coarseDuplicate && fineDuplicate;
-        }
-    }
-
-    if( duplicate )
-    {
-        if( LooksLikeSmallShiftNotDuplicate( previousPixels, currentPixels, frameWidth, frameHeight,
-                                            /*maxAbsDyFull=*/lowContrastMode ? 24 : 16,
-                                            /*maxAbsDxFull=*/lowContrastMode ? 12 : 8,
-                                            lowContrastMode ) )
-        {
-            duplicate = false;
-        }
-    }
-
-    // Informative-pixel rescue (see AreFramesNearDuplicate for details).
-    if( duplicate && lowContrastMode )
-    {
-        unsigned __int64 infDiff = 0, infCount = 0;
-        if( ComputeInformativePixelDifference( currentPixels, previousPixels, frameWidth, frameHeight, infDiff, infCount ) &&
-            infCount > 0 )
-        {
-            const unsigned __int64 avgInfDiff = infDiff / ( infCount * 3 );
-            if( avgInfDiff >= 8 )
-            {
-                duplicate = false;
-            }
-        }
-    }
-
-    return duplicate;
+    return ArePixelFramesNearDuplicateCore( currentPixels, previousPixels, frameWidth, frameHeight, lowContrastMode, /*verbose=*/false );
 }
 
 static bool TransposePixels32( const std::vector<BYTE>& source,
