@@ -3518,6 +3518,22 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
     }
 
+    // Downward-spike guard: when the expected step is established and
+    // the detected step is dramatically smaller (< 1/3), the match is
+    // likely a harmonic sub-multiple on periodic content.  Only reject
+    // when the fine score is also mediocre -- a genuine scroll slow-down
+    // would produce a clean (low) fine score.
+    if( directionEstablished && expectedAbsStep > frameHeight / 8 &&
+        bestAbsStep > 0 && bestAbsStep < expectedAbsStep * 2 / 3 &&
+        bestFineScore > 8 * kFineScoreScale )
+    {
+        StitchLog( L"[Panorama/Stitch] FindBestFrameShift downward-spike expected=(%d,%d) best=(%d,%d) bestStep=%d expectedStep=%d fineScore=%llu\n",
+                     expectedDx, expectedDy, bestDx, bestDy,
+                     bestAbsStep, expectedAbsStep,
+                     static_cast<unsigned long long>( bestFineScore ) );
+        return false;
+    }
+
     // Adaptive fine threshold.  For masked scoring (very-low-entropy or
     // masked fallback) the fine score is on a different scale (higher,
     // because only content pixels contribute) so use a more generous
@@ -4107,6 +4123,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
     int retryNormalizationBudget = 0;
     int nearStationaryCount = 0;
     int duplicateRetryStreak = 0;
+    int consecutiveNonDupRejectCount = 0;
 
     int minX = 0;
     int minY = 0;
@@ -4302,6 +4319,93 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
             else
             {
                 duplicateRetryStreak = 0;
+                consecutiveNonDupRejectCount++;
+
+                // After several consecutive non-duplicate rejections the
+                // reference frame has drifted too far behind the current
+                // scroll position for FindBestFrameShift to produce an
+                // overlap match.  Recover by matching the adjacent
+                // captured pair (i-1, i) to discover the actual per-frame
+                // step, then extrapolate from the last accepted origin.
+                const bool earlyRecoveryEligible =
+                    ( i - composedFrameIndices.back() ) >= 2 && composedFrameSteps.size() >= 6;
+                if( ( consecutiveNonDupRejectCount >= 3 ||
+                      ( consecutiveNonDupRejectCount >= 1 && earlyRecoveryEligible ) ) && i >= 2 )
+                {
+                    int adjDx = 0, adjDy = 0;
+                    bool adjNearStationary = false;
+                    const int adjVLE = ( frameConstantFraction[i - 1] > 0.58 &&
+                                         frameConstantFraction[i] > 0.58 ) ? 1 : 0;
+
+                    if( FindBestFrameShift( framePixels[i - 1], framePixels[i],
+                                            frameWidth, frameHeight,
+                                            expectedDx, expectedDy,
+                                            adjDx, adjDy,
+                                            lowContrastMode,
+                                            frameLuma[i - 1], frameLuma[i],
+                                            adjVLE, &adjNearStationary ) )
+                    {
+                        int perFrameStepX = -adjDx;
+                        int perFrameStepY = -adjDy;
+
+                        // Apply direction clamping consistent with
+                        // the established scroll axis.
+                        if( composedFrameSteps.size() >= 3 )
+                        {
+                            const int stepCap = 3 * minProgress;
+                            int histAbsX = 0, histAbsY = 0;
+                            for( size_t si = 1; si < composedFrameSteps.size(); ++si )
+                            {
+                                histAbsX += min( abs( composedFrameSteps[si].x ), stepCap );
+                                histAbsY += min( abs( composedFrameSteps[si].y ), stepCap );
+                            }
+                            if( histAbsY > histAbsX * 8 )
+                                perFrameStepX = 0;
+                            else if( histAbsX > histAbsY * 8 )
+                                perFrameStepY = 0;
+                        }
+
+                        // Require meaningful progress after clamping
+                        // so we don't re-anchor on near-stationary or
+                        // wrong-axis content.
+                        if( abs( perFrameStepX ) + abs( perFrameStepY ) >= max( 4, minProgress / 2 ) )
+                        {
+                            const int gap = static_cast<int>( i - composedFrameIndices.back() );
+
+                            POINT nextOrigin = composedFrameOrigins.back();
+                            nextOrigin.x += perFrameStepX * gap;
+                            nextOrigin.y += perFrameStepY * gap;
+
+                            composedFrameIndices.push_back( i );
+                            composedFrameOrigins.push_back( nextOrigin );
+                            composedFrameSteps.push_back( { perFrameStepX, perFrameStepY } );
+
+                            expectedDx = adjDx;
+                            expectedDy = adjDy;
+                            retryEligibilityStep = max( abs( adjDx ), abs( adjDy ) );
+                            retryNormalizationBudget = 5;
+                            consecutiveNonDupRejectCount = 0;
+                            nearStationaryCount = 0;
+
+                            StitchLog( L"[Panorama/Stitch] Frame %zu recovery-accepted: adj=(%d,%d) gap=%d step=(%d,%d) origin=(%d,%d)\n",
+                                         i,
+                                         adjDx,
+                                         adjDy,
+                                         gap,
+                                         perFrameStepX,
+                                         perFrameStepY,
+                                         nextOrigin.x,
+                                         nextOrigin.y );
+
+                            minX = min( minX, nextOrigin.x );
+                            minY = min( minY, nextOrigin.y );
+                            maxX = max( maxX, nextOrigin.x + frameWidth );
+                            maxY = max( maxY, nextOrigin.y + frameHeight );
+                            continue;
+                        }
+                    }
+                }
+
                 StitchLog( L"[Panorama/Stitch] Frame %zu rejected: no reliable shift match expected=(%d,%d)\n",
                              i,
                              expectedDx,
@@ -4310,6 +4414,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
             }
         }
         duplicateRetryStreak = 0;
+        consecutiveNonDupRejectCount = 0;
 
         const int maxAbsDx = max( 8, frameWidth / 6 );
         const int maxAbsDy = frameHeight - minProgress;
@@ -5660,9 +5765,12 @@ bool RunPanoramaStitchSelfTest()
     // ====================================================================
     // Phase 1: Basic stitching scenarios
     // ====================================================================
-    TestLog( L"\n==== Phase 1: Basic stitching scenarios ====\n" );
     int basicTestsRun = 0;
     int basicTestsPassed = 0;
+
+    if( !selfTestStressOnly )
+    {
+    TestLog( L"\n==== Phase 1: Basic stitching scenarios ====\n" );
 
     {
         constexpr int frameWidth = 420;
@@ -6213,6 +6321,8 @@ bool RunPanoramaStitchSelfTest()
         TestLog( L"  [%d/5] drop-logic-near-duplicate PASSED\n", basicTestsRun );
     }
 
+    } // !selfTestStressOnly — end of Phase 1
+
     // Random-slice tests using real images.
     // Load PNG images from <solutionDir>/Debug, slice each into overlapping
     // frames with random window height and random step sizes, stitch, and
@@ -6321,7 +6431,8 @@ bool RunPanoramaStitchSelfTest()
             const int expectedH = origins.back() + winH;
             const bool isStressScenario = wcsncmp( scenario, L"stress-", 7 ) == 0;
             const bool isStrictRangeScenario = wcsstr( scenario, L"legitjumps" ) != nullptr;
-            const bool isFastScrollScenario = wcsstr( scenario, L"fastscroll" ) != nullptr;
+            const bool isFastScrollScenario = wcsstr( scenario, L"fastscroll" ) != nullptr ||
+                                                wcsstr( scenario, L"accelscroll" ) != nullptr;
             const bool isHcfDarkScenario = wcsstr( scenario, L"hcfdark" ) != nullptr;
 
             std::vector<HBITMAP> frames;
@@ -7467,7 +7578,7 @@ bool RunPanoramaStitchSelfTest()
                                     step = max( 1, min( maxStep, ( winH * 7 ) / 20 ) );
                                 }
                             }
-                            else
+                            else if( profile == 4 )
                             {
                                 // Fast-scroll cadence: large steps (40-60% of frame
                                 // height) simulating real fast-scroll captures of
@@ -7479,6 +7590,27 @@ bool RunPanoramaStitchSelfTest()
 
                                 // Consistent large step with minor variation.
                                 step = min( maxStep, minBigStep + rand() % max( 1, bigStepRange ) );
+                            }
+                            else
+                            {
+                                // Scroll-acceleration cadence: small initial step
+                                // (~2% of frame) that rapidly grows to 60-80% of
+                                // frame height.  Reproduces the real capture failure
+                                // where a slow start locks expectedDy to a small
+                                // value, then all subsequent large-shift frames are
+                                // rejected because the stitcher keeps comparing
+                                // against the last accepted frame with the stale
+                                // expected step.
+                                if( frame <= 2 )
+                                {
+                                    step = max( 1, winH / 50 + rand() % max( 1, winH / 40 ) );
+                                }
+                                else
+                                {
+                                    const int accelMin = max( 1, ( winH * 3 ) / 5 );
+                                    const int accelRange = max( 1, ( winH * 4 ) / 5 - accelMin );
+                                    step = min( maxStep, accelMin + rand() % max( 1, accelRange ) );
+                                }
                             }
 
                             const int nextY = y + step;
@@ -7560,6 +7692,17 @@ bool RunPanoramaStitchSelfTest()
                             swprintf_s( fastName, L"stress-vertical-fastscroll-trial%d-w%d-n%zu-maxstep%d",
                                         trial, winH, fastOrigins.size(), fastMaxStep );
                             if( !runVerticalScenario( fastName, fastOrigins, winH, fastMaxStep ) )
+                                break;
+                        }
+                        if( stressEarlyExit )
+                            break;
+                        {
+                            const int accelMaxStep = max( maxStep, winH * 4 / 5 );
+                            std::vector<int> accelOrigins = buildCadenceStressOrigins( winH, accelMaxStep, static_cast<unsigned>( 76000 + trial * 41 ), 5 );
+                            wchar_t accelName[256];
+                            swprintf_s( accelName, L"stress-vertical-accelscroll-trial%d-w%d-n%zu-maxstep%d",
+                                        trial, winH, accelOrigins.size(), accelMaxStep );
+                            if( !runVerticalScenario( accelName, accelOrigins, winH, accelMaxStep ) )
                                 break;
                         }
                     }
