@@ -67,7 +67,7 @@
                             <Grid
                                 x:Name="PART_RootGrid"
                                 MinWidth="32"
-                                MinHeight="32"
+                                MinHeight="30"
                                 Margin="{TemplateBinding InnerMargin}"
                                 Padding="{TemplateBinding Padding}"
                                 VerticalAlignment="Stretch"
