@@ -165,11 +165,12 @@ if (-not $SkipVSComponents) {
         $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 
         if (-not $VSInstallPath -and (Test-Path $vsWhere)) {
-            $VSInstallPath = & $vsWhere -latest -property installationPath 2>$null
+            $VSInstallPath = & $vsWhere -latest -prerelease -property installationPath 2>$null
         }
 
         if (-not $VSInstallPath) {
             $commonPaths = @(
+                "${env:ProgramFiles}\Microsoft Visual Studio\18\Preview",
                 "${env:ProgramFiles}\Microsoft Visual Studio\18\Enterprise",
                 "${env:ProgramFiles}\Microsoft Visual Studio\18\Professional",
                 "${env:ProgramFiles}\Microsoft Visual Studio\18\Community",
