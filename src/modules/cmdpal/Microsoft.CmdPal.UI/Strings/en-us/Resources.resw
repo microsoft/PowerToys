@@ -934,4 +934,16 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Unpin from dock</value>
     <comment>Command name for unpinning an item from the dock</comment>
   </data>
+  <data name="top_level_move_up_command_name" xml:space="preserve">
+    <value>Move up</value>
+    <comment>Command name for moving a pinned home item up in the pinned section order</comment>
+  </data>
+  <data name="top_level_move_to_top_command_name" xml:space="preserve">
+    <value>Move to the top</value>
+    <comment>Command name for moving a pinned home item to the top of the pinned section order</comment>
+  </data>
+  <data name="top_level_move_down_command_name" xml:space="preserve">
+    <value>Move down</value>
+    <comment>Command name for moving a pinned home item down in the pinned section order</comment>
+  </data>
 </root>
