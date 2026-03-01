@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Dock.DockControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -37,6 +37,7 @@
                         <DataTemplate x:DataType="dockVm:DockItemViewModel">
                             <local:DockItemControl
                                 Title="{x:Bind Title, Mode=OneWay}"
+                                HorizontalAlignment="Stretch"
                                 RightTapped="BandItem_RightTapped"
                                 Subtitle="{x:Bind Subtitle, Mode=OneWay}"
                                 Tag="{x:Bind}"

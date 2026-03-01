@@ -15,7 +15,8 @@
                 <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
                 <Setter Property="BorderBrush" Value="{ThemeResource FlipViewNextPreviousButtonBorderBrush}" />
                 <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="Padding" Value="0" />
+                <Setter Property="Padding" Value="8,0,8,0" />
+                <Setter Property="Margin" Value="0" />
                 <Setter Property="HorizontalAlignment" Value="Left" />
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
@@ -154,7 +155,7 @@
             <Button
                 x:Name="ScrollBackBtn"
                 Margin="8,0,0,0"
-                Padding="2,8,2,8"
+                Padding="4,8,4,8"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="Scroll left"
@@ -169,8 +170,8 @@
             </Button>
             <Button
                 x:Name="ScrollForwardBtn"
-                Margin="0,0,8,0"
-                Padding="2,8,2,8"
+                Margin="8,0,0,0"
+                Padding="4,8,4,8"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="Scroll right"
@@ -180,7 +181,7 @@
                 <FontIcon
                     x:Name="ScrollForwardIcon"
                     FontSize="{ThemeResource FlipViewButtonFontSize}"
-                    Glyph="&#xEDDA;" />
+                    Glyph="&#xE72A;" />
             </Button>
         </Grid>
 
@@ -192,14 +193,14 @@
                         <Setter Target="scroller.HorizontalScrollMode" Value="Enabled" />
                         <Setter Target="scroller.VerticalScrollBarVisibility" Value="Hidden" />
                         <Setter Target="scroller.VerticalScrollMode" Value="Disabled" />
-                        <Setter Target="ScrollBackBtn.Padding" Value="4,12,4,12" />
+                        <Setter Target="ScrollBackBtn.Padding" Value="4,8,4,8" />
                         <Setter Target="ScrollBackBtn.Margin" Value="8,0,0,0" />
                         <Setter Target="ScrollBackBtn.HorizontalAlignment" Value="Left" />
                         <Setter Target="ScrollBackBtn.VerticalAlignment" Value="Center" />
                         <Setter Target="ScrollBackBtn.(AutomationProperties.Name)" Value="Scroll left" />
                         <Setter Target="ScrollBackBtn.(ToolTipService.ToolTip)" Value="Scroll left" />
                         <Setter Target="ScrollBackIcon.Glyph" Value="&#xEDD9;" />
-                        <Setter Target="ScrollForwardBtn.Padding" Value="4,12,4,12" />
+                        <Setter Target="ScrollForwardBtn.Padding" Value="4,8,4,8" />
                         <Setter Target="ScrollForwardBtn.Margin" Value="0,0,8,0" />
                         <Setter Target="ScrollForwardBtn.HorizontalAlignment" Value="Right" />
                         <Setter Target="ScrollForwardBtn.VerticalAlignment" Value="Center" />
@@ -227,7 +228,7 @@
                         <Setter Target="ScrollForwardBtn.VerticalAlignment" Value="Bottom" />
                         <Setter Target="ScrollForwardBtn.(AutomationProperties.Name)" Value="Scroll down" />
                         <Setter Target="ScrollForwardBtn.(ToolTipService.ToolTip)" Value="Scroll down" />
-                        <Setter Target="ScrollForwardIcon.Glyph" Value="&#xEDDC;" />
+                        <Setter Target="ScrollForwardIcon.Glyph" Value="&#xE72A;" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
