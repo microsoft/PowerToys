@@ -170,7 +170,7 @@ public sealed partial class DockItemControl : Control
             }
         }
 
-        HorizontalAlignment = HorizontalAlignment.Center;
+        HorizontalAlignment = HorizontalAlignment.Stretch;
     }
 
     private void UpdateAllVisibility()
