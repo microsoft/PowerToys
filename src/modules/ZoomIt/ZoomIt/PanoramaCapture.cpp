@@ -1717,210 +1717,6 @@ static bool ArePixelFramesNearDuplicate( const std::vector<BYTE>& currentPixels,
     return duplicate;
 }
 
-// Detect torn/corrupted frames captured mid-scroll.
-// A torn frame has its top and bottom halves at different scroll offsets
-// because the application was mid-update when the BitBlt fired (e.g.
-// ScrollWindowEx shifted pixels but repaint hadn't completed).
-//
-// Method: find the best vertical scroll offset for the top band and
-// bottom band of the frame independently.  If they disagree by more
-// than a small tolerance, the frame is torn.
-static bool IsFrameTorn( HBITMAP currentFrame, HBITMAP previousFrame )
-{
-    std::vector<BYTE> currPx, prevPx;
-    int cW = 0, cH = 0, pW = 0, pH = 0;
-    if( !ReadBitmapPixels32( currentFrame, currPx, cW, cH ) ||
-        !ReadBitmapPixels32( previousFrame, prevPx, pW, pH ) )
-        return false;
-    if( cW != pW || cH != pH || cH < 32 )
-        return false;
-
-    const int width = cW;
-    const int height = cH;
-
-    // Build downsampled luma for speed.
-    const int scale = ( min( width, height ) >= 240 ) ? 4 : 2;
-    const int dsW = width / scale;
-    const int dsH = height / scale;
-    if( dsW < 8 || dsH < 16 )
-        return false;
-
-    std::vector<BYTE> prevLuma( dsW * dsH );
-    std::vector<BYTE> currLuma( dsW * dsH );
-    for( int y = 0; y < dsH; ++y )
-    {
-        for( int x = 0; x < dsW; ++x )
-        {
-            const int srcIdx = ( y * scale * width + x * scale ) * 4;
-            prevLuma[y * dsW + x] = static_cast<BYTE>(
-                ( prevPx[srcIdx + 2] * 77 + prevPx[srcIdx + 1] * 150 + prevPx[srcIdx + 0] * 29 ) >> 8 );
-            currLuma[y * dsW + x] = static_cast<BYTE>(
-                ( currPx[srcIdx + 2] * 77 + currPx[srcIdx + 1] * 150 + currPx[srcIdx + 0] * 29 ) >> 8 );
-        }
-    }
-
-    // Score a vertical shift over a horizontal band [bandY0, bandY0+bandH).
-    // Returns average absolute luma difference in the overlap.
-    auto scoreBand = [&]( int dy, int bandY0, int bandH ) -> double
-    {
-        const int absDy = abs( dy );
-        const int marginX = max( 2, dsW / 20 );
-        const int overlapH = bandH - absDy;
-        if( overlapH < bandH / 3 )
-            return 1e9;
-
-        unsigned __int64 total = 0;
-        unsigned __int64 n = 0;
-        for( int y = 0; y < overlapH; y += 2 )
-        {
-            const int pY = bandY0 + ( dy < 0 ? y + absDy : y );
-            const int cY = bandY0 + ( dy < 0 ? y : y + absDy );
-            if( pY >= dsH || cY >= dsH )
-                break;
-            for( int x = marginX; x < dsW - marginX; x += 2 )
-            {
-                total += static_cast<unsigned __int64>(
-                    abs( static_cast<int>( prevLuma[pY * dsW + x] ) -
-                         static_cast<int>( currLuma[cY * dsW + x] ) ) );
-                n++;
-            }
-        }
-        if( n < 50 )
-            return 1e9;
-        return static_cast<double>( total ) / static_cast<double>( n );
-    };
-
-    // Search range: up to half the frame height in downsampled units.
-    const int maxDy = min( dsH / 2, dsH - 4 );
-
-    // Find best shift for top band and bottom band.
-    const int bandH = dsH / 2;
-    const int topY0 = 0;
-    const int botY0 = dsH - bandH;
-
-    int bestTopDy = 0, bestBotDy = 0;
-    double bestTopScore = scoreBand( 0, topY0, bandH );
-    double bestBotScore = scoreBand( 0, botY0, bandH );
-
-    for( int dy = -maxDy; dy <= maxDy; ++dy )
-    {
-        if( dy == 0 )
-            continue;
-
-        const double ts = scoreBand( dy, topY0, bandH );
-        if( ts < bestTopScore )
-        {
-            bestTopScore = ts;
-            bestTopDy = dy;
-        }
-
-        const double bs = scoreBand( dy, botY0, bandH );
-        if( bs < bestBotScore )
-        {
-            bestBotScore = bs;
-            bestBotDy = dy;
-        }
-    }
-
-    // If both bands found stationary (dy=0), no scroll happened -- not torn.
-    if( bestTopDy == 0 && bestBotDy == 0 )
-        return false;
-
-    // Torn if top and bottom disagree by more than 2 downsampled pixels.
-    const int dyDiff = abs( bestTopDy - bestBotDy );
-    if( dyDiff > 2 )
-    {
-        StitchLog( L"[Panorama/Capture] Torn frame detected: topDy=%d botDy=%d diff=%d (ds scale=%d)\n",
-                   bestTopDy * scale, bestBotDy * scale, dyDiff * scale, scale );
-        return true;
-    }
-
-    return false;
-}
-
-static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
-                                        const std::vector<BYTE>& currentPixels,
-                                        int frameWidth,
-                                        int frameHeight,
-                                        int dx,
-                                        int dy,
-                                        unsigned __int64& scoreOut,
-                                        bool ignoreConstantRegions = false,
-                                        int marginOverride = -1,
-                                        int sampleStep = 2 )
-{
-    if( previousPixels.size() != currentPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
-    {
-        return false;
-    }
-
-    const int absDx = abs( dx );
-    const int absDy = abs( dy );
-    const int marginX = ( marginOverride >= 0 ) ? marginOverride : max( 4, frameWidth / 20 );
-    const int marginY = ( marginOverride >= 0 ) ? marginOverride : max( 4, frameHeight / 20 );
-    const int step = max( 1, sampleStep );
-    const int overlapW = frameWidth - absDx - 2 * marginX;
-    const int overlapH = frameHeight - absDy - 2 * marginY;
-    if( overlapW < frameWidth / 4 || overlapH < frameHeight / 4 )
-    {
-        return false;
-    }
-
-    unsigned __int64 totalDiff = 0;
-    unsigned __int64 samples = 0;
-
-    const int prevX = marginX + max( 0, -dx );
-    const int currX = marginX + max( 0, dx );
-    const int prevY = marginY + max( 0, -dy );
-    const int currY = marginY + max( 0, dy );
-
-    for( int y = 0; y < overlapH; y += step )
-    {
-        const int pY = prevY + y;
-        const int cY = currY + y;
-        for( int x = 0; x < overlapW; x += step )
-        {
-            const int pX = prevX + x;
-            const int cX = currX + x;
-            const int pIndex = ( pY * frameWidth + pX ) * 4;
-            const int cIndex = ( cY * frameWidth + cX ) * 4;
-            const int pLuma = ( previousPixels[pIndex + 2] * 77 + previousPixels[pIndex + 1] * 150 + previousPixels[pIndex + 0] * 29 ) >> 8;
-            const int cLuma = ( currentPixels[cIndex + 2] * 77 + currentPixels[cIndex + 1] * 150 + currentPixels[cIndex + 0] * 29 ) >> 8;
-
-            // When ignoring constant regions, skip pixels where neither
-            // frame has meaningful gradient (flat background).
-            if( ignoreConstantRegions )
-            {
-                auto hasGradient = [&]( const std::vector<BYTE>& px, int gx, int gy ) -> bool
-                {
-                    if( gx + 1 >= frameWidth || gy + 1 >= frameHeight )
-                        return false;
-                    const int idx = ( gy * frameWidth + gx ) * 4;
-                    const int idxR = idx + 4;
-                    const int idxD = idx + frameWidth * 4;
-                    const int lc = ( px[idx + 2] * 77 + px[idx + 1] * 150 + px[idx + 0] * 29 ) >> 8;
-                    const int lr = ( px[idxR + 2] * 77 + px[idxR + 1] * 150 + px[idxR + 0] * 29 ) >> 8;
-                    const int ld = ( px[idxD + 2] * 77 + px[idxD + 1] * 150 + px[idxD + 0] * 29 ) >> 8;
-                    return ( abs( lc - lr ) + abs( lc - ld ) ) >= 4;
-                };
-                if( !hasGradient( previousPixels, pX, pY ) && !hasGradient( currentPixels, cX, cY ) )
-                    continue;
-            }
-
-            totalDiff += static_cast<unsigned __int64>( abs( pLuma - cLuma ) );
-            samples++;
-        }
-    }
-
-    if( samples < ( ignoreConstantRegions ? 20 : 100 ) )
-    {
-        return false;
-    }
-
-    scoreOut = totalDiff / samples;
-    return true;
-}
-
 static bool TransposePixels32( const std::vector<BYTE>& source,
                                int sourceWidth,
                                int sourceHeight,
@@ -2837,16 +2633,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // The masked fine search restricts scoring to content pixels (text
     // edges) which is essential for low-contrast terminal-style content
     // where the standard SAD produces near-zero scores everywhere.
-    //
-    // For the high-constant-fraction fallback path, ClearType subpixel
-    // rendering redistributes R/G/B without changing luma, making the
-    // luma-based fine search blind to wrong shifts (all produce score 0).
-    // Use RGB channel comparison instead: compare the original BGRA pixel
-    // data so that per-channel differences are preserved.
     std::vector<BYTE> fullMaskPrev;
     std::vector<BYTE> fullMaskCurr;
     const bool useFineMask = veryLowEntropyPair || useMaskedFallback;
-    const bool useRgbFineSearch = false;
     const bool useZnccFineSearch = highConstantFractionPair && useFineMask;
     constexpr unsigned __int64 kZnccScoreBase = 12800;
     if( useFineMask )
@@ -3029,68 +2818,6 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                         }
                         totalDiff += rowDiff;
                     }
-                    else if( useRgbFineSearch )
-                    {
-
-                    // RGB/BGRA comparison: ClearType subpixel rendering
-                    // creates per-channel differences that cancel in luma.
-                    // Compare the original BGRA pixel data directly so
-                    // that per-channel differences are preserved.
-                    const BYTE* pRgb = &previousPixels[static_cast<size_t>( prevRow + xStart ) * 4];
-                    const BYTE* cRgb = &currentPixels[static_cast<size_t>( currRow + xStart + dx ) * 4];
-                    const int byteSpan = xSpan * 4;
-
-#if defined(_M_X64) || defined(_M_IX86)
-                    __m128i rgbSadAcc = _mm_setzero_si128();
-                    int bi = 0;
-                    for( ; bi + 16 <= byteSpan; bi += 16 )
-                    {
-                        const __m128i a = _mm_loadu_si128( reinterpret_cast<const __m128i*>( pRgb + bi ) );
-                        const __m128i b = _mm_loadu_si128( reinterpret_cast<const __m128i*>( cRgb + bi ) );
-                        rgbSadAcc = _mm_add_epi64( rgbSadAcc, _mm_sad_epu8( a, b ) );
-                    }
-
-                    rowDiff = static_cast<unsigned __int64>( _mm_cvtsi128_si64( rgbSadAcc ) ) +
-                              static_cast<unsigned __int64>( _mm_cvtsi128_si64( _mm_srli_si128( rgbSadAcc, 8 ) ) );
-
-                    for( ; bi < byteSpan; ++bi )
-                    {
-                        rowDiff += static_cast<unsigned __int64>(
-                            abs( static_cast<int>( pRgb[bi] ) - static_cast<int>( cRgb[bi] ) ) );
-                    }
-#elif defined(_M_ARM64)
-                    uint64x2_t rgbSadAcc = vdupq_n_u64( 0 );
-                    int bi = 0;
-                    for( ; bi + 16 <= byteSpan; bi += 16 )
-                    {
-                        const uint8x16_t a = vld1q_u8( pRgb + bi );
-                        const uint8x16_t b = vld1q_u8( cRgb + bi );
-                        const uint8x16_t absDiff = vabdq_u8( a, b );
-                        const uint16x8_t sum16 = vpaddlq_u8( absDiff );
-                        const uint32x4_t sum32 = vpaddlq_u16( sum16 );
-                        const uint64x2_t sum64 = vpaddlq_u32( sum32 );
-                        rgbSadAcc = vaddq_u64( rgbSadAcc, sum64 );
-                    }
-
-                    rowDiff = vgetq_lane_u64( rgbSadAcc, 0 ) + vgetq_lane_u64( rgbSadAcc, 1 );
-
-                    for( ; bi < byteSpan; ++bi )
-                    {
-                        rowDiff += static_cast<unsigned __int64>(
-                            abs( static_cast<int>( pRgb[bi] ) - static_cast<int>( cRgb[bi] ) ) );
-                    }
-#else
-                    for( int bi = 0; bi < byteSpan; ++bi )
-                    {
-                        rowDiff += static_cast<unsigned __int64>(
-                            abs( static_cast<int>( pRgb[bi] ) - static_cast<int>( cRgb[bi] ) ) );
-                    }
-#endif
-
-                    totalDiff += rowDiff;
-                    samples += static_cast<unsigned __int64>( byteSpan );
-
-                    } // useRgbFineSearch
                     else
                     {
 
@@ -3156,13 +2883,11 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                     // Early termination: if running average already exceeds
                     // the best fine score, this candidate cannot win.
                     // Exception: always evaluate the neighborhood of the expected
-                    // step fully.  On sparse/high-constant-fraction content the
-                    // RGB fine-search can accumulate 800 comparison bytes in less
-                    // than one row; a previous harmonic candidate may have set a
+                    // step fully.  A previous harmonic candidate may have set a
                     // low bestFineScore that prematurely kills the expected-step
                     // candidate before it sees enough content to produce a fair
                     // average.
-                    const unsigned __int64 earlyMinSamples = useFineMask ? 50 : ( useRgbFineSearch ? 800 : 200 );
+                    const unsigned __int64 earlyMinSamples = useFineMask ? 50 : 200;
                     const bool isExpectedStepDy = ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
                         expectedAbsStep > 0 &&
                         abs( abs( dy ) - expectedAbsStep ) <= refineRadiusDy + 4;
@@ -3174,7 +2899,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                     }
                 }
 
-                const unsigned __int64 minSamples = useFineMask ? 20 : ( useRgbFineSearch ? 400 : 100 );
+                const unsigned __int64 minSamples = useFineMask ? 20 : 100;
                 if( earlyExit || samples < minSamples )
                 {
                     continue;
@@ -3572,7 +3297,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
             ? ( lowContrastMode ? 24 * kFineScoreScale : 30 * kFineScoreScale )
             : ( lowContrastMode ? 12 * kFineScoreScale : 15 * kFineScoreScale );
 
-        // On sparse/high-constant-fraction content the RGB fine search can
+        // On sparse/high-constant-fraction content the fine search can
         // produce legitimate correct-shift scores moderately above the base
         // threshold because only a handful of pixels differ between frames.
         // When the best found candidate is already near the expected step
@@ -3811,7 +3536,7 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
 
     // Precompute gradient mask for both frames.  A pixel has gradient if
     // abs(luma - luma_right) + abs(luma - luma_below) >= 4.  Last row and
-    // last column have no gradient (matching ComputeShiftAlignmentScore).
+    // last column have no gradient.
     const size_t pixelCount = static_cast<size_t>( frameWidth ) * frameHeight;
     std::vector<BYTE> gradMask( pixelCount * 2, 0 );
     BYTE* prevGrad = gradMask.data();
@@ -5172,23 +4897,6 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             DeleteObject( frame );
             continue;
         }
-
-        // Discard torn frames captured mid-scroll.  A torn frame has
-        // its top and bottom halves at different scroll offsets (e.g.
-        // ScrollWindowEx shifted pixels but repaint hadn't completed).
-        // Discarding n+1 is safe: the next clean frame n+2 will be
-        // compared against the last accepted frame n.
-        // DISABLED: DwmFlush synchronization should prevent torn frames.
-        // if( IsFrameTorn( frame, frames.back() ) )
-        // {
-        //     tornFrameCount++;
-        //     StitchLog( L"[Panorama/Capture] Torn frame discarded (grabbed=%zu count=%zu iteration=%zu)\n",
-        //                debugGrabbedFrameCount,
-        //                tornFrameCount,
-        //                captureIteration );
-        //     DeleteObject( frame );
-        //     continue;
-        // }
 
         frames.push_back( frame );
         frame = nullptr;
