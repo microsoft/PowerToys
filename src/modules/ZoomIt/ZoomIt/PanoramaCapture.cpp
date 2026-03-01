@@ -702,7 +702,7 @@ static bool RunPanoramaStitchFromDumpDirectory( const std::filesystem::path& dum
         }
     }
 
-    const bool useGrabbedFrames = grabbedFramePaths.size() >= 2 && grabbedFramePaths.size() > acceptedFramePaths.size();
+    const bool useGrabbedFrames = grabbedFramePaths.size() >= 2 && acceptedFramePaths.size() < 2;
     std::vector<std::filesystem::path>& framePaths = useGrabbedFrames ? grabbedFramePaths : acceptedFramePaths;
 
     if( framePaths.size() < 2 )
@@ -1793,7 +1793,9 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
                                         int dx,
                                         int dy,
                                         unsigned __int64& scoreOut,
-                                        bool ignoreConstantRegions = false )
+                                        bool ignoreConstantRegions = false,
+                                        int marginOverride = -1,
+                                        int sampleStep = 2 )
 {
     if( previousPixels.size() != currentPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
     {
@@ -1802,8 +1804,9 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
 
     const int absDx = abs( dx );
     const int absDy = abs( dy );
-    const int marginX = max( 4, frameWidth / 20 );
-    const int marginY = max( 4, frameHeight / 20 );
+    const int marginX = ( marginOverride >= 0 ) ? marginOverride : max( 4, frameWidth / 20 );
+    const int marginY = ( marginOverride >= 0 ) ? marginOverride : max( 4, frameHeight / 20 );
+    const int step = max( 1, sampleStep );
     const int overlapW = frameWidth - absDx - 2 * marginX;
     const int overlapH = frameHeight - absDy - 2 * marginY;
     if( overlapW < frameWidth / 4 || overlapH < frameHeight / 4 )
@@ -1819,11 +1822,11 @@ static bool ComputeShiftAlignmentScore( const std::vector<BYTE>& previousPixels,
     const int prevY = marginY + max( 0, -dy );
     const int currY = marginY + max( 0, dy );
 
-    for( int y = 0; y < overlapH; y += 2 )
+    for( int y = 0; y < overlapH; y += step )
     {
         const int pY = prevY + y;
         const int cY = currY + y;
-        for( int x = 0; x < overlapW; x += 2 )
+        for( int x = 0; x < overlapW; x += step )
         {
             const int pX = prevX + x;
             const int cX = currX + x;
@@ -3686,39 +3689,117 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
         return true;
     }
 
-    unsigned __int64 directScore = 0;
-    unsigned __int64 transposedScore = 0;
-    const bool ignoreConst = lowContrastMode &&
-        ( precomputedVeryLowEntropy >= 0
-          ? ( precomputedVeryLowEntropy != 0 )
-          : IsVeryLowEntropyPair( previousPixels, currentPixels, frameWidth, frameHeight ) );
-    const bool directScored = ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight, directDx, directDy, directScore, ignoreConst );
-    const bool transposedScored = ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight, mappedDx, mappedDy, transposedScore, ignoreConst );
+    // Axis detection: scan pure-vertical and pure-horizontal shifts in a
+    // range to find which direction has a true alignment minimum.  This is
+    // far more robust than scoring two potentially-spurious ZNCC peaks,
+    // especially on mostly-constant content where ZNCC produces noise peaks.
+    constexpr int kAxisScanRange = 50;
+    constexpr int kAxisMargin = 4;
+    constexpr int kAxisStep = 2;
 
-    if( directScored && transposedScored )
+    unsigned __int64 bestVertScore = ULLONG_MAX;
+    unsigned __int64 bestHorizScore = ULLONG_MAX;
+    int bestVertDy = 0;
+    int bestHorizDx = 0;
+
+    for( int dy = -kAxisScanRange; dy <= kAxisScanRange; dy++ )
     {
-        if( transposedScore < directScore )
+        if( dy == 0 )
+            continue;
+        unsigned __int64 score = 0;
+        if( ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight,
+                                        0, dy, score, /*ignoreConst=*/true, kAxisMargin, kAxisStep ) )
+        {
+            if( score < bestVertScore )
+            {
+                bestVertScore = score;
+                bestVertDy = dy;
+            }
+        }
+    }
+
+    for( int dx = -kAxisScanRange; dx <= kAxisScanRange; dx++ )
+    {
+        if( dx == 0 )
+            continue;
+        unsigned __int64 score = 0;
+        if( ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight,
+                                        dx, 0, score, /*ignoreConst=*/true, kAxisMargin, kAxisStep ) )
+        {
+            if( score < bestHorizScore )
+            {
+                bestHorizScore = score;
+                bestHorizDx = dx;
+            }
+        }
+    }
+
+    // If ignoring constant regions fails for one or both axes, retry
+    // without the constant-region filter.
+    if( bestVertScore == ULLONG_MAX || bestHorizScore == ULLONG_MAX )
+    {
+        for( int dy = -kAxisScanRange; dy <= kAxisScanRange; dy++ )
+        {
+            if( dy == 0 )
+                continue;
+            unsigned __int64 score = 0;
+            if( ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight,
+                                            0, dy, score, false, kAxisMargin, kAxisStep ) )
+            {
+                if( score < bestVertScore )
+                {
+                    bestVertScore = score;
+                    bestVertDy = dy;
+                }
+            }
+        }
+        for( int dx = -kAxisScanRange; dx <= kAxisScanRange; dx++ )
+        {
+            if( dx == 0 )
+                continue;
+            unsigned __int64 score = 0;
+            if( ComputeShiftAlignmentScore( previousPixels, currentPixels, frameWidth, frameHeight,
+                                            dx, 0, score, false, kAxisMargin, kAxisStep ) )
+            {
+                if( score < bestHorizScore )
+                {
+                    bestHorizScore = score;
+                    bestHorizDx = dx;
+                }
+            }
+        }
+    }
+
+    StitchLog( L"[Panorama/Stitch] AxisScan vertBest=%I64u dy=%d horizBest=%I64u dx=%d\n",
+               bestVertScore, bestVertDy, bestHorizScore, bestHorizDx );
+
+    const bool verticalWins = bestVertScore < bestHorizScore;
+
+    if( verticalWins )
+    {
+        if( directOk )
+        {
+            bestDx = directDx;
+            bestDy = directDy;
+        }
+        else
+        {
+            bestDx = 0;
+            bestDy = bestVertDy;
+        }
+    }
+    else
+    {
+        if( transposedOk )
         {
             bestDx = mappedDx;
             bestDy = mappedDy;
         }
         else
         {
-            bestDx = directDx;
-            bestDy = directDy;
+            bestDx = bestHorizDx;
+            bestDy = 0;
         }
-        return true;
-    }
-
-    if( transposedScored )
-    {
-        bestDx = mappedDx;
-        bestDy = mappedDy;
-    }
-    else
-    {
-        bestDx = directDx;
-        bestDy = directDy;
     }
     return true;
 }
