@@ -1,0 +1,295 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NewRemappingBtn_Text.Text" xml:space="preserve">
+    <value>Add new remapping</value>
+  </data>
+  <data name="EmptyStateTitle.Text" xml:space="preserve">
+    <value>Nothing mapped yet</value>
+  </data>
+  <data name="EmptyStateDescription.Text" xml:space="preserve">
+    <value>Create a key or shortcut remapping to customize how your keyboard works.</value>
+  </data>
+  <data name="RemappingsHeader.Text" xml:space="preserve">
+    <value>Keys and shortcuts</value>
+  </data>
+  <data name="TextMappingsHeader.Text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="ProgramsHeader.Text" xml:space="preserve">
+    <value>Programs</value>
+  </data>
+  <data name="UrlsHeader.Text" xml:space="preserve">
+    <value>Urls</value>
+  </data>
+  <data name="MapsToText.Text" xml:space="preserve">
+    <value>maps to</value>
+  </data>
+  <data name="InsertsText.Text" xml:space="preserve">
+    <value>inserts</value>
+  </data>
+  <data name="OpensText.Text" xml:space="preserve">
+    <value>opens</value>
+  </data>
+  <data name="InText.Text" xml:space="preserve">
+    <value>in</value>
+  </data>
+  <data name="DeleteMenuItem.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="TooltipArguments.Text" xml:space="preserve">
+    <value>Arguments:</value>
+  </data>
+  <data name="TooltipStartIn.Text" xml:space="preserve">
+    <value>Start in:</value>
+  </data>
+  <data name="TooltipElevation.Text" xml:space="preserve">
+    <value>Elevation:</value>
+  </data>
+  <data name="TooltipIfRunning.Text" xml:space="preserve">
+    <value>If running:</value>
+  </data>
+  <data name="TooltipWindow.Text" xml:space="preserve">
+    <value>Window:</value>
+  </data>
+  <data name="RemappingDialog.Title" xml:space="preserve">
+    <value>Add new remapping</value>
+  </data>
+  <data name="RemappingDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="RemappingDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeleteConfirmationDialog.Title" xml:space="preserve">
+    <value>Are you sure?</value>
+  </data>
+  <data name="DeleteConfirmationDialogContent.Text" xml:space="preserve">
+    <value>You are about to delete this remapping.</value>
+  </data>
+  <data name="DeleteConfirmationDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteConfirmationDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TriggerLabel.Text" xml:space="preserve">
+    <value>Trigger</value>
+  </data>
+  <data name="ActionLabel.Text" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="TriggerType_KeyOrShortcut.AutomationProperties.Name" xml:space="preserve">
+    <value>Key or shortcut</value>
+  </data>
+  <data name="TriggerType_KeyOrShortcut_Text.Text" xml:space="preserve">
+    <value>Key or shortcut</value>
+  </data>
+  <data name="TriggerType_Mouse.AutomationProperties.Name" xml:space="preserve">
+    <value>Mouse button</value>
+  </data>
+  <data name="TriggerType_Mouse_Text.Text" xml:space="preserve">
+    <value>Mouse button</value>
+  </data>
+  <data name="AllowChordsCheckBox.Content" xml:space="preserve">
+    <value>Allow chords</value>
+  </data>
+  <data name="ExactMatchCheckBox.Content" xml:space="preserve">
+    <value>Exact match</value>
+  </data>
+  <data name="MouseButton_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="MouseButton_Center.Content" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="MouseButton_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="MouseButton_Button1.Content" xml:space="preserve">
+    <value>Button 1</value>
+  </data>
+  <data name="MouseButton_Button2.Content" xml:space="preserve">
+    <value>Button 2</value>
+  </data>
+  <data name="AppSpecificCheckBox.Content" xml:space="preserve">
+    <value>Only apply to a specific app</value>
+  </data>
+  <data name="AppNameTextBox.Header" xml:space="preserve">
+    <value>App name</value>
+  </data>
+  <data name="AppNameTextBox.PlaceholderText" xml:space="preserve">
+    <value>Enter app name (e.g., notepad.exe)</value>
+  </data>
+  <data name="ActionType_KeyOrShortcut.AutomationProperties.Name" xml:space="preserve">
+    <value>Remap to key or shortcut</value>
+  </data>
+  <data name="ActionType_KeyOrShortcut_Text.Text" xml:space="preserve">
+    <value>Remap to key or shortcut</value>
+  </data>
+  <data name="ActionType_Text.AutomationProperties.Name" xml:space="preserve">
+    <value>Insert text</value>
+  </data>
+  <data name="ActionType_Text_Text.Text" xml:space="preserve">
+    <value>Insert text</value>
+  </data>
+  <data name="ActionType_OpenUrl.AutomationProperties.Name" xml:space="preserve">
+    <value>Open URL</value>
+  </data>
+  <data name="ActionType_OpenUrl_Text.Text" xml:space="preserve">
+    <value>Open URL</value>
+  </data>
+  <data name="ActionType_OpenApp.AutomationProperties.Name" xml:space="preserve">
+    <value>Open app</value>
+  </data>
+  <data name="ActionType_OpenApp_Text.Text" xml:space="preserve">
+    <value>Open app</value>
+  </data>
+  <data name="ActionType_MouseClick.AutomationProperties.Name" xml:space="preserve">
+    <value>Remap to mouse click</value>
+  </data>
+  <data name="ActionType_MouseClick_Text.Text" xml:space="preserve">
+    <value>Remap to mouse click</value>
+  </data>
+  <data name="TextContentBox.Header" xml:space="preserve">
+    <value>Text to type</value>
+  </data>
+  <data name="TextContentBox.PlaceholderText" xml:space="preserve">
+    <value>Enter the text to type when triggered</value>
+  </data>
+  <data name="UrlPathInput.Header" xml:space="preserve">
+    <value>URL to open</value>
+  </data>
+  <data name="UrlPathInput.PlaceholderText" xml:space="preserve">
+    <value>https://example.com</value>
+  </data>
+  <data name="ProgramPathInput.Header" xml:space="preserve">
+    <value>Program path</value>
+  </data>
+  <data name="ProgramPathInput.PlaceholderText" xml:space="preserve">
+    <value>C:\Program Files\...</value>
+  </data>
+  <data name="ProgramPathSelectButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Select program path</value>
+  </data>
+  <data name="ProgramArgsInput.Header" xml:space="preserve">
+    <value>Arguments (optional)</value>
+  </data>
+  <data name="ProgramArgsInput.PlaceholderText" xml:space="preserve">
+    <value>--arg1 value1</value>
+  </data>
+  <data name="StartInPathInput.Header" xml:space="preserve">
+    <value>Start in directory (optional)</value>
+  </data>
+  <data name="StartInPathInput.PlaceholderText" xml:space="preserve">
+    <value>C:\Users\...</value>
+  </data>
+  <data name="StartInSelectButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Select start directory</value>
+  </data>
+  <data name="ElevationComboBox.Header" xml:space="preserve">
+    <value>Run as</value>
+  </data>
+  <data name="Elevation_Normal.Content" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Elevation_Elevated.Content" xml:space="preserve">
+    <value>Elevated</value>
+  </data>
+  <data name="Elevation_DifferentUser.Content" xml:space="preserve">
+    <value>Different user</value>
+  </data>
+  <data name="IfRunningComboBox.Header" xml:space="preserve">
+    <value>If already running</value>
+  </data>
+  <data name="IfRunning_ShowWindow.Content" xml:space="preserve">
+    <value>Show window</value>
+  </data>
+  <data name="IfRunning_StartAnother.Content" xml:space="preserve">
+    <value>Start another</value>
+  </data>
+  <data name="IfRunning_DoNothing.Content" xml:space="preserve">
+    <value>Do nothing</value>
+  </data>
+  <data name="IfRunning_Close.Content" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="IfRunning_EndTask.Content" xml:space="preserve">
+    <value>End task</value>
+  </data>
+  <data name="VisibilityComboBox.Header" xml:space="preserve">
+    <value>Window visibility</value>
+  </data>
+  <data name="Visibility_Normal.Content" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Visibility_Hidden.Content" xml:space="preserve">
+    <value>Hidden</value>
+  </data>
+  <data name="Visibility_Minimized.Content" xml:space="preserve">
+    <value>Minimized</value>
+  </data>
+  <data name="Visibility_Maximized.Content" xml:space="preserve">
+    <value>Maximized</value>
+  </data>
+  <data name="MouseClickPlaceholder.Text" xml:space="preserve">
+    <value>Mouse click action - coming soon</value>
+  </data>
+</root>

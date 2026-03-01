@@ -9,6 +9,8 @@
 #include <shellapi.h>
 #include <common/utils/logger_helper.h>
 #include <common/interop/shared_constants.h>
+#include <thread>
+#include <atomic>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
@@ -37,6 +39,8 @@ namespace
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ToggleShortcut";
+    const wchar_t JSON_KEY_EDITOR_SHORTCUT[] = L"EditorShortcut";
+    const wchar_t JSON_KEY_USE_NEW_EDITOR[] = L"useNewEditor";
 }
 
 // Implement the PowerToy Module Interface and all the required methods.
@@ -56,11 +60,22 @@ private:
     // Hotkey for toggling the module
     Hotkey m_hotkey = { .key = 0 };
 
+    // Hotkey for opening the editor
+    Hotkey m_editorHotkey = { .key = 0 };
+
+    // Whether to use the new WinUI3 editor
+    bool m_useNewEditor = false;
+
     ULONGLONG m_lastHotkeyToggleTime = 0;
 
     HANDLE m_hProcess = nullptr;
+    HANDLE m_hEditorProcess = nullptr;
 
     HANDLE m_hTerminateEngineEvent = nullptr;
+    HANDLE m_open_new_editor_event_handle{ nullptr };
+    std::thread m_toggle_thread;
+    std::atomic<bool> m_toggle_thread_running{ false };
+
 
     void refresh_process_state()
     {
@@ -174,6 +189,49 @@ private:
             m_hotkey.alt = false;
             m_hotkey.key = 'K';
         }
+
+        // Parse editor shortcut
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                auto jsonEditorHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES)
+                                                  .GetNamedObject(JSON_KEY_EDITOR_SHORTCUT);
+                m_editorHotkey.win = jsonEditorHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                m_editorHotkey.alt = jsonEditorHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                m_editorHotkey.shift = jsonEditorHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                m_editorHotkey.ctrl = jsonEditorHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                m_editorHotkey.key = static_cast<unsigned char>(jsonEditorHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize Keyboard Manager editor shortcut");
+            }
+        }
+
+        if (!m_editorHotkey.key)
+        {
+            // Set default: Win+Shift+Q
+            m_editorHotkey.win = true;
+            m_editorHotkey.shift = true;
+            m_editorHotkey.ctrl = false;
+            m_editorHotkey.alt = false;
+            m_editorHotkey.key = 'Q';
+        }
+
+        // Parse useNewEditor setting
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                m_useNewEditor = propertiesObject.GetNamedBoolean(JSON_KEY_USE_NEW_EDITOR, false);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to parse useNewEditor setting, defaulting to false");
+            }
+        }
     }
 
     // Load the settings file.
@@ -214,16 +272,29 @@ public:
             }
         }
 
+        m_open_new_editor_event_handle = CreateDefaultEvent(CommonSharedConstants::OPEN_NEW_KEYBOARD_MANAGER_EVENT);
+
         init_settings();
     };
 
     ~KeyboardManager()
     {
+        StopOpenEditorListener();
         stop_engine();
         if (m_hTerminateEngineEvent)
         {
             CloseHandle(m_hTerminateEngineEvent);
             m_hTerminateEngineEvent = nullptr;
+        }
+        if (m_open_new_editor_event_handle)
+        {
+            CloseHandle(m_open_new_editor_event_handle);
+            m_open_new_editor_event_handle = nullptr;
+        }
+        if (m_hEditorProcess)
+        {
+            CloseHandle(m_hEditorProcess);
+            m_hEditorProcess = nullptr;
         }
     }
 
@@ -296,6 +367,7 @@ public:
         // Log telemetry
         Trace::EnableKeyboardManager(true);
         start_engine();
+        StartOpenEditorListener();
     }
 
     // Disable the powertoy
@@ -304,6 +376,7 @@ public:
         m_enabled = false;
         // Log telemetry
         Trace::EnableKeyboardManager(false);
+        StopOpenEditorListener();
         stop_engine();
     }
 
@@ -319,25 +392,125 @@ public:
         return false;
     }
 
-    // Return the invocation hotkey for toggling
+    // Return the invocation hotkeys for toggling and opening the editor
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
+        size_t count = 0;
+
+        // Hotkey 0: toggle engine
         if (m_hotkey.key)
         {
-            if (hotkeys && buffer_size >= 1)
+            if (hotkeys && buffer_size > count)
             {
-                hotkeys[0] = m_hotkey;
+                hotkeys[count] = m_hotkey;
             }
-            return 1;
+            count++;
         }
-        else
+
+        // Hotkey 1: open editor (only when using new editor)
+        if (m_useNewEditor && m_editorHotkey.key)
         {
-            return 0;
+            if (hotkeys && buffer_size > count)
+            {
+                hotkeys[count] = m_editorHotkey;
+            }
+            count++;
+        }
+
+        return count;
+    }
+
+    void StartOpenEditorListener()
+    {
+        if (m_toggle_thread_running || !m_open_new_editor_event_handle)
+        {
+            return;
+        }
+
+        m_toggle_thread_running = true;
+        m_toggle_thread = std::thread([this]() {
+            while (m_toggle_thread_running)
+            {
+                const DWORD wait_result = WaitForSingleObject(m_open_new_editor_event_handle, 500);
+                if (!m_toggle_thread_running)
+                {
+                    break;
+                }
+
+                if (wait_result == WAIT_OBJECT_0)
+                {
+                    launch_editor();
+                    ResetEvent(m_open_new_editor_event_handle);
+                }
+            }
+        });
+    }
+
+    void StopOpenEditorListener()
+    {
+        if (!m_toggle_thread_running)
+        {
+            return;
+        }
+
+        m_toggle_thread_running = false;
+        if (m_open_new_editor_event_handle)
+        {
+            SetEvent(m_open_new_editor_event_handle);
+        }
+        if (m_toggle_thread.joinable())
+        {
+            m_toggle_thread.join();
         }
     }
 
+    bool launch_editor()
+    {
+        // Check if editor is already running
+        if (m_hEditorProcess)
+        {
+            if (WaitForSingleObject(m_hEditorProcess, 0) == WAIT_TIMEOUT)
+            {
+                // Editor still running, bring it to front
+                DWORD editorPid = GetProcessId(m_hEditorProcess);
+                if (editorPid)
+                {
+                    AllowSetForegroundWindow(editorPid);
+                }
+                return true;
+            }
+            else
+            {
+                CloseHandle(m_hEditorProcess);
+                m_hEditorProcess = nullptr;
+            }
+        }
+
+        unsigned long powertoys_pid = GetCurrentProcessId();
+        std::wstring executable_args = std::to_wstring(powertoys_pid);
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"WinUI3Apps\\PowerToys.KeyboardManagerEditorUI.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+        if (ShellExecuteExW(&sei) == false)
+        {
+            Logger::error(L"Failed to start new keyboard manager editor");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+            return false;
+        }
+
+        m_hEditorProcess = sei.hProcess;
+        return m_hEditorProcess != nullptr;
+    }
+
     // Process the hotkey event
-    virtual bool on_hotkey(size_t /*hotkeyId*/) override
+    virtual bool on_hotkey(size_t hotkeyId) override
     {
         if (!m_enabled)
         {
@@ -352,14 +525,23 @@ public:
         }
         m_lastHotkeyToggleTime = now;
 
-        refresh_process_state();
-        if (m_active)
+        if (hotkeyId == 0)
         {
-            stop_engine();
+            // Toggle engine on/off
+            refresh_process_state();
+            if (m_active)
+            {
+                stop_engine();
+            }
+            else
+            {
+                start_engine();
+            }
         }
-        else
+        else if (hotkeyId == 1)
         {
-            start_engine();
+            // Open the new editor (only in new editor mode)
+            launch_editor();
         }
 
         return true;

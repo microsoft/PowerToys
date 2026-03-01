@@ -8,16 +8,36 @@
     <RootNamespace>KeyboardManagerEditorUI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <UseWinUI>true</UseWinUI>
-    <EnableMsixTooling>true</EnableMsixTooling>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <Nullable>enable</Nullable>
     <WindowsPackageType>None</WindowsPackageType>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <AssemblyName>PowerToys.KeyboardManagerEditorUI</AssemblyName>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\$(MSBuildProjectName)</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.KeyboardManagerEditorUI.pri</ProjectPriFileName>
   </PropertyGroup>
 
+  <PropertyGroup>
+	<EnableDefaultXamlItems>true</EnableDefaultXamlItems>
+	<EnableXamlJitOptimization>true</EnableXamlJitOptimization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\KeyboardManagerEditor\Keyboard.ico" />
+    <None Remove="Styles\Colors.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="KeyboardManagerEditorXAML\App.xaml" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <ApplicationDefinition Include="KeyboardManagerEditorXAML\App.xaml" />
+  </ItemGroup>
+	
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
@@ -27,12 +47,16 @@
     Tools extension to be activated for this project even if the Windows App SDK Nuget
     package has not yet been restored.
   -->
-  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
+  <PackageReference Include="CommunityToolkit.Common" />
+  <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+  <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+  <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+  <PackageReference Include="Microsoft.WindowsAppSDK" />
+  <PackageReference Include="WinUIEx" />
     <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
     <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
@@ -40,9 +64,26 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
+	<ProjectReference Include="..\KeyboardManagerEditorLibraryWrapper\KeyboardManagerEditorLibraryWrapper.vcxproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Assets\" />
+    <Content Update="Assets\KeyboardManagerEditor\Keyboard.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\KeyboardManagerEditor\Square150x150Logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Styles\Colors.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Styles\Button.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!--
@@ -50,7 +91,7 @@
     Explorer "Package and Publish" context menu entry to be enabled for this project even if
     the Windows App SDK Nuget package has not yet been restored.
   -->
-  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 </Project>

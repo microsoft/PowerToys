@@ -408,6 +408,12 @@
   <data name="KeyboardManager_Settings_Subtitle" xml:space="preserve">
     <value>Open Keyboard Manager settings</value>
   </data>
+  <data name="KeyboardManager_OpenNewEditor_Title" xml:space="preserve">
+    <value>Keyboard Manager: Open Editor</value>
+  </data>
+  <data name="KeyboardManager_OpenNewEditor_Subtitle" xml:space="preserve">
+    <value>Open the Keyboard Manager remap editor</value>
+  </data>
   <!-- Light Switch Module -->
   <data name="LightSwitch_Toggle_Title" xml:space="preserve">
     <value>Light Switch: Toggle theme</value>

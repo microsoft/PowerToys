@@ -1,0 +1,548 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="KeyboardManagerEditorUI.Pages.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:commoncontrols="using:Microsoft.PowerToys.Common.UI.Controls"
+    xmlns:controls="using:KeyboardManagerEditorUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helper="using:KeyboardManagerEditorUI.Helpers"
+    xmlns:local="using:KeyboardManagerEditorUI.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">800</x:Double>
+        <x:Double x:Key="ContentDialogMaxHeight">800</x:Double>
+        <Style
+            x:Key="OriginalKeyVisualStyle"
+            BasedOn="{StaticResource DefaultKeyVisualStyle}"
+            TargetType="commoncontrols:KeyVisual">
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="{ThemeResource ControlFillColorDefaultBrush}" />
+            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="RenderKeyAsGlyph" Value="True" />
+        </Style>
+        <Style
+            x:Key="RemappedKeyVisualStyle"
+            BasedOn="{StaticResource OriginalKeyVisualStyle}"
+            TargetType="commoncontrols:KeyVisual">
+            <Setter Property="Background" Value="{ThemeResource CustomAccentBackgroundBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+        </Style>
+        <Style
+            x:Key="RemappedIconLabelControlStyle"
+            BasedOn="{StaticResource DefaultIconLabelControlStyle}"
+            TargetType="controls:IconLabelControl">
+            <Setter Property="Background" Value="{ThemeResource CustomAccentBackgroundBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+            <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+        </Style>
+        <Style x:Key="ItemDividerStyle" TargetType="Rectangle">
+            <Style.Setters>
+                <Setter Property="Grid.ColumnSpan" Value="2" />
+                <Setter Property="Height" Value="1" />
+                <Setter Property="Margin" Value="-16,0,-16,-8" />
+                <Setter Property="Fill" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="VerticalAlignment" Value="Bottom" />
+            </Style.Setters>
+        </Style>
+        <tkconverters:DoubleToVisibilityConverter
+            x:Key="CountToVisibilityConverter"
+            FalseValue="Collapsed"
+            GreaterThan="0"
+            TrueValue="Visible" />
+        <tkconverters:StringVisibilityConverter
+            x:Key="StringVisibilityConverter"
+            EmptyValue="Collapsed"
+            NotEmptyValue="Visible" />
+    </Page.Resources>
+
+    <Grid Padding="16" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid VerticalAlignment="Top">
+            <Button
+                x:Name="NewRemappingBtn"
+                VerticalAlignment="Top"
+                Click="NewRemappingBtn_Click">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon FontSize="14" Glyph="&#xE710;" />
+                    <TextBlock x:Uid="NewRemappingBtn_Text" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </Grid>
+        <Grid
+            Grid.Row="1"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="{ThemeResource OverlayCornerRadius}">
+            <tkcontrols:SwitchPresenter
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                TargetType="x:String"
+                Value="{x:Bind MappingState, Mode=OneWay}">
+                <tkcontrols:Case Value="Empty">
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="8">
+                        <FontIcon
+                            HorizontalAlignment="Center"
+                            FontSize="24"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xEDA7;" />
+                        <TextBlock
+                            x:Uid="EmptyStateTitle"
+                            VerticalAlignment="Center"
+                            CharacterSpacing="12"
+                            TextAlignment="Center"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap" />
+                        <TextBlock
+                            x:Uid="EmptyStateDescription"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            TextAlignment="Center"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap" />
+                    </StackPanel>
+                </tkcontrols:Case>
+                <tkcontrols:Case Value="HasMappings">
+                    <ScrollViewer VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto">
+                        <Grid>
+                            <StackPanel Orientation="Vertical" Spacing="24">
+                                <!--  Remappings Section  -->
+                                <StackPanel Orientation="Vertical" Visibility="{x:Bind RemappingList.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                                    <TextBlock
+                                        x:Uid="RemappingsHeader"
+                                        Margin="16,16,0,8"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                    <Rectangle
+                                        Height="1"
+                                        HorizontalAlignment="Stretch"
+                                        Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                                    <ListView
+                                        IsItemClickEnabled="True"
+                                        ItemClick="RemappingsList_ItemClick"
+                                        ItemsSource="{x:Bind RemappingList}"
+                                        ScrollViewer.VerticalScrollMode="Disabled"
+                                        SelectionMode="None">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="helper:Remapping">
+                                                <Grid MinHeight="48" Padding="0,8,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Rectangle Style="{StaticResource ItemDividerStyle}" />
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind Shortcut}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <commoncontrols:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                        <TextBlock
+                                                            x:Uid="MapsToText"
+                                                            VerticalAlignment="Center"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                        <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind RemappedKeys}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <commoncontrols:KeyVisual Content="{Binding}" Style="{StaticResource RemappedKeyVisualStyle}" />
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                        <StackPanel
+                                                            Orientation="Horizontal"
+                                                            Spacing="8"
+                                                            Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
+                                                            <TextBlock
+                                                                x:Uid="InText"
+                                                                VerticalAlignment="Center"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                            <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel
+                                                        Grid.Column="1"
+                                                        Orientation="Horizontal"
+                                                        Spacing="8">
+                                                        <ToggleSwitch
+                                                            IsOn="{x:Bind IsActive}"
+                                                            Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                                            Toggled="ToggleSwitch_Toggled" />
+                                                        <Button
+                                                            VerticalAlignment="Center"
+                                                            Content="{ui:FontIcon Glyph=&#xE712;,
+                                                                                  FontSize=14}"
+                                                            Style="{StaticResource SubtleButtonStyle}">
+                                                            <Button.Flyout>
+                                                                <MenuFlyout>
+                                                                    <MenuFlyoutItem
+                                                                        x:Uid="DeleteMenuItem"
+                                                                        Click="DeleteMapping_Click"
+                                                                        Icon="{ui:FontIcon Glyph=&#xE74D;,
+                                                                                           FontSize=14}"
+                                                                        Tag="{x:Bind}" />
+                                                                </MenuFlyout>
+                                                            </Button.Flyout>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </StackPanel>
+
+                                <!--  Text Section  -->
+                                <StackPanel Orientation="Vertical" Visibility="{x:Bind TextMappings.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                                    <TextBlock
+                                        x:Uid="TextMappingsHeader"
+                                        Margin="16,16,0,8"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                    <Rectangle
+                                        Height="1"
+                                        HorizontalAlignment="Stretch"
+                                        Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                                    <ListView
+                                        IsItemClickEnabled="True"
+                                        ItemClick="TextMappingsList_ItemClick"
+                                        ItemsSource="{x:Bind TextMappings}"
+                                        ScrollViewer.VerticalScrollMode="Disabled"
+                                        SelectionMode="None">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="helper:TextMapping">
+                                                <Grid MinHeight="48" Padding="0,8,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Rectangle Style="{StaticResource ItemDividerStyle}" />
+
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind Shortcut}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <commoncontrols:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                        <TextBlock
+                                                            x:Uid="InsertsText"
+                                                            VerticalAlignment="Center"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                        <controls:IconLabelControl
+                                                            ActionType="Text"
+                                                            Label="{x:Bind Text}"
+                                                            Style="{StaticResource RemappedIconLabelControlStyle}" />
+                                                        <StackPanel
+                                                            Orientation="Horizontal"
+                                                            Spacing="8"
+                                                            Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
+                                                            <TextBlock
+                                                                x:Uid="InText"
+                                                                VerticalAlignment="Center"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                            <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel
+                                                        Grid.Column="1"
+                                                        Orientation="Horizontal"
+                                                        Spacing="8">
+                                                        <ToggleSwitch
+                                                            IsOn="{x:Bind IsActive}"
+                                                            Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                                            Toggled="ToggleSwitch_Toggled" />
+                                                        <Button
+                                                            VerticalAlignment="Center"
+                                                            Content="{ui:FontIcon Glyph=&#xE712;,
+                                                                                  FontSize=14}"
+                                                            Style="{StaticResource SubtleButtonStyle}">
+                                                            <Button.Flyout>
+                                                                <MenuFlyout>
+                                                                    <MenuFlyoutItem
+                                                                        x:Uid="DeleteMenuItem"
+                                                                        Click="DeleteMapping_Click"
+                                                                        Icon="{ui:FontIcon Glyph=&#xE74D;,
+                                                                                           FontSize=14}"
+                                                                        Tag="{x:Bind}" />
+                                                                </MenuFlyout>
+                                                            </Button.Flyout>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </StackPanel>
+
+                                <!--  Programs Section  -->
+                                <StackPanel Orientation="Vertical" Visibility="{x:Bind ProgramShortcuts.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                                    <TextBlock
+                                        x:Uid="ProgramsHeader"
+                                        Margin="16,16,0,8"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                    <Rectangle
+                                        Height="1"
+                                        HorizontalAlignment="Stretch"
+                                        Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+
+                                    <ListView
+                                        IsItemClickEnabled="True"
+                                        ItemClick="ProgramShortcutsList_ItemClick"
+                                        ItemsSource="{x:Bind ProgramShortcuts}"
+                                        ScrollViewer.VerticalScrollMode="Disabled"
+                                        SelectionMode="None">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="helper:ProgramShortcut">
+                                                <Grid MinHeight="48" Padding="0,8,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Rectangle Style="{StaticResource ItemDividerStyle}" />
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <ToolTipService.ToolTip>
+                                                            <ToolTip>
+                                                                <StackPanel Spacing="4">
+                                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                        <TextBlock x:Uid="TooltipArguments" FontWeight="SemiBold" />
+                                                                        <TextBlock Text="{x:Bind Args}" />
+                                                                    </StackPanel>
+                                                                    <StackPanel
+                                                                        Orientation="Horizontal"
+                                                                        Spacing="8"
+                                                                        Visibility="{x:Bind StartInDirectory, Converter={StaticResource StringVisibilityConverter}}">
+                                                                        <TextBlock x:Uid="TooltipStartIn" FontWeight="SemiBold" />
+                                                                        <TextBlock Text="{x:Bind StartInDirectory}" />
+                                                                    </StackPanel>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                        <TextBlock x:Uid="TooltipElevation" FontWeight="SemiBold" />
+                                                                        <TextBlock Text="{x:Bind Elevation}" />
+                                                                    </StackPanel>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                        <TextBlock x:Uid="TooltipIfRunning" FontWeight="SemiBold" />
+                                                                        <TextBlock Text="{x:Bind IfRunningAction}" />
+                                                                    </StackPanel>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                        <TextBlock x:Uid="TooltipWindow" FontWeight="SemiBold" />
+                                                                        <TextBlock Text="{x:Bind Visibility}" />
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                            </ToolTip>
+                                                        </ToolTipService.ToolTip>
+                                                        <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind Shortcut}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <commoncontrols:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                        <TextBlock
+                                                            x:Uid="OpensText"
+                                                            VerticalAlignment="Center"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                        <controls:IconLabelControl
+                                                            ActionType="Program"
+                                                            Label="{x:Bind AppToRun}"
+                                                            Style="{StaticResource RemappedIconLabelControlStyle}" />
+                                                        <StackPanel
+                                                            Orientation="Horizontal"
+                                                            Spacing="8"
+                                                            Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
+                                                            <TextBlock
+                                                                x:Uid="InText"
+                                                                VerticalAlignment="Center"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                            <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        Orientation="Horizontal"
+                                                        Spacing="8">
+                                                        <ToggleSwitch
+                                                            IsOn="{x:Bind IsActive}"
+                                                            Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                                            Toggled="ToggleSwitch_Toggled" />
+                                                        <Button
+                                                            VerticalAlignment="Center"
+                                                            Content="{ui:FontIcon Glyph=&#xE712;,
+                                                                                  FontSize=14}"
+                                                            Style="{StaticResource SubtleButtonStyle}">
+                                                            <Button.Flyout>
+                                                                <MenuFlyout>
+                                                                    <MenuFlyoutItem
+                                                                        x:Uid="DeleteMenuItem"
+                                                                        Click="DeleteMapping_Click"
+                                                                        Icon="{ui:FontIcon Glyph=&#xE74D;,
+                                                                                           FontSize=14}"
+                                                                        Tag="{x:Bind}" />
+                                                                </MenuFlyout>
+                                                            </Button.Flyout>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </StackPanel>
+
+                                <!--  URLs Section  -->
+                                <StackPanel Orientation="Vertical" Visibility="{x:Bind UrlShortcuts.Count, Mode=OneWay, Converter={StaticResource CountToVisibilityConverter}}">
+                                    <TextBlock
+                                        x:Uid="UrlsHeader"
+                                        Margin="16,16,0,8"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                    <Rectangle
+                                        Height="1"
+                                        HorizontalAlignment="Stretch"
+                                        Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
+                                    <ListView
+                                        IsItemClickEnabled="True"
+                                        ItemClick="UrlShortcutsList_ItemClick"
+                                        ItemsSource="{x:Bind UrlShortcuts}"
+                                        ScrollViewer.VerticalScrollMode="Disabled"
+                                        SelectionMode="None">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="helper:URLShortcut">
+                                                <Grid MinHeight="48" Padding="0,8,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Rectangle Style="{StaticResource ItemDividerStyle}" />
+
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <ItemsControl VerticalAlignment="Center" ItemsSource="{x:Bind Shortcut}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Orientation="Horizontal" Spacing="4" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <commoncontrols:KeyVisual Content="{Binding}" Style="{StaticResource OriginalKeyVisualStyle}" />
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                        <TextBlock
+                                                            x:Uid="OpensText"
+                                                            VerticalAlignment="Center"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                        <controls:IconLabelControl
+                                                            ActionType="Url"
+                                                            Label="{x:Bind URL}"
+                                                            Style="{StaticResource RemappedIconLabelControlStyle}" />
+                                                        <StackPanel
+                                                            Orientation="Horizontal"
+                                                            Spacing="8"
+                                                            Visibility="{x:Bind AppName, Converter={StaticResource StringVisibilityConverter}}">
+                                                            <TextBlock
+                                                                x:Uid="InText"
+                                                                VerticalAlignment="Center"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                            <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <StackPanel
+                                                        Grid.Column="1"
+                                                        Orientation="Horizontal"
+                                                        Spacing="8">
+                                                        <ToggleSwitch
+                                                            IsOn="{x:Bind IsActive}"
+                                                            Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
+                                                            Toggled="ToggleSwitch_Toggled" />
+                                                        <Button
+                                                            VerticalAlignment="Center"
+                                                            Content="{ui:FontIcon Glyph=&#xE712;,
+                                                                                  FontSize=14}"
+                                                            Style="{StaticResource SubtleButtonStyle}">
+                                                            <Button.Flyout>
+                                                                <MenuFlyout>
+                                                                    <MenuFlyoutItem
+                                                                        x:Uid="DeleteMenuItem"
+                                                                        Click="DeleteMapping_Click"
+                                                                        Icon="{ui:FontIcon Glyph=&#xE74D;,
+                                                                                           FontSize=14}"
+                                                                        Tag="{x:Bind}" />
+                                                                </MenuFlyout>
+                                                            </Button.Flyout>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+                </tkcontrols:Case>
+            </tkcontrols:SwitchPresenter>
+        </Grid>
+
+        <!--  Content Dialog for new remapping  -->
+        <ContentDialog
+            x:Name="RemappingDialog"
+            x:Uid="RemappingDialog"
+            Width="760"
+            MinWidth="800"
+            MinHeight="500"
+            MaxWidth="900"
+            DefaultButton="Primary"
+            IsPrimaryButtonEnabled="False"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <controls:UnifiedMappingControl x:Name="UnifiedMappingControl" Margin="0,16,0,0" />
+        </ContentDialog>
+
+        <!--  Confirmation Dialog for delete  -->
+        <ContentDialog
+            x:Name="DeleteConfirmationDialog"
+            x:Uid="DeleteConfirmationDialog"
+            DefaultButton="Primary">
+            <TextBlock x:Uid="DeleteConfirmationDialogContent" TextWrapping="Wrap" />
+        </ContentDialog>
+    </Grid>
+</Page>

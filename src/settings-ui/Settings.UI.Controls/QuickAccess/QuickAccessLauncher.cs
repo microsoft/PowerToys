@@ -127,6 +127,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     }
 
                     return true;
+                case ModuleType.KeyboardManager:
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.OpenNewKeyboardManagerEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    return true;
                 default:
                     return false;
             }

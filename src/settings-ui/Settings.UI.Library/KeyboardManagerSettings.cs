@@ -42,6 +42,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     () => Properties.ToggleShortcut,
                     value => Properties.ToggleShortcut = value ?? Properties.DefaultToggleShortcut,
                     "Toggle_Shortcut"),
+                new HotkeyAccessor(
+                    () => Properties.EditorShortcut,
+                    value => Properties.EditorShortcut = value ?? Properties.DefaultEditorShortcut,
+                    "Editor_Shortcut"),
             };
 
             return hotkeyAccessors.ToArray();

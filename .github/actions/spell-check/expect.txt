@@ -204,6 +204,7 @@ comdlg
 comexp
 cominterop
 commandpalette
+commoncontrols
 compmgmt
 COMPOSITIONFULL
 CONFIGW
@@ -673,6 +674,7 @@ jpnime
 Jsons
 jsonval
 jxr
+kbmcontrols
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -1520,6 +1522,7 @@ tlc
 TPMLEFTALIGN
 TPMRETURNCMD
 TNP
+Toggleable
 Toolhelp
 toolwindow
 TOPDOWNDIB
@@ -2191,6 +2194,7 @@ wft
 wikimedia
 wikipedia
 windowedge
+WINDOWSAPPRUNTIME
 windowsml
 winexe
 winforms
