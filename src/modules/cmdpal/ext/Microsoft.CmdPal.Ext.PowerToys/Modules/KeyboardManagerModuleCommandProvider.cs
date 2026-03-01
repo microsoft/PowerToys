@@ -18,7 +18,7 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
         var title = SettingsWindow.KBM.ModuleDisplayName();
         var icon = SettingsWindow.KBM.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.KBM, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.KBM, title) { Id = "com.microsoft.powertoys.keyboardManager.openSettings" })
         {
             Title = title,
             Subtitle = Resources.KeyboardManager_Settings_Subtitle,

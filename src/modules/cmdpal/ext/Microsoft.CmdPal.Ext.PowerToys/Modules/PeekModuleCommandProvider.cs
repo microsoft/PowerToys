@@ -18,7 +18,7 @@ internal sealed class PeekModuleCommandProvider : ModuleCommandProvider
         var title = SettingsWindow.Peek.ModuleDisplayName();
         var icon = SettingsWindow.Peek.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.Peek, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.Peek, title) { Id = "com.microsoft.powertoys.peek.openSettings" })
         {
             Title = title,
             Subtitle = Resources.Peek_Settings_Subtitle,

@@ -21,7 +21,7 @@ internal sealed class ScreenRulerModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new ToggleScreenRulerCommand())
+            yield return new ListItem(new ToggleScreenRulerCommand() { Id = "com.microsoft.powertoys.screenRuler.toggle" })
             {
                 Title = Resources.ScreenRuler_Toggle_Title,
                 Subtitle = Resources.ScreenRuler_Toggle_Subtitle,
@@ -29,7 +29,7 @@ internal sealed class ScreenRulerModuleCommandProvider : ModuleCommandProvider
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.screenRuler.openSettings" })
         {
             Title = title,
             Subtitle = Resources.ScreenRuler_Settings_Subtitle,
