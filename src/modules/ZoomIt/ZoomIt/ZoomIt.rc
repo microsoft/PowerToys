@@ -296,8 +296,9 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SY
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Capture a scrolling panorama of a selected screen region. Select the area, then scroll the content. Move slowly and consistently, and do not rewind to previously covered areas. Press the hotkey again or with Shift to save to a file.",IDC_STATIC,7,7,245,33
-    LTEXT           "Panorama Toggle:",IDC_STATIC,7,50,63,8
-    CONTROL         "",IDC_SNIP_PANORAMA_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,73,48,80,12
+    LTEXT           "Panorama Toggle:",IDC_STATIC,7,74,63,8
+    CONTROL         "",IDC_SNIP_PANORAMA_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,73,72,80,12
+    LTEXT           "For the best results, scroll slowly and at a constant rate, do not include stationary content (like scrollbars) in the capture area, and avoid content that is changing (e.g., animations or videos). ",IDC_STATIC,7,41,245,33
 END
 
 DEMOTYPE DIALOGEX 0, 0, 260, 249
