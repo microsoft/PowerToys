@@ -39,6 +39,7 @@ public sealed partial class MainListPage : DynamicListPage,
     // recognise them across successive GetItems() calls
     private readonly Separator _resultsSeparator = new(Resources.results);
     private readonly Separator _fallbacksSeparator = new(Resources.fallbacks);
+    private readonly Separator _commandsSeparator = new(Resources.home_sections_commands_title);
 
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
@@ -196,7 +197,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
                 // +1 for the separator
                 var result = new IListItem[eligibleCount + 1];
-                result[0] = _resultsSeparator;
+                result[0] = _commandsSeparator;
 
                 // Second pass: populate
                 var writeIndex = 1;
