@@ -182,7 +182,7 @@
         <Grid
             x:Name="ContentGrid"
             Margin="4"
-            Padding="4,0,4,0"
+            Padding="0,0,0,0"
             Background="Transparent"
             RightTapped="RootGrid_RightTapped">
             <Grid.ColumnDefinitions>
@@ -334,12 +334,16 @@
                     <VisualState.StateTriggers>
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Top" />
                     </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ContentGrid.Margin" Value="4,0,4,4" />
+                    </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="DockOnBottom">
                     <VisualState.StateTriggers>
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Bottom" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="ContentGrid.Margin" Value="4,4,4,0" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,1,0,0" />
                     </VisualState.Setters>
                 </VisualState>
@@ -373,7 +377,8 @@
                         <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
-                        <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
+                        <Setter Target="ContentGrid.Margin" Value="0,4,4,4" />
+                        <Setter Target="ContentGrid.Padding" Value="0,8,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,0,1,0" />
 
                         <Setter Target="StartListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
@@ -411,7 +416,8 @@
                         <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
-                        <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
+                        <Setter Target="ContentGrid.Margin" Value="4,4,0,4" />
+                        <Setter Target="ContentGrid.Padding" Value="4,8,0,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
 
                         <Setter Target="StartListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
