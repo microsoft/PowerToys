@@ -116,6 +116,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Null-safe access in case property wasn't upgraded yet - default to 0 (Both)
             _cursorWrapWrapMode = CursorWrapSettingsConfig.Properties.WrapMode?.Value ?? 0;
 
+            // Null-safe access in case property wasn't upgraded yet - default to 0 (Always)
+            _cursorWrapActivationMode = CursorWrapSettingsConfig.Properties.ActivationMode?.Value ?? 0;
+
             // Null-safe access in case property wasn't upgraded yet - default to false
             _cursorWrapDisableOnSingleMonitor = CursorWrapSettingsConfig.Properties.DisableCursorWrapOnSingleMonitor?.Value ?? false;
 
@@ -1110,6 +1113,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int CursorWrapActivationMode
+        {
+            get
+            {
+                return _cursorWrapActivationMode;
+            }
+
+            set
+            {
+                if (value != _cursorWrapActivationMode)
+                {
+                    _cursorWrapActivationMode = value;
+
+                    // Ensure the property exists before setting value
+                    if (CursorWrapSettingsConfig.Properties.ActivationMode == null)
+                    {
+                        CursorWrapSettingsConfig.Properties.ActivationMode = new IntProperty(value);
+                    }
+                    else
+                    {
+                        CursorWrapSettingsConfig.Properties.ActivationMode.Value = value;
+                    }
+
+                    NotifyCursorWrapPropertyChanged();
+                }
+            }
+        }
+
         public bool CursorWrapDisableOnSingleMonitor
         {
             get
@@ -1210,6 +1241,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _cursorWrapAutoActivate;
         private bool _cursorWrapDisableWrapDuringDrag; // Will be initialized in constructor from settings
         private int _cursorWrapWrapMode; // 0=Both, 1=VerticalOnly, 2=HorizontalOnly
+        private int _cursorWrapActivationMode; // 0=Always, 1=HoldingCtrl (disables wrap), 2=HoldingShift (disables wrap)
         private bool _cursorWrapDisableOnSingleMonitor; // Disable cursor wrap when only one monitor is connected
     }
 }

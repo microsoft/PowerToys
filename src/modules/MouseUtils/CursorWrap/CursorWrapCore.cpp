@@ -163,6 +163,39 @@ void CursorWrapCore::UpdateMonitorInfo()
     Logger::info(L"======= UPDATE MONITOR INFO END =======");
 }
 
+void CursorWrapCore::ResetWrapState()
+{
+    m_hasPreviousPosition = false;
+    m_hasLastWrapDestination = false;
+    m_previousPosition = { LONG_MIN, LONG_MIN };
+    m_lastWrapDestination = { LONG_MIN, LONG_MIN };
+}
+
+CursorDirection CursorWrapCore::CalculateDirection(const POINT& currentPos) const
+{
+    CursorDirection dir = { 0, 0 };
+    if (m_hasPreviousPosition)
+    {
+        dir.dx = currentPos.x - m_previousPosition.x;
+        dir.dy = currentPos.y - m_previousPosition.y;
+    }
+    return dir;
+}
+
+bool CursorWrapCore::IsWithinWrapThreshold(const POINT& currentPos) const
+{
+    if (!m_hasLastWrapDestination)
+    {
+        return false;
+    }
+    
+    int dx = currentPos.x - m_lastWrapDestination.x;
+    int dy = currentPos.y - m_lastWrapDestination.y;
+    int distanceSquared = dx * dx + dy * dy;
+    
+    return distanceSquared <= (WRAP_DISTANCE_THRESHOLD * WRAP_DISTANCE_THRESHOLD);
+}
+
 POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapDuringDrag, int wrapMode, bool disableOnSingleMonitor)
 {
     // Check if wrapping should be disabled on single monitor
@@ -176,6 +209,8 @@ POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapD
             loggedOnce = true;
         }
 #endif
+        m_previousPosition = currentPos;
+        m_hasPreviousPosition = true;
         return currentPos;
     }
 
@@ -185,8 +220,30 @@ POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapD
 #ifdef _DEBUG
         OutputDebugStringW(L"[CursorWrap] [DRAG] Left mouse button down - skipping wrap\n");
 #endif
+        m_previousPosition = currentPos;
+        m_hasPreviousPosition = true;
         return currentPos;
     }
+
+    // Check distance threshold to prevent rapid oscillation
+    if (IsWithinWrapThreshold(currentPos))
+    {
+#ifdef _DEBUG
+        OutputDebugStringW(L"[CursorWrap] [THRESHOLD] Cursor within wrap threshold - skipping wrap\n");
+#endif
+        m_previousPosition = currentPos;
+        m_hasPreviousPosition = true;
+        return currentPos;
+    }
+    
+    // Clear wrap destination threshold once cursor moves away
+    if (m_hasLastWrapDestination && !IsWithinWrapThreshold(currentPos))
+    {
+        m_hasLastWrapDestination = false;
+    }
+
+    // Calculate cursor movement direction
+    CursorDirection direction = CalculateDirection(currentPos);
 
     // Convert int wrapMode to WrapMode enum
     WrapMode mode = static_cast<WrapMode>(wrapMode);
@@ -195,6 +252,7 @@ POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapD
     {
         std::wostringstream oss;
         oss << L"[CursorWrap] [MOVE] Cursor at (" << currentPos.x << L", " << currentPos.y << L")";
+        oss << L" direction=(" << direction.dx << L", " << direction.dy << L")";
 
         // Get current monitor and identify which one
         HMONITOR currentMonitor = MonitorFromPoint(currentPos, MONITOR_DEFAULTTONEAREST);
@@ -229,9 +287,9 @@ POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapD
     // Get current monitor
     HMONITOR currentMonitor = MonitorFromPoint(currentPos, MONITOR_DEFAULTTONEAREST);
 
-    // Check if cursor is on an outer edge (filtered by wrap mode)
+    // Check if cursor is on an outer edge (filtered by wrap mode and direction)
     EdgeType edgeType;
-    if (!m_topology.IsOnOuterEdge(currentMonitor, currentPos, edgeType, mode))
+    if (!m_topology.IsOnOuterEdge(currentMonitor, currentPos, edgeType, mode, &direction))
     {
 #ifdef _DEBUG
         static bool lastWasNotOuter = false;
@@ -241,6 +299,8 @@ POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapD
             lastWasNotOuter = true;
         }
 #endif
+        m_previousPosition = currentPos;
+        m_hasPreviousPosition = true;
         return currentPos; // Not on an outer edge
     }
 
@@ -277,6 +337,17 @@ POINT CursorWrapCore::HandleMouseMove(const POINT& currentPos, bool disableWrapD
         OutputDebugStringW(L"[CursorWrap] [WRAP] No position change (same-monitor wrap?)\n");
     }
 #endif
+
+    // Update tracking state
+    m_previousPosition = currentPos;
+    m_hasPreviousPosition = true;
+    
+    // Store wrap destination for threshold checking
+    if (newPos.x != currentPos.x || newPos.y != currentPos.y)
+    {
+        m_lastWrapDestination = newPos;
+        m_hasLastWrapDestination = true;
+    }
 
     return newPos;
 }
