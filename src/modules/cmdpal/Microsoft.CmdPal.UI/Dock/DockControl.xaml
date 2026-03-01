@@ -188,7 +188,7 @@
         <local:DockContentControl
             x:Name="ContentGrid"
             Margin="4"
-            Padding="4,0,4,0"
+            Padding="0,0,0,0"
             Background="Transparent"
             IsEditMode="{x:Bind IsEditMode, Mode=OneWay}"
             RightTapped="RootGrid_RightTapped">
