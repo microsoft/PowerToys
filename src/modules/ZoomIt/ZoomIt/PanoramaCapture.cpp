@@ -2579,35 +2579,45 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
     // Flat-content exhaustive fallback: when the coarse search cannot
     // discriminate offsets (best coarse score is at noise-floor level),
-    // inject every DS candidate in the search window.  For high-entropy
-    // low-contrast content, all shifts score nearly identically in the
-    // downsampled space because rows are independent random values, so
-    // the top-12 selection is essentially random and may miss the true
-    // shift.  The fine search at full resolution CAN discriminate because
-    // the true shift gives zero difference (exact row match).  Once the
-    // first score=0 candidate is found the earlyExit mechanism makes all
-    // remaining candidates trivially cheap to evaluate.
+    // inject DS candidates across the search window.  Iterate from the
+    // center outward (smallest absStep first) so that moderate shifts —
+    // the most common in real scrolling — get candidate slots before the
+    // budget fills up.  For high-entropy low-contrast content, all
+    // shifts score nearly identically in the downsampled space because
+    // rows are independent random values, so the top-12 selection is
+    // essentially random and may miss the true shift.  The fine search
+    // at full resolution CAN discriminate because the true shift gives
+    // zero difference (exact row match).  Once the first score=0
+    // candidate is found the earlyExit mechanism makes all remaining
+    // candidates trivially cheap to evaluate.
     if( bestCoarseScore >= 8 && !highConstantFractionPair )
     {
-        for( int dyDs = searchMinDy; dyDs <= searchMaxDy && prunedCount < kMaxCandidatesWithProbes; ++dyDs )
+        for( int absStep = minStepDs; absStep <= maxStepDs && prunedCount < kMaxCandidatesWithProbes; ++absStep )
         {
-            if( abs( dyDs ) < minStepDs || abs( dyDs ) > maxStepDs )
-                continue;
-
-            bool alreadyPresent = false;
-            for( int ci = 0; ci < prunedCount; ++ci )
+            for( int direction = -1; direction <= 1; direction += 2 )
             {
-                if( candidates[ci].dyDs == dyDs )
-                {
-                    alreadyPresent = true;
+                if( prunedCount >= kMaxCandidatesWithProbes )
                     break;
-                }
-            }
 
-            if( !alreadyPresent )
-            {
-                candidates[prunedCount] = { dyDs, coarsePruneThreshold };
-                prunedCount++;
+                const int dyDs = direction * absStep;
+                if( dyDs < searchMinDy || dyDs > searchMaxDy )
+                    continue;
+
+                bool alreadyPresent = false;
+                for( int ci = 0; ci < prunedCount; ++ci )
+                {
+                    if( candidates[ci].dyDs == dyDs )
+                    {
+                        alreadyPresent = true;
+                        break;
+                    }
+                }
+
+                if( !alreadyPresent )
+                {
+                    candidates[prunedCount] = { dyDs, coarsePruneThreshold };
+                    prunedCount++;
+                }
             }
         }
     }
@@ -7558,6 +7568,101 @@ bool RunPanoramaStitchSelfTest()
             else
             {
                 TestLog( L"[Panorama/Test] Skipping vertical_stress.png (not found at %s)\n", vPath.c_str() );
+            }
+        }
+
+        // Wide-portal exhaustive-fallback test: when the search range
+        // exceeds the candidate budget (kMaxCandidatesWithProbes=160),
+        // the iteration order of the exhaustive fallback determines
+        // which shifts are evaluated.  With a tall portal the search
+        // range is hundreds of DS positions, but only ~148 can be
+        // injected.  A linear start-from-extreme order fills the budget
+        // with extreme shifts, missing the moderate shift where the
+        // content actually aligns.  This test uses random-noise content
+        // and steps not divisible by 4 (DS aliasing) so the coarse
+        // search cannot discriminate, triggering the exhaustive path.
+        if( !stressEarlyExit )
+        {
+            const wchar_t* wpName = L"stress-vertical-wideportal";
+            if( stressScenarioMatches( wpName ) )
+            {
+                if( stressFocusEnabled )
+                    stressFocusMatched = true;
+
+                const int wpW = 800;
+                const int wpH = 1600;
+                const int wpImgH = 4000;
+
+                // Per-pixel random noise: all DS shifts score ~54,
+                // triggering the exhaustive fallback.  The correct shift
+                // at dyDs ~13-17 falls deep inside the gap that the
+                // linear iteration creates (coverage stops at ~-187 for
+                // dsH=400, gap spans -186..-7).
+                std::vector<BYTE> wpImg( static_cast<size_t>( wpW ) * wpImgH * 4 );
+                {
+                    unsigned int seed = 99991u;
+                    for( size_t i = 0; i < wpImg.size(); ++i )
+                    {
+                        if( ( i & 3 ) == 3 ) { wpImg[i] = 255; continue; }
+                        seed = seed * 1103515245u + 12345u;
+                        wpImg[i] = static_cast<BYTE>( ( seed >> 16 ) & 0xFF );
+                    }
+                }
+
+                const int wpSteps[] = { 50, 54, 66 };
+                int wpPassed = 0;
+
+                for( int step : wpSteps )
+                {
+                    const size_t frameBytes = static_cast<size_t>( wpW ) * wpH * 4;
+                    std::vector<BYTE> frame0( frameBytes );
+                    std::vector<BYTE> frame1( frameBytes );
+                    memcpy( frame0.data(), wpImg.data(), frameBytes );
+                    memcpy( frame1.data(),
+                            wpImg.data() + static_cast<size_t>( step ) * wpW * 4,
+                            frameBytes );
+
+                    int bestDx = 0, bestDy = 0;
+                    bool found = FindBestFrameShift(
+                        frame0, frame1, wpW, wpH,
+                        0, 0,
+                        bestDx, bestDy,
+                        false );
+
+                    const bool ok = found && ( bestDy == -step );
+                    if( ok ) wpPassed++;
+
+                    TestLog( L"[Panorama/Test] %s step=%d found=%d bestDy=%d expected=%d %s\n",
+                             wpName, step, found ? 1 : 0, bestDy, -step,
+                             ok ? L"ok" : L"MISS" );
+                }
+
+                stressTestsRun++;
+                const bool wpOk = wpPassed >= 2;
+                {
+                    wchar_t msg[512]{};
+                    if( wpOk )
+                    {
+                        stressTestsPassed++;
+                        TestLog( L"  [%d] %s PASSED (%d/%d shifts found)\n", stressTestsRun, wpName, wpPassed, 3 );
+                        swprintf_s( msg, L"PASS: %s (%d/3)\n", wpName, wpPassed );
+                    }
+                    else
+                    {
+                        TestLog( L"***** FAIL: %s (%d/%d shifts found) *****\n", wpName, wpPassed, 3 );
+                        swprintf_s( msg, L"FAIL: %s (%d/3)\n", wpName, wpPassed );
+                        stressFailLog += msg;
+                    }
+                    stressLog += msg;
+                }
+
+                if( stressFocusEnabled )
+                {
+                    TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                             wpName, wpOk ? L"PASS" : L"FAIL" );
+                    if( stressStopAfterFocus )
+                        stressEarlyExit = true;
+                }
             }
         }
 
