@@ -283,7 +283,7 @@
   <data name="dock_settings_name" xml:space="preserve">
     <value>Dock settings</value>
     <comment>Command name for opening dock settings</comment>
-  </data> 
+  </data>
   <data name="ShowDetailsCommand" xml:space="preserve">
     <value>Show details</value>
     <comment>Name for the command that shows details of an item</comment>
@@ -295,5 +295,8 @@
   <data name="results" xml:space="preserve">
     <value>Results</value>
     <comment>Section title for list of all search results that doesn't fall into any other category</comment>
+  </data>
+  <data name="home_sections_pinned_title" xml:space="preserve">
+    <value>Pinned</value>
   </data>
 </root>

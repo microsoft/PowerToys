@@ -188,7 +188,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                 SupportsPinning = true;
 
                 // Load pinned commands from saved settings
-                pinnedCommands = LoadPinnedCommands(four, providerSettings);
+                pinnedCommands = LoadPinnedCommands(four, settings);
             }
 
             Id = model.Id;
@@ -240,12 +240,6 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         }
     }
 
-    private record TopLevelObjects(
-        ICommandItem[]? Commands,
-        IFallbackCommandItem[]? Fallbacks,
-        ICommandItem[]? PinnedCommands,
-        ICommandItem[]? DockBands);
-
     private void InitializeCommands(
         TopLevelObjects objects,
         IServiceProvider serviceProvider,
@@ -275,7 +269,24 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
         if (objects.PinnedCommands is not null)
         {
-            topLevelList.AddRange(objects.PinnedCommands.Select(c => make(c, TopLevelType.Normal)));
+            foreach (var pinnedCommand in objects.PinnedCommands)
+            {
+                var pinnedItem = make(pinnedCommand, TopLevelType.Normal);
+                var alreadyExists = false;
+                foreach (var existingItem in topLevelList)
+                {
+                    if (existingItem.Id == pinnedItem.Id)
+                    {
+                        alreadyExists = true;
+                        break;
+                    }
+                }
+
+                if (!alreadyExists)
+                {
+                    topLevelList.Add(pinnedItem);
+                }
+            }
         }
 
         TopLevelItems = topLevelList.ToArray();
@@ -367,11 +378,11 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         return null;
     }
 
-    private ICommandItem[] LoadPinnedCommands(ICommandProvider4 model, ProviderSettings providerSettings)
+    private ICommandItem[] LoadPinnedCommands(ICommandProvider4 model, SettingsModel settings)
     {
         var pinnedItems = new List<ICommandItem>();
 
-        foreach (var pinnedId in providerSettings.PinnedCommandIds)
+        foreach (var pinnedId in settings.GetPinnedCommandIds(ProviderId))
         {
             try
             {
@@ -410,12 +421,9 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
     public void PinCommand(string commandId, IServiceProvider serviceProvider)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
-        var providerSettings = GetProviderSettings(settings);
 
-        if (!providerSettings.PinnedCommandIds.Contains(commandId))
+        if (settings.TryPinCommand(ProviderId, commandId))
         {
-            providerSettings.PinnedCommandIds.Add(commandId);
-
             // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
             this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
             SettingsModel.SaveSettings(settings, false);
@@ -425,9 +433,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
     public void UnpinCommand(string commandId, IServiceProvider serviceProvider)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
-        var providerSettings = GetProviderSettings(settings);
 
-        if (providerSettings.PinnedCommandIds.Remove(commandId))
+        if (settings.TryUnpinCommand(ProviderId, commandId))
         {
             // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
             this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
@@ -489,4 +496,10 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         this.DockBandItems = bands.ToArray();
         this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs());
     }
+
+    private record TopLevelObjects(
+        ICommandItem[]? Commands,
+        IFallbackCommandItem[]? Fallbacks,
+        ICommandItem[]? PinnedCommands,
+        ICommandItem[]? DockBands);
 }
