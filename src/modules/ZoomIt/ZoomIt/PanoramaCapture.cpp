@@ -5282,38 +5282,6 @@ bool RunPanoramaStitchSelfTest()
     } stitchLogGuard( selfTestDumpDirectory );
 #endif
 
-    auto createBitmapFromPixels = []( const std::vector<BYTE>& pixels, int width, int height ) -> HBITMAP
-    {
-        BITMAPINFO bmi{};
-        bmi.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
-        bmi.bmiHeader.biWidth = width;
-        bmi.bmiHeader.biHeight = -height;
-        bmi.bmiHeader.biPlanes = 1;
-        bmi.bmiHeader.biBitCount = 32;
-        bmi.bmiHeader.biCompression = BI_RGB;
-
-        HDC hdc = GetDC( nullptr );
-        if( hdc == nullptr )
-        {
-            return nullptr;
-        }
-
-        void* bits = nullptr;
-        HBITMAP bitmap = CreateDIBSection( hdc, &bmi, DIB_RGB_COLORS, &bits, nullptr, 0 );
-        if( bitmap != nullptr && bits != nullptr )
-        {
-            memcpy( bits, pixels.data(), pixels.size() );
-        }
-        else if( bitmap != nullptr )
-        {
-            DeleteObject( bitmap );
-            bitmap = nullptr;
-        }
-
-        ReleaseDC( nullptr, hdc );
-        return bitmap;
-    };
-
     auto runScenario = [&]( const wchar_t* scenarioName,
                             int frameWidth,
                             int frameHeight,
@@ -5358,7 +5326,7 @@ bool RunPanoramaStitchSelfTest()
                         static_cast<size_t>( frameWidth ) * 4 );
             }
 
-            HBITMAP frameBitmap = createBitmapFromPixels( framePixels, frameWidth, frameHeight );
+            HBITMAP frameBitmap = CreateBitmapFromPixels32( framePixels, frameWidth, frameHeight );
             if( frameBitmap == nullptr )
             {
                 TestLog( L"[Panorama/Test] Scenario=%s failed to create frame bitmap index=%zu\n",
@@ -5927,8 +5895,8 @@ bool RunPanoramaStitchSelfTest()
 
         // Case 1: identical frames -> must be detected as duplicate.
         {
-            HBITMAP frameA = createBitmapFromPixels( basePixels, dW, dH );
-            HBITMAP frameB = createBitmapFromPixels( basePixels, dW, dH );
+            HBITMAP frameA = CreateBitmapFromPixels32( basePixels, dW, dH );
+            HBITMAP frameB = CreateBitmapFromPixels32( basePixels, dW, dH );
             bool subPix = false;
             bool dup = AreFramesNearDuplicate( frameA, frameB, false, &subPix );
             DeleteObject( frameA );
@@ -5948,8 +5916,8 @@ bool RunPanoramaStitchSelfTest()
             memcpy( shifted.data() + static_cast<size_t>( shiftY ) * dW * 4,
                     basePixels.data(),
                     static_cast<size_t>( dH - shiftY ) * dW * 4 );
-            HBITMAP frameA = createBitmapFromPixels( basePixels, dW, dH );
-            HBITMAP frameB = createBitmapFromPixels( shifted, dW, dH );
+            HBITMAP frameA = CreateBitmapFromPixels32( basePixels, dW, dH );
+            HBITMAP frameB = CreateBitmapFromPixels32( shifted, dW, dH );
             bool dup = AreFramesNearDuplicate( frameB, frameA, false );
             DeleteObject( frameA );
             DeleteObject( frameB );
@@ -5990,8 +5958,8 @@ bool RunPanoramaStitchSelfTest()
             memcpy( lowShifted.data(), lowBase.data() + static_cast<size_t>( dH - 1 ) * dW * 4,
                     static_cast<size_t>( dW ) * 4 );
 
-            HBITMAP frameA = createBitmapFromPixels( lowBase, dW, dH );
-            HBITMAP frameB = createBitmapFromPixels( lowShifted, dW, dH );
+            HBITMAP frameA = CreateBitmapFromPixels32( lowBase, dW, dH );
+            HBITMAP frameB = CreateBitmapFromPixels32( lowShifted, dW, dH );
             bool subPix = false;
             bool dup = AreFramesNearDuplicate( frameB, frameA, true, &subPix );
             DeleteObject( frameA );
@@ -6013,8 +5981,8 @@ bool RunPanoramaStitchSelfTest()
                 flat[i + 2] = 130;
                 flat[i + 3] = 0xFF;
             }
-            HBITMAP frameA = createBitmapFromPixels( flat, dW, dH );
-            HBITMAP frameB = createBitmapFromPixels( flat, dW, dH );
+            HBITMAP frameA = CreateBitmapFromPixels32( flat, dW, dH );
+            HBITMAP frameB = CreateBitmapFromPixels32( flat, dW, dH );
             bool dup = AreFramesNearDuplicate( frameA, frameB, true );
             DeleteObject( frameA );
             DeleteObject( frameB );
@@ -6203,7 +6171,7 @@ bool RunPanoramaStitchSelfTest()
                     }
                 }
 
-                HBITMAP bmp = createBitmapFromPixels( fp, imgW, winH );
+                HBITMAP bmp = CreateBitmapFromPixels32( fp, imgW, winH );
                 if( !bmp )
                 {
                     for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
@@ -6871,7 +6839,7 @@ bool RunPanoramaStitchSelfTest()
                     memcpy( fp.data() + dstOff, imgPx.data() + srcOff, static_cast<size_t>( winW ) * 4 );
                 }
 
-                HBITMAP bmp = createBitmapFromPixels( fp, winW, imgH );
+                HBITMAP bmp = CreateBitmapFromPixels32( fp, winW, imgH );
                 if( !bmp )
                 {
                     for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
