@@ -3689,6 +3689,17 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
         return true;
     }
 
+    // Both searches succeeded.  For normal (non-VLE) content the direct ZNCC
+    // result is reliable — the transposed search just happened to find a
+    // candidate too.  Only run the expensive axis scan for very-low-entropy
+    // content where ZNCC peaks are unreliable noise.
+    if( !precomputedVeryLowEntropy )
+    {
+        bestDx = directDx;
+        bestDy = directDy;
+        return true;
+    }
+
     // Axis detection: scan pure-vertical and pure-horizontal shifts in a
     // range to find which direction has a true alignment minimum.  This is
     // far more robust than scoring two potentially-spurious ZNCC peaks,
@@ -3896,7 +3907,7 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     StitchLog( L"[Panorama/Stitch] AxisScan vertBest=%I64u dy=%d horizBest=%I64u dx=%d\n",
                bestVertScore, bestVertDy, bestHorizScore, bestHorizDx );
 
-    const bool verticalWins = bestVertScore < bestHorizScore;
+    const bool verticalWins = bestVertScore <= bestHorizScore;
 
     if( verticalWins )
     {
