@@ -104,7 +104,11 @@
                                 </ItemsControl>
                             </ToggleButton.Content>
                         </ToggleButton>
-                        <CheckBox x:Uid="AllowChordsCheckBox" x:Name="AllowChordsCheckBox" Click="AllowChordsCheckBox_Click" IsChecked="True" />
+                        <CheckBox
+                            x:Name="AllowChordsCheckBox"
+                            x:Uid="AllowChordsCheckBox"
+                            Click="AllowChordsCheckBox_Click"
+                            IsChecked="True" />
                     </StackPanel>
                 </tkcontrols:Case>
                 <!--  Mouse Button Trigger  -->

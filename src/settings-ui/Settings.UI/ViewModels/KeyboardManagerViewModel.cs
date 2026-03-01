@@ -17,9 +17,11 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.Utilities;
+using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -364,6 +366,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 startInfo.Arguments = $"{type.ToString(CultureInfo.InvariantCulture)} {Environment.ProcessId}";
                 System.Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", null);
                 editor = Process.Start(startInfo);
+                PowerToysTelemetry.Log.WriteEvent(new ModuleLaunchedFromSettingsEvent("KeyboardManagerClassic"));
             }
             catch (Exception e)
             {
@@ -396,6 +399,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 startInfo.UseShellExecute = true; // LOAD BEARING
                 startInfo.Arguments = $"{Environment.ProcessId}";
                 editor = Process.Start(startInfo);
+                PowerToysTelemetry.Log.WriteEvent(new ModuleLaunchedFromSettingsEvent("KeyboardManagerWinUI"));
             }
             catch (Exception e)
             {
