@@ -1126,12 +1126,60 @@ static void BuildFullLumaFrame( const std::vector<BYTE>& pixels,
 {
     const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight );
     luma.resize( pixelCount );
-    for( size_t p = 0; p < pixelCount; ++p )
+    const BYTE* src = pixels.data();
+    BYTE* dst = luma.data();
+    size_t p = 0;
+
+#if defined(_M_ARM64)
+    // NEON: process 8 BGRA pixels per iteration.
+    for( ; p + 8 <= pixelCount; p += 8 )
+    {
+        const uint8x8x4_t bgra = vld4_u8( src + p * 4 );
+        const uint16x8_t rw = vmull_u8( bgra.val[2], vdup_n_u8( 77 ) );
+        const uint16x8_t gw = vmull_u8( bgra.val[1], vdup_n_u8( 150 ) );
+        const uint16x8_t bw = vmull_u8( bgra.val[0], vdup_n_u8( 29 ) );
+        const uint16x8_t sum = vaddq_u16( vaddq_u16( rw, gw ), bw );
+        vst1_u8( dst + p, vshrn_n_u16( sum, 8 ) );
+    }
+#elif defined(_M_X64) || defined(_M_IX86)
+    // SSE2: process 4 BGRA pixels per iteration using _mm_madd_epi16
+    // for pairwise multiply-add of adjacent 16-bit words to 32-bit.
+    const __m128i zero = _mm_setzero_si128();
+    const __m128i coeffs = _mm_setr_epi16( 29, 150, 77, 0, 29, 150, 77, 0 );
+    const __m128i mask_even32 = _mm_setr_epi32( -1, 0, -1, 0 );
+    for( ; p + 4 <= pixelCount; p += 4 )
+    {
+        const __m128i bgra = _mm_loadu_si128( reinterpret_cast<const __m128i*>( src + p * 4 ) );
+        // Unpack interleaved BGRA bytes to 16-bit words.
+        const __m128i lo16 = _mm_unpacklo_epi8( bgra, zero );  // B0 G0 R0 A0 B1 G1 R1 A1
+        const __m128i hi16 = _mm_unpackhi_epi8( bgra, zero );  // B2 G2 R2 A2 B3 G3 R3 A3
+        // _mm_madd_epi16: [B*29+G*150, R*77+A*0, ...]  per 32-bit lane pair.
+        const __m128i prod_lo = _mm_madd_epi16( lo16, coeffs );
+        const __m128i prod_hi = _mm_madd_epi16( hi16, coeffs );
+        // Sum adjacent 32-bit pairs within each 64-bit lane.
+        const __m128i sum_lo = _mm_add_epi32( _mm_and_si128( prod_lo, mask_even32 ),
+                                              _mm_srli_epi64( prod_lo, 32 ) );
+        const __m128i sum_hi = _mm_add_epi32( _mm_and_si128( prod_hi, mask_even32 ),
+                                              _mm_srli_epi64( prod_hi, 32 ) );
+        // >> 8 to divide by 256, then pack 32 -> 16 -> 8.
+        const __m128i l32 = _mm_packs_epi32( _mm_srli_epi32( sum_lo, 8 ),
+                                             _mm_srli_epi32( sum_hi, 8 ) );
+        const __m128i l8 = _mm_packus_epi16( l32, zero );
+        // l8 has [l0, 0, l1, 0, l2, 0, l3, 0, ...] because the odd 32-bit
+        // lanes were zero before packing.  Extract even bytes.
+        dst[p + 0] = static_cast<BYTE>( _mm_extract_epi16( l8, 0 ) & 0xFF );
+        dst[p + 1] = static_cast<BYTE>( _mm_extract_epi16( l8, 1 ) & 0xFF );
+        dst[p + 2] = static_cast<BYTE>( _mm_extract_epi16( l8, 2 ) & 0xFF );
+        dst[p + 3] = static_cast<BYTE>( _mm_extract_epi16( l8, 3 ) & 0xFF );
+    }
+#endif
+
+    for( ; p < pixelCount; ++p )
     {
         const size_t idx = p * 4;
-        luma[p] = static_cast<BYTE>( ( pixels[idx + 2] * 77 +
-                                       pixels[idx + 1] * 150 +
-                                       pixels[idx + 0] * 29 ) >> 8 );
+        dst[p] = static_cast<BYTE>( ( src[idx + 2] * 77 +
+                                      src[idx + 1] * 150 +
+                                      src[idx + 0] * 29 ) >> 8 );
     }
 }
 
@@ -1187,22 +1235,24 @@ static double NCC1D( const int* a, const int* b, int n )
 {
     if( n <= 0 ) return 0.0;
 
-    double sumA = 0, sumB = 0, sumAB = 0, sumA2 = 0, sumB2 = 0;
+    __int64 iSumA = 0, iSumB = 0, iSumAB = 0, iSumA2 = 0, iSumB2 = 0;
     for( int i = 0; i < n; ++i )
     {
-        const double ai = static_cast<double>( a[i] );
-        const double bi = static_cast<double>( b[i] );
-        sumA  += ai;
-        sumB  += bi;
-        sumAB += ai * bi;
-        sumA2 += ai * ai;
-        sumB2 += bi * bi;
+        const __int64 ai = static_cast<__int64>( a[i] );
+        const __int64 bi = static_cast<__int64>( b[i] );
+        iSumA  += ai;
+        iSumB  += bi;
+        iSumAB += ai * bi;
+        iSumA2 += ai * ai;
+        iSumB2 += bi * bi;
     }
-    const double N = static_cast<double>( n );
-    const double varA = sumA2 / N - ( sumA / N ) * ( sumA / N );
-    const double varB = sumB2 / N - ( sumB / N ) * ( sumB / N );
+    const double N    = static_cast<double>( n );
+    const double sumA = static_cast<double>( iSumA );
+    const double sumB = static_cast<double>( iSumB );
+    const double varA = static_cast<double>( iSumA2 ) / N - ( sumA / N ) * ( sumA / N );
+    const double varB = static_cast<double>( iSumB2 ) / N - ( sumB / N ) * ( sumB / N );
     if( varA <= 0.0 || varB <= 0.0 ) return 0.0;
-    const double cov = sumAB / N - ( sumA / N ) * ( sumB / N );
+    const double cov = static_cast<double>( iSumAB ) / N - ( sumA / N ) * ( sumB / N );
     return cov / sqrt( varA * varB );
 }
 
@@ -1216,7 +1266,7 @@ static double ComputeMaskedZNCC( const BYTE* prevLuma, const BYTE* currLuma,
                                  int direction, int dx,
                                  int marginX, int minSamples )
 {
-    double sumA = 0, sumB = 0, sumAB = 0, sumA2 = 0, sumB2 = 0;
+    __int64 iSumA = 0, iSumB = 0, iSumAB = 0, iSumA2 = 0, iSumB2 = 0;
     int n = 0;
     const int xStart = max( marginX, marginX + max( 0, -dx ) );
     const int xEnd = min( width - marginX, width - marginX - max( 0, dx ) );
@@ -1233,23 +1283,25 @@ static double ComputeMaskedZNCC( const BYTE* prevLuma, const BYTE* currLuma,
             if( !maskPrev[prevRow + x] && !maskCurr[currRow + x + dx] )
                 continue;
 
-            const double a = static_cast<double>( prevLuma[prevRow + x] );
-            const double b = static_cast<double>( currLuma[currRow + x + dx] );
-            sumA  += a;
-            sumB  += b;
-            sumAB += a * b;
-            sumA2 += a * a;
-            sumB2 += b * b;
+            const int a = static_cast<int>( prevLuma[prevRow + x] );
+            const int b = static_cast<int>( currLuma[currRow + x + dx] );
+            iSumA  += a;
+            iSumB  += b;
+            iSumAB += a * b;
+            iSumA2 += a * a;
+            iSumB2 += b * b;
             n++;
         }
     }
 
     if( n < minSamples ) return 0.0;
-    const double N = static_cast<double>( n );
-    const double varA = sumA2 / N - ( sumA / N ) * ( sumA / N );
-    const double varB = sumB2 / N - ( sumB / N ) * ( sumB / N );
+    const double N    = static_cast<double>( n );
+    const double sumA = static_cast<double>( iSumA );
+    const double sumB = static_cast<double>( iSumB );
+    const double varA = static_cast<double>( iSumA2 ) / N - ( sumA / N ) * ( sumA / N );
+    const double varB = static_cast<double>( iSumB2 ) / N - ( sumB / N ) * ( sumB / N );
     if( varA <= 0.0 || varB <= 0.0 ) return 0.0;
-    const double cov = sumAB / N - ( sumA / N ) * ( sumB / N );
+    const double cov = static_cast<double>( iSumAB ) / N - ( sumA / N ) * ( sumB / N );
     return cov / sqrt( varA * varB );
 }
 
@@ -2227,8 +2279,10 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
                 // Early termination: if running average already exceeds
                 // the worst kept candidate, this step cannot win.
+                // Use (score+1)*samples to match floor-division semantics:
+                // floor(totalDiff/samples) > score  iff  totalDiff >= (score+1)*samples.
                 if( candidateCount >= kMaxCandidates && samples >= 100 &&
-                    totalDiff / samples > candidates[candidateCount - 1].score )
+                    totalDiff >= (candidates[candidateCount - 1].score + 1) * samples )
                 {
                     earlyExitCoarse = true;
                 }
@@ -3104,7 +3158,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                         abs( abs( dy ) - expectedAbsStep ) <= refineRadiusDy + 4;
                     if( !isExpectedStepDy &&
                         bestFineScore != ( std::numeric_limits<unsigned __int64>::max )() &&
-                        samples >= earlyMinSamples && totalDiff * kFineScoreScale / samples > bestFineScore )
+                        samples >= earlyMinSamples && totalDiff * kFineScoreScale >= (bestFineScore + 1) * samples )
                     {
                         earlyExit = true;
                     }
@@ -4354,7 +4408,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                 std::vector<int> sorted = recentAxisSteps;
                 std::sort( sorted.begin(), sorted.end() );
                 const int medianAxisStep = sorted[sorted.size() / 2];
-                const int outlierStepThreshold = max( ( axisFrame * 2 ) / 5, max( minProgress * 6, medianAxisStep * 4 ) );
+                const int outlierStepThreshold = max( ( axisFrame * 2 ) / 5, max( minProgress * 6, medianAxisStep * 5 ) );
                 const int lowOverlapThreshold = ( axisFrame * 3 ) / 5;
                 const int expectedSpikeThreshold = max( axisFrame / 3, max( minProgress * 5, expectedAxisStep * 3 ) );
 
@@ -4393,14 +4447,14 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                 // above the observed step range.  Use the 75th percentile
                 // of recent steps as a tighter reference.
                 //
-                // Keep a hard floor at 40% of the frame to avoid rejecting
+                // Keep a hard floor at 50% of the frame to avoid rejecting
                 // legitimate fast-scroll jumps.  The stress "legitjumps"
                 // scenarios include valid jumps up to that range.
                 if( sorted.size() >= 6 )
                 {
                     const int p75 = sorted[sorted.size() * 3 / 4];
                     const int rangeGuard = p75 + max( minProgress, medianAxisStep / 2 );
-                    const int legitJumpFloor = ( axisFrame * 2 ) / 5;
+                    const int legitJumpFloor = axisFrame / 2;
                     const int guardedThreshold = max( rangeGuard, legitJumpFloor );
                     if( axisStep > guardedThreshold && axisOverlap < ( axisFrame * 2 ) / 3 )
                     {
@@ -4422,11 +4476,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                 // scoring is unreliable because near-uniform pixels match
                 // at essentially random offsets.  Use a tighter step ceiling
                 // than the standard outlier guard, but still allow legitimate
-                // fast-scroll jumps up to 45% of frame height.
+                // fast-scroll jumps up to 50% of frame height.
                 if( veryLowEntropy != 0 )
                 {
                     const int vleMedianCeiling = max( medianAxisStep * 3, minProgress * 4 );
-                    const int vleLegitFloor = ( axisFrame * 9 ) / 20; // 45% of frame
+                    const int vleLegitFloor = axisFrame / 2; // 50% of frame
                     const int vleStepCeiling = max( vleMedianCeiling, vleLegitFloor );
                     if( axisStep > vleStepCeiling )
                     {
