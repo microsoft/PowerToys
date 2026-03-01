@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Dock.DockContentControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    mc:Ignorable="d">
+
+    <Grid x:Name="ContentGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="StartColumn" Width="*" />
+            <ColumnDefinition x:Name="CenterColumn" Width="Auto" />
+            <ColumnDefinition x:Name="EndColumn" Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="StartRow" Height="*" />
+            <RowDefinition x:Name="CenterRow" Height="Auto" />
+            <RowDefinition x:Name="EndRow" Height="*" />
+        </Grid.RowDefinitions>
+
+        <cpcontrols:ScrollContainer
+            x:Name="StartScroller"
+            Grid.RowSpan="3"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Stretch"
+            ActionButton="{x:Bind StartActionButton, Mode=OneWay}"
+            Source="{x:Bind StartSource, Mode=OneWay}" />
+
+        <cpcontrols:ScrollContainer
+            x:Name="CenterScroller"
+            Grid.RowSpan="3"
+            Grid.Column="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Stretch"
+            ActionButton="{x:Bind CenterActionButton, Mode=OneWay}"
+            Source="{x:Bind CenterSource, Mode=OneWay}" />
+
+        <cpcontrols:ScrollContainer
+            x:Name="EndScroller"
+            Grid.RowSpan="3"
+            Grid.Column="2"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Stretch"
+            ContentAlignment="End"
+            ActionButton="{x:Bind EndActionButton, Mode=OneWay}"
+            Source="{x:Bind EndSource, Mode=OneWay}" />
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="OrientationStates">
+                <VisualState x:Name="HorizontalState" />
+                <VisualState x:Name="VerticalState">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind Orientation, Mode=OneWay}" To="Vertical" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="StartColumn.Width" Value="*" />
+                        <Setter Target="CenterColumn.Width" Value="*" />
+                        <Setter Target="EndColumn.Width" Value="*" />
+
+                        <Setter Target="StartRow.Height" Value="*" />
+                        <Setter Target="CenterRow.Height" Value="Auto" />
+                        <Setter Target="EndRow.Height" Value="*" />
+
+                        <Setter Target="StartScroller.(Grid.Row)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="StartScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="StartScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="StartScroller.Orientation" Value="Vertical" />
+                        <Setter Target="StartScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="StartScroller.VerticalAlignment" Value="Top" />
+
+                        <Setter Target="CenterScroller.(Grid.Row)" Value="1" />
+                        <Setter Target="CenterScroller.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="CenterScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="CenterScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="CenterScroller.Orientation" Value="Vertical" />
+                        <Setter Target="CenterScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="CenterScroller.VerticalAlignment" Value="Center" />
+
+                        <Setter Target="EndScroller.(Grid.Row)" Value="2" />
+                        <Setter Target="EndScroller.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="EndScroller.(Grid.Column)" Value="0" />
+                        <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
+                        <Setter Target="EndScroller.Orientation" Value="Vertical" />
+                        <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+
+            <VisualStateGroup x:Name="CenterVisibilityStates">
+                <VisualState x:Name="CenterVisibleState" />
+                <VisualState x:Name="CenterCollapsedState">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind IsCenterVisible, Mode=OneWay}" To="False" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="CenterColumn.Width" Value="0" />
+                        <Setter Target="CenterRow.Height" Value="0" />
+                        <Setter Target="EndColumn.Width" Value="Auto" />
+                        <Setter Target="EndRow.Height" Value="Auto" />
+                        <Setter Target="CenterScroller.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+
+            <VisualStateGroup x:Name="EditModeStates">
+                <VisualState x:Name="EditModeOff" />
+                <VisualState x:Name="EditModeOn">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind IsEditMode, Mode=OneWay}" To="True" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="CenterScroller.MinWidth" Value="48" />
+                        <Setter Target="StartScroller.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <Setter Target="StartScroller.Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                        <Setter Target="StartScroller.BorderThickness" Value="1" />
+                        <Setter Target="StartScroller.CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                        <Setter Target="CenterScroller.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <Setter Target="CenterScroller.Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                        <Setter Target="CenterScroller.BorderThickness" Value="1" />
+                        <Setter Target="CenterScroller.CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                        <Setter Target="EndScroller.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                        <Setter Target="EndScroller.Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                        <Setter Target="EndScroller.BorderThickness" Value="1" />
+                        <Setter Target="EndScroller.CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                        <Setter Target="StartScroller.ActionButtonVisibility" Value="Visible" />
+                        <Setter Target="CenterScroller.ActionButtonVisibility" Value="Visible" />
+                        <Setter Target="EndScroller.ActionButtonVisibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</UserControl>
