@@ -67,6 +67,7 @@ ARPINSTALLLOCATION
 ARPPRODUCTICON
 ARRAYSIZE
 ARROWKEYS
+arrowshape
 asf
 AShortcut
 ASingle
@@ -537,6 +538,8 @@ HIBYTE
 hicon
 HIDEWINDOW
 Hif
+highlightbackground
+highlightthickness
 HIMAGELIST
 himl
 hinst
@@ -627,6 +630,7 @@ inetcpl
 Infobar
 INFOEXAMPLE
 Infotip
+initialfile
 INITDIALOG
 INITGUID
 INITTOLOGFONTSTRUCT
@@ -809,6 +813,7 @@ Metadatas
 metafile
 metapackage
 mfc
+mfalse
 Mgmt
 Microwaved
 midl
@@ -866,6 +871,7 @@ msrc
 msstore
 msvcp
 MTND
+mtrue
 MULTIPLEUSE
 multizone
 muxc
@@ -1016,6 +1022,8 @@ OWNDC
 OWNERDRAWFIXED
 Packagemanager
 PACL
+padx
+pady
 PAINTSTRUCT
 PALETTEWINDOW
 PARENTNOTIFY
@@ -1447,6 +1455,7 @@ STYLECHANGING
 subkeys
 sublang
 SUBMODULEUPDATE
+sug
 Superbar
 sut
 svchost
@@ -2031,6 +2040,7 @@ metadatamatters
 middleclickaction
 MIIM
 mikeclayton
+mikehall
 minimizebox
 modelcontextprotocol
 mousehighlighter
@@ -2152,6 +2162,7 @@ taskbar
 TESTONLY
 TEXTBOXNEWLINE
 textextractor
+textvariable
 tgamma
 THEMECHANGED
 thickframe
