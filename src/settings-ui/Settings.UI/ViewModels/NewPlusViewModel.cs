@@ -9,6 +9,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -17,7 +18,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
-
+using Microsoft.Win32;
 using static Microsoft.PowerToys.Settings.UI.Helpers.ShellGetFolder;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -31,6 +32,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private NewPlusSettings Settings { get; set; }
 
         private const string ModuleName = NewPlusSettings.ModuleName;
+
+        private const string BuiltInNewRegistryPath = @"Software\Classes\Directory\Background\ShellEx\ContextMenuHandlers\New";
+        private const string BuiltNewCOMGuid = "{D969A300-E7FF-11d0-A93B-00A0C90F2719}";
+        private const string NewDisabledValuePrefix = "disabled_";
 
         public NewPlusViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
@@ -50,6 +55,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _replaceVariables = Settings.Properties.ReplaceVariables.Value;
             InitializeEnabledValue();
             InitializeGpoValues();
+
+            _disableBuiltInNew = !IsBuiltInNewEnabled();
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -76,6 +83,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _hideFileExtensionGpoRuleConfiguration = GPOWrapper.GetConfiguredNewPlusHideTemplateFilenameExtensionValue();
             _hideFileExtensionIsGPOConfigured = _hideFileExtensionGpoRuleConfiguration == GpoRuleConfigured.Disabled || _hideFileExtensionGpoRuleConfiguration == GpoRuleConfigured.Enabled;
 
+            // Policy for Hide Built-in New toggle setting
+            _hideBuiltInNewContextMenuToggleSettingGPOConfigured = GPOWrapper.GetConfiguredNewPlusHideBuiltInNewContextMenuValue() == GpoRuleConfigured.Enabled
+                                                    || GPOWrapper.GetConfiguredNewPlusHideBuiltInNewContextMenuValue() == GpoRuleConfigured.Disabled;
+
             // Same for Replace Variables
             _replaceVariablesIsGPOConfigured = GPOWrapper.GetConfiguredNewPlusReplaceVariablesValue() == GpoRuleConfigured.Enabled
                                                     || GPOWrapper.GetConfiguredNewPlusReplaceVariablesValue() == GpoRuleConfigured.Disabled;
@@ -96,6 +107,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(IsHideFileExtSettingGPOConfigured));
                     OnPropertyChanged(nameof(IsReplaceVariablesSettingGPOConfigured));
                     OnPropertyChanged(nameof(IsReplaceVariablesSettingsCardEnabled));
+                    OnPropertyChanged(nameof(IsDisableBuiltInNewSettingsCardEnabled));
+                    OnPropertyChanged(nameof(IsNewPlusHideBuiltInNewToggleSettingGPOConfigured));
 
                     OutGoingGeneralSettings outgoingMessage = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoingMessage.ToString());
@@ -105,6 +118,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     if (_isNewPlusEnabled == true)
                     {
                         CopyTemplateExamples(_templateLocation);
+                    }
+                    else
+                    {
+                        // Re-enable built-in New handler when NewPlus is disabled if allowed by GPO
+                        if (!IsNewPlusHideBuiltInNewToggleSettingGPOConfigured)
+                        {
+                            EnableBuiltInNewViaRegistry();
+                        }
                     }
                 }
             }
@@ -164,6 +185,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsReplaceVariablesSettingGPOConfigured => _isNewPlusEnabled && _replaceVariablesIsGPOConfigured;
 
+        public bool IsDisableBuiltInNewSettingsCardEnabled => _isNewPlusEnabled && !_hideBuiltInNewContextMenuToggleSettingGPOConfigured;
+
+        public bool IsNewPlusHideBuiltInNewToggleSettingGPOConfigured => _isNewPlusEnabled && _hideBuiltInNewContextMenuToggleSettingGPOConfigured;
+
         public bool HideStartingDigits
         {
             get => _hideStartingDigits;
@@ -201,6 +226,48 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Settings.Properties.ReplaceVariables.Value = value;
                     OnPropertyChanged(nameof(ReplaceVariables));
 
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool HideBuiltInNew
+        {
+            get
+            {
+                if (IsNewPlusHideBuiltInNewToggleSettingGPOConfigured)
+                {
+                    return GPOWrapper.GetConfiguredNewPlusHideBuiltInNewContextMenuValue() == GpoRuleConfigured.Enabled;
+                }
+
+                return _disableBuiltInNew;
+            }
+
+            set
+            {
+                if (IsNewPlusHideBuiltInNewToggleSettingGPOConfigured)
+                {
+                    value = GPOWrapper.GetConfiguredNewPlusHideBuiltInNewContextMenuValue() == GpoRuleConfigured.Enabled;
+                }
+
+                if (_disableBuiltInNew != value)
+                {
+                    // Update New visibility right now
+                    if (_disableBuiltInNew)
+                    {
+                        EnableBuiltInNewViaRegistry();
+                    }
+                    else
+                    {
+                        DisableBuiltInNewViaRegistry();
+                    }
+
+                    _disableBuiltInNew = value;
+                    OnPropertyChanged(nameof(HideBuiltInNew));
+
+                    // Set the user preference for New visibility, which we then also use in powertoys_module.cpp to ensure
+                    // that backup/restore of settings work without having to update settings
+                    Settings.Properties.BuiltInNewHidePreference.Value = value;
                     NotifySettingsChanged();
                 }
             }
@@ -271,12 +338,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _hideFileExtension;
         private bool _hideStartingDigits;
         private bool _replaceVariables;
+        private bool _disableBuiltInNew; // reflects the current state of New visibility
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private GpoRuleConfigured _hideFileExtensionGpoRuleConfiguration;
         private bool _hideFileExtensionIsGPOConfigured;
         private bool _replaceVariablesIsGPOConfigured;
+        private bool _hideBuiltInNewContextMenuToggleSettingGPOConfigured;
 
         public void RefreshEnabledState()
         {
@@ -316,6 +385,88 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
             return await Task.FromResult(GetFolderDialogWithFlags(hwnd, FolderDialogFlags._BIF_NEWDIALOGSTYLE));
+        }
+
+        private bool IsBuiltInNewEnabled()
+        {
+            try
+            {
+                using (var newKey = Registry.CurrentUser.OpenSubKey(BuiltInNewRegistryPath, writable: false))
+                {
+                    string builtInNewHandlerValue = newKey.GetValue(null, null) as string;
+
+                    if (builtInNewHandlerValue is null || string.Equals(builtInNewHandlerValue, BuiltNewCOMGuid, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // If no default value for key, or GUID is BuiltNewCOMGuid then built-in New is enabled
+                        return true;
+                    }
+
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to determine built-in New enablement status.", ex);
+            }
+
+            return false;
+        }
+
+        private void DisableBuiltInNewViaRegistry()
+        {
+            try
+            {
+                using (var newKey = Registry.CurrentUser.OpenSubKey(BuiltInNewRegistryPath, writable: true))
+                {
+                    string builtInNewHandlerValue = newKey.GetValue(null, null) as string;
+
+                    if (!string.IsNullOrEmpty(builtInNewHandlerValue) && builtInNewHandlerValue.StartsWith(NewDisabledValuePrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Already disabled
+                        return;
+                    }
+
+                    // Any string value will disable the built-in New handler
+                    string newDisabledValue = NewDisabledValuePrefix + builtInNewHandlerValue;
+                    newKey.SetValue(string.Empty, newDisabledValue);
+                }
+
+                HideBuiltInNew = true;
+                OnPropertyChanged(nameof(HideBuiltInNew));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to disable built-in New in the registry.", ex);
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void EnableBuiltInNewViaRegistry()
+        {
+            try
+            {
+                using (var newKey = Registry.CurrentUser.OpenSubKey(BuiltInNewRegistryPath, writable: true))
+                {
+                    string builtInNewHandlerValue = newKey.GetValue(null, null) as string;
+
+                    if (builtInNewHandlerValue is null)
+                    {
+                        // Already enabled
+                        return;
+                    }
+
+                    // Null key default value enables built-in New handler
+                    newKey.DeleteValue(null, true);
+                }
+
+                HideBuiltInNew = false;
+                OnPropertyChanged(nameof(HideBuiltInNew));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to enable built-in New in the registry.", ex);
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

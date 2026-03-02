@@ -201,12 +201,70 @@
             <Setter Property="cpcontrols:WrapPanel.IsFullLine" Value="True" />
         </Style>
 
+        <ControlTemplate x:Key="ListViewItemWithoutVisualIndicatorTemplate" TargetType="ListViewItem">
+            <ListViewItemPresenter
+                x:Name="Root"
+                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                CheckBoxBorderBrush="{ThemeResource ListViewItemCheckBoxBorderBrush}"
+                CheckBoxBrush="{ThemeResource ListViewItemCheckBoxBrush}"
+                CheckBoxCornerRadius="{ThemeResource ListViewItemCheckBoxCornerRadius}"
+                CheckBoxDisabledBorderBrush="{ThemeResource ListViewItemCheckBoxDisabledBorderBrush}"
+                CheckBoxDisabledBrush="{ThemeResource ListViewItemCheckBoxDisabledBrush}"
+                CheckBoxPointerOverBorderBrush="{ThemeResource ListViewItemCheckBoxPointerOverBorderBrush}"
+                CheckBoxPointerOverBrush="{ThemeResource ListViewItemCheckBoxPointerOverBrush}"
+                CheckBoxPressedBorderBrush="{ThemeResource ListViewItemCheckBoxPressedBorderBrush}"
+                CheckBoxPressedBrush="{ThemeResource ListViewItemCheckBoxPressedBrush}"
+                CheckBoxSelectedBrush="{ThemeResource ListViewItemCheckBoxSelectedBrush}"
+                CheckBoxSelectedDisabledBrush="{ThemeResource ListViewItemCheckBoxSelectedDisabledBrush}"
+                CheckBoxSelectedPointerOverBrush="{ThemeResource ListViewItemCheckBoxSelectedPointerOverBrush}"
+                CheckBoxSelectedPressedBrush="{ThemeResource ListViewItemCheckBoxSelectedPressedBrush}"
+                CheckBrush="{ThemeResource ListViewItemCheckBrush}"
+                CheckDisabledBrush="{ThemeResource ListViewItemCheckDisabledBrush}"
+                CheckMode="{ThemeResource ListViewItemCheckMode}"
+                CheckPressedBrush="{ThemeResource ListViewItemCheckPressedBrush}"
+                ContentMargin="{TemplateBinding Padding}"
+                ContentTransitions="{TemplateBinding ContentTransitions}"
+                Control.IsTemplateFocusTarget="True"
+                CornerRadius="{ThemeResource ListViewItemCornerRadius}"
+                DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                DragBackground="{ThemeResource ListViewItemDragBackground}"
+                DragForeground="{ThemeResource ListViewItemDragForeground}"
+                DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+                FocusBorderBrush="{ThemeResource ListViewItemFocusBorderBrush}"
+                FocusSecondaryBorderBrush="{ThemeResource ListViewItemFocusSecondaryBorderBrush}"
+                FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
+                FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
+                FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
+                FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
+                PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackground}"
+                PointerOverBackground="{ThemeResource ListViewItemBackgroundPointerOver}"
+                PointerOverForeground="{ThemeResource ListViewItemForegroundPointerOver}"
+                PressedBackground="{ThemeResource ListViewItemBackgroundPressed}"
+                ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}"
+                SelectedBackground="{ThemeResource ListViewItemBackgroundSelected}"
+                SelectedDisabledBackground="{ThemeResource ListViewItemBackgroundSelectedDisabled}"
+                SelectedForeground="{ThemeResource ListViewItemForegroundSelected}"
+                SelectedPointerOverBackground="{ThemeResource ListViewItemBackgroundSelectedPointerOver}"
+                SelectedPressedBackground="{ThemeResource ListViewItemBackgroundSelectedPressed}"
+                SelectionCheckMarkVisualEnabled="{ThemeResource ListViewItemSelectionCheckMarkVisualEnabled}"
+                SelectionIndicatorBrush="{ThemeResource ListViewItemSelectionIndicatorBrush}"
+                SelectionIndicatorCornerRadius="{ThemeResource ListViewItemSelectionIndicatorCornerRadius}"
+                SelectionIndicatorDisabledBrush="{ThemeResource ListViewItemSelectionIndicatorDisabledBrush}"
+                SelectionIndicatorPointerOverBrush="{ThemeResource ListViewItemSelectionIndicatorPointerOverBrush}"
+                SelectionIndicatorPressedBrush="{ThemeResource ListViewItemSelectionIndicatorPressedBrush}"
+                SelectionIndicatorVisualEnabled="False" />
+        </ControlTemplate>
+
         <Style
-            x:Key="ListDefaultContainerStyle"
+            x:Key="ListSingleRowItemContainerStyle"
             BasedOn="{StaticResource DefaultListViewItemStyle}"
             TargetType="ListViewItem">
             <Setter Property="MinHeight" Value="{StaticResource SingleRowListViewItemHeight}" />
             <Setter Property="Height" Value="{StaticResource SingleRowListViewItemHeight}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template" Value="{StaticResource ListViewItemWithoutVisualIndicatorTemplate}" />
         </Style>
 
         <Style
@@ -246,14 +304,17 @@
         </Style>
 
         <DataTemplate x:Key="TagTemplate" x:DataType="viewModels:TagViewModel">
+            <!--
+                Tags are immutable, so we don't have to worry about binding mode.
+            -->
             <cpcontrols:Tag
-                AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
-                BackgroundColor="{x:Bind Background, Mode=OneWay}"
+                AutomationProperties.Name="{x:Bind Text}"
+                BackgroundColor="{x:Bind Background}"
                 FontSize="12"
-                ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
-                Icon="{x:Bind Icon, Mode=OneWay}"
-                Text="{x:Bind Text, Mode=OneWay}"
-                ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
+                ForegroundColor="{x:Bind Foreground}"
+                Icon="{x:Bind Icon}"
+                Text="{x:Bind Text}"
+                ToolTipService.ToolTip="{x:Bind ToolTip}" />
         </DataTemplate>
 
         <cmdpalUI:ListItemTemplateSelector
@@ -265,7 +326,7 @@
 
         <cmdpalUI:ListItemContainerStyleSelector
             x:Key="ListItemContainerStyleSelector"
-            Default="{StaticResource ListDefaultContainerStyle}"
+            Default="{StaticResource ListSingleRowItemContainerStyle}"
             Section="{StaticResource ListSectionContainerStyle}"
             Separator="{StaticResource ListSeparatorContainerStyle}" />
 
@@ -310,10 +371,7 @@
                     Title and subtitle are intentionally in a nested Grid instead in the outer container,
                     to avoid pushing the following element (tags) out of bounds.
                 -->
-                <Grid
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    ColumnSpacing="12">
+                <Grid Grid.Column="1" ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -345,10 +403,11 @@
                 </Grid>
 
                 <!--
-                    8px right margin is added to visually match the spacing between then icon,
-                    and the left margin of the list, as there's
+                    An 8px right margin is added to visually match the spacing between the icon
+                    and the left margin of the list.
+                    ItemRepeater is a lightweight control (compared to ItemsControl).
                 -->
-                <ItemsControl
+                <ItemsRepeater
                     Grid.Column="2"
                     Margin="0,0,8,0"
                     VerticalAlignment="Center"
@@ -357,12 +416,10 @@
                     ItemTemplate="{StaticResource TagTemplate}"
                     ItemsSource="{x:Bind Tags, Mode=OneWay}"
                     Visibility="{x:Bind HasTags, Mode=OneWay}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="4" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
+                    <ItemsRepeater.Layout>
+                        <StackLayout Orientation="Horizontal" Spacing="4" />
+                    </ItemsRepeater.Layout>
+                </ItemsRepeater>
             </Grid>
         </DataTemplate>
 
