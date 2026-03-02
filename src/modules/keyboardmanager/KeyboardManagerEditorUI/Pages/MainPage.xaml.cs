@@ -661,7 +661,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             if (shortcut is Remapping remapping)
             {
-                RemappingHelper.SaveMapping(_mappingService!, remapping.Shortcut, remapping.RemappedKeys, remapping.IsAllApps, remapping.AppName, false);
+                RemappingHelper.SaveMapping(_mappingService!, remapping.Shortcut, remapping.RemappedKeys, !remapping.IsAllApps, remapping.AppName, false);
                 shortcut.IsActive = true;
                 SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
                 return;
