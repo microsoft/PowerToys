@@ -157,7 +157,7 @@ namespace KeyboardManagerEditorUI.Helpers
             string shortcutKeysString = BuildKeyCodeString(keys, mappingService);
             return SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values
                 .Count(settings => KeyboardManagerInterop.AreShortcutsEqual(settings.Shortcut.OriginalKeys, shortcutKeysString) &&
-                                   settings.Shortcut.TargetApp == appName) > upperLimit;
+                                   (string.IsNullOrEmpty(settings.Shortcut.TargetApp) || string.IsNullOrEmpty(appName) || settings.Shortcut.TargetApp == appName)) > upperLimit;
         }
 
         public static bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys, KeyboardMappingService mappingService)
