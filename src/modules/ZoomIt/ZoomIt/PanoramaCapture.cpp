@@ -431,6 +431,72 @@ static void StitchLog( const wchar_t* format, ... )
 
 //----------------------------------------------------------------------------
 //
+// Performance profiling for FindBestFrameShiftVerticalOnly
+//
+//----------------------------------------------------------------------------
+#ifdef _DEBUG
+struct StitchPerfCounters
+{
+    LARGE_INTEGER freqQpc;
+    __int64 totalCalls;
+    __int64 tBuildDsLuma;       // BuildDownsampledLuma
+    __int64 tStationary;        // Stationary score
+    __int64 tVleMask;           // VLE/HCF mask build + dilation
+    __int64 tCoarseSearch;      // Coarse search loop
+    __int64 tFullResLuma;       // BuildFullLumaFrame (when not precomputed)
+    __int64 tProbeInject;       // Probe/candidate injection
+    __int64 tFineSearch;        // Fine search (Phase 2)
+    __int64 tPostValidation;    // Post-search validation/ambiguity
+    __int64 tTotal;             // Total function time
+    __int64 tEdgeProjection;    // Edge-density NCC (HCF injection)
+    __int64 tMaskedFallback;    // Full-res masked coarse fallback
+
+    StitchPerfCounters() { Reset(); QueryPerformanceFrequency( &freqQpc ); }
+    void Reset() { memset( &totalCalls, 0, (char*)(&tMaskedFallback + 1) - (char*)&totalCalls ); }
+
+    double UsFromTicks( __int64 ticks ) const
+    {
+        return ticks * 1000000.0 / freqQpc.QuadPart;
+    }
+
+    void Report()
+    {
+        if( totalCalls == 0 ) return;
+        StitchLog( L"[Panorama/Perf] === FindBestFrameShiftVerticalOnly profiling (%lld calls) ===\n", totalCalls );
+        StitchLog( L"[Panorama/Perf]   Total:          %8.0f us (%.0f us/call)\n", UsFromTicks( tTotal ), UsFromTicks( tTotal ) / totalCalls );
+        StitchLog( L"[Panorama/Perf]   BuildDsLuma:    %8.0f us (%.1f%%)\n", UsFromTicks( tBuildDsLuma ), tBuildDsLuma * 100.0 / max( tTotal, 1LL ) );
+        StitchLog( L"[Panorama/Perf]   Stationary:     %8.0f us (%.1f%%)\n", UsFromTicks( tStationary ), tStationary * 100.0 / max( tTotal, 1LL ) );
+        StitchLog( L"[Panorama/Perf]   VLE/HCF mask:   %8.0f us (%.1f%%)\n", UsFromTicks( tVleMask ), tVleMask * 100.0 / max( tTotal, 1LL ) );
+        StitchLog( L"[Panorama/Perf]   CoarseSearch:   %8.0f us (%.1f%%)\n", UsFromTicks( tCoarseSearch ), tCoarseSearch * 100.0 / max( tTotal, 1LL ) );
+        StitchLog( L"[Panorama/Perf]   MaskedFallback: %8.0f us (%.1f%%)\n", UsFromTicks( tMaskedFallback ), tMaskedFallback * 100.0 / max( tTotal, 1LL ) );
+        StitchLog( L"[Panorama/Perf]   FullResLuma:    %8.0f us (%.1f%%)\n", UsFromTicks( tFullResLuma ), tFullResLuma * 100.0 / max( tTotal, 1LL ) );
+        StitchLog( L"[Panorama/Perf]   ProbeInject:    %8.0f us (%.1f%%)\n", UsFromTicks( tProbeInject ), tProbeInject * 100.0 / max( tTotal, 1LL ) );
+        StitchLog( L"[Panorama/Perf]   EdgeProjection: %8.0f us (%.1f%%)\n", UsFromTicks( tEdgeProjection ), tEdgeProjection * 100.0 / max( tTotal, 1LL ) );
+        StitchLog( L"[Panorama/Perf]   FineSearch:     %8.0f us (%.1f%%)\n", UsFromTicks( tFineSearch ), tFineSearch * 100.0 / max( tTotal, 1LL ) );
+        StitchLog( L"[Panorama/Perf]   PostValidation: %8.0f us (%.1f%%)\n", UsFromTicks( tPostValidation ), tPostValidation * 100.0 / max( tTotal, 1LL ) );
+        StitchLog( L"[Panorama/Perf] ===================================================\n" );
+    }
+};
+static StitchPerfCounters g_StitchPerf;
+
+struct ScopedPerfTimer
+{
+    __int64& accumulator;
+    LARGE_INTEGER start;
+    ScopedPerfTimer( __int64& acc ) : accumulator( acc ) { QueryPerformanceCounter( &start ); }
+    ~ScopedPerfTimer() { LARGE_INTEGER end; QueryPerformanceCounter( &end ); accumulator += end.QuadPart - start.QuadPart; }
+};
+#define PERF_TIMER(field) ScopedPerfTimer _pt_##field( g_StitchPerf.field )
+#define PERF_START(field) LARGE_INTEGER _ps_##field; QueryPerformanceCounter( &_ps_##field )
+#define PERF_STOP(field) { LARGE_INTEGER _pe; QueryPerformanceCounter( &_pe ); g_StitchPerf.field += _pe.QuadPart - _ps_##field.QuadPart; }
+#else
+#define PERF_TIMER(field) ((void)0)
+#define PERF_START(field) ((void)0)
+#define PERF_STOP(field)  ((void)0)
+#endif
+
+//----------------------------------------------------------------------------
+//
 // Panorama capture helpers
 //
 //----------------------------------------------------------------------------
@@ -1780,6 +1846,11 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         return false;
     }
 
+    PERF_START( tTotal );
+#ifdef _DEBUG
+    g_StitchPerf.totalCalls++;
+#endif
+
     // Informative-pixel SAD at dy=0 for HCF pairs (set during the
     // stationary check, consumed by the post-search validation).
     unsigned __int64 hcfInfDiff = 0, hcfInfCount = 0;
@@ -1789,6 +1860,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // matches on repetitive content.  For the first frame pair
     // (expectedDy == 0) search outward from the smallest step.
     //
+    PERF_START( tBuildDsLuma );
     const int downsampleScale = ( min( frameWidth, frameHeight ) >= 240 ) ? 4 : 2;
     const bool hasPrecomputedLuma = !precomputedPrevLuma.empty() && !precomputedCurrLuma.empty();
     std::vector<BYTE> previousLuma;
@@ -1806,14 +1878,18 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     }
     if( dsW != dsW2 || dsH != dsH2 )
     {
+        PERF_STOP( tBuildDsLuma );
+        PERF_STOP( tTotal );
         return false;
     }
+    PERF_STOP( tBuildDsLuma );
 
     const int minStepDs = 1;
     const int maxStepDs = dsH - max( 2, dsH / 6 );
     const int marginX = max( 2, dsW / 20 );
 
     // Stationary score: how well the frames match with zero shift.
+    PERF_START( tStationary );
     unsigned __int64 stationaryScore = ( std::numeric_limits<unsigned __int64>::max )();
     {
         unsigned __int64 totalDiff = 0;
@@ -1834,8 +1910,10 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
             stationaryScore = totalDiff / samples;
         }
     }
+    PERF_STOP( tStationary );
 
     // Very-low-entropy detection and informative mask
+    PERF_START( tVleMask );
     // For frames that are mostly constant (>58% uniform pixels in both
     // frames), build a boolean mask of "informative" downsampled pixels
     // (those near edges/text).  Scoring limited to these pixels avoids
@@ -1943,6 +2021,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
             }
         }
     }
+    PERF_STOP( tVleMask );
 
     // Reject if frames are stationary (near-identical).
     // For very-low-entropy pairs, use the masked stationary score which
@@ -1997,6 +2076,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                          veryLowEntropyPair ? 1 : 0,
                          highConstantFractionPair ? 1 : 0,
                          frameWidth, frameHeight );
+            PERF_STOP( tTotal );
             return false;
         }
     }
@@ -2031,6 +2111,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
 
     // Score every candidate within the search window.
+    PERF_START( tCoarseSearch );
     // Collect the top candidates by raw coarse score, then rank by
     // full-resolution comparison.  This avoids the problem of distance-
     // based scoring favoring wrong harmonic matches when scroll speed
@@ -2126,8 +2207,10 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
             }
         }
     }
+    PERF_STOP( tCoarseSearch );
 
     // Full-resolution masked coarse fallback 
+    PERF_START( tMaskedFallback );
     // When all coarse candidates have score 0 (or the coarse search
     // produced zero candidates because VLE masking left < 20 samples
     // at every offset), the downsampled search can't discriminate
@@ -2304,17 +2387,20 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                          frameWidth, frameHeight );
         }
     }
+    PERF_STOP( tMaskedFallback );
 
     if( candidateCount == 0 )
     {
         StitchLog( L"[Panorama/Stitch] FindBestFrameShift no-match expected=(%d,%d) frame=%dx%d\n",
                      expectedDx, expectedDy, frameWidth, frameHeight );
+        PERF_STOP( tTotal );
         return false;
     }
 
     const unsigned __int64 bestCoarseScore = candidates[0].score;
 
     // Prune candidates whose coarse score is far worse than the best.
+    PERF_START( tProbeInject );
     const unsigned __int64 coarsePruneThreshold = bestCoarseScore + ( lowContrastMode ? 20 : 30 );
     int prunedCount = candidateCount;
     for( int ci = 0; ci < prunedCount; ++ci )
@@ -2559,6 +2645,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // edge-density NCC provides structurally-informed candidates.
     if( highConstantFractionPair && !useMaskedFallback && candidateCount > 0 )
     {
+        PERF_START( tEdgeProjection );
         std::vector<int> edgePrevInj, edgeCurrInj;
         BuildRowEdgeDensity( previousFullLuma, frameWidth, frameHeight, 4, edgePrevInj );
         BuildRowEdgeDensity( currentFullLuma, frameWidth, frameHeight, 4, edgeCurrInj );
@@ -2571,32 +2658,50 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
         const int searchMinFull = searchMinDy * downsampleScale;
         const int searchMaxFull = searchMaxDy * downsampleScale;
-        for( int absStep = max( 4, downsampleScale ); absStep <= frameHeight - max( 2, frameHeight / 6 ); absStep += 2 )
+
+        // Parallel NCC scan: evaluate all (absStep, dir) pairs concurrently.
+        const int nccMinStep = max( 4, downsampleScale );
+        const int nccMaxStep = frameHeight - max( 2, frameHeight / 6 );
+        struct NccWork { int absStep; int dir; double ncc; };
+        std::vector<NccWork> nccWork;
+        nccWork.reserve( 2 * ( ( nccMaxStep - nccMinStep ) / 2 + 1 ) );
+        for( int absStep = nccMinStep; absStep <= nccMaxStep; absStep += 2 )
         {
             for( int dir = -1; dir <= 1; dir += 2 )
             {
                 const int dyF = dir * absStep;
-                if( dyF < searchMinFull || dyF > searchMaxFull ) continue;
-                const int overlap = frameHeight - absStep;
-                const int* aS = ( dir < 0 ) ? &edgePrevInj[absStep] : &edgePrevInj[0];
-                const int* bS = ( dir < 0 ) ? &edgeCurrInj[0] : &edgeCurrInj[absStep];
-                const double ncc = NCC1D( aS, bS, overlap );
+                if( dyF >= searchMinFull && dyF <= searchMaxFull )
+                    nccWork.push_back( { absStep, dir, 0.0 } );
+            }
+        }
 
-                if( eiCount < kEdgeInject || ncc > edgeInj[eiCount - 1].ncc )
+        parallel_for( 0, static_cast<int>( nccWork.size() ), [&]( int idx )
+        {
+            auto& w = nccWork[idx];
+            const int overlap = frameHeight - w.absStep;
+            const int* aS = ( w.dir < 0 ) ? &edgePrevInj[w.absStep] : &edgePrevInj[0];
+            const int* bS = ( w.dir < 0 ) ? &edgeCurrInj[0] : &edgeCurrInj[w.absStep];
+            w.ncc = NCC1D( aS, bS, overlap );
+        } );
+
+        // Pick top kEdgeInject from all NCC results.
+        for( const auto& w : nccWork )
+        {
+            const int dyF = w.dir * w.absStep;
+            if( eiCount < kEdgeInject || w.ncc > edgeInj[eiCount - 1].ncc )
+            {
+                int ip = eiCount < kEdgeInject ? eiCount : eiCount - 1;
+                for( int j = ip; j > 0 && edgeInj[j - 1].ncc < w.ncc; --j )
                 {
-                    int ip = eiCount < kEdgeInject ? eiCount : eiCount - 1;
-                    for( int j = ip; j > 0 && edgeInj[j - 1].ncc < ncc; --j )
-                    {
-                        if( j < kEdgeInject )
-                            edgeInj[j] = edgeInj[j - 1];
-                        ip = j - 1;
-                    }
-                    if( ip < kEdgeInject )
-                    {
-                        edgeInj[ip] = { dyF, ncc };
-                        if( eiCount < kEdgeInject )
-                            eiCount++;
-                    }
+                    if( j < kEdgeInject )
+                        edgeInj[j] = edgeInj[j - 1];
+                    ip = j - 1;
+                }
+                if( ip < kEdgeInject )
+                {
+                    edgeInj[ip] = { dyF, w.ncc };
+                    if( eiCount < kEdgeInject )
+                        eiCount++;
                 }
             }
         }
@@ -2614,6 +2719,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
         StitchLog( L"[Panorama/Stitch] EdgeProjectionInject injected=%d topNCC=%.4f\n",
                      eiCount, eiCount > 0 ? edgeInj[0].ncc : 0.0 );
+        PERF_STOP( tEdgeProjection );
     }
 
     // Debug: log coarse candidates for HCF frames to diagnose harmonic issues.
@@ -2629,8 +2735,10 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
         StitchLog( L"\n" );
     }
+    PERF_STOP( tProbeInject );
 
     // Phase 2: Rank candidates by full-resolution comparison 
+    PERF_START( tFineSearch );
     // For each coarse candidate, compute a fine score at full resolution.
     // This resolves ambiguity from harmonic matches on repetitive content
     // since the full-resolution comparison sees fine text details that
@@ -2746,354 +2854,348 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
     const int fineMarginX = useMaskedFallback ? 4 : max( 4, frameWidth / 20 );
 
+    // Parallel fine search: enumerate work items, score in parallel, rank sequentially.
+    struct FineWorkItem {
+        int ci;
+        int dy;
+        int dx;
+        unsigned __int64 score;
+        bool valid;
+    };
+    std::vector<FineWorkItem> fineWork;
+    fineWork.reserve( prunedCount * ( 2 * refineRadiusDy + 1 ) * ( 2 * refineRadiusDx + 1 ) );
+
     for( int ci = 0; ci < prunedCount; ++ci )
     {
         const int coarseDyFull = candidates[ci].dyDs * downsampleScale;
-
         for( int ddy = -refineRadiusDy; ddy <= refineRadiusDy; ++ddy )
         {
             const int dy = coarseDyFull + ddy;
             const int absStep = abs( dy );
             if( absStep < 4 || absStep >= frameHeight - 4 )
-            {
                 continue;
-            }
-
             const int overlap = frameHeight - absStep;
             if( overlap < frameHeight / 4 )
-            {
                 continue;
-            }
-
             for( int dx = -refineRadiusDx; dx <= refineRadiusDx; ++dx )
             {
                 const int xStart = max( fineMarginX, fineMarginX + max( 0, -dx ) );
                 const int xEnd = min( frameWidth - fineMarginX, frameWidth - fineMarginX - max( 0, dx ) );
                 if( xEnd - xStart < frameWidth / 3 )
-                {
                     continue;
-                }
-
-                unsigned __int64 score;
-
-                if( useZnccFineSearch )
-                {
-                    // ZNCC fine scoring: uses only informative (masked) pixels.
-                    // Constant regions have sigma=0 and contribute nothing, avoiding
-                    // the "everything scores 0" problem that SAD has on HCF content.
-                    const double zncc = ComputeMaskedZNCC(
-                        previousFullLuma.data(), currentFullLuma.data(),
-                        fullMaskPrev.data(), fullMaskCurr.data(),
-                        frameWidth, overlap, absStep,
-                        ( dy < 0 ) ? -1 : 1, dx,
-                        fineMarginX, 50 /*minSamples*/ );
-
-                    // Convert ZNCC to integer score compatible with SAD pipeline.
-                    // ZNCC=1.0 -> score=0 (perfect), ZNCC=0.5 -> score=kZnccScoreBase/2.
-                    score = static_cast<unsigned __int64>(
-                        max( 0.0, ( 1.0 - zncc ) * static_cast<double>( kZnccScoreBase ) ) );
-                }
-                else
-                {
-
-                unsigned __int64 totalDiff = 0;
-                unsigned __int64 samples = 0;
-                bool earlyExit = false;
-
-                for( int y = 0; y < overlap && !earlyExit; y += 2 )
-                {
-                    int pY, cY;
-                    if( dy < 0 )
-                    {
-                        pY = y + absStep;
-                        cY = y;
-                    }
-                    else
-                    {
-                        pY = y;
-                        cY = y + absStep;
-                    }
-
-                    const int prevRow = pY * frameWidth;
-                    const int currRow = cY * frameWidth;
-
-                    const BYTE* pBase = &previousFullLuma[prevRow + xStart];
-                    const BYTE* cBase = &currentFullLuma[currRow + xStart + dx];
-                    const int xSpan = xEnd - xStart;
-                    unsigned __int64 rowDiff = 0;
-
-                    if( useFineMask )
-                    {
-                        // Masked scoring: only accumulate at informative
-                        // pixels (union of both masks at their respective
-                        // positions).
-                        for( int xi = 0; xi < xSpan; ++xi )
-                        {
-                            const int prevIdx = prevRow + xStart + xi;
-                            const int currIdx = currRow + xStart + xi + dx;
-                            if( fullMaskPrev[prevIdx] || fullMaskCurr[currIdx] )
-                            {
-                                rowDiff += static_cast<unsigned __int64>(
-                                    abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
-                                samples++;
-                            }
-                        }
-                        totalDiff += rowDiff;
-                    }
-                    else
-                    {
-
-#if defined(_M_X64) || defined(_M_IX86)
-                    // SSE2 SIMD: process 16 luma pixels at once using
-                    // _mm_sad_epu8 (sum of absolute differences).
-                    __m128i sadAcc = _mm_setzero_si128();
-                    int xi = 0;
-                    for( ; xi + 16 <= xSpan; xi += 16 )
-                    {
-                        const __m128i a = _mm_loadu_si128( reinterpret_cast<const __m128i*>( pBase + xi ) );
-                        const __m128i b = _mm_loadu_si128( reinterpret_cast<const __m128i*>( cBase + xi ) );
-                        sadAcc = _mm_add_epi64( sadAcc, _mm_sad_epu8( a, b ) );
-                    }
-
-                    rowDiff = static_cast<unsigned __int64>( _mm_cvtsi128_si64( sadAcc ) ) +
-                              static_cast<unsigned __int64>( _mm_cvtsi128_si64( _mm_srli_si128( sadAcc, 8 ) ) );
-
-                    for( ; xi < xSpan; ++xi )
-                    {
-                        rowDiff += static_cast<unsigned __int64>(
-                            abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
-                    }
-#elif defined(_M_ARM64)
-                    // NEON SIMD: process 16 luma pixels at once using
-                    // vabdq_u8 (absolute difference) + vpaddlq (pairwise
-                    // widening add) to compute sum of absolute differences.
-                    uint64x2_t sadAcc = vdupq_n_u64( 0 );
-                    int xi = 0;
-                    for( ; xi + 16 <= xSpan; xi += 16 )
-                    {
-                        const uint8x16_t a = vld1q_u8( pBase + xi );
-                        const uint8x16_t b = vld1q_u8( cBase + xi );
-                        const uint8x16_t absDiff = vabdq_u8( a, b );
-                        // Widen 8->16->32->64 with pairwise adds.
-                        const uint16x8_t sum16 = vpaddlq_u8( absDiff );
-                        const uint32x4_t sum32 = vpaddlq_u16( sum16 );
-                        const uint64x2_t sum64 = vpaddlq_u32( sum32 );
-                        sadAcc = vaddq_u64( sadAcc, sum64 );
-                    }
-
-                    rowDiff = vgetq_lane_u64( sadAcc, 0 ) + vgetq_lane_u64( sadAcc, 1 );
-
-                    for( ; xi < xSpan; ++xi )
-                    {
-                        rowDiff += static_cast<unsigned __int64>(
-                            abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
-                    }
-#else
-                    // Scalar fallback.
-                    for( int xi = 0; xi < xSpan; ++xi )
-                    {
-                        rowDiff += static_cast<unsigned __int64>(
-                            abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
-                    }
-#endif
-
-                    totalDiff += rowDiff;
-                    samples += xSpan;
-
-                    } // standard luma
-
-                    // Early termination: if running average already exceeds
-                    // the best fine score, this candidate cannot win.
-                    // Exception: always evaluate the neighborhood of the expected
-                    // step fully.  A previous harmonic candidate may have set a
-                    // low bestFineScore that prematurely kills the expected-step
-                    // candidate before it sees enough content to produce a fair
-                    // average.
-                    const unsigned __int64 earlyMinSamples = useFineMask ? 50 : 200;
-                    const bool isExpectedStepDy = ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
-                        expectedAbsStep > 0 &&
-                        abs( abs( dy ) - expectedAbsStep ) <= refineRadiusDy + 4;
-                    if( !isExpectedStepDy &&
-                        bestFineScore != ( std::numeric_limits<unsigned __int64>::max )() &&
-                        samples >= earlyMinSamples && totalDiff * kFineScoreScale >= (bestFineScore + 1) * samples )
-                    {
-                        earlyExit = true;
-                    }
-                }
-
-                const unsigned __int64 minSamples = useFineMask ? 20 : 100;
-                if( earlyExit || samples < minSamples )
-                {
-                    continue;
-                }
-
-                score = totalDiff * kFineScoreScale / samples;
-
-                } // !useZnccFineSearch
-
-                // Harmonic-fallback tracking.
-                // For ZNCC, "perfect" means score near 0 (within kZnccMinPerfect
-                // due to floating-point rounding) rather than exactly 0.
-                const unsigned __int64 harmonicPerfectThreshold = useZnccFineSearch ? 64 : 0;
-                if( harmonicFallback && score <= harmonicPerfectThreshold )
-                {
-                    if( ci < preHarmonicProbeCount )
-                        foundOriginalZero = true;
-                    if( absStep < smallestZeroAbsStep )
-                    {
-                        smallestZeroAbsStep = absStep;
-                        smallestZeroDy = dy;
-                        smallestZeroDx = dx;
-                    }
-                }
-
-                // Skip harmonic-fallback probes that didn't achieve a
-                // perfect pixel match -- only score<=threshold probes can win.
-                // Also skip probes entirely when an original candidate
-                // already found a perfect score (the correct shift is already in
-                // the candidate list and probes can only cause harm).
-                if( harmonicFallback && ci >= preHarmonicProbeCount &&
-                    ( score > harmonicPerfectThreshold || foundOriginalZero ) )
-                    continue;
-
-                unsigned __int64 rankScore = score;
-                if( expectedAbsStep > 0 && expectedAbsStep >= frameHeight / 4 &&
-                    absStep > 4 && absStep < expectedAbsStep * 2 / 3 )
-                {
-                    const int ratio = ( expectedAbsStep + absStep / 2 ) / absStep;
-                    const int residual = abs( expectedAbsStep - ratio * absStep );
-                    if( ratio >= 2 && residual < max( 5, absStep / 3 ) )
-                    {
-                        rankScore += static_cast<unsigned __int64>( min( ratio, 6 ) * 2 );
-                    }
-                }
-                if( expectedAbsStep > 0 && highConstantFractionPair )
-                {
-                    // Ranking-only overlap penalty for periodic content.
-                    // Harmonic matches often win with smaller overlap
-                    // regions that happen to have lower average SAD.
-                    // Keep the raw score for acceptance thresholds; use the
-                    // penalty only for candidate ordering.
-                    // Exempt candidates near the expected step -- the overlap
-                    // penalty is designed to catch unexpected large steps, not
-                    // penalize legitimately large expected motion.
-                    const bool nearExpectedStep = abs( absStep - expectedAbsStep ) <= refineRadiusDy + 4;
-                    const int overlapPct = ( overlap * 100 ) / max( 1, frameHeight );
-                    if( !nearExpectedStep && overlapPct < 72 )
-                    {
-                        const unsigned __int64 overlapPenalty =
-                            static_cast<unsigned __int64>( ( 72 - overlapPct ) * 6 );
-                        rankScore = score + overlapPenalty;
-                    }
-                }
-                // Record best score near expected step. Used both for
-                // diagnostics and for harmonic-override that prefers
-                // expected-step candidates over far-away harmonics.
-                if( expectedAbsStep > 0 && abs( abs( dy ) - expectedAbsStep ) <= 4 )
-                {
-                    if( score < scoreAtExpectedStep )
-                    {
-                        scoreAtExpectedStep = score;
-                        dxAtExpectedStep = dx;
-                        dyAtExpectedStep = dy;
-                    }
-                }
-
-                if( rankScore < bestFineRankScore )
-                {
-                    secondBestFineScore = bestFineScore;
-                    secondBestFineRankScore = bestFineRankScore;
-                    secondBestDx = bestDx;
-                    secondBestDy = bestDy;
-                    bestFineScore = score;
-                    bestFineRankScore = rankScore;
-                    bestDx = dx;
-                    bestDy = dy;
-                    bestCoarseDy = candidates[ci].dyDs;
-                    bestAbsStep = abs( dy );
-                    bestAbsDx = abs( dx );
-                    bestExpectedDelta = ( expectedAbsStep > 0 ) ? abs( bestAbsStep - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
-                }
-                else if( rankScore == bestFineRankScore )
-                {
-                    const int absStep = abs( dy );
-                    const int absDx = abs( dx );
-                    const int expectedDelta = ( expectedAbsStep > 0 ) ? abs( absStep - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
-
-                    // Tie-break equal-quality matches by preferring the shift
-                    // closest to expected motion. Repeating patterns often
-                    // produce harmonic ties where smallest-|dy| collapses
-                    // height and drops real content ranges.
-                    //
-                    // First frame pair (expectedAbsStep==0): prefer smaller
-                    // shift.  On VLE content all offsets score identically
-                    // (fineScore=0), so picking the smallest avoids locking
-                    // onto a randomly-large harmonic that makes the alignment
-                    // score fail the overlap check and causes wrong axis
-                    // selection.
-                    if( ( expectedAbsStep > 0 && expectedDelta < bestExpectedDelta ) ||
-                        ( expectedAbsStep == 0 && absStep < bestAbsStep ) ||
-                        ( expectedDelta == bestExpectedDelta &&
-                          ( absStep < bestAbsStep || ( absStep == bestAbsStep && absDx < bestAbsDx ) ) ) )
-                    {
-                        bestDx = dx;
-                        bestDy = dy;
-                        bestCoarseDy = candidates[ci].dyDs;
-                        bestAbsStep = absStep;
-                        bestAbsDx = absDx;
-                        bestExpectedDelta = expectedDelta;
-                    }
-                }
-                else if( expectedAbsStep > 0 && bestFineRankScore != ( std::numeric_limits<unsigned __int64>::max )() )
-                {
-                    unsigned __int64 scoreSlack = (std::max)( static_cast<unsigned __int64>( 2 ), bestFineRankScore / 80 );
-                    const int absStep = abs( dy );
-                    const int absDx = abs( dx );
-                    const int expectedDelta = abs( absStep - expectedAbsStep );
-                    const bool preferExpectedStep = ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
-                        expectedAbsStep >= 8;
-
-                    // Sparse high-constant frames frequently produce shallow
-                    // harmonic minima. Allow a wider near-tie band so a
-                    // candidate materially closer to expected motion can win.
-                    // Use tiered slack: wider for HCF, moderate for non-HCF.
-                    if( preferExpectedStep )
-                    {
-                        scoreSlack = (std::max)( scoreSlack, highConstantFractionPair
-                            ? bestFineRankScore / 12    // 8.3% for HCF
-                            : bestFineRankScore / 30 ); // 3.3% for non-HCF
-                    }
-
-                    // If score is nearly identical, prefer a materially more
-                    // plausible step near expected motion.
-                    const int requiredExpectedGain = highConstantFractionPair ? 0 : 1;
-                    if( rankScore <= bestFineRankScore + scoreSlack && expectedDelta + requiredExpectedGain < bestExpectedDelta )
-                    {
-                        secondBestFineScore = min( secondBestFineScore, bestFineScore );
-                        secondBestFineRankScore = min( secondBestFineRankScore, bestFineRankScore );
-                        secondBestDx = bestDx;
-                        secondBestDy = bestDy;
-                        bestFineScore = score;
-                        bestFineRankScore = rankScore;
-                        bestDx = dx;
-                        bestDy = dy;
-                        bestCoarseDy = candidates[ci].dyDs;
-                        bestAbsStep = absStep;
-                        bestAbsDx = absDx;
-                        bestExpectedDelta = expectedDelta;
-                    }
-                }
-                else if( rankScore < secondBestFineRankScore )
-                {
-                    secondBestFineRankScore = rankScore;
-                    secondBestFineScore = score;
-                    secondBestDx = dx;
-                    secondBestDy = dy;
-                }
+                fineWork.push_back( { ci, dy, dx, 0, false } );
             }
         }
     }
 
+    // Shared approximate best score for cross-thread early termination.
+    // Only used after a significant fraction of rows are evaluated to
+    // avoid prematurely terminating the true best candidate whose running
+    // average is temporarily inflated by early high-difference rows.
+    std::atomic<unsigned __int64> sharedBestFine{ ( std::numeric_limits<unsigned __int64>::max )() };
+
+    // Score all work items in parallel.
+    parallel_for( 0, static_cast<int>( fineWork.size() ), [&]( int idx )
+    {
+        auto& w = fineWork[idx];
+        const int dy = w.dy;
+        const int dx = w.dx;
+        const int absStep = abs( dy );
+        const int overlap = frameHeight - absStep;
+        const int xStart = max( fineMarginX, fineMarginX + max( 0, -dx ) );
+        const int xEnd = min( frameWidth - fineMarginX, frameWidth - fineMarginX - max( 0, dx ) );
+
+        if( useZnccFineSearch )
+        {
+            const double zncc = ComputeMaskedZNCC(
+                previousFullLuma.data(), currentFullLuma.data(),
+                fullMaskPrev.data(), fullMaskCurr.data(),
+                frameWidth, overlap, absStep,
+                ( dy < 0 ) ? -1 : 1, dx,
+                fineMarginX, 50 /*minSamples*/ );
+            w.score = static_cast<unsigned __int64>(
+                max( 0.0, ( 1.0 - zncc ) * static_cast<double>( kZnccScoreBase ) ) );
+            w.valid = true;
+        }
+        else
+        {
+
+        unsigned __int64 totalDiff = 0;
+        unsigned __int64 samples = 0;
+        bool earlyExit = false;
+
+        for( int y = 0; y < overlap && !earlyExit; y += 2 )
+        {
+            int pY, cY;
+            if( dy < 0 )
+            {
+                pY = y + absStep;
+                cY = y;
+            }
+            else
+            {
+                pY = y;
+                cY = y + absStep;
+            }
+
+            const int prevRow = pY * frameWidth;
+            const int currRow = cY * frameWidth;
+
+            const BYTE* pBase = &previousFullLuma[prevRow + xStart];
+            const BYTE* cBase = &currentFullLuma[currRow + xStart + dx];
+            const int xSpan = xEnd - xStart;
+            unsigned __int64 rowDiff = 0;
+
+            if( useFineMask )
+            {
+                for( int xi = 0; xi < xSpan; ++xi )
+                {
+                    const int prevIdx = prevRow + xStart + xi;
+                    const int currIdx = currRow + xStart + xi + dx;
+                    if( fullMaskPrev[prevIdx] || fullMaskCurr[currIdx] )
+                    {
+                        rowDiff += static_cast<unsigned __int64>(
+                            abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
+                        samples++;
+                    }
+                }
+                totalDiff += rowDiff;
+            }
+            else
+            {
+
+#if defined(_M_X64) || defined(_M_IX86)
+            __m128i sadAcc = _mm_setzero_si128();
+            int xi = 0;
+            for( ; xi + 16 <= xSpan; xi += 16 )
+            {
+                const __m128i a = _mm_loadu_si128( reinterpret_cast<const __m128i*>( pBase + xi ) );
+                const __m128i b = _mm_loadu_si128( reinterpret_cast<const __m128i*>( cBase + xi ) );
+                sadAcc = _mm_add_epi64( sadAcc, _mm_sad_epu8( a, b ) );
+            }
+
+            rowDiff = static_cast<unsigned __int64>( _mm_cvtsi128_si64( sadAcc ) ) +
+                      static_cast<unsigned __int64>( _mm_cvtsi128_si64( _mm_srli_si128( sadAcc, 8 ) ) );
+
+            for( ; xi < xSpan; ++xi )
+            {
+                rowDiff += static_cast<unsigned __int64>(
+                    abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
+            }
+#elif defined(_M_ARM64)
+            uint64x2_t sadAcc = vdupq_n_u64( 0 );
+            int xi = 0;
+            for( ; xi + 16 <= xSpan; xi += 16 )
+            {
+                const uint8x16_t a = vld1q_u8( pBase + xi );
+                const uint8x16_t b = vld1q_u8( cBase + xi );
+                const uint8x16_t absDiff = vabdq_u8( a, b );
+                const uint16x8_t sum16 = vpaddlq_u8( absDiff );
+                const uint32x4_t sum32 = vpaddlq_u16( sum16 );
+                const uint64x2_t sum64 = vpaddlq_u32( sum32 );
+                sadAcc = vaddq_u64( sadAcc, sum64 );
+            }
+
+            rowDiff = vgetq_lane_u64( sadAcc, 0 ) + vgetq_lane_u64( sadAcc, 1 );
+
+            for( ; xi < xSpan; ++xi )
+            {
+                rowDiff += static_cast<unsigned __int64>(
+                    abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
+            }
+#else
+            for( int xi = 0; xi < xSpan; ++xi )
+            {
+                rowDiff += static_cast<unsigned __int64>(
+                    abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
+            }
+#endif
+
+            totalDiff += rowDiff;
+            samples += xSpan;
+
+            } // standard luma
+
+            // Early termination using shared best score across threads.
+            // Only activate after 75% of rows to avoid false termination of
+            // the true best candidate whose initial rows may have higher SAD.
+            const unsigned __int64 earlyMinSamples = useFineMask ? 50 : 200;
+            const bool isExpectedStepDy = ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
+                expectedAbsStep > 0 &&
+                abs( abs( dy ) - expectedAbsStep ) <= refineRadiusDy + 4;
+            const unsigned __int64 curBest = sharedBestFine.load( std::memory_order_relaxed );
+            if( !isExpectedStepDy &&
+                curBest != ( std::numeric_limits<unsigned __int64>::max )() &&
+                y >= overlap * 3 / 4 &&
+                samples >= earlyMinSamples && totalDiff * kFineScoreScale >= (curBest + 1) * samples )
+            {
+                earlyExit = true;
+            }
+        }
+
+        const unsigned __int64 minSamples = useFineMask ? 20 : 100;
+        if( earlyExit || samples < minSamples )
+            return;
+
+        w.score = totalDiff * kFineScoreScale / samples;
+        w.valid = true;
+
+        // Update shared best for cross-thread early termination.
+        unsigned __int64 old = sharedBestFine.load( std::memory_order_relaxed );
+        while( w.score < old )
+        {
+            if( sharedBestFine.compare_exchange_weak( old, w.score, std::memory_order_relaxed ) )
+                break;
+        }
+
+        } // !useZnccFineSearch
+    } );
+
+    // Sequential ranking pass over scored results.
+    for( const auto& w : fineWork )
+    {
+        if( !w.valid )
+            continue;
+
+        const int ci = w.ci;
+        const int dy = w.dy;
+        const int dx = w.dx;
+        const unsigned __int64 score = w.score;
+        const int absStep = abs( dy );
+        const int overlap = frameHeight - absStep;
+
+        // Harmonic-fallback tracking.
+        const unsigned __int64 harmonicPerfectThreshold = useZnccFineSearch ? 64 : 0;
+        if( harmonicFallback && score <= harmonicPerfectThreshold )
+        {
+            if( ci < preHarmonicProbeCount )
+                foundOriginalZero = true;
+            if( absStep < smallestZeroAbsStep )
+            {
+                smallestZeroAbsStep = absStep;
+                smallestZeroDy = dy;
+                smallestZeroDx = dx;
+            }
+        }
+
+        // Skip harmonic-fallback probes that didn't achieve a
+        // perfect pixel match -- only score<=threshold probes can win.
+        // Also skip probes entirely when an original candidate
+        // already found a perfect score.
+        if( harmonicFallback && ci >= preHarmonicProbeCount &&
+            ( score > harmonicPerfectThreshold || foundOriginalZero ) )
+            continue;
+
+        unsigned __int64 rankScore = score;
+        if( expectedAbsStep > 0 && expectedAbsStep >= frameHeight / 4 &&
+            absStep > 4 && absStep < expectedAbsStep * 2 / 3 )
+        {
+            const int ratio = ( expectedAbsStep + absStep / 2 ) / absStep;
+            const int residual = abs( expectedAbsStep - ratio * absStep );
+            if( ratio >= 2 && residual < max( 5, absStep / 3 ) )
+            {
+                rankScore += static_cast<unsigned __int64>( min( ratio, 6 ) * 2 );
+            }
+        }
+        if( expectedAbsStep > 0 && highConstantFractionPair )
+        {
+            const bool nearExpectedStep = abs( absStep - expectedAbsStep ) <= refineRadiusDy + 4;
+            const int overlapPct = ( overlap * 100 ) / max( 1, frameHeight );
+            if( !nearExpectedStep && overlapPct < 72 )
+            {
+                const unsigned __int64 overlapPenalty =
+                    static_cast<unsigned __int64>( ( 72 - overlapPct ) * 6 );
+                rankScore = score + overlapPenalty;
+            }
+        }
+        if( expectedAbsStep > 0 && abs( abs( dy ) - expectedAbsStep ) <= 4 )
+        {
+            if( score < scoreAtExpectedStep )
+            {
+                scoreAtExpectedStep = score;
+                dxAtExpectedStep = dx;
+                dyAtExpectedStep = dy;
+            }
+        }
+
+        if( rankScore < bestFineRankScore )
+        {
+            secondBestFineScore = bestFineScore;
+            secondBestFineRankScore = bestFineRankScore;
+            secondBestDx = bestDx;
+            secondBestDy = bestDy;
+            bestFineScore = score;
+            bestFineRankScore = rankScore;
+            bestDx = dx;
+            bestDy = dy;
+            bestCoarseDy = candidates[ci].dyDs;
+            bestAbsStep = abs( dy );
+            bestAbsDx = abs( dx );
+            bestExpectedDelta = ( expectedAbsStep > 0 ) ? abs( bestAbsStep - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
+        }
+        else if( rankScore == bestFineRankScore )
+        {
+            const int absStep = abs( dy );
+            const int absDx = abs( dx );
+            const int expectedDelta = ( expectedAbsStep > 0 ) ? abs( absStep - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
+
+            if( ( expectedAbsStep > 0 && expectedDelta < bestExpectedDelta ) ||
+                ( expectedAbsStep == 0 && absStep < bestAbsStep ) ||
+                ( expectedDelta == bestExpectedDelta &&
+                  ( absStep < bestAbsStep || ( absStep == bestAbsStep && absDx < bestAbsDx ) ) ) )
+            {
+                bestDx = dx;
+                bestDy = dy;
+                bestCoarseDy = candidates[ci].dyDs;
+                bestAbsStep = absStep;
+                bestAbsDx = absDx;
+                bestExpectedDelta = expectedDelta;
+            }
+        }
+        else if( expectedAbsStep > 0 && bestFineRankScore != ( std::numeric_limits<unsigned __int64>::max )() )
+        {
+            unsigned __int64 scoreSlack = (std::max)( static_cast<unsigned __int64>( 2 ), bestFineRankScore / 80 );
+            const int absStep = abs( dy );
+            const int absDx = abs( dx );
+            const int expectedDelta = abs( absStep - expectedAbsStep );
+            const bool preferExpectedStep = ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
+                expectedAbsStep >= 8;
+
+            if( preferExpectedStep )
+            {
+                scoreSlack = (std::max)( scoreSlack, highConstantFractionPair
+                    ? bestFineRankScore / 12    // 8.3% for HCF
+                    : bestFineRankScore / 30 ); // 3.3% for non-HCF
+            }
+
+            const int requiredExpectedGain = highConstantFractionPair ? 0 : 1;
+            if( rankScore <= bestFineRankScore + scoreSlack && expectedDelta + requiredExpectedGain < bestExpectedDelta )
+            {
+                secondBestFineScore = min( secondBestFineScore, bestFineScore );
+                secondBestFineRankScore = min( secondBestFineRankScore, bestFineRankScore );
+                secondBestDx = bestDx;
+                secondBestDy = bestDy;
+                bestFineScore = score;
+                bestFineRankScore = rankScore;
+                bestDx = dx;
+                bestDy = dy;
+                bestCoarseDy = candidates[ci].dyDs;
+                bestAbsStep = absStep;
+                bestAbsDx = absDx;
+                bestExpectedDelta = expectedDelta;
+            }
+        }
+        else if( rankScore < secondBestFineRankScore )
+        {
+            secondBestFineRankScore = rankScore;
+            secondBestFineScore = score;
+            secondBestDx = dx;
+            secondBestDy = dy;
+        }
+    }
+    PERF_STOP( tFineSearch );
+
+    PERF_START( tPostValidation );
     if( ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
         bestFineRankScore != ( std::numeric_limits<unsigned __int64>::max )() &&
         secondBestFineRankScore != ( std::numeric_limits<unsigned __int64>::max )() )
@@ -3248,6 +3350,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                      static_cast<unsigned long long>( stationaryScore ),
                      static_cast<unsigned long long>( maskedStationaryScore ),
                      veryLowEntropyPair ? 1 : 0 );
+        PERF_STOP( tPostValidation ); PERF_STOP( tTotal );
         return false;
     }
 
@@ -3290,6 +3393,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                      expectedDx, expectedDy, bestDx, bestDy,
                      bestAbsStep, expectedAbsStep,
                      static_cast<unsigned long long>( bestFineScore ) );
+        PERF_STOP( tPostValidation ); PERF_STOP( tTotal );
         return false;
     }
 
@@ -3362,6 +3466,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                      highConstantFractionPair ? 1 : 0,
                      bestExpectedDelta,
                      refineRadiusDy );
+        PERF_STOP( tPostValidation ); PERF_STOP( tTotal );
         return false;
     }
 
@@ -3385,6 +3490,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
     if( outMaskedStationaryScore )
         *outMaskedStationaryScore = maskedStationaryScore;
+    PERF_STOP( tPostValidation ); PERF_STOP( tTotal );
     return true;
 }
 
@@ -4440,6 +4546,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
         maxX = max( maxX, nextOrigin.x + frameWidth );
         maxY = max( maxY, nextOrigin.y + frameHeight );
     }
+
+#ifdef _DEBUG
+    g_StitchPerf.Report();
+    g_StitchPerf.Reset();
+#endif
 
     int totalAbsStepX = 0;
     int totalAbsStepY = 0;
