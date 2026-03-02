@@ -66,6 +66,8 @@
                             ToolTipService.ToolTip="{TemplateBinding ToolTip}">
                             <Grid
                                 x:Name="PART_RootGrid"
+                                MinWidth="32"
+                                MinHeight="30"
                                 Margin="{TemplateBinding InnerMargin}"
                                 Padding="{TemplateBinding Padding}"
                                 VerticalAlignment="Stretch"
@@ -80,7 +82,7 @@
                                     ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
 
                                     <!--  Icon  -->
@@ -164,6 +166,7 @@
                                     <VisualState x:Name="TextHidden">
                                         <VisualState.Setters>
                                             <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
+                                            <Setter Target="ContentGrid.HorizontalAlignment" Value="Center" />
                                             <Setter Target="TextPanel.Visibility" Value="Collapsed" />
                                         </VisualState.Setters>
                                     </VisualState>
