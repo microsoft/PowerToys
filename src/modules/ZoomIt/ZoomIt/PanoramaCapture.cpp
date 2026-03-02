@@ -105,9 +105,11 @@
 #include "Utility.h"
 #include "WindowsVersions.h"
 
+#include <atomic>
 #include <filesystem>
 #include <fstream>
 #include <limits>
+#include <thread>
 #include <vector>
 #include <functional>
 #include <cmath>
@@ -131,6 +133,45 @@ std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t*
 
 static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<bool(int)> progressCallback = nullptr );
 static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile );
+
+//----------------------------------------------------------------------------
+// Lightweight parallel_for using std::thread.
+// Distributes [begin, end) work items across up to hardware_concurrency
+// threads using atomic work-stealing.  Falls back to serial execution
+// for single items or single-core machines.
+//----------------------------------------------------------------------------
+template<typename Func>
+static void parallel_for( int begin, int end, const Func& body )
+{
+    const int count = end - begin;
+    if( count <= 0 )
+        return;
+    const int maxThreads = static_cast<int>( std::thread::hardware_concurrency() );
+    const int numThreads = min( maxThreads, count );
+    if( numThreads <= 1 )
+    {
+        for( int i = begin; i < end; ++i )
+            body( i );
+        return;
+    }
+    std::vector<std::thread> threads( numThreads - 1 );
+    std::atomic<int> nextIndex( begin );
+    auto worker = [&]()
+    {
+        for( ;; )
+        {
+            const int i = nextIndex.fetch_add( 1 );
+            if( i >= end )
+                break;
+            body( i );
+        }
+    };
+    for( auto& t : threads )
+        t = std::thread( worker );
+    worker();
+    for( auto& t : threads )
+        t.join();
+}
 
 //----------------------------------------------------------------------------
 // Progress dialog for panorama stitching.
@@ -3820,21 +3861,15 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
         }
     }
 
-    // Pre-compute full-resolution luma for every frame so that
-    // FindBestFrameShift can skip redundant BGRA->luma conversions.
+    // Pre-compute full-resolution luma and per-frame constant-content
+    // fraction in parallel.  Each frame's work is independent.
     std::vector<std::vector<BYTE>> frameLuma( frames.size() );
-    for( size_t i = 0; i < frames.size(); i++ )
+    std::vector<double> frameConstantFraction( frames.size() );
+    parallel_for( 0, static_cast<int>( frames.size() ), [&]( int i )
     {
         BuildFullLumaFrame( framePixels[i], frameWidth, frameHeight, frameLuma[i] );
-    }
-
-    // Pre-compute per-frame constant-content fraction so that
-    // IsVeryLowEntropyPair can be resolved without redundant scans.
-    std::vector<double> frameConstantFraction( frames.size() );
-    for( size_t i = 0; i < frames.size(); i++ )
-    {
         frameConstantFraction[i] = ComputeConstantContentFraction( framePixels[i], frameWidth, frameHeight );
-    }
+    } );
 
     std::vector<size_t> composedFrameIndices;
     std::vector<POINT> composedFrameOrigins;
@@ -4498,12 +4533,14 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
         const int overlapHeight = mostlyVerticalMove ? max( 0, frameHeight - absStepY ) : 0;
         const int overlapWidth = mostlyHorizontalMove ? max( 0, frameWidth - absStepX ) : 0;
 
-        for( int y = 0; y < frameHeight; ++y )
+        // Parallelize row loop: each row y maps to a unique canvasY,
+        // so rows write to disjoint canvas memory -- no data races.
+        parallel_for( 0, frameHeight, [&]( int y )
         {
             const int canvasY = destinationY + y;
             if( canvasY < 0 || canvasY >= stitchedHeight )
             {
-                continue;
+                return;
             }
 
             const size_t srcRowBase = static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) * 4;
@@ -4636,7 +4673,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                                                                     static_cast<int>( sourcePixels[srcIndex + 2] ) * static_cast<int>( weightNew ) ) / 255 );
                 stitchedPixels[dstIndex + 3] = 0xFF;
             }
-        }
+        } );
     }
 
     HBITMAP stitchedBitmap = CreateBitmapFromPixels32( stitchedPixels, stitchedWidth, stitchedHeight );
