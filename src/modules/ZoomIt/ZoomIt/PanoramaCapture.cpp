@@ -1890,7 +1890,8 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                                             bool* outNearStationaryOverride = nullptr,
                                             bool allowHighConstStationaryRelax = false,
                                             unsigned __int64* outMaskedStationaryScore = nullptr,
-                                            bool forceExhaustiveProbeBudget = false )
+                                            bool forceExhaustiveProbeBudget = false,
+                                            bool forceExhaustiveFineDx = false )
 {
     if( previousPixels.size() != currentPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
     {
@@ -2912,7 +2913,15 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         ? max( normalRefineRadius,
                ( searchMaxDy - searchMinDy ) * downsampleScale / ( 2 * max( 1, candidateCount - 1 ) ) )
         : normalRefineRadius;
-    const int refineRadiusDx = 1;
+    // Fast fine-search pass: when horizontal motion is expected to be zero and
+    // vertical direction is already established, evaluate only dx=0 first.
+    // If confidence is weak, we rerun once with full dx radius to preserve
+    // quality on borderline frames.
+    const bool useFastFineDxPass =
+        !forceExhaustiveFineDx &&
+        expectedDx == 0 &&
+        expectedDy != 0;
+    const int refineRadiusDx = useFastFineDxPass ? 0 : 1;
 
     // Build full-resolution informative masks for very-low-entropy pairs.
     // The masked fine search restricts scoring to content pixels (text
@@ -3568,7 +3577,8 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                                                    outNearStationaryOverride,
                                                    allowHighConstStationaryRelax,
                                                    outMaskedStationaryScore,
-                                                   true );
+                                                   true,
+                                                   forceExhaustiveFineDx );
         }
     }
 
@@ -3736,6 +3746,37 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
     if( bestFineScore == ( std::numeric_limits<unsigned __int64>::max )() || bestFineScore > fineThreshold )
     {
+        if( useFastFineDxPass )
+        {
+            StitchLog( L"[Panorama/Stitch] FineSearch dx-fast-pass rerun expected=(%d,%d) best=(%d,%d) fineScore=%llu fineThreshold=%llu\n",
+                         expectedDx,
+                         expectedDy,
+                         bestDx,
+                         bestDy,
+                         static_cast<unsigned long long>( bestFineScore ),
+                         static_cast<unsigned long long>( fineThreshold ) );
+
+            PERF_STOP( tPostValidation );
+            PERF_STOP( tTotal );
+            return FindBestFrameShiftVerticalOnly( previousPixels,
+                                                   currentPixels,
+                                                   frameWidth,
+                                                   frameHeight,
+                                                   expectedDx,
+                                                   expectedDy,
+                                                   bestDx,
+                                                   bestDy,
+                                                   lowContrastMode,
+                                                   precomputedPrevLuma,
+                                                   precomputedCurrLuma,
+                                                   precomputedVeryLowEntropy,
+                                                   outNearStationaryOverride,
+                                                   allowHighConstStationaryRelax,
+                                                   outMaskedStationaryScore,
+                                                   forceExhaustiveProbeBudget,
+                                                   true );
+        }
+
         if( bypassProbeInjection && !forceExhaustiveProbeBudget )
         {
             StitchLog( L"[Panorama/Stitch] ProbeInject bypass fallback rerun expected=(%d,%d) best=(%d,%d) fineScore=%llu fineThreshold=%llu\n",
@@ -3763,6 +3804,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                                                    outNearStationaryOverride,
                                                    allowHighConstStationaryRelax,
                                                    outMaskedStationaryScore,
+                                                   true,
                                                    true );
         }
 
