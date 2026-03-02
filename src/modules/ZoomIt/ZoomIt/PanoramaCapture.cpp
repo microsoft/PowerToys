@@ -3451,6 +3451,41 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     int mappedDx = transposedDy;
     int mappedDy = transposedDx;
 
+    // When only one direction succeeds for the initial axis detection,
+    // verify the frames differ enough for reliable direction detection.
+    // On near-identical frames (stationaryScore ≈ 0), both searches
+    // produce noise-level fine scores.  Content autocorrelation can make
+    // the wrong direction score lower than the correct one (e.g. text
+    // lines cause high vertical autocorrelation SAD but lower horizontal
+    // SAD), allowing the wrong axis to lock in permanently.
+    // Guard: compute a quick full-frame luma difference.  If frames are
+    // too similar, reject the pair so the stitch retries with a later
+    // frame that has more distinctive scroll movement.
+    if( directOk != transposedOk &&
+        !precomputedPrevLuma.empty() && !precomputedCurrLuma.empty() )
+    {
+        unsigned __int64 totalDiff = 0;
+        unsigned __int64 samples = 0;
+        const size_t lumaSize = precomputedPrevLuma.size();
+        for( size_t i = 0; i < lumaSize; i += 4 )
+        {
+            totalDiff += static_cast<unsigned __int64>(
+                abs( static_cast<int>( precomputedPrevLuma[i] ) -
+                     static_cast<int>( precomputedCurrLuma[i] ) ) );
+            samples++;
+        }
+        if( samples > 0 && totalDiff / samples <= 2 )
+        {
+            StitchLog( L"[Panorama/Stitch] FindBestFrameShift axis-detection deferred: "
+                       L"frames too similar (lumaDiff=%llu/%llu=%llu) directOk=%d transposedOk=%d\n",
+                       static_cast<unsigned long long>( totalDiff ),
+                       static_cast<unsigned long long>( samples ),
+                       static_cast<unsigned long long>( totalDiff / samples ),
+                       directOk ? 1 : 0, transposedOk ? 1 : 0 );
+            return false;
+        }
+    }
+
     if( directOk && !transposedOk )
     {
         bestDx = directDx;
