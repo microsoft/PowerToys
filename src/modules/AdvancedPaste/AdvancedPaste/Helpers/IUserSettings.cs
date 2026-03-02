@@ -27,8 +27,20 @@ namespace AdvancedPaste.Settings
 
         public PasteAIConfiguration PasteAIConfiguration { get; }
 
+        public IReadOnlyList<AdvancedPastePythonScriptAction> PythonScriptActions { get; }
+
+        public string PythonScriptsFolder { get; }
+
+        public string PythonExecutablePath { get; }
+
+        public int PythonScriptTimeoutSeconds { get; }
+
+        public IReadOnlyDictionary<string, string> TrustedScriptHashes { get; }
+
         public event EventHandler Changed;
 
         Task SetActiveAIProviderAsync(string providerId);
+
+        void StoreTrustedScriptHash(string scriptPath, string hash);
     }
 }

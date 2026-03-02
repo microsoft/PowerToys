@@ -306,6 +306,8 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsToMinHeightConverter}}" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.PythonScriptPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsToMinHeightConverter}}" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <ListView
@@ -341,6 +343,27 @@
                     ScrollViewer.VerticalScrollMode="Disabled"
                     SelectionMode="None"
                     TabIndex="2" />
+
+                <Rectangle
+                    Grid.Row="3"
+                    Height="1"
+                    HorizontalAlignment="Stretch"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    Visibility="{x:Bind ViewModel.PythonScriptPasteFormats.Count, Mode=OneWay, Converter={StaticResource countToVisibilityConverter}}" />
+
+                <ListView
+                    x:Name="PythonScriptsListView"
+                    Grid.Row="4"
+                    VerticalAlignment="Top"
+                    IsItemClickEnabled="True"
+                    ItemClick="PasteFormat_ItemClick"
+                    ItemContainerTransitions="{x:Null}"
+                    ItemTemplateSelector="{StaticResource PasteFormatTemplateSelector}"
+                    ItemsSource="{x:Bind ViewModel.PythonScriptPasteFormats, Mode=OneWay}"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    SelectionMode="None"
+                    TabIndex="3" />
             </Grid>
         </ScrollViewer>
     </Grid>

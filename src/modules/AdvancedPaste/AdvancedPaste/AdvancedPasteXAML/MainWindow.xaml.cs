@@ -43,7 +43,8 @@ namespace AdvancedPaste
                 double GetHeight(int maxCustomActionCount) =>
                     baseHeight +
                     new PasteFormatsToHeightConverter().GetHeight(coreActionCount + _userSettings.AdditionalActions.Count) +
-                    new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.GetHeight(_optionsViewModel.IsCustomAIServiceEnabled ? _userSettings.CustomActions.Count : 0);
+                    new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.GetHeight(_optionsViewModel.IsCustomAIServiceEnabled ? _userSettings.CustomActions.Count : 0) +
+                    new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.GetHeight(_optionsViewModel.PythonScriptPasteFormats.Count);
 
                 MinHeight = GetHeight(1);
                 Height = GetHeight(5);
@@ -59,6 +60,7 @@ namespace AdvancedPaste
                     UpdateHeight();
                 }
             };
+            _optionsViewModel.PythonScriptPasteFormats.CollectionChanged += (_, _) => UpdateHeight();
 
             AppWindow.SetIcon("Assets/AdvancedPaste/AdvancedPaste.ico");
             this.ExtendsContentIntoTitleBar = true;

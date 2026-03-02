@@ -598,6 +598,18 @@ opera.exe</value>
   <data name="AdvancedPaste_Additional_Actions_GroupSettings.Header" xml:space="preserve">
     <value>Custom actions</value>
   </data>
+  <data name="AdvancedPaste_PythonScripts_GroupSettings.Header" xml:space="preserve">
+    <value>Python scripts</value>
+  </data>
+  <data name="AdvancedPaste_PythonExecutablePath_SettingsCard.Header" xml:space="preserve">
+    <value>Python interpreter</value>
+  </data>
+  <data name="AdvancedPaste_PythonExecutablePath_SettingsCard.Description" xml:space="preserve">
+    <value>Path to the Python executable used to run scripts. Leave blank to detect automatically (supports Anaconda, Miniconda, system Python).</value>
+  </data>
+  <data name="AdvancedPaste_PythonExecutablePath_TextBox.PlaceholderText" xml:space="preserve">
+    <value>Auto-detect (e.g. C:\Users\&lt;user&gt;\anaconda3\python.exe)</value>
+  </data>
   <data name="AdvancedPaste_FoundryLocal_LegalDescription" xml:space="preserve">
     <value>You're running local models directly on your device. Their behavior may vary or be unpredictable.</value>
   </data>

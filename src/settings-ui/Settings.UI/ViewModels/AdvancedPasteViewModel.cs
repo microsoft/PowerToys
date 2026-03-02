@@ -293,6 +293,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public AdvancedPasteAdditionalActions AdditionalActions => _additionalActions;
 
+        public string PythonExecutablePath
+        {
+            get => _advancedPasteSettings.Properties.PythonScripts?.PythonExecutablePath ?? string.Empty;
+            set
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
+                if (!string.Equals(scripts.PythonExecutablePath, value, StringComparison.OrdinalIgnoreCase))
+                {
+                    scripts.PythonExecutablePath = value ?? string.Empty;
+                    OnPropertyChanged(nameof(PythonExecutablePath));
+                    SaveAndNotifySettings();
+                }
+            }
+        }
+
         public static IEnumerable<AIServiceTypeMetadata> AvailableProviders => AIServiceTypeRegistry.GetAvailableServiceTypes();
 
         /// <summary>

@@ -372,4 +372,39 @@
     <value>Unable to load Foundry Local model: {0}</value>
     <comment>{0} is the model identifier. Do not translate {0}.</comment>
   </data>
+  <data name="PythonNotFound" xml:space="preserve">
+    <value>Python was not found. Please install Python or configure the path in Settings.</value>
+  </data>
+  <data name="WslNotAvailable" xml:space="preserve">
+    <value>WSL is not installed or not available. Cannot run Linux scripts.</value>
+  </data>
+  <data name="PythonScriptFailed" xml:space="preserve">
+    <value>The Python script failed to execute.</value>
+  </data>
+  <data name="PythonScriptTimeout" xml:space="preserve">
+    <value>Script execution timed out ({0} seconds).</value>
+    <comment>{0} is the configured timeout in seconds. Do not translate {0}.</comment>
+  </data>
+  <data name="PythonScriptNotFound" xml:space="preserve">
+    <value>Script file not found: {0}</value>
+    <comment>{0} is the script file path. Do not translate {0}.</comment>
+  </data>
+  <data name="PythonScriptInvalidJson" xml:space="preserve">
+    <value>The script output is not valid JSON.</value>
+  </data>
+  <data name="PythonScriptTrustTitle" xml:space="preserve">
+    <value>Run Python Script?</value>
+  </data>
+  <data name="PythonScriptTrustContent" xml:space="preserve">
+    <value>This script has not been verified. Running untrusted scripts can be a security risk. Do you want to run the following script?
+
+{0}</value>
+    <comment>{0} is the script file path. Do not translate {0}.</comment>
+  </data>
+  <data name="PythonScriptTrustConfirm" xml:space="preserve">
+    <value>Run</value>
+  </data>
+  <data name="PythonScriptTrustCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
 </root>

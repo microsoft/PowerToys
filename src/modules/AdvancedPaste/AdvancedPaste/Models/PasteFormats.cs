@@ -122,4 +122,13 @@ public enum PasteFormats
         KernelFunctionDescription = "Takes user instructions and applies them to the current clipboard content (text or image). Use this function for image analysis, description, or transformation tasks beyond simple OCR.",
         RequiresPrompt = true)]
     CustomTextTransformation,
+
+    [PasteFormatMetadata(
+        IsCoreAction = false,
+        IconGlyph = "\uE943",
+        RequiresAIService = false,
+        CanPreview = false,
+        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html | ClipboardFormat.Image | ClipboardFormat.Audio | ClipboardFormat.Video | ClipboardFormat.File,
+        KernelFunctionDescription = "Runs a user-provided Python script on clipboard content.")]
+    PythonScript,
 }

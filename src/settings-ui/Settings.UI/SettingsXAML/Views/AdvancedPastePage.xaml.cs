@@ -264,6 +264,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private void BrowsePythonExecutablePath_Click(object sender, RoutedEventArgs e)
+        {
+            string selectedFile = PickFileDialog(
+                "Python Executable\0python.exe;python3.exe\0All Executables\0*.exe\0",
+                "Select Python Executable");
+
+            if (!string.IsNullOrEmpty(selectedFile))
+            {
+                PythonExecutablePathTextBox.Text = selectedFile;
+                if (ViewModel is not null)
+                {
+                    ViewModel.PythonExecutablePath = selectedFile;
+                }
+            }
+        }
+
         private static string PickFileDialog(string filter, string title, string initialDir = null, int initialFilter = 0)
         {
             // Use Win32 OpenFileName dialog as FileOpenPicker doesn't work with elevated permissions

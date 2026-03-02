@@ -107,6 +107,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnoreAttribute]
         public PasteAIConfiguration PasteAIConfiguration { get; set; }
 
+        [JsonPropertyName("python-scripts")]
+        [CmdConfigureIgnoreAttribute]
+        public AdvancedPastePythonScriptSettings PythonScripts { get; set; } = new();
+
         public override string ToString()
             => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.AdvancedPasteProperties);
     }
