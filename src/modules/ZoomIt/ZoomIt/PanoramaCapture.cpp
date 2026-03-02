@@ -3478,20 +3478,43 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     }
 
     // Downward-spike guard: when the expected step is established and
-    // the detected step is dramatically smaller (< 1/3), the match is
+    // the detected step is dramatically smaller (< 2/3), the match is
     // likely a harmonic sub-multiple on periodic content.  Only reject
     // when the fine score is also mediocre -- a genuine scroll slow-down
     // would produce a clean (low) fine score.
+    //
+    // Before rejecting outright, try falling back to the expected-step
+    // candidate.  On HCF periodic content the harmonic wins the fine
+    // search, but the expected step may still have a usable score.
+    // Let the normal fineThreshold check validate it downstream.
     if( directionEstablished && expectedAbsStep > frameHeight / 8 &&
         bestAbsStep > 0 && bestAbsStep < expectedAbsStep * 2 / 3 &&
         bestFineScore > 8 * kFineScoreScale )
     {
-        StitchLog( L"[Panorama/Stitch] FindBestFrameShift downward-spike expected=(%d,%d) best=(%d,%d) bestStep=%d expectedStep=%d fineScore=%llu\n",
-                     expectedDx, expectedDy, bestDx, bestDy,
-                     bestAbsStep, expectedAbsStep,
-                     static_cast<unsigned long long>( bestFineScore ) );
-        PERF_STOP( tPostValidation ); PERF_STOP( tTotal );
-        return false;
+        if( scoreAtExpectedStep != ( std::numeric_limits<unsigned __int64>::max )() )
+        {
+            StitchLog( L"[Panorama/Stitch] FindBestFrameShift downward-spike-fallback expected=(%d,%d) harmonic=(%d,%d) harmonicScore=%llu expectedStep=(%d,%d) expectedScore=%llu\n",
+                         expectedDx, expectedDy, bestDx, bestDy,
+                         static_cast<unsigned long long>( bestFineScore ),
+                         dxAtExpectedStep, dyAtExpectedStep,
+                         static_cast<unsigned long long>( scoreAtExpectedStep ) );
+            bestDx = dxAtExpectedStep;
+            bestDy = dyAtExpectedStep;
+            bestFineScore = scoreAtExpectedStep;
+            bestFineRankScore = scoreAtExpectedStep;
+            bestAbsStep = abs( bestDy );
+            bestAbsDx = abs( bestDx );
+            bestExpectedDelta = abs( bestAbsStep - expectedAbsStep );
+        }
+        else
+        {
+            StitchLog( L"[Panorama/Stitch] FindBestFrameShift downward-spike expected=(%d,%d) best=(%d,%d) bestStep=%d expectedStep=%d fineScore=%llu\n",
+                         expectedDx, expectedDy, bestDx, bestDy,
+                         bestAbsStep, expectedAbsStep,
+                         static_cast<unsigned long long>( bestFineScore ) );
+            PERF_STOP( tPostValidation ); PERF_STOP( tTotal );
+            return false;
+        }
     }
 
     // Adaptive fine threshold.  For masked scoring (very-low-entropy or
