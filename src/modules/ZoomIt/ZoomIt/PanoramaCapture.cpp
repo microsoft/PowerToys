@@ -2367,6 +2367,16 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 continue;
             }
 
+            // Respect the search window established by the scroll direction.
+            // Without this check, probes near expectedDyDs can inject wrong-
+            // direction candidates (e.g. dyDs=+1 when searching negative only),
+            // which on HCF content score nearly identically to the correct
+            // direction and cause forward/backward oscillation.
+            if( probeDyDs < searchMinDy || probeDyDs > searchMaxDy )
+            {
+                continue;
+            }
+
             bool alreadyPresent = false;
             for( int ci = 0; ci < prunedCount; ++ci )
             {
@@ -7785,6 +7795,137 @@ bool RunPanoramaStitchSelfTest()
                         {
                             stressEarlyExit = true;
                             break;
+                        }
+                    }
+                }
+            }
+
+            // HCF tall-portal tiny-step test: exercises the probe-injection
+            // bounds fix for a real-world failure where a ~997 px portal with
+            // 4 px scroll steps caused direction oscillation.  Probes near
+            // expectedDyDs injected wrong-direction candidates that scored
+            // identically on HCF content.  Uses a narrower/shorter canvas to
+            // keep execution fast while preserving the same code path (the
+            // downsampled step size dyDs=±1 is identical).
+            {
+                const int tpW = 200;
+                const int tpH = 3000;
+                std::vector<BYTE> tpPx( static_cast<size_t>( tpW ) * tpH * 4, 0 );
+                for( size_t pi = 0; pi < static_cast<size_t>( tpW ) * tpH; ++pi )
+                {
+                    tpPx[pi * 4 + 0] = 15;
+                    tpPx[pi * 4 + 1] = 15;
+                    tpPx[pi * 4 + 2] = 15;
+                    tpPx[pi * 4 + 3] = 255;
+                }
+                {
+                    unsigned int bs = 77777u;
+                    int by = 25;
+                    while( by < tpH - 3 )
+                    {
+                        bs = bs * 1103515245u + 12345u;
+                        const int bh = 2 + static_cast<int>( ( bs >> 16 ) % 2 );
+                        bs = bs * 1103515245u + 12345u;
+                        const int br = 170 + static_cast<int>( ( bs >> 16 ) % 50 );
+                        for( int r = by; r < min( by + bh, tpH ); ++r )
+                        {
+                            for( int c = 10; c < tpW - 10; ++c )
+                            {
+                                const size_t idx = ( static_cast<size_t>( r ) * tpW + c ) * 4;
+                                bs = bs * 1103515245u + 12345u;
+                                const int v = max( 0, min( 255, br + static_cast<int>( ( bs >> 16 ) % 11 ) - 5 ) );
+                                tpPx[idx + 0] = static_cast<BYTE>( v );
+                                tpPx[idx + 1] = static_cast<BYTE>( v );
+                                tpPx[idx + 2] = static_cast<BYTE>( v );
+                            }
+                        }
+                        bs = bs * 1103515245u + 12345u;
+                        by += bh + 80 + static_cast<int>( ( bs >> 16 ) % 71 );
+                    }
+                }
+                TestLog( L"[Panorama/Test] Generated tallportal HCF image %dx%d\n", tpW, tpH );
+
+                for( int trial = 0; trial < kHcfTrials; ++trial )
+                {
+                    if( stressEarlyExit )
+                        break;
+                    srand( static_cast<unsigned>( 90000 + trial * 53 ) );
+
+                    const int winH = 300 + rand() % 101; // 300-400 px portal
+
+                    std::vector<int> originsY;
+                    originsY.push_back( 0 );
+                    int y = 0;
+                    for( int f = 1; f < 20; ++f )
+                    {
+                        const int step = 4;
+                        const int nextY = y + step;
+                        if( nextY + winH > tpH )
+                            break;
+                        y = nextY;
+                        originsY.push_back( y );
+                    }
+
+                    if( originsY.size() < 5 )
+                        continue;
+
+                    wchar_t scenarioName[256];
+                    swprintf_s( scenarioName, L"stress-vertical-tallportal-trial%d-w%d-n%zu",
+                                trial, winH, originsY.size() );
+
+                    if( !stressScenarioMatches( scenarioName ) )
+                        continue;
+                    if( stressFocusEnabled )
+                        stressFocusMatched = true;
+
+                    {
+                        std::wstring origStr;
+                        for( size_t oi = 0; oi < originsY.size() && oi < 20; ++oi )
+                        {
+                            if( oi > 0 ) origStr += L",";
+                            origStr += std::to_wstring( originsY[oi] );
+                        }
+                        if( originsY.size() > 20 ) origStr += L",...";
+                        TestLog( L"[Panorama/Test] Running %s origins=[%s]\n", scenarioName, origStr.c_str() );
+                    }
+
+                    stressTestsRun++;
+                    const int result = stitchAndCompare( scenarioName, tpPx, tpW, tpH, originsY, winH );
+                    {
+                        wchar_t msg[512]{};
+                        if( result < 0 )
+                        {
+                            TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", scenarioName );
+                            swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu)\n", scenarioName, winH, originsY.size() );
+                            stressFailLog += msg;
+                        }
+                        else if( result == 1 )
+                        {
+                            stressTestsPassed++;
+                            TestLog( L"  [%d] %s PASSED\n", stressTestsRun, scenarioName );
+                            swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu)\n", scenarioName, winH, originsY.size() );
+                        }
+                        else
+                        {
+                            TestLog( L"***** FAIL: %s *****\n", scenarioName );
+                            swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu)\n", scenarioName, winH, originsY.size() );
+                            stressFailLog += msg;
+                        }
+                        stressLog += msg;
+
+                        if( stressFocusEnabled )
+                        {
+                            const wchar_t* focusResult = L"FAIL";
+                            if( result < 0 ) focusResult = L"INFRA";
+                            else if( result == 1 ) focusResult = L"PASS";
+                            TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                         scenarioName,
+                                         focusResult );
+                            if( stressStopAfterFocus )
+                            {
+                                stressEarlyExit = true;
+                                break;
+                            }
                         }
                     }
                 }
