@@ -1325,12 +1325,28 @@ static void BuildRowEdgeDensity( const std::vector<BYTE>& luma,
     density.resize( height, 0 );
     for( int y = 0; y < height; ++y )
     {
-        int sum = 0;
         const int row = y * width;
-        for( int x = marginX; x < width - marginX - 1; ++x )
+        const BYTE* rowPtr = luma.data() + row;
+        const int xStart = marginX;
+        const int xEnd = width - marginX - 1;
+        int sum = 0;
+        int x = xStart;
+#if defined(_M_ARM64)
+        uint32x4_t vSum = vdupq_n_u32( 0 );
+        for( ; x + 16 <= xEnd; x += 16 )
         {
-            sum += abs( static_cast<int>( luma[row + x + 1] ) -
-                        static_cast<int>( luma[row + x] ) );
+            const uint8x16_t cur  = vld1q_u8( rowPtr + x );
+            const uint8x16_t next = vld1q_u8( rowPtr + x + 1 );
+            const uint8x16_t diff = vabdq_u8( cur, next );
+            const uint16x8_t sum16 = vpaddlq_u8( diff );
+            vSum = vaddq_u32( vSum, vpaddlq_u16( sum16 ) );
+        }
+        sum = static_cast<int>( vaddvq_u32( vSum ) );
+#endif
+        for( ; x < xEnd; ++x )
+        {
+            sum += abs( static_cast<int>( rowPtr[x + 1] ) -
+                        static_cast<int>( rowPtr[x] ) );
         }
         density[y] = sum;
     }
@@ -1343,7 +1359,38 @@ static double NCC1D( const int* a, const int* b, int n )
     if( n <= 0 ) return 0.0;
 
     __int64 iSumA = 0, iSumB = 0, iSumAB = 0, iSumA2 = 0, iSumB2 = 0;
-    for( int i = 0; i < n; ++i )
+    int i = 0;
+#if defined(_M_ARM64)
+    // NEON: accumulate 4 int32 elements per iteration using widening
+    // multiply-accumulate (vmlal_s32) for products.
+    int64x2_t vSumA  = vdupq_n_s64( 0 );
+    int64x2_t vSumB  = vdupq_n_s64( 0 );
+    int64x2_t vSumAB = vdupq_n_s64( 0 );
+    int64x2_t vSumA2 = vdupq_n_s64( 0 );
+    int64x2_t vSumB2 = vdupq_n_s64( 0 );
+    for( ; i + 4 <= n; i += 4 )
+    {
+        const int32x4_t va = vld1q_s32( a + i );
+        const int32x4_t vb = vld1q_s32( b + i );
+        // Pairwise add-long for sums (s32 -> s64).
+        vSumA = vaddq_s64( vSumA, vpaddlq_s32( va ) );
+        vSumB = vaddq_s64( vSumB, vpaddlq_s32( vb ) );
+        // Widening multiply-accumulate: low and high halves separately.
+        const int32x2_t aLo = vget_low_s32( va );
+        const int32x2_t aHi = vget_high_s32( va );
+        const int32x2_t bLo = vget_low_s32( vb );
+        const int32x2_t bHi = vget_high_s32( vb );
+        vSumAB = vmlal_s32( vmlal_s32( vSumAB, aLo, bLo ), aHi, bHi );
+        vSumA2 = vmlal_s32( vmlal_s32( vSumA2, aLo, aLo ), aHi, aHi );
+        vSumB2 = vmlal_s32( vmlal_s32( vSumB2, bLo, bLo ), bHi, bHi );
+    }
+    iSumA  = vgetq_lane_s64( vSumA, 0 )  + vgetq_lane_s64( vSumA, 1 );
+    iSumB  = vgetq_lane_s64( vSumB, 0 )  + vgetq_lane_s64( vSumB, 1 );
+    iSumAB = vgetq_lane_s64( vSumAB, 0 ) + vgetq_lane_s64( vSumAB, 1 );
+    iSumA2 = vgetq_lane_s64( vSumA2, 0 ) + vgetq_lane_s64( vSumA2, 1 );
+    iSumB2 = vgetq_lane_s64( vSumB2, 0 ) + vgetq_lane_s64( vSumB2, 1 );
+#endif
+    for( ; i < n; ++i )
     {
         const __int64 ai = static_cast<__int64>( a[i] );
         const __int64 bi = static_cast<__int64>( b[i] );
@@ -1947,9 +1994,35 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         const int dsEdgeThreshold = 3;
         for( int y = 1; y < dsH - 1; ++y )
         {
-            for( int x = 1; x < dsW - 1; ++x )
+            const int rowOff = y * dsW;
+            int x = 1;
+#if defined(_M_ARM64)
+            const uint8x16_t vThresh = vdupq_n_u8( dsEdgeThreshold );
+            const uint8x16_t vOne    = vdupq_n_u8( 1 );
+            for( ; x + 16 < dsW - 1; x += 16 )
             {
-                const int idx = y * dsW + x;
+                const int idx = rowOff + x;
+                // Previous frame gradient.
+                const uint8x16_t pCur  = vld1q_u8( previousLuma.data() + idx );
+                const uint8x16_t pRight = vld1q_u8( previousLuma.data() + idx + 1 );
+                const uint8x16_t pDown  = vld1q_u8( previousLuma.data() + idx + dsW );
+                const uint8x16_t pGrad = vqaddq_u8( vabdq_u8( pCur, pRight ),
+                                                     vabdq_u8( pCur, pDown ) );
+                const uint8x16_t pMask = vandq_u8( vcgeq_u8( pGrad, vThresh ), vOne );
+                vst1q_u8( dsMaskPrev.data() + idx, pMask );
+                // Current frame gradient.
+                const uint8x16_t cCur   = vld1q_u8( currentLuma.data() + idx );
+                const uint8x16_t cRight = vld1q_u8( currentLuma.data() + idx + 1 );
+                const uint8x16_t cDown  = vld1q_u8( currentLuma.data() + idx + dsW );
+                const uint8x16_t cGrad = vqaddq_u8( vabdq_u8( cCur, cRight ),
+                                                     vabdq_u8( cCur, cDown ) );
+                const uint8x16_t cMask = vandq_u8( vcgeq_u8( cGrad, vThresh ), vOne );
+                vst1q_u8( dsMaskCurr.data() + idx, cMask );
+            }
+#endif
+            for( ; x < dsW - 1; ++x )
+            {
+                const int idx = rowOff + x;
                 const int gradHP = abs( static_cast<int>( previousLuma[idx] ) - static_cast<int>( previousLuma[idx + 1] ) );
                 const int gradVP = abs( static_cast<int>( previousLuma[idx] ) - static_cast<int>( previousLuma[idx + dsW] ) );
                 if( gradHP + gradVP >= dsEdgeThreshold )
@@ -1965,7 +2038,31 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         std::vector<BYTE> dilatedCurr( dsMaskCurr.size(), 0 );
         for( int y = 1; y < dsH - 1; ++y )
         {
-            for( int x = 1; x < dsW - 1; ++x )
+            const int rowOff = y * dsW;
+            int x = 1;
+#if defined(_M_ARM64)
+            const uint8x16_t vOne = vdupq_n_u8( 1 );
+            for( ; x + 16 < dsW - 1; x += 16 )
+            {
+                const int idx = rowOff + x;
+                // Previous mask: OR of center, left, right, up, down.
+                uint8x16_t pOr = vld1q_u8( dsMaskPrev.data() + idx );
+                pOr = vorrq_u8( pOr, vld1q_u8( dsMaskPrev.data() + idx - 1 ) );
+                pOr = vorrq_u8( pOr, vld1q_u8( dsMaskPrev.data() + idx + 1 ) );
+                pOr = vorrq_u8( pOr, vld1q_u8( dsMaskPrev.data() + idx - dsW ) );
+                pOr = vorrq_u8( pOr, vld1q_u8( dsMaskPrev.data() + idx + dsW ) );
+                // Clamp to 1 (inputs are 0/1, OR preserves that, but be safe).
+                vst1q_u8( dilatedPrev.data() + idx, vandq_u8( vminq_u8( pOr, vOne ), vOne ) );
+                // Current mask.
+                uint8x16_t cOr = vld1q_u8( dsMaskCurr.data() + idx );
+                cOr = vorrq_u8( cOr, vld1q_u8( dsMaskCurr.data() + idx - 1 ) );
+                cOr = vorrq_u8( cOr, vld1q_u8( dsMaskCurr.data() + idx + 1 ) );
+                cOr = vorrq_u8( cOr, vld1q_u8( dsMaskCurr.data() + idx - dsW ) );
+                cOr = vorrq_u8( cOr, vld1q_u8( dsMaskCurr.data() + idx + dsW ) );
+                vst1q_u8( dilatedCurr.data() + idx, vandq_u8( vminq_u8( cOr, vOne ), vOne ) );
+            }
+#endif
+            for( ; x < dsW - 1; ++x )
             {
                 const int idx = y * dsW + x;
                 if( dsMaskPrev[idx] | dsMaskPrev[idx - 1] | dsMaskPrev[idx + 1] |
