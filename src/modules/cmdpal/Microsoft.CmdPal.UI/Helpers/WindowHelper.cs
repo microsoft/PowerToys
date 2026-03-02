@@ -16,8 +16,22 @@ internal sealed partial class WindowHelper
         if (Marshal.GetExceptionForHR(NativeMethods.SHQueryUserNotificationState(out state)) is null)
         {
             if (state == UserNotificationState.QUNS_RUNNING_D3D_FULL_SCREEN ||
-                state == UserNotificationState.QUNS_BUSY ||
                 state == UserNotificationState.QUNS_PRESENTATION_MODE)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static bool IsAppBusy()
+    {
+        UserNotificationState state;
+
+        if (Marshal.GetExceptionForHR(NativeMethods.SHQueryUserNotificationState(out state)) is null)
+        {
+            if (state == UserNotificationState.QUNS_BUSY)
             {
                 return true;
             }

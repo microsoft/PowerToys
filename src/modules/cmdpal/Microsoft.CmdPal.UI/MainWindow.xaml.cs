@@ -74,6 +74,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private bool _ignoreHotKeyWhenFullScreen = true;
+    private bool _ignoreHotKeyWhenBusy;
     private bool _suppressDpiChange;
     private bool _themeServiceInitialized;
 
@@ -331,6 +332,7 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
+        _ignoreHotKeyWhenBusy = settings.IgnoreShortcutWhenBusy;
 
         _autoGoHomeInterval = settings.AutoGoHomeInterval;
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
@@ -1156,6 +1158,15 @@ public sealed partial class MainWindow : WindowEx,
         {
             // If we're in full screen mode, ignore the hotkey
             if (WindowHelper.IsWindowFullscreen())
+            {
+                return;
+            }
+        }
+
+        if (_ignoreHotKeyWhenBusy)
+        {
+            // If an app has set the busy state (e.g. NVIDIA overlay), ignore the hotkey
+            if (WindowHelper.IsAppBusy())
             {
                 return;
             }

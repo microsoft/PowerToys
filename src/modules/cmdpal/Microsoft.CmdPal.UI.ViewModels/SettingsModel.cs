@@ -46,7 +46,9 @@ public partial class SettingsModel : ObservableObject
 
     public bool ShowSystemTrayIcon { get; set; } = true;
 
-    public bool IgnoreShortcutWhenFullscreen { get; set; }
+    public bool IgnoreShortcutWhenFullscreen { get; set; } = true;
+
+    public bool IgnoreShortcutWhenBusy { get; set; }
 
     public bool AllowExternalReload { get; set; }
 
