@@ -175,6 +175,8 @@ namespace KeyboardManagerEditorUI.Pages
                 Type = EditingItem.ItemType.ProgramShortcut,
                 Item = programShortcut,
                 OriginalTriggerKeys = programShortcut.Shortcut.ToList(),
+                AppName = programShortcut.AppName,
+                IsAllApps = programShortcut.IsAllApps,
             };
 
             UnifiedMappingControl.Reset();
@@ -193,6 +195,7 @@ namespace KeyboardManagerEditorUI.Pages
                 UnifiedMappingControl.SetIfRunningAction(mapping.IfRunningAction);
             }
 
+            UnifiedMappingControl.SetAppSpecific(!programShortcut.IsAllApps, programShortcut.AppName);
             RemappingDialog.Title = "Edit remapping";
             await ShowRemappingDialog();
         }
@@ -210,12 +213,15 @@ namespace KeyboardManagerEditorUI.Pages
                 Type = EditingItem.ItemType.UrlShortcut,
                 Item = urlShortcut,
                 OriginalTriggerKeys = urlShortcut.Shortcut.ToList(),
+                AppName = urlShortcut.AppName,
+                IsAllApps = urlShortcut.IsAllApps,
             };
 
             UnifiedMappingControl.Reset();
             UnifiedMappingControl.SetTriggerKeys(urlShortcut.Shortcut.ToList());
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.OpenUrl);
             UnifiedMappingControl.SetUrl(urlShortcut.URL);
+            UnifiedMappingControl.SetAppSpecific(!urlShortcut.IsAllApps, urlShortcut.AppName);
             RemappingDialog.Title = "Edit remapping";
             await ShowRemappingDialog();
         }
@@ -373,7 +379,7 @@ namespace KeyboardManagerEditorUI.Pages
                     default:
                         if (_editingItem.Item is IToggleableShortcut shortcut)
                         {
-                            DeleteShortcutMapping(_editingItem.OriginalTriggerKeys);
+                            DeleteShortcutMapping(_editingItem.OriginalTriggerKeys, _editingItem.AppName ?? string.Empty);
                             if (!string.IsNullOrEmpty(shortcut.Id))
                             {
                                 SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);

@@ -295,15 +295,16 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void UpdateAppSpecificCheckBoxState()
         {
-            // Only enable app-specific remapping for shortcuts (multiple keys)
+            // Only enable app-specific remapping for shortcuts (multiple keys).
             bool isShortcut = _triggerKeys.Count > 1;
+            bool alreadyChecked = AppSpecificCheckBox.IsChecked == true;
 
             try
             {
                 _internalUpdate = true;
 
-                AppSpecificCheckBox.IsEnabled = isShortcut;
-                if (!isShortcut)
+                AppSpecificCheckBox.IsEnabled = isShortcut || alreadyChecked;
+                if (!isShortcut && !alreadyChecked)
                 {
                     AppSpecificCheckBox.IsChecked = false;
                     AppNameTextBox.Visibility = Visibility.Collapsed;
