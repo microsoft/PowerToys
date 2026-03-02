@@ -73,8 +73,11 @@ public sealed partial class MainWindow : WindowEx,
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
+    private readonly List<long> _breakthroughTimestamps = [];
+
     private bool _ignoreHotKeyWhenFullScreen = true;
     private bool _ignoreHotKeyWhenBusy;
+    private bool _allowBreakthroughShortcut;
     private bool _suppressDpiChange;
     private bool _themeServiceInitialized;
 
@@ -333,6 +336,7 @@ public sealed partial class MainWindow : WindowEx,
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
         _ignoreHotKeyWhenBusy = settings.IgnoreShortcutWhenBusy;
+        _allowBreakthroughShortcut = settings.AllowBreakthroughShortcut;
 
         _autoGoHomeInterval = settings.AutoGoHomeInterval;
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
@@ -1154,25 +1158,51 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HandleSummon(string commandId)
     {
-        if (_ignoreHotKeyWhenFullScreen)
+        var shouldSuppress = false;
+
+        if (_ignoreHotKeyWhenFullScreen && WindowHelper.IsWindowFullscreen())
         {
-            // If we're in full screen mode, ignore the hotkey
-            if (WindowHelper.IsWindowFullscreen())
-            {
-                return;
-            }
+            shouldSuppress = true;
         }
 
-        if (_ignoreHotKeyWhenBusy)
+        if (_ignoreHotKeyWhenBusy && WindowHelper.IsAppBusy())
         {
-            // If an app has set the busy state (e.g. NVIDIA overlay), ignore the hotkey
-            if (WindowHelper.IsAppBusy())
+            shouldSuppress = true;
+        }
+
+        if (shouldSuppress)
+        {
+            if (_allowBreakthroughShortcut && IsBreakthroughTriggered())
+            {
+                // Rapid-press breakthrough: let it through
+            }
+            else
             {
                 return;
             }
         }
 
         HandleSummonCore(commandId);
+    }
+
+    private bool IsBreakthroughTriggered()
+    {
+        const int requiredPresses = 3;
+        var windowTicks = 2 * Stopwatch.Frequency; // 2 seconds
+        var now = Stopwatch.GetTimestamp();
+
+        _breakthroughTimestamps.Add(now);
+
+        // Prune timestamps outside the window
+        _breakthroughTimestamps.RemoveAll(t => now - t > windowTicks);
+
+        if (_breakthroughTimestamps.Count >= requiredPresses)
+        {
+            _breakthroughTimestamps.Clear();
+            return true;
+        }
+
+        return false;
     }
 
     private void HandleSummonCore(string commandId)

@@ -158,6 +158,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool AllowBreakthroughShortcut
+    {
+        get => _settings.AllowBreakthroughShortcut;
+        set
+        {
+            _settings.AllowBreakthroughShortcut = value;
+            Save();
+        }
+    }
+
     public bool DisableAnimations
     {
         get => _settings.DisableAnimations;

@@ -350,6 +350,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_IgnoreShortcutWhenBusy_SettingsCard.Description" xml:space="preserve">
     <value>Windows may detect that a fullscreen application is running or Presentation Settings are applied. Some applications (such as NVIDIA overlay) can trigger this incorrectly, preventing the shortcut from working</value>
   </data>
+  <data name="Settings_GeneralPage_AllowBreakthroughShortcut_SettingsCard.Header" xml:space="preserve">
+    <value>Allow breakthrough with rapid shortcut presses</value>
+  </data>
+  <data name="Settings_GeneralPage_AllowBreakthroughShortcut_SettingsCard.Description" xml:space="preserve">
+    <value>Press the activation shortcut 3 times within 2 seconds to bypass the fullscreen or busy state guard</value>
+  </data>
   <data name="Settings_GeneralPage_NotificationState_InfoBar" xml:space="preserve">
     <value>The system is currently reporting: {0}. This may prevent your activation shortcut from working.</value>
   </data>
