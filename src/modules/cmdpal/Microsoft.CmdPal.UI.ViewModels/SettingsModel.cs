@@ -52,6 +52,8 @@ public partial class SettingsModel : ObservableObject
 
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
+    public List<PinnedCommandSettings> PinnedCommands { get; set; } = [];
+
     public string[] FallbackRanks { get; set; } = [];
 
     public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
@@ -122,6 +124,121 @@ public partial class SettingsModel : ObservableObject
         }
 
         return settings;
+    }
+
+    public bool IsCommandPinned(string providerId, string commandId)
+    {
+        foreach (var pinnedCommand in PinnedCommands)
+        {
+            if (pinnedCommand.ProviderId == providerId &&
+                pinnedCommand.CommandId == commandId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public List<string> GetPinnedCommandIds(string providerId)
+    {
+        List<string> pinnedCommandIds = [];
+        foreach (var pinnedCommand in PinnedCommands)
+        {
+            if (pinnedCommand.ProviderId == providerId)
+            {
+                pinnedCommandIds.Add(pinnedCommand.CommandId);
+            }
+        }
+
+        return pinnedCommandIds;
+    }
+
+    public bool TryPinCommand(string providerId, string commandId)
+    {
+        if (IsCommandPinned(providerId, commandId))
+        {
+            return false;
+        }
+
+        PinnedCommands.Add(new PinnedCommandSettings(providerId, commandId));
+        return true;
+    }
+
+    public bool TryUnpinCommand(string providerId, string commandId)
+    {
+        for (var i = 0; i < PinnedCommands.Count; i++)
+        {
+            var pinnedCommand = PinnedCommands[i];
+            if (pinnedCommand.ProviderId == providerId &&
+                pinnedCommand.CommandId == commandId)
+            {
+                PinnedCommands.RemoveAt(i);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public bool TryMovePinnedCommand(string providerId, string commandId, bool moveUp, Func<PinnedCommandSettings, bool>? isVisible = null)
+    {
+        var index = FindPinnedCommandIndex(providerId, commandId);
+        if (index < 0)
+        {
+            return false;
+        }
+
+        // Find the next visible neighbor in the move direction, skipping
+        // stale entries (removed/disabled/failed extensions).
+        var direction = moveUp ? -1 : 1;
+        var targetIndex = index + direction;
+        while (targetIndex >= 0 && targetIndex < PinnedCommands.Count &&
+               isVisible != null && !isVisible(PinnedCommands[targetIndex]))
+        {
+            targetIndex += direction;
+        }
+
+        if (targetIndex < 0 || targetIndex >= PinnedCommands.Count)
+        {
+            return false;
+        }
+
+        // Remove and re-insert rather than swap so that stale entries
+        // between index and targetIndex keep their relative positions.
+        var pinnedCommand = PinnedCommands[index];
+        PinnedCommands.RemoveAt(index);
+        PinnedCommands.Insert(targetIndex, pinnedCommand);
+        return true;
+    }
+
+    public bool TryMovePinnedCommandToTop(string providerId, string commandId)
+    {
+        var index = FindPinnedCommandIndex(providerId, commandId);
+        if (index <= 0)
+        {
+            return false;
+        }
+
+        var pinnedCommand = PinnedCommands[index];
+        PinnedCommands.RemoveAt(index);
+        PinnedCommands.Insert(0, pinnedCommand);
+        return true;
+    }
+
+    private int FindPinnedCommandIndex(string providerId, string commandId)
+    {
+        for (var i = 0; i < PinnedCommands.Count; i++)
+        {
+            var pinnedCommand = PinnedCommands[i];
+            if (pinnedCommand.ProviderId == providerId &&
+                pinnedCommand.CommandId == commandId)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public string[] GetGlobalFallbacks()
@@ -330,6 +447,7 @@ public partial class SettingsModel : ObservableObject
 [JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
 [JsonSerializable(typeof(List<HistoryItem>), TypeInfoPropertyName = "HistoryList")]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
+[JsonSerializable(typeof(PinnedCommandSettings))]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Just used here")]
 internal sealed partial class JsonSerializationContext : JsonSerializerContext

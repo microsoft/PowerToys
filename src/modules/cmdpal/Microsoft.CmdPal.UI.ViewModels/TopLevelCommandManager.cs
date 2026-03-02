@@ -19,7 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class TopLevelCommandManager : ObservableObject,
+public sealed partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
     IRecipient<PinCommandItemMessage>,
     IRecipient<UnpinCommandItemMessage>,
@@ -40,6 +40,8 @@ public partial class TopLevelCommandManager : ObservableObject,
     private readonly Lock _dockBandsLock = new();
     private readonly SupersedingAsyncGate _reloadCommandsGate;
 
+    private HashSet<PinnedCommandSettings> _pinnedCommandSet = [];
+
     public TopLevelCommandManager(IServiceProvider serviceProvider, ICommandProviderCache commandProviderCache)
     {
         _serviceProvider = serviceProvider;
@@ -50,7 +52,10 @@ public partial class TopLevelCommandManager : ObservableObject,
         WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
         WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
+        RebuildPinnedCache();
     }
+
+    public ObservableCollection<PinnedCommandSettings> PinnedCommands { get; } = [];
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
 
@@ -68,6 +73,18 @@ public partial class TopLevelCommandManager : ObservableObject,
                 return _builtInCommands.Concat(_extensionCommandProviders).ToList();
             }
         }
+    }
+
+    internal bool IsPinned(string providerId, string commandId)
+    {
+        return _pinnedCommandSet.Contains(new PinnedCommandSettings(providerId, commandId));
+    }
+
+    internal void RebuildPinnedCache()
+    {
+        var settings = _serviceProvider.GetService<SettingsModel>()!;
+        _pinnedCommandSet = new(settings.PinnedCommands);
+        ListHelpers.InPlaceUpdateList(PinnedCommands, settings.PinnedCommands);
     }
 
     public async Task<bool> LoadBuiltinsAsync()
@@ -521,12 +538,14 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         var wrapper = LookupProvider(message.ProviderId);
         wrapper?.PinCommand(message.CommandId, _serviceProvider);
+        RebuildPinnedCache();
     }
 
     public void Receive(UnpinCommandItemMessage message)
     {
         var wrapper = LookupProvider(message.ProviderId);
         wrapper?.UnpinCommand(message.CommandId, _serviceProvider);
+        RebuildPinnedCache();
     }
 
     public void Receive(PinToDockMessage message)
