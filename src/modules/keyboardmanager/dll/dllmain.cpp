@@ -476,6 +476,22 @@ public:
                 if (editorPid)
                 {
                     AllowSetForegroundWindow(editorPid);
+
+                    // Find the editor's main window and set it to foreground
+                    EnumWindows([](HWND hwnd, LPARAM lParam) -> BOOL {
+                        DWORD windowPid = 0;
+                        GetWindowThreadProcessId(hwnd, &windowPid);
+                        if (windowPid == static_cast<DWORD>(lParam) && IsWindowVisible(hwnd))
+                        {
+                            SetForegroundWindow(hwnd);
+                            if (IsIconic(hwnd))
+                            {
+                                ShowWindow(hwnd, SW_RESTORE);
+                            }
+                            return FALSE; // Stop enumerating
+                        }
+                        return TRUE;
+                    }, static_cast<LPARAM>(editorPid));
                 }
                 return true;
             }
