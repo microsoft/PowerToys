@@ -325,8 +325,8 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="ContentGrid.Orientation" Value="Vertical" />
-                        <Setter Target="ContentGrid.Margin" Value="0,4,4,4" />
-                        <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
+                        <Setter Target="ContentGrid.Margin" Value="0,0,4,4" />
+                        <Setter Target="ContentGrid.Padding" Value="0,0,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,0,1,0" />
                         <Setter Target="StartListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
                         <Setter Target="CenterListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
@@ -339,8 +339,8 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="ContentGrid.Orientation" Value="Vertical" />
-                        <Setter Target="ContentGrid.Margin" Value="4,4,0,4" />
-                        <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
+                        <Setter Target="ContentGrid.Margin" Value="4,0,0,4" />
+                        <Setter Target="ContentGrid.Padding" Value="4,0,0,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
                         <Setter Target="StartListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
                         <Setter Target="CenterListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
