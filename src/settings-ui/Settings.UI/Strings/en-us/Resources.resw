@@ -5150,6 +5150,12 @@ The break timer font matches the text font.</value>
   <data name="LightSwitch_SunsetTooltip.Text" xml:space="preserve">
     <value>Sunset</value>
   </data>
+  <data name="LightSwitch_LocationError_Timeout" xml:space="preserve">
+    <value>Unable to connect to location services. Please try again or enter your coordinates manually.</value>
+  </data>
+  <data name="LightSwitch_LocationError_Unavailable" xml:space="preserve">
+    <value>Location services unavailable. Please enter your coordinates manually.</value>
+  </data>
   <data name="Close_NavViewItem.Content" xml:space="preserve">
     <value>Close PowerToys</value>
     <comment>Don't loc "PowerToys"</comment>
