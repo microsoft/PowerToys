@@ -172,7 +172,22 @@ private:
     void init_settings()
     {
         powertoy_new_enabled = NewSettingsInstance().GetEnabled();
+
         UpdateRegistration(powertoy_new_enabled);
+
+        if (powertoy_new_enabled)
+        {
+            // NOTE: This requires that the runner is running and have loaded the new plus module.
+            // It's not enough for user to just invoke the context menu.
+            if (NewSettingsInstance().GetHideBuiltInNew())
+            {
+                newplus::utilities::disable_built_in_new_via_registry();
+            }
+            else
+            {
+                newplus::utilities::enable_built_in_new_via_registry();
+            }
+        }
     }
 };
 

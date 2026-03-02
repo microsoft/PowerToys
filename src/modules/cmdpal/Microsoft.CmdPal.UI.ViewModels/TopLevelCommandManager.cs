@@ -10,9 +10,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -24,7 +23,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public sealed partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
     IRecipient<PinCommandItemMessage>,
-    IPageContext,
+    IRecipient<UnpinCommandItemMessage>,
+    IRecipient<PinToDockMessage>,
     IDisposable
 {
     private static readonly TimeSpan ExtensionStartTimeout = TimeSpan.FromSeconds(10);
@@ -39,11 +39,14 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private readonly List<CommandProviderWrapper> _builtInCommands = [];
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
     private readonly Lock _commandProvidersLock = new();
+
+    // watch out: if you add code that locks CommandProviders, be sure to always
+    // lock CommandProviders before locking DockBands, or you will cause a
+    // deadlock.
+    private readonly Lock _dockBandsLock = new();
     private readonly SupersedingAsyncGate _reloadCommandsGate;
     private CancellationTokenSource _extensionLoadCts = new();
     private CancellationToken _currentExtensionLoadCancellationToken;
-
-    TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
     public TopLevelCommandManager(IServiceProvider serviceProvider, ICommandProviderCache commandProviderCache)
     {
@@ -53,10 +56,14 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
         WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
+        WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
     }
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
+
+    public ObservableCollection<TopLevelViewModel> DockBands { get; set; } = [];
 
     [ObservableProperty]
     public partial bool IsLoading { get; private set; } = true;
@@ -93,12 +100,26 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                 _builtInCommands.Add(wrapper);
             }
 
-            var commands = await LoadTopLevelCommandsFromProvider(wrapper);
+            var objects = await LoadTopLevelCommandsFromProvider(wrapper);
             lock (TopLevelCommands)
             {
-                foreach (var c in commands)
+                if (objects.Commands is IEnumerable<TopLevelViewModel> commands)
                 {
-                    TopLevelCommands.Add(c);
+                    foreach (var c in commands)
+                    {
+                        TopLevelCommands.Add(c);
+                    }
+                }
+            }
+
+            lock (_dockBandsLock)
+            {
+                if (objects.DockBands is IEnumerable<TopLevelViewModel> bands)
+                {
+                    foreach (var c in bands)
+                    {
+                        DockBands.Add(c);
+                    }
                 }
             }
         }
@@ -111,16 +132,15 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     }
 
     // May be called from a background thread
-    private async Task<ICollection<TopLevelViewModel>> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
+    private async Task<TopLevelObjectSets> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
-        WeakReference<IPageContext> weakSelf = new(this);
-
-        await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
+        await commandProvider.LoadTopLevelCommands(_serviceProvider);
 
         var commands = await Task.Factory.StartNew(
             () =>
             {
                 List<TopLevelViewModel> commands = [];
+                List<TopLevelViewModel> bands = [];
                 foreach (var item in commandProvider.TopLevelItems)
                 {
                     commands.Add(item);
@@ -134,7 +154,15 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                     }
                 }
 
-                return commands;
+                foreach (var item in commandProvider.DockBandItems)
+                {
+                    bands.Add(item);
+                }
+
+                var commandsCount = commands.Count;
+                var bandsCount = bands.Count;
+                Logger.LogDebug($"{commandProvider.ProviderId}: Loaded {commandsCount} commands, {bandsCount} bands");
+                return new TopLevelObjectSets(commands, bands);
             },
             CancellationToken.None,
             TaskCreationOptions.None,
@@ -162,8 +190,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     /// <returns>an awaitable task</returns>
     private async Task UpdateCommandsForProvider(CommandProviderWrapper sender, IItemsChangedEventArgs args)
     {
-        WeakReference<IPageContext> weakSelf = new(this);
-        await sender.LoadTopLevelCommands(_serviceProvider, weakSelf);
+        await sender.LoadTopLevelCommands(_serviceProvider);
 
         List<TopLevelViewModel> newItems = [.. sender.TopLevelItems];
         foreach (var i in sender.FallbackItems)
@@ -173,6 +200,8 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                 newItems.Add(i);
             }
         }
+
+        List<TopLevelViewModel> newBands = [.. sender.DockBandItems];
 
         // modify the TopLevelCommands under shared lock; event if we clone it, we don't want
         // TopLevelCommands to get modified while we're working on it. Otherwise, we might
@@ -190,6 +219,16 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             clone.InsertRange(startIndex, newItems);
 
             ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+        }
+
+        lock (_dockBandsLock)
+        {
+            // same idea for DockBands
+            List<TopLevelViewModel> dockClone = [.. DockBands];
+            var dockStartIndex = FindIndexForFirstProviderItem(dockClone, sender.ProviderId);
+            dockClone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
+            dockClone.InsertRange(dockStartIndex, newBands);
+            ListHelpers.InPlaceUpdateList(DockBands, dockClone);
         }
 
         return;
@@ -243,6 +282,11 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         lock (TopLevelCommands)
         {
             TopLevelCommands.Clear();
+        }
+
+        lock (_dockBandsLock)
+        {
+            DockBands.Clear();
         }
 
         await LoadBuiltinsAsync().ConfigureAwait(false);
@@ -322,13 +366,13 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
 
         // Register started extensions and load their commands
-        var totalCommands = await RegisterAndLoadCommandsAsync(startedWrappers, ct).ConfigureAwait(false);
+        var loadSummary = await RegisterAndLoadCommandsAsync(startedWrappers, ct).ConfigureAwait(false);
 
         timer.Stop();
-        Logger.LogInfo($"Loaded {totalCommands} command(s) from {startedWrappers.Count} extension(s) in {timer.ElapsedMilliseconds} ms");
+        Logger.LogInfo($"Loaded {loadSummary.CommandCount} command(s) and {loadSummary.DockBandCount} band(s) from {startedWrappers.Count} extension(s) in {timer.ElapsedMilliseconds} ms");
     }
 
-    private async Task<int> RegisterAndLoadCommandsAsync(ICollection<CommandProviderWrapper> wrappers, CancellationToken ct)
+    private async Task<RegisterAndLoadSummary> RegisterAndLoadCommandsAsync(ICollection<CommandProviderWrapper> wrappers, CancellationToken ct)
     {
         lock (_commandProvidersLock)
         {
@@ -339,24 +383,54 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         var loadResults = await Task.WhenAll(wrappers.Select(w => TryLoadCommandsAsync(w, ct))).ConfigureAwait(false);
 
         var totalCommands = 0;
+        var totalDockBands = 0;
         var timedOut = new List<CommandLoadResult>();
+        List<TopLevelViewModel> commandsToAdd = [];
+        List<TopLevelViewModel> dockBandsToAdd = [];
 
-        lock (TopLevelCommands)
+        foreach (var r in loadResults)
         {
-            foreach (var r in loadResults)
+            if (r.IsLoaded)
             {
-                if (r.IsLoaded)
+                var commands = r.TopLevelObjectSets.Commands;
+                if (commands is not null)
                 {
-                    foreach (var c in r.Commands)
+                    foreach (var c in commands)
                     {
-                        TopLevelCommands.Add(c);
+                        commandsToAdd.Add(c);
                         totalCommands++;
                     }
                 }
-                else if (r.IsTimedOut)
+
+                var bands = r.TopLevelObjectSets.DockBands;
+                if (bands is not null)
                 {
-                    timedOut.Add(r);
+                    foreach (var b in bands)
+                    {
+                        dockBandsToAdd.Add(b);
+                        totalDockBands++;
+                    }
                 }
+            }
+            else if (r.IsTimedOut)
+            {
+                timedOut.Add(r);
+            }
+        }
+
+        lock (TopLevelCommands)
+        {
+            foreach (var c in commandsToAdd)
+            {
+                TopLevelCommands.Add(c);
+            }
+        }
+
+        lock (_dockBandsLock)
+        {
+            foreach (var b in dockBandsToAdd)
+            {
+                DockBands.Add(b);
             }
         }
 
@@ -370,7 +444,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             }
         }
 
-        return totalCommands;
+        return new RegisterAndLoadSummary(totalCommands, totalDockBands);
     }
 
     private async Task<ExtensionStartResult> TryStartExtensionAsync(IExtensionWrapper extension)
@@ -413,7 +487,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             await startTask.WaitAsync(BackgroundStartTimeout, ct).ConfigureAwait(false);
 
             var wrapper = new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
-            Logger.LogInfo($"Late-started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms, loading commands");
+            Logger.LogInfo($"Late-started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms, loading commands and bands");
 
             await RegisterAndLoadCommandsAsync([wrapper], ct).ConfigureAwait(false);
         }
@@ -434,45 +508,63 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         try
         {
             var result = await loadTask.WaitAsync(CommandLoadTimeout, ct).ConfigureAwait(false);
-            Logger.LogInfo($"Loaded commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} in {sw.ElapsedMilliseconds} ms");
+            var commandCount = result.Commands?.Count ?? 0;
+            var dockBandCount = result.DockBands?.Count ?? 0;
+            Logger.LogInfo($"Loaded {commandCount} command(s) and {dockBandCount} band(s) from {wrapper.ExtensionHost?.Extension?.PackageFullName} in {sw.ElapsedMilliseconds} ms");
             return CommandLoadResult.Loaded(wrapper, result);
         }
         catch (TimeoutException)
         {
-            Logger.LogWarning($"Loading commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} timed out after {sw.ElapsedMilliseconds} ms, continuing in background");
+            Logger.LogWarning($"Loading commands and bands from {wrapper.ExtensionHost?.Extension?.PackageFullName} timed out after {sw.ElapsedMilliseconds} ms, continuing in background");
             return CommandLoadResult.TimedOut(wrapper, loadTask, sw);
         }
         catch (OperationCanceledException)
         {
-            Logger.LogDebug($"Loading commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} was cancelled after {sw.ElapsedMilliseconds} ms");
+            Logger.LogDebug($"Loading commands and bands from {wrapper.ExtensionHost?.Extension?.PackageFullName} was cancelled after {sw.ElapsedMilliseconds} ms");
             return CommandLoadResult.Failed(wrapper);
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to load commands for extension {wrapper.ExtensionHost?.Extension?.PackageFullName} after {sw.ElapsedMilliseconds} ms: {ex}");
+            Logger.LogError($"Failed to load commands and bands for extension {wrapper.ExtensionHost?.Extension?.PackageFullName} after {sw.ElapsedMilliseconds} ms: {ex}");
             return CommandLoadResult.Failed(wrapper);
         }
     }
 
     private async Task AppendCommandsWhenReadyAsync(
         CommandProviderWrapper wrapper,
-        Task<ICollection<TopLevelViewModel>> loadTask,
+        Task<TopLevelObjectSets> loadTask,
         Stopwatch sw,
         CancellationToken ct)
     {
         try
         {
-            var commands = await loadTask.WaitAsync(BackgroundCommandLoadTimeout, ct).ConfigureAwait(false);
+            var topLevelObjectSets = await loadTask.WaitAsync(BackgroundCommandLoadTimeout, ct).ConfigureAwait(false);
 
-            lock (TopLevelCommands)
+            var commands = topLevelObjectSets.Commands;
+            if (commands is not null)
             {
-                foreach (var c in commands)
+                lock (TopLevelCommands)
                 {
-                    TopLevelCommands.Add(c);
+                    foreach (var c in commands)
+                    {
+                        TopLevelCommands.Add(c);
+                    }
                 }
             }
 
-            Logger.LogInfo($"Late-loaded {commands.Count} command(s) from {wrapper.ExtensionHost?.Extension?.PackageFullName} in {sw.ElapsedMilliseconds} ms");
+            var dockBands = topLevelObjectSets.DockBands;
+            if (dockBands is not null)
+            {
+                lock (_dockBandsLock)
+                {
+                    foreach (var band in dockBands)
+                    {
+                        DockBands.Add(band);
+                    }
+                }
+            }
+
+            Logger.LogInfo($"Late-loaded {commands?.Count ?? 0} command(s) and {dockBands?.Count ?? 0} band(s) from {wrapper.ExtensionHost?.Extension?.PackageFullName} in {sw.ElapsedMilliseconds} ms");
         }
         catch (OperationCanceledException)
         {
@@ -480,7 +572,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Background loading of commands from {wrapper.ExtensionHost?.Extension?.PackageFullName} failed after {sw.ElapsedMilliseconds} ms: {ex}");
+            Logger.LogError($"Background loading of commands and bands from {wrapper.ExtensionHost?.Extension?.PackageFullName} failed after {sw.ElapsedMilliseconds} ms: {ex}");
         }
     }
 
@@ -492,6 +584,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             {
                 // Then find all the top-level commands that belonged to that extension
                 List<TopLevelViewModel> commandsToRemove = [];
+                List<TopLevelViewModel> bandsToRemove = [];
                 lock (TopLevelCommands)
                 {
                     foreach (var extension in extensions)
@@ -502,6 +595,15 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                             if (host?.Extension == extension)
                             {
                                 commandsToRemove.Add(command);
+                            }
+                        }
+
+                        foreach (var band in DockBands)
+                        {
+                            var host = band.ExtensionHost;
+                            if (host?.Extension == extension)
+                            {
+                                bandsToRemove.Add(band);
                             }
                         }
                     }
@@ -520,6 +622,17 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                             foreach (var deleted in commandsToRemove)
                             {
                                 TopLevelCommands.Remove(deleted);
+                            }
+                        }
+                    }
+
+                    lock (_dockBandsLock)
+                    {
+                        if (bandsToRemove.Count != 0)
+                        {
+                            foreach (var deleted in bandsToRemove)
+                            {
+                                DockBands.Remove(deleted);
                             }
                         }
                     }
@@ -546,6 +659,22 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         return null;
     }
 
+    public TopLevelViewModel? LookupDockBand(string id)
+    {
+        lock (_dockBandsLock)
+        {
+            foreach (var command in DockBands)
+            {
+                if (command.Id == id)
+                {
+                    return command;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public void Receive(ReloadCommandsMessage message) =>
         _ = ReloadAllCommandsAsync();
 
@@ -555,7 +684,28 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         wrapper?.PinCommand(message.CommandId, _serviceProvider);
     }
 
-    private CommandProviderWrapper? LookupProvider(string providerId)
+    public void Receive(UnpinCommandItemMessage message)
+    {
+        var wrapper = LookupProvider(message.ProviderId);
+        wrapper?.UnpinCommand(message.CommandId, _serviceProvider);
+    }
+
+    public void Receive(PinToDockMessage message)
+    {
+        if (LookupProvider(message.ProviderId) is CommandProviderWrapper wrapper)
+        {
+            if (message.Pin)
+            {
+                wrapper?.PinDockBand(message.CommandId, _serviceProvider);
+            }
+            else
+            {
+                wrapper?.UnpinDockBand(message.CommandId, _serviceProvider);
+            }
+        }
+    }
+
+    public CommandProviderWrapper? LookupProvider(string providerId)
     {
         lock (_commandProvidersLock)
         {
@@ -564,18 +714,59 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    void IPageContext.ShowException(Exception ex, string? extensionHint)
-    {
-        var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint ?? "TopLevelCommandManager");
-        CommandPaletteHost.Instance.Log(message);
-    }
-
     internal bool IsProviderActive(string id)
     {
         lock (_commandProvidersLock)
         {
             return _builtInCommands.Any(wrapper => wrapper.Id == id && wrapper.IsActive)
                    || _extensionCommandProviders.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
+        }
+    }
+
+    internal void PinDockBand(TopLevelViewModel bandVm)
+    {
+        lock (_dockBandsLock)
+        {
+            foreach (var existing in DockBands)
+            {
+                if (existing.Id == bandVm.Id)
+                {
+                    // already pinned
+                    Logger.LogDebug($"Dock band '{bandVm.Id}' is already pinned.");
+                    return;
+                }
+            }
+
+            Logger.LogDebug($"Attempting to pin dock band '{bandVm.Id}' from provider '{bandVm.CommandProviderId}'.");
+            var providerId = bandVm.CommandProviderId;
+            var foundProvider = false;
+
+            // WATCH OUT: This locks CommandProviders. If you add code that
+            // locks CommandProviders first, before locking DockBands, you will
+            // cause a deadlock.
+            foreach (var provider in CommandProviders)
+            {
+                if (provider.Id == providerId)
+                {
+                    Logger.LogDebug($"Found provider '{providerId}' to pin dock band '{bandVm.Id}'.");
+                    provider.PinDockBand(bandVm);
+                    foundProvider = true;
+                    break;
+                }
+            }
+
+            if (!foundProvider)
+            {
+                Logger.LogWarning($"Could not find provider '{providerId}' to pin dock band '{bandVm.Id}'.");
+            }
+            else
+            {
+                // Add the band to DockBands if not already present
+                if (!DockBands.Any(b => b.Id == bandVm.Id))
+                {
+                    DockBands.Add(bandVm);
+                }
+            }
         }
     }
 
@@ -626,16 +817,16 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     private sealed class CommandLoadResult
     {
-        public IEnumerable<TopLevelViewModel>? Commands { get; private init; }
+        public TopLevelObjectSets? TopLevelObjectSets { get; private init; }
 
         public CommandProviderWrapper Wrapper { get; }
 
-        public Task<ICollection<TopLevelViewModel>>? PendingLoadTask { get; private init; }
+        public Task<TopLevelObjectSets>? PendingLoadTask { get; private init; }
 
         public Stopwatch? Stopwatch { get; private init; }
 
-        [MemberNotNullWhen(true, nameof(Commands))]
-        public bool IsLoaded => Commands is not null;
+        [MemberNotNullWhen(true, nameof(TopLevelObjectSets))]
+        public bool IsLoaded => TopLevelObjectSets is not null;
 
         [MemberNotNullWhen(true, nameof(PendingLoadTask), nameof(Stopwatch))]
         public bool IsTimedOut => PendingLoadTask is not null;
@@ -645,12 +836,12 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             Wrapper = wrapper;
         }
 
-        public static CommandLoadResult Loaded(CommandProviderWrapper wrapper, IEnumerable<TopLevelViewModel> commands)
+        public static CommandLoadResult Loaded(CommandProviderWrapper wrapper, TopLevelObjectSets topLevelObjectSets)
         {
-            return new CommandLoadResult(wrapper) { Commands = commands };
+            return new CommandLoadResult(wrapper) { TopLevelObjectSets = topLevelObjectSets };
         }
 
-        public static CommandLoadResult TimedOut(CommandProviderWrapper wrapper, Task<ICollection<TopLevelViewModel>> pendingLoadTask, Stopwatch sw)
+        public static CommandLoadResult TimedOut(CommandProviderWrapper wrapper, Task<TopLevelObjectSets> pendingLoadTask, Stopwatch sw)
         {
             return new CommandLoadResult(wrapper) { PendingLoadTask = pendingLoadTask, Stopwatch = sw };
         }
@@ -660,4 +851,8 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             return new CommandLoadResult(wrapper);
         }
     }
+
+    private readonly record struct RegisterAndLoadSummary(int CommandCount, int DockBandCount);
+
+    private record TopLevelObjectSets(ICollection<TopLevelViewModel>? Commands, ICollection<TopLevelViewModel>? DockBands);
 }

@@ -120,12 +120,10 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
             {
-                TitleBarIcon.Margin = new Thickness(0, 0, 8, 0); // Workaround, see XAML comment
                 AppTitleBar.IsPaneToggleButtonVisible = true;
             }
             else
             {
-                TitleBarIcon.Margin = new Thickness(16, 0, 0, 0);  // Workaround, see XAML comment
                 AppTitleBar.IsPaneToggleButtonVisible = false;
             }
         }
