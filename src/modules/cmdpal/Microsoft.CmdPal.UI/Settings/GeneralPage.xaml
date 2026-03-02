@@ -53,6 +53,13 @@
                             <controls:SettingsCard ContentAlignment="Left">
                                 <ptcontrols:CheckBoxWithDescriptionControl x:Uid="Settings_GeneralPage_IgnoreShortcutWhenBusy_SettingsCard" IsChecked="{x:Bind viewModel.IgnoreShortcutWhenBusy, Mode=TwoWay}" />
                             </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <InfoBar
+                                    IsClosable="False"
+                                    IsOpen="{x:Bind IsNotificationStateSuppressing, Mode=OneWay}"
+                                    Message="{x:Bind NotificationStateMessage, Mode=OneWay}"
+                                    Severity="Warning" />
+                            </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_AutoGoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">

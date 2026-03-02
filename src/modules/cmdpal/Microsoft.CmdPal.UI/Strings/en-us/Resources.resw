@@ -350,6 +350,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_IgnoreShortcutWhenBusy_SettingsCard.Description" xml:space="preserve">
     <value>Windows may detect that a fullscreen application is running or Presentation Settings are applied. Some applications (such as NVIDIA overlay) can trigger this incorrectly, preventing the shortcut from working</value>
   </data>
+  <data name="Settings_GeneralPage_NotificationState_InfoBar" xml:space="preserve">
+    <value>The system is currently reporting: {0}. This may prevent your activation shortcut from working.</value>
+  </data>
+  <data name="NotificationState_D3DFullScreen" xml:space="preserve">
+    <value>a D3D fullscreen application is running</value>
+  </data>
+  <data name="NotificationState_PresentationMode" xml:space="preserve">
+    <value>Presentation Mode is active</value>
+  </data>
+  <data name="NotificationState_Busy" xml:space="preserve">
+    <value>the system heuristically detects a fullscreen app or Presentation Settings</value>
+  </data>
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
     <value>Highlight search on activate</value>
   </data>

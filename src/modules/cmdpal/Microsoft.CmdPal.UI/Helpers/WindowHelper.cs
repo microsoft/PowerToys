@@ -39,4 +39,14 @@ internal sealed partial class WindowHelper
 
         return false;
     }
+
+    public static UserNotificationState? GetUserNotificationState()
+    {
+        if (Marshal.GetExceptionForHR(NativeMethods.SHQueryUserNotificationState(out var state)) is null)
+        {
+            return state;
+        }
+
+        return null;
+    }
 }
