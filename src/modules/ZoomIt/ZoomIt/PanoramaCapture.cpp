@@ -131,7 +131,10 @@ const wchar_t* HotkeyIdToString( WPARAM hotkeyId );
 DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap );
 std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId );
 
-static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<bool(int)> progressCallback = nullptr );
+static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
+                                     bool lowContrastMode,
+                                     std::function<bool(int)> progressCallback = nullptr,
+                                     size_t* outComposedFrameCount = nullptr );
 static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile );
 
 //----------------------------------------------------------------------------
@@ -1886,7 +1889,8 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                                             int precomputedVeryLowEntropy = -1,
                                             bool* outNearStationaryOverride = nullptr,
                                             bool allowHighConstStationaryRelax = false,
-                                            unsigned __int64* outMaskedStationaryScore = nullptr )
+                                            unsigned __int64* outMaskedStationaryScore = nullptr,
+                                            bool forceExhaustiveProbeBudget = false )
 {
     if( previousPixels.size() != currentPixels.size() || frameWidth <= 0 || frameHeight <= 0 )
     {
@@ -2223,21 +2227,29 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     constexpr int kMaxCandidatesWithProbes = 160;
     constexpr int kStableDirectionCandidateBudget = 64;
     constexpr int kConfidentDirectionCandidateBudget = 48;
+    constexpr int kUnknownDirectionCandidateBudget = 96;
     CoarseCandidate candidates[kMaxCandidatesWithProbes];
     int candidateCount = 0;
 
-    // Adaptive probe budget: once scroll direction is established and the
-    // pair is not a low-entropy/high-constant hard case, keep probe growth
-    // bounded so fine search doesn't evaluate excessive candidates.
+    // Fast-pass budget: search with a tighter candidate budget first, then
+    // rerun with exhaustive budget only when confidence is weak.
+    // Exception: first-pair unknown-direction VLE content is exactly where
+    // candidate starvation can cause axis-defer loops and middle-frame drops,
+    // so force exhaustive coverage up front.
+    const bool useFastProbePass = !forceExhaustiveProbeBudget &&
+                                  !( expectedDyDs == 0 && veryLowEntropyPair );
     int probeCandidateBudget = kMaxCandidatesWithProbes;
-    const bool hasEstablishedDirection = ( expectedDyDs != 0 );
-    const bool hardProbeCase = !hasEstablishedDirection || veryLowEntropyPair || highConstantFractionPair;
-    if( !hardProbeCase )
+    if( useFastProbePass )
     {
-        probeCandidateBudget = kStableDirectionCandidateBudget;
-        if( abs( expectedDyDs ) >= 2 )
+        if( expectedDyDs == 0 )
         {
-            probeCandidateBudget = kConfidentDirectionCandidateBudget;
+            probeCandidateBudget = kUnknownDirectionCandidateBudget;
+        }
+        else
+        {
+            probeCandidateBudget = ( abs( expectedDyDs ) >= 2 )
+                ? kConfidentDirectionCandidateBudget
+                : kStableDirectionCandidateBudget;
         }
     }
 
@@ -2726,7 +2738,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     const bool harmonicFallback = highConstantFractionPair && bestCoarseScore <= 2 && !useMaskedFallback;
     const int preHarmonicProbeCount = prunedCount;
     const int expectedAbsStepEarly = max( abs( expectedDy ), abs( expectedDx ) );
-    if( harmonicFallback )
+    if( harmonicFallback && forceExhaustiveProbeBudget )
     {
         probeCandidateBudget = kMaxCandidatesWithProbes;
     }
@@ -3431,6 +3443,64 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         bestExpectedDelta = ( expectedAbsStep > 0 ) ? abs( bestAbsStep - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
     }
 
+    // Conservative fast-pass fallback: if ranking confidence is weak,
+    // rerun once with exhaustive probe budget to preserve quality.
+    if( useFastProbePass )
+    {
+        const bool noFineWinner = ( bestFineScore == ( std::numeric_limits<unsigned __int64>::max )() );
+        bool ambiguousWinner = false;
+        const bool allowAmbiguityRerun = expectedAbsStep > 0 && !highConstantFractionPair;
+        if( !noFineWinner &&
+            secondBestFineRankScore != ( std::numeric_limits<unsigned __int64>::max )() )
+        {
+            const unsigned __int64 ambiguitySlack =
+                ( std::max )( static_cast<unsigned __int64>( 8 ), bestFineRankScore / 16 );
+            ambiguousWinner = allowAmbiguityRerun &&
+                ( secondBestFineRankScore <= bestFineRankScore + ambiguitySlack );
+        }
+
+        bool farFromExpected = false;
+        if( expectedAbsStep > 0 && !noFineWinner )
+        {
+            const int expectedDeltaTolerance = max( refineRadiusDy + 8, expectedAbsStep / 2 );
+            const unsigned __int64 uncertainScoreFloor = useZnccFineSearch
+                ? static_cast<unsigned __int64>( kZnccScoreBase / 3 )
+                : static_cast<unsigned __int64>( 20 * kFineScoreScale );
+            farFromExpected =
+                bestExpectedDelta > expectedDeltaTolerance &&
+                bestFineScore > uncertainScoreFloor;
+        }
+
+        if( noFineWinner || ambiguousWinner || farFromExpected )
+        {
+            StitchLog( L"[Panorama/Stitch] FindBestFrameShift fast-pass rerun: "
+                         L"reason=noFine:%d ambiguous:%d farExpected:%d budget=%d\n",
+                         noFineWinner ? 1 : 0,
+                         ambiguousWinner ? 1 : 0,
+                         farFromExpected ? 1 : 0,
+                         probeCandidateBudget );
+
+            PERF_STOP( tPostValidation );
+            PERF_STOP( tTotal );
+            return FindBestFrameShiftVerticalOnly( previousPixels,
+                                                   currentPixels,
+                                                   frameWidth,
+                                                   frameHeight,
+                                                   expectedDx,
+                                                   expectedDy,
+                                                   bestDx,
+                                                   bestDy,
+                                                   lowContrastMode,
+                                                   precomputedPrevLuma,
+                                                   precomputedCurrLuma,
+                                                   precomputedVeryLowEntropy,
+                                                   outNearStationaryOverride,
+                                                   allowHighConstStationaryRelax,
+                                                   outMaskedStationaryScore,
+                                                   true );
+        }
+    }
+
     // Cross-validate shift vs stationary score.  The stationary score measures
     // how different the frames look at zero offset.  A large scroll means most
     // of the content is new, so stationaryScore should be proportionally high.
@@ -4059,7 +4129,10 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     return true;
 }
 
-static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool lowContrastMode, std::function<bool(int)> progressCallback)
+static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
+                                    bool lowContrastMode,
+                                    std::function<bool(int)> progressCallback,
+                                    size_t* outComposedFrameCount)
 {
     bool cancelled = false;
     auto reportProgress = [&progressCallback, &cancelled]( int percent )
@@ -4338,6 +4411,75 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                     }
                 }
 
+                if( !foundShift && expectedDx == 0 && expectedDy == 0 &&
+                    duplicateRetryStreak >= 2 && i >= 2 )
+                {
+                    int negDx = 0, negDy = 0;
+                    int posDx = 0, posDy = 0;
+                    bool negNearStationary = false;
+                    bool posNearStationary = false;
+
+                    const bool negOk = FindBestFrameShiftVerticalOnly( framePixels[i - 1], framePixels[i],
+                                                                        frameWidth, frameHeight,
+                                                                        0, -minProgress,
+                                                                        negDx, negDy,
+                                                                        lowContrastMode,
+                                                                        frameLuma[i - 1], frameLuma[i],
+                                                                        veryLowEntropy != 0,
+                                                                        &negNearStationary,
+                                                                        true,
+                                                                        nullptr,
+                                                                        true );
+                    const bool posOk = FindBestFrameShiftVerticalOnly( framePixels[i - 1], framePixels[i],
+                                                                        frameWidth, frameHeight,
+                                                                        0, minProgress,
+                                                                        posDx, posDy,
+                                                                        lowContrastMode,
+                                                                        frameLuma[i - 1], frameLuma[i],
+                                                                        veryLowEntropy != 0,
+                                                                        &posNearStationary,
+                                                                        true,
+                                                                        nullptr,
+                                                                        true );
+
+                    if( negOk || posOk )
+                    {
+                        int bootDx = 0, bootDy = 0;
+                        bool bootNearStationary = false;
+                        if( negOk && ( !posOk || abs( negDy ) >= abs( posDy ) ) )
+                        {
+                            bootDx = negDx;
+                            bootDy = negDy;
+                            bootNearStationary = negNearStationary;
+                        }
+                        else
+                        {
+                            bootDx = posDx;
+                            bootDy = posDy;
+                            bootNearStationary = posNearStationary;
+                        }
+
+                        const int bootStep = abs( bootDx ) + abs( bootDy );
+                        const int bootAxisStep = max( abs( bootDx ), abs( bootDy ) );
+                        const int bootAxisCap = max( 32, frameHeight / 4 );
+                        if( bootStep >= max( 4, minProgress / 2 ) && bootAxisStep <= bootAxisCap )
+                        {
+                            dx = bootDx;
+                            dy = bootDy;
+                            nearStationaryOverride = bootNearStationary;
+                            foundShift = true;
+                            StitchLog( L"[Panorama/Stitch] Frame %zu duplicate-startup-bootstrap accepted: dx=%d dy=%d step=%d streak=%d negOk=%d posOk=%d\n",
+                                         i,
+                                         dx,
+                                         dy,
+                                         bootAxisStep,
+                                         duplicateRetryStreak,
+                                         negOk ? 1 : 0,
+                                         posOk ? 1 : 0 );
+                        }
+                    }
+                }
+
                 if( foundShift )
                 {
                     retryStreakUsed = duplicateRetryStreak;
@@ -4372,13 +4514,73 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                     const int adjVLE = ( frameConstantFraction[i - 1] > 0.58 &&
                                          frameConstantFraction[i] > 0.58 ) ? 1 : 0;
 
-                    if( FindBestFrameShift( framePixels[i - 1], framePixels[i],
-                                            frameWidth, frameHeight,
-                                            expectedDx, expectedDy,
-                                            adjDx, adjDy,
-                                            lowContrastMode,
-                                            frameLuma[i - 1], frameLuma[i],
-                                            adjVLE, &adjNearStationary ) )
+                    bool adjFound = FindBestFrameShift( framePixels[i - 1], framePixels[i],
+                                                        frameWidth, frameHeight,
+                                                        expectedDx, expectedDy,
+                                                        adjDx, adjDy,
+                                                        lowContrastMode,
+                                                        frameLuma[i - 1], frameLuma[i],
+                                                        adjVLE, &adjNearStationary );
+
+                    // Startup bootstrap: when expected shift is still unknown
+                    // (0,0), try directional guesses for the adjacent pair.
+                    // This bypasses first-pair axis-defer loops on VLE captures
+                    // where frame differences are tiny but motion is real.
+                    if( !adjFound && expectedDx == 0 && expectedDy == 0 )
+                    {
+                        int negDx = 0, negDy = 0;
+                        int posDx = 0, posDy = 0;
+                        bool negNearStationary = false;
+                        bool posNearStationary = false;
+
+                        const bool negOk = FindBestFrameShiftVerticalOnly( framePixels[i - 1], framePixels[i],
+                                                                            frameWidth, frameHeight,
+                                                                            0, -minProgress,
+                                                                            negDx, negDy,
+                                                                            lowContrastMode,
+                                                                            frameLuma[i - 1], frameLuma[i],
+                                                                            adjVLE != 0,
+                                                                            &negNearStationary,
+                                                                            true,
+                                                                            nullptr,
+                                                                            true );
+                        const bool posOk = FindBestFrameShiftVerticalOnly( framePixels[i - 1], framePixels[i],
+                                                                            frameWidth, frameHeight,
+                                                                            0, minProgress,
+                                                                            posDx, posDy,
+                                                                            lowContrastMode,
+                                                                            frameLuma[i - 1], frameLuma[i],
+                                                                            adjVLE != 0,
+                                                                            &posNearStationary,
+                                                                            true,
+                                                                            nullptr,
+                                                                            true );
+
+                        if( negOk || posOk )
+                        {
+                            if( negOk && ( !posOk || abs( negDy ) >= abs( posDy ) ) )
+                            {
+                                adjDx = negDx;
+                                adjDy = negDy;
+                                adjNearStationary = negNearStationary;
+                            }
+                            else
+                            {
+                                adjDx = posDx;
+                                adjDy = posDy;
+                                adjNearStationary = posNearStationary;
+                            }
+
+                            adjFound = true;
+                            StitchLog( L"[Panorama/Stitch] Startup bootstrap: directional guess selected adj=(%d,%d) negOk=%d posOk=%d\n",
+                                         adjDx,
+                                         adjDy,
+                                         negOk ? 1 : 0,
+                                         posOk ? 1 : 0 );
+                        }
+                    }
+
+                    if( adjFound )
                     {
                         int perFrameStepX = -adjDx;
                         int perFrameStepY = -adjDy;
@@ -4985,6 +5187,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
     {
         StitchLog( L"[Panorama/Stitch] Failed to create stitched bitmap from pixels\n" );
         return nullptr;
+    }
+
+    if( outComposedFrameCount )
+    {
+        *outComposedFrameCount = composedFrameIndices.size();
     }
 
     const ULONGLONG stitchDurationMs = GetTickCount64() - stitchStart;
@@ -5848,7 +6055,7 @@ bool RunPanoramaStitchSelfTest()
         }
 
         basicTestsRun++;
-        TestLog( L"  [%d/5] baseline-uniform-scroll ...\n", basicTestsRun );
+        TestLog( L"  [%d/8] baseline-uniform-scroll ...\n", basicTestsRun );
         if( !runScenario( L"baseline-uniform-scroll",
                           frameWidth,
                           frameHeight,
@@ -5863,7 +6070,7 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
         basicTestsPassed++;
-        TestLog( L"  [%d/5] baseline-uniform-scroll PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/8] baseline-uniform-scroll PASSED\n", basicTestsRun );
     }
 
     // Test: small-step frames must not overwrite previously composed content.
@@ -5876,7 +6083,7 @@ bool RunPanoramaStitchSelfTest()
     // the fix: a tampered small-step frame's overlap markers must NOT
     // appear in the output.
     basicTestsRun++;
-    TestLog( L"  [%d/5] small-step-no-overwrite ...\n", basicTestsRun );
+    TestLog( L"  [%d/8] small-step-no-overwrite ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 420;
         constexpr int frameHeight = 320;
@@ -6062,12 +6269,12 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
 
-        TestLog( L"  [%d/5] small-step-no-overwrite PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/8] small-step-no-overwrite PASSED\n", basicTestsRun );
         basicTestsPassed++;
     }
 
     basicTestsRun++;
-    TestLog( L"  [%d/5] repro-1099x336-variable-steps-tail ...\n", basicTestsRun );
+    TestLog( L"  [%d/8] repro-1099x336-variable-steps-tail ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 1099;
         constexpr int frameHeight = 336;
@@ -6152,11 +6359,11 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
         basicTestsPassed++;
-        TestLog( L"  [%d/5] repro-1099x336-variable-steps-tail PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/8] repro-1099x336-variable-steps-tail PASSED\n", basicTestsRun );
     }
 
     basicTestsRun++;
-    TestLog( L"  [%d/5] repro-realcapture-variable-large-steps ...\n", basicTestsRun );
+    TestLog( L"  [%d/8] repro-realcapture-variable-large-steps ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 1079;
         constexpr int frameHeight = 341;
@@ -6219,12 +6426,298 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
         basicTestsPassed++;
-        TestLog( L"  [%d/5] repro-realcapture-variable-large-steps PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/8] repro-realcapture-variable-large-steps PASSED\n", basicTestsRun );
+
+    // Regression test for very-low-entropy periodic content where early
+    // frames can be rejected at expected=(0,0), causing a large recovery
+    // gap and dropped middle content.
+    basicTestsRun++;
+    TestLog( L"  [%d/8] repro-vle-periodic-middledrop ...\n", basicTestsRun );
+    {
+        constexpr int frameWidth = 1228;
+        constexpr int frameHeight = 1032;
+        constexpr int stepY = 50;
+        constexpr int frameCount = 19;
+        constexpr int canvasHeight = frameHeight + stepY * ( frameCount + 2 );
+        constexpr int expectedStitchedHeight = frameHeight + stepY * ( frameCount - 1 );
+
+        std::vector<BYTE> syntheticCanvasPixels(
+            static_cast<size_t>( frameWidth ) * static_cast<size_t>( canvasHeight ) * 4,
+            0 );
+
+        for( int y = 0; y < canvasHeight; ++y )
+        {
+            for( int x = 0; x < frameWidth; ++x )
+            {
+                // Dark, low-contrast background with tiny deterministic noise.
+                BYTE base = static_cast<BYTE>( 14 + ( ( x * 3 + y * 5 ) & 0x03 ) );
+                const size_t index = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( x ) ) * 4;
+                syntheticCanvasPixels[index + 0] = base;
+                syntheticCanvasPixels[index + 1] = static_cast<BYTE>( base + 1 );
+                syntheticCanvasPixels[index + 2] = static_cast<BYTE>( base + 2 );
+                syntheticCanvasPixels[index + 3] = 0xFF;
+            }
+        }
+
+        // Add sparse periodic ruler lines and tiny left-gutter markers.
+        for( int band = 0; band * stepY < canvasHeight; ++band )
+        {
+            const int y0 = band * stepY;
+            for( int dy = 0; dy < 2; ++dy )
+            {
+                const int yy = y0 + dy;
+                if( yy >= canvasHeight )
+                    continue;
+                for( int x = 0; x < frameWidth; ++x )
+                {
+                    const size_t index = ( static_cast<size_t>( yy ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( x ) ) * 4;
+                    syntheticCanvasPixels[index + 0] = 38;
+                    syntheticCanvasPixels[index + 1] = 42;
+                    syntheticCanvasPixels[index + 2] = 46;
+                }
+            }
+
+            // Sparse, weak non-periodic marker (line-number-like cue).
+            // Keep it tiny so the frame remains very-low-entropy.
+            const int x0 = 10 + ( ( band * 37 ) % 96 );
+            for( int yy = y0 + 10; yy < min( y0 + 12, canvasHeight ); ++yy )
+            {
+                for( int xx = x0; xx < min( x0 + 2, frameWidth ); ++xx )
+                {
+                    const size_t index = ( static_cast<size_t>( yy ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( xx ) ) * 4;
+                    syntheticCanvasPixels[index + 0] = 150;
+                    syntheticCanvasPixels[index + 1] = 156;
+                    syntheticCanvasPixels[index + 2] = 162;
+                }
+            }
+        }
+
+        std::vector<int> originsY;
+        originsY.reserve( frameCount );
+        for( int i = 0; i < frameCount; ++i )
+        {
+            originsY.push_back( i * stepY );
+        }
+
+        if( !runScenario( L"repro-vle-periodic-middledrop",
+                          frameWidth,
+                          frameHeight,
+                          originsY,
+                          syntheticCanvasPixels,
+                          canvasHeight,
+                          expectedStitchedHeight,
+                          8,
+                          false ) )
+        {
+            TestLog( L"***** FAIL: repro-vle-periodic-middledrop *****\n" );
+            return false;
+        }
+        basicTestsPassed++;
+        TestLog( L"  [%d/8] repro-vle-periodic-middledrop PASSED\n", basicTestsRun );
+
+    basicTestsRun++;
+    TestLog( L"  [%d/8] repro-axis-defer-vle-vertical ...\n", basicTestsRun );
+    {
+        constexpr int frameWidth = 1228;
+        constexpr int frameHeight = 1032;
+        constexpr int shiftY = 50;
+        constexpr int canvasHeight = frameHeight + shiftY + 64;
+
+        std::vector<BYTE> canvasPixels(
+            static_cast<size_t>( frameWidth ) * static_cast<size_t>( canvasHeight ) * 4,
+            0 );
+
+        for( int y = 0; y < canvasHeight; ++y )
+        {
+            for( int x = 0; x < frameWidth; ++x )
+            {
+                BYTE base = static_cast<BYTE>( 14 + ( ( x * 3 + y * 5 ) & 0x03 ) );
+                const size_t index = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( x ) ) * 4;
+                canvasPixels[index + 0] = base;
+                canvasPixels[index + 1] = static_cast<BYTE>( base + 1 );
+                canvasPixels[index + 2] = static_cast<BYTE>( base + 2 );
+                canvasPixels[index + 3] = 0xFF;
+            }
+        }
+
+        for( int band = 0; band * shiftY < canvasHeight; ++band )
+        {
+            const int y0 = band * shiftY;
+            for( int dy = 0; dy < 2; ++dy )
+            {
+                const int yy = y0 + dy;
+                if( yy >= canvasHeight )
+                    continue;
+                for( int x = 0; x < frameWidth; ++x )
+                {
+                    const size_t index = ( static_cast<size_t>( yy ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( x ) ) * 4;
+                    canvasPixels[index + 0] = 38;
+                    canvasPixels[index + 1] = 42;
+                    canvasPixels[index + 2] = 46;
+                }
+            }
+
+            const int x0 = 10 + ( ( band * 37 ) % 96 );
+            for( int yy = y0 + 10; yy < min( y0 + 12, canvasHeight ); ++yy )
+            {
+                for( int xx = x0; xx < min( x0 + 2, frameWidth ); ++xx )
+                {
+                    const size_t index = ( static_cast<size_t>( yy ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( xx ) ) * 4;
+                    canvasPixels[index + 0] = 150;
+                    canvasPixels[index + 1] = 156;
+                    canvasPixels[index + 2] = 162;
+                }
+            }
+        }
+
+        std::vector<BYTE> previousPixels( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) * 4 );
+        std::vector<BYTE> currentPixels( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) * 4 );
+        for( int y = 0; y < frameHeight; ++y )
+        {
+            const size_t srcPrev = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) ) * 4;
+            const size_t srcCurr = ( static_cast<size_t>( y + shiftY ) * static_cast<size_t>( frameWidth ) ) * 4;
+            const size_t dst = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) ) * 4;
+            memcpy( previousPixels.data() + dst, canvasPixels.data() + srcPrev, static_cast<size_t>( frameWidth ) * 4 );
+            memcpy( currentPixels.data() + dst, canvasPixels.data() + srcCurr, static_cast<size_t>( frameWidth ) * 4 );
+        }
+
+        std::vector<BYTE> previousLuma;
+        std::vector<BYTE> currentLuma;
+        BuildFullLumaFrame( previousPixels, frameWidth, frameHeight, previousLuma );
+        BuildFullLumaFrame( currentPixels, frameWidth, frameHeight, currentLuma );
+
+        int bestDx = 0;
+        int bestDy = 0;
+        bool nearStationaryOverride = false;
+        const bool found = FindBestFrameShift( previousPixels,
+                                               currentPixels,
+                                               frameWidth,
+                                               frameHeight,
+                                               0,
+                                               0,
+                                               bestDx,
+                                               bestDy,
+                                               true,
+                                               previousLuma,
+                                               currentLuma,
+                                               1,
+                                               &nearStationaryOverride );
+
+        if( !found || abs( bestDy ) < shiftY - 8 )
+        {
+            TestLog( L"***** FAIL: repro-axis-defer-vle-vertical found=%d best=(%d,%d) expectedDy~-%d *****\n",
+                     found ? 1 : 0,
+                     bestDx,
+                     bestDy,
+                     shiftY );
+            return false;
+        }
+
+        basicTestsPassed++;
+        TestLog( L"  [%d/8] repro-axis-defer-vle-vertical PASSED\n", basicTestsRun );
+    }
+
+    basicTestsRun++;
+    TestLog( L"  [%d/8] repro-capture-middledrop-composedcount ...\n", basicTestsRun );
+    {
+        std::wstring captureRegressionDir = readSelfTestArg( L"/panorama-selftest-capture-dir" );
+        if( captureRegressionDir.empty() )
+        {
+            captureRegressionDir = L"C:\\Users\\markruss\\AppData\\Local\\Temp\\ZoomItPanoramaDebug\\panorama_20260302_115447_60228";
+        }
+
+        std::error_code ec;
+        if( !std::filesystem::exists( captureRegressionDir, ec ) || ec )
+        {
+            TestLog( L"[Panorama/Test] Capture regression dir not found, skipping: %s\n", captureRegressionDir.c_str() );
+            basicTestsPassed++;
+            TestLog( L"  [%d/8] repro-capture-middledrop-composedcount SKIPPED\n", basicTestsRun );
+        }
+        else
+        {
+            std::vector<std::filesystem::path> acceptedFrames;
+            for( const auto& entry : std::filesystem::directory_iterator( captureRegressionDir, ec ) )
+            {
+                if( ec )
+                    break;
+                if( !entry.is_regular_file() )
+                    continue;
+                const std::wstring fileName = entry.path().filename().wstring();
+                if( fileName.rfind( L"accepted_", 0 ) == 0 && entry.path().extension() == L".bmp" )
+                {
+                    acceptedFrames.push_back( entry.path() );
+                }
+            }
+
+            std::sort( acceptedFrames.begin(), acceptedFrames.end() );
+            if( acceptedFrames.size() < 4 )
+            {
+                TestLog( L"***** FAIL: repro-capture-middledrop-composedcount insufficient accepted frames=%zu dir=%s *****\n",
+                         acceptedFrames.size(), captureRegressionDir.c_str() );
+                return false;
+            }
+
+            std::vector<HBITMAP> frames;
+            frames.reserve( acceptedFrames.size() );
+            bool loadFailed = false;
+            for( const auto& framePath : acceptedFrames )
+            {
+                HBITMAP bitmap = LoadBitmapFromFile( framePath );
+                if( bitmap == nullptr )
+                {
+                    loadFailed = true;
+                    TestLog( L"[Panorama/Test] Failed to load capture frame: %s\n", framePath.c_str() );
+                    break;
+                }
+                frames.push_back( bitmap );
+            }
+
+            if( loadFailed )
+            {
+                for( HBITMAP frame : frames )
+                {
+                    if( frame ) DeleteObject( frame );
+                }
+                return false;
+            }
+
+            size_t composedCount = 0;
+            HBITMAP stitchedBitmap = StitchPanoramaFrames( frames, false, nullptr, &composedCount );
+            for( HBITMAP frame : frames )
+            {
+                if( frame ) DeleteObject( frame );
+            }
+
+            if( stitchedBitmap == nullptr )
+            {
+                TestLog( L"***** FAIL: repro-capture-middledrop-composedcount StitchPanoramaFrames returned nullptr *****\n" );
+                return false;
+            }
+
+            DeleteObject( stitchedBitmap );
+
+            const size_t frameCount = acceptedFrames.size();
+            const size_t requiredComposed = ( frameCount * 3 ) / 4;
+            TestLog( L"[Panorama/Test] Capture regression composed=%zu/%zu required>=%zu dir=%s\n",
+                     composedCount, frameCount, requiredComposed, captureRegressionDir.c_str() );
+
+            if( composedCount < requiredComposed )
+            {
+                TestLog( L"***** FAIL: repro-capture-middledrop-composedcount composed=%zu/%zu (<%zu) *****\n",
+                         composedCount, frameCount, requiredComposed );
+                return false;
+            }
+
+            basicTestsPassed++;
+            TestLog( L"  [%d/8] repro-capture-middledrop-composedcount PASSED\n", basicTestsRun );
+        }
+    }
+    }
     }
 
     // Drop-logic test: exercise AreFramesNearDuplicate directly
     basicTestsRun++;
-    TestLog( L"  [%d/5] drop-logic-near-duplicate ...\n", basicTestsRun );
+    TestLog( L"  [%d/8] drop-logic-near-duplicate ...\n", basicTestsRun );
     {
         constexpr int dW = 200;
         constexpr int dH = 200;
@@ -6345,7 +6838,7 @@ bool RunPanoramaStitchSelfTest()
         }
 
         basicTestsPassed++;
-        TestLog( L"  [%d/5] drop-logic-near-duplicate PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/8] drop-logic-near-duplicate PASSED\n", basicTestsRun );
     }
 
     } // !selfTestStressOnly — end of Phase 1
