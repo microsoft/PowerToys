@@ -2525,6 +2525,22 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
     const unsigned __int64 bestCoarseScore = candidates[0].score;
 
+    // Optimization #1: confidence-gated probe injection bypass.
+    // On stable high-constant-fraction streams with established motion,
+    // probe candidate expansion can dominate runtime while adding little
+    // value. Skip probes when the coarse winner is clearly separated.
+    const bool coarseWinnerClearlySeparated =
+        ( candidateCount <= 1 ) ||
+        ( candidates[1].score >= candidates[0].score + 6 );
+    const bool bypassProbeInjection =
+        useFastProbePass &&
+        !forceExhaustiveProbeBudget &&
+        expectedDyDs != 0 &&
+        highConstantFractionPair &&
+        !veryLowEntropyPair &&
+        bestCoarseScore <= 12 &&
+        coarseWinnerClearlySeparated;
+
     // Prune candidates whose coarse score is far worse than the best.
     PERF_START( tProbeInject );
     const unsigned __int64 coarsePruneThreshold = bestCoarseScore + ( lowContrastMode ? 20 : 30 );
@@ -2569,7 +2585,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // similarly-scored coarse candidates at text-line harmonics, pushing the
     // correct shift outside the top-12.  Adding probes at the expected step
     // ensures the fine search always evaluates the correct neighborhood.
-    if( expectedDyDs != 0 && prunedCount < probeCandidateBudget )
+    if( !bypassProbeInjection && expectedDyDs != 0 && prunedCount < probeCandidateBudget )
     {
         for( int probe = -3; probe <= 3 && prunedCount < probeCandidateBudget; ++probe )
         {
@@ -2620,7 +2636,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // zero difference (exact row match).  Once the first score=0
     // candidate is found the earlyExit mechanism makes all remaining
     // candidates trivially cheap to evaluate.
-    if( bestCoarseScore >= 8 && !highConstantFractionPair )
+    if( !bypassProbeInjection && bestCoarseScore >= 8 && !highConstantFractionPair )
     {
         for( int absStep = minStepDs; absStep <= maxStepDs && prunedCount < probeCandidateBudget; ++absStep )
         {
@@ -2660,7 +2676,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // Performance is safe because the correct shift produces fineScore=0
     // on exact-overlap content, and early termination kills all subsequent
     // candidates after the first sample.
-    if( expectedDyDs == 0 && prunedCount < probeCandidateBudget )
+    if( !bypassProbeInjection && expectedDyDs == 0 && prunedCount < probeCandidateBudget )
     {
         const int rangeSpan = searchMaxDy - searchMinDy;
         const int probeTarget = min( 30, max( 10, rangeSpan / 4 ) );
@@ -2695,7 +2711,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // non-zero scores while the correct shift scores ~ 0.  Injecting
     // every candidate is safe: early termination after the first score=0
     // hit makes subsequent evaluations trivially cheap.
-    if( useMaskedFallback && prunedCount < probeCandidateBudget )
+    if( !bypassProbeInjection && useMaskedFallback && prunedCount < probeCandidateBudget )
     {
         for( int dyDs = searchMinDy; dyDs <= searchMaxDy && prunedCount < probeCandidateBudget; ++dyDs )
         {
@@ -2738,11 +2754,11 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     const bool harmonicFallback = highConstantFractionPair && bestCoarseScore <= 2 && !useMaskedFallback;
     const int preHarmonicProbeCount = prunedCount;
     const int expectedAbsStepEarly = max( abs( expectedDy ), abs( expectedDx ) );
-    if( harmonicFallback && forceExhaustiveProbeBudget )
+    if( !bypassProbeInjection && harmonicFallback && forceExhaustiveProbeBudget )
     {
         probeCandidateBudget = kMaxCandidatesWithProbes;
     }
-    if( harmonicFallback && expectedAbsStepEarly >= frameHeight / 5 )
+    if( !bypassProbeInjection && harmonicFallback && expectedAbsStepEarly >= frameHeight / 5 )
     {
         const int maxProbeDyDs = max( 3, abs( expectedDy ) / ( 3 * downsampleScale ) );
 
@@ -2850,6 +2866,15 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         StitchLog( L"[Panorama/Stitch] EdgeProjectionInject injected=%d topNCC=%.4f\n",
                      eiCount, eiCount > 0 ? edgeInj[0].ncc : 0.0 );
         PERF_STOP( tEdgeProjection );
+    }
+
+    if( bypassProbeInjection )
+    {
+        StitchLog( L"[Panorama/Stitch] ProbeInject bypassed expected=(%d,%d) bestCoarse=%llu candidateCount=%d\n",
+                     expectedDx,
+                     expectedDy,
+                     static_cast<unsigned long long>( bestCoarseScore ),
+                     candidateCount );
     }
 
     // Debug: log coarse candidates for HCF frames to diagnose harmonic issues.
@@ -3711,6 +3736,36 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
     if( bestFineScore == ( std::numeric_limits<unsigned __int64>::max )() || bestFineScore > fineThreshold )
     {
+        if( bypassProbeInjection && !forceExhaustiveProbeBudget )
+        {
+            StitchLog( L"[Panorama/Stitch] ProbeInject bypass fallback rerun expected=(%d,%d) best=(%d,%d) fineScore=%llu fineThreshold=%llu\n",
+                         expectedDx,
+                         expectedDy,
+                         bestDx,
+                         bestDy,
+                         static_cast<unsigned long long>( bestFineScore ),
+                         static_cast<unsigned long long>( fineThreshold ) );
+
+            PERF_STOP( tPostValidation );
+            PERF_STOP( tTotal );
+            return FindBestFrameShiftVerticalOnly( previousPixels,
+                                                   currentPixels,
+                                                   frameWidth,
+                                                   frameHeight,
+                                                   expectedDx,
+                                                   expectedDy,
+                                                   bestDx,
+                                                   bestDy,
+                                                   lowContrastMode,
+                                                   precomputedPrevLuma,
+                                                   precomputedCurrLuma,
+                                                   precomputedVeryLowEntropy,
+                                                   outNearStationaryOverride,
+                                                   allowHighConstStationaryRelax,
+                                                   outMaskedStationaryScore,
+                                                   true );
+        }
+
         StitchLog( L"[Panorama/Stitch] FindBestFrameShift poor-fine expected=(%d,%d) best=(%d,%d) fineScore=%llu fineThreshold=%llu stationary=%llu maskedStat=%llu veryLowEntropy=%d expectedStepScore=%llu dyAtExpectedStep=%d highConstFrac=%d bestExpDelta=%d refineRad=%d\n",
                      expectedDx, expectedDy, bestDx, bestDy,
                      static_cast<unsigned long long>( bestFineScore ),
