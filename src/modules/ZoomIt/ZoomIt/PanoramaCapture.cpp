@@ -2947,6 +2947,34 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
     }
 
+    // Per-row mask prefix counts let the masked fine-search skip rows that
+    // contain no informative pixels in either frame window.
+    std::vector<unsigned short> fullMaskPrevRowPrefix;
+    std::vector<unsigned short> fullMaskCurrRowPrefix;
+    if( useFineMask )
+    {
+        const size_t prefixStride = static_cast<size_t>( frameWidth ) + 1;
+        fullMaskPrevRowPrefix.assign( static_cast<size_t>( frameHeight ) * prefixStride, 0 );
+        fullMaskCurrRowPrefix.assign( static_cast<size_t>( frameHeight ) * prefixStride, 0 );
+
+        for( int y = 0; y < frameHeight; ++y )
+        {
+            const size_t rowBase = static_cast<size_t>( y ) * static_cast<size_t>( frameWidth );
+            const size_t prefBase = static_cast<size_t>( y ) * prefixStride;
+            for( int x = 0; x < frameWidth; ++x )
+            {
+                fullMaskPrevRowPrefix[prefBase + static_cast<size_t>( x ) + 1] =
+                    static_cast<unsigned short>(
+                        fullMaskPrevRowPrefix[prefBase + static_cast<size_t>( x )] +
+                        ( fullMaskPrev[rowBase + static_cast<size_t>( x )] ? 1 : 0 ) );
+                fullMaskCurrRowPrefix[prefBase + static_cast<size_t>( x ) + 1] =
+                    static_cast<unsigned short>(
+                        fullMaskCurrRowPrefix[prefBase + static_cast<size_t>( x )] +
+                        ( fullMaskCurr[rowBase + static_cast<size_t>( x )] ? 1 : 0 ) );
+            }
+        }
+    }
+
     // Scale fine scores by 256 to preserve sub-integer precision.
     // For sparse content (< 1% non-background pixels), the per-pixel
     // average difference at wrong shifts is < 1.0, which integer
@@ -3078,6 +3106,24 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
             if( useFineMask )
             {
+                const size_t prefixStride = static_cast<size_t>( frameWidth ) + 1;
+                const size_t prevPrefBase = static_cast<size_t>( pY ) * prefixStride;
+                const size_t currPrefBase = static_cast<size_t>( cY ) * prefixStride;
+                const int currXStart = xStart + dx;
+                const int currXEnd = xEnd + dx;
+
+                const unsigned int prevInformative = static_cast<unsigned int>(
+                    fullMaskPrevRowPrefix[prevPrefBase + static_cast<size_t>( xEnd )] -
+                    fullMaskPrevRowPrefix[prevPrefBase + static_cast<size_t>( xStart )] );
+                const unsigned int currInformative = static_cast<unsigned int>(
+                    fullMaskCurrRowPrefix[currPrefBase + static_cast<size_t>( currXEnd )] -
+                    fullMaskCurrRowPrefix[currPrefBase + static_cast<size_t>( currXStart )] );
+
+                if( prevInformative == 0 && currInformative == 0 )
+                {
+                    continue;
+                }
+
                 for( int xi = 0; xi < xSpan; ++xi )
                 {
                     const int prevIdx = prevRow + xStart + xi;
