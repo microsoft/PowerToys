@@ -11,6 +11,7 @@ using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Win32.UI.Shell;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
@@ -100,20 +101,32 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
     {
         var state = WindowHelper.GetUserNotificationState();
 
-        if (state is UserNotificationState.QUNS_RUNNING_D3D_FULL_SCREEN or
-            UserNotificationState.QUNS_PRESENTATION_MODE or
-            UserNotificationState.QUNS_BUSY)
+        if (state is QUERY_USER_NOTIFICATION_STATE.QUNS_RUNNING_D3D_FULL_SCREEN or
+            QUERY_USER_NOTIFICATION_STATE.QUNS_PRESENTATION_MODE or
+            QUERY_USER_NOTIFICATION_STATE.QUNS_BUSY)
         {
             var stateDescription = state switch
             {
-                UserNotificationState.QUNS_RUNNING_D3D_FULL_SCREEN => ResourceLoaderInstance.GetString("NotificationState_D3DFullScreen"),
-                UserNotificationState.QUNS_PRESENTATION_MODE => ResourceLoaderInstance.GetString("NotificationState_PresentationMode"),
-                UserNotificationState.QUNS_BUSY => ResourceLoaderInstance.GetString("NotificationState_Busy"),
+                QUERY_USER_NOTIFICATION_STATE.QUNS_RUNNING_D3D_FULL_SCREEN => ResourceLoaderInstance.GetString("NotificationState_D3DFullScreen"),
+                QUERY_USER_NOTIFICATION_STATE.QUNS_PRESENTATION_MODE => ResourceLoaderInstance.GetString("NotificationState_PresentationMode"),
+                QUERY_USER_NOTIFICATION_STATE.QUNS_BUSY => ResourceLoaderInstance.GetString("NotificationState_Busy"),
                 _ => string.Empty,
             };
 
             var messageFormat = ResourceLoaderInstance.GetString("Settings_GeneralPage_NotificationState_InfoBar");
-            NotificationStateMessage = string.Format(CultureInfo.CurrentCulture, messageFormat, stateDescription);
+            var message = string.Format(CultureInfo.CurrentCulture, messageFormat, stateDescription);
+
+            if (state is QUERY_USER_NOTIFICATION_STATE.QUNS_BUSY)
+            {
+                var triggerApps = WindowHelper.FindVisibleTriggerApps();
+                if (triggerApps.Count > 0)
+                {
+                    var triggerFormat = ResourceLoaderInstance.GetString("NotificationState_TriggerApps");
+                    message += " " + string.Format(CultureInfo.CurrentCulture, triggerFormat, string.Join(", ", triggerApps));
+                }
+            }
+
+            NotificationStateMessage = message;
             IsNotificationStateSuppressing = true;
         }
         else

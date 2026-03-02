@@ -112,3 +112,7 @@ AttachThreadInput
 GetWindowPlacement
 WINDOWPLACEMENT
 WM_DPICHANGED
+
+QUERY_USER_NOTIFICATION_STATE
+EnumWindows
+IsWindowVisible

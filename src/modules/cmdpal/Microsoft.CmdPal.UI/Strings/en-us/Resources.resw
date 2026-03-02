@@ -362,6 +362,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="NotificationState_Busy" xml:space="preserve">
     <value>the system heuristically detects a fullscreen app or Presentation Settings</value>
   </data>
+  <data name="NotificationState_TriggerApps" xml:space="preserve">
+    <value>Likely caused by: {0}.</value>
+  </data>
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
     <value>Highlight search on activate</value>
   </data>
