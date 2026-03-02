@@ -2221,8 +2221,25 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 
     constexpr int kMaxCandidates = 12;
     constexpr int kMaxCandidatesWithProbes = 160;
+    constexpr int kStableDirectionCandidateBudget = 64;
+    constexpr int kConfidentDirectionCandidateBudget = 48;
     CoarseCandidate candidates[kMaxCandidatesWithProbes];
     int candidateCount = 0;
+
+    // Adaptive probe budget: once scroll direction is established and the
+    // pair is not a low-entropy/high-constant hard case, keep probe growth
+    // bounded so fine search doesn't evaluate excessive candidates.
+    int probeCandidateBudget = kMaxCandidatesWithProbes;
+    const bool hasEstablishedDirection = ( expectedDyDs != 0 );
+    const bool hardProbeCase = !hasEstablishedDirection || veryLowEntropyPair || highConstantFractionPair;
+    if( !hardProbeCase )
+    {
+        probeCandidateBudget = kStableDirectionCandidateBudget;
+        if( abs( expectedDyDs ) >= 2 )
+        {
+            probeCandidateBudget = kConfidentDirectionCandidateBudget;
+        }
+    }
 
     for( int absStep = minStepDs; absStep <= maxStepDs; ++absStep )
     {
@@ -2540,9 +2557,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // similarly-scored coarse candidates at text-line harmonics, pushing the
     // correct shift outside the top-12.  Adding probes at the expected step
     // ensures the fine search always evaluates the correct neighborhood.
-    if( expectedDyDs != 0 && prunedCount < kMaxCandidatesWithProbes )
+    if( expectedDyDs != 0 && prunedCount < probeCandidateBudget )
     {
-        for( int probe = -3; probe <= 3 && prunedCount < kMaxCandidatesWithProbes; ++probe )
+        for( int probe = -3; probe <= 3 && prunedCount < probeCandidateBudget; ++probe )
         {
             const int probeDyDs = expectedDyDs + probe;
             if( abs( probeDyDs ) < minStepDs || abs( probeDyDs ) > maxStepDs )
@@ -2593,11 +2610,11 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // candidates trivially cheap to evaluate.
     if( bestCoarseScore >= 8 && !highConstantFractionPair )
     {
-        for( int absStep = minStepDs; absStep <= maxStepDs && prunedCount < kMaxCandidatesWithProbes; ++absStep )
+        for( int absStep = minStepDs; absStep <= maxStepDs && prunedCount < probeCandidateBudget; ++absStep )
         {
             for( int direction = -1; direction <= 1; direction += 2 )
             {
-                if( prunedCount >= kMaxCandidatesWithProbes )
+                if( prunedCount >= probeCandidateBudget )
                     break;
 
                 const int dyDs = direction * absStep;
@@ -2631,12 +2648,12 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // Performance is safe because the correct shift produces fineScore=0
     // on exact-overlap content, and early termination kills all subsequent
     // candidates after the first sample.
-    if( expectedDyDs == 0 && prunedCount < kMaxCandidatesWithProbes )
+    if( expectedDyDs == 0 && prunedCount < probeCandidateBudget )
     {
         const int rangeSpan = searchMaxDy - searchMinDy;
         const int probeTarget = min( 30, max( 10, rangeSpan / 4 ) );
         const int probeStride = max( 1, rangeSpan / max( 1, probeTarget ) );
-        for( int pos = searchMinDy; pos <= searchMaxDy && prunedCount < kMaxCandidatesWithProbes; pos += probeStride )
+        for( int pos = searchMinDy; pos <= searchMaxDy && prunedCount < probeCandidateBudget; pos += probeStride )
         {
             if( abs( pos ) < minStepDs || abs( pos ) > maxStepDs )
                 continue;
@@ -2666,9 +2683,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // non-zero scores while the correct shift scores ~ 0.  Injecting
     // every candidate is safe: early termination after the first score=0
     // hit makes subsequent evaluations trivially cheap.
-    if( useMaskedFallback && prunedCount < kMaxCandidatesWithProbes )
+    if( useMaskedFallback && prunedCount < probeCandidateBudget )
     {
-        for( int dyDs = searchMinDy; dyDs <= searchMaxDy && prunedCount < kMaxCandidatesWithProbes; ++dyDs )
+        for( int dyDs = searchMinDy; dyDs <= searchMaxDy && prunedCount < probeCandidateBudget; ++dyDs )
         {
             if( abs( dyDs ) < minStepDs || abs( dyDs ) > maxStepDs )
                 continue;
@@ -2709,11 +2726,15 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     const bool harmonicFallback = highConstantFractionPair && bestCoarseScore <= 2 && !useMaskedFallback;
     const int preHarmonicProbeCount = prunedCount;
     const int expectedAbsStepEarly = max( abs( expectedDy ), abs( expectedDx ) );
+    if( harmonicFallback )
+    {
+        probeCandidateBudget = kMaxCandidatesWithProbes;
+    }
     if( harmonicFallback && expectedAbsStepEarly >= frameHeight / 5 )
     {
         const int maxProbeDyDs = max( 3, abs( expectedDy ) / ( 3 * downsampleScale ) );
 
-        for( int dyDs = -maxProbeDyDs; dyDs <= maxProbeDyDs && prunedCount < kMaxCandidatesWithProbes; ++dyDs )
+        for( int dyDs = -maxProbeDyDs; dyDs <= maxProbeDyDs && prunedCount < probeCandidateBudget; ++dyDs )
         {
             if( abs( dyDs ) < minStepDs || abs( dyDs ) > maxStepDs )
                 continue;
@@ -2804,7 +2825,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
 
         // Inject into candidate array (avoid duplicates).
-        for( int ei = 0; ei < eiCount && prunedCount < kMaxCandidatesWithProbes; ++ei )
+        for( int ei = 0; ei < eiCount && prunedCount < probeCandidateBudget; ++ei )
         {
             const int dyDs = edgeInj[ei].dyFull / downsampleScale;
             bool dup = false;
