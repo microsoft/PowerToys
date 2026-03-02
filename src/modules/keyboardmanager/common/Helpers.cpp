@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Helpers.h"
 #include <sstream>
+#include <mutex>
 #include <thread>
 
 #include <common/interop/shared_constants.h>
@@ -409,12 +410,19 @@ namespace Helpers
         SendInput(ARRAYSIZE(pasteInputs), pasteInputs, sizeof(INPUT));
     }
 
+    // Serializes clipboard operations so rapid text remappings don't race.
+    static std::mutex clipboardMutex;
+
     // Function to send text via clipboard paste (Ctrl+V).
     // Saves the previous clipboard content and restores it asynchronously.
     // The clipboard entry is excluded from clipboard history via
     // ExcludeClipboardContentFromMonitorProcessing (set in SetClipboardText).
     bool SendTextViaClipboard(const std::wstring& text)
     {
+        // Acquire the mutex so that the entire snapshot-paste-restore cycle
+        // is atomic with respect to other text remapping calls.
+        std::unique_lock<std::mutex> lock(clipboardMutex);
+
         // Snapshot current clipboard state
         bool hadOriginalText = false;
         std::wstring originalClipboardText;
@@ -442,14 +450,15 @@ namespace Helpers
         {
             return false;
         }
-
-        // Send Ctrl+V
+        
         SendPasteKeystroke();
 
         // Restore clipboard after a delay on a background thread.
         // Ctrl+V is asynchronous (SendInput queues the input), so the target
         // app needs time to process the keystroke and read the clipboard.
-        std::thread([originalClipboardText = std::move(originalClipboardText), hadOriginalText]() {
+        // The lock is moved into the thread so the next call blocks until
+        // restoration completes.
+        std::thread([lock = std::move(lock), originalClipboardText = std::move(originalClipboardText), hadOriginalText]() {
             Sleep(500);
             if (hadOriginalText)
             {
