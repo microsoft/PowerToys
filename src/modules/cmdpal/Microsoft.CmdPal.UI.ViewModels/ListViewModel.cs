@@ -567,8 +567,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
                 }
 
-                TextToSuggest = item.TextToSuggest;
-                WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(item.TextToSuggest));
+                var suggestion = item.TextToSuggest;
+                DoOnUiThread(() =>
+                {
+                    TextToSuggest = suggestion;
+                    WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(suggestion));
+                });
             },
             ct);
     }
