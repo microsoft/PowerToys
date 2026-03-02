@@ -36,13 +36,16 @@ public:
     WindowKeyboardSnap() = default;
     ~WindowKeyboardSnap() = default;
 
-    bool Snap(HWND window, HMONITOR activeMonitor, DWORD vkCode, 
-        const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, 
+    bool Snap(HWND window, HMONITOR activeMonitor, DWORD vkCode,
+        const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas,
         const std::vector<HMONITOR>& monitors);
-    bool Snap(HWND window, RECT windowRect, HMONITOR activeMonitor, DWORD vkCode, 
-        const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, 
+    bool Snap(HWND window, RECT windowRect, HMONITOR activeMonitor, DWORD vkCode,
+        const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas,
         const std::vector<std::pair<HMONITOR, RECT>>& monitors);
     bool Extend(HWND window, RECT windowRect, HMONITOR monitor, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas);
+    bool SnapToZoneByNumber(HWND window, HMONITOR activeMonitor, DWORD vkCode,
+        const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas,
+        const std::vector<HMONITOR>& monitors);
 	
 private:
     bool SnapHotkeyBasedOnZoneNumber(HWND window, DWORD vkCode, HMONITOR monitor, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<HMONITOR>& monitors);

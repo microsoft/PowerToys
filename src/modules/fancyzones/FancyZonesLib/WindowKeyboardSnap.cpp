@@ -15,6 +15,93 @@ bool WindowKeyboardSnap::Snap(HWND window, HMONITOR monitor, DWORD vkCode, const
     return (vkCode == VK_LEFT || vkCode == VK_RIGHT) && SnapHotkeyBasedOnZoneNumber(window, vkCode, monitor, activeWorkAreas, monitors);
 }
 
+bool WindowKeyboardSnap::SnapToZoneByNumber(HWND window, HMONITOR /*activeMonitor*/, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<HMONITOR>& monitors)
+{
+    // Map vkCode '0'-'9' to zone index. '1' = zone 0, '2' = zone 1, ..., '0' = zone 9
+    ZoneIndex targetGlobalIndex;
+    if (vkCode == '0')
+    {
+        targetGlobalIndex = 9;
+    }
+    else
+    {
+        targetGlobalIndex = static_cast<ZoneIndex>(vkCode - '1');
+    }
+
+    // clean previous extension data
+    m_extendData.Reset();
+
+    // Build a flat list of zones across all monitors in monitor order.
+    // Each entry: cumulative offset of zone indices per monitor.
+    ZoneIndex offset = 0;
+    for (HMONITOR monitor : monitors)
+    {
+        if (!activeWorkAreas.contains(monitor))
+        {
+            continue;
+        }
+
+        const auto& workArea = activeWorkAreas.at(monitor);
+        if (!workArea)
+        {
+            continue;
+        }
+
+        const auto& layout = workArea->GetLayout();
+        if (!layout)
+        {
+            continue;
+        }
+
+        auto numZones = static_cast<ZoneIndex>(layout->Zones().size());
+        if (targetGlobalIndex >= offset && targetGlobalIndex < offset + numZones)
+        {
+            // Found the work area containing the target zone
+            ZoneIndex localIndex = targetGlobalIndex - offset;
+            bool snapped = workArea->Snap(window, { localIndex });
+
+            if (snapped)
+            {
+                // Unsnap from all other work areas
+                for (const auto& [otherMonitor, otherWorkArea] : activeWorkAreas)
+                {
+                    if (otherWorkArea && otherWorkArea.get() != workArea.get())
+                    {
+                        otherWorkArea->Unsnap(window);
+                    }
+                }
+
+                Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
+            }
+
+            return snapped;
+        }
+
+        offset += numZones;
+    }
+
+    // For span-zones-across-monitors mode (single NULL monitor key)
+    if (monitors.empty() && activeWorkAreas.contains(nullptr))
+    {
+        const auto& workArea = activeWorkAreas.at(nullptr);
+        if (workArea)
+        {
+            const auto& layout = workArea->GetLayout();
+            if (layout && targetGlobalIndex < static_cast<ZoneIndex>(layout->Zones().size()))
+            {
+                bool snapped = workArea->Snap(window, { targetGlobalIndex });
+                if (snapped)
+                {
+                    Trace::FancyZones::KeyboardSnapWindowToZone(workArea->GetLayout().get(), workArea->GetLayoutWindows());
+                }
+                return snapped;
+            }
+        }
+    }
+
+    return false;
+}
+
 bool WindowKeyboardSnap::Snap(HWND window, RECT windowRect, HMONITOR monitor, DWORD vkCode, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, const std::vector<std::pair<HMONITOR, RECT>>& monitors)
 {
     if (!activeWorkAreas.contains(monitor))

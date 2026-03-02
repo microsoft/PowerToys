@@ -491,6 +491,20 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
     }
 
+    // Win+Number (0-9): snap window to zone by global index across monitors
+    if (win && !shift && !ctrl && !alt)
+    {
+        if (info->vkCode >= '0' && info->vkCode <= '9')
+        {
+            if (ShouldProcessSnapHotkey(info->vkCode))
+            {
+                Trace::FancyZones::OnKeyDown(info->vkCode, win, ctrl, false /*inMoveSize*/);
+                PostMessageW(m_window, WM_PRIV_SNAP_HOTKEY, 0, info->vkCode);
+                return true;
+            }
+        }
+    }
+
     if (FancyZonesSettings::settings().quickLayoutSwitch)
     {
         int digitPressed = -1;
@@ -635,7 +649,14 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
                 monitor = MonitorFromWindow(foregroundWindow, MONITOR_DEFAULTTONULL);
             }
 
-            if (FancyZonesSettings::settings().moveWindowsBasedOnPosition)
+            DWORD vkCode = static_cast<DWORD>(lparam);
+
+            // Win+Number: snap to zone by global index across monitors
+            if (vkCode >= '0' && vkCode <= '9')
+            {
+                m_windowKeyboardSnapper.SnapToZoneByNumber(foregroundWindow, monitor, vkCode, m_workAreaConfiguration.GetAllWorkAreas(), FancyZonesUtils::GetMonitorsOrdered());
+            }
+            else if (FancyZonesSettings::settings().moveWindowsBasedOnPosition)
             {
                 auto monitors = FancyZonesUtils::GetAllMonitorRects<&MONITORINFOEX::rcWork>();
                 RECT windowRect;
@@ -644,11 +665,11 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
                     // Check whether Alt is used in the shortcut key combination
                     if (GetAsyncKeyState(VK_MENU) & 0x8000)
                     {
-                        m_windowKeyboardSnapper.Extend(foregroundWindow, windowRect, monitor, static_cast<DWORD>(lparam), m_workAreaConfiguration.GetAllWorkAreas());
+                        m_windowKeyboardSnapper.Extend(foregroundWindow, windowRect, monitor, vkCode, m_workAreaConfiguration.GetAllWorkAreas());
                     }
                     else
                     {
-                        m_windowKeyboardSnapper.Snap(foregroundWindow, windowRect, monitor, static_cast<DWORD>(lparam), m_workAreaConfiguration.GetAllWorkAreas(), monitors);
+                        m_windowKeyboardSnapper.Snap(foregroundWindow, windowRect, monitor, vkCode, m_workAreaConfiguration.GetAllWorkAreas(), monitors);
                     }
                 }
                 else
@@ -658,7 +679,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             }
             else
             {
-                m_windowKeyboardSnapper.Snap(foregroundWindow, monitor, static_cast<DWORD>(lparam), m_workAreaConfiguration.GetAllWorkAreas(), FancyZonesUtils::GetMonitorsOrdered());
+                m_windowKeyboardSnapper.Snap(foregroundWindow, monitor, vkCode, m_workAreaConfiguration.GetAllWorkAreas(), FancyZonesUtils::GetMonitorsOrdered());
             }
         }
         else if (message == WM_PRIV_INIT)
@@ -1124,6 +1145,11 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
         if (vkCode == VK_UP || vkCode == VK_DOWN)
         {
             return FancyZonesSettings::settings().moveWindowsBasedOnPosition;
+        }
+        else if (vkCode >= '0' && vkCode <= '9')
+        {
+            // Win+Number: snap to zone by index - always allowed when zones exist
+            return true;
         }
         else
         {
