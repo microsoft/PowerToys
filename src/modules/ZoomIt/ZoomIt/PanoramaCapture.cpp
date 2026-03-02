@@ -4570,6 +4570,36 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames, bool low
                     continue;
                 }
 
+                // Near-stationary spike guard: when recent motion is very
+                // small (< 5% of frame), a large jump is almost certainly
+                // a harmonic match on periodic content rather than a
+                // genuine scroll acceleration.  Unlike the other outlier
+                // guards this has no hard floor tied to frame height, so
+                // it catches spurious matches that slip under the 33-50%
+                // floors above.  The 20x multiplier allows legitimate
+                // jump-recovery scrolls (10-16x median) while catching
+                // harmonic spikes (60x+ median in the real bug case).
+                //
+                // Also require p75 < axisFrame/10: if 25%+ of recent
+                // steps were large the user was actively scrolling and
+                // a big step is more likely genuine acceleration than a
+                // harmonic artifact.
+                const int p75AxisStep = sorted[sorted.size() * 3 / 4];
+                if( medianAxisStep < axisFrame / 20 &&
+                    p75AxisStep < axisFrame / 10 &&
+                    axisStep > max( medianAxisStep * 20, minProgress * 4 ) )
+                {
+                    StitchLog( L"[Panorama/Stitch] Frame %zu rejected: near-stationary-spike step=(%d,%d) axisStep=%d median=%d p75=%d threshold=%d\n",
+                                 i,
+                                 stepX,
+                                 stepY,
+                                 axisStep,
+                                 medianAxisStep,
+                                 p75AxisStep,
+                                 max( medianAxisStep * 20, minProgress * 4 ) );
+                    continue;
+                }
+
                 // Step-range outlier guard: on periodic content the fine
                 // search can pick a harmonic that is only moderately above
                 // normal -- not enough for the 4x median guard -- but well
@@ -7680,6 +7710,68 @@ bool RunPanoramaStitchSelfTest()
                                         trial, winH, accelOrigins.size(), accelMaxStep );
                             if( !runVerticalScenario( accelName, accelOrigins, winH, accelMaxStep ) )
                                 break;
+                        }
+                        if( stressEarlyExit )
+                            break;
+                    }
+
+                    // Slow-then-fast acceleration test: moderate scrolling
+                    // followed by a near-stationary pause, then sudden large
+                    // steps.  The near-stationary spike guard must not reject
+                    // the fast phase when p75 of recent history shows the
+                    // user was actively scrolling before the pause.
+                    if( !stressEarlyExit )
+                    {
+                        const wchar_t* stfName = L"stress-vertical-slowthenfast";
+                        if( stressScenarioMatches( stfName ) )
+                        {
+                            if( stressFocusEnabled )
+                                stressFocusMatched = true;
+
+                            const int stfH = 800;
+                            if( vH >= stfH + 4200 )
+                            {
+                                std::vector<int> stfOrigins;
+                                stfOrigins.push_back( 0 );
+                                int y = 0;
+
+                                // Phase 1: 4 moderate steps (~10% of frame)
+                                // to seed non-trivial p75.
+                                const int modSteps[] = { 80, 87, 94, 101 };
+                                for( int ms : modSteps )
+                                {
+                                    y += ms;
+                                    if( y + stfH > vH ) break;
+                                    stfOrigins.push_back( y );
+                                }
+
+                                // Phase 2: 8 near-stationary steps to pull
+                                // median below axisFrame/20.
+                                for( int f = 0; f < 8; ++f )
+                                {
+                                    y += 4 + ( f % 3 ); // 4-6
+                                    if( y + stfH > vH ) break;
+                                    stfOrigins.push_back( y );
+                                }
+
+                                // Phase 3: 10 fast steps (31-40% of frame).
+                                // Without the p75 fix these are all rejected
+                                // by the near-stationary spike guard.
+                                const int fastSteps[] = { 250, 263, 276, 289, 302,
+                                                          260, 273, 286, 299, 312 };
+                                for( int fs : fastSteps )
+                                {
+                                    y += fs;
+                                    if( y + stfH > vH ) break;
+                                    stfOrigins.push_back( y );
+                                }
+
+                                if( stfOrigins.size() >= 15 )
+                                {
+                                    if( !runVerticalScenario( stfName, stfOrigins, stfH, 312 ) )
+                                        stressEarlyExit = true;
+                                }
+                            }
                         }
                     }
                 }
