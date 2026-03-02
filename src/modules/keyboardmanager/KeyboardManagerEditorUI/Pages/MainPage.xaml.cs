@@ -694,7 +694,7 @@ namespace KeyboardManagerEditorUI.Pages
 
             bool deleted = shortcut.Shortcut.Count == 1
                 ? DeleteSingleKeyToTextMapping(shortcut.Shortcut[0])
-                : DeleteMultiKeyMapping(shortcut.Shortcut);
+                : DeleteMultiKeyMapping(shortcut.Shortcut, shortcut.AppName);
 
             if (deleted)
             {
