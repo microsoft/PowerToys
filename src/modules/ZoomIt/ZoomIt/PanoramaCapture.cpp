@@ -3099,9 +3099,20 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         {
             const int bestDelta = abs( abs( bestDy ) - expectedAbsStep );
             const int secondDelta = abs( abs( secondBestDy ) - expectedAbsStep );
-            if( secondDelta + 2 < bestDelta )
+
+            // Direction tiebreaker: when both candidates have the same
+            // absolute step distance from expected (e.g. +4 and -4 both
+            // match expectedAbsStep=4), prefer the one whose sign matches
+            // expectedDy.  Without this, the stitcher oscillates between
+            // +dy and -dy on HCF content where forward/backward shifts
+            // score nearly identically.
+            const bool bestMatchesDir = ( expectedDy > 0 && bestDy > 0 ) || ( expectedDy < 0 && bestDy < 0 );
+            const bool secondMatchesDir = ( expectedDy > 0 && secondBestDy > 0 ) || ( expectedDy < 0 && secondBestDy < 0 );
+            const bool directionOverride = bestDelta == secondDelta && !bestMatchesDir && secondMatchesDir;
+
+            if( secondDelta + 2 < bestDelta || directionOverride )
             {
-                StitchLog( L"[Panorama/Stitch] FindBestFrameShift ambiguity-fallback expected=(%d,%d) best=(%d,%d) second=(%d,%d) bestRank=%llu secondRank=%llu\n",
+                StitchLog( L"[Panorama/Stitch] FindBestFrameShift ambiguity-fallback expected=(%d,%d) best=(%d,%d) second=(%d,%d) bestRank=%llu secondRank=%llu dirOverride=%d\n",
                              expectedDx,
                              expectedDy,
                              bestDx,
@@ -3109,7 +3120,8 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                              secondBestDx,
                              secondBestDy,
                              static_cast<unsigned long long>( bestFineRankScore ),
-                             static_cast<unsigned long long>( secondBestFineRankScore ) );
+                             static_cast<unsigned long long>( secondBestFineRankScore ),
+                             directionOverride ? 1 : 0 );
 
                 bestDx = secondBestDx;
                 bestDy = secondBestDy;
@@ -5267,7 +5279,11 @@ bool RunPanoramaStitchSelfTest()
             ++valueEnd;
         }
 
-        return std::wstring( valueStart, valueEnd );
+        std::wstring result( valueStart, valueEnd );
+        // Strip stray trailing quotes (bash on Windows can inject these).
+        while( !result.empty() && result.back() == L'"' )
+            result.pop_back();
+        return result;
     };
 
     auto readSelfTestBoolArg = [&]( const wchar_t* switchName, bool defaultValue ) -> bool
@@ -7664,6 +7680,96 @@ bool RunPanoramaStitchSelfTest()
                     {
                         TestLog( L"***** FAIL: %s *****\n", scenarioName );
                         swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu, maxStep=%d)\n", scenarioName, winH, originsY.size(), hcfMaxStep );
+                    }
+                    stressLog += msg;
+
+                    if( stressFocusEnabled )
+                    {
+                        const wchar_t* focusResult = L"FAIL";
+                        if( result < 0 ) focusResult = L"INFRA";
+                        else if( result == 1 ) focusResult = L"PASS";
+                        TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                     scenarioName,
+                                     focusResult );
+                        if( stressStopAfterFocus )
+                        {
+                            stressEarlyExit = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // HCF tiny-step test: reuse the same synthetic HCF canvas with
+            // very small uniform steps (4-8 px).  Reproduces a real capture
+            // failure where the stitcher oscillates between +dy and -dy
+            // because forward/backward shifts score nearly identically on
+            // uniform content and the ambiguity fallback cannot disambiguate
+            // when both |+dy| and |-dy| equal expectedAbsStep.
+            for( int trial = 0; trial < kHcfTrials; ++trial )
+            {
+                if( stressEarlyExit )
+                    break;
+                srand( static_cast<unsigned>( 85000 + trial * 47 ) );
+
+                const int winH = 250 + rand() % 201;
+
+                std::vector<int> originsY;
+                originsY.push_back( 0 );
+                int y = 0;
+                for( int f = 1; f < 20; ++f )
+                {
+                    const int step = 4 + rand() % 5; // 4-8 px
+                    const int nextY = y + step;
+                    if( nextY + winH > hcfH )
+                        break;
+                    y = nextY;
+                    originsY.push_back( y );
+                }
+
+                if( originsY.size() < 5 )
+                    continue;
+
+                wchar_t scenarioName[256];
+                swprintf_s( scenarioName, L"stress-vertical-tinystep-trial%d-w%d-n%zu",
+                            trial, winH, originsY.size() );
+
+                if( !stressScenarioMatches( scenarioName ) )
+                    continue;
+                if( stressFocusEnabled )
+                    stressFocusMatched = true;
+
+                {
+                    std::wstring origStr;
+                    for( size_t oi = 0; oi < originsY.size() && oi < 20; ++oi )
+                    {
+                        if( oi > 0 ) origStr += L",";
+                        origStr += std::to_wstring( originsY[oi] );
+                    }
+                    if( originsY.size() > 20 ) origStr += L",...";
+                    TestLog( L"[Panorama/Test] Running %s origins=[%s]\n", scenarioName, origStr.c_str() );
+                }
+
+                stressTestsRun++;
+                const int result = stitchAndCompare( scenarioName, hcfPx, hcfW, hcfH, originsY, winH );
+                {
+                    wchar_t msg[512]{};
+                    if( result < 0 )
+                    {
+                        TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", scenarioName );
+                        swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu)\n", scenarioName, winH, originsY.size() );
+                        stressFailLog += msg;
+                    }
+                    else if( result == 1 )
+                    {
+                        stressTestsPassed++;
+                        TestLog( L"  [%d] %s PASSED\n", stressTestsRun, scenarioName );
+                        swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu)\n", scenarioName, winH, originsY.size() );
+                    }
+                    else
+                    {
+                        TestLog( L"***** FAIL: %s *****\n", scenarioName );
+                        swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu)\n", scenarioName, winH, originsY.size() );
                     }
                     stressLog += msg;
 
