@@ -8,6 +8,11 @@
 #include <windows.h>
 #include <scrnsave.h>
 
+// Embed DPI-awareness manifest so the screensaver sees native resolution.
+// This ensures the pre-captured desktop screenshot (saved at physical pixels
+// by the DPI-aware ZoomIt process) matches the screensaver window dimensions.
+1 RT_MANIFEST "ZoomItBreak.manifest"
+
 // IDS_DESCRIPTION is used by scrnsavw.lib as the window class name.
 STRINGTABLE
 BEGIN
