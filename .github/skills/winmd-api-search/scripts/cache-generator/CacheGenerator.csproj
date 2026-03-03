@@ -15,8 +15,15 @@
     Baseline WinAppSDK packages: downloaded during restore so the cache generator
     can always index WinAppSDK APIs, even if the target project hasn't been restored.
     ExcludeAssets="all" means they're downloaded but don't affect this tool's build.
+
+    When the repo has a known version (passed via -p:WinAppSdkVersion=X.Y.Z from
+    Update-WinMdCache.ps1), prefer that version to avoid unnecessary NuGet downloads.
+    Falls back to Version="*" (latest) on fresh clones with no restore.
   -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(WinAppSdkVersion)' != ''">
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="$(WinAppSdkVersion)" ExcludeAssets="all" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(WinAppSdkVersion)' == ''">
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="*" ExcludeAssets="all" />
   </ItemGroup>
 </Project>

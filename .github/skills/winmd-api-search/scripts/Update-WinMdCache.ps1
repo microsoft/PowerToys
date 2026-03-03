@@ -41,6 +41,62 @@ $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..\..')).Path
 $generatorProj = Join-Path (Join-Path $PSScriptRoot 'cache-generator') 'CacheGenerator.csproj'
 
+# ---------------------------------------------------------------------------
+# WinAppSDK version detection -- look only at the repo root folder (no recursion)
+# ---------------------------------------------------------------------------
+
+function Get-WinAppSdkVersionFromDirectoryPackagesProps {
+    <#
+    .SYNOPSIS
+        Extract Microsoft.WindowsAppSDK version from a Directory.Packages.props
+        (Central Package Management) at the repo root.
+    #>
+    param([string]$RepoRoot)
+    $propsFile = Join-Path $RepoRoot 'Directory.Packages.props'
+    if (-not (Test-Path $propsFile)) { return $null }
+    try {
+        [xml]$xml = Get-Content $propsFile -Raw
+        $node = $xml.SelectNodes('//PackageVersion') |
+            Where-Object { $_.Include -eq 'Microsoft.WindowsAppSDK' } |
+            Select-Object -First 1
+        if ($node) { return $node.Version }
+    } catch {
+        Write-Verbose "Could not parse $propsFile : $_"
+    }
+    return $null
+}
+
+function Get-WinAppSdkVersionFromPackagesConfig {
+    <#
+    .SYNOPSIS
+        Extract Microsoft.WindowsAppSDK version from a packages.config at the repo root.
+    #>
+    param([string]$RepoRoot)
+    $configFile = Join-Path $RepoRoot 'packages.config'
+    if (-not (Test-Path $configFile)) { return $null }
+    try {
+        [xml]$xml = Get-Content $configFile -Raw
+        $node = $xml.SelectNodes('//package') |
+            Where-Object { $_.id -eq 'Microsoft.WindowsAppSDK' } |
+            Select-Object -First 1
+        if ($node) { return $node.version }
+    } catch {
+        Write-Verbose "Could not parse $configFile : $_"
+    }
+    return $null
+}
+
+# Try Directory.Packages.props first (CPM), then packages.config
+$winAppSdkVersion = Get-WinAppSdkVersionFromDirectoryPackagesProps -RepoRoot $root
+if (-not $winAppSdkVersion) {
+    $winAppSdkVersion = Get-WinAppSdkVersionFromPackagesConfig -RepoRoot $root
+}
+if ($winAppSdkVersion) {
+    Write-Host "Detected WinAppSDK version from repo: $winAppSdkVersion" -ForegroundColor Cyan
+} else {
+    Write-Host "No WinAppSDK version found at repo root; will use latest (Version=*)" -ForegroundColor Yellow
+}
+
 # Default: if no ProjectDir, scan the workspace root
 if (-not $ProjectDir) {
     $ProjectDir = $root
@@ -76,13 +132,23 @@ try {
     $targetFramework = "net$bestMajor.0"
     Write-Host "Using .NET SDK: $targetFramework" -ForegroundColor Cyan
 
+    # Build MSBuild properties -- pass detected WinAppSDK version when available
+    $sdkVersionProp = ''
+    if ($winAppSdkVersion) {
+        $sdkVersionProp = "-p:WinAppSdkVersion=$winAppSdkVersion"
+    }
+
     Write-Host "Building cache generator..." -ForegroundColor Cyan
-    dotnet restore $generatorProj -p:TargetFramework=$targetFramework --nologo -v q
+    $restoreArgs = @($generatorProj, "-p:TargetFramework=$targetFramework", '--nologo', '-v', 'q')
+    if ($sdkVersionProp) { $restoreArgs += $sdkVersionProp }
+    dotnet restore @restoreArgs
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Restore failed"
         exit 1
     }
-    dotnet build $generatorProj -c Release --nologo -v q -p:TargetFramework=$targetFramework --no-restore
+    $buildArgs = @($generatorProj, '-c', 'Release', '--nologo', '-v', 'q', "-p:TargetFramework=$targetFramework", '--no-restore')
+    if ($sdkVersionProp) { $buildArgs += $sdkVersionProp }
+    dotnet build @buildArgs
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Build failed"
         exit 1
