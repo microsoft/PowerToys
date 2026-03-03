@@ -921,7 +921,7 @@ static class WinMdParser
                 continue;
             }
 
-            if ((method.Attributes & MethodAttributes.Public) == 0)
+            if ((method.Attributes & MethodAttributes.MemberAccessMask) != MethodAttributes.Public)
             {
                 continue;
             }
@@ -1027,7 +1027,7 @@ static class WinMdParser
             if (!accessors.Adder.IsNil)
             {
                 var adder = reader.GetMethodDefinition(accessors.Adder);
-                if ((adder.Attributes & MethodAttributes.Public) != 0)
+                if ((adder.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.Public)
                 {
                     isPublicEvent = true;
                 }
@@ -1036,7 +1036,7 @@ static class WinMdParser
             if (!isPublicEvent && !accessors.Remover.IsNil)
             {
                 var remover = reader.GetMethodDefinition(accessors.Remover);
-                if ((remover.Attributes & MethodAttributes.Public) != 0)
+                if ((remover.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.Public)
                 {
                     isPublicEvent = true;
                 }
