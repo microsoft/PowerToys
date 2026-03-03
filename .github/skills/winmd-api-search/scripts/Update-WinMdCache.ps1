@@ -23,7 +23,7 @@
 
 .EXAMPLE
     .\Update-WinMdCache.ps1
-    .\Update-WinMdCache.ps1 -ProjectDir BlankWInUI
+    .\Update-WinMdCache.ps1 -ProjectDir BlankWinUI
     .\Update-WinMdCache.ps1 -Scan -ProjectDir .
     .\Update-WinMdCache.ps1 -ProjectDir "src\MyApp\MyApp.csproj"
 #>
