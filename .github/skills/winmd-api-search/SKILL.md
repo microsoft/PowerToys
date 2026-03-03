@@ -94,8 +94,8 @@ This returns ranked namespaces with top matching types and the **JSON file path*
 If results have **low scores (below 60) or are irrelevant**, fall back to searching online documentation:
 
 1. Use web search to find the right API on Microsoft Learn, for example:
-   - `site:learn.microsoft.com/en-us/uwp/api <capability keywords>` for `Windows.*` APIs
-   - `site:learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt <capability keywords>` for `Microsoft.*` WinAppSDK APIs
+   - `site:learn.microsoft.com/uwp/api <capability keywords>` for `Windows.*` APIs
+   - `site:learn.microsoft.com/windows/windows-app-sdk/api/winrt <capability keywords>` for `Microsoft.*` WinAppSDK APIs
 2. Read the documentation pages to identify which type matches the user's requirement.
 3. Once you know the type name, come back and use `-Action members` or `-Action enums` to get the exact local signatures.
 
@@ -111,11 +111,11 @@ The cache contains only signatures — no descriptions or usage guidance. For ex
 
 | Namespace prefix | Documentation base URL |
 |-----------------|----------------------|
-| `Windows.*` | `https://learn.microsoft.com/en-us/uwp/api/{fully.qualified.typename}` |
-| `Microsoft.*` (WinAppSDK) | `https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/{fully.qualified.typename}` |
+| `Windows.*` | `https://learn.microsoft.com/uwp/api/{fully.qualified.typename}` |
+| `Microsoft.*` (WinAppSDK) | `https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/{fully.qualified.typename}` |
 
 For example, `Microsoft.UI.Xaml.Controls.NavigationView` maps to:
-`https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.navigationview`
+`https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.navigationview`
 
 **5. Use the API knowledge to answer or write code**
 
@@ -187,5 +187,5 @@ Results are grouped by namespace. Higher-scored namespaces appear first.
 
 ## References
 
-- [Windows Platform SDK API reference](https://learn.microsoft.com/en-us/uwp/api/) — documentation for `Windows.*` namespaces
-- [Windows App SDK API reference](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/) — documentation for `Microsoft.*` WinAppSDK namespaces
+- [Windows Platform SDK API reference](https://learn.microsoft.com/uwp/api/) — documentation for `Windows.*` namespaces
+- [Windows App SDK API reference](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/) — documentation for `Microsoft.*` WinAppSDK namespaces
