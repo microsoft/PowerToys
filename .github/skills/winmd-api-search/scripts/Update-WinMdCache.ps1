@@ -173,6 +173,18 @@ try {
         $runArgs += '--scan'
     }
 
+    # Detect installed WinAppSDK runtime via Get-AppxPackage (the WindowsApps
+    # folder is ACL-restricted so C# cannot enumerate it directly).
+    $runtimePkg = Get-AppxPackage -Name 'Microsoft.WindowsAppRuntime.*' -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -notmatch 'CBS' -and $_.Architecture -eq 'X64' } |
+        Sort-Object -Property Version -Descending |
+        Select-Object -First 1
+    if ($runtimePkg -and $runtimePkg.InstallLocation -and (Test-Path $runtimePkg.InstallLocation)) {
+        Write-Host "Detected WinAppSDK runtime: $($runtimePkg.Name) v$($runtimePkg.Version)" -ForegroundColor Cyan
+        $runArgs += '--winappsdk-runtime'
+        $runArgs += $runtimePkg.InstallLocation
+    }
+
     $runArgs += $ProjectDir
     $runArgs += $OutputDir
 

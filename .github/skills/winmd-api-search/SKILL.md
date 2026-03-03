@@ -48,6 +48,7 @@ Cache is stored at `Generated Files\winmd-cache\`, deduplicated per-package+vers
 |--------|----------------|
 | Windows Platform SDK | Always (reads from local SDK install) |
 | WinAppSDK (latest) | Always (bundled as baseline in cache generator) |
+| WinAppSDK Runtime | When installed on the system (detected via `Get-AppxPackage`) |
 | Project NuGet packages | After `dotnet restore` or with `packages.config` |
 | Project-output `.winmd` | After project build (class libraries that produce WinMD) |
 

@@ -17,17 +17,34 @@ using System.Xml.Linq;
 // --- Arg parsing ---
 
 var scanMode = args.Contains("--scan");
-var positionalArgs = args.Where(a => !a.StartsWith('-')).ToArray();
+
+// Parse --winappsdk-runtime <path> option
+string? winAppSdkRuntimePath = null;
+for (int i = 0; i < args.Length - 1; i++)
+{
+    if (args[i].Equals("--winappsdk-runtime", StringComparison.OrdinalIgnoreCase))
+    {
+        winAppSdkRuntimePath = args[i + 1];
+        break;
+    }
+}
+
+var positionalArgs = args
+    .Where(a => !a.StartsWith('-'))
+    .Where(a => a != winAppSdkRuntimePath) // exclude the runtime path value
+    .ToArray();
 
 if (positionalArgs.Length < 2)
 {
     Console.Error.WriteLine("Usage:");
     Console.Error.WriteLine("  CacheGenerator <project-dir> <output-dir>");
     Console.Error.WriteLine("  CacheGenerator --scan <root-dir> <output-dir>");
+    Console.Error.WriteLine("  CacheGenerator --winappsdk-runtime <path> <project-dir> <output-dir>");
     Console.Error.WriteLine();
     Console.Error.WriteLine("  project-dir: Path containing .csproj/.vcxproj (or a project file itself)");
     Console.Error.WriteLine("  root-dir:    Root to scan recursively for project files");
     Console.Error.WriteLine("  output-dir:  Cache output (e.g. \"Generated Files\\winmd-cache\")");
+    Console.Error.WriteLine("  --winappsdk-runtime: Path to installed WinAppSDK runtime (from Get-AppxPackage)");
     return 1;
 }
 
@@ -121,7 +138,7 @@ foreach (var projectFile in projectFiles)
     Console.WriteLine($"\n--- {projectName} ({Path.GetFileName(projectFile)}) ---");
 
     // Find packages that contain WinMD files
-    var packages = NuGetResolver.FindPackagesWithWinMd(projectDir, projectFile);
+    var packages = NuGetResolver.FindPackagesWithWinMd(projectDir, projectFile, winAppSdkRuntimePath);
 
     if (packages.Count == 0)
     {
@@ -303,7 +320,7 @@ record PackageWithWinMd(string Id, string Version, List<string> WinMdFiles);
 
 static class NuGetResolver
 {
-    public static List<PackageWithWinMd> FindPackagesWithWinMd(string projectDir, string projectFile)
+    public static List<PackageWithWinMd> FindPackagesWithWinMd(string projectDir, string projectFile, string? winAppSdkRuntimePath)
     {
         var result = new List<PackageWithWinMd>();
 
@@ -334,6 +351,14 @@ static class NuGetResolver
         if (sdkWinMd.Files.Count > 0)
         {
             result.Add(new PackageWithWinMd("WindowsSDK", sdkWinMd.Version, sdkWinMd.Files));
+        }
+
+        // 5. Installed WinAppSDK runtime as a synthetic "package"
+        //    Useful for Electron/Node.js apps that don't reference WinAppSDK via NuGet.
+        var runtimeWinMd = FindWinAppSdkRuntimeWinMd(winAppSdkRuntimePath);
+        if (runtimeWinMd.Files.Count > 0)
+        {
+            result.Add(new PackageWithWinMd("WinAppSdkRuntime", runtimeWinMd.Version, runtimeWinMd.Files));
         }
 
         // Deduplicate by (Id, Version), merging WinMdFiles from multiple sources
@@ -679,6 +704,43 @@ static class NuGetResolver
                 var version = Path.GetFileName(versionDir);
                 return ([windowsWinMd], version);
             }
+        }
+
+        return ([], "unknown");
+    }
+
+    /// <summary>
+    /// Read WinMD files from the installed WinAppSDK runtime path (discovered via
+    /// Get-AppxPackage in PowerShell and passed as --winappsdk-runtime argument).
+    /// The WindowsApps folder is ACL-restricted so C# cannot enumerate it directly.
+    /// </summary>
+    internal static (List<string> Files, string Version) FindWinAppSdkRuntimeWinMd(string? runtimePath)
+    {
+        if (string.IsNullOrEmpty(runtimePath) || !Directory.Exists(runtimePath))
+        {
+            return ([], "unknown");
+        }
+
+        try
+        {
+            var winmdFiles = Directory.EnumerateFiles(runtimePath, "*.winmd", SearchOption.TopDirectoryOnly)
+                .ToList();
+
+            if (winmdFiles.Count > 0)
+            {
+                // Extract SDK version from path: ...Microsoft.WindowsAppRuntime.1.8_... -> "1.8"
+                var dirName = Path.GetFileName(runtimePath);
+                var prefix = dirName.Split('_')[0]; // "Microsoft.WindowsAppRuntime.1.8"
+                var sdkVersion = prefix.Length > "Microsoft.WindowsAppRuntime.".Length
+                    ? prefix["Microsoft.WindowsAppRuntime.".Length..]
+                    : dirName;
+
+                return (winmdFiles, sdkVersion);
+            }
+        }
+        catch
+        {
+            // Path may be inaccessible; degrade gracefully
         }
 
         return ([], "unknown");
