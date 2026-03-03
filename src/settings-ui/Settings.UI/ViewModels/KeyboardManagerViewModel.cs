@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -18,18 +19,20 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.Utilities;
 using Microsoft.Win32;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class KeyboardManagerViewModel : Observable
+    public partial class KeyboardManagerViewModel : PageViewModelBase
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private readonly SettingsUtils _settingsUtils;
 
-        private const string PowerToyName = KeyboardManagerSettings.ModuleName;
+        protected override string ModuleName => KeyboardManagerSettings.ModuleName;
+
         private const string JsonFileType = ".json";
 
         // Default editor path. Can be removed once the new WinUI3 editor is released.
@@ -74,15 +77,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            if (_settingsUtils.SettingsExists(PowerToyName))
+            if (_settingsUtils.SettingsExists(ModuleName))
             {
                 try
                 {
-                    Settings = _settingsUtils.GetSettingsOrDefault<KeyboardManagerSettings>(PowerToyName);
+                    Settings = _settingsUtils.GetSettingsOrDefault<KeyboardManagerSettings>(ModuleName);
                 }
                 catch (Exception e)
                 {
-                    Logger.LogError($"Exception encountered while reading {PowerToyName} settings.", e);
+                    Logger.LogError($"Exception encountered while reading {ModuleName} settings.", e);
 #if DEBUG
                     if (e is ArgumentException || e is ArgumentNullException || e is PathTooLongException)
                     {
@@ -100,7 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 Settings = new KeyboardManagerSettings();
-                _settingsUtils.SaveSettings(Settings.ToJsonString(), PowerToyName);
+                _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
         }
 
@@ -172,6 +175,41 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return new List<KeysDataModel>();
                 }
             }
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [ToggleShortcut],
+            };
+
+            return hotkeysDict;
+        }
+
+        public HotkeySettings ToggleShortcut
+        {
+            get => Settings.Properties.ToggleShortcut;
+            set
+            {
+                if (Settings.Properties.ToggleShortcut != value)
+                {
+                    Settings.Properties.ToggleShortcut = value ?? Settings.Properties.DefaultToggleShortcut;
+                    OnPropertyChanged(nameof(ToggleShortcut));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        private void NotifySettingsChanged()
+        {
+            // Using InvariantCulture as this is an IPC message
+            SendConfigMSG(
+                   string.Format(
+                       CultureInfo.InvariantCulture,
+                       "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                       ModuleName,
+                       JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.KeyboardManagerSettings)));
         }
 
         public static List<AppSpecificKeysDataModel> CombineShortcutLists(List<KeysDataModel> globalShortcutList, List<AppSpecificKeysDataModel> appSpecificShortcutList)
@@ -256,13 +294,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (editor != null && editor.HasExited)
                 {
-                    Logger.LogInfo($"Previous instance of {PowerToyName} editor exited");
+                    Logger.LogInfo($"Previous instance of {ModuleName} editor exited");
                     editor = null;
                 }
 
                 if (editor != null)
                 {
-                    Logger.LogInfo($"The {PowerToyName} editor instance {editor.Id} exists. Bringing the process to the front");
+                    Logger.LogInfo($"The {ModuleName} editor instance {editor.Id} exists. Bringing the process to the front");
                     BringProcessToFront(editor);
                     return;
                 }
@@ -298,14 +336,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
 
                 string path = Path.Combine(Environment.CurrentDirectory, editorPath);
-                Logger.LogInfo($"Starting {PowerToyName} editor from {path}");
+                Logger.LogInfo($"Starting {ModuleName} editor from {path}");
 
                 // InvariantCulture: type represents the KeyboardManagerEditorType enum value
                 editor = Process.Start(path, $"{type.ToString(CultureInfo.InvariantCulture)} {Environment.ProcessId}");
             }
             catch (Exception e)
             {
-                Logger.LogError($"Exception encountered when opening an {PowerToyName} editor", e);
+                Logger.LogError($"Exception encountered when opening an {ModuleName} editor", e);
             }
         }
 
@@ -338,7 +376,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     while (!readSuccessfully && !ts.IsCancellationRequested)
                     {
-                        profileExists = _settingsUtils.SettingsExists(PowerToyName, fileName);
+                        profileExists = _settingsUtils.SettingsExists(ModuleName, fileName);
                         if (!profileExists)
                         {
                             break;
@@ -347,12 +385,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         {
                             try
                             {
-                                _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
+                                _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(ModuleName, fileName);
                                 readSuccessfully = true;
                             }
                             catch (Exception e)
                             {
-                                Logger.LogError($"Exception encountered when reading {PowerToyName} settings", e);
+                                Logger.LogError($"Exception encountered when reading {ModuleName} settings", e);
                             }
                         }
 
@@ -379,23 +417,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (!completedInTime)
                 {
-                    Logger.LogError($"Timeout encountered when loading {PowerToyName} profile");
+                    Logger.LogError($"Timeout encountered when loading {ModuleName} profile");
                 }
             }
             catch (Exception e)
             {
                 // Failed to load the configuration.
-                Logger.LogError($"Exception encountered when loading {PowerToyName} profile", e);
+                Logger.LogError($"Exception encountered when loading {ModuleName} profile", e);
                 success = false;
             }
 
             if (!profileExists)
             {
-                Logger.LogInfo($"Couldn't load {PowerToyName} profile because it doesn't exist");
+                Logger.LogInfo($"Couldn't load {ModuleName} profile because it doesn't exist");
             }
             else if (!success)
             {
-                Logger.LogError($"Couldn't load {PowerToyName} profile");
+                Logger.LogError($"Couldn't load {ModuleName} profile");
             }
 
             return success;

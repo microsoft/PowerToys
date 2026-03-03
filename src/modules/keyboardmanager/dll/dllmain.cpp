@@ -28,12 +28,24 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
     return TRUE;
 }
 
+namespace
+{
+    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_WIN[] = L"win";
+    const wchar_t JSON_KEY_ALT[] = L"alt";
+    const wchar_t JSON_KEY_CTRL[] = L"ctrl";
+    const wchar_t JSON_KEY_SHIFT[] = L"shift";
+    const wchar_t JSON_KEY_CODE[] = L"code";
+    const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ToggleShortcut";
+}
+
 // Implement the PowerToy Module Interface and all the required methods.
 class KeyboardManager : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
     bool m_enabled = false;
+    bool m_active = false;
 
     // The PowerToy name that will be shown in the settings.
     const std::wstring app_name = GET_RESOURCE_STRING(IDS_KEYBOARDMANAGER);
@@ -41,9 +53,145 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key = KeyboardManagerConstants::ModuleName;
 
+    // Hotkey for toggling the module
+    Hotkey m_hotkey = { .key = 0 };
+
+    ULONGLONG m_lastHotkeyToggleTime = 0;
+
     HANDLE m_hProcess = nullptr;
 
     HANDLE m_hTerminateEngineEvent = nullptr;
+
+    void refresh_process_state()
+    {
+        if (m_hProcess && WaitForSingleObject(m_hProcess, 0) != WAIT_TIMEOUT)
+        {
+            CloseHandle(m_hProcess);
+            m_hProcess = nullptr;
+            m_active = false;
+        }
+    }
+
+    bool start_engine()
+    {
+        refresh_process_state();
+        if (m_hProcess)
+        {
+            m_active = true;
+            return true;
+        }
+
+        if (!m_hTerminateEngineEvent)
+        {
+            Logger::error(L"Cannot start keyboard manager engine because terminate event is not available");
+            m_active = false;
+            return false;
+        }
+
+        unsigned long powertoys_pid = GetCurrentProcessId();
+        std::wstring executable_args = std::to_wstring(powertoys_pid);
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+        if (ShellExecuteExW(&sei) == false)
+        {
+            Logger::error(L"Failed to start keyboard manager engine");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+
+            m_active = false;
+            return false;
+        }
+
+        m_hProcess = sei.hProcess;
+        if (m_hProcess)
+        {
+            SetPriorityClass(m_hProcess, REALTIME_PRIORITY_CLASS);
+            m_active = true;
+            return true;
+        }
+
+        m_active = false;
+        return false;
+    }
+
+    void stop_engine()
+    {
+        refresh_process_state();
+        if (!m_hProcess)
+        {
+            m_active = false;
+            return;
+        }
+
+        SetEvent(m_hTerminateEngineEvent);
+        auto waitResult = WaitForSingleObject(m_hProcess, 1500);
+        if (waitResult == WAIT_TIMEOUT)
+        {
+            TerminateProcess(m_hProcess, 0);
+            WaitForSingleObject(m_hProcess, 500);
+        }
+
+        CloseHandle(m_hProcess);
+        m_hProcess = nullptr;
+        ResetEvent(m_hTerminateEngineEvent);
+        m_active = false;
+    }
+
+    void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
+    {
+        auto settingsObject = settings.get_raw_json();
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES)
+                                            .GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
+                m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize Keyboard Manager toggle shortcut");
+            }
+        }
+
+        if (!m_hotkey.key)
+        {
+            // Set default: Win+Shift+K
+            m_hotkey.win = true;
+            m_hotkey.shift = true;
+            m_hotkey.ctrl = false;
+            m_hotkey.alt = false;
+            m_hotkey.key = 'K';
+        }
+    }
+
+    // Load the settings file.
+    void init_settings()
+    {
+        try
+        {
+            // Load and parse the settings file for this PowerToy.
+            PowerToysSettings::PowerToyValues settings =
+                PowerToysSettings::PowerToyValues::load_from_settings_file(get_key());
+            parse_hotkey(settings);
+        }
+        catch (std::exception&)
+        {
+            Logger::warn(L"An exception occurred while loading the settings file");
+            // Error while loading from the settings file. Let default values stay as they are.
+        }
+    }
 
 public:
     // Constructor
@@ -65,7 +213,19 @@ public:
                 Logger::error(message.value());
             }
         }
+
+        init_settings();
     };
+
+    ~KeyboardManager()
+    {
+        stop_engine();
+        if (m_hTerminateEngineEvent)
+        {
+            CloseHandle(m_hTerminateEngineEvent);
+            m_hTerminateEngineEvent = nullptr;
+        }
+    }
 
     // Destroy the powertoy and free memory
     virtual void destroy() override
@@ -117,6 +277,7 @@ public:
             // Parse the input JSON string.
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
+            parse_hotkey(values);
 
             // If you don't need to do any custom processing of the settings, proceed
             // to persists the values calling:
@@ -134,33 +295,7 @@ public:
         m_enabled = true;
         // Log telemetry
         Trace::EnableKeyboardManager(true);
-
-        unsigned long powertoys_pid = GetCurrentProcessId();
-        std::wstring executable_args = L"";
-        executable_args.append(std::to_wstring(powertoys_pid));
-
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe";
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = executable_args.data();
-        if (ShellExecuteExW(&sei) == false)
-        {
-            Logger::error(L"Failed to start keyboard manager engine");
-            auto message = get_last_error_message(GetLastError());
-            if (message.has_value())
-            {
-                Logger::error(message.value());
-            }
-        }
-        else
-        {
-            m_hProcess = sei.hProcess;
-            if (m_hProcess)
-            {
-                SetPriorityClass(m_hProcess, REALTIME_PRIORITY_CLASS);
-            }
-        }
+        start_engine();
     }
 
     // Disable the powertoy
@@ -169,15 +304,7 @@ public:
         m_enabled = false;
         // Log telemetry
         Trace::EnableKeyboardManager(false);
-
-        if (m_hProcess)
-        {
-            SetEvent(m_hTerminateEngineEvent);
-            WaitForSingleObject(m_hProcess, 1500);
-
-            TerminateProcess(m_hProcess, 0);
-            m_hProcess = nullptr;
-        }
+        stop_engine();
     }
 
     // Returns if the powertoys is enabled
@@ -192,6 +319,51 @@ public:
         return false;
     }
 
+    // Return the invocation hotkey for toggling
+    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
+    {
+        if (m_hotkey.key)
+        {
+            if (hotkeys && buffer_size >= 1)
+            {
+                hotkeys[0] = m_hotkey;
+            }
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    // Process the hotkey event
+    virtual bool on_hotkey(size_t /*hotkeyId*/) override
+    {
+        if (!m_enabled)
+        {
+            return false;
+        }
+
+        constexpr ULONGLONG hotkeyToggleDebounceMs = 500;
+        const auto now = GetTickCount64();
+        if (now - m_lastHotkeyToggleTime < hotkeyToggleDebounceMs)
+        {
+            return true;
+        }
+        m_lastHotkeyToggleTime = now;
+
+        refresh_process_state();
+        if (m_active)
+        {
+            stop_engine();
+        }
+        else
+        {
+            start_engine();
+        }
+
+        return true;
+    }
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

@@ -2,12 +2,16 @@
     x:Class="Microsoft.CmdPal.UI.Controls.ShortcutDialogContentControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     x:Name="ShortcutContentControl"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:BoolToKeyVisualStateConverter x:Key="BoolToKeyVisualStateConverter" />
+    </UserControl.Resources>
     <Grid MinWidth="498" MinHeight="220">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -33,13 +37,16 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <controls:KeyVisual
-                        Height="56"
+                    <ptcontrols:KeyVisual
+                        Padding="20,16"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
-                        IsError="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                        CornerRadius="{StaticResource OverlayCornerRadius}"
+                        FontSize="16"
+                        FontWeight="SemiBold"
                         IsTabStop="False"
-                        VisualType="Large" />
+                        State="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay, Converter={StaticResource BoolToKeyVisualStateConverter}, ConverterParameter=Error}"
+                        Style="{StaticResource AccentKeyVisualStyle}" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

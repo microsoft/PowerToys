@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using CoreWidgetProvider.Helpers;
 using CoreWidgetProvider.Widgets.Enums;
-using Microsoft.CmdPal.Core.Common;
+using Microsoft.CmdPal.Common;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel;

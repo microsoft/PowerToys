@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -33,8 +34,19 @@
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard.Description>
+                                    <StackPanel Orientation="Vertical">
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.IncreaseOpacityShortcut, Mode=OneWay}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.DecreaseOpacityShortcut, Mode=OneWay}" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard.Description>
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="AlwaysOnTop_GameMode" IsChecked="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AlwaysOnTop_ContextMenuEnabled" IsChecked="{x:Bind ViewModel.ShowInSystemMenu, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -96,22 +108,6 @@
                     <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_Sound" HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.SoundEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsExpander
-                        x:Uid="AlwaysOnTop_TransparencyInfo"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
-                        IsExpanded="True">
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard.Description>
-                                    <StackPanel Orientation="Vertical">
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.IncreaseOpacityShortcut, Mode=OneWay}" />
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.DecreaseOpacityShortcut, Mode=OneWay}" />
-                                    </StackPanel>
-                                </tkcontrols:SettingsCard.Description>
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

@@ -17,6 +17,7 @@ using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
+using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
@@ -34,6 +35,8 @@ namespace Microsoft.PowerToys.Settings.UI
         private OobeWindow oobeWindow;
 
         private ScoobeWindow scoobeWindow;
+
+        private ShortcutConflictWindow shortcutConflictWindow;
 
         private enum Arguments
         {
@@ -297,9 +300,9 @@ namespace Microsoft.PowerToys.Settings.UI
                     return 0;
                 });
 #else
-        /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
-        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard);
-        Exit();
+                /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
+                global::Common.UI.SettingsDeepLink.OpenSettings(global::Common.UI.SettingsDeepLink.SettingsWindow.Dashboard);
+                Exit();
 #endif
             }
         }
@@ -336,10 +339,10 @@ namespace Microsoft.PowerToys.Settings.UI
             return settingsWindow;
         }
 
-        public static bool IsOobeOrScoobeOpen()
+        public static bool IsSecondaryWindowOpen()
         {
             var app = (App)Current;
-            return app.oobeWindow != null || app.scoobeWindow != null;
+            return app.oobeWindow != null || app.scoobeWindow != null || app.shortcutConflictWindow != null;
         }
 
         public void OpenScoobe()
@@ -353,6 +356,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 scoobeWindow.Closed += (_, _) =>
                 {
                     scoobeWindow = null;
+                    settingsWindow?.CloseHiddenWindow();
                 };
 
                 scoobeWindow.Activate();
@@ -374,6 +378,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 oobeWindow.Closed += (_, _) =>
                 {
                     oobeWindow = null;
+                    settingsWindow?.CloseHiddenWindow();
                 };
 
                 oobeWindow.Activate();
@@ -381,6 +386,26 @@ namespace Microsoft.PowerToys.Settings.UI
             else
             {
                 WindowHelpers.BringToForeground(oobeWindow.GetWindowHandle());
+            }
+        }
+
+        public void OpenShortcutConflictWindow()
+        {
+            if (shortcutConflictWindow == null)
+            {
+                shortcutConflictWindow = new ShortcutConflictWindow();
+
+                shortcutConflictWindow.Closed += (_, _) =>
+                {
+                    shortcutConflictWindow = null;
+                    settingsWindow?.CloseHiddenWindow();
+                };
+
+                shortcutConflictWindow.Activate();
+            }
+            else
+            {
+                WindowHelpers.BringToForeground(shortcutConflictWindow.GetWindowHandle());
             }
         }
 

@@ -3,6 +3,10 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <OutputType>Exe</OutputType>
     <AssemblyTitle>UnitTests-BgcodePreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-BgcodePreviewHandler</AssemblyDescription>
     <Description>PowerToys UnitTests-BgcodePreviewHandler</Description>

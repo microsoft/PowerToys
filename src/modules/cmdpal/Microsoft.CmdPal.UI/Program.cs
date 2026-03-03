@@ -4,7 +4,7 @@
 
 using System.Runtime.InteropServices;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;

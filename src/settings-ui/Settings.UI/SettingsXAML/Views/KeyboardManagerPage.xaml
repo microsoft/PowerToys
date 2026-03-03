@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -20,14 +21,14 @@
         </Style>
 
         <DataTemplate x:Key="OriginalKeyTemplate" x:DataType="x:String">
-            <controls:KeyVisual
+            <ptcontrols:KeyVisual
                 Padding="8"
                 Content="{Binding}"
                 CornerRadius="{StaticResource ControlCornerRadius}" />
         </DataTemplate>
 
         <DataTemplate x:Key="RemappedKeyTemplate" x:DataType="x:String">
-            <controls:KeyVisual
+            <ptcontrols:KeyVisual
                 Padding="8"
                 Content="{Binding}"
                 CornerRadius="{StaticResource ControlCornerRadius}"
@@ -70,6 +71,13 @@
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
 
+                <tkcontrols:SettingsCard
+                    Name="ToggleShortcut"
+                    x:Uid="KeyboardManager_Toggle_Shortcut"
+                    HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ToggleShortcut, Mode=TwoWay}" />
+                </tkcontrols:SettingsCard>
+
                 <controls:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="KeyboardManagerRemapKeyboardButton"
@@ -100,7 +108,7 @@
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
-                                        <controls:IsEnabledTextBlock
+                                        <ptcontrols:IsEnabledTextBlock
                                             x:Uid="To"
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
@@ -175,14 +183,14 @@
                                                 </ItemsControl.ItemsPanel>
                                             </ItemsControl>
 
-                                            <controls:IsEnabledTextBlock
+                                            <ptcontrols:IsEnabledTextBlock
                                                 x:Uid="To"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
                                                 Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
 
-                                            <controls:IsEnabledTextBlock
+                                            <ptcontrols:IsEnabledTextBlock
                                                 x:Uid="Starts"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"

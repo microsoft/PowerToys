@@ -129,6 +129,18 @@ namespace newplus::helpers::variables
         return result;
     }
 
+    static bool exclude_item(const std::filesystem::path& path)
+    {
+        DWORD attrs = GetFileAttributesW(path.c_str());
+        if (attrs == INVALID_FILE_ATTRIBUTES)
+        {
+            return false;
+        }
+
+        // Exclude if hidden or system
+        return (attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)) != 0;
+    }
+
     inline void resolve_variables_in_filename_and_rename_files(const std::filesystem::path& path, const bool do_rename = true)
     {
         // Depth first recursion, so that we start renaming the leaves, and avoid having to rescan
@@ -143,7 +155,7 @@ namespace newplus::helpers::variables
         // Perform the actual rename
         for (const auto& current : std::filesystem::directory_iterator(path))
         {
-            if (!newplus::helpers::filesystem::is_hidden(current))
+            if (!exclude_item(current))
             {
                 const std::filesystem::path resolved_path = resolve_variables_in_path(current.path());
 

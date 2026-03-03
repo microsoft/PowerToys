@@ -1,4 +1,4 @@
-<local:NavigablePage
+﻿<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ZoomItPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -280,6 +280,12 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItRecordCaptureAudio" ContentAlignment="Left">
                                 <CheckBox x:Uid="ZoomIt_Record_CaptureAudio" IsChecked="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="ZoomItRecordMicMonoMix" ContentAlignment="Left">
+                                <CheckBox
+                                    x:Uid="ZoomIt_Record_MicMonoMix"
+                                    IsChecked="{x:Bind ViewModel.RecordMicMonoMix, Mode=TwoWay}"
+                                    Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Name="ZoomItRecordMicrophone"

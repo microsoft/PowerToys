@@ -1,17 +1,19 @@
-﻿<Application
+<Application
     x:Class="Microsoft.PowerToys.Settings.UI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <ResourceDictionary Source="/SettingsXAML/Controls/KeyVisual/KeyVisual.xaml" />
-                <ResourceDictionary Source="/SettingsXAML/Controls/KeyVisual/KeyCharPresenter.xaml" />
+                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyVisual.xaml" />
+                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyCharPresenter.xaml" />
+                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/IsEnabledTextBlock/IsEnabledTextBlock.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/TitleBar/TitleBar.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/Button.xaml" />
@@ -19,7 +21,7 @@
                 <ResourceDictionary Source="/SettingsXAML/Themes/Colors.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Generic.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/Timeline/TimelineStyles.xaml" />
-                <ResourceDictionary Source="/SettingsXAML/Controls/ShortcutControl/ShortcutWithTextLabelControl.xaml" />
+                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/ShortcutWithTextLabelControl/ShortcutWithTextLabelControl.xaml" />
                 <!--  Other merged dictionaries here  -->
             </ResourceDictionary.MergedDictionaries>
 
@@ -74,7 +76,7 @@
                 <Setter Property="IsTabStop" Value="False" />
             </Style>
 
-            <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="controls:CheckBoxWithDescriptionControl" />
+            <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="ptcontrols:CheckBoxWithDescriptionControl" />
 
             <tkcontrols:MarkdownThemes
                 x:Key="DescriptionTextMarkdownThemeConfig"

@@ -79,6 +79,15 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Image.
+        /// </summary>
+        public static string clipboard_item_image_title {
+            get {
+                return ResourceManager.GetString("clipboard_item_image_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copied to clipboard.
         /// </summary>
         public static string copied_toast_text {
@@ -147,6 +156,258 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         public static string list_item_title {
             get {
                 return ResourceManager.GetString("list_item_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copied.
+        /// </summary>
+        public static string metadata_copied_key {
+            get {
+                return ResourceManager.GetString("metadata_copied_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Created.
+        /// </summary>
+        public static string metadata_file_system_created_key {
+            get {
+                return ResourceManager.GetString("metadata_file_system_created_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder.
+        /// </summary>
+        public static string metadata_file_system_folder_value {
+            get {
+                return ResourceManager.GetString("metadata_file_system_folder_value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Location.
+        /// </summary>
+        public static string metadata_file_system_location_key {
+            get {
+                return ResourceManager.GetString("metadata_file_system_location_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Modified.
+        /// </summary>
+        public static string metadata_file_system_modified_key {
+            get {
+                return ResourceManager.GetString("metadata_file_system_modified_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        public static string metadata_file_system_name_key {
+            get {
+                return ResourceManager.GetString("metadata_file_system_name_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File.
+        /// </summary>
+        public static string metadata_file_system_section_title {
+            get {
+                return ResourceManager.GetString("metadata_file_system_section_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Size.
+        /// </summary>
+        public static string metadata_file_system_size_key {
+            get {
+                return ResourceManager.GetString("metadata_file_system_size_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type.
+        /// </summary>
+        public static string metadata_file_system_type_key {
+            get {
+                return ResourceManager.GetString("metadata_file_system_type_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to General.
+        /// </summary>
+        public static string metadata_general_section_title {
+            get {
+                return ResourceManager.GetString("metadata_general_section_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dimensions.
+        /// </summary>
+        public static string metadata_image_dimensions_key {
+            get {
+                return ResourceManager.GetString("metadata_image_dimensions_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DPI.
+        /// </summary>
+        public static string metadata_image_dpi_key {
+            get {
+                return ResourceManager.GetString("metadata_image_dpi_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Image metadata.
+        /// </summary>
+        public static string metadata_image_section_title {
+            get {
+                return ResourceManager.GetString("metadata_image_section_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Storage size.
+        /// </summary>
+        public static string metadata_image_storage_size_key {
+            get {
+                return ResourceManager.GetString("metadata_image_storage_size_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Characters.
+        /// </summary>
+        public static string metadata_text_characters_key {
+            get {
+                return ResourceManager.GetString("metadata_text_characters_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Line ending.
+        /// </summary>
+        public static string metadata_text_line_ending_key {
+            get {
+                return ResourceManager.GetString("metadata_text_line_ending_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lines.
+        /// </summary>
+        public static string metadata_text_lines_key {
+            get {
+                return ResourceManager.GetString("metadata_text_lines_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paragraphs.
+        /// </summary>
+        public static string metadata_text_paragraphs_key {
+            get {
+                return ResourceManager.GetString("metadata_text_paragraphs_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Text statistics.
+        /// </summary>
+        public static string metadata_text_section_title {
+            get {
+                return ResourceManager.GetString("metadata_text_section_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sentences.
+        /// </summary>
+        public static string metadata_text_sentences_key {
+            get {
+                return ResourceManager.GetString("metadata_text_sentences_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Words.
+        /// </summary>
+        public static string metadata_text_words_key {
+            get {
+                return ResourceManager.GetString("metadata_text_words_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fragment.
+        /// </summary>
+        public static string metadata_web_link_fragment_key {
+            get {
+                return ResourceManager.GetString("metadata_web_link_fragment_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Host.
+        /// </summary>
+        public static string metadata_web_link_host_key {
+            get {
+                return ResourceManager.GetString("metadata_web_link_host_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path.
+        /// </summary>
+        public static string metadata_web_link_path_key {
+            get {
+                return ResourceManager.GetString("metadata_web_link_path_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Port.
+        /// </summary>
+        public static string metadata_web_link_port_key {
+            get {
+                return ResourceManager.GetString("metadata_web_link_port_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Query params.
+        /// </summary>
+        public static string metadata_web_link_query_params_key {
+            get {
+                return ResourceManager.GetString("metadata_web_link_query_params_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Web link.
+        /// </summary>
+        public static string metadata_web_link_section_title {
+            get {
+                return ResourceManager.GetString("metadata_web_link_section_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to URL.
+        /// </summary>
+        public static string metadata_web_link_url_key {
+            get {
+                return ResourceManager.GetString("metadata_web_link_url_key", resourceCulture);
             }
         }
         
