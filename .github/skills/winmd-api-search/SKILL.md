@@ -1,6 +1,7 @@
 ---
 name: winmd-api-search
 description: 'Find and explore Windows desktop APIs. Use when building features that need platform capabilities — camera, file access, notifications, UI controls, AI/ML, sensors, networking, etc. Discovers the right API for a task and retrieves full type details (methods, properties, events, enumeration values).'
+license: Complete terms in LICENSE.txt
 ---
 
 # WinMD API Search
@@ -14,12 +15,43 @@ This skill helps you find the right Windows API for any capability and get its f
 
 Even on a fresh clone with no restore or build, you still get full Platform SDK + WinAppSDK coverage.
 
-## When to Use
+## When to Use This Skill
 
 - User wants to build a feature and you need to find which API provides that capability
 - User asks "how do I do X?" where X involves a platform feature (camera, files, notifications, sensors, AI, etc.)
 - You need the exact methods, properties, events, or enumeration values of a type before writing code
 - You're unsure which control, class, or interface to use for a UI or system task
+
+## Prerequisites
+
+- **.NET SDK 8.0 or later** — required to build the cache generator. Install from [dotnet.microsoft.com](https://dotnet.microsoft.com/download) if not available.
+
+## Cache Setup (Required Before First Use)
+
+All query and search commands read from a local JSON cache. **You must generate the cache before running any queries.**
+
+```powershell
+# All projects in the repo (recommended for first run)
+.\.github\skills\winmd-api-search\scripts\Update-WinMdCache.ps1
+
+# Single project
+.\.github\skills\winmd-api-search\scripts\Update-WinMdCache.ps1 -ProjectDir <project-folder>
+```
+
+No project restore or build is needed for baseline coverage (Platform SDK + WinAppSDK). For additional NuGet packages, the project needs `dotnet restore` (which generates `project.assets.json`) or a `packages.config` file.
+
+Cache is stored at `Generated Files\winmd-cache\`, deduplicated per-package+version.
+
+### What gets indexed
+
+| Source | When available |
+|--------|----------------|
+| Windows Platform SDK | Always (reads from local SDK install) |
+| WinAppSDK (latest) | Always (bundled as baseline in cache generator) |
+| Project NuGet packages | After `dotnet restore` or with `packages.config` |
+| Project-output `.winmd` | After project build (class libraries that produce WinMD) |
+
+> **Note:** This cache directory should be in `.gitignore` — it's generated, not source.
 
 ## How to Use
 
@@ -30,6 +62,10 @@ Pick the path that matches the situation:
 ### Discover — "I don't know which API to use"
 
 The user describes a capability in their own words. You need to find the right API.
+
+**0. Ensure the cache exists**
+
+If the cache hasn't been generated yet, run `Update-WinMdCache.ps1` first — see [Cache Setup](#cache-setup-required-before-first-use) above.
 
 **1. Translate user language → search keywords**
 
@@ -56,7 +92,7 @@ This returns ranked namespaces with top matching types and the **JSON file path*
 
 **3. Read the JSON to choose the right API**
 
-Use `read_file` on the file path(s) from the top results. The JSON has all types in that namespace — full members, signatures, parameters, return types, enumeration values.
+Read the file at the path(s) from the top results. The JSON has all types in that namespace — full members, signatures, parameters, return types, enumeration values.
 
 Read and decide which types and members fit the user's requirement.
 
@@ -82,7 +118,7 @@ You already know (or suspect) the type or namespace name. Go direct:
 .\.github\skills\winmd-api-search\scripts\Invoke-WinMdQuery.ps1 -Action namespaces -Filter "Microsoft.UI"
 ```
 
-If you need full detail beyond what `-Action members` shows, use `-Action search` to get the JSON file path, then `read_file` the JSON directly.
+If you need full detail beyond what `-Action members` shows, use `-Action search` to get the JSON file path, then read the JSON file directly.
 
 ---
 
@@ -113,36 +149,6 @@ The search ranks type names against your query:
 | 20 | Fuzzy character match | `NavVw` → `NavigationView` |
 
 Results are grouped by namespace. Higher-scored namespaces appear first.
-
-## Cache Setup
-
-If the cache doesn't exist, generate it:
-
-```powershell
-# Single project
-.\.\.github\skills\winmd-api-search\scripts\Update-WinMdCache.ps1 -ProjectDir <project-folder>
-
-# All projects in the repo
-.\.\.github\skills\winmd-api-search\scripts\Update-WinMdCache.ps1
-```
-
-Requires:
-- **.NET SDK 8.0 or later** — auto-detects the highest installed SDK (>= 8). Install from [dotnet.microsoft.com](https://dotnet.microsoft.com/download) if not available.
-
-No project restore or build is needed for baseline coverage (Platform SDK + WinAppSDK). For additional NuGet packages, the project needs `dotnet restore` (which generates `project.assets.json`) or a `packages.config` file.
-
-Cache is stored at `Generated Files\winmd-cache\`, deduplicated per-package+version.
-
-### What gets indexed
-
-| Source | When available |
-|--------|----------------|
-| Windows Platform SDK | Always (reads from local SDK install) |
-| WinAppSDK (latest) | Always (bundled as baseline in cache generator) |
-| Project NuGet packages | After `dotnet restore` or with `packages.config` |
-| Project-output `.winmd` | After project build (class libraries that produce WinMD) |
-
-> **Note:** This cache directory should be in `.gitignore` — it's generated, not source.
 
 ## Troubleshooting
 

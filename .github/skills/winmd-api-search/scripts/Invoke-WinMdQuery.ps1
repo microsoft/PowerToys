@@ -122,7 +122,7 @@ function Resolve-ProjectManifest {
     }
 
     $available = ($manifests | ForEach-Object { $_.BaseName }) -join ', '
-    Write-Error "Multiple projects cached — use -Project to specify. Available: $available"
+    Write-Error "Multiple projects cached -- use -Project to specify. Available: $available"
     exit 1
 }
 
@@ -130,7 +130,7 @@ function Get-PackageCacheDirs {
     param($Manifest)
     $dirs = @()
     foreach ($pkg in $Manifest.packages) {
-        $dir = Join-Path $CacheDir 'packages' $pkg.id $pkg.version
+        $dir = Join-Path (Join-Path (Join-Path $CacheDir 'packages') $pkg.id) $pkg.version
         if (Test-Path $dir) {
             $dirs += $dir
         }
@@ -148,7 +148,7 @@ function Show-Projects {
     }
     Write-Output "Cached projects ($($projects.Count)):"
     foreach ($p in $projects) {
-        $manifest = Get-Content (Join-Path $CacheDir 'projects' "$p.json") | ConvertFrom-Json
+        $manifest = Get-Content (Join-Path (Join-Path $CacheDir 'projects') "$p.json") | ConvertFrom-Json
         $pkgCount = $manifest.packages.Count
         Write-Output "  $p ($pkgCount package(s))"
     }
@@ -160,12 +160,12 @@ function Show-Packages {
     $manifest = Resolve-ProjectManifest -Name $Project
     Write-Output "Packages for project '$($manifest.projectName)' ($($manifest.packages.Count)):"
     foreach ($pkg in $manifest.packages) {
-        $metaPath = Join-Path $CacheDir 'packages' $pkg.id $pkg.version 'meta.json'
+        $metaPath = Join-Path (Join-Path (Join-Path (Join-Path $CacheDir 'packages') $pkg.id) $pkg.version) 'meta.json'
         if (Test-Path $metaPath) {
             $meta = Get-Content $metaPath | ConvertFrom-Json
-            Write-Output "  $($pkg.id)@$($pkg.version) — $($meta.totalTypes) types, $($meta.totalMembers) members"
+            Write-Output "  $($pkg.id)@$($pkg.version) -- $($meta.totalTypes) types, $($meta.totalMembers) members"
         } else {
-            Write-Output "  $($pkg.id)@$($pkg.version) — (cache missing)"
+            Write-Output "  $($pkg.id)@$($pkg.version) -- (cache missing)"
         }
     }
 }
@@ -180,7 +180,7 @@ function Show-Stats {
     $totalWinMd = 0
 
     foreach ($pkg in $manifest.packages) {
-        $metaPath = Join-Path $CacheDir 'packages' $pkg.id $pkg.version 'meta.json'
+        $metaPath = Join-Path (Join-Path (Join-Path (Join-Path $CacheDir 'packages') $pkg.id) $pkg.version) 'meta.json'
         if (Test-Path $metaPath) {
             $meta = Get-Content $metaPath | ConvertFrom-Json
             $totalTypes += $meta.totalTypes
@@ -190,7 +190,7 @@ function Show-Stats {
         }
     }
 
-    Write-Output "WinMD Index Statistics — $($manifest.projectName)"
+    Write-Output "WinMD Index Statistics -- $($manifest.projectName)"
     Write-Output "======================================"
     Write-Output "  Packages:   $($manifest.packages.Count)"
     Write-Output "  Namespaces: $totalNamespaces (may overlap across packages)"
@@ -293,7 +293,7 @@ function Get-MembersOfType {
 # ─── Action: search ──────────────────────────────────────────────────────────
 # Ranks namespaces by best type-name match score.
 # Outputs: ranked namespaces with top matching types and the JSON file path.
-# The LLM can then read_file the JSON to inspect all members intelligently.
+# The agent can then read the JSON file to inspect all members intelligently.
 
 function Search-WinMd {
     param([string]$SearchQuery, [int]$Max)

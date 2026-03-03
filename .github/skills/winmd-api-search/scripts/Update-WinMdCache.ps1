@@ -39,7 +39,7 @@ $ErrorActionPreference = 'Stop'
 # Convention: skill lives at .github/skills/winmd-api-search/scripts/
 # so workspace root is 4 levels up from $PSScriptRoot.
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..\..')).Path
-$generatorProj = Join-Path $PSScriptRoot 'cache-generator' 'CacheGenerator.csproj'
+$generatorProj = Join-Path (Join-Path $PSScriptRoot 'cache-generator') 'CacheGenerator.csproj'
 
 # Default: if no ProjectDir, scan the workspace root
 if (-not $ProjectDir) {
@@ -50,7 +50,7 @@ if (-not $ProjectDir) {
 Push-Location $root
 
 try {
-    # Detect installed .NET SDK — require >= 8.0
+    # Detect installed .NET SDK -- require >= 8.0
     $dotnetSdks = dotnet --list-sdks 2>$null
     $bestMajor = $dotnetSdks |
         ForEach-Object { if ($_ -match '^(\d+)\.') { [int]$Matches[1] } } |
@@ -68,6 +68,10 @@ try {
 
     Write-Host "Building cache generator..." -ForegroundColor Cyan
     dotnet restore $generatorProj -p:TargetFramework=$targetFramework --nologo -v q
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Restore failed"
+        exit 1
+    }
     dotnet build $generatorProj -c Release --nologo -v q -p:TargetFramework=$targetFramework --no-restore
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Build failed"
