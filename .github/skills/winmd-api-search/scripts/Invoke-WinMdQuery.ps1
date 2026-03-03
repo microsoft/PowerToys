@@ -104,6 +104,16 @@ function Resolve-ProjectManifest {
     if ($Name) {
         $path = Join-Path $projectsDir "$Name.json"
         if (-not (Test-Path $path)) {
+            # Scan mode appends a hash suffix -- try prefix match
+            $matching = @(Get-ChildItem $projectsDir -Filter "${Name}_*.json" -ErrorAction SilentlyContinue)
+            if ($matching.Count -eq 1) {
+                return Get-Content $matching[0].FullName -Raw | ConvertFrom-Json
+            }
+            if ($matching.Count -gt 1) {
+                $names = ($matching | ForEach-Object { $_.BaseName }) -join ', '
+                Write-Error "Multiple projects match '$Name'. Specify the full name: $names"
+                exit 1
+            }
             $available = (Get-CachedProjects) -join ', '
             Write-Error "Project '$Name' not found. Available: $available"
             exit 1

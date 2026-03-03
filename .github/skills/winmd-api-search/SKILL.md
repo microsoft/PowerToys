@@ -157,7 +157,8 @@ If you need full detail beyond what `-Action members` shows, use `-Action search
 ```
 
 > If only one project is cached, `-Project` is auto-selected.
-> If multiple projects exist, add `-Project <name>`.
+> If multiple projects exist, add `-Project <name>` (use `-Action projects` to see available names).
+> In scan mode, manifest names include a short hash suffix to avoid collisions; you can pass the base project name without the suffix if it's unambiguous.
 
 ## Search Scoring
 
