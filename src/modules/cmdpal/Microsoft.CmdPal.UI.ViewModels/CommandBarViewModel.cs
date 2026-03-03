@@ -122,10 +122,15 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         }
 
         SecondaryCommand = SelectedItem.SecondaryCommand;
-        ShouldShowContextMenu = SelectedItem.MoreCommands
-            .OfType<CommandContextItemViewModel>()
-            .Skip(1)
-            .Any();
+
+        var hasMoreThanOneContextItem = SelectedItem.MoreCommands.Count() > 1;
+        var hasMoreThanOneCommand = SelectedItem.MoreCommands.OfType<CommandContextItemViewModel>().Any();
+
+        ShouldShowContextMenu = hasMoreThanOneContextItem && hasMoreThanOneCommand;
+
+        OnPropertyChanged(nameof(HasSecondaryCommand));
+        OnPropertyChanged(nameof(SecondaryCommand));
+        OnPropertyChanged(nameof(ShouldShowContextMenu));
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator

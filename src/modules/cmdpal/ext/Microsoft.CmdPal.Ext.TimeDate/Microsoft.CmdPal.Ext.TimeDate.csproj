@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
-	<Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
-    <Import Project="..\Common.ExtDependencies.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
+  <Import Project="..\Common.ExtDependencies.props" />
 
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.TimeDate</RootNamespace>
@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
     <!-- CmdPal Toolkit reference now included via Common.ExtDependencies.props -->
   </ItemGroup>
 

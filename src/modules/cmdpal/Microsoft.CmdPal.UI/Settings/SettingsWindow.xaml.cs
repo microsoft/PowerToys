@@ -35,7 +35,7 @@ public sealed partial class SettingsWindow : WindowEx,
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
     // Gets or sets optional action invoked after NavigationView is loaded.
-    public Action NavigationViewLoaded { get; set; } = () => { };
+    public Action? NavigationViewLoaded { get; set; }
 
     public SettingsWindow()
     {
@@ -125,6 +125,9 @@ public sealed partial class SettingsWindow : WindowEx,
             case "Extensions":
                 pageType = typeof(ExtensionsPage);
                 break;
+            case "Dock":
+                pageType = typeof(DockSettingsPage);
+                break;
             case "Internal":
                 pageType = typeof(InternalPage);
                 break;
@@ -142,6 +145,18 @@ public sealed partial class SettingsWindow : WindowEx,
         if (pageType is not null)
         {
             NavFrame.Navigate(pageType);
+
+            // Now, make sure to actually select the correct menu item too
+            foreach (var obj in NavView.MenuItems)
+            {
+                if (obj is NavigationViewItem item)
+                {
+                    if (item.Tag is string s && s == page)
+                    {
+                        NavView.SelectedItem = item;
+                    }
+                }
+            }
         }
     }
 
@@ -290,6 +305,12 @@ public sealed partial class SettingsWindow : WindowEx,
         {
             NavView.SelectedItem = ExtensionPageNavItem;
             var pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(DockSettingsPage))
+        {
+            NavView.SelectedItem = DockSettingsPageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_DockPage");
             BreadCrumbs.Add(new(pageType, pageType));
         }
         else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)

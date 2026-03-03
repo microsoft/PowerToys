@@ -18,6 +18,7 @@ struct Settings
     static constexpr int minTransparencyPercentage = 20; // minimum transparency (can't go below 20%)
     static constexpr int maxTransparencyPercentage = 100; // maximum (fully opaque)
     static constexpr int transparencyStep = 10; // step size for +/- adjustment
+    bool showInSystemMenu = false;
     bool enableFrame = true;
     bool enableSound = true;
     bool roundCornersEnabled = true;

@@ -7,7 +7,7 @@
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -55,8 +55,8 @@
   </ItemGroup>
 
   <ItemGroup>
-	<AdditionalFiles Include="NativeMethods.txt" />
-	<AdditionalFiles Include="NativeMethods.json" />
+    <AdditionalFiles Include="NativeMethods.txt" />
+    <AdditionalFiles Include="NativeMethods.json" />
   </ItemGroup>
 
 </Project>
