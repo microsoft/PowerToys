@@ -326,7 +326,18 @@ static class NuGetResolver
             result.Add(new PackageWithWinMd("WindowsSDK", sdkWinMd.Version, sdkWinMd.Files));
         }
 
-        return result;
+        // Deduplicate by (Id, Version), merging WinMdFiles from multiple sources
+        return result
+            .GroupBy(p => (p.Id.ToLowerInvariant(), p.Version.ToLowerInvariant()))
+            .Select(g =>
+            {
+                var merged = g.SelectMany(p => p.WinMdFiles)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                var first = g.First();
+                return new PackageWithWinMd(first.Id, first.Version, merged);
+            })
+            .ToList();
     }
 
     /// <summary>
