@@ -175,8 +175,11 @@ try {
 
     # Detect installed WinAppSDK runtime via Get-AppxPackage (the WindowsApps
     # folder is ACL-restricted so C# cannot enumerate it directly).
+    # WinMD files are architecture-independent metadata, so pick whichever arch
+    # matches the current OS to ensure the package is present.
+    $osArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
     $runtimePkg = Get-AppxPackage -Name 'Microsoft.WindowsAppRuntime.*' -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -notmatch 'CBS' -and $_.Architecture -eq 'X64' } |
+        Where-Object { $_.Name -notmatch 'CBS' -and $_.Architecture -eq $osArch } |
         Sort-Object -Property Version -Descending |
         Select-Object -First 1
     if ($runtimePkg -and $runtimePkg.InstallLocation -and (Test-Path $runtimePkg.InstallLocation)) {
