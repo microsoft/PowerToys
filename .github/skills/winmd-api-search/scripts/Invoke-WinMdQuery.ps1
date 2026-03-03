@@ -355,9 +355,9 @@ function Search-WinMd {
                 }
 
                 if ($typeScore -ge $bestMemberScore) {
-                    $entry.Types += "$($t.kind) $($t.fullName) [$typeScore]"
+                    $entry.Types += @{ Text = "$($t.kind) $($t.fullName) [$typeScore]"; Score = $typeScore }
                 } else {
-                    $entry.Types += "$($t.kind) $($t.fullName) -> $matchingMember [$bestMemberScore]"
+                    $entry.Types += @{ Text = "$($t.kind) $($t.fullName) -> $matchingMember [$bestMemberScore]"; Score = $bestMemberScore }
                 }
             }
         }
@@ -379,8 +379,10 @@ function Search-WinMd {
         foreach ($fp in $info.FilePaths) {
             Write-Output "    File: $fp"
         }
-        # Show top 5 matching types in this namespace
-        $info.Types | Select-Object -First 5 | ForEach-Object { Write-Output "    $_" }
+        # Show top 5 highest-scoring matching types in this namespace
+        $info.Types | Sort-Object { $_.Score } -Descending |
+            Select-Object -First 5 |
+            ForEach-Object { Write-Output "    $($_.Text)" }
         Write-Output ""
     }
 }

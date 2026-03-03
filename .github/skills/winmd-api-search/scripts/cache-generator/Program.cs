@@ -53,32 +53,15 @@ if (scanMode)
         return 1;
     }
 
-    IEnumerable<string> EnumerateFilesSafe(string root, string pattern)
+    var enumerationOptions = new EnumerationOptions
     {
-        var results = new List<string>();
-        try
-        {
-            foreach (var file in Directory.EnumerateFiles(root, pattern))
-            {
-                results.Add(file);
-            }
-        }
-        catch { /* skip inaccessible root */ }
+        RecurseSubdirectories = true,
+        IgnoreInaccessible = true,
+        MatchType = MatchType.Simple,
+    };
 
-        try
-        {
-            foreach (var dir in Directory.EnumerateDirectories(root))
-            {
-                results.AddRange(EnumerateFilesSafe(dir, pattern));
-            }
-        }
-        catch { /* skip inaccessible subtrees */ }
-
-        return results;
-    }
-
-    projectFiles.AddRange(EnumerateFilesSafe(inputPath, "*.csproj"));
-    projectFiles.AddRange(EnumerateFilesSafe(inputPath, "*.vcxproj"));
+    projectFiles.AddRange(Directory.EnumerateFiles(inputPath, "*.csproj", enumerationOptions));
+    projectFiles.AddRange(Directory.EnumerateFiles(inputPath, "*.vcxproj", enumerationOptions));
 
     // Exclude common non-source directories
     projectFiles = projectFiles
@@ -1134,6 +1117,20 @@ static class WinMdParser
     {
         HandleKind.TypeDefinition => GetTypeDefName(reader, (TypeDefinitionHandle)handle),
         HandleKind.TypeReference => GetTypeRefName(reader, (TypeReferenceHandle)handle),
+        HandleKind.TypeSpecification => DecodeTypeSpecification(reader, (TypeSpecificationHandle)handle),
         _ => "unknown",
     };
+
+    private static string DecodeTypeSpecification(MetadataReader reader, TypeSpecificationHandle handle)
+    {
+        try
+        {
+            var typeSpec = reader.GetTypeSpecification(handle);
+            return typeSpec.DecodeSignature(new SimpleTypeProvider(), null);
+        }
+        catch
+        {
+            return "unknown";
+        }
+    }
 }
