@@ -206,5 +206,10 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
         }
+
+        private void OpenSettingsItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            App.OpenSettingsWindow();
+        }
     }
 }
