@@ -734,6 +734,7 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/MousePointerCrosshairs.vcxproj" Id="eae14c0e-7a6b-45da-9080-a7d8c077ba6e" />
+    <Project Path="src/modules/MouseUtils/MouseScrollRemap/MouseScrollRemap.vcxproj" Id="e8f8f8f8-9d85-4081-b35c-1ccc9dcc1e99" />
   </Folder>
   <Folder Name="/modules/MouseUtils/Tests/">
     <Project Path="src/modules/MouseUtils/MouseJump.Common.UnitTests/MouseJump.Common.UnitTests.csproj">
