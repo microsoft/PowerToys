@@ -900,8 +900,32 @@ static class WinMdParser
                 var propSig = prop.DecodeSignature(typeProvider, null);
                 var propType = propSig.ReturnType;
                 var accessors = prop.GetAccessors();
-                var hasGetter = !accessors.Getter.IsNil;
-                var hasSetter = !accessors.Setter.IsNil;
+
+                var hasGetter = false;
+                if (!accessors.Getter.IsNil)
+                {
+                    var getterDef = reader.GetMethodDefinition(accessors.Getter);
+                    if ((getterDef.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.Public)
+                    {
+                        hasGetter = true;
+                    }
+                }
+
+                var hasSetter = false;
+                if (!accessors.Setter.IsNil)
+                {
+                    var setterDef = reader.GetMethodDefinition(accessors.Setter);
+                    if ((setterDef.Attributes & MethodAttributes.MemberAccessMask) == MethodAttributes.Public)
+                    {
+                        hasSetter = true;
+                    }
+                }
+
+                // Skip properties where neither accessor is public
+                if (!hasGetter && !hasSetter)
+                {
+                    continue;
+                }
                 var accessStr = (hasGetter, hasSetter) switch
                 {
                     (true, true) => "{ get; set; }",
@@ -934,6 +958,32 @@ static class WinMdParser
         {
             var evt = reader.GetEventDefinition(eventHandle);
             var evtName = reader.GetString(evt.Name);
+            var accessors = evt.GetAccessors();
+
+            var isPublicEvent = false;
+            if (!accessors.Adder.IsNil)
+            {
+                var adder = reader.GetMethodDefinition(accessors.Adder);
+                if ((adder.Attributes & MethodAttributes.Public) != 0)
+                {
+                    isPublicEvent = true;
+                }
+            }
+
+            if (!isPublicEvent && !accessors.Remover.IsNil)
+            {
+                var remover = reader.GetMethodDefinition(accessors.Remover);
+                if ((remover.Attributes & MethodAttributes.Public) != 0)
+                {
+                    isPublicEvent = true;
+                }
+            }
+
+            if (!isPublicEvent)
+            {
+                continue;
+            }
+
             var evtType = GetHandleTypeName(reader, evt.Type);
 
             members.Add(new WinMdMemberInfo
@@ -990,7 +1040,7 @@ static class WinMdParser
                 continue;
             }
 
-            if ((field.Attributes & FieldAttributes.Public) != 0 &&
+            if ((field.Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Public &&
                 (field.Attributes & FieldAttributes.Static) != 0)
             {
                 values.Add(fieldName);

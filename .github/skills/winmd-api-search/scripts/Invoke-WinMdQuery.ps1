@@ -108,7 +108,7 @@ function Resolve-ProjectManifest {
             Write-Error "Project '$Name' not found. Available: $available"
             exit 1
         }
-        return Get-Content $path | ConvertFrom-Json
+        return Get-Content $path -Raw | ConvertFrom-Json
     }
 
     # Auto-select if only one project
@@ -118,7 +118,7 @@ function Resolve-ProjectManifest {
         exit 1
     }
     if ($manifests.Count -eq 1) {
-        return Get-Content $manifests[0].FullName | ConvertFrom-Json
+        return Get-Content $manifests[0].FullName -Raw | ConvertFrom-Json
     }
 
     $available = ($manifests | ForEach-Object { $_.BaseName }) -join ', '
@@ -148,7 +148,7 @@ function Show-Projects {
     }
     Write-Output "Cached projects ($($projects.Count)):"
     foreach ($p in $projects) {
-        $manifest = Get-Content (Join-Path (Join-Path $CacheDir 'projects') "$p.json") | ConvertFrom-Json
+        $manifest = Get-Content (Join-Path (Join-Path $CacheDir 'projects') "$p.json") -Raw | ConvertFrom-Json
         $pkgCount = $manifest.packages.Count
         Write-Output "  $p ($pkgCount package(s))"
     }
@@ -162,7 +162,7 @@ function Show-Packages {
     foreach ($pkg in $manifest.packages) {
         $metaPath = Join-Path (Join-Path (Join-Path (Join-Path $CacheDir 'packages') $pkg.id) $pkg.version) 'meta.json'
         if (Test-Path $metaPath) {
-            $meta = Get-Content $metaPath | ConvertFrom-Json
+            $meta = Get-Content $metaPath -Raw | ConvertFrom-Json
             Write-Output "  $($pkg.id)@$($pkg.version) -- $($meta.totalTypes) types, $($meta.totalMembers) members"
         } else {
             Write-Output "  $($pkg.id)@$($pkg.version) -- (cache missing)"
@@ -182,7 +182,7 @@ function Show-Stats {
     foreach ($pkg in $manifest.packages) {
         $metaPath = Join-Path (Join-Path (Join-Path (Join-Path $CacheDir 'packages') $pkg.id) $pkg.version) 'meta.json'
         if (Test-Path $metaPath) {
-            $meta = Get-Content $metaPath | ConvertFrom-Json
+            $meta = Get-Content $metaPath -Raw | ConvertFrom-Json
             $totalTypes += $meta.totalTypes
             $totalMembers += $meta.totalMembers
             $totalNamespaces += $meta.totalNamespaces
@@ -210,7 +210,7 @@ function Get-Namespaces {
     foreach ($dir in $dirs) {
         $nsFile = Join-Path $dir 'namespaces.json'
         if (Test-Path $nsFile) {
-            $allNs += (Get-Content $nsFile | ConvertFrom-Json)
+            $allNs += (Get-Content $nsFile -Raw | ConvertFrom-Json)
         }
     }
 
@@ -240,7 +240,7 @@ function Get-TypesInNamespace {
         $filePath = Join-Path $dir "types\$safeFile"
         if (-not (Test-Path $filePath)) { continue }
         $found = $true
-        $types = Get-Content $filePath | ConvertFrom-Json
+        $types = Get-Content $filePath -Raw | ConvertFrom-Json
         foreach ($t in $types) {
             if ($seen.ContainsKey($t.fullName)) { continue }
             $seen[$t.fullName] = $true
@@ -279,7 +279,7 @@ function Get-MembersOfType {
         $filePath = Join-Path $dir "types\$safeFile"
         if (-not (Test-Path $filePath)) { continue }
 
-        $types = Get-Content $filePath | ConvertFrom-Json
+        $types = Get-Content $filePath -Raw | ConvertFrom-Json
         $type = $types | Where-Object { $_.fullName -eq $FullName }
         if (-not $type) { continue }
 
@@ -317,14 +317,14 @@ function Search-WinMd {
     foreach ($dir in $dirs) {
         $nsFile = Join-Path $dir 'namespaces.json'
         if (-not (Test-Path $nsFile)) { continue }
-        $nsList = Get-Content $nsFile | ConvertFrom-Json
+        $nsList = Get-Content $nsFile -Raw | ConvertFrom-Json
 
         foreach ($n in $nsList) {
             $safeFile = $n.Replace('.', '_') + '.json'
             $filePath = Join-Path $dir "types\$safeFile"
             if (-not (Test-Path $filePath)) { continue }
 
-            $types = Get-Content $filePath | ConvertFrom-Json
+            $types = Get-Content $filePath -Raw | ConvertFrom-Json
             foreach ($t in $types) {
                 $typeScore = Get-MatchScore -Name $t.name -FullName $t.fullName -Query $SearchQuery
 
@@ -457,7 +457,7 @@ function Get-EnumValues {
         $filePath = Join-Path $dir "types\$safeFile"
         if (-not (Test-Path $filePath)) { continue }
 
-        $types = Get-Content $filePath | ConvertFrom-Json
+        $types = Get-Content $filePath -Raw | ConvertFrom-Json
         $type = $types | Where-Object { $_.fullName -eq $FullName }
         if (-not $type) { continue }
 
