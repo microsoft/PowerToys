@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
@@ -69,8 +70,20 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
 
+        ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
+
         // Start with edit mode disabled - normal click behavior
         UpdateEditMode(false);
+    }
+
+    private void CenterItems_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        UpdateCenterVisibility();
+    }
+
+    private void UpdateCenterVisibility()
+    {
+        ContentGrid.IsCenterVisible = IsEditMode || ViewModel.CenterItems.Count > 0;
     }
 
     public void Receive(EnterDockEditModeMessage message)
@@ -84,6 +97,9 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void UpdateEditMode(bool isEditMode)
     {
+        // Update center visibility based on edit mode and center items
+        UpdateCenterVisibility();
+
         // Enable/disable drag-and-drop based on edit mode
         StartListView.CanDragItems = isEditMode;
         StartListView.CanReorderItems = isEditMode;
@@ -110,9 +126,6 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         }
 
         EditButtonsTeachingTip.IsOpen = isEditMode;
-
-        // Update visual state
-        VisualStateManager.GoToState(this, isEditMode ? "EditModeOn" : "EditModeOff", true);
     }
 
     internal void EnterEditMode()
@@ -218,6 +231,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             if (item.HasMoreCommands)
             {
                 ContextControl.ViewModel.SelectedItem = item;
+                ContextControl.ShowFilterBox = true;
                 ContextMenuFlyout.ShowAt(
                     dockItem,
                     new FlyoutShowOptions()
@@ -299,6 +313,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         if (item.HasMoreCommands)
         {
             ContextControl.ViewModel.SelectedItem = item;
+            ContextControl.ShowFilterBox = false;
             ContextMenuFlyout.ShowAt(
             this.RootGrid,
             new FlyoutShowOptions()

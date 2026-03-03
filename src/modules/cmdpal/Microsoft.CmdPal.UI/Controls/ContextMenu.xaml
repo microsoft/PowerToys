@@ -161,6 +161,17 @@
             Style="{StaticResource SearchTextBoxStyle}"
             TextChanged="ContextFilterBox_TextChanged" />
         <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="FilterBoxVisibility">
+                <VisualState x:Name="FilterBoxVisible" />
+                <VisualState x:Name="FilterBoxCollapsed">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind ShowFilterBox, Mode=OneWay}" To="False" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ContextFilterBox.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
             <VisualStateGroup x:Name="ContextMenuOrder">
                 <VisualState x:Name="FilterOnTop">
                     <VisualState.StateTriggers>
