@@ -90,13 +90,33 @@ Start with simple everyday words. If results are weak or irrelevant, try the mor
 
 This returns ranked namespaces with top matching types and the **JSON file path**.
 
+If results have **low scores (below 60) or are irrelevant**, fall back to searching online documentation:
+
+1. Use web search to find the right API on Microsoft Learn, for example:
+   - `site:learn.microsoft.com/en-us/uwp/api <capability keywords>` for `Windows.*` APIs
+   - `site:learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt <capability keywords>` for `Microsoft.*` WinAppSDK APIs
+2. Read the documentation pages to identify which type matches the user's requirement.
+3. Once you know the type name, come back and use `-Action members` or `-Action enums` to get the exact local signatures.
+
 **3. Read the JSON to choose the right API**
 
 Read the file at the path(s) from the top results. The JSON has all types in that namespace — full members, signatures, parameters, return types, enumeration values.
 
 Read and decide which types and members fit the user's requirement.
 
-**4. Use the API knowledge to answer or write code**
+**4. Look up official documentation for context**
+
+The cache contains only signatures — no descriptions or usage guidance. For explanations, examples, and remarks, look up the type on Microsoft Learn:
+
+| Namespace prefix | Documentation base URL |
+|-----------------|----------------------|
+| `Windows.*` | `https://learn.microsoft.com/en-us/uwp/api/{fully.qualified.typename}` |
+| `Microsoft.*` (WinAppSDK) | `https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/{fully.qualified.typename}` |
+
+For example, `Microsoft.UI.Xaml.Controls.NavigationView` maps to:
+`https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.navigationview`
+
+**5. Use the API knowledge to answer or write code**
 
 ---
 
@@ -160,3 +180,8 @@ Results are grouped by namespace. Higher-scored namespaces appear first.
 | "Type not found" | Use fully qualified name (e.g., `Microsoft.UI.Xaml.Controls.Button`) |
 | Stale after NuGet update | Re-run `Update-WinMdCache.ps1` |
 | Cache in git history | Add `Generated Files/` to `.gitignore` |
+
+## References
+
+- [Windows Platform SDK API reference](https://learn.microsoft.com/en-us/uwp/api/) — documentation for `Windows.*` namespaces
+- [Windows App SDK API reference](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/) — documentation for `Microsoft.*` WinAppSDK namespaces
