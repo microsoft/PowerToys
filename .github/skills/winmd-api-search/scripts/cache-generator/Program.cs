@@ -12,6 +12,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Security.Cryptography;
 using System.Xml.Linq;
 
 // --- Arg parsing ---
@@ -183,8 +184,19 @@ foreach (var projectFile in projectFiles)
 
     var projectsDir = Path.Combine(outputDir, "projects");
     Directory.CreateDirectory(projectsDir);
+
+    // In scan mode, different directories may contain same-named projects.
+    // Append a short path hash to avoid overwriting manifests.
+    var manifestFileName = projectName;
+    if (scanMode)
+    {
+        var hashBytes = SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(projectFile));
+        var hashSuffix = Convert.ToHexString(hashBytes)[..8].ToLowerInvariant();
+        manifestFileName = $"{projectName}_{hashSuffix}";
+    }
+
     File.WriteAllText(
-        Path.Combine(projectsDir, $"{projectName}.json"),
+        Path.Combine(projectsDir, $"{manifestFileName}.json"),
         JsonSerializer.Serialize(manifest, jsonOptions));
 }
 
@@ -513,6 +525,14 @@ static class NuGetResolver
 
             foreach (var lib in libraries.EnumerateObject())
             {
+                // Only treat libraries with type == "package" as NuGet packages;
+                // skip project references and other entry types.
+                if (!lib.Value.TryGetProperty("type", out var typeProp) ||
+                    !string.Equals(typeProp.GetString(), "package", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 // Key format: "PackageId/Version"
                 var slashIdx = lib.Name.IndexOf('/');
                 if (slashIdx < 0)
