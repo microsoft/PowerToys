@@ -1848,42 +1848,172 @@ static BOOLEAN ExtractResourceToFile( LPCTSTR resName, LPCTSTR resType, LPCTSTR 
 //----------------------------------------------------------------------------
 #define SCREENSAVER_BACKUP_KEY  L"Software\\Sysinternals\\ZoomIt\\SavedScreenSaver"
 
+struct ScreenSaverSnapshot
+{
+    TCHAR scrPath[MAX_PATH] = {};
+    TCHAR screenSaveActive[8] = {};
+    TCHAR secure[8] = {};
+    TCHAR timeoutText[16] = {};
+    DWORD timeoutSeconds = 0;
+    BOOLEAN hasScrPath = FALSE;
+    BOOLEAN hasScreenSaveActive = FALSE;
+    BOOLEAN hasSecure = FALSE;
+    BOOLEAN hasTimeoutText = FALSE;
+    BOOLEAN screenSaveActiveRuntime = TRUE;
+    BOOLEAN valid = FALSE;
+};
+
+// Per-run snapshot captured immediately before we swap in ZoomIt's .scr.
+// This avoids relying only on registry backup timing for unlock restore.
+static ScreenSaverSnapshot g_PreBreakScreenSaverSnapshot;
+
+static BOOLEAN CaptureCurrentScreenSaverSettings( ScreenSaverSnapshot* snapshot )
+{
+    if( snapshot == nullptr )
+        return FALSE;
+
+    ScreenSaverSnapshot localSnapshot;
+
+    DWORD cbPath = sizeof( localSnapshot.scrPath );
+    localSnapshot.hasScrPath =
+        ( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"SCRNSAVE.EXE",
+                       RRF_RT_REG_SZ, NULL, localSnapshot.scrPath, &cbPath ) == ERROR_SUCCESS );
+
+    DWORD cbScreenSaveActive = sizeof( localSnapshot.screenSaveActive );
+    localSnapshot.hasScreenSaveActive =
+        ( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveActive",
+                       RRF_RT_REG_SZ, NULL, localSnapshot.screenSaveActive, &cbScreenSaveActive ) == ERROR_SUCCESS );
+
+    DWORD cbSecure = sizeof( localSnapshot.secure );
+    localSnapshot.hasSecure =
+        ( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaverIsSecure",
+                       RRF_RT_REG_SZ, NULL, localSnapshot.secure, &cbSecure ) == ERROR_SUCCESS );
+
+    DWORD cbTimeoutText = sizeof( localSnapshot.timeoutText );
+    localSnapshot.hasTimeoutText =
+        ( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveTimeOut",
+                       RRF_RT_REG_SZ, NULL, localSnapshot.timeoutText, &cbTimeoutText ) == ERROR_SUCCESS );
+
+    UINT timeout = 0;
+    SystemParametersInfo( SPI_GETSCREENSAVETIMEOUT, 0, &timeout, 0 );
+    localSnapshot.timeoutSeconds = timeout;
+
+    BOOL screenSaveActive = TRUE;
+    SystemParametersInfo( SPI_GETSCREENSAVEACTIVE, 0, &screenSaveActive, 0 );
+    localSnapshot.screenSaveActiveRuntime = screenSaveActive ? TRUE : FALSE;
+
+    if( localSnapshot.hasTimeoutText )
+    {
+        const int parsed = _tstoi( localSnapshot.timeoutText );
+        if( parsed > 0 )
+        {
+            localSnapshot.timeoutSeconds = static_cast<DWORD>( parsed );
+        }
+    }
+
+    localSnapshot.valid = TRUE;
+
+    *snapshot = localSnapshot;
+    return TRUE;
+}
+
+static void ApplyScreenSaverSnapshot( const ScreenSaverSnapshot* snapshot )
+{
+    if( snapshot == nullptr || !snapshot->valid )
+        return;
+
+    if( snapshot->hasScrPath )
+    {
+        RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"SCRNSAVE.EXE", REG_SZ, snapshot->scrPath,
+                        static_cast<DWORD>( ( _tcslen( snapshot->scrPath ) + 1 ) * sizeof( TCHAR ) ) );
+    }
+    else
+    {
+        RegDeleteKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"SCRNSAVE.EXE" );
+    }
+
+    if( snapshot->hasScreenSaveActive )
+    {
+        RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"ScreenSaveActive", REG_SZ, snapshot->screenSaveActive,
+                        static_cast<DWORD>( ( _tcslen( snapshot->screenSaveActive ) + 1 ) * sizeof( TCHAR ) ) );
+    }
+    else
+    {
+        RegDeleteKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveActive" );
+    }
+    SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, snapshot->screenSaveActiveRuntime ? TRUE : FALSE, 0, SPIF_SENDCHANGE );
+
+    if( snapshot->hasSecure )
+    {
+        RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"ScreenSaverIsSecure", REG_SZ, snapshot->secure,
+                        static_cast<DWORD>( ( _tcslen( snapshot->secure ) + 1 ) * sizeof( TCHAR ) ) );
+    }
+    else
+    {
+        RegDeleteKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaverIsSecure" );
+    }
+
+    if( snapshot->hasTimeoutText )
+    {
+        RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"ScreenSaveTimeOut", REG_SZ, snapshot->timeoutText,
+                        static_cast<DWORD>( ( _tcslen( snapshot->timeoutText ) + 1 ) * sizeof( TCHAR ) ) );
+    }
+    else
+    {
+        RegDeleteKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveTimeOut" );
+    }
+
+    SystemParametersInfo( SPI_SETSCREENSAVETIMEOUT, snapshot->timeoutSeconds, 0, SPIF_SENDCHANGE );
+}
+
 static void SaveScreenSaverSettings( void )
 {
+    CaptureCurrentScreenSaverSettings( &g_PreBreakScreenSaverSnapshot );
+
     HKEY hKey;
     if( RegCreateKeyEx( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY, 0, NULL,
                         0, KEY_SET_VALUE, NULL, &hKey, NULL ) == ERROR_SUCCESS )
     {
-        TCHAR scrPath[MAX_PATH] = {};
-        DWORD cbPath = sizeof( scrPath );
-        RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"SCRNSAVE.EXE",
-                     RRF_RT_REG_SZ, NULL, scrPath, &cbPath );
+        const ScreenSaverSnapshot& snap = g_PreBreakScreenSaverSnapshot;
+
+        DWORD has = snap.hasScrPath;
+        RegSetValueEx( hKey, L"HasSCRNSAVE.EXE", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &has ), sizeof( DWORD ) );
         RegSetValueEx( hKey, L"SCRNSAVE.EXE", 0, REG_SZ,
-                       reinterpret_cast<const BYTE*>( scrPath ),
-                       static_cast<DWORD>( ( _tcslen( scrPath ) + 1 ) * sizeof( TCHAR ) ) );
+                       reinterpret_cast<const BYTE*>( snap.scrPath ),
+                       static_cast<DWORD>( ( _tcslen( snap.scrPath ) + 1 ) * sizeof( TCHAR ) ) );
 
-        TCHAR screenSaveActive[8] = {};
-        DWORD cbScreenSaveActive = sizeof( screenSaveActive );
-        RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveActive",
-                     RRF_RT_REG_SZ, NULL, screenSaveActive, &cbScreenSaveActive );
+        has = snap.hasScreenSaveActive;
+        RegSetValueEx( hKey, L"HasScreenSaveActive", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &has ), sizeof( DWORD ) );
         RegSetValueEx( hKey, L"ScreenSaveActive", 0, REG_SZ,
-                       reinterpret_cast<const BYTE*>( screenSaveActive ),
-                       static_cast<DWORD>( ( _tcslen( screenSaveActive ) + 1 ) * sizeof( TCHAR ) ) );
+                       reinterpret_cast<const BYTE*>( snap.screenSaveActive ),
+                       static_cast<DWORD>( ( _tcslen( snap.screenSaveActive ) + 1 ) * sizeof( TCHAR ) ) );
 
-        TCHAR secure[8] = {};
-        DWORD cbSecure = sizeof( secure );
-        RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaverIsSecure",
-                     RRF_RT_REG_SZ, NULL, secure, &cbSecure );
+        has = snap.hasSecure;
+        RegSetValueEx( hKey, L"HasScreenSaverIsSecure", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &has ), sizeof( DWORD ) );
         RegSetValueEx( hKey, L"ScreenSaverIsSecure", 0, REG_SZ,
-                       reinterpret_cast<const BYTE*>( secure ),
-                       static_cast<DWORD>( ( _tcslen( secure ) + 1 ) * sizeof( TCHAR ) ) );
+                       reinterpret_cast<const BYTE*>( snap.secure ),
+                       static_cast<DWORD>( ( _tcslen( snap.secure ) + 1 ) * sizeof( TCHAR ) ) );
 
-        // Save the screensaver timeout so we can restore it after
-        // overriding it to 1 second.
-        UINT timeout = 0;
-        SystemParametersInfo( SPI_GETSCREENSAVETIMEOUT, 0, &timeout, 0 );
+        has = snap.hasTimeoutText;
+        RegSetValueEx( hKey, L"HasScreenSaveTimeOut", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &has ), sizeof( DWORD ) );
+        RegSetValueEx( hKey, L"ScreenSaveTimeOutText", 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>( snap.timeoutText ),
+                       static_cast<DWORD>( ( _tcslen( snap.timeoutText ) + 1 ) * sizeof( TCHAR ) ) );
+
         RegSetValueEx( hKey, L"ScreenSaveTimeOut", 0, REG_DWORD,
-                       reinterpret_cast<const BYTE*>( &timeout ), sizeof( DWORD ) );
+                       reinterpret_cast<const BYTE*>( &snap.timeoutSeconds ), sizeof( DWORD ) );
+
+        DWORD runtimeActive = snap.screenSaveActiveRuntime;
+        RegSetValueEx( hKey, L"ScreenSaveActiveRuntime", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &runtimeActive ), sizeof( DWORD ) );
 
         RegCloseKey( hKey );
     }
@@ -1891,55 +2021,145 @@ static void SaveScreenSaverSettings( void )
 
 static void RestoreScreenSaverSettings( void )
 {
-    HKEY hKey;
-    if( RegOpenKeyEx( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY, 0,
-                      KEY_QUERY_VALUE, &hKey ) == ERROR_SUCCESS )
+    bool restored = false;
+
+    // Preferred restore path: exact values captured in-memory before this run
+    // applied ZoomIt's screensaver settings.
+    if( g_PreBreakScreenSaverSnapshot.valid )
     {
-        TCHAR scrPath[MAX_PATH] = {};
-        DWORD cbPath = sizeof( scrPath );
-        if( RegQueryValueEx( hKey, L"SCRNSAVE.EXE", NULL, NULL,
-                             reinterpret_cast<BYTE*>( scrPath ), &cbPath ) == ERROR_SUCCESS )
-        {
-            RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
-                            L"SCRNSAVE.EXE", REG_SZ, scrPath,
-                            static_cast<DWORD>( ( _tcslen( scrPath ) + 1 ) * sizeof( TCHAR ) ) );
-        }
-
-        TCHAR screenSaveActive[8] = {};
-        DWORD cbScreenSaveActive = sizeof( screenSaveActive );
-        if( RegQueryValueEx( hKey, L"ScreenSaveActive", NULL, NULL,
-                             reinterpret_cast<BYTE*>( screenSaveActive ), &cbScreenSaveActive ) == ERROR_SUCCESS )
-        {
-            RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
-                            L"ScreenSaveActive", REG_SZ, screenSaveActive,
-                            static_cast<DWORD>( ( _tcslen( screenSaveActive ) + 1 ) * sizeof( TCHAR ) ) );
-            SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, screenSaveActive[0] == L'1', 0, SPIF_SENDCHANGE );
-        }
-
-        TCHAR secure[8] = {};
-        DWORD cbSecure = sizeof( secure );
-        if( RegQueryValueEx( hKey, L"ScreenSaverIsSecure", NULL, NULL,
-                             reinterpret_cast<BYTE*>( secure ), &cbSecure ) == ERROR_SUCCESS )
-        {
-            RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
-                            L"ScreenSaverIsSecure", REG_SZ, secure,
-                            static_cast<DWORD>( ( _tcslen( secure ) + 1 ) * sizeof( TCHAR ) ) );
-        }
-
-        // Restore screensaver timeout.
-        DWORD dwTimeout = 0;
-        DWORD cbTimeout = sizeof( dwTimeout );
-        if( RegQueryValueEx( hKey, L"ScreenSaveTimeOut", NULL, NULL,
-                             reinterpret_cast<BYTE*>( &dwTimeout ), &cbTimeout ) == ERROR_SUCCESS )
-        {
-            SystemParametersInfo( SPI_SETSCREENSAVETIMEOUT, dwTimeout, 0, SPIF_SENDCHANGE );
-        }
-
-        RegCloseKey( hKey );
+        ApplyScreenSaverSnapshot( &g_PreBreakScreenSaverSnapshot );
+        g_PreBreakScreenSaverSnapshot.valid = FALSE;
+        restored = true;
         RegDeleteKey( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY );
+    }
+    else
+    {
+        // Crash-recovery fallback path.
+        HKEY hKey;
+        if( RegOpenKeyEx( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY, 0,
+                          KEY_QUERY_VALUE, &hKey ) == ERROR_SUCCESS )
+        {
+            ScreenSaverSnapshot backupSnapshot;
 
-        // Broadcast settings change so Windows picks up all the registry modifications
-        // (SCRNSAVE.EXE, ScreenSaverIsSecure are registry-only with no SPI equivalent).
+            DWORD has = 1;
+            DWORD cbHas = sizeof( has );
+            if( RegQueryValueEx( hKey, L"HasSCRNSAVE.EXE", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &has ), &cbHas ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.hasScrPath = has ? TRUE : FALSE;
+            }
+            else
+            {
+                backupSnapshot.hasScrPath = TRUE;
+            }
+
+            DWORD cbPath = sizeof( backupSnapshot.scrPath );
+            if( RegQueryValueEx( hKey, L"SCRNSAVE.EXE", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( backupSnapshot.scrPath ), &cbPath ) != ERROR_SUCCESS )
+            {
+                backupSnapshot.scrPath[0] = 0;
+            }
+
+            has = 1;
+            cbHas = sizeof( has );
+            if( RegQueryValueEx( hKey, L"HasScreenSaveActive", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &has ), &cbHas ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.hasScreenSaveActive = has ? TRUE : FALSE;
+            }
+            else
+            {
+                backupSnapshot.hasScreenSaveActive = TRUE;
+            }
+
+            DWORD cbScreenSaveActive = sizeof( backupSnapshot.screenSaveActive );
+            if( RegQueryValueEx( hKey, L"ScreenSaveActive", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( backupSnapshot.screenSaveActive ), &cbScreenSaveActive ) != ERROR_SUCCESS )
+            {
+                backupSnapshot.screenSaveActive[0] = 0;
+            }
+
+            has = 1;
+            cbHas = sizeof( has );
+            if( RegQueryValueEx( hKey, L"HasScreenSaverIsSecure", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &has ), &cbHas ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.hasSecure = has ? TRUE : FALSE;
+            }
+            else
+            {
+                backupSnapshot.hasSecure = TRUE;
+            }
+
+            DWORD cbSecure = sizeof( backupSnapshot.secure );
+            if( RegQueryValueEx( hKey, L"ScreenSaverIsSecure", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( backupSnapshot.secure ), &cbSecure ) != ERROR_SUCCESS )
+            {
+                backupSnapshot.secure[0] = 0;
+            }
+
+            has = 1;
+            cbHas = sizeof( has );
+            if( RegQueryValueEx( hKey, L"HasScreenSaveTimeOut", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &has ), &cbHas ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.hasTimeoutText = has ? TRUE : FALSE;
+            }
+            else
+            {
+                backupSnapshot.hasTimeoutText = TRUE;
+            }
+
+            DWORD cbTimeoutText = sizeof( backupSnapshot.timeoutText );
+            if( RegQueryValueEx( hKey, L"ScreenSaveTimeOutText", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( backupSnapshot.timeoutText ), &cbTimeoutText ) != ERROR_SUCCESS )
+            {
+                backupSnapshot.timeoutText[0] = 0;
+            }
+
+            DWORD dwTimeout = 0;
+            DWORD cbTimeout = sizeof( dwTimeout );
+            if( RegQueryValueEx( hKey, L"ScreenSaveTimeOut", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &dwTimeout ), &cbTimeout ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.timeoutSeconds = dwTimeout;
+            }
+            else
+            {
+                UINT timeout = 0;
+                SystemParametersInfo( SPI_GETSCREENSAVETIMEOUT, 0, &timeout, 0 );
+                backupSnapshot.timeoutSeconds = timeout;
+            }
+
+            DWORD runtimeActive = TRUE;
+            DWORD cbRuntimeActive = sizeof( runtimeActive );
+            if( RegQueryValueEx( hKey, L"ScreenSaveActiveRuntime", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &runtimeActive ), &cbRuntimeActive ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.screenSaveActiveRuntime = runtimeActive ? TRUE : FALSE;
+            }
+            else
+            {
+                BOOL active = TRUE;
+                SystemParametersInfo( SPI_GETSCREENSAVEACTIVE, 0, &active, 0 );
+                backupSnapshot.screenSaveActiveRuntime = active ? TRUE : FALSE;
+            }
+
+            backupSnapshot.valid = TRUE;
+            ApplyScreenSaverSnapshot( &backupSnapshot );
+            restored = true;
+
+            RegCloseKey( hKey );
+            RegDeleteKey( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY );
+        }
+    }
+
+    if( restored )
+    {
+        // Broadcast settings change so Windows picks up all registry-only
+        // values (SCRNSAVE.EXE, ScreenSaverIsSecure) and refreshed timeout.
+        SendNotifyMessage( HWND_BROADCAST, WM_SETTINGCHANGE, 0,
+                           reinterpret_cast<LPARAM>( L"Control Panel\\Desktop" ) );
         SendNotifyMessage( HWND_BROADCAST, WM_SETTINGCHANGE, SPI_SETSCREENSAVEACTIVE, 0 );
     }
 }
@@ -1954,6 +2174,33 @@ static BOOLEAN HasOrphanedScreenSaverSettings( void )
         return TRUE;
     }
     return FALSE;
+}
+
+static BOOLEAN IsBreakScreenSaverRunning( void )
+{
+    HANDLE hSnap = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+    if( hSnap == INVALID_HANDLE_VALUE )
+    {
+        return FALSE;
+    }
+
+    PROCESSENTRY32 pe = { sizeof( pe ) };
+    BOOLEAN running = FALSE;
+    if( Process32First( hSnap, &pe ) )
+    {
+        do
+        {
+            if( _tcsicmp( pe.szExeFile, L"ZoomItBreak.scr" ) == 0 )
+            {
+                running = TRUE;
+                break;
+            }
+        }
+        while( Process32Next( hSnap, &pe ) );
+    }
+
+    CloseHandle( hSnap );
+    return running;
 }
 
 
@@ -2105,13 +2352,17 @@ static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
 
     //
     // 4. Save current screensaver settings for later restoration.
-    //    Only save if not already saved (prevents race condition if user
-    //    activates break timer twice in quick succession).
+    //    Always take a fresh snapshot immediately before swapping in
+    //    ZoomIt's .scr so unlock cleanup can reliably restore the user's
+    //    pre-break values (path, active flag, secure flag, timeout).
     //
-    if( !HasOrphanedScreenSaverSettings() )
+    // If a stale backup exists from an interrupted prior run, restore it
+    // first so we don't snapshot already-overridden ZoomIt values.
+    if( HasOrphanedScreenSaverSettings() )
     {
-        SaveScreenSaverSettings();
+        RestoreScreenSaverSettings();
     }
+    SaveScreenSaverSettings();
 
     //
     // 4a. Ensure screensaver is fully reset before reconfiguring.
@@ -2184,6 +2435,11 @@ static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
     //    own window, triggering unwanted LiveZoom activation.
     //
     DefWindowProc( hWnd, WM_SYSCOMMAND, SC_SCREENSAVE, 0 );
+
+    // Defensive cleanup path: if session-change notifications are delayed or
+    // missed, poll until the break .scr exits and then restore original values.
+    // This ensures ScreenSaveTimeOut/SCRNSAVE.EXE don't remain overridden.
+    SetTimer( hWnd, 4, 2000, NULL );
 
     return TRUE;
 }
@@ -10194,6 +10450,22 @@ LRESULT APIENTRY MainWndProc(
                 SendMessage(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(mousePos.x, mousePos.y));
             }
             break;
+
+        case 4:
+            // Break screensaver post-cleanup watchdog.
+            if( HasOrphanedScreenSaverSettings() )
+            {
+                if( !IsBreakScreenSaverRunning() )
+                {
+                    RestoreScreenSaverSettings();
+                    KillTimer( hWnd, 4 );
+                }
+            }
+            else
+            {
+                KillTimer( hWnd, 4 );
+            }
+            break;
         }
         break;
 
@@ -10359,12 +10631,11 @@ LRESULT APIENTRY MainWndProc(
         // session, restore the original screensaver settings so the break timer
         // doesn't reactivate.
         //
-        if( wParam == WTS_SESSION_UNLOCK )
+        if( wParam == WTS_SESSION_UNLOCK ||
+            wParam == WTS_SESSION_LOGON ||
+            wParam == WTS_CONSOLE_CONNECT )
         {
-            if( HasOrphanedScreenSaverSettings() )
-            {
-                RestoreScreenSaverSettings();
-            }
+            RestoreScreenSaverSettings();
         }
         break;
 
