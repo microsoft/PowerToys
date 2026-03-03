@@ -141,10 +141,10 @@
             Grid.Column="1">
             <ScrollViewer
                 x:Name="scroller"
-                HorizontalScrollBarVisibility="Hidden"
+                HorizontalScrollBarVisibility="Disabled"
                 HorizontalScrollMode="Enabled"
                 SizeChanged="Scroller_SizeChanged"
-                VerticalScrollBarVisibility="Hidden"
+                VerticalScrollBarVisibility="Disabled"
                 VerticalScrollMode="Disabled"
                 ViewChanging="Scroller_ViewChanging">
                 <Grid x:Name="ContentGrid">
@@ -188,9 +188,9 @@
             <VisualStateGroup x:Name="OrientationStates">
                 <VisualState x:Name="HorizontalState">
                     <VisualState.Setters>
-                        <Setter Target="scroller.HorizontalScrollBarVisibility" Value="Hidden" />
+                        <Setter Target="scroller.HorizontalScrollBarVisibility" Value="Disabled" />
                         <Setter Target="scroller.HorizontalScrollMode" Value="Enabled" />
-                        <Setter Target="scroller.VerticalScrollBarVisibility" Value="Hidden" />
+                        <Setter Target="scroller.VerticalScrollBarVisibility" Value="Disabled" />
                         <Setter Target="scroller.VerticalScrollMode" Value="Disabled" />
                         <Setter Target="ScrollBackBtn.Padding" Value="4,12,4,12" />
                         <Setter Target="ScrollBackBtn.Margin" Value="8,0,0,0" />
@@ -210,9 +210,9 @@
                 </VisualState>
                 <VisualState x:Name="VerticalState">
                     <VisualState.Setters>
-                        <Setter Target="scroller.HorizontalScrollBarVisibility" Value="Hidden" />
+                        <Setter Target="scroller.HorizontalScrollBarVisibility" Value="Disabled" />
                         <Setter Target="scroller.HorizontalScrollMode" Value="Disabled" />
-                        <Setter Target="scroller.VerticalScrollBarVisibility" Value="Hidden" />
+                        <Setter Target="scroller.VerticalScrollBarVisibility" Value="Disabled" />
                         <Setter Target="scroller.VerticalScrollMode" Value="Enabled" />
                         <Setter Target="ScrollBackBtn.Padding" Value="12,4,12,4" />
                         <Setter Target="ScrollBackBtn.Margin" Value="0,8,0,0" />

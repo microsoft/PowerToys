@@ -52,6 +52,7 @@ public sealed partial class MainListPage : DynamicListPage,
     // recognise them across successive GetItems() calls
     private readonly Separator _resultsSeparator = new(Resources.results);
     private readonly Separator _fallbacksSeparator = new(Resources.fallbacks);
+    private readonly Separator _commandsSeparator = new(Resources.home_sections_commands_title);
 
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
@@ -66,6 +67,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private int AppResultLimit => AllAppsCommandProvider.TopLevelResultLimit;
 
+    private InterlockedBoolean _fullRefreshRequested;
     private InterlockedBoolean _refreshRunning;
     private InterlockedBoolean _refreshRequested;
 
@@ -110,7 +112,17 @@ public sealed partial class MainListPage : DynamicListPage,
 
                     var sw = Stopwatch.StartNew();
 #endif
-                    RaiseItemsChanged();
+                    if (_fullRefreshRequested.Clear())
+                    {
+                        // full refresh
+                        RaiseItemsChanged();
+                    }
+                    else
+                    {
+                        // preserve selection
+                        RaiseItemsChanged(ListViewModel.IncrementalRefresh);
+                    }
+
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
                     Logger.LogInfo($"UpdateFallbacks: RaiseItemsChanged took {sw.Elapsed}");
 #endif
@@ -239,7 +251,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
                 // +1 for the separator
                 var result = new IListItem[eligibleCount + 1];
-                result[0] = _resultsSeparator;
+                result[0] = _commandsSeparator;
 
                 // Second pass: populate
                 var writeIndex = 1;
@@ -376,6 +388,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 _filteredItemsIncludesApps = _includeApps;
                 ClearResults();
                 var wasAlreadyEmpty = string.IsNullOrWhiteSpace(oldSearch);
+                _fullRefreshRequested.Set();
                 _refreshThrottledDebouncedAction.Invoke(wasAlreadyEmpty ? null : TimeSpan.Zero);
 
                 return;
@@ -525,10 +538,12 @@ public sealed partial class MainListPage : DynamicListPage,
                     adjustedInterval = TimeSpan.Zero;
                 }
 
+                _fullRefreshRequested.Set();
                 _refreshThrottledDebouncedAction.Invoke(adjustedInterval);
             }
             else
             {
+                _fullRefreshRequested.Set();
                 _refreshThrottledDebouncedAction.Invoke();
             }
 

@@ -22,6 +22,7 @@ namespace NonLocalizable
     const static wchar_t* TOOL_WINDOW_CLASS_NAME = L"AlwaysOnTopWindow";
     const static wchar_t* WINDOW_IS_PINNED_PROP = L"AlwaysOnTop_Pinned";
     constexpr UINT SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND = 0xEFE0;
+    constexpr ULONG_PTR SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG = 0x414F5450;
     constexpr DWORD SYSTEM_EVENT_MENU_POPUP_START = 0x0006;
     constexpr DWORD SYSTEM_EVENT_MENU_POPUP_END = 0x0007;
 }
@@ -39,6 +40,29 @@ namespace
         }
 
         hooks.clear();
+    }
+
+    bool HasMenuCommand(HMENU menu, UINT commandId) noexcept
+    {
+        return menu && GetMenuState(menu, commandId, MF_BYCOMMAND) != static_cast<UINT>(-1);
+    }
+
+    bool IsAlwaysOnTopMenuCommand(HMENU menu) noexcept
+    {
+        if (!HasMenuCommand(menu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND))
+        {
+            return false;
+        }
+
+        MENUITEMINFOW menuItemInfo{};
+        menuItemInfo.cbSize = sizeof(menuItemInfo);
+        menuItemInfo.fMask = MIIM_DATA;
+
+        return GetMenuItemInfoW(menu,
+                                NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND,
+                                FALSE,
+                                &menuItemInfo) &&
+               menuItemInfo.dwItemData == NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG;
     }
 }
 
@@ -503,7 +527,7 @@ void AlwaysOnTop::UpdateSystemMenuItem(HWND window) const noexcept
 
     if (!AlwaysOnTopSettings::settings().showInSystemMenu)
     {
-        if (GetMenuState(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND) != static_cast<UINT>(-1))
+        if (IsAlwaysOnTopMenuCommand(systemMenu))
         {
             RemoveMenu(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND);
         }
@@ -513,19 +537,25 @@ void AlwaysOnTop::UpdateSystemMenuItem(HWND window) const noexcept
     auto text = GET_RESOURCE_STRING(IDS_SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP);
     MENUITEMINFOW menuItemInfo{};
     menuItemInfo.cbSize = sizeof(menuItemInfo);
-    menuItemInfo.fMask = MIIM_ID | MIIM_STATE | MIIM_STRING;
+    menuItemInfo.fMask = MIIM_ID | MIIM_STATE | MIIM_STRING | MIIM_DATA;
     menuItemInfo.wID = NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND;
     menuItemInfo.fState = IsPinned(window) ? MFS_CHECKED : MFS_UNCHECKED;
     menuItemInfo.dwTypeData = text.data();
+    menuItemInfo.dwItemData = NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG;
 
-    if (GetMenuState(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND) == static_cast<UINT>(-1))
+    if (!HasMenuCommand(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND))
     {
         InsertMenuItemW(systemMenu, SC_CLOSE, FALSE, &menuItemInfo);
     }
-    else
+    else if (IsAlwaysOnTopMenuCommand(systemMenu))
     {
         menuItemInfo.fMask = MIIM_STATE | MIIM_STRING;
         SetMenuItemInfoW(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, FALSE, &menuItemInfo);
+    }
+    else
+    {
+        Logger::warn(L"Skipping Always On Top system menu command registration because ID 0x{:X} is already in use by another item.",
+                     NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND);
     }
 }
 
@@ -652,8 +682,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
             }
 
             const auto systemMenu = GetSystemMenu(window, false);
-            return systemMenu &&
-                   GetMenuState(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND) != static_cast<UINT>(-1);
+            return systemMenu && IsAlwaysOnTopMenuCommand(systemMenu);
         };
 
         HWND commandWindow = nullptr;
