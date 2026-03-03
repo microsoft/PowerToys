@@ -333,11 +333,7 @@ function Search-WinMd {
                 $matchingMember = $null
                 if ($t.members) {
                     foreach ($m in $t.members) {
-                        # Extract member name from signature (first word or name before '(')
-                        $memberName = $m.signature
-                        if ($memberName -match '^(?:\S+\s+)?(\w+)') {
-                            $memberName = $Matches[1]
-                        }
+                        $memberName = $m.name
                         $mScore = Get-MatchScore -Name $memberName -FullName "$($t.fullName).$memberName" -Query $SearchQuery
                         if ($mScore -gt $bestMemberScore) {
                             $bestMemberScore = $mScore
