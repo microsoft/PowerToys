@@ -346,10 +346,13 @@ function Search-WinMd {
                 if ($score -le 0) { continue }
 
                 if (-not $nsResults.ContainsKey($n)) {
-                    $nsResults[$n] = @{ BestScore = 0; Types = @(); FilePath = $filePath }
+                    $nsResults[$n] = @{ BestScore = 0; Types = @(); FilePaths = @() }
                 }
                 $entry = $nsResults[$n]
                 if ($score -gt $entry.BestScore) { $entry.BestScore = $score }
+                if ($entry.FilePaths -notcontains $filePath) {
+                    $entry.FilePaths += $filePath
+                }
 
                 if ($typeScore -ge $bestMemberScore) {
                     $entry.Types += "$($t.kind) $($t.fullName) [$typeScore]"
@@ -373,7 +376,9 @@ function Search-WinMd {
         $ns = $r.Key
         $info = $r.Value
         Write-Output "[$($info.BestScore)] $ns"
-        Write-Output "    File: $($info.FilePath)"
+        foreach ($fp in $info.FilePaths) {
+            Write-Output "    File: $fp"
+        }
         # Show top 5 matching types in this namespace
         $info.Types | Select-Object -First 5 | ForEach-Object { Write-Output "    $_" }
         Write-Output ""

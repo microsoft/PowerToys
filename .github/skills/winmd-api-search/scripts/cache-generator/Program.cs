@@ -53,8 +53,32 @@ if (scanMode)
         return 1;
     }
 
-    projectFiles.AddRange(Directory.GetFiles(inputPath, "*.csproj", SearchOption.AllDirectories));
-    projectFiles.AddRange(Directory.GetFiles(inputPath, "*.vcxproj", SearchOption.AllDirectories));
+    IEnumerable<string> EnumerateFilesSafe(string root, string pattern)
+    {
+        var results = new List<string>();
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(root, pattern))
+            {
+                results.Add(file);
+            }
+        }
+        catch { /* skip inaccessible root */ }
+
+        try
+        {
+            foreach (var dir in Directory.EnumerateDirectories(root))
+            {
+                results.AddRange(EnumerateFilesSafe(dir, pattern));
+            }
+        }
+        catch { /* skip inaccessible subtrees */ }
+
+        return results;
+    }
+
+    projectFiles.AddRange(EnumerateFilesSafe(inputPath, "*.csproj"));
+    projectFiles.AddRange(EnumerateFilesSafe(inputPath, "*.vcxproj"));
 
     // Exclude common non-source directories
     projectFiles = projectFiles
@@ -207,7 +231,10 @@ void ExportPackageCache(PackageWithWinMd pkg, string cacheDir)
     {
         PackageId = pkg.Id,
         Version = pkg.Version,
-        WinMdFiles = pkg.WinMdFiles.Select(Path.GetFileName).Distinct().ToList(),
+        WinMdFiles = pkg.WinMdFiles
+            .Select(Path.GetFileName)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList(),
         TotalTypes = allTypes.Count,
         TotalMembers = allTypes.Sum(t => t.Members.Count),
         TotalNamespaces = namespaces.Count,
