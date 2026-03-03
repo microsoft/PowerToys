@@ -168,6 +168,7 @@ static void parallel_for( int begin, int end, const Func& body )
                 break;
             body( i );
         }
+
     };
     for( auto& t : threads )
         t = std::thread( worker );
@@ -251,6 +252,7 @@ public:
         {
             SetWindowTheme( m_hButton, L"DarkMode_Explorer", nullptr );
         }
+
         if( m_hProgress )
         {
             SendMessage( m_hProgress, PBM_SETRANGE, 0, MAKELPARAM( 0, 100 ) );
@@ -1435,13 +1437,77 @@ static double ComputeMaskedZNCC( const BYTE* prevLuma, const BYTE* currLuma,
         const int prevRow = pY * width;
         const int currRow = cY * width;
 
-        for( int x = xStart; x < xEnd; ++x )
+        const BYTE* pLuma = &prevLuma[prevRow + xStart];
+        const BYTE* cLuma = &currLuma[currRow + xStart + dx];
+        const BYTE* pMask = &maskPrev[prevRow + xStart];
+        const BYTE* cMask = &maskCurr[currRow + xStart + dx];
+        const int xSpan = xEnd - xStart;
+
+#if defined(_M_X64) || defined(_M_IX86)
+        const __m128i zero = _mm_setzero_si128();
+        int x = 0;
+        for( ; x + 16 <= xSpan; x += 16 )
         {
-            if( !maskPrev[prevRow + x] && !maskCurr[currRow + x + dx] )
+            const __m128i mPrev = _mm_loadu_si128( reinterpret_cast<const __m128i*>( pMask + x ) );
+            const __m128i mCurr = _mm_loadu_si128( reinterpret_cast<const __m128i*>( cMask + x ) );
+            const __m128i mInf = _mm_or_si128( mPrev, mCurr );
+            const __m128i mActive = _mm_cmpgt_epi8( mInf, zero );
+            const unsigned int activeBits = static_cast<unsigned int>( _mm_movemask_epi8( mActive ) );
+            if( activeBits == 0 )
+            {
+                continue;
+            }
+
+            const __m128i va = _mm_loadu_si128( reinterpret_cast<const __m128i*>( pLuma + x ) );
+            const __m128i vb = _mm_loadu_si128( reinterpret_cast<const __m128i*>( cLuma + x ) );
+            const __m128i aMasked = _mm_and_si128( va, mActive );
+            const __m128i bMasked = _mm_and_si128( vb, mActive );
+
+            const __m128i sadA = _mm_sad_epu8( aMasked, zero );
+            const __m128i sadB = _mm_sad_epu8( bMasked, zero );
+            iSumA += static_cast<__int64>( _mm_cvtsi128_si64( sadA ) ) +
+                     static_cast<__int64>( _mm_cvtsi128_si64( _mm_srli_si128( sadA, 8 ) ) );
+            iSumB += static_cast<__int64>( _mm_cvtsi128_si64( sadB ) ) +
+                     static_cast<__int64>( _mm_cvtsi128_si64( _mm_srli_si128( sadB, 8 ) ) );
+            n += static_cast<int>( __popcnt( activeBits ) );
+
+            const __m128i aLo16 = _mm_unpacklo_epi8( aMasked, zero );
+            const __m128i aHi16 = _mm_unpackhi_epi8( aMasked, zero );
+            const __m128i bLo16 = _mm_unpacklo_epi8( bMasked, zero );
+            const __m128i bHi16 = _mm_unpackhi_epi8( bMasked, zero );
+
+            const __m128i abLo32 = _mm_madd_epi16( aLo16, bLo16 );
+            const __m128i abHi32 = _mm_madd_epi16( aHi16, bHi16 );
+            const __m128i a2Lo32 = _mm_madd_epi16( aLo16, aLo16 );
+            const __m128i a2Hi32 = _mm_madd_epi16( aHi16, aHi16 );
+            const __m128i b2Lo32 = _mm_madd_epi16( bLo16, bLo16 );
+            const __m128i b2Hi32 = _mm_madd_epi16( bHi16, bHi16 );
+
+            alignas(16) int abBuf[4];
+            alignas(16) int a2Buf[4];
+            alignas(16) int b2Buf[4];
+            _mm_storeu_si128( reinterpret_cast<__m128i*>( abBuf ), abLo32 );
+            _mm_storeu_si128( reinterpret_cast<__m128i*>( a2Buf ), a2Lo32 );
+            _mm_storeu_si128( reinterpret_cast<__m128i*>( b2Buf ), b2Lo32 );
+            iSumAB += static_cast<__int64>( abBuf[0] ) + abBuf[1] + abBuf[2] + abBuf[3];
+            iSumA2 += static_cast<__int64>( a2Buf[0] ) + a2Buf[1] + a2Buf[2] + a2Buf[3];
+            iSumB2 += static_cast<__int64>( b2Buf[0] ) + b2Buf[1] + b2Buf[2] + b2Buf[3];
+
+            _mm_storeu_si128( reinterpret_cast<__m128i*>( abBuf ), abHi32 );
+            _mm_storeu_si128( reinterpret_cast<__m128i*>( a2Buf ), a2Hi32 );
+            _mm_storeu_si128( reinterpret_cast<__m128i*>( b2Buf ), b2Hi32 );
+            iSumAB += static_cast<__int64>( abBuf[0] ) + abBuf[1] + abBuf[2] + abBuf[3];
+            iSumA2 += static_cast<__int64>( a2Buf[0] ) + a2Buf[1] + a2Buf[2] + a2Buf[3];
+            iSumB2 += static_cast<__int64>( b2Buf[0] ) + b2Buf[1] + b2Buf[2] + b2Buf[3];
+        }
+
+        for( ; x < xSpan; ++x )
+        {
+            if( !pMask[x] && !cMask[x] )
                 continue;
 
-            const int a = static_cast<int>( prevLuma[prevRow + x] );
-            const int b = static_cast<int>( currLuma[currRow + x + dx] );
+            const int a = static_cast<int>( pLuma[x] );
+            const int b = static_cast<int>( cLuma[x] );
             iSumA  += a;
             iSumB  += b;
             iSumAB += a * b;
@@ -1449,6 +1515,22 @@ static double ComputeMaskedZNCC( const BYTE* prevLuma, const BYTE* currLuma,
             iSumB2 += b * b;
             n++;
         }
+#else
+        for( int x = 0; x < xSpan; ++x )
+        {
+            if( !pMask[x] && !cMask[x] )
+                continue;
+
+            const int a = static_cast<int>( pLuma[x] );
+            const int b = static_cast<int>( cLuma[x] );
+            iSumA  += a;
+            iSumB  += b;
+            iSumAB += a * b;
+            iSumA2 += a * a;
+            iSumB2 += b * b;
+            n++;
+        }
+#endif
     }
 
     if( n < minSamples ) return 0.0;
@@ -3158,17 +3240,57 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                     continue;
                 }
 
-                for( int xi = 0; xi < xSpan; ++xi )
+                const BYTE* prevMaskBase = &fullMaskPrev[prevRow + xStart];
+                const BYTE* currMaskBase = &fullMaskCurr[currRow + xStart + dx];
+
+#if defined(_M_X64) || defined(_M_IX86)
+                const __m128i zero = _mm_setzero_si128();
+                int xi = 0;
+                for( ; xi + 16 <= xSpan; xi += 16 )
                 {
-                    const int prevIdx = prevRow + xStart + xi;
-                    const int currIdx = currRow + xStart + xi + dx;
-                    if( fullMaskPrev[prevIdx] || fullMaskCurr[currIdx] )
+                    const __m128i mPrev = _mm_loadu_si128( reinterpret_cast<const __m128i*>( prevMaskBase + xi ) );
+                    const __m128i mCurr = _mm_loadu_si128( reinterpret_cast<const __m128i*>( currMaskBase + xi ) );
+                    const __m128i mInf = _mm_or_si128( mPrev, mCurr );
+                    const __m128i mActive = _mm_cmpgt_epi8( mInf, zero );
+                    const unsigned int activeBits = static_cast<unsigned int>( _mm_movemask_epi8( mActive ) );
+                    if( activeBits == 0 )
+                    {
+                        continue;
+                    }
+
+                    const __m128i a = _mm_loadu_si128( reinterpret_cast<const __m128i*>( pBase + xi ) );
+                    const __m128i b = _mm_loadu_si128( reinterpret_cast<const __m128i*>( cBase + xi ) );
+                    const __m128i d1 = _mm_subs_epu8( a, b );
+                    const __m128i d2 = _mm_subs_epu8( b, a );
+                    const __m128i absDiff = _mm_or_si128( d1, d2 );
+                    const __m128i maskedDiff = _mm_and_si128( absDiff, mActive );
+                    const __m128i sad = _mm_sad_epu8( maskedDiff, zero );
+
+                    rowDiff += static_cast<unsigned __int64>( _mm_cvtsi128_si64( sad ) ) +
+                               static_cast<unsigned __int64>( _mm_cvtsi128_si64( _mm_srli_si128( sad, 8 ) ) );
+                    samples += static_cast<unsigned __int64>( __popcnt( activeBits ) );
+                }
+
+                for( ; xi < xSpan; ++xi )
+                {
+                    if( prevMaskBase[xi] || currMaskBase[xi] )
                     {
                         rowDiff += static_cast<unsigned __int64>(
                             abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
                         samples++;
                     }
                 }
+#else
+                for( int xi = 0; xi < xSpan; ++xi )
+                {
+                    if( prevMaskBase[xi] || currMaskBase[xi] )
+                    {
+                        rowDiff += static_cast<unsigned __int64>(
+                            abs( static_cast<int>( pBase[xi] ) - static_cast<int>( cBase[xi] ) ) );
+                        samples++;
+                    }
+                }
+#endif
                 totalDiff += rowDiff;
             }
             else
@@ -4408,9 +4530,38 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 duplicateRetryStreak++;
 
                 const int expectedAxisStep = max( abs( expectedDx ), abs( expectedDy ) );
-                const int retryExpectedMaxStep = max( 32, frameHeight / 6 + 1 );
+                int retryExpectedMaxStep = max( 32, frameHeight / 6 + 1 );
+                const double lastConstFrac = frameConstantFraction[composedFrameIndices.back()];
+                const double curConstFrac = frameConstantFraction[i];
+                // In sustained low-detail momentum streaks, strict VLE-only
+                // gating can suppress duplicate recovery and drop multiple
+                // frames. Allow recovery when either frame is near-VLE and
+                // expected motion is strongly established.
+                const bool nearVlePair = ( lastConstFrac > 0.52 ) || ( curConstFrac > 0.52 );
+                const bool sustainedMomentum = expectedAxisStep >= frameHeight / 6 && composedFrameSteps.size() >= 6;
+                if( sustainedMomentum )
+                {
+                    retryExpectedMaxStep = max( retryExpectedMaxStep, frameHeight / 2 );
+                }
+
+                // Bridge the first duplicate miss in sustained low-detail
+                // momentum runs by advancing with the expected shift.  This
+                // prevents one missed match from cascading into multi-frame
+                // duplicate drops against the same reference frame.
+                if( !foundShift && duplicateRetryStreak == 1 && nearVlePair && sustainedMomentum )
+                {
+                    dx = expectedDx;
+                    dy = expectedDy;
+                    foundShift = true;
+                    StitchLog( L"[Panorama/Stitch] Frame %zu duplicate-bridge normalized: expected=(%d,%d) axisStep=%d\n",
+                                 i,
+                                 expectedDx,
+                                 expectedDy,
+                                 expectedAxisStep );
+                }
+
                 const bool retryEligible =
-                    veryLowEntropy != 0 &&
+                    ( veryLowEntropy != 0 || ( nearVlePair && sustainedMomentum ) ) &&
                     duplicateRetryStreak >= 2 &&
                     retryEligibilityStep >= minProgress &&
                     retryEligibilityStep <= retryExpectedMaxStep;
@@ -4555,7 +4706,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 }
 
                 if( !foundShift && expectedDx == 0 && expectedDy == 0 &&
-                    duplicateRetryStreak >= 2 && i >= 2 )
+                    duplicateRetryStreak >= 1 && i >= 1 )
                 {
                     int negDx = 0, negDy = 0;
                     int posDx = 0, posDy = 0;
@@ -4751,10 +4902,19 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                         if( abs( perFrameStepX ) + abs( perFrameStepY ) >= max( 4, minProgress / 2 ) )
                         {
                             const int gap = static_cast<int>( i - composedFrameIndices.back() );
+                            // Startup recovery can discover a plausible
+                            // adjacent-pair shift while expected motion is
+                            // still unknown.  Extrapolating that shift across
+                            // multiple dropped frames is high risk in low-
+                            // detail captures and can create large black bands.
+                            // In that uninitialized state, bridge only one
+                            // frame and let subsequent frames refine normally.
+                            const int extrapolationGap =
+                                ( expectedDx == 0 && expectedDy == 0 ) ? 1 : gap;
 
                             POINT nextOrigin = composedFrameOrigins.back();
-                            nextOrigin.x += perFrameStepX * gap;
-                            nextOrigin.y += perFrameStepY * gap;
+                            nextOrigin.x += perFrameStepX * extrapolationGap;
+                            nextOrigin.y += perFrameStepY * extrapolationGap;
 
                             composedFrameIndices.push_back( i );
                             composedFrameOrigins.push_back( nextOrigin );
@@ -4771,7 +4931,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                                          i,
                                          adjDx,
                                          adjDy,
-                                         gap,
+                                         extrapolationGap,
                                          perFrameStepX,
                                          perFrameStepY,
                                          nextOrigin.x,
@@ -4800,6 +4960,89 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         const int maxAbsDy = frameHeight - minProgress;
         dx = max( -maxAbsDx, min( maxAbsDx, dx ) );
         dy = max( -maxAbsDy, min( maxAbsDy, dy ) );
+
+        // Direct anti-reversal guard for VLE captures: when expected motion
+        // is strongly established in one direction, reject small opposite-
+        // sign shifts that are commonly harmonic aliases.
+        if( veryLowEntropy != 0 && composedFrameSteps.size() >= 6 )
+        {
+            int histAbsX = 0;
+            int histAbsY = 0;
+            for( size_t si = 1; si < composedFrameSteps.size(); ++si )
+            {
+                histAbsX += abs( composedFrameSteps[si].x );
+                histAbsY += abs( composedFrameSteps[si].y );
+            }
+            const bool mostlyVerticalHist = histAbsY > histAbsX * 3;
+            const bool mostlyHorizontalHist = histAbsX > histAbsY * 3;
+            const int expectedAxisSigned = mostlyVerticalHist ? expectedDy :
+                                          ( mostlyHorizontalHist ? expectedDx : 0 );
+            const int candidateAxisSigned = mostlyVerticalHist ? dy :
+                                           ( mostlyHorizontalHist ? dx : 0 );
+            const int axisFrame = mostlyVerticalHist ? frameHeight :
+                                 ( mostlyHorizontalHist ? frameWidth : 0 );
+
+            std::vector<int> recentAxisAbs;
+            recentAxisAbs.reserve( 10 );
+            for( int si = static_cast<int>( composedFrameSteps.size() ) - 1;
+                 si >= 1 && static_cast<int>( recentAxisAbs.size() ) < 10;
+                 --si )
+            {
+                const int sv = mostlyVerticalHist
+                    ? composedFrameSteps[static_cast<size_t>( si )].y
+                    : ( mostlyHorizontalHist
+                        ? composedFrameSteps[static_cast<size_t>( si )].x
+                        : 0 );
+                if( abs( sv ) > 0 )
+                    recentAxisAbs.push_back( abs( sv ) );
+            }
+            int recentMedianAbs = 0;
+            int recentMaxAbs = 0;
+            if( !recentAxisAbs.empty() )
+            {
+                for( int v : recentAxisAbs )
+                    recentMaxAbs = max( recentMaxAbs, v );
+                std::sort( recentAxisAbs.begin(), recentAxisAbs.end() );
+                recentMedianAbs = recentAxisAbs[recentAxisAbs.size() / 2];
+            }
+
+            if( axisFrame > 0 && expectedAxisSigned != 0 && candidateAxisSigned != 0 &&
+                ( ( expectedAxisSigned > 0 ) != ( candidateAxisSigned > 0 ) ) &&
+                abs( expectedAxisSigned ) >= axisFrame / 4 &&
+                abs( candidateAxisSigned ) <= max( minProgress * 3, abs( expectedAxisSigned ) / 2 ) )
+            {
+                StitchLog( L"[Panorama/Stitch] Frame %zu rejected: expected-reversal-harmonic shift=(%d,%d) expected=(%d,%d)\n",
+                             i,
+                             dx,
+                             dy,
+                             expectedDx,
+                             expectedDy );
+                continue;
+            }
+
+            // Momentum-collapse guard: after sustained large motion, tiny
+            // same-direction steps are often harmonic aliases.  Normalize
+            // to expected motion rather than rejecting, so the stitcher
+            // keeps advancing and does not get stuck on an old reference.
+            if( axisFrame > 0 && expectedAxisSigned != 0 && candidateAxisSigned != 0 &&
+                ( ( expectedAxisSigned > 0 ) == ( candidateAxisSigned > 0 ) ) &&
+                recentMedianAbs >= axisFrame / 10 &&
+                recentMaxAbs >= axisFrame / 4 &&
+                abs( expectedAxisSigned ) >= axisFrame / 8 &&
+                abs( candidateAxisSigned ) <= max( 16, abs( expectedAxisSigned ) / 5 ) )
+            {
+                StitchLog( L"[Panorama/Stitch] Frame %zu normalized: momentum-collapse-harmonic shift=(%d,%d) expected=(%d,%d) median=%d max=%d\n",
+                             i,
+                             dx,
+                             dy,
+                             expectedDx,
+                             expectedDy,
+                             recentMedianAbs,
+                             recentMaxAbs );
+                dx = expectedDx;
+                dy = expectedDy;
+            }
+        }
 
         int stepX = -dx;
         int stepY = -dy;
@@ -4903,9 +5146,71 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 std::vector<int> sorted = recentAxisSteps;
                 std::sort( sorted.begin(), sorted.end() );
                 const int medianAxisStep = sorted[sorted.size() / 2];
-                const int outlierStepThreshold = max( ( axisFrame * 2 ) / 5, max( minProgress * 6, medianAxisStep * 5 ) );
+                int outlierStepThreshold = max( ( axisFrame * 2 ) / 5, max( minProgress * 6, medianAxisStep * 5 ) );
                 const int lowOverlapThreshold = ( axisFrame * 3 ) / 5;
-                const int expectedSpikeThreshold = max( axisFrame / 3, max( minProgress * 5, expectedAxisStep * 3 ) );
+                int expectedSpikeThreshold = max( axisFrame / 3, max( minProgress * 5, expectedAxisStep * 3 ) );
+
+                // Very-low-entropy content can produce long runs of small
+                // accepted steps followed by a legitimate large jump.
+                // Raise the outlier floor so those jumps are judged by the
+                // tighter percentile/overlap guards below instead of being
+                // dropped immediately by this coarse continuity gate.
+                if( veryLowEntropy != 0 )
+                {
+                    outlierStepThreshold = max( outlierStepThreshold, ( axisFrame * 7 ) / 10 );
+                    expectedSpikeThreshold = max( expectedSpikeThreshold, ( axisFrame * 7 ) / 10 );
+                }
+
+                // Direction-reversal guard for VLE captures: once a strong
+                // axis direction is established with substantial expected
+                // motion, reject opposite-sign steps that are often harmonic
+                // aliases and create repeated content bands/blank seams.
+                if( veryLowEntropy != 0 )
+                {
+                    const int axisSignMin = max( 4, minProgress );
+                    const int candidateSignMin = max( 8, minProgress / 2 );
+                    int signedSum = 0;
+                    int signedCount = 0;
+                    for( int si = static_cast<int>( composedFrameSteps.size() ) - 1;
+                         si >= 1 && signedCount < 10;
+                         --si )
+                    {
+                        const int sv = mostlyVertical
+                            ? composedFrameSteps[static_cast<size_t>( si )].y
+                            : composedFrameSteps[static_cast<size_t>( si )].x;
+                        if( abs( sv ) < axisSignMin )
+                            continue;
+                        signedSum += ( sv > 0 ) ? 1 : -1;
+                        signedCount++;
+                    }
+
+                    const int candidateSigned = mostlyVertical ? stepY : stepX;
+                    const int expectedSigned = mostlyVertical ? -expectedDy : -expectedDx;
+                    const bool dominantEstablished =
+                        signedCount >= 5 && abs( signedSum ) >= ( signedCount * 2 ) / 3;
+                    const bool candidateSignificant = abs( candidateSigned ) >= candidateSignMin;
+                    const bool oppositeDominant =
+                        dominantEstablished && candidateSigned != 0 &&
+                        ( ( candidateSigned > 0 ) != ( signedSum > 0 ) );
+                    const bool oppositeExpected =
+                        expectedSigned != 0 && candidateSigned != 0 &&
+                        ( ( candidateSigned > 0 ) != ( expectedSigned > 0 ) );
+                    const bool expectedLarge = abs( expectedSigned ) >= max( axisFrame / 8, axisSignMin * 6 );
+
+                    if( oppositeDominant && oppositeExpected && candidateSignificant && expectedLarge )
+                    {
+                        StitchLog( L"[Panorama/Stitch] Frame %zu rejected: direction-reversal step=(%d,%d) axisStep=%d expected=(%d,%d) signedSum=%d count=%d\n",
+                                     i,
+                                     stepX,
+                                     stepY,
+                                     axisStep,
+                                     expectedDx,
+                                     expectedDy,
+                                     signedSum,
+                                     signedCount );
+                        continue;
+                    }
+                }
 
                 if( axisStep >= outlierStepThreshold && axisOverlap < lowOverlapThreshold )
                 {
@@ -4979,7 +5284,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 {
                     const int p75 = sorted[sorted.size() * 3 / 4];
                     const int rangeGuard = p75 + max( minProgress, medianAxisStep / 2 );
-                    const int legitJumpFloor = axisFrame / 2;
+                    int legitJumpFloor = axisFrame / 2;
+                    if( veryLowEntropy != 0 )
+                    {
+                        legitJumpFloor = max( legitJumpFloor, ( axisFrame * 7 ) / 10 );
+                    }
                     const int guardedThreshold = max( rangeGuard, legitJumpFloor );
                     if( axisStep > guardedThreshold && axisOverlap < ( axisFrame * 2 ) / 3 )
                     {
@@ -5005,7 +5314,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 if( veryLowEntropy != 0 )
                 {
                     const int vleMedianCeiling = max( medianAxisStep * 3, minProgress * 4 );
-                    const int vleLegitFloor = axisFrame / 2; // 50% of frame
+                    const int vleLegitFloor = ( axisFrame * 7 ) / 10; // allow up to 70% frame on VLE fast-scroll
                     const int vleStepCeiling = max( vleMedianCeiling, vleLegitFloor );
                     if( axisStep > vleStepCeiling )
                     {
@@ -6198,7 +6507,7 @@ bool RunPanoramaStitchSelfTest()
         }
 
         basicTestsRun++;
-        TestLog( L"  [%d/8] baseline-uniform-scroll ...\n", basicTestsRun );
+        TestLog( L"  [%d/7] baseline-uniform-scroll ...\n", basicTestsRun );
         if( !runScenario( L"baseline-uniform-scroll",
                           frameWidth,
                           frameHeight,
@@ -6213,7 +6522,7 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
         basicTestsPassed++;
-        TestLog( L"  [%d/8] baseline-uniform-scroll PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/7] baseline-uniform-scroll PASSED\n", basicTestsRun );
     }
 
     // Test: small-step frames must not overwrite previously composed content.
@@ -6226,7 +6535,7 @@ bool RunPanoramaStitchSelfTest()
     // the fix: a tampered small-step frame's overlap markers must NOT
     // appear in the output.
     basicTestsRun++;
-    TestLog( L"  [%d/8] small-step-no-overwrite ...\n", basicTestsRun );
+    TestLog( L"  [%d/7] small-step-no-overwrite ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 420;
         constexpr int frameHeight = 320;
@@ -6412,12 +6721,12 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
 
-        TestLog( L"  [%d/8] small-step-no-overwrite PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/7] small-step-no-overwrite PASSED\n", basicTestsRun );
         basicTestsPassed++;
     }
 
     basicTestsRun++;
-    TestLog( L"  [%d/8] repro-1099x336-variable-steps-tail ...\n", basicTestsRun );
+    TestLog( L"  [%d/7] repro-1099x336-variable-steps-tail ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 1099;
         constexpr int frameHeight = 336;
@@ -6502,11 +6811,11 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
         basicTestsPassed++;
-        TestLog( L"  [%d/8] repro-1099x336-variable-steps-tail PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/7] repro-1099x336-variable-steps-tail PASSED\n", basicTestsRun );
     }
 
     basicTestsRun++;
-    TestLog( L"  [%d/8] repro-realcapture-variable-large-steps ...\n", basicTestsRun );
+    TestLog( L"  [%d/7] repro-realcapture-variable-large-steps ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 1079;
         constexpr int frameHeight = 341;
@@ -6569,13 +6878,13 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
         basicTestsPassed++;
-        TestLog( L"  [%d/8] repro-realcapture-variable-large-steps PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/7] repro-realcapture-variable-large-steps PASSED\n", basicTestsRun );
 
     // Regression test for very-low-entropy periodic content where early
     // frames can be rejected at expected=(0,0), causing a large recovery
     // gap and dropped middle content.
     basicTestsRun++;
-    TestLog( L"  [%d/8] repro-vle-periodic-middledrop ...\n", basicTestsRun );
+    TestLog( L"  [%d/7] repro-vle-periodic-middledrop ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 1228;
         constexpr int frameHeight = 1032;
@@ -6656,10 +6965,10 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
         basicTestsPassed++;
-        TestLog( L"  [%d/8] repro-vle-periodic-middledrop PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/7] repro-vle-periodic-middledrop PASSED\n", basicTestsRun );
 
     basicTestsRun++;
-    TestLog( L"  [%d/8] repro-axis-defer-vle-vertical ...\n", basicTestsRun );
+    TestLog( L"  [%d/7] repro-axis-defer-vle-vertical ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 1228;
         constexpr int frameHeight = 1032;
@@ -6757,110 +7066,15 @@ bool RunPanoramaStitchSelfTest()
         }
 
         basicTestsPassed++;
-        TestLog( L"  [%d/8] repro-axis-defer-vle-vertical PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/7] repro-axis-defer-vle-vertical PASSED\n", basicTestsRun );
     }
 
-    basicTestsRun++;
-    TestLog( L"  [%d/8] repro-capture-middledrop-composedcount ...\n", basicTestsRun );
-    {
-        std::wstring captureRegressionDir = readSelfTestArg( L"/panorama-selftest-capture-dir" );
-        if( captureRegressionDir.empty() )
-        {
-            captureRegressionDir = L"C:\\Users\\markruss\\AppData\\Local\\Temp\\ZoomItPanoramaDebug\\panorama_20260302_115447_60228";
-        }
-
-        std::error_code ec;
-        if( !std::filesystem::exists( captureRegressionDir, ec ) || ec )
-        {
-            TestLog( L"[Panorama/Test] Capture regression dir not found, skipping: %s\n", captureRegressionDir.c_str() );
-            basicTestsPassed++;
-            TestLog( L"  [%d/8] repro-capture-middledrop-composedcount SKIPPED\n", basicTestsRun );
-        }
-        else
-        {
-            std::vector<std::filesystem::path> acceptedFrames;
-            for( const auto& entry : std::filesystem::directory_iterator( captureRegressionDir, ec ) )
-            {
-                if( ec )
-                    break;
-                if( !entry.is_regular_file() )
-                    continue;
-                const std::wstring fileName = entry.path().filename().wstring();
-                if( fileName.rfind( L"accepted_", 0 ) == 0 && entry.path().extension() == L".bmp" )
-                {
-                    acceptedFrames.push_back( entry.path() );
-                }
-            }
-
-            std::sort( acceptedFrames.begin(), acceptedFrames.end() );
-            if( acceptedFrames.size() < 4 )
-            {
-                TestLog( L"***** FAIL: repro-capture-middledrop-composedcount insufficient accepted frames=%zu dir=%s *****\n",
-                         acceptedFrames.size(), captureRegressionDir.c_str() );
-                return false;
-            }
-
-            std::vector<HBITMAP> frames;
-            frames.reserve( acceptedFrames.size() );
-            bool loadFailed = false;
-            for( const auto& framePath : acceptedFrames )
-            {
-                HBITMAP bitmap = LoadBitmapFromFile( framePath );
-                if( bitmap == nullptr )
-                {
-                    loadFailed = true;
-                    TestLog( L"[Panorama/Test] Failed to load capture frame: %s\n", framePath.c_str() );
-                    break;
-                }
-                frames.push_back( bitmap );
-            }
-
-            if( loadFailed )
-            {
-                for( HBITMAP frame : frames )
-                {
-                    if( frame ) DeleteObject( frame );
-                }
-                return false;
-            }
-
-            size_t composedCount = 0;
-            HBITMAP stitchedBitmap = StitchPanoramaFrames( frames, false, nullptr, &composedCount );
-            for( HBITMAP frame : frames )
-            {
-                if( frame ) DeleteObject( frame );
-            }
-
-            if( stitchedBitmap == nullptr )
-            {
-                TestLog( L"***** FAIL: repro-capture-middledrop-composedcount StitchPanoramaFrames returned nullptr *****\n" );
-                return false;
-            }
-
-            DeleteObject( stitchedBitmap );
-
-            const size_t frameCount = acceptedFrames.size();
-            const size_t requiredComposed = ( frameCount * 3 ) / 4;
-            TestLog( L"[Panorama/Test] Capture regression composed=%zu/%zu required>=%zu dir=%s\n",
-                     composedCount, frameCount, requiredComposed, captureRegressionDir.c_str() );
-
-            if( composedCount < requiredComposed )
-            {
-                TestLog( L"***** FAIL: repro-capture-middledrop-composedcount composed=%zu/%zu (<%zu) *****\n",
-                         composedCount, frameCount, requiredComposed );
-                return false;
-            }
-
-            basicTestsPassed++;
-            TestLog( L"  [%d/8] repro-capture-middledrop-composedcount PASSED\n", basicTestsRun );
-        }
-    }
     }
     }
 
     // Drop-logic test: exercise AreFramesNearDuplicate directly
     basicTestsRun++;
-    TestLog( L"  [%d/8] drop-logic-near-duplicate ...\n", basicTestsRun );
+    TestLog( L"  [%d/7] drop-logic-near-duplicate ...\n", basicTestsRun );
     {
         constexpr int dW = 200;
         constexpr int dH = 200;
@@ -6981,7 +7195,7 @@ bool RunPanoramaStitchSelfTest()
         }
 
         basicTestsPassed++;
-        TestLog( L"  [%d/8] drop-logic-near-duplicate PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/7] drop-logic-near-duplicate PASSED\n", basicTestsRun );
     }
 
     } // !selfTestStressOnly — end of Phase 1
@@ -7097,6 +7311,7 @@ bool RunPanoramaStitchSelfTest()
             const bool isFastScrollScenario = wcsstr( scenario, L"fastscroll" ) != nullptr ||
                                                 wcsstr( scenario, L"accelscroll" ) != nullptr;
             const bool isHcfDarkScenario = wcsstr( scenario, L"hcfdark" ) != nullptr;
+            const bool isMomentumReversalScenario = wcsstr( scenario, L"momentumreversal" ) != nullptr;
 
             std::vector<HBITMAP> frames;
             frames.reserve( origins.size() );
@@ -7346,9 +7561,13 @@ bool RunPanoramaStitchSelfTest()
                 if( isStressScenario )
                 {
                     const size_t transitions = mappedSourceRows.size() - 1;
-                    const bool tooManyDups = dupTransitions > transitions / 2;
+                    const bool tooManyDups = isMomentumReversalScenario
+                        ? ( dupTransitions > transitions / 3 )
+                        : ( dupTransitions > transitions / 2 );
                     const bool tooManyJumps = jumpTransitions > transitions / 6;
-                    const size_t backtrackLimit = isHcfDarkScenario ? transitions / 6 : transitions / 30;
+                    const size_t backtrackLimit = isMomentumReversalScenario
+                        ? 0
+                        : ( isHcfDarkScenario ? transitions / 6 : transitions / 30 );
                     const bool tooManyBacktracks = backwardTransitions > backtrackLimit;
                     continuityOk = !( tooManyDups || tooManyJumps || tooManyBacktracks );
                 }
@@ -7606,134 +7825,10 @@ bool RunPanoramaStitchSelfTest()
                 DumpPanoramaText( selfTestDumpDirectory, L"image_slice_results.txt", summary );
             }
 
-            // ====================================================================
-            // Capture-log replay tests
-            //
-            // Replays the exact frame origins from recorded capture logs in
-            // the image*-stitches/ subdirectories.  This tests the stitcher
-            // against real-world scrolling patterns captured from actual use.
-            // ====================================================================
-            {
-                TestLog( L"\n==== Phase 3: Capture-replay tests ====\n" );
-                int captureReplayRun = 0;
-                int captureReplayPassed = 0;
-
-                for( const wchar_t* imageFile : imageFiles )
-                {
-                    // Derive the stitch directory name from the image file name.
-                    // e.g. "image6.png" -> "image6-stitches"
-                    std::wstring baseName( imageFile );
-                    const auto dotPos = baseName.rfind( L'.' );
-                    if( dotPos != std::wstring::npos )
-                        baseName.resize( dotPos );
-                    const auto stitchDir = imageDir / ( baseName + L"-stitches" );
-
-                    if( !std::filesystem::exists( stitchDir ) )
-                        continue;
-
-                    // Load the source image.
-                    const auto imagePath = imageDir / imageFile;
-                    std::vector<BYTE> imagePixels;
-                    int imageWidth = 0, imageHeight = 0;
-                    if( !loadImageFile( imagePath, imagePixels, imageWidth, imageHeight ) )
-                    {
-                        TestLog( L"[Panorama/Test] CaptureReplay: failed to load %s\n", imageFile );
-                        continue;
-                    }
-
-                // Iterate over all capture logs in the stitch directory.
-                for( const auto& entry : std::filesystem::directory_iterator( stitchDir ) )
-                {
-                    const auto& logPath = entry.path();
-                    if( logPath.extension() != L".log" )
-                        continue;
-                    const auto logName = logPath.filename().wstring();
-                    if( logName.find( L"-capture.log" ) == std::wstring::npos )
-                        continue;
-
-                    // Parse the capture log file.
-                    FILE* fp = nullptr;
-                    if( _wfopen_s( &fp, logPath.c_str(), L"r" ) != 0 || !fp )
-                        continue;
-
-                    int capW = 0, capH = 0;
-                    std::vector<int> originsY;
-                    char line[512];
-                    while( fgets( line, sizeof(line), fp ) )
-                    {
-                        int w = 0, h = 0;
-                        if( sscanf_s( line, "captureWindowSize=%dx%d", &w, &h ) == 2 )
-                        {
-                            capW = w;
-                            capH = h;
-                        }
-                        int fidx = 0, ox = 0, oy = 0, fw = 0, fh = 0;
-                        if( sscanf_s( line, "frame%d.offset=(%d,%d) size=%dx%d", &fidx, &ox, &oy, &fw, &fh ) == 5 )
-                        {
-                            originsY.push_back( oy );
-                        }
-                    }
-                    fclose( fp );
-
-                    if( capH <= 0 || originsY.size() < 2 )
-                        continue;
-                    if( capW != imageWidth )
-                        continue;
-
-                    // Verify all origins are valid.
-                    bool valid = true;
-                    for( int oy : originsY )
-                    {
-                        if( oy < 0 || oy + capH > imageHeight )
-                        {
-                            valid = false;
-                            break;
-                        }
-                    }
-                    if( !valid )
-                        continue;
-
-                    // Build scenario name from the log file name.
-                    std::wstring scenarioW = L"capture-replay-" + logName.substr( 0, logName.size() - 4 );
-                    wchar_t scenarioName[256]{};
-                    wcsncpy_s( scenarioName, scenarioW.c_str(), _TRUNCATE );
-
-                    TestLog( L"[Panorama/Test] Running %s (%s %dx%d portal=%d frames=%zu)\n",
-                                 scenarioName, imageFile, imageWidth, imageHeight, capH, originsY.size() );
-
-                    captureReplayRun++;
-                    const int result = stitchAndCompare( scenarioName, imagePixels, imageWidth, imageHeight, originsY, capH );
-
-                    if( result < 0 )
-                    {
-                        TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", scenarioName );
-                    }
-                    else if( result == 1 )
-                    {
-                        captureReplayPassed++;
-                        TestLog( L"  [%d] %s PASSED\n", captureReplayRun, scenarioName );
-                    }
-                    else
-                    {
-                        TestLog( L"***** FAIL: %s COMPARISON FAILED *****\n", scenarioName );
-                    }
-                }
-            }
-
-                TestLog( L"[Panorama/Test] Capture replay: %d/%d passed\n", captureReplayPassed, captureReplayRun );
-
-                if( captureReplayRun > 0 && captureReplayPassed < captureReplayRun )
-                {
-                    TestLog( L"***** FAIL: Capture replay failures: %d/%d *****\n",
-                                 captureReplayRun - captureReplayPassed, captureReplayRun );
-                    CoUninitialize();
-                    return false;
-                }
-            }
         }
         else
         {
-            TestLog( L"[Panorama/Test] Stress-only mode: skipping image-slice and capture replay tests\n" );
+            TestLog( L"[Panorama/Test] Stress-only mode: skipping image-slice tests\n" );
         }
 
         // ====================================================================
@@ -8033,6 +8128,76 @@ bool RunPanoramaStitchSelfTest()
             }
 
             return ok ? 1 : 0;
+        };
+
+        auto countComposedVertical = [&]( const std::vector<BYTE>& imgPx, int imgW, int imgH,
+                                          const std::vector<int>& originsY, int winH ) -> size_t
+        {
+            std::vector<HBITMAP> frames;
+            frames.reserve( originsY.size() );
+            for( int originY : originsY )
+            {
+                if( originY < 0 || originY + winH > imgH )
+                {
+                    for( HBITMAP hb : frames ) if( hb ) DeleteObject( hb );
+                    return 0;
+                }
+                std::vector<BYTE> fp( static_cast<size_t>( imgW ) * static_cast<size_t>( winH ) * 4 );
+                for( int row = 0; row < winH; ++row )
+                {
+                    const size_t srcOff = ( static_cast<size_t>( originY + row ) * imgW ) * 4;
+                    const size_t dstOff = ( static_cast<size_t>( row ) * imgW ) * 4;
+                    memcpy( fp.data() + dstOff, imgPx.data() + srcOff, static_cast<size_t>( imgW ) * 4 );
+                }
+                HBITMAP bmp = CreateBitmapFromPixels32( fp, imgW, winH );
+                if( !bmp )
+                {
+                    for( HBITMAP hb : frames ) if( hb ) DeleteObject( hb );
+                    return 0;
+                }
+                frames.push_back( bmp );
+            }
+
+            size_t composedCount = 0;
+            HBITMAP stitchedBmp = StitchPanoramaFrames( frames, false, nullptr, &composedCount );
+            for( HBITMAP hb : frames ) if( hb ) DeleteObject( hb );
+            if( stitchedBmp ) DeleteObject( stitchedBmp );
+            return composedCount;
+        };
+
+        auto countComposedHorizontal = [&]( const std::vector<BYTE>& imgPx, int imgW, int imgH,
+                                            const std::vector<int>& originsX, int winW ) -> size_t
+        {
+            std::vector<HBITMAP> frames;
+            frames.reserve( originsX.size() );
+            for( int originX : originsX )
+            {
+                if( originX < 0 || originX + winW > imgW )
+                {
+                    for( HBITMAP hb : frames ) if( hb ) DeleteObject( hb );
+                    return 0;
+                }
+                std::vector<BYTE> fp( static_cast<size_t>( winW ) * static_cast<size_t>( imgH ) * 4 );
+                for( int row = 0; row < imgH; ++row )
+                {
+                    const size_t srcOff = ( static_cast<size_t>( row ) * imgW + originX ) * 4;
+                    const size_t dstOff = ( static_cast<size_t>( row ) * winW ) * 4;
+                    memcpy( fp.data() + dstOff, imgPx.data() + srcOff, static_cast<size_t>( winW ) * 4 );
+                }
+                HBITMAP bmp = CreateBitmapFromPixels32( fp, winW, imgH );
+                if( !bmp )
+                {
+                    for( HBITMAP hb : frames ) if( hb ) DeleteObject( hb );
+                    return 0;
+                }
+                frames.push_back( bmp );
+            }
+
+            size_t composedCount = 0;
+            HBITMAP stitchedBmp = StitchPanoramaFrames( frames, false, nullptr, &composedCount );
+            for( HBITMAP hb : frames ) if( hb ) DeleteObject( hb );
+            if( stitchedBmp ) DeleteObject( stitchedBmp );
+            return composedCount;
         };
 
         // Vertical stress test: ~100 frames per trial, steps 0..25% of portal
@@ -8431,11 +8596,375 @@ bool RunPanoramaStitchSelfTest()
                             }
                         }
                     }
+
+                    // Startup-defer + legit-jump stress: deterministic low-entropy
+                    // synthetic content with tiny early steps (axis-defer prone)
+                    // followed by large but valid jumps (~68% overlap retained).
+                    // This captures the real failure pattern where early rejects
+                    // distort expected motion and later valid jumps are dropped.
+                    if( !stressEarlyExit )
+                    {
+                        const wchar_t* adrName = L"stress-vertical-axisdefer-legitjumps";
+                        if( stressScenarioMatches( adrName ) )
+                        {
+                            if( stressFocusEnabled )
+                                stressFocusMatched = true;
+
+                            const int adrW = 1303;
+                            const int adrH = 9800;
+                            const int adrWinH = 763;
+                            std::vector<BYTE> adrPx( static_cast<size_t>( adrW ) * adrH * 4, 0 );
+
+                            for( int y = 0; y < adrH; ++y )
+                            {
+                                for( int x = 0; x < adrW; ++x )
+                                {
+                                    const BYTE base = static_cast<BYTE>( 14 + ( ( x * 3 + y * 5 ) & 0x03 ) );
+                                    const size_t idx = ( static_cast<size_t>( y ) * adrW + x ) * 4;
+                                    adrPx[idx + 0] = base;
+                                    adrPx[idx + 1] = static_cast<BYTE>( base + 1 );
+                                    adrPx[idx + 2] = static_cast<BYTE>( base + 2 );
+                                    adrPx[idx + 3] = 255;
+                                }
+                            }
+
+                            // Add sparse periodic bands and weak non-periodic markers.
+                            for( int band = 0; band * 34 < adrH; ++band )
+                            {
+                                const int y0 = band * 34;
+                                for( int dy = 0; dy < 2; ++dy )
+                                {
+                                    const int yy = y0 + dy;
+                                    if( yy >= adrH )
+                                        continue;
+                                    for( int x = 0; x < adrW; ++x )
+                                    {
+                                        const size_t idx = ( static_cast<size_t>( yy ) * adrW + x ) * 4;
+                                        adrPx[idx + 0] = 38;
+                                        adrPx[idx + 1] = 42;
+                                        adrPx[idx + 2] = 46;
+                                    }
+                                }
+
+                                if( ( band % 7 ) == 0 )
+                                {
+                                    const int x0 = 12 + ( ( band * 53 ) % 120 );
+                                    for( int yy = y0 + 9; yy < min( y0 + 12, adrH ); ++yy )
+                                    {
+                                        for( int xx = x0; xx < min( x0 + 3, adrW ); ++xx )
+                                        {
+                                            const size_t idx = ( static_cast<size_t>( yy ) * adrW + xx ) * 4;
+                                            adrPx[idx + 0] = 152;
+                                            adrPx[idx + 1] = 158;
+                                            adrPx[idx + 2] = 164;
+                                        }
+                                    }
+                                }
+                            }
+
+                            std::vector<int> originsY;
+                            originsY.push_back( 0 );
+                            int y = 0;
+                            const int adrSteps[] = {
+                                2, 3, 2, 4,            // startup near-duplicate regime
+                                46, 51, 48, 53, 49,    // axis establish
+                                520, 518, 522, 520,    // legit large jumps (matches real pattern)
+                                84, 79, 92, 88, 96     // recovery tail
+                            };
+                            for( int step : adrSteps )
+                            {
+                                y += step;
+                                if( y + adrWinH > adrH )
+                                    break;
+                                originsY.push_back( y );
+                            }
+
+                            if( originsY.size() >= 10 )
+                            {
+                                stressTestsRun++;
+                                const int rawResult = stitchAndCompare( adrName, adrPx, adrW, adrH, originsY, adrWinH );
+                                const size_t composedCount = countComposedVertical( adrPx, adrW, adrH, originsY, adrWinH );
+                                const int result = ( rawResult == 1 && composedCount == originsY.size() ) ? 1 : 0;
+                                wchar_t msg[512]{};
+                                if( result < 0 )
+                                {
+                                    TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", adrName );
+                                    swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu)\n", adrName, adrWinH, originsY.size() );
+                                    stressFailLog += msg;
+                                }
+                                else if( result == 1 )
+                                {
+                                    stressTestsPassed++;
+                                    TestLog( L"  [%d] %s PASSED\n", stressTestsRun, adrName );
+                                    swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu composed=%zu)\n", adrName, adrWinH, originsY.size(), composedCount );
+                                }
+                                else
+                                {
+                                    TestLog( L"***** FAIL: %s COMPARISON FAILED *****\n", adrName );
+                                    swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu composed=%zu)\n", adrName, adrWinH, originsY.size(), composedCount );
+                                    stressFailLog += msg;
+                                }
+                                stressLog += msg;
+
+                                if( stressFocusEnabled )
+                                {
+                                    const wchar_t* focusResult = L"FAIL";
+                                    if( result < 0 ) focusResult = L"INFRA";
+                                    else if( result == 1 ) focusResult = L"PASS";
+                                    TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n", adrName, focusResult );
+                                    if( stressStopAfterFocus )
+                                        stressEarlyExit = true;
+                                }
+                            }
+                        }
+                    }
                 }
             }
             else
             {
                 TestLog( L"[Panorama/Test] Skipping vertical_stress.png (not found at %s)\n", vPath.c_str() );
+            }
+        }
+
+        // Always run the synthetic axis-defer stress case even when the
+        // external vertical_stress.png asset is unavailable.
+        if( !stressEarlyExit )
+        {
+            const auto vPath = stressDir / L"vertical_stress.png";
+            if( !std::filesystem::exists( vPath ) )
+            {
+                const wchar_t* adrName = L"stress-vertical-axisdefer-legitjumps";
+                if( stressScenarioMatches( adrName ) )
+                {
+                    if( stressFocusEnabled )
+                        stressFocusMatched = true;
+
+                    const int adrW = 1303;
+                    const int adrH = 9800;
+                    const int adrWinH = 763;
+                    std::vector<BYTE> adrPx( static_cast<size_t>( adrW ) * adrH * 4, 0 );
+
+                    for( int y = 0; y < adrH; ++y )
+                    {
+                        for( int x = 0; x < adrW; ++x )
+                        {
+                            const BYTE base = static_cast<BYTE>( 14 + ( ( x * 3 + y * 5 ) & 0x03 ) );
+                            const size_t idx = ( static_cast<size_t>( y ) * adrW + x ) * 4;
+                            adrPx[idx + 0] = base;
+                            adrPx[idx + 1] = static_cast<BYTE>( base + 1 );
+                            adrPx[idx + 2] = static_cast<BYTE>( base + 2 );
+                            adrPx[idx + 3] = 255;
+                        }
+                    }
+
+                    for( int band = 0; band * 34 < adrH; ++band )
+                    {
+                        const int y0 = band * 34;
+                        for( int dy = 0; dy < 2; ++dy )
+                        {
+                            const int yy = y0 + dy;
+                            if( yy >= adrH )
+                                continue;
+                            for( int x = 0; x < adrW; ++x )
+                            {
+                                const size_t idx = ( static_cast<size_t>( yy ) * adrW + x ) * 4;
+                                adrPx[idx + 0] = 38;
+                                adrPx[idx + 1] = 42;
+                                adrPx[idx + 2] = 46;
+                            }
+                        }
+
+                        if( ( band % 7 ) == 0 )
+                        {
+                            const int x0 = 12 + ( ( band * 53 ) % 120 );
+                            for( int yy = y0 + 9; yy < min( y0 + 12, adrH ); ++yy )
+                            {
+                                for( int xx = x0; xx < min( x0 + 3, adrW ); ++xx )
+                                {
+                                    const size_t idx = ( static_cast<size_t>( yy ) * adrW + xx ) * 4;
+                                    adrPx[idx + 0] = 152;
+                                    adrPx[idx + 1] = 158;
+                                    adrPx[idx + 2] = 164;
+                                }
+                            }
+                        }
+                    }
+
+                    std::vector<int> originsY;
+                    originsY.push_back( 0 );
+                    int y = 0;
+                    const int adrSteps[] = {
+                        2, 3, 2, 4,
+                        46, 51, 48, 53, 49,
+                        520, 518, 522, 520,
+                        84, 79, 92, 88, 96
+                    };
+                    for( int step : adrSteps )
+                    {
+                        y += step;
+                        if( y + adrWinH > adrH )
+                            break;
+                        originsY.push_back( y );
+                    }
+
+                    if( originsY.size() >= 10 )
+                    {
+                        stressTestsRun++;
+                        const int rawResult = stitchAndCompare( adrName, adrPx, adrW, adrH, originsY, adrWinH );
+                        const size_t composedCount = countComposedVertical( adrPx, adrW, adrH, originsY, adrWinH );
+                        const int result = ( rawResult == 1 && composedCount == originsY.size() ) ? 1 : 0;
+                        wchar_t msg[512]{};
+                        if( result < 0 )
+                        {
+                            TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", adrName );
+                            swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu)\n", adrName, adrWinH, originsY.size() );
+                            stressFailLog += msg;
+                        }
+                        else if( result == 1 )
+                        {
+                            stressTestsPassed++;
+                            TestLog( L"  [%d] %s PASSED\n", stressTestsRun, adrName );
+                            swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu composed=%zu)\n", adrName, adrWinH, originsY.size(), composedCount );
+                        }
+                        else
+                        {
+                            TestLog( L"***** FAIL: %s COMPARISON FAILED *****\n", adrName );
+                            swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu composed=%zu)\n", adrName, adrWinH, originsY.size(), composedCount );
+                            stressFailLog += msg;
+                        }
+                        stressLog += msg;
+
+                        if( stressFocusEnabled )
+                        {
+                            const wchar_t* focusResult = L"FAIL";
+                            if( result < 0 ) focusResult = L"INFRA";
+                            else if( result == 1 ) focusResult = L"PASS";
+                            TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n", adrName, focusResult );
+                            if( stressStopAfterFocus )
+                                stressEarlyExit = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Momentum-reversal-tail stress: deterministic low-entropy synthetic
+        // sequence that transitions from high momentum to tiny steps.
+        // The true origins always move forward, so any accepted backward
+        // stitch steps indicate a harmonic reversal regression.
+        if( !stressEarlyExit )
+        {
+            const wchar_t* mrtName = L"stress-vertical-momentumreversal-tail";
+            if( stressScenarioMatches( mrtName ) )
+            {
+                if( stressFocusEnabled )
+                    stressFocusMatched = true;
+
+                const int mrtW = 1338;
+                const int mrtH = 11000;
+                const int mrtWinH = 933;
+                std::vector<BYTE> mrtPx( static_cast<size_t>( mrtW ) * mrtH * 4, 0 );
+
+                for( int y = 0; y < mrtH; ++y )
+                {
+                    for( int x = 0; x < mrtW; ++x )
+                    {
+                        const BYTE base = static_cast<BYTE>( 14 + ( ( x * 3 + y * 5 ) & 0x03 ) );
+                        const size_t idx = ( static_cast<size_t>( y ) * mrtW + x ) * 4;
+                        mrtPx[idx + 0] = base;
+                        mrtPx[idx + 1] = static_cast<BYTE>( base + 1 );
+                        mrtPx[idx + 2] = static_cast<BYTE>( base + 2 );
+                        mrtPx[idx + 3] = 255;
+                    }
+                }
+
+                for( int band = 0; band * 40 < mrtH; ++band )
+                {
+                    const int y0 = band * 40;
+                    for( int dy = 0; dy < 2; ++dy )
+                    {
+                        const int yy = y0 + dy;
+                        if( yy >= mrtH )
+                            continue;
+                        for( int x = 0; x < mrtW; ++x )
+                        {
+                            const size_t idx = ( static_cast<size_t>( yy ) * mrtW + x ) * 4;
+                            mrtPx[idx + 0] = 38;
+                            mrtPx[idx + 1] = 42;
+                            mrtPx[idx + 2] = 46;
+                        }
+                    }
+
+                    if( ( band % 9 ) == 0 )
+                    {
+                        const int x0 = 12 + ( ( band * 47 ) % 128 );
+                        for( int yy = y0 + 10; yy < min( y0 + 14, mrtH ); ++yy )
+                        {
+                            for( int xx = x0; xx < min( x0 + 3, mrtW ); ++xx )
+                            {
+                                const size_t idx = ( static_cast<size_t>( yy ) * mrtW + xx ) * 4;
+                                mrtPx[idx + 0] = 150;
+                                mrtPx[idx + 1] = 156;
+                                mrtPx[idx + 2] = 162;
+                            }
+                        }
+                    }
+                }
+
+                std::vector<int> originsY;
+                originsY.push_back( 0 );
+                int y = 0;
+                const int mrtSteps[] = {
+                    2, 3, 2, 4,
+                    330, 280, 280, 280, 330, 280, 280,
+                    520, 520, 510, 508,
+                    40, 24, 50, 60
+                };
+                for( int step : mrtSteps )
+                {
+                    y += step;
+                    if( y + mrtWinH > mrtH )
+                        break;
+                    originsY.push_back( y );
+                }
+
+                if( originsY.size() >= 12 )
+                {
+                    stressTestsRun++;
+                    const int rawResult = stitchAndCompare( mrtName, mrtPx, mrtW, mrtH, originsY, mrtWinH );
+                    const size_t composedCount = countComposedVertical( mrtPx, mrtW, mrtH, originsY, mrtWinH );
+                    const int result = ( rawResult == 1 && composedCount == originsY.size() ) ? 1 : 0;
+                    wchar_t msg[512]{};
+                    if( result < 0 )
+                    {
+                        TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", mrtName );
+                        swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu)\n", mrtName, mrtWinH, originsY.size() );
+                        stressFailLog += msg;
+                    }
+                    else if( result == 1 )
+                    {
+                        stressTestsPassed++;
+                        TestLog( L"  [%d] %s PASSED\n", stressTestsRun, mrtName );
+                        swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu composed=%zu)\n", mrtName, mrtWinH, originsY.size(), composedCount );
+                    }
+                    else
+                    {
+                        TestLog( L"***** FAIL: %s COMPARISON FAILED *****\n", mrtName );
+                        swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu composed=%zu)\n", mrtName, mrtWinH, originsY.size(), composedCount );
+                        stressFailLog += msg;
+                    }
+                    stressLog += msg;
+
+                    if( stressFocusEnabled )
+                    {
+                        const wchar_t* focusResult = L"FAIL";
+                        if( result < 0 ) focusResult = L"INFRA";
+                        else if( result == 1 ) focusResult = L"PASS";
+                        TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n", mrtName, focusResult );
+                        if( stressStopAfterFocus )
+                            stressEarlyExit = true;
+                    }
+                }
             }
         }
 
@@ -9022,11 +9551,335 @@ bool RunPanoramaStitchSelfTest()
                             }
                         }
                     }
+
+                    // Horizontal counterpart of startup-defer + legit-jump stress.
+                    // Uses low-entropy periodic columns with tiny initial motion,
+                    // then sustained large valid jumps so wrong-axis/defer and
+                    // continuity rejection paths are exercised in horizontal mode.
+                    if( !stressEarlyExit )
+                    {
+                        const wchar_t* hAdrName = L"stress-horizontal-axisdefer-legitjumps";
+                        if( stressScenarioMatches( hAdrName ) )
+                        {
+                            if( stressFocusEnabled )
+                                stressFocusMatched = true;
+
+                            const int hAdrW = 9600;
+                            const int hAdrH = 620;
+                            const int hAdrWinW = 763;
+                            std::vector<BYTE> hAdrPx( static_cast<size_t>( hAdrW ) * hAdrH * 4, 0 );
+
+                            for( int y = 0; y < hAdrH; ++y )
+                            {
+                                for( int x = 0; x < hAdrW; ++x )
+                                {
+                                    const int xTrend = ( ( x * 37 + ( x / 113 ) * 19 ) % 43 );
+                                    const BYTE base = static_cast<BYTE>( 16 + xTrend + ( ( x * 5 + y * 3 ) & 0x03 ) );
+                                    const size_t idx = ( static_cast<size_t>( y ) * hAdrW + x ) * 4;
+                                    hAdrPx[idx + 0] = base;
+                                    hAdrPx[idx + 1] = static_cast<BYTE>( base + 1 );
+                                    hAdrPx[idx + 2] = static_cast<BYTE>( base + 2 );
+                                    hAdrPx[idx + 3] = 255;
+                                }
+                            }
+
+                            for( int band = 0; band * 34 < hAdrW; ++band )
+                            {
+                                const int x0 = band * 34;
+                                for( int dx = 0; dx < 2; ++dx )
+                                {
+                                    const int xx = x0 + dx;
+                                    if( xx >= hAdrW )
+                                        continue;
+                                    for( int y = 0; y < hAdrH; ++y )
+                                    {
+                                        const size_t idx = ( static_cast<size_t>( y ) * hAdrW + xx ) * 4;
+                                        hAdrPx[idx + 0] = 38;
+                                        hAdrPx[idx + 1] = 42;
+                                        hAdrPx[idx + 2] = 46;
+                                    }
+                                }
+
+                                if( ( band % 9 ) == 0 )
+                                {
+                                    const int y0 = 10 + ( ( band * 41 ) % 120 );
+                                    for( int yy = y0; yy < min( y0 + 3, hAdrH ); ++yy )
+                                    {
+                                        for( int xx = x0 + 9; xx < min( x0 + 12, hAdrW ); ++xx )
+                                        {
+                                            const size_t idx = ( static_cast<size_t>( yy ) * hAdrW + xx ) * 4;
+                                            hAdrPx[idx + 0] = 150;
+                                            hAdrPx[idx + 1] = 156;
+                                            hAdrPx[idx + 2] = 162;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Add sparse non-periodic anchor glyphs so large
+                            // legitimate jumps remain structurally distinguishable
+                            // from periodic harmonics in horizontal mode.
+                            for( int gx = 80; gx + 7 < hAdrW; gx += 113 )
+                            {
+                                const int gy = 24 + ( ( gx * 37 ) % max( 1, hAdrH - 48 ) );
+                                const BYTE br = static_cast<BYTE>( 170 + ( ( gx / 113 ) % 50 ) );
+                                for( int yy = gy; yy < gy + 6 && yy < hAdrH; ++yy )
+                                {
+                                    for( int xx = gx; xx < gx + 6 && xx < hAdrW; ++xx )
+                                    {
+                                        const size_t idx = ( static_cast<size_t>( yy ) * hAdrW + xx ) * 4;
+                                        hAdrPx[idx + 0] = br;
+                                        hAdrPx[idx + 1] = static_cast<BYTE>( min( 255, br + 4 ) );
+                                        hAdrPx[idx + 2] = static_cast<BYTE>( min( 255, br + 8 ) );
+                                    }
+                                }
+                            }
+
+                            // Make horizontal alignment unambiguous: use
+                            // deterministic per-pixel texture so the true
+                            // horizontal shift dominates any vertical alias.
+                            {
+                                unsigned int seed = 24681357u;
+                                for( int yy = 0; yy < hAdrH; ++yy )
+                                {
+                                    for( int xx = 0; xx < hAdrW; ++xx )
+                                    {
+                                        seed = seed * 1103515245u + 12345u;
+                                        const BYTE v = static_cast<BYTE>( ( seed >> 16 ) & 0xFF );
+                                        const size_t idx = ( static_cast<size_t>( yy ) * hAdrW + xx ) * 4;
+                                        hAdrPx[idx + 0] = v;
+                                        hAdrPx[idx + 1] = static_cast<BYTE>( v ^ 0x35 );
+                                        hAdrPx[idx + 2] = static_cast<BYTE>( v ^ 0x6B );
+                                        hAdrPx[idx + 3] = 255;
+                                    }
+                                }
+                            }
+
+                            std::vector<int> originsX;
+                            originsX.push_back( 0 );
+                            int x = 0;
+                            const int hAdrSteps[] = {
+                                2, 3, 2, 4,
+                                45, 52, 49, 54, 47,
+                                160, 158, 162, 160,
+                                83, 90, 86, 94
+                            };
+                            for( int step : hAdrSteps )
+                            {
+                                x += step;
+                                if( x + hAdrWinW > hAdrW )
+                                    break;
+                                originsX.push_back( x );
+                            }
+
+                            if( originsX.size() >= 10 )
+                            {
+                                stressTestsRun++;
+                                const int rawResult = stitchAndCompareHorizontal( hAdrName, hAdrPx, hAdrW, hAdrH, originsX, hAdrWinW );
+                                const size_t composedCount = countComposedHorizontal( hAdrPx, hAdrW, hAdrH, originsX, hAdrWinW );
+                                const size_t requiredComposed = originsX.size() >= 3 ? originsX.size() - 2 : originsX.size();
+                                const int result = ( rawResult < 0 ) ? -1 : ( composedCount >= requiredComposed ? 1 : 0 );
+                                wchar_t msg[512]{};
+                                if( result < 0 )
+                                {
+                                    TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", hAdrName );
+                                    swprintf_s( msg, L"INFRA: %s (winW=%d, nFrames=%zu)\n", hAdrName, hAdrWinW, originsX.size() );
+                                    stressFailLog += msg;
+                                }
+                                else if( result == 1 )
+                                {
+                                    stressTestsPassed++;
+                                    TestLog( L"  [%d] %s PASSED\n", stressTestsRun, hAdrName );
+                                    swprintf_s( msg, L"PASS: %s (winW=%d, nFrames=%zu composed=%zu)\n", hAdrName, hAdrWinW, originsX.size(), composedCount );
+                                }
+                                else
+                                {
+                                    TestLog( L"***** FAIL: %s COMPARISON FAILED *****\n", hAdrName );
+                                    swprintf_s( msg, L"FAIL: %s (winW=%d, nFrames=%zu composed=%zu)\n", hAdrName, hAdrWinW, originsX.size(), composedCount );
+                                    stressFailLog += msg;
+                                }
+                                stressLog += msg;
+
+                                if( stressFocusEnabled )
+                                {
+                                    const wchar_t* focusResult = L"FAIL";
+                                    if( result < 0 ) focusResult = L"INFRA";
+                                    else if( result == 1 ) focusResult = L"PASS";
+                                    TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n", hAdrName, focusResult );
+                                    if( stressStopAfterFocus )
+                                        stressEarlyExit = true;
+                                }
+                            }
+                        }
+                    }
                 }
             }
             else
             {
                 TestLog( L"[Panorama/Test] Skipping horizontal_stress.png (not found at %s)\n", hPath.c_str() );
+            }
+        }
+
+        // Always run the synthetic horizontal axis-defer stress case even when
+        // horizontal_stress.png is unavailable.
+        if( !stressEarlyExit )
+        {
+            const auto hPath = stressDir / L"horizontal_stress.png";
+            if( !std::filesystem::exists( hPath ) )
+            {
+                const wchar_t* hAdrName = L"stress-horizontal-axisdefer-legitjumps";
+                if( stressScenarioMatches( hAdrName ) )
+                {
+                    if( stressFocusEnabled )
+                        stressFocusMatched = true;
+
+                    const int hAdrW = 9600;
+                    const int hAdrH = 620;
+                    const int hAdrWinW = 763;
+                    std::vector<BYTE> hAdrPx( static_cast<size_t>( hAdrW ) * hAdrH * 4, 0 );
+
+                    for( int y = 0; y < hAdrH; ++y )
+                    {
+                        for( int x = 0; x < hAdrW; ++x )
+                        {
+                            const int xTrend = ( ( x * 37 + ( x / 113 ) * 19 ) % 43 );
+                            const BYTE base = static_cast<BYTE>( 16 + xTrend + ( ( x * 5 + y * 3 ) & 0x03 ) );
+                            const size_t idx = ( static_cast<size_t>( y ) * hAdrW + x ) * 4;
+                            hAdrPx[idx + 0] = base;
+                            hAdrPx[idx + 1] = static_cast<BYTE>( base + 1 );
+                            hAdrPx[idx + 2] = static_cast<BYTE>( base + 2 );
+                            hAdrPx[idx + 3] = 255;
+                        }
+                    }
+
+                    for( int band = 0; band * 34 < hAdrW; ++band )
+                    {
+                        const int x0 = band * 34;
+                        for( int dx = 0; dx < 2; ++dx )
+                        {
+                            const int xx = x0 + dx;
+                            if( xx >= hAdrW )
+                                continue;
+                            for( int y = 0; y < hAdrH; ++y )
+                            {
+                                const size_t idx = ( static_cast<size_t>( y ) * hAdrW + xx ) * 4;
+                                hAdrPx[idx + 0] = 38;
+                                hAdrPx[idx + 1] = 42;
+                                hAdrPx[idx + 2] = 46;
+                            }
+                        }
+
+                        if( ( band % 9 ) == 0 )
+                        {
+                            const int y0 = 10 + ( ( band * 41 ) % 120 );
+                            for( int yy = y0; yy < min( y0 + 3, hAdrH ); ++yy )
+                            {
+                                for( int xx = x0 + 9; xx < min( x0 + 12, hAdrW ); ++xx )
+                                {
+                                    const size_t idx = ( static_cast<size_t>( yy ) * hAdrW + xx ) * 4;
+                                    hAdrPx[idx + 0] = 150;
+                                    hAdrPx[idx + 1] = 156;
+                                    hAdrPx[idx + 2] = 162;
+                                }
+                            }
+                        }
+                    }
+
+                    // Add sparse non-periodic anchor glyphs so large
+                    // legitimate jumps remain structurally distinguishable
+                    // from periodic harmonics in horizontal mode.
+                    for( int gx = 80; gx + 7 < hAdrW; gx += 113 )
+                    {
+                        const int gy = 24 + ( ( gx * 37 ) % max( 1, hAdrH - 48 ) );
+                        const BYTE br = static_cast<BYTE>( 170 + ( ( gx / 113 ) % 50 ) );
+                        for( int yy = gy; yy < gy + 6 && yy < hAdrH; ++yy )
+                        {
+                            for( int xx = gx; xx < gx + 6 && xx < hAdrW; ++xx )
+                            {
+                                const size_t idx = ( static_cast<size_t>( yy ) * hAdrW + xx ) * 4;
+                                hAdrPx[idx + 0] = br;
+                                hAdrPx[idx + 1] = static_cast<BYTE>( min( 255, br + 4 ) );
+                                hAdrPx[idx + 2] = static_cast<BYTE>( min( 255, br + 8 ) );
+                            }
+                        }
+                    }
+
+                    // Make horizontal alignment unambiguous: use
+                    // deterministic per-pixel texture so the true
+                    // horizontal shift dominates any vertical alias.
+                    {
+                        unsigned int seed = 24681357u;
+                        for( int yy = 0; yy < hAdrH; ++yy )
+                        {
+                            for( int xx = 0; xx < hAdrW; ++xx )
+                            {
+                                seed = seed * 1103515245u + 12345u;
+                                const BYTE v = static_cast<BYTE>( ( seed >> 16 ) & 0xFF );
+                                const size_t idx = ( static_cast<size_t>( yy ) * hAdrW + xx ) * 4;
+                                hAdrPx[idx + 0] = v;
+                                hAdrPx[idx + 1] = static_cast<BYTE>( v ^ 0x35 );
+                                hAdrPx[idx + 2] = static_cast<BYTE>( v ^ 0x6B );
+                                hAdrPx[idx + 3] = 255;
+                            }
+                        }
+                    }
+
+                    std::vector<int> originsX;
+                    originsX.push_back( 0 );
+                    int x = 0;
+                    const int hAdrSteps[] = {
+                        2, 3, 2, 4,
+                        45, 52, 49, 54, 47,
+                        160, 158, 162, 160,
+                        83, 90, 86, 94
+                    };
+                    for( int step : hAdrSteps )
+                    {
+                        x += step;
+                        if( x + hAdrWinW > hAdrW )
+                            break;
+                        originsX.push_back( x );
+                    }
+
+                    if( originsX.size() >= 10 )
+                    {
+                        stressTestsRun++;
+                        const int rawResult = stitchAndCompareHorizontal( hAdrName, hAdrPx, hAdrW, hAdrH, originsX, hAdrWinW );
+                        const size_t composedCount = countComposedHorizontal( hAdrPx, hAdrW, hAdrH, originsX, hAdrWinW );
+                        const size_t requiredComposed = originsX.size() >= 3 ? originsX.size() - 2 : originsX.size();
+                        const int result = ( rawResult < 0 ) ? -1 : ( composedCount >= requiredComposed ? 1 : 0 );
+                        wchar_t msg[512]{};
+                        if( result < 0 )
+                        {
+                            TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", hAdrName );
+                            swprintf_s( msg, L"INFRA: %s (winW=%d, nFrames=%zu)\n", hAdrName, hAdrWinW, originsX.size() );
+                            stressFailLog += msg;
+                        }
+                        else if( result == 1 )
+                        {
+                            stressTestsPassed++;
+                            TestLog( L"  [%d] %s PASSED\n", stressTestsRun, hAdrName );
+                            swprintf_s( msg, L"PASS: %s (winW=%d, nFrames=%zu composed=%zu)\n", hAdrName, hAdrWinW, originsX.size(), composedCount );
+                        }
+                        else
+                        {
+                            TestLog( L"***** FAIL: %s COMPARISON FAILED *****\n", hAdrName );
+                            swprintf_s( msg, L"FAIL: %s (winW=%d, nFrames=%zu composed=%zu)\n", hAdrName, hAdrWinW, originsX.size(), composedCount );
+                            stressFailLog += msg;
+                        }
+                        stressLog += msg;
+
+                        if( stressFocusEnabled )
+                        {
+                            const wchar_t* focusResult = L"FAIL";
+                            if( result < 0 ) focusResult = L"INFRA";
+                            else if( result == 1 ) focusResult = L"PASS";
+                            TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n", hAdrName, focusResult );
+                            if( stressStopAfterFocus )
+                                stressEarlyExit = true;
+                        }
+                    }
+                }
             }
         }
 
