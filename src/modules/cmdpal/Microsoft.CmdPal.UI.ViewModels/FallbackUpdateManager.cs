@@ -18,7 +18,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 /// Tracks per-command inflight calls, pending-retry slots, and enforces a per-batch
 /// sibling-spawn cap to prevent runaway thread expansion.
 /// </summary>
-internal sealed class FallbackUpdateManager : IDisposable
+internal sealed partial class FallbackUpdateManager : IDisposable
 {
     // For individual fallback item updates - if an item takes longer than this, we will detach it
     // and continue with others.
