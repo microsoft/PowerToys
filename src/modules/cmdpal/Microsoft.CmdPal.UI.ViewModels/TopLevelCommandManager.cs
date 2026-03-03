@@ -517,6 +517,14 @@ public partial class TopLevelCommandManager : ObservableObject,
         return null;
     }
 
+    public List<TopLevelViewModel> GetDockBandsSnapshot()
+    {
+        lock (_dockBandsLock)
+        {
+            return [.. DockBands];
+        }
+    }
+
     public void Receive(ReloadCommandsMessage message) =>
         ReloadAllCommandsAsync().ConfigureAwait(false);
 
