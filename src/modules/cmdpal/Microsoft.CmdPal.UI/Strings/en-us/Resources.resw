@@ -314,6 +314,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionPage_Alias_SettingsCard.Description" xml:space="preserve">
     <value>A short keyword used to navigate to this command.</value>
   </data>
+  <data name="Settings_ExtensionPage_Alias_SettingsCard.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Alias</value>
+  </data>
   <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Header" xml:space="preserve">
     <value>Alias activation</value>
   </data>
@@ -462,6 +465,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Settings_ExtensionPage_Alias_PlaceholderText.PlaceholderText" xml:space="preserve">
     <value>Enter alias</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_PlaceholderText.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Alias</value>
   </data>
   <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Show status messages</value>
