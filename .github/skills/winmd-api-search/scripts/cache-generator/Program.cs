@@ -588,10 +588,14 @@ static class NuGetResolver
             // Walk up from project dir to find it.
             var packagesFolder = FindSolutionPackagesFolder(projectDir);
 
-            // Also check NuGet global packages cache
-            var globalPackages = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                ".nuget", "packages");
+            // Also check NuGet global packages cache (respect NUGET_PACKAGES override)
+            var globalPackages = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
+            if (string.IsNullOrWhiteSpace(globalPackages))
+            {
+                globalPackages = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    ".nuget", "packages");
+            }
 
             foreach (var pkg in packages)
             {
