@@ -134,7 +134,7 @@ public sealed partial class MainListPage : DynamicListPage,
             },
             RaiseItemsChangedThrottle);
 
-        _fallbackUpdateManager = new FallbackUpdateManager(() => _refreshThrottledDebouncedAction.Invoke());
+        _fallbackUpdateManager = new FallbackUpdateManager(() => RequestRefresh(fullRefresh: false));
 
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
@@ -174,8 +174,18 @@ public sealed partial class MainListPage : DynamicListPage,
         }
         else
         {
-            _refreshThrottledDebouncedAction.Invoke();
+            RequestRefresh(fullRefresh: false);
         }
+    }
+
+    private void RequestRefresh(bool fullRefresh, TimeSpan? interval = null)
+    {
+        if (fullRefresh)
+        {
+            _fullRefreshRequested.Set();
+        }
+
+        _refreshThrottledDebouncedAction.Invoke(interval);
     }
 
     private void ReapplySearchInBackground()
@@ -388,8 +398,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 _filteredItemsIncludesApps = _includeApps;
                 ClearResults();
                 var wasAlreadyEmpty = string.IsNullOrWhiteSpace(oldSearch);
-                _fullRefreshRequested.Set();
-                _refreshThrottledDebouncedAction.Invoke(wasAlreadyEmpty ? null : TimeSpan.Zero);
+                RequestRefresh(fullRefresh: true, interval: wasAlreadyEmpty ? null : TimeSpan.Zero);
 
                 return;
             }
@@ -538,13 +547,11 @@ public sealed partial class MainListPage : DynamicListPage,
                     adjustedInterval = TimeSpan.Zero;
                 }
 
-                _fullRefreshRequested.Set();
-                _refreshThrottledDebouncedAction.Invoke(adjustedInterval);
+                RequestRefresh(fullRefresh: true, adjustedInterval);
             }
             else
             {
-                _fullRefreshRequested.Set();
-                _refreshThrottledDebouncedAction.Invoke();
+                RequestRefresh(fullRefresh: true);
             }
 
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
@@ -693,7 +700,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public void Receive(UpdateFallbackItemsMessage message)
     {
-        _refreshThrottledDebouncedAction.Invoke();
+        RequestRefresh(fullRefresh: false);
     }
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
