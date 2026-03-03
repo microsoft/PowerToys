@@ -148,6 +148,9 @@ If you need full detail beyond what `-Action members` shows, use `-Action search
 # List cached projects
 .\.github\skills\winmd-api-search\scripts\Invoke-WinMdQuery.ps1 -Action projects
 
+# List packages for a project
+.\.github\skills\winmd-api-search\scripts\Invoke-WinMdQuery.ps1 -Action packages
+
 # Show stats
 .\.github\skills\winmd-api-search\scripts\Invoke-WinMdQuery.ps1 -Action stats
 ```
@@ -157,7 +160,7 @@ If you need full detail beyond what `-Action members` shows, use `-Action search
 
 ## Search Scoring
 
-The search ranks type names against your query:
+The search ranks type names and member names against your query:
 
 | Score | Match type | Example |
 |-------|-----------|---------|
