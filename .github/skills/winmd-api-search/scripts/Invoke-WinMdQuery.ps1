@@ -46,8 +46,8 @@
 
 .EXAMPLE
     .\Invoke-WinMdQuery.ps1 -Action projects
-    .\Invoke-WinMdQuery.ps1 -Action packages -Project BlankWInUI
-    .\Invoke-WinMdQuery.ps1 -Action stats -Project BlankWInUI
+    .\Invoke-WinMdQuery.ps1 -Action packages -Project BlankWinUI
+    .\Invoke-WinMdQuery.ps1 -Action stats -Project BlankWinUI
     .\Invoke-WinMdQuery.ps1 -Action namespaces -Filter "Microsoft.UI"
     .\Invoke-WinMdQuery.ps1 -Action types -Namespace "Microsoft.UI.Xaml.Controls"
     .\Invoke-WinMdQuery.ps1 -Action members -TypeName "Microsoft.UI.Xaml.Controls.Button"
