@@ -1,0 +1,5 @@
+{
+  "universes_allowed": "all",
+  "max_agents_per_universe": 8,
+  "overflow_strategy": "diegetic_expansion_first"
+}

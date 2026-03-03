@@ -1,0 +1,13 @@
+[
+  {
+    "assignment_id": "cmdpal-001",
+    "universe": "Alien",
+    "created_at": "2026-03-02T20:15:27Z",
+    "agents": [
+      { "name": "Ripley", "role": "Lead" },
+      { "name": "Dallas", "role": "UI Dev" },
+      { "name": "Parker", "role": "Core/SDK Dev" },
+      { "name": "Lambert", "role": "Tester" }
+    ]
+  }
+]
