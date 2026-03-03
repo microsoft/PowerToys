@@ -29,7 +29,10 @@
             </ItemsPanelTemplate>
 
             <DataTemplate x:Key="DockBandTemplate" x:DataType="dockVm:DockBandViewModel">
-                <ItemsRepeater ItemsSource="{x:Bind Items, Mode=OneWay}" Layout="{StaticResource ItemsOrientationLayout}">
+                <ItemsRepeater
+                    ItemsSource="{x:Bind Items, Mode=OneWay}"
+                    Layout="{StaticResource ItemsOrientationLayout}"
+                    TabFocusNavigation="Local">
                     <ItemsRepeater.Transitions>
                         <TransitionCollection />
                     </ItemsRepeater.Transitions>
@@ -63,10 +66,12 @@
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="IsItemClickEnabled" Value="False" />
                 <Setter Property="SelectionMode" Value="None" />
+                <Setter Property="IsTabStop" Value="False" />
                 <!--  Drag properties controlled by code-behind based on IsEditMode  -->
                 <Setter Property="CanDragItems" Value="False" />
                 <Setter Property="CanReorderItems" Value="False" />
                 <Setter Property="AllowDrop" Value="False" />
+                <Setter Property="TabFocusNavigation" Value="Local" />
             </Style>
 
             <Style x:Key="DockBandListViewItemStyle" TargetType="ListViewItem">
@@ -76,6 +81,7 @@
                 <Setter Property="MinWidth" Value="0" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                 <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                <Setter Property="IsTabStop" Value="False" />
             </Style>
 
             <Style
@@ -182,7 +188,7 @@
         <Grid
             x:Name="ContentGrid"
             Margin="4"
-            Padding="4,0,4,0"
+            Padding="0,0,0,0"
             Background="Transparent"
             RightTapped="RootGrid_RightTapped">
             <Grid.ColumnDefinitions>
@@ -225,7 +231,8 @@
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
                         ItemsSource="{x:Bind ViewModel.StartItems, Mode=OneWay}"
                         SelectionMode="None"
-                        Style="{StaticResource DockBandListViewStyle}" />
+                        Style="{StaticResource DockBandListViewStyle}"
+                        TabIndex="0" />
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
 
@@ -260,7 +267,8 @@
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
                         ItemsSource="{x:Bind ViewModel.CenterItems, Mode=OneWay}"
                         SelectionMode="None"
-                        Style="{StaticResource DockBandListViewStyle}" />
+                        Style="{StaticResource DockBandListViewStyle}"
+                        TabIndex="1" />
                 </cpcontrols:ScrollContainer.Source>
             </cpcontrols:ScrollContainer>
 
@@ -294,7 +302,8 @@
                         ItemsPanel="{StaticResource HorizontalItemsPanel}"
                         ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
                         SelectionMode="None"
-                        Style="{StaticResource DockBandListViewStyle}">
+                        Style="{StaticResource DockBandListViewStyle}"
+                        TabIndex="2">
                         <ListView.ItemContainerTransitions>
                             <TransitionCollection />
                         </ListView.ItemContainerTransitions>
@@ -334,12 +343,16 @@
                     <VisualState.StateTriggers>
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Top" />
                     </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ContentGrid.Margin" Value="4,0,4,4" />
+                    </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="DockOnBottom">
                     <VisualState.StateTriggers>
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Bottom" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <Setter Target="ContentGrid.Margin" Value="4,4,4,0" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,1,0,0" />
                     </VisualState.Setters>
                 </VisualState>
@@ -373,7 +386,8 @@
                         <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
-                        <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
+                        <Setter Target="ContentGrid.Margin" Value="0,0,4,4" />
+                        <Setter Target="ContentGrid.Padding" Value="0,0,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,0,1,0" />
 
                         <Setter Target="StartListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
@@ -411,7 +425,8 @@
                         <Setter Target="EndScroller.(Grid.ColumnSpan)" Value="3" />
                         <Setter Target="EndScroller.HorizontalAlignment" Value="Stretch" />
                         <Setter Target="EndScroller.VerticalAlignment" Value="Bottom" />
-                        <Setter Target="ContentGrid.Padding" Value="4,8,4,8" />
+                        <Setter Target="ContentGrid.Margin" Value="4,0,0,4" />
+                        <Setter Target="ContentGrid.Padding" Value="4,0,0,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
 
                         <Setter Target="StartListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />

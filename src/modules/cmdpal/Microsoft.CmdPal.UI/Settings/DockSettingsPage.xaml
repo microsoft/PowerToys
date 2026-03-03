@@ -220,7 +220,7 @@
                     <!--  Bands Section  -->
                     <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                    <ItemsRepeater ItemsSource="{x:Bind AllDockBandItems, Mode=OneWay}">
+                    <ItemsRepeater ItemsSource="{x:Bind AllDockBandItems}">
                         <ItemsRepeater.Layout>
                             <StackLayout Spacing="{StaticResource SettingsCardSpacing}" />
                         </ItemsRepeater.Layout>

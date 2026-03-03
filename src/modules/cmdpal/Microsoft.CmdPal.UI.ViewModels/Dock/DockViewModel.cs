@@ -45,6 +45,8 @@ public sealed partial class DockViewModel
         _pageContext = new(this);
 
         _topLevelCommandManager.DockBands.CollectionChanged += DockBands_CollectionChanged;
+
+        EmitDockConfiguration();
     }
 
     private void DockBands_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -610,6 +612,22 @@ public sealed partial class DockViewModel
                 new CommandContextItem(openSettingsCommand),
             };
         }
+    }
+
+    private void EmitDockConfiguration()
+    {
+        var isDockEnabled = _settingsModel.EnableDock;
+        var dockSide = isDockEnabled ? _settings.Side.ToString().ToLowerInvariant() : "none";
+
+        static string FormatBands(List<DockBandSettings> bands) =>
+            string.Join("\n", bands.Select(b => $"{b.ProviderId}/{b.CommandId}"));
+
+        var startBands = isDockEnabled ? FormatBands(_settings.StartBands) : string.Empty;
+        var centerBands = isDockEnabled ? FormatBands(_settings.CenterBands) : string.Empty;
+        var endBands = isDockEnabled ? FormatBands(_settings.EndBands) : string.Empty;
+
+        WeakReferenceMessenger.Default.Send(new TelemetryDockConfigurationMessage(
+            isDockEnabled, dockSide, startBands, centerBands, endBands));
     }
 
     /// <summary>

@@ -5,6 +5,7 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -26,6 +27,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinRT.Interop;
 using WinUIEx;
+using WindowExtensions = Microsoft.CmdPal.UI.Helpers.WindowExtensions;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -45,6 +47,7 @@ public sealed partial class DockWindow : WindowEx,
 
     private readonly IThemeService _themeService;
     private readonly DockWindowViewModel _windowViewModel;
+    private readonly HiddenOwnerWindowBehavior _hiddenOwnerWindowBehavior = new();
 
     private HWND _hwnd = HWND.Null;
     private APPBARDATA _appBarData;
@@ -80,7 +83,7 @@ public sealed partial class DockWindow : WindowEx,
         Root.Children.Add(_dock);
         ExtendsContentIntoTitleBar = true;
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
-        AppWindow.IsShownInSwitchers = false;
+        _hiddenOwnerWindowBehavior.ShowInTaskbar(this, false);
         if (AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
         {
             overlappedPresenter.SetBorderAndTitleBar(false, false);
@@ -288,10 +291,34 @@ public sealed partial class DockWindow : WindowEx,
         var edgeWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXEDGE);
         var frameWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXFRAME);
 
-        UpdateAppBarDataForEdge(_settings.Side, _settings.DockSize, dpi / 96.0);
+        var scaleFactor = dpi / 96.0;
+        UpdateAppBarDataForEdge(_settings.Side, _settings.DockSize, scaleFactor);
 
         // Query and set position
         PInvoke.SHAppBarMessage(PInvoke.ABM_QUERYPOS, ref _appBarData);
+
+        // ABM_QUERYPOS adjusts our rect so we don't overlap other app bars,
+        // but it may have shifted our anchored edge without updating the
+        // opposite edge. We need to re-apply our desired thickness so the
+        // bar keeps its correct size. Without this, a second bar docked to
+        // the same side would get a zero-height/width rect and fail to
+        // reserve work-area space.
+        switch (_settings.Side)
+        {
+            case DockSide.Top:
+                _appBarData.rc.bottom = _appBarData.rc.top + (int)(DockSettingsToViews.HeightForSize(_settings.DockSize) * scaleFactor);
+                break;
+            case DockSide.Bottom:
+                _appBarData.rc.top = _appBarData.rc.bottom - (int)(DockSettingsToViews.HeightForSize(_settings.DockSize) * scaleFactor);
+                break;
+            case DockSide.Left:
+                _appBarData.rc.right = _appBarData.rc.left + (int)(DockSettingsToViews.WidthForSize(_settings.DockSize) * scaleFactor);
+                break;
+            case DockSide.Right:
+                _appBarData.rc.left = _appBarData.rc.right - (int)(DockSettingsToViews.WidthForSize(_settings.DockSize) * scaleFactor);
+                break;
+        }
+
         PInvoke.SHAppBarMessage(PInvoke.ABM_SETPOS, ref _appBarData);
 
         // TODO: investigate ABS_AUTOHIDE and auto hide bars.
