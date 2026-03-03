@@ -10466,6 +10466,43 @@ LRESULT APIENTRY MainWndProc(
                 KillTimer( hWnd, 4 );
             }
             break;
+
+        case 5:
+        {
+            //
+            // Deferred SPI re-apply after session unlock.
+            // Winlogon may override our SPI_SETSCREENSAVEACTIVE /
+            // SPI_SETSCREENSAVETIMEOUT calls during the desktop switch.
+            // Re-read the (already-restored) registry values and push
+            // them into the runtime SPI state.
+            //
+            KillTimer( hWnd, 5 );
+
+            TCHAR regActive[16] = {};
+            DWORD cbActive = sizeof( regActive );
+            BOOL rtActive = FALSE;
+            if( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                             L"ScreenSaveActive", RRF_RT_REG_SZ, NULL,
+                             regActive, &cbActive ) == ERROR_SUCCESS )
+            {
+                rtActive = ( wcstol( regActive, nullptr, 10 ) != 0 );
+            }
+            SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, rtActive, 0, SPIF_SENDCHANGE );
+
+            TCHAR regTimeout[16] = {};
+            DWORD cbTimeout = sizeof( regTimeout );
+            UINT timeout = 300;  // safe default
+            if( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                             L"ScreenSaveTimeOut", RRF_RT_REG_SZ, NULL,
+                             regTimeout, &cbTimeout ) == ERROR_SUCCESS )
+            {
+                long parsed = wcstol( regTimeout, nullptr, 10 );
+                if( parsed > 0 )
+                    timeout = static_cast<UINT>( parsed );
+            }
+            SystemParametersInfo( SPI_SETSCREENSAVETIMEOUT, timeout, 0, SPIF_SENDCHANGE );
+            break;
+        }
         }
         break;
 
@@ -10636,6 +10673,15 @@ LRESULT APIENTRY MainWndProc(
             wParam == WTS_CONSOLE_CONNECT )
         {
             RestoreScreenSaverSettings();
+
+            //
+            // Schedule a deferred SPI re-apply.  Winlogon may re-read the
+            // (now-stale) screensaver policy during the desktop switch,
+            // overriding the SPI_SETSCREENSAVEACTIVE / TIMEOUT calls we
+            // just made.  Timer 5 fires after the transition completes
+            // and re-asserts the correct runtime state.
+            //
+            SetTimer( hWnd, 5, 5000, NULL );
         }
         break;
 
