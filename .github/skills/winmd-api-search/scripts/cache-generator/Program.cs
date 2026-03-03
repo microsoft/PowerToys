@@ -193,6 +193,15 @@ void ExportPackageCache(PackageWithWinMd pkg, string cacheDir)
         .OrderBy(ns => ns)
         .ToList();
 
+    // Include global (empty) namespace types under a reserved bucket name
+    var hasGlobalNs = typesByNamespace.ContainsKey(string.Empty)
+                      && typesByNamespace[string.Empty].Count > 0;
+    const string globalNsBucket = "_GlobalNamespace";
+    if (hasGlobalNs)
+    {
+        namespaces.Insert(0, globalNsBucket);
+    }
+
     // meta.json
     var meta = new
     {
@@ -217,7 +226,8 @@ void ExportPackageCache(PackageWithWinMd pkg, string cacheDir)
     // types/<Namespace>.json
     foreach (var ns in namespaces)
     {
-        var types = typesByNamespace[ns];
+        var lookupKey = ns == globalNsBucket ? string.Empty : ns;
+        var types = typesByNamespace[lookupKey];
         var safeFileName = ns.Replace('.', '_') + ".json";
         File.WriteAllText(
             Path.Combine(typesDir, safeFileName),
@@ -602,10 +612,17 @@ static class NuGetResolver
             return ([], "unknown");
         }
 
-        // Filter to version-numbered directories only (skip "Facade" etc.)
+        // Filter to version-numbered directories only (skip "Facade" etc.) and
+        // sort by numeric version, not lexicographically, to pick the highest SDK.
         var versionDirs = Directory.GetDirectories(windowsKitsPath)
-            .Where(d => char.IsDigit(Path.GetFileName(d)[0]))
-            .OrderByDescending(d => Path.GetFileName(d))
+            .Select(d => (Dir: d, Name: Path.GetFileName(d)))
+            .Where(x => !string.IsNullOrEmpty(x.Name) && char.IsDigit(x.Name[0]))
+            .Select(x => Version.TryParse(x.Name, out var v)
+                ? (Dir: x.Dir, Version: v)
+                : (Dir: (string?)null, Version: (Version?)null))
+            .Where(x => x.Dir is not null && x.Version is not null)
+            .OrderByDescending(x => x.Version)
+            .Select(x => x.Dir!)
             .ToList();
 
         foreach (var versionDir in versionDirs)
