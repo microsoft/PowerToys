@@ -410,7 +410,32 @@ static class NuGetResolver
             var found = Directory.GetFiles(objDir, "project.assets.json", SearchOption.AllDirectories);
             if (found.Length > 0)
             {
-                return found[0];
+                // Pick the most recently written file to avoid non-deterministic
+                // selection when multi-targeting creates multiple assets files.
+                string? bestPath = null;
+                DateTime bestWriteTime = DateTime.MinValue;
+
+                foreach (var path in found)
+                {
+                    try
+                    {
+                        var writeTime = File.GetLastWriteTimeUtc(path);
+                        if (writeTime > bestWriteTime)
+                        {
+                            bestWriteTime = writeTime;
+                            bestPath = path;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore files we cannot access metadata for
+                    }
+                }
+
+                if (bestPath is not null)
+                {
+                    return bestPath;
+                }
             }
         }
 

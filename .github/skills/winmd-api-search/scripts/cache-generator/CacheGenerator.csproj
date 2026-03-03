@@ -8,7 +8,7 @@
   </PropertyGroup>
   <!-- System.Reflection.Metadata is inbox in net9.0+, only needed for net8.0 -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <PackageReference Include="System.Reflection.Metadata" Version="9.*" />
+    <PackageReference Include="System.Reflection.Metadata" Version="8.0.1" />
   </ItemGroup>
 
   <!--
