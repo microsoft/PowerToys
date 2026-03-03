@@ -18,7 +18,7 @@
     - namespaces  : List all namespaces (optional -Filter prefix)
     - types       : List types in a namespace (-Namespace required)
     - members     : List members of a type (-TypeName required)
-    - search      : Search types and members (-Query required)
+    - search      : Search types and members by name (-Query required)
     - enums       : List enum values (-TypeName required)
 
 .PARAMETER Project
@@ -263,7 +263,13 @@ function Get-MembersOfType {
         exit 1
     }
 
-    $ns = $FullName.Substring(0, $FullName.LastIndexOf('.'))
+    $lastDot = $FullName.LastIndexOf('.')
+    if ($lastDot -lt 0) {
+        Write-Error "-TypeName must include a namespace (for example: 'MyNamespace.MyType'). Provided: $FullName"
+        exit 1
+    }
+
+    $ns = $FullName.Substring(0, $lastDot)
     $safeFile = $ns.Replace('.', '_') + '.json'
 
     $manifest = Resolve-ProjectManifest -Name $Project
@@ -291,7 +297,7 @@ function Get-MembersOfType {
 }
 
 # ─── Action: search ──────────────────────────────────────────────────────────
-# Ranks namespaces by best type-name match score.
+# Ranks namespaces by best match score on type names and member names.
 # Outputs: ranked namespaces with top matching types and the JSON file path.
 # The agent can then read the JSON file to inspect all members intelligently.
 
@@ -305,7 +311,7 @@ function Search-WinMd {
     $manifest = Resolve-ProjectManifest -Name $Project
     $dirs = Get-PackageCacheDirs -Manifest $manifest
 
-    # Collect: namespace → { bestScore, matchingTypes[], filePath }
+    # Collect: namespace -> { bestScore, matchingTypes[], filePath }
     $nsResults = @{}
 
     foreach ($dir in $dirs) {
@@ -320,7 +326,27 @@ function Search-WinMd {
 
             $types = Get-Content $filePath | ConvertFrom-Json
             foreach ($t in $types) {
-                $score = Get-MatchScore -Name $t.name -FullName $t.fullName -Query $SearchQuery
+                $typeScore = Get-MatchScore -Name $t.name -FullName $t.fullName -Query $SearchQuery
+
+                # Also search member names for matches
+                $bestMemberScore = 0
+                $matchingMember = $null
+                if ($t.members) {
+                    foreach ($m in $t.members) {
+                        # Extract member name from signature (first word or name before '(')
+                        $memberName = $m.signature
+                        if ($memberName -match '^(?:\S+\s+)?(\w+)') {
+                            $memberName = $Matches[1]
+                        }
+                        $mScore = Get-MatchScore -Name $memberName -FullName "$($t.fullName).$memberName" -Query $SearchQuery
+                        if ($mScore -gt $bestMemberScore) {
+                            $bestMemberScore = $mScore
+                            $matchingMember = $m.signature
+                        }
+                    }
+                }
+
+                $score = [Math]::Max($typeScore, $bestMemberScore)
                 if ($score -le 0) { continue }
 
                 if (-not $nsResults.ContainsKey($n)) {
@@ -328,7 +354,12 @@ function Search-WinMd {
                 }
                 $entry = $nsResults[$n]
                 if ($score -gt $entry.BestScore) { $entry.BestScore = $score }
-                $entry.Types += "$($t.kind) $($t.fullName) [$score]"
+
+                if ($typeScore -ge $bestMemberScore) {
+                    $entry.Types += "$($t.kind) $($t.fullName) [$typeScore]"
+                } else {
+                    $entry.Types += "$($t.kind) $($t.fullName) -> $matchingMember [$bestMemberScore]"
+                }
             }
         }
     }
@@ -410,7 +441,13 @@ function Get-EnumValues {
         exit 1
     }
 
-    $ns = $FullName.Substring(0, $FullName.LastIndexOf('.'))
+    $lastDot = $FullName.LastIndexOf('.')
+    if ($lastDot -lt 1) {
+        Write-Error "-TypeName must be a fully-qualified type name including namespace, e.g. 'Namespace.TypeName'. Provided: $FullName"
+        exit 1
+    }
+
+    $ns = $FullName.Substring(0, $lastDot)
     $safeFile = $ns.Replace('.', '_') + '.json'
 
     $manifest = Resolve-ProjectManifest -Name $Project

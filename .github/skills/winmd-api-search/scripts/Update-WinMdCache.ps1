@@ -50,13 +50,23 @@ if (-not $ProjectDir) {
 Push-Location $root
 
 try {
-    # Detect installed .NET SDK -- require >= 8.0
+    # Detect installed .NET SDK -- require >= 8.0, prefer stable over preview
     $dotnetSdks = dotnet --list-sdks 2>$null
     $bestMajor = $dotnetSdks |
+        Where-Object { $_ -notmatch 'preview|rc|alpha|beta' } |
         ForEach-Object { if ($_ -match '^(\d+)\.') { [int]$Matches[1] } } |
         Where-Object { $_ -ge 8 } |
         Sort-Object -Descending |
         Select-Object -First 1
+
+    # Fall back to preview SDKs if no stable SDK found
+    if (-not $bestMajor) {
+        $bestMajor = $dotnetSdks |
+            ForEach-Object { if ($_ -match '^(\d+)\.') { [int]$Matches[1] } } |
+            Where-Object { $_ -ge 8 } |
+            Sort-Object -Descending |
+            Select-Object -First 1
+    }
 
     if (-not $bestMajor) {
         Write-Error "No .NET SDK >= 8.0 found. Install from https://dotnet.microsoft.com/download"
