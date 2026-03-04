@@ -112,18 +112,6 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         }
     }
 
-    private async Task LoadDetailsAsync()
-    {
-        try
-        {
-            Details = await _detailsLoadTask.Value;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning($"Failed to load details for {AppIdentifier}\n{ex}");
-        }
-    }
-
     private async Task LoadIconAsync()
     {
         try
