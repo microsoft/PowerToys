@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
@@ -82,5 +84,43 @@ public sealed class PythonScriptTrustService(IUserSettings userSettings) : IPyth
         using var stream = File.OpenRead(scriptPath);
         var hashBytes = SHA256.HashData(stream);
         return Convert.ToHexStringLower(hashBytes);
+    }
+
+    public async Task<bool> RequestInstallAsync(string scriptName, IReadOnlyList<PythonRequirement> missingPackages)
+    {
+        try
+        {
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            var packageList = string.Join("\n", missingPackages.Select(r =>
+                string.Equals(r.ImportName, r.PipPackage, StringComparison.Ordinal)
+                    ? $"  • {r.PipPackage}"
+                    : $"  • {r.PipPackage}  (import: {r.ImportName})"));
+
+            var dialog = new ContentDialog
+            {
+                Title = resourceLoader.GetString("PythonPackageInstallTitle"),
+                Content = string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    resourceLoader.GetString("PythonPackageInstallContent"),
+                    scriptName,
+                    packageList),
+                PrimaryButtonText = resourceLoader.GetString("PythonPackageInstallConfirm"),
+                CloseButtonText = resourceLoader.GetString("PythonPackageInstallCancel"),
+            };
+
+            var mainWindow = (Microsoft.UI.Xaml.Application.Current as AdvancedPaste.App)?.GetMainWindow();
+            if (mainWindow?.Content?.XamlRoot is { } xamlRoot)
+            {
+                dialog.XamlRoot = xamlRoot;
+            }
+
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to show package install dialog", ex);
+            return false;
+        }
     }
 }

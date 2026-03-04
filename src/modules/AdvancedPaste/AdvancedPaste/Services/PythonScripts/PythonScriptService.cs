@@ -86,7 +86,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             if (process.ExitCode != 0)
             {
                 var stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
-                var errorMsg = stderr.Length > 200 ? stderr[..200] : stderr;
+                var errorMsg = stderr.Length > 1500 ? stderr[..1500] : stderr;
                 throw new PasteActionException(errorMsg, new InvalidOperationException($"Script exited with code {process.ExitCode}."));
             }
         }
@@ -119,25 +119,39 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             var inputPayload = await BuildWslInputPayloadAsync(clipboardData, detectedFormat, workDir, cancellationToken);
             var inputJson = JsonSerializer.Serialize(inputPayload);
 
+            // Write the JSON payload to a file (UTF-8, no BOM) so it can be fed to Python
+            // via a shell redirect instead of a Windows→WSL stdin pipe.
+            // The Windows→WSL stdin pipe inserts a UTF-8 BOM regardless of the .NET encoding
+            // settings, which causes json.load(sys.stdin) to raise JSONDecodeError in Python.
+            var inputFilePath = Path.Combine(workDir, "ap_input.json");
+            await File.WriteAllTextAsync(inputFilePath, inputJson, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), cancellationToken);
+
             var wslScriptPath = ToWslPath(scriptPath);
-            var psi = new ProcessStartInfo("wsl.exe", $"--exec python3 \"{wslScriptPath}\"")
+            var wslInputPath = ToWslPath(inputFilePath);
+
+            // Single-quote paths for bash; escape any embedded single quotes.
+            var quotedScript = "'" + wslScriptPath.Replace("'", "'\\''") + "'";
+            var quotedInput = "'" + wslInputPath.Replace("'", "'\\''") + "'";
+
+            // bash redirects ap_input.json as stdin, so Python scripts can still use
+            // json.load(sys.stdin) unchanged. -X utf8 forces UTF-8 I/O in the Python process.
+            // -l (login shell) sources /etc/profile and ~/.profile so that tools installed
+            // via apt, conda, nvm, etc. are available in PATH just like in a normal terminal.
+            var bashCmd = $"python3 -X utf8 {quotedScript} < {quotedInput}";
+            var psi = new ProcessStartInfo("wsl.exe", $"bash -l -c \"{bashCmd.Replace("\"", "\\\"")}\"")
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                StandardInputEncoding = Encoding.UTF8,
                 StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
             };
 
             using var process = Process.Start(psi)
                 ?? throw new PasteActionException(
                     ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptFailed"),
                     new InvalidOperationException("Failed to start WSL process."));
-
-            await process.StandardInput.WriteAsync(inputJson);
-            process.StandardInput.Close();
 
             int timeoutMs = _userSettings.PythonScriptTimeoutSeconds * 1000;
             using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -167,7 +181,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
             if (process.ExitCode != 0)
             {
-                var errorMsg = stderr.Length > 200 ? stderr[..200] : stderr;
+                var errorMsg = stderr.Length > 1500 ? stderr[..1500] : stderr;
                 throw new PasteActionException(errorMsg, new InvalidOperationException($"WSL script exited with code {process.ExitCode}."));
             }
 
@@ -196,6 +210,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             ClipboardFormat.Text | ClipboardFormat.Html |
             ClipboardFormat.Image | ClipboardFormat.Audio |
             ClipboardFormat.Video | ClipboardFormat.File;
+        var requirements = new List<PythonRequirement>();
 
         try
         {
@@ -252,6 +267,13 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                     supportedFormats = ParseFormats(tag);
                     continue;
                 }
+
+                tag = ParseTag(line, "@advancedpaste:requires");
+                if (tag != null)
+                {
+                    requirements.AddRange(ParseRequirements(tag));
+                    continue;
+                }
             }
         }
         catch (Exception ex)
@@ -259,7 +281,28 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             Logger.LogError($"Failed to read metadata from {scriptPath}", ex);
         }
 
-        return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version);
+        return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version, requirements);
+    }
+
+    /// <summary>
+    /// Parses a space-separated requires string.
+    /// Each token is either "importName" or "importName=pipPackage".
+    /// Example: "cv2=opencv-python-headless numpy requests"
+    /// </summary>
+    private static IEnumerable<PythonRequirement> ParseRequirements(string value)
+    {
+        foreach (var token in value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var eqIdx = token.IndexOf('=');
+            if (eqIdx > 0)
+            {
+                yield return new PythonRequirement(token[..eqIdx], token[(eqIdx + 1)..]);
+            }
+            else
+            {
+                yield return new PythonRequirement(token, token);
+            }
+        }
     }
 
     private static string ParseTag(string line, string tag)
@@ -326,6 +369,187 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         }
 
         return scripts;
+    }
+
+    public async Task<IReadOnlyList<PythonRequirement>> GetMissingRequirementsAsync(
+        PythonScriptMetadata metadata,
+        CancellationToken cancellationToken)
+    {
+        if (metadata.Requirements.Count == 0)
+        {
+            return [];
+        }
+
+        var missing = new List<PythonRequirement>();
+
+        foreach (var req in metadata.Requirements)
+        {
+            bool installed = string.Equals(metadata.Platform, PlatformLinux, StringComparison.OrdinalIgnoreCase)
+                ? await IsInstalledInWslAsync(req.ImportName, cancellationToken)
+                : await IsInstalledOnWindowsAsync(req.ImportName, cancellationToken);
+
+            if (!installed)
+            {
+                missing.Add(req);
+            }
+        }
+
+        return missing;
+    }
+
+    public async Task InstallRequirementsAsync(
+        IReadOnlyList<PythonRequirement> requirements,
+        string platform,
+        CancellationToken cancellationToken)
+    {
+        if (requirements.Count == 0)
+        {
+            return;
+        }
+
+        var packages = string.Join(" ", requirements.Select(r => r.PipPackage));
+
+        if (string.Equals(platform, PlatformLinux, StringComparison.OrdinalIgnoreCase))
+        {
+            await InstallInWslAsync(packages, cancellationToken);
+        }
+        else
+        {
+            await InstallOnWindowsAsync(packages, cancellationToken);
+        }
+    }
+
+    private async Task<bool> IsInstalledOnWindowsAsync(string importName, CancellationToken cancellationToken)
+    {
+        var pythonExe = TryFindPythonExecutable(_userSettings.PythonExecutablePath);
+        if (pythonExe is null)
+        {
+            return false;
+        }
+
+        var psi = new ProcessStartInfo(pythonExe, $"-c \"import {importName}\"")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        using var process = Process.Start(psi);
+        if (process is null)
+        {
+            return false;
+        }
+
+        await process.WaitForExitAsync(cancellationToken);
+        return process.ExitCode == 0;
+    }
+
+    private static async Task<bool> IsInstalledInWslAsync(string importName, CancellationToken cancellationToken)
+    {
+        var psi = new ProcessStartInfo("wsl.exe", $"bash -l -c \"python3 -c 'import {importName}'\"")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        using var process = Process.Start(psi);
+        if (process is null)
+        {
+            return false;
+        }
+
+        await process.WaitForExitAsync(cancellationToken);
+        return process.ExitCode == 0;
+    }
+
+    private async Task InstallOnWindowsAsync(string packages, CancellationToken cancellationToken)
+    {
+        var pythonExe = TryFindPythonExecutable(_userSettings.PythonExecutablePath);
+        if (pythonExe is null)
+        {
+            throw new PasteActionException(
+                ResourceLoaderInstance.ResourceLoader.GetString("PythonNotFound"),
+                new InvalidOperationException("Python executable not found."));
+        }
+
+        var psi = new ProcessStartInfo(pythonExe, $"-m pip install {packages}")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+
+        using var process = Process.Start(psi)
+            ?? throw new PasteActionException(
+                ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptFailed"),
+                new InvalidOperationException("Failed to start pip."));
+
+        await process.WaitForExitAsync(cancellationToken);
+
+        if (process.ExitCode != 0)
+        {
+            var stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
+            throw new PasteActionException(
+                string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    ResourceLoaderInstance.ResourceLoader.GetString("PythonPackageInstallFailed"),
+                    packages,
+                    stderr.Length > 300 ? stderr[..300] : stderr),
+                new InvalidOperationException($"pip exited with code {process.ExitCode}."));
+        }
+    }
+
+    private static async Task InstallInWslAsync(string packages, CancellationToken cancellationToken)
+    {
+        // Try plain pip3 first; if the environment is managed (PEP 668), retry with --break-system-packages.
+        foreach (var extraArgs in (string[])[string.Empty, "--break-system-packages"])
+        {
+            var installCmd = $"pip3 install {packages} {extraArgs}".TrimEnd();
+            var psi = new ProcessStartInfo("wsl.exe", $"bash -l -c \"{installCmd.Replace("\"", "\\\"")}\"")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
+            };
+
+            using var process = Process.Start(psi);
+            if (process is null)
+            {
+                continue;
+            }
+
+            await process.WaitForExitAsync(cancellationToken);
+
+            if (process.ExitCode == 0)
+            {
+                return;
+            }
+
+            var stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
+
+            // If it failed for a reason OTHER than externally-managed-environment, throw immediately.
+            if (!stderr.Contains("externally-managed-environment", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new PasteActionException(
+                    string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        ResourceLoaderInstance.ResourceLoader.GetString("PythonPackageInstallFailed"),
+                        packages,
+                        stderr.Length > 300 ? stderr[..300] : stderr),
+                    new InvalidOperationException($"pip3 exited with code {process.ExitCode}."));
+            }
+        }
+
+        throw new PasteActionException(
+            string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                ResourceLoaderInstance.ResourceLoader.GetString("PythonPackageInstallFailed"),
+                packages,
+                "externally-managed-environment: both plain pip3 and --break-system-packages failed."),
+            new InvalidOperationException("pip3 install failed in WSL."));
     }
 
     public string TryFindPythonExecutable(string overridePath = null)
@@ -613,10 +837,21 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         string workDir,
         CancellationToken cancellationToken)
     {
+        // Represent the detected formats as a JSON array of lowercase strings so that
+        // multi-format values (e.g. Text | Html) don't produce a confusing "text, html" string.
+        var formatArray = new JsonArray();
+        foreach (ClipboardFormat flag in Enum.GetValues<ClipboardFormat>())
+        {
+            if (flag != ClipboardFormat.None && detectedFormat.HasFlag(flag))
+            {
+                formatArray.Add(JsonValue.Create(flag.ToString().ToLowerInvariant()));
+            }
+        }
+
         var obj = new JsonObject
         {
             ["version"] = 2,
-            ["format"] = detectedFormat.ToString().ToLowerInvariant(),
+            ["format"] = formatArray,
             ["work_dir"] = ToWslPath(workDir),
         };
 
@@ -627,7 +862,11 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
         if (clipboardData.Contains(StandardDataFormats.Html))
         {
-            obj["html"] = await clipboardData.GetHtmlFormatAsync();
+            // GetHtmlFormatAsync() returns the Windows CF_HTML format which includes a header
+            // block (Version:, StartHTML:, EndHTML: …). Extract only the inner HTML fragment
+            // so scripts receive clean, usable HTML rather than the raw clipboard header.
+            var rawHtml = await clipboardData.GetHtmlFormatAsync();
+            obj["html"] = ExtractHtmlFragment(rawHtml);
         }
 
         if (clipboardData.Contains(StandardDataFormats.Bitmap))
@@ -656,11 +895,38 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         return obj;
     }
 
+    /// <summary>
+    /// Extracts the HTML fragment from a Windows CF_HTML clipboard string.
+    /// Falls back to returning the full string if the fragment markers are absent.
+    /// </summary>
+    private static string ExtractHtmlFragment(string cfHtml)
+    {
+        const string startMarker = "<!--StartFragment-->";
+        const string endMarker = "<!--EndFragment-->";
+
+        var start = cfHtml.IndexOf(startMarker, StringComparison.OrdinalIgnoreCase);
+        var end = cfHtml.IndexOf(endMarker, StringComparison.OrdinalIgnoreCase);
+
+        if (start >= 0 && end > start)
+        {
+            return cfHtml[(start + startMarker.Length)..end].Trim();
+        }
+
+        return cfHtml;
+    }
+
     private static async Task<DataPackage> ParseWslOutputAsync(
         string stdout,
         string workDir,
         CancellationToken cancellationToken)
     {
+        // An empty stdout means the script finished without producing output.
+        // Treat as a no-op rather than a JSON error so scripts can exit cleanly.
+        if (string.IsNullOrWhiteSpace(stdout))
+        {
+            return new DataPackage();
+        }
+
         JsonObject outputObj;
         try
         {
@@ -684,6 +950,19 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 dataPackage.SetText(text);
                 break;
 
+            case "html":
+                var html = outputObj["html"]?.GetValue<string>() ?? string.Empty;
+                dataPackage.SetHtmlFormat(html);
+
+                // Also set plain text as fallback for apps that don't accept HTML.
+                var htmlAsText = outputObj["text"]?.GetValue<string>();
+                if (!string.IsNullOrEmpty(htmlAsText))
+                {
+                    dataPackage.SetText(htmlAsText);
+                }
+
+                break;
+
             case "file":
             case "files":
                 var filePathsNode = outputObj["file_paths"];
@@ -692,12 +971,19 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                     var storageItems = new List<IStorageItem>();
                     foreach (var node in arr)
                     {
-                        var wslPath = node?.GetValue<string>();
-                        if (!string.IsNullOrEmpty(wslPath))
+                        var rawPath = node?.GetValue<string>();
+                        if (string.IsNullOrEmpty(rawPath))
                         {
-                            var winPath = ToWindowsPath(wslPath);
-                            storageItems.Add(await StorageFile.GetFileFromPathAsync(winPath));
+                            continue;
                         }
+
+                        if (!TryToWindowsPath(rawPath, out var winPath))
+                        {
+                            Logger.LogError($"WSL script returned a non-/mnt/ file path that cannot be mapped to Windows: {rawPath}");
+                            continue;
+                        }
+
+                        storageItems.Add(await StorageFile.GetFileFromPathAsync(winPath));
                     }
 
                     if (storageItems.Count > 0)
@@ -712,7 +998,12 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 var imagePath = outputObj["image_path"]?.GetValue<string>();
                 if (!string.IsNullOrEmpty(imagePath))
                 {
-                    var winImagePath = ToWindowsPath(imagePath);
+                    if (!TryToWindowsPath(imagePath, out var winImagePath))
+                    {
+                        Logger.LogError($"WSL script returned a non-/mnt/ image path: {imagePath}. Output the image to work_dir instead.");
+                        break;
+                    }
+
                     var file = await StorageFile.GetFileFromPathAsync(winImagePath);
                     dataPackage.SetStorageItems([file]);
                 }
@@ -726,6 +1017,23 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         }
 
         return dataPackage;
+    }
+
+    /// <summary>
+    /// Converts a WSL /mnt/X/... path to the equivalent Windows path.
+    /// Returns false (and sets <paramref name="windowsPath"/> to null) for paths that
+    /// are not under /mnt/ (e.g. /tmp/...), which cannot be accessed from Windows.
+    /// </summary>
+    private static bool TryToWindowsPath(string wslPath, out string windowsPath)
+    {
+        if (!wslPath.StartsWith("/mnt/", StringComparison.Ordinal) || wslPath.Length < 7)
+        {
+            windowsPath = null;
+            return false;
+        }
+
+        windowsPath = ToWindowsPath(wslPath);
+        return true;
     }
 
     private static string CreateTempWorkDir()

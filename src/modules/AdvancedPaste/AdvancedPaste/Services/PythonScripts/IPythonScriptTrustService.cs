@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AdvancedPaste.Services.PythonScripts;
@@ -27,4 +28,10 @@ public interface IPythonScriptTrustService
     /// Computes the SHA-256 hash of the script file and returns the hex string.
     /// </summary>
     string ComputeHash(string scriptPath);
+
+    /// <summary>
+    /// Shows a confirmation dialog listing the missing packages and asking the user
+    /// whether to install them. Returns true if the user approved installation.
+    /// </summary>
+    Task<bool> RequestInstallAsync(string scriptName, IReadOnlyList<PythonRequirement> missingPackages);
 }

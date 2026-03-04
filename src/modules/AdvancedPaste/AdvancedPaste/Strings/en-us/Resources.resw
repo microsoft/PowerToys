@@ -407,4 +407,25 @@
   <data name="PythonScriptTrustCancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="PythonPackageInstallTitle" xml:space="preserve">
+    <value>Install Missing Packages?</value>
+  </data>
+  <data name="PythonPackageInstallContent" xml:space="preserve">
+    <value>The script "{0}" requires the following Python packages that are not installed:
+
+{1}
+
+Install them now?</value>
+    <comment>{0} = script display name, {1} = bullet list of package names. Do not translate package names.</comment>
+  </data>
+  <data name="PythonPackageInstallConfirm" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="PythonPackageInstallCancel" xml:space="preserve">
+    <value>Skip</value>
+  </data>
+  <data name="PythonPackageInstallFailed" xml:space="preserve">
+    <value>Failed to install package(s) "{0}": {1}</value>
+    <comment>{0} = pip package names, {1} = error detail. Do not translate package names.</comment>
+  </data>
 </root>

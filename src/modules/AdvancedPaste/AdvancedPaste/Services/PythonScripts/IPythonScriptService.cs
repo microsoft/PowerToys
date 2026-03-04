@@ -43,4 +43,20 @@ public interface IPythonScriptService
     /// Returns true if wsl.exe is available on this machine.
     /// </summary>
     bool IsWslAvailable();
+
+    /// <summary>
+    /// Checks which of the declared requirements are not yet importable.
+    /// Returns an empty list if all packages are installed.
+    /// </summary>
+    Task<IReadOnlyList<PythonRequirement>> GetMissingRequirementsAsync(
+        PythonScriptMetadata metadata,
+        CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Installs the given packages via pip / pip3.
+    /// </summary>
+    Task InstallRequirementsAsync(
+        IReadOnlyList<PythonRequirement> requirements,
+        string platform,
+        CancellationToken cancellationToken);
 }

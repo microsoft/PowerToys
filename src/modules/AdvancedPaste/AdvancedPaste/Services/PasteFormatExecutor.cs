@@ -80,6 +80,20 @@ public sealed class PasteFormatExecutor(
         }
 
         var metadata = _pythonScriptService.ReadMetadata(scriptPath);
+
+        // Pre-flight: check for missing packages and offer to install them.
+        var missingPackages = await _pythonScriptService.GetMissingRequirementsAsync(metadata, cancellationToken);
+        if (missingPackages.Count > 0)
+        {
+            var approved = await _pythonScriptTrustService.RequestInstallAsync(metadata.Name, missingPackages);
+            if (!approved)
+            {
+                throw new OperationCanceledException("User declined to install missing Python packages.");
+            }
+
+            await _pythonScriptService.InstallRequirementsAsync(missingPackages, metadata.Platform, cancellationToken);
+        }
+
         var detectedFormat = await clipboardData.GetAvailableFormatsAsync();
 
         if (string.Equals(metadata.Platform, "linux", StringComparison.OrdinalIgnoreCase))
