@@ -189,6 +189,7 @@ BOOL	g_fullScreenWorkaround = FALSE;
 bool	g_bSaveInProgress = false;
 bool    g_PanoramaCaptureActive = false;
 bool    g_PanoramaStopRequested = false;
+bool    g_PanoramaDebugMode = false;
 std::wstring	g_TextBuffer;
 // This is useful in the context of right-justified text only.
 std::list<std::wstring> g_TextBufferPreviousLines;
@@ -11367,6 +11368,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 {
     MSG					msg;
     HACCEL				hAccel;
+
+    // Enable panorama frame/log dumps in release builds when requested.
+    if( lpCmdLine != nullptr && wcsstr( lpCmdLine, L"/panorama-debug" ) != nullptr )
+    {
+        g_PanoramaDebugMode = true;
+    }
 
 #ifdef _DEBUG
     if( lpCmdLine != nullptr && wcsstr( lpCmdLine, L"/panorama-selftest" ) != nullptr )

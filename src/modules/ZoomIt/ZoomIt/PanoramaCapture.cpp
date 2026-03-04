@@ -25,7 +25,7 @@
 //    rect each iteration.  Consecutive near-duplicate frames (average
 //    per-pixel RGB difference < 6, sampled every 6th pixel with a 2.5%
 //    margin on all edges) are discarded.  Capture stops when the user
-//    presses the stop hotkey or 256 frames have been collected.
+//    presses the stop hotkey or kMaxCaptureFrames frames have been collected.
 //
 // 2. Stitching (StitchPanoramaFrames)
 //    ---------------------------------
@@ -89,14 +89,16 @@
 //      CreateDIBSection.  The caller either copies it to the clipboard
 //      as CF_DIB or saves it as a PNG file through IFileSaveDialog.
 //
-// Debug support (debug builds only)
+// Debug support
 // ----------------------------------
 // In debug builds, every grabbed and accepted frame is saved as a BMP
 // to %TEMP%\ZoomItPanoramaDebug\<session>.  A StitchLog function writes
 // tracing output to OutputDebugString and optionally to a file.
+// In release builds, launch with /panorama-debug to enable the same
+// frame dumps and stitch log output.
 // Command-line switches /panorama-selftest, /panorama-stitch-latest,
-// and /panorama-stitch-replay allow offline re-stitching and automated
-// regression testing.
+// and /panorama-stitch-replay (debug only) allow offline re-stitching
+// and automated regression testing.
 //
 //============================================================================
 #include "pch.h"
@@ -130,6 +132,9 @@ void OutputDebug(const TCHAR* format, ...);
 const wchar_t* HotkeyIdToString( WPARAM hotkeyId );
 DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap );
 std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId );
+
+// Maximum number of frames the capture loop will collect before auto-stopping.
+static constexpr size_t kMaxCaptureFrames = 1024;
 
 static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
                                      bool lowContrastMode,
@@ -411,10 +416,25 @@ private:
 static PanoramaProgressDialog g_ProgressDialog;
 
 // Temporary file-based trace for stitch debugging (debug builds only).
-#ifdef _DEBUG
 static FILE* g_StitchLogFile = nullptr;
+
+// Returns true when panorama debug output (frame dumps + stitch log) is active.
+// Debug builds always enable it; release builds enable it via /panorama-debug.
+static bool PanoramaDebugEnabled()
+{
+#ifdef _DEBUG
+    return true;
+#else
+    return g_PanoramaDebugMode;
+#endif
+}
+
 static void StitchLog( const wchar_t* format, ... )
 {
+    if( !PanoramaDebugEnabled() )
+    {
+        return;
+    }
     va_list args;
     va_start( args, format );
     wchar_t buffer[1024]{};
@@ -430,9 +450,6 @@ static void StitchLog( const wchar_t* format, ... )
         fflush( g_StitchLogFile );
     }
 }
-#else
-#define StitchLog(...) ((void)0)
-#endif
 
 //----------------------------------------------------------------------------
 //
@@ -618,7 +635,6 @@ static HBITMAP CreateBitmapFromPixels32( const std::vector<BYTE>& pixels, int wi
     return bitmap;
 }
 
-#ifdef _DEBUG
 static std::wstring CreatePanoramaDebugDumpDirectory()
 {
     std::error_code errorCode;
@@ -670,6 +686,7 @@ static std::wstring CreatePanoramaDebugDumpDirectory()
     return sessionDirectory.wstring();
 }
 
+#ifdef _DEBUG
 static std::filesystem::path GetPanoramaDebugRootDirectory()
 {
     wchar_t tempPath[MAX_PATH]{};
@@ -687,6 +704,7 @@ static std::filesystem::path GetPanoramaDebugRootDirectory()
 
     return std::filesystem::path( modulePath ).parent_path() / L"debug" / L"ZoomItPanoramaDebug";
 }
+#endif // _DEBUG
 
 static bool SaveBitmapAsBmp( HBITMAP bitmap, const std::filesystem::path& filePath )
 {
@@ -769,6 +787,7 @@ static void DumpPanoramaText( const std::wstring& debugDumpDirectory,
     stream << text;
 }
 
+#ifdef _DEBUG
 static HBITMAP LoadBitmapFromFile( const std::filesystem::path& filePath )
 {
     return reinterpret_cast<HBITMAP>( LoadImageW( nullptr,
@@ -5874,14 +5893,17 @@ bool RunPanoramaCaptureToFile( HWND hWnd )
 
 static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 {
-#ifdef _DEBUG
-    const std::wstring debugDumpDirectory = CreatePanoramaDebugDumpDirectory();
+    std::wstring debugDumpDirectory;
     size_t debugGrabbedFrameCount = 0;
-    if( !debugDumpDirectory.empty() )
+    if( PanoramaDebugEnabled() )
     {
-        const auto logPath = std::filesystem::path( debugDumpDirectory ) / L"stitch_log.txt";
-        g_StitchLogFile = _wfopen( logPath.wstring().c_str(), L"w" );
-        StitchLog( L"[Panorama/Debug] Dump directory: %s\n", debugDumpDirectory.c_str() );
+        debugDumpDirectory = CreatePanoramaDebugDumpDirectory();
+        if( !debugDumpDirectory.empty() )
+        {
+            const auto logPath = std::filesystem::path( debugDumpDirectory ) / L"stitch_log.txt";
+            g_StitchLogFile = _wfopen( logPath.wstring().c_str(), L"w" );
+            StitchLog( L"[Panorama/Debug] Dump directory: %s\n", debugDumpDirectory.c_str() );
+        }
     }
     // RAII guard: close the stitch log on every return path.
     struct CaptureStitchLogGuard
@@ -5895,7 +5917,6 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             }
         }
     } captureStitchLogGuard;
-#endif
 
     g_RecordCropping = TRUE;
     const bool started = g_SelectRectangle.Start( hWnd );
@@ -5946,8 +5967,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
                absoluteRect.right,
                absoluteRect.bottom );
 
-#ifdef _DEBUG
-    if( !debugDumpDirectory.empty() )
+    if( PanoramaDebugEnabled() && !debugDumpDirectory.empty() )
     {
         wchar_t infoText[512]{};
         swprintf_s( infoText,
@@ -5966,7 +5986,6 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
                     absoluteRect.bottom );
         DumpPanoramaText( debugDumpDirectory, L"capture_info.txt", infoText );
     }
-#endif
 
     wil::unique_hdc hdcSource( CreateDC( L"DISPLAY", static_cast<PTCHAR>(nullptr), static_cast<PTCHAR>(nullptr), static_cast<CONST DEVMODE*>(nullptr) ) );
     if( hdcSource == nullptr )
@@ -5976,8 +5995,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         return false;
     }
 
-#ifdef _DEBUG
-    if( !debugDumpDirectory.empty() )
+    if( PanoramaDebugEnabled() && !debugDumpDirectory.empty() )
     {
         RECT desktopRect{};
         desktopRect.left = GetSystemMetrics( SM_XVIRTUALSCREEN );
@@ -5996,7 +6014,6 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             StitchLog( L"[Panorama/Debug] Failed to capture desktop snapshot\n" );
         }
     }
-#endif
 
     // The SelectRectangle border window has WDA_EXCLUDEFROMCAPTURE set,
     // which tells DWM to replace the window's entire bounding rectangle
@@ -6027,9 +6044,10 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
                contrastStdDev,
                contrastEdgeDelta );
 
-#ifdef _DEBUG
-    DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, firstFrame );
-#endif
+    if( PanoramaDebugEnabled() )
+    {
+        DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, firstFrame );
+    }
 
     size_t duplicateFrameCount = 0;
     size_t subPixelDropCount = 0;
@@ -6082,9 +6100,10 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             continue;
         }
 
-#ifdef _DEBUG
-        DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, frame );
-#endif
+        if( PanoramaDebugEnabled() )
+        {
+            DumpPanoramaBitmap( debugDumpDirectory, L"grabbed", ++debugGrabbedFrameCount, frame );
+        }
 
         bool isSubPixelDrop = false;
         if( AreFramesNearDuplicate( frame, frames.back(), lowContrastMode, &isSubPixelDrop ) )
@@ -6118,9 +6137,9 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
                    frames.size(),
                    debugGrabbedFrameCount,
                    captureIteration );
-        if( frames.size() >= 256 )
+        if( frames.size() >= kMaxCaptureFrames )
         {
-            StitchLog( L"[Panorama/Capture] Reached frame limit (256), stopping capture\n" );
+            StitchLog( L"[Panorama/Capture] Reached frame limit (%zu), stopping capture\n", kMaxCaptureFrames );
             break;
         }
     }
@@ -6133,8 +6152,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
                tornFrameCount,
                captureIteration );
 
-#ifdef _DEBUG
-    if( !debugDumpDirectory.empty() )
+    if( PanoramaDebugEnabled() && !debugDumpDirectory.empty() )
     {
         wchar_t statsText[256]{};
         swprintf_s( statsText,
@@ -6152,7 +6170,6 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             DumpPanoramaBitmap( debugDumpDirectory, L"accepted", frameIndex + 1, frames[frameIndex] );
         }
     }
-#endif
 
     g_SelectRectangle.Stop();
 
@@ -6200,9 +6217,10 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         return false;
     }
 
-#ifdef _DEBUG
-    DumpPanoramaBitmap( debugDumpDirectory, L"stitched", 0, panoramaBitmap );
-#endif
+    if( PanoramaDebugEnabled() )
+    {
+        DumpPanoramaBitmap( debugDumpDirectory, L"stitched", 0, panoramaBitmap );
+    }
 
     if( saveToFile )
     {
