@@ -2106,10 +2106,22 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // luma gradient exceeds a small threshold in either frame.
     std::vector<BYTE> dsMaskPrev;
     std::vector<BYTE> dsMaskCurr;
-    if( veryLowEntropyPair || highConstantFractionPair )
+    struct InformativeMaskCacheEntry
     {
-        dsMaskPrev.resize( static_cast<size_t>( dsW ) * dsH, 0 );
-        dsMaskCurr.resize( static_cast<size_t>( dsW ) * dsH, 0 );
+        const BYTE* prevKey;
+        const BYTE* currKey;
+        int width;
+        int height;
+        std::vector<BYTE> prevMask;
+        std::vector<BYTE> currMask;
+    };
+    static thread_local std::vector<InformativeMaskCacheEntry> informativeMaskCache;
+
+    auto buildInformativeMasks = [&]( std::vector<BYTE>& outPrevMask,
+                                      std::vector<BYTE>& outCurrMask )
+    {
+        outPrevMask.resize( static_cast<size_t>( dsW ) * dsH, 0 );
+        outCurrMask.resize( static_cast<size_t>( dsW ) * dsH, 0 );
         const int dsEdgeThreshold = 3;
         for( int y = 1; y < dsH - 1; ++y )
         {
@@ -2121,22 +2133,21 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
             for( ; x + 16 < dsW - 1; x += 16 )
             {
                 const int idx = rowOff + x;
-                // Previous frame gradient.
                 const uint8x16_t pCur  = vld1q_u8( previousLuma.data() + idx );
                 const uint8x16_t pRight = vld1q_u8( previousLuma.data() + idx + 1 );
                 const uint8x16_t pDown  = vld1q_u8( previousLuma.data() + idx + dsW );
                 const uint8x16_t pGrad = vqaddq_u8( vabdq_u8( pCur, pRight ),
                                                      vabdq_u8( pCur, pDown ) );
                 const uint8x16_t pMask = vandq_u8( vcgeq_u8( pGrad, vThresh ), vOne );
-                vst1q_u8( dsMaskPrev.data() + idx, pMask );
-                // Current frame gradient.
+                vst1q_u8( outPrevMask.data() + idx, pMask );
+
                 const uint8x16_t cCur   = vld1q_u8( currentLuma.data() + idx );
                 const uint8x16_t cRight = vld1q_u8( currentLuma.data() + idx + 1 );
                 const uint8x16_t cDown  = vld1q_u8( currentLuma.data() + idx + dsW );
                 const uint8x16_t cGrad = vqaddq_u8( vabdq_u8( cCur, cRight ),
                                                      vabdq_u8( cCur, cDown ) );
                 const uint8x16_t cMask = vandq_u8( vcgeq_u8( cGrad, vThresh ), vOne );
-                vst1q_u8( dsMaskCurr.data() + idx, cMask );
+                vst1q_u8( outCurrMask.data() + idx, cMask );
             }
 #endif
             for( ; x < dsW - 1; ++x )
@@ -2145,16 +2156,16 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 const int gradHP = abs( static_cast<int>( previousLuma[idx] ) - static_cast<int>( previousLuma[idx + 1] ) );
                 const int gradVP = abs( static_cast<int>( previousLuma[idx] ) - static_cast<int>( previousLuma[idx + dsW] ) );
                 if( gradHP + gradVP >= dsEdgeThreshold )
-                    dsMaskPrev[idx] = 1;
+                    outPrevMask[idx] = 1;
                 const int gradHC = abs( static_cast<int>( currentLuma[idx] ) - static_cast<int>( currentLuma[idx + 1] ) );
                 const int gradVC = abs( static_cast<int>( currentLuma[idx] ) - static_cast<int>( currentLuma[idx + dsW] ) );
                 if( gradHC + gradVC >= dsEdgeThreshold )
-                    dsMaskCurr[idx] = 1;
+                    outCurrMask[idx] = 1;
             }
         }
-        // Dilate masks by 1px so adjacent-to-edge pixels are included.
-        std::vector<BYTE> dilatedPrev( dsMaskPrev.size(), 0 );
-        std::vector<BYTE> dilatedCurr( dsMaskCurr.size(), 0 );
+
+        std::vector<BYTE> dilatedPrev( outPrevMask.size(), 0 );
+        std::vector<BYTE> dilatedCurr( outCurrMask.size(), 0 );
         for( int y = 1; y < dsH - 1; ++y )
         {
             const int rowOff = y * dsW;
@@ -2164,36 +2175,85 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
             for( ; x + 16 < dsW - 1; x += 16 )
             {
                 const int idx = rowOff + x;
-                // Previous mask: OR of center, left, right, up, down.
-                uint8x16_t pOr = vld1q_u8( dsMaskPrev.data() + idx );
-                pOr = vorrq_u8( pOr, vld1q_u8( dsMaskPrev.data() + idx - 1 ) );
-                pOr = vorrq_u8( pOr, vld1q_u8( dsMaskPrev.data() + idx + 1 ) );
-                pOr = vorrq_u8( pOr, vld1q_u8( dsMaskPrev.data() + idx - dsW ) );
-                pOr = vorrq_u8( pOr, vld1q_u8( dsMaskPrev.data() + idx + dsW ) );
-                // Clamp to 1 (inputs are 0/1, OR preserves that, but be safe).
+                uint8x16_t pOr = vld1q_u8( outPrevMask.data() + idx );
+                pOr = vorrq_u8( pOr, vld1q_u8( outPrevMask.data() + idx - 1 ) );
+                pOr = vorrq_u8( pOr, vld1q_u8( outPrevMask.data() + idx + 1 ) );
+                pOr = vorrq_u8( pOr, vld1q_u8( outPrevMask.data() + idx - dsW ) );
+                pOr = vorrq_u8( pOr, vld1q_u8( outPrevMask.data() + idx + dsW ) );
                 vst1q_u8( dilatedPrev.data() + idx, vandq_u8( vminq_u8( pOr, vOne ), vOne ) );
-                // Current mask.
-                uint8x16_t cOr = vld1q_u8( dsMaskCurr.data() + idx );
-                cOr = vorrq_u8( cOr, vld1q_u8( dsMaskCurr.data() + idx - 1 ) );
-                cOr = vorrq_u8( cOr, vld1q_u8( dsMaskCurr.data() + idx + 1 ) );
-                cOr = vorrq_u8( cOr, vld1q_u8( dsMaskCurr.data() + idx - dsW ) );
-                cOr = vorrq_u8( cOr, vld1q_u8( dsMaskCurr.data() + idx + dsW ) );
+
+                uint8x16_t cOr = vld1q_u8( outCurrMask.data() + idx );
+                cOr = vorrq_u8( cOr, vld1q_u8( outCurrMask.data() + idx - 1 ) );
+                cOr = vorrq_u8( cOr, vld1q_u8( outCurrMask.data() + idx + 1 ) );
+                cOr = vorrq_u8( cOr, vld1q_u8( outCurrMask.data() + idx - dsW ) );
+                cOr = vorrq_u8( cOr, vld1q_u8( outCurrMask.data() + idx + dsW ) );
                 vst1q_u8( dilatedCurr.data() + idx, vandq_u8( vminq_u8( cOr, vOne ), vOne ) );
             }
 #endif
             for( ; x < dsW - 1; ++x )
             {
                 const int idx = y * dsW + x;
-                if( dsMaskPrev[idx] | dsMaskPrev[idx - 1] | dsMaskPrev[idx + 1] |
-                    dsMaskPrev[idx - dsW] | dsMaskPrev[idx + dsW] )
+                if( outPrevMask[idx] | outPrevMask[idx - 1] | outPrevMask[idx + 1] |
+                    outPrevMask[idx - dsW] | outPrevMask[idx + dsW] )
                     dilatedPrev[idx] = 1;
-                if( dsMaskCurr[idx] | dsMaskCurr[idx - 1] | dsMaskCurr[idx + 1] |
-                    dsMaskCurr[idx - dsW] | dsMaskCurr[idx + dsW] )
+                if( outCurrMask[idx] | outCurrMask[idx - 1] | outCurrMask[idx + 1] |
+                    outCurrMask[idx - dsW] | outCurrMask[idx + dsW] )
                     dilatedCurr[idx] = 1;
             }
         }
-        dsMaskPrev = std::move( dilatedPrev );
-        dsMaskCurr = std::move( dilatedCurr );
+        outPrevMask = std::move( dilatedPrev );
+        outCurrMask = std::move( dilatedCurr );
+    };
+
+    if( veryLowEntropyPair || highConstantFractionPair )
+    {
+        const bool canCacheMasks = hasPrecomputedLuma &&
+                                   !precomputedPrevLuma.empty() &&
+                                   !precomputedCurrLuma.empty();
+        const BYTE* prevKey = canCacheMasks ? precomputedPrevLuma.data() : nullptr;
+        const BYTE* currKey = canCacheMasks ? precomputedCurrLuma.data() : nullptr;
+
+        bool cacheHit = false;
+        if( canCacheMasks )
+        {
+            for( auto it = informativeMaskCache.begin(); it != informativeMaskCache.end(); ++it )
+            {
+                if( it->prevKey == prevKey &&
+                    it->currKey == currKey &&
+                    it->width == dsW &&
+                    it->height == dsH )
+                {
+                    dsMaskPrev = it->prevMask;
+                    dsMaskCurr = it->currMask;
+                    InformativeMaskCacheEntry entry = std::move( *it );
+                    informativeMaskCache.erase( it );
+                    informativeMaskCache.push_back( std::move( entry ) );
+                    cacheHit = true;
+                    break;
+                }
+            }
+        }
+
+        if( !cacheHit )
+        {
+            buildInformativeMasks( dsMaskPrev, dsMaskCurr );
+
+            if( canCacheMasks )
+            {
+                if( informativeMaskCache.size() >= 4 )
+                {
+                    informativeMaskCache.erase( informativeMaskCache.begin() );
+                }
+                InformativeMaskCacheEntry entry;
+                entry.prevKey = prevKey;
+                entry.currKey = currKey;
+                entry.width = dsW;
+                entry.height = dsH;
+                entry.prevMask = dsMaskPrev;
+                entry.currMask = dsMaskCurr;
+                informativeMaskCache.push_back( std::move( entry ) );
+            }
+        }
     }
 
     // Compute masked stationary score for very-low-entropy pairs.
