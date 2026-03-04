@@ -850,6 +850,7 @@ MOUSEINPUT
 MOVESIZEEND
 MOVESIZESTART
 MRM
+MRT
 mru
 msc
 mscorlib
@@ -981,6 +982,7 @@ NTAPI
 ntdll
 NTSTATUS
 NTSYSAPI
+nullability
 NULLCURSOR
 nullonfailure
 numberbox
@@ -2047,7 +2049,6 @@ mousehighlighter
 mousejump
 mousepointer
 mouseutils
-mrt
 MSAL
 msdia
 MSIs
