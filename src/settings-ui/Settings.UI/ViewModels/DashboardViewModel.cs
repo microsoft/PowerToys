@@ -213,6 +213,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     continue;
                 }
 
+                // TEMPORARILY_DISABLED: PowerDisplay
+                if (moduleType == ModuleType.PowerDisplay)
+                {
+                    continue;
+                }
+
                 GpoRuleConfigured gpo = ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
                 var newItem = new DashboardListItem()
                 {
@@ -221,7 +227,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                    IsNew = moduleType == ModuleType.CursorWrap || moduleType == ModuleType.PowerDisplay,
+                    IsNew = false,
                     DashboardModuleItems = GetModuleItems(moduleType),
                     ClickCommand = new RelayCommand<object>(DashboardListItemClick),
                 };

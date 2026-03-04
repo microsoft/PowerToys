@@ -1727,7 +1727,13 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Help_floatWithout" xml:space="preserve">
     <value>float without leading zero</value>
   </data>
-  <data name="ColorFormatEditorHelpline3.Text" xml:space="preserve">
+   <data name="ColorFormatEditorHelpline3.Text" xml:space="preserve">
+    <value>The lightness (CIE), chromaticity A (CIE Lab) and chromaticity B (CIE Lab) values can be formatted to the following formats:</value>
+  </data>
+  <data name="Help_integer" xml:space="preserve">
+    <value>rounded to the nearest integer</value>
+  </data>
+  <data name="ColorFormatEditorHelpline4.Text" xml:space="preserve">
     <value>Example:  %ReX means red value in hex uppercase two digits format.</value>
   </data>
   <data name="ColorPicker_ShowColorName.Header" xml:space="preserve">
@@ -2189,6 +2195,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="ScoobeWindow_TitleTxt.Title" xml:space="preserve">
     <value>What's new in PowerToys</value>
   </data>
+  <data name="Scoobe_OpenSettings.Content" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="ScoobeReleaseNotes_ViewOnGitHub" xml:space="preserve">
+    <value>View on GitHub</value>
+  </data>
   <data name="SettingsWindow_Title" xml:space="preserve">
     <value>PowerToys Settings</value>
     <comment>Title of the settings window when running as user</comment>
@@ -2492,6 +2504,26 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_WrapMode_Both.Content" xml:space="preserve">
     <value>Vertical and horizontal</value>
   </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode.Header" xml:space="preserve">
+    <value>Wrapping activation</value>
+    <comment>CursorWrap: Label for activation mode dropdown</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode.Description" xml:space="preserve">
+    <value>Control when cursor wrapping occurs as the pointer reaches the screen edge.</value>
+    <comment>CursorWrap: Description for activation mode dropdown</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode_Always.Content" xml:space="preserve">
+    <value>Always</value>
+    <comment>CursorWrap: Activation mode - always wrap</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode_HoldingCtrl.Content" xml:space="preserve">
+    <value>Holding Ctrl</value>
+    <comment>CursorWrap: Activation mode - disable wrap when Ctrl held</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode_HoldingShift.Content" xml:space="preserve">
+    <value>Holding Shift</value>
+    <comment>CursorWrap: Activation mode - disable wrap when Shift held</comment>
+  </data>		
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
@@ -2958,6 +2990,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="AlwaysOnTop_Behavior_GroupSettings.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
+  <data name="AlwaysOnTop_ContextMenuEnabled.Header" xml:space="preserve">
+    <value>Show Always on Top in the title bar context menu</value>
+  </data>
+  <data name="AlwaysOnTop_ContextMenuEnabled.Description" xml:space="preserve">
+    <value>Lets you turn Always on Top mode on or off from the window's title bar right-click menu</value>
+  </data>
   <data name="Shell_AlwaysOnTop.Content" xml:space="preserve">
     <value>Always On Top</value>
     <comment>{Locked}</comment>
@@ -2974,19 +3012,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Activation shortcut</value>
   </data>
   <data name="AlwaysOnTop_ActivationShortcut.Description" xml:space="preserve">
-    <value>Customize the shortcut to pin or unpin an app window and use the same modifier keys with + or − to adjust its transparency</value>
-  </data>
-  <data name="AlwaysOnTop_TransparencyInfo.Header" xml:space="preserve">
-    <value>Window transparency</value>
-  </data>
-  <data name="AlwaysOnTop_TransparencyInfo.Description" xml:space="preserve">
-    <value>Adjust the transparency of the focused window on top</value>
+    <value>Customize the shortcut to pin or unpin an app window</value>
   </data>
   <data name="AlwaysOnTop_IncreaseOpacity" xml:space="preserve">
-    <value>Press **{0}** to increase the window opacity</value>
+    <value>Press **{0}** to increase the opacity of the window</value>
   </data>
   <data name="AlwaysOnTop_DecreaseOpacity" xml:space="preserve">
-    <value>Press **{0}** to decrease the window opacity</value>
+    <value>Press **{0}** to decrease the opacity of the window</value>
   </data>
   <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>
@@ -4376,6 +4408,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Ignores digits, spaces, and dots at the start of filenames—useful for sorting templates without showing those characters</value>
     <comment>Template filename starting digits settings toggle</comment>
   </data>
+  <data name="NewPlusHideBuiltInNewToggle.Header" xml:space="preserve">
+    <value>Hide the built-in "New" context menu</value>
+    <comment>Localize New in accordance with Windows New</comment>
+  </data>
   <data name="NewPlus_behavior.Header" xml:space="preserve">
     <value>Behavior</value>
     <comment>New+ behavior related settings label</comment>
@@ -5136,6 +5172,12 @@ The break timer font matches the text font.</value>
   </data>
   <data name="LightSwitch_SunsetTooltip.Text" xml:space="preserve">
     <value>Sunset</value>
+  </data>
+  <data name="LightSwitch_LocationError_Timeout" xml:space="preserve">
+    <value>Unable to connect to location services. Please try again or enter your coordinates manually.</value>
+  </data>
+  <data name="LightSwitch_LocationError_Unavailable" xml:space="preserve">
+    <value>Location services unavailable. Please enter your coordinates manually.</value>
   </data>
   <data name="Close_NavViewItem.Content" xml:space="preserve">
     <value>Close PowerToys</value>

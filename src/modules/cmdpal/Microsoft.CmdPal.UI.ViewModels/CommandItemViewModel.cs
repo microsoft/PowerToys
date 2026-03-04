@@ -51,9 +51,11 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private string _itemTitle = string.Empty;
 
-    public string Title => string.IsNullOrEmpty(_itemTitle) ? Name : _itemTitle;
+    protected string ItemTitle => _itemTitle;
 
-    public string Subtitle { get; private set; } = string.Empty;
+    public virtual string Title => string.IsNullOrEmpty(_itemTitle) ? Name : _itemTitle;
+
+    public virtual string Subtitle { get; private set; } = string.Empty;
 
     private IconInfoViewModel _icon = new(null);
 
@@ -73,9 +75,29 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public CommandItemViewModel? PrimaryCommand => this;
 
-    public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? ActualCommands[0] : null;
+    public CommandItemViewModel? SecondaryCommand
+    {
+        get
+        {
+            if (HasMoreCommands)
+            {
+                if (MoreCommands[0] is CommandContextItemViewModel command)
+                {
+                    return command;
+                }
+            }
+
+            return null;
+        }
+    }
 
     public bool ShouldBeVisible => !string.IsNullOrEmpty(Name);
+
+    public bool HasTitle => !string.IsNullOrEmpty(Title);
+
+    public bool HasSubtitle => !string.IsNullOrEmpty(Subtitle);
+
+    public virtual bool HasText => HasTitle || HasSubtitle;
 
     public DataPackageView? DataPackage { get; private set; }
 
@@ -103,7 +125,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     public CommandItemViewModel(
         ExtensionObject<ICommandItem> item,
         WeakReference<IPageContext> errorContext,
-        IContextMenuFactory? contextMenuFactory = null)
+        IContextMenuFactory? contextMenuFactory)
         : base(errorContext)
     {
         _commandItemModel = item;
@@ -331,11 +353,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 UpdateProperty(nameof(Name));
                 UpdateProperty(nameof(Title));
                 UpdateProperty(nameof(Icon));
+                UpdateProperty(nameof(HasText));
                 break;
 
             case nameof(Title):
                 _itemTitle = model.Title;
                 _titleCache.Invalidate();
+                UpdateProperty(nameof(HasText));
                 break;
 
             case nameof(Subtitle):
@@ -343,6 +367,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 this.Subtitle = modelSubtitle;
                 _defaultCommandContextItemViewModel?.Subtitle = modelSubtitle;
                 _subtitleCache.Invalidate();
+                UpdateProperty(nameof(HasText));
                 break;
 
             case nameof(Icon):
@@ -401,11 +426,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
     }
 
-    private void UpdateDefaultContextItemIcon()
-    {
+    private void UpdateDefaultContextItemIcon() =>
+
         // Command icon takes precedence over our icon on the primary command
         _defaultCommandContextItemViewModel?.UpdateIcon(Command.Icon.IsSet ? Command.Icon : _icon);
-    }
 
     private void UpdateTitle(string? title)
     {
@@ -462,6 +486,30 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         freedItems.OfType<CommandContextItemViewModel>()
                   .ToList()
                   .ForEach(c => c.SafeCleanup());
+    }
+
+    public void RefreshMoreCommands()
+    {
+        Task.Run(RefreshMoreCommandsSynchronous);
+    }
+
+    private void RefreshMoreCommandsSynchronous()
+    {
+        try
+        {
+            BuildAndInitMoreCommands();
+            UpdateProperty(nameof(MoreCommands));
+            UpdateProperty(nameof(AllCommands));
+            UpdateProperty(nameof(SecondaryCommand));
+            UpdateProperty(nameof(SecondaryCommandName));
+            UpdateProperty(nameof(HasMoreCommands));
+        }
+        catch (Exception ex)
+        {
+            // Handle any exceptions that might occur during the refresh process
+            CoreLogger.LogError("Error refreshing MoreCommands in CommandItemViewModel", ex);
+            ShowException(ex, _commandItemModel?.Unsafe?.Title);
+        }
     }
 
     protected override void UnsafeCleanup()

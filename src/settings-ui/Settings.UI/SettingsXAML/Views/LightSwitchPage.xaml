@@ -376,6 +376,12 @@
                                 VerticalAlignment="Center"
                                 IsActive="False"
                                 Visibility="Collapsed" />
+                            <TextBlock
+                                x:Name="LocationErrorText"
+                                Grid.Row="2"
+                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                TextWrapping="Wrap"
+                                Visibility="Collapsed" />
                             <Grid
                                 x:Name="LocationResultPanel"
                                 Grid.Row="2"

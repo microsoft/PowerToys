@@ -19,4 +19,8 @@ public interface ISettingsInterface
     public List<string> ProgramSuffixes { get; }
 
     public List<string> RunCommandSuffixes { get; }
+
+    public bool IncludeNonAppsOnDesktop { get; }
+
+    public bool IncludeNonAppsInStartMenu { get; }
 }

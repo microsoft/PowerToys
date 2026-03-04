@@ -126,10 +126,12 @@
                     x:Uid="Shell_Peek"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}"
                     Tag="Peek" />
+                <!-- TEMPORARILY_DISABLED: PowerDisplay
                 <NavigationViewItem
                     x:Uid="Shell_PowerDisplay"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}"
                     Tag="PowerDisplay" />
+                -->
                 <NavigationViewItem
                     x:Uid="Shell_PowerRename"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}"

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -68,6 +68,11 @@ public partial class SettingsModel : ObservableObject
 
     public EscapeKeyBehavior EscapeKeyBehaviorSetting { get; set; } = EscapeKeyBehavior.ClearSearchFirstThenGoBack;
 
+    public bool EnableDock { get; set; }
+
+    public DockSettings DockSettings { get; set; } = new();
+
+    // Theme settings
     public UserTheme Theme { get; set; } = UserTheme.Default;
 
     public ColorizationMode ColorizationMode { get; set; }
@@ -91,6 +96,8 @@ public partial class SettingsModel : ObservableObject
     public BackdropStyle BackdropStyle { get; set; }
 
     public int BackdropOpacity { get; set; } = 100;
+
+    // </Theme settings>
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
@@ -230,7 +237,7 @@ public partial class SettingsModel : ObservableObject
         return false;
     }
 
-    public static void SaveSettings(SettingsModel model)
+    public static void SaveSettings(SettingsModel model, bool hotReload = true)
     {
         if (string.IsNullOrEmpty(FilePath))
         {
@@ -265,7 +272,10 @@ public partial class SettingsModel : ObservableObject
                     // TODO: Instead of just raising the event here, we should
                     // have a file change watcher on the settings file, and
                     // reload the settings then
-                    model.SettingsChanged?.Invoke(model, null);
+                    if (hotReload)
+                    {
+                        model.SettingsChanged?.Invoke(model, null);
+                    }
                 }
                 else
                 {
@@ -311,6 +321,7 @@ public partial class SettingsModel : ObservableObject
 [JsonSerializable(typeof(int))]
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(bool))]
+[JsonSerializable(typeof(Color))]
 [JsonSerializable(typeof(HistoryItem))]
 [JsonSerializable(typeof(SettingsModel))]
 [JsonSerializable(typeof(WindowPosition))]

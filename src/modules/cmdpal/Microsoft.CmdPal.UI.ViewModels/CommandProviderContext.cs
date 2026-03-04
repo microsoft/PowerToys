@@ -4,9 +4,21 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed class CommandProviderContext
+public static class CommandProviderContext
 {
-    public required string ProviderId { get; init; }
+    public static ICommandProviderContext Empty { get; } = new EmptyCommandProviderContext();
 
-    public static CommandProviderContext Empty { get; } = new() { ProviderId = "<EMPTY>" };
+    private sealed class EmptyCommandProviderContext : ICommandProviderContext
+    {
+        public string ProviderId => "<EMPTY>";
+
+        public bool SupportsPinning => false;
+    }
+}
+
+public interface ICommandProviderContext
+{
+    string ProviderId { get; }
+
+    bool SupportsPinning { get; }
 }
