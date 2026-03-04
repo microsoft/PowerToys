@@ -2106,10 +2106,32 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     // luma gradient exceeds a small threshold in either frame.
     std::vector<BYTE> dsMaskPrev;
     std::vector<BYTE> dsMaskCurr;
+
+    auto sampledLumaSignature = []( const std::vector<BYTE>& luma ) -> unsigned __int64
+    {
+        if( luma.empty() )
+        {
+            return 0;
+        }
+
+        // Hash the full luma buffer so cache hits are content-exact even when
+        // callers reuse the same vector storage across different frames.
+        const size_t size = luma.size();
+        unsigned __int64 hash = 1469598103934665603ull; // FNV-1a offset basis
+        for( size_t i = 0; i < size; ++i )
+        {
+            hash ^= static_cast<unsigned __int64>( luma[i] );
+            hash *= 1099511628211ull; // FNV-1a prime
+        }
+        return hash;
+    };
+
     struct InformativeMaskCacheEntry
     {
         const BYTE* prevKey;
         const BYTE* currKey;
+        unsigned __int64 prevSignature;
+        unsigned __int64 currSignature;
         int width;
         int height;
         std::vector<BYTE> prevMask;
@@ -2192,7 +2214,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
 #endif
             for( ; x < dsW - 1; ++x )
             {
-                const int idx = y * dsW + x;
+                const int idx = rowOff + x;
                 if( outPrevMask[idx] | outPrevMask[idx - 1] | outPrevMask[idx + 1] |
                     outPrevMask[idx - dsW] | outPrevMask[idx + dsW] )
                     dilatedPrev[idx] = 1;
@@ -2208,10 +2230,12 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     if( veryLowEntropyPair || highConstantFractionPair )
     {
         const bool canCacheMasks = hasPrecomputedLuma &&
-                                   !precomputedPrevLuma.empty() &&
-                                   !precomputedCurrLuma.empty();
+                       !precomputedPrevLuma.empty() &&
+                       !precomputedCurrLuma.empty();
         const BYTE* prevKey = canCacheMasks ? precomputedPrevLuma.data() : nullptr;
         const BYTE* currKey = canCacheMasks ? precomputedCurrLuma.data() : nullptr;
+        const unsigned __int64 prevSignature = canCacheMasks ? sampledLumaSignature( precomputedPrevLuma ) : 0;
+        const unsigned __int64 currSignature = canCacheMasks ? sampledLumaSignature( precomputedCurrLuma ) : 0;
 
         bool cacheHit = false;
         if( canCacheMasks )
@@ -2220,6 +2244,8 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
             {
                 if( it->prevKey == prevKey &&
                     it->currKey == currKey &&
+                    it->prevSignature == prevSignature &&
+                    it->currSignature == currSignature &&
                     it->width == dsW &&
                     it->height == dsH )
                 {
@@ -2247,6 +2273,8 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 InformativeMaskCacheEntry entry;
                 entry.prevKey = prevKey;
                 entry.currKey = currKey;
+                entry.prevSignature = prevSignature;
+                entry.currSignature = currSignature;
                 entry.width = dsW;
                 entry.height = dsH;
                 entry.prevMask = dsMaskPrev;
@@ -3577,19 +3605,19 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
         else if( rankScore == bestFineRankScore )
         {
-            const int absStep = abs( dy );
+            const int tieAbsStep = abs( dy );
             const int absDx = abs( dx );
-            const int expectedDelta = ( expectedAbsStep > 0 ) ? abs( absStep - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
+            const int expectedDelta = ( expectedAbsStep > 0 ) ? abs( tieAbsStep - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
 
             if( ( expectedAbsStep > 0 && expectedDelta < bestExpectedDelta ) ||
-                ( expectedAbsStep == 0 && absStep < bestAbsStep ) ||
+                ( expectedAbsStep == 0 && tieAbsStep < bestAbsStep ) ||
                 ( expectedDelta == bestExpectedDelta &&
-                  ( absStep < bestAbsStep || ( absStep == bestAbsStep && absDx < bestAbsDx ) ) ) )
+                  ( tieAbsStep < bestAbsStep || ( tieAbsStep == bestAbsStep && absDx < bestAbsDx ) ) ) )
             {
                 bestDx = dx;
                 bestDy = dy;
                 bestCoarseDy = candidates[ci].dyDs;
-                bestAbsStep = absStep;
+                bestAbsStep = tieAbsStep;
                 bestAbsDx = absDx;
                 bestExpectedDelta = expectedDelta;
             }
@@ -3597,9 +3625,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         else if( expectedAbsStep > 0 && bestFineRankScore != ( std::numeric_limits<unsigned __int64>::max )() )
         {
             unsigned __int64 scoreSlack = (std::max)( static_cast<unsigned __int64>( 2 ), bestFineRankScore / 80 );
-            const int absStep = abs( dy );
+            const int candidateAbsStep = abs( dy );
             const int absDx = abs( dx );
-            const int expectedDelta = abs( absStep - expectedAbsStep );
+            const int expectedDelta = abs( candidateAbsStep - expectedAbsStep );
             const bool preferExpectedStep = ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
                 expectedAbsStep >= 8;
 
@@ -4054,6 +4082,46 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                      refineRadiusDy );
         PERF_STOP( tPostValidation ); PERF_STOP( tTotal );
         return false;
+    }
+
+    // HCF harmonic-overshoot guard: periodic content can produce deceptively
+    // low fine scores at harmonic multiples (2x/3x expected step). If the
+    // expected-step candidate is still acceptable, prefer it to prevent
+    // accumulating stitch drift.
+    if( highConstantFractionPair && expectedAbsStep >= 12 &&
+        bestFineScore != ( std::numeric_limits<unsigned __int64>::max )() &&
+        bestAbsStep > expectedAbsStep + max( 10, expectedAbsStep / 3 ) &&
+        bestAbsStep <= expectedAbsStep * 3 &&
+        scoreAtExpectedStep != ( std::numeric_limits<unsigned __int64>::max )() &&
+        scoreAtExpectedStep <= fineThreshold &&
+        maskedStationaryScore <= 24 )
+    {
+        const int harmonicTolerance = max( 4, expectedAbsStep / 10 );
+        const int harmonicResidual = bestAbsStep % expectedAbsStep;
+        const bool nearHarmonicMultiple =
+            harmonicResidual <= harmonicTolerance ||
+            expectedAbsStep - harmonicResidual <= harmonicTolerance;
+
+        if( nearHarmonicMultiple )
+        {
+            StitchLog( L"[Panorama/Stitch] FindBestFrameShift hcf-harmonic-overshoot fallback expected=(%d,%d) harmonic=(%d,%d) harmonicScore=%llu expectedStep=(%d,%d) expectedScore=%llu\n",
+                         expectedDx,
+                         expectedDy,
+                         bestDx,
+                         bestDy,
+                         static_cast<unsigned long long>( bestFineScore ),
+                         dxAtExpectedStep,
+                         dyAtExpectedStep,
+                         static_cast<unsigned long long>( scoreAtExpectedStep ) );
+
+            bestDx = dxAtExpectedStep;
+            bestDy = dyAtExpectedStep;
+            bestFineScore = scoreAtExpectedStep;
+            bestFineRankScore = scoreAtExpectedStep;
+            bestAbsStep = abs( bestDy );
+            bestAbsDx = abs( bestDx );
+            bestExpectedDelta = abs( bestAbsStep - expectedAbsStep );
+        }
     }
 
     StitchLog( L"[Panorama/Stitch] FindBestFrameShift expected=(%d,%d) best=(%d,%d) coarseScore=%llu fineScore=%llu stationary=%llu maskedStat=%llu veryLowEntropy=%d window=[%d,%d] expectedStepScore=%llu dyAtExpectedStep=%d highConstFrac=%d accepted=1\n",
@@ -6464,6 +6532,9 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 //      or a debugger).  On failure, artifacts are written to
 //      %TEMP%\ZoomItPanoramaDebug\panorama_<timestamp>_<pid>\.
 //
+#pragma warning(push)
+#pragma warning(disable : 4456) // Self-test scaffolding reuses local names in nested scopes.
+#pragma warning(disable : 4189) // Some scenario-only locals are intentionally write-only for diagnostics.
 bool RunPanoramaStitchSelfTest()
 {
     // Allocate a console so stdout output is visible when running from
@@ -9584,6 +9655,194 @@ bool RunPanoramaStitchSelfTest()
                                                                                  50, 50, 52, 48, 50, 51, 49,
                                                                                  50, 50, 52, 48, 50, 51, 49 } );
 
+                // Harmonic-overshoot stress: with expected step established at
+                // -45, periodic low-detail bands can score better at harmonic
+                // multiples (-60/-90) and cause visible stitch blur/exclusion.
+                // This scenario validates that selection remains anchored near
+                // expected motion on HCF-like content.
+                if( !stressEarlyExit )
+                {
+                    const wchar_t* hcfName = L"stress-vertical-hcf-harmonic-overshoot";
+                    if( stressScenarioMatches( hcfName ) )
+                    {
+                        if( stressFocusEnabled )
+                            stressFocusMatched = true;
+
+                        constexpr int w = 1206;
+                        constexpr int h = 1018;
+                        constexpr int expectedStep = 45;
+                        constexpr int srcH = h + expectedStep * 24 + 260;
+                        std::vector<BYTE> source( static_cast<size_t>( w ) * srcH * 4, 0 );
+
+                        auto paintSource = [&]( int phase )
+                        {
+                            for( int y = 0; y < srcH; ++y )
+                            {
+                                for( int x = 0; x < w; ++x )
+                                {
+                                    const BYTE base = static_cast<BYTE>( 15 + ( ( x * 7 + y * 3 ) & 0x03 ) );
+                                    const size_t idx = ( static_cast<size_t>( y ) * w + x ) * 4;
+                                    source[idx + 0] = base;
+                                    source[idx + 1] = static_cast<BYTE>( base + 1 );
+                                    source[idx + 2] = static_cast<BYTE>( base + 2 );
+                                    source[idx + 3] = 255;
+                                }
+                            }
+
+                            for( int band = 0; ; ++band )
+                            {
+                                const int y0 = phase + band * expectedStep;
+                                if( y0 >= srcH )
+                                    break;
+                                if( y0 < 1 )
+                                    continue;
+                                for( int by = y0; by < min( srcH - 1, y0 + 2 ); ++by )
+                                {
+                                    for( int x = 0; x < w; ++x )
+                                    {
+                                        const size_t idx = ( static_cast<size_t>( by ) * w + x ) * 4;
+                                        source[idx + 0] = 38;
+                                        source[idx + 1] = 42;
+                                        source[idx + 2] = 46;
+                                    }
+                                }
+                            }
+
+                            // Sparse asymmetric anchors: enough to define the
+                            // true 45px step, but weak enough for harmonic
+                            // ambiguity to appear without proper guarding.
+                            for( int ay = max( 1, 19 + phase ); ay < srcH - 4; ay += 137 )
+                            {
+                                const int x0 = 20 + ( ( ay * 37 + phase * 11 ) % ( w - 60 ) );
+                                for( int dy = 0; dy < 3; ++dy )
+                                {
+                                    for( int dx = 0; dx < 3; ++dx )
+                                    {
+                                        const size_t idx = ( static_cast<size_t>( ay + dy ) * w + x0 + dx ) * 4;
+                                        source[idx + 0] = 154;
+                                        source[idx + 1] = 160;
+                                        source[idx + 2] = 166;
+                                    }
+                                }
+                            }
+                        };
+
+                        auto buildFrameFromSource = [&]( int top, std::vector<BYTE>& outFrame )
+                        {
+                            outFrame.resize( static_cast<size_t>( w ) * h * 4 );
+                            for( int row = 0; row < h; ++row )
+                            {
+                                const BYTE* src = source.data() +
+                                                  ( static_cast<size_t>( top + row ) * w * 4 );
+                                BYTE* dst = outFrame.data() + static_cast<size_t>( row ) * w * 4;
+                                memcpy( dst, src, static_cast<size_t>( w ) * 4 );
+                            }
+                        };
+
+                        TestLog( L"[Panorama/Test] Running %s\n", hcfName );
+                        stressTestsRun++;
+
+                        int evaluatedCases = 0;
+                        int harmonicOvershoots = 0;
+                        int sampleExpected = 0;
+                        int sampleBestDy = 0;
+
+                        for( int trial = 0; trial < 24; ++trial )
+                        {
+                            const int phase = trial;
+                            paintSource( phase );
+
+                            std::vector<int> origins;
+                            origins.push_back( 80 );
+                            for( int i = 0; i < 20; ++i )
+                            {
+                                origins.push_back( origins.back() + expectedStep );
+                            }
+
+                            int expectedDy = -expectedStep;
+                            for( size_t fi = 0; fi + 1 < origins.size(); ++fi )
+                            {
+                                std::vector<BYTE> prevFrame;
+                                std::vector<BYTE> currFrame;
+                                buildFrameFromSource( origins[fi], prevFrame );
+                                buildFrameFromSource( origins[fi + 1], currFrame );
+
+                                int bestDx = 0;
+                                int bestDy = 0;
+                                const bool found = FindBestFrameShift( prevFrame,
+                                                                       currFrame,
+                                                                       w,
+                                                                       h,
+                                                                       0,
+                                                                       expectedDy,
+                                                                       bestDx,
+                                                                       bestDy,
+                                                                       false );
+                                if( !found )
+                                {
+                                    continue;
+                                }
+
+                                evaluatedCases++;
+                                const int absBest = abs( bestDy );
+                                const bool overshoot = absBest > expectedStep + 10;
+                                if( overshoot )
+                                {
+                                    harmonicOvershoots++;
+                                    if( sampleExpected == 0 )
+                                    {
+                                        sampleExpected = expectedDy;
+                                        sampleBestDy = bestDy;
+                                    }
+                                }
+
+                                expectedDy = bestDy;
+                            }
+                        }
+
+                        const bool enoughCoverage = evaluatedCases >= 12;
+                        const bool resultPass = enoughCoverage && harmonicOvershoots == 0;
+                        wchar_t msg[512]{};
+                        if( resultPass )
+                        {
+                            stressTestsPassed++;
+                            TestLog( L"  [%d] %s PASSED\n", stressTestsRun, hcfName );
+                            swprintf_s( msg,
+                                        L"PASS: %s (cases=%d overshoots=%d)\n",
+                                        hcfName,
+                                        evaluatedCases,
+                                        harmonicOvershoots );
+                        }
+                        else
+                        {
+                            TestLog( L"***** FAIL: %s (cases=%d overshoots=%d sampleBestDy=%d expected=%d) *****\n",
+                                     hcfName,
+                                     evaluatedCases,
+                                     harmonicOvershoots,
+                                     sampleBestDy,
+                                     sampleExpected );
+                            swprintf_s( msg,
+                                        L"FAIL: %s (cases=%d overshoots=%d sampleBestDy=%d expected=%d)\n",
+                                        hcfName,
+                                        evaluatedCases,
+                                        harmonicOvershoots,
+                                        sampleBestDy,
+                                        sampleExpected );
+                            stressFailLog += msg;
+                        }
+                        stressLog += msg;
+
+                        if( stressFocusEnabled )
+                        {
+                            TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                     hcfName,
+                                     resultPass ? L"PASS" : L"FAIL" );
+                            if( stressStopAfterFocus )
+                                stressEarlyExit = true;
+                        }
+                    }
+                }
+
         // Wide-portal exhaustive-fallback test: when the search range
         // exceeds the candidate budget (kMaxCandidatesWithProbes=160),
         // the iteration order of the exhaustive fallback determines
@@ -10188,6 +10447,232 @@ bool RunPanoramaStitchSelfTest()
                     }
                 }
             }
+
+            // Deterministic cache-regression stress: reuse the same luma
+            // buffers for two different narrow-band pairs. This catches stale
+            // informative-mask cache entries keyed only by buffer address.
+            if( !stressEarlyExit )
+            {
+                const wchar_t* scenarioName = L"stress-vertical-maskcache-pointerreuse";
+                if( stressScenarioMatches( scenarioName ) )
+                {
+                    if( stressFocusEnabled )
+                        stressFocusMatched = true;
+
+                    const int w = 480;
+                    const int h = 360;
+
+                    std::vector<BYTE> prevPixels( static_cast<size_t>( w ) * h * 4, 0 );
+                    std::vector<BYTE> currPixels( static_cast<size_t>( w ) * h * 4, 0 );
+                    std::vector<BYTE> precomputedPrevLuma( static_cast<size_t>( w ) * h, 0 );
+                    std::vector<BYTE> precomputedCurrLuma( static_cast<size_t>( w ) * h, 0 );
+
+                    auto paintNarrowBands = [&]( std::vector<BYTE>& pixels,
+                                                 int phase,
+                                                 int yStart,
+                                                 int spacing,
+                                                 BYTE dark,
+                                                 BYTE bright )
+                    {
+                        const size_t totalPixels = static_cast<size_t>( w ) * h;
+                        for( size_t pi = 0; pi < totalPixels; ++pi )
+                        {
+                            pixels[pi * 4 + 0] = 246;
+                            pixels[pi * 4 + 1] = 246;
+                            pixels[pi * 4 + 2] = 246;
+                            pixels[pi * 4 + 3] = 255;
+                        }
+
+                        for( int band = 0; band < 14; ++band )
+                        {
+                            const int y0 = yStart + band * spacing;
+                            if( y0 >= h - 2 )
+                            {
+                                break;
+                            }
+
+                            const int bandHeight = ( band % 3 == 0 ) ? 2 : 3;
+                            const int xStart = 20 + ( ( phase * 29 + band * 11 ) % 80 );
+                            const int xEnd = w - 20 - ( ( phase * 13 + band * 17 ) % 80 );
+                            for( int by = max( 1, y0 ); by < min( h - 1, y0 + bandHeight ); ++by )
+                            {
+                                for( int bx = max( 1, xStart ); bx < min( w - 1, max( xStart + 2, xEnd ) ); ++bx )
+                                {
+                                    const size_t idx = ( static_cast<size_t>( by ) * w + bx ) * 4;
+                                    const BYTE value = ( ( bx + by + band ) % 5 == 0 ) ? bright : dark;
+                                    pixels[idx + 0] = value;
+                                    pixels[idx + 1] = value;
+                                    pixels[idx + 2] = value;
+                                }
+                            }
+                        }
+                    };
+
+                    auto runPair = [&]( int expectedDy,
+                                        int& outDx,
+                                        int& outDy,
+                                        unsigned __int64& outMaskedScore,
+                                        const std::vector<BYTE>& prevLumaArg,
+                                        const std::vector<BYTE>& currLumaArg ) -> bool
+                    {
+                        bool nearStationaryOverride = false;
+                        outDx = 0;
+                        outDy = 0;
+                        outMaskedScore = 0;
+                        return FindBestFrameShiftVerticalOnly( prevPixels,
+                                                               currPixels,
+                                                               w,
+                                                               h,
+                                                               0,
+                                                               expectedDy,
+                                                               outDx,
+                                                               outDy,
+                                                               false,
+                                                               prevLumaArg,
+                                                               currLumaArg,
+                                                               1,
+                                                               &nearStationaryOverride,
+                                                               false,
+                                                               &outMaskedScore );
+                    };
+
+                    TestLog( L"[Panorama/Test] Running %s\n", scenarioName );
+                    stressTestsRun++;
+
+                    int comparableCases = 0;
+                    int divergenceCases = 0;
+                    int sampleReuseDy = 0;
+                    int sampleFreshDy = 0;
+                    int sampleExpected = 0;
+                    unsigned __int64 sampleReuseMasked = 0;
+                    unsigned __int64 sampleFreshMasked = 0;
+
+                    for( int trial = 0; trial < 24; ++trial )
+                    {
+                        const int warmupExpected = -12 - ( ( trial * 7 ) % 12 ); // -12..-23
+                        const int targetExpected = -18 - ( ( trial * 11 ) % 18 ); // -18..-35
+
+                        // Warm-up pair fills cache for the current luma buffers.
+                        paintNarrowBands( prevPixels, 5 + trial, 20 + ( trial % 6 ) * 4, 18, 22, 78 );
+                        paintNarrowBands( currPixels, 8 + trial, 20 + ( trial % 6 ) * 4 - warmupExpected, 18, 22, 78 );
+                        BuildFullLumaFrame( prevPixels, w, h, precomputedPrevLuma );
+                        BuildFullLumaFrame( currPixels, w, h, precomputedCurrLuma );
+
+                        int warmDx = 0;
+                        int warmDy = 0;
+                        unsigned __int64 warmMaskedScore = 0;
+                        runPair( warmupExpected,
+                                 warmDx,
+                                 warmDy,
+                                 warmMaskedScore,
+                                 precomputedPrevLuma,
+                                 precomputedCurrLuma );
+
+                        // Target pair mutates content in-place while reusing the
+                        // same luma buffers and therefore the same data pointers.
+                        paintNarrowBands( prevPixels, 41 + trial * 3, 128 + ( trial % 5 ) * 7, 11, 26, 96 );
+                        paintNarrowBands( currPixels, 47 + trial * 3, 128 + ( trial % 5 ) * 7 - targetExpected, 11, 26, 96 );
+                        BuildFullLumaFrame( prevPixels, w, h, precomputedPrevLuma );
+                        BuildFullLumaFrame( currPixels, w, h, precomputedCurrLuma );
+
+                        int reuseDx = 0;
+                        int reuseDy = 0;
+                        unsigned __int64 reuseMaskedScore = 0;
+                        const bool reuseOk = runPair( targetExpected,
+                                                      reuseDx,
+                                                      reuseDy,
+                                                      reuseMaskedScore,
+                                                      precomputedPrevLuma,
+                                                      precomputedCurrLuma );
+
+                        std::vector<BYTE> freshPrevLuma = precomputedPrevLuma;
+                        std::vector<BYTE> freshCurrLuma = precomputedCurrLuma;
+
+                        int freshDx = 0;
+                        int freshDy = 0;
+                        unsigned __int64 freshMaskedScore = 0;
+                        const bool freshOk = runPair( targetExpected,
+                                                      freshDx,
+                                                      freshDy,
+                                                      freshMaskedScore,
+                                                      freshPrevLuma,
+                                                      freshCurrLuma );
+
+                        const bool freshComparable = freshOk;
+                        if( !freshComparable )
+                        {
+                            continue;
+                        }
+
+                        comparableCases++;
+                        const bool diverged = ( reuseOk != freshOk ) || abs( reuseDy - freshDy ) > 4;
+                        if( diverged )
+                        {
+                            divergenceCases++;
+                            if( sampleExpected == 0 )
+                            {
+                                sampleExpected = targetExpected;
+                                sampleReuseDy = reuseDy;
+                                sampleFreshDy = freshDy;
+                                sampleReuseMasked = reuseMaskedScore;
+                                sampleFreshMasked = freshMaskedScore;
+                            }
+                        }
+                    }
+
+                    const bool enoughComparableCases = comparableCases >= 5;
+                    const bool resultPass = enoughComparableCases && divergenceCases == 0;
+
+                    wchar_t msg[512]{};
+                    if( resultPass )
+                    {
+                        stressTestsPassed++;
+                        TestLog( L"  [%d] %s PASSED (pair1=%d pair2=%d)\n",
+                                 stressTestsRun,
+                                 scenarioName,
+                                 comparableCases,
+                                 divergenceCases );
+                        swprintf_s( msg,
+                                    L"PASS: %s (comparable=%d divergence=%d)\n",
+                                    scenarioName,
+                                    comparableCases,
+                                    divergenceCases );
+                    }
+                    else
+                    {
+                        TestLog( L"***** FAIL: %s (comparable=%d divergence=%d sampleExpected=%d sampleReuseDy=%d sampleFreshDy=%d sampleReuseMs=%llu sampleFreshMs=%llu) *****\n",
+                                 scenarioName,
+                                 comparableCases,
+                                 divergenceCases,
+                                 sampleExpected,
+                                 sampleReuseDy,
+                                 sampleFreshDy,
+                                 static_cast<unsigned long long>( sampleReuseMasked ),
+                                 static_cast<unsigned long long>( sampleFreshMasked ) );
+                        swprintf_s( msg,
+                                    L"FAIL: %s (comparable=%d divergence=%d sampleExpected=%d sampleReuseDy=%d sampleFreshDy=%d sampleReuseMs=%llu sampleFreshMs=%llu)\n",
+                                    scenarioName,
+                                    comparableCases,
+                                    divergenceCases,
+                                    sampleExpected,
+                                    sampleReuseDy,
+                                    sampleFreshDy,
+                                    static_cast<unsigned long long>( sampleReuseMasked ),
+                                    static_cast<unsigned long long>( sampleFreshMasked ) );
+                        stressFailLog += msg;
+                    }
+                    stressLog += msg;
+
+                    if( stressFocusEnabled )
+                    {
+                        TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                     scenarioName,
+                                     resultPass ? L"PASS" : L"FAIL" );
+                        if( stressStopAfterFocus )
+                            stressEarlyExit = true;
+                    }
+                }
+            }
         }
 
         // Horizontal stress test: ~100 frames per trial, steps 0..25% of portal
@@ -10682,6 +11167,8 @@ bool RunPanoramaStitchSelfTest()
     TestLog( L"[Panorama/Test] All scenarios passed.  Dump: %s\n", selfTestDumpDirectory.c_str() );
     return true;
 }
+
+#pragma warning(pop)
 
 bool RunPanoramaStitchDumpDirectory( const wchar_t* path )
 {
