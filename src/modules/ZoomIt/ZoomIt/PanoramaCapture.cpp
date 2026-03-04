@@ -3174,6 +3174,17 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     for( int ci = 0; ci < prunedCount; ++ci )
     {
         const int coarseDyFull = candidates[ci].dyDs * downsampleScale;
+
+        if( highConstantFractionPair && expectedAbsStep >= 12 )
+        {
+            const int expectedWindow = max( refineRadiusDy + 8, expectedAbsStep / 3 );
+            const int coarseExpectedDelta = abs( abs( coarseDyFull ) - expectedAbsStep );
+            if( ci > 0 && coarseExpectedDelta > expectedWindow )
+            {
+                continue;
+            }
+        }
+
         for( int ddy = -refineRadiusDy; ddy <= refineRadiusDy; ++ddy )
         {
             const int dy = coarseDyFull + ddy;
@@ -3388,10 +3399,17 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 expectedAbsStep > 0 &&
                 abs( abs( dy ) - expectedAbsStep ) <= refineRadiusDy + 4;
             const unsigned __int64 curBest = sharedBestFine.load( std::memory_order_relaxed );
-            if( !isExpectedStepDy &&
-                curBest != ( std::numeric_limits<unsigned __int64>::max )() &&
-                y >= overlap * 3 / 4 &&
-                samples >= earlyMinSamples && totalDiff * kFineScoreScale >= (curBest + 1) * samples )
+            const bool zeroBestFastExit =
+                highConstantFractionPair &&
+                !isExpectedStepDy &&
+                curBest == 0 &&
+                samples >= earlyMinSamples;
+
+            if( zeroBestFastExit ||
+                ( !isExpectedStepDy &&
+                  curBest != ( std::numeric_limits<unsigned __int64>::max )() &&
+                  y >= overlap * 3 / 4 &&
+                  samples >= earlyMinSamples && totalDiff * kFineScoreScale >= ( curBest + 1 ) * samples ) )
             {
                 earlyExit = true;
             }
@@ -7542,6 +7560,7 @@ bool RunPanoramaStitchSelfTest()
             const bool isFastScrollScenario = wcsstr( scenario, L"fastscroll" ) != nullptr ||
                                                 wcsstr( scenario, L"accelscroll" ) != nullptr;
             const bool isHcfDarkScenario = wcsstr( scenario, L"hcfdark" ) != nullptr;
+            const bool isHcfWhitespaceScenario = wcsstr( scenario, L"hcfwhitespace" ) != nullptr;
             const bool isMomentumReversalScenario = wcsstr( scenario, L"momentumreversal" ) != nullptr;
 
             std::vector<HBITMAP> frames;
@@ -7594,6 +7613,29 @@ bool RunPanoramaStitchSelfTest()
                         const size_t bi = pi * 4;
                         const int luma = ( fp[bi + 2] * 77 + fp[bi + 1] * 150 + fp[bi + 0] * 29 ) >> 8;
                         if( luma < 40 ) continue; // dark pixel -- keep identical
+                        for( int ch = 0; ch < 3; ++ch )
+                        {
+                            noiseSeed = noiseSeed * 1103515245u + 12345u;
+                            const int noise = static_cast<int>( ( noiseSeed >> 16 ) % 5 ) - 2;
+                            const int val = static_cast<int>( fp[bi + ch] ) + noise;
+                            fp[bi + ch] = static_cast<BYTE>( max( 0, min( 255, val ) ) );
+                        }
+                    }
+                }
+
+                // HCF-whitespace noise: add tiny deterministic variation only
+                // to darker text pixels, while keeping bright background
+                // identical. This models subpixel text rendering variation on
+                // mostly-white pages without reducing constant-content fraction.
+                if( isHcfWhitespaceScenario )
+                {
+                    unsigned int noiseSeed = static_cast<unsigned int>( fi * 104729 + 2017 );
+                    const size_t totalPixels = static_cast<size_t>( imgW ) * static_cast<size_t>( winH );
+                    for( size_t pi = 0; pi < totalPixels; ++pi )
+                    {
+                        const size_t bi = pi * 4;
+                        const int luma = ( fp[bi + 2] * 77 + fp[bi + 1] * 150 + fp[bi + 0] * 29 ) >> 8;
+                        if( luma > 210 ) continue; // keep white background identical
                         for( int ch = 0; ch < 3; ++ch )
                         {
                             noiseSeed = noiseSeed * 1103515245u + 12345u;
@@ -9949,6 +9991,139 @@ bool RunPanoramaStitchSelfTest()
                                 stressEarlyExit = true;
                                 break;
                             }
+                        }
+                    }
+                }
+            }
+
+            // HCF whitespace stress test: light background + sparse text-like
+            // bands with fixed moderate true motion. Reproduces real captures
+            // where high-constant-content windows can collapse to tiny shifts
+            // and then over-correct with large jumps.
+            if( !stressEarlyExit )
+            {
+                const int wsW = 998;
+                const int wsH = 18000;
+                std::vector<BYTE> wsPx( static_cast<size_t>( wsW ) * wsH * 4, 0 );
+
+                for( size_t pi = 0; pi < static_cast<size_t>( wsW ) * wsH; ++pi )
+                {
+                    wsPx[pi * 4 + 0] = 246;
+                    wsPx[pi * 4 + 1] = 246;
+                    wsPx[pi * 4 + 2] = 246;
+                    wsPx[pi * 4 + 3] = 255;
+                }
+
+                {
+                    unsigned int bandSeed = 99173u;
+                    int bandY = 4500;
+                    while( bandY < wsH - 3 )
+                    {
+                        bandSeed = bandSeed * 1103515245u + 12345u;
+                        const int bandHeight = 2 + static_cast<int>( ( bandSeed >> 16 ) % 2 );
+                        bandSeed = bandSeed * 1103515245u + 12345u;
+                        const int brightness = 24 + static_cast<int>( ( bandSeed >> 16 ) % 28 );
+                        bandSeed = bandSeed * 1103515245u + 12345u;
+                        const int bandStart = 56 + static_cast<int>( ( bandSeed >> 16 ) % 40 );
+                        bandSeed = bandSeed * 1103515245u + 12345u;
+                        const int bandEnd = wsW - 54 - static_cast<int>( ( bandSeed >> 16 ) % 40 );
+
+                        for( int by = bandY; by < min( bandY + bandHeight, wsH ); ++by )
+                        {
+                            for( int bx = bandStart; bx < max( bandStart + 1, bandEnd ); ++bx )
+                            {
+                                const size_t idx = ( static_cast<size_t>( by ) * wsW + bx ) * 4;
+                                wsPx[idx + 0] = static_cast<BYTE>( brightness );
+                                wsPx[idx + 1] = static_cast<BYTE>( brightness );
+                                wsPx[idx + 2] = static_cast<BYTE>( brightness );
+                            }
+                        }
+
+                        bandSeed = bandSeed * 1103515245u + 12345u;
+                        const int gap = 95 + static_cast<int>( ( bandSeed >> 16 ) % 126 );
+                        bandY += bandHeight + gap;
+                    }
+                }
+
+                const int winH = 854;
+                const int fixedStep = 30;
+                std::vector<int> originsY;
+                originsY.reserve( 220 );
+                originsY.push_back( 0 );
+                int y = 0;
+                while( originsY.size() < 214 )
+                {
+                    const int nextY = y + fixedStep;
+                    if( nextY + winH > wsH )
+                        break;
+                    y = nextY;
+                    originsY.push_back( y );
+                }
+
+                if( originsY.size() >= 60 )
+                {
+                    const wchar_t* scenarioName = L"stress-vertical-hcfwhitespace-trial0";
+
+                    if( stressScenarioMatches( scenarioName ) )
+                    {
+                        if( stressFocusEnabled )
+                            stressFocusMatched = true;
+
+                        TestLog( L"[Panorama/Test] Running %s firstOrigin=%d lastOrigin=%d n=%zu\n",
+                                     scenarioName,
+                                     originsY.front(),
+                                     originsY.back(),
+                                     originsY.size() );
+
+                        stressTestsRun++;
+                        const ULONGLONG wsStart = GetTickCount64();
+                        const int rawResult = stitchAndCompare( scenarioName, wsPx, wsW, wsH, originsY, winH );
+                        const ULONGLONG wsDurationMs = GetTickCount64() - wsStart;
+                        const bool tooSlow = wsDurationMs > 70000;
+                        const int result = ( rawResult < 0 ) ? -1 : ( rawResult == 1 && !tooSlow ? 1 : 0 );
+                        const size_t composedCount = countComposedVertical( wsPx, wsW, wsH, originsY, winH );
+
+                        wchar_t msg[512]{};
+                        if( result < 0 )
+                        {
+                            TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", scenarioName );
+                            swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu, composed=%zu)\n",
+                                        scenarioName, winH, originsY.size(), composedCount );
+                            stressFailLog += msg;
+                        }
+                        else if( result == 1 )
+                        {
+                            stressTestsPassed++;
+                            TestLog( L"  [%d] %s PASSED\n", stressTestsRun, scenarioName );
+                            swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu, composed=%zu, durMs=%llu)\n",
+                                        scenarioName, winH, originsY.size(), composedCount, wsDurationMs );
+                        }
+                        else
+                        {
+                            if( tooSlow )
+                            {
+                                TestLog( L"***** FAIL: %s runtime too slow (%llums) *****\n", scenarioName, wsDurationMs );
+                            }
+                            else
+                            {
+                                TestLog( L"***** FAIL: %s *****\n", scenarioName );
+                            }
+                            swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu, composed=%zu, durMs=%llu)\n",
+                                        scenarioName, winH, originsY.size(), composedCount, wsDurationMs );
+                            stressFailLog += msg;
+                        }
+                        stressLog += msg;
+
+                        if( stressFocusEnabled )
+                        {
+                            const wchar_t* focusResult = L"FAIL";
+                            if( result < 0 ) focusResult = L"INFRA";
+                            else if( result == 1 ) focusResult = L"PASS";
+                            TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                         scenarioName,
+                                         focusResult );
+                            if( stressStopAfterFocus )
+                                stressEarlyExit = true;
                         }
                     }
                 }
