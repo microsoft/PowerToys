@@ -598,6 +598,8 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
     int GetKeyCodeFromName(const wchar_t* keyName)
     {
+        Logger::info(L"Getting key code for key name: {0}", keyName ? keyName : L"null");
+
         if (keyName == nullptr)
         {
             return 0;
@@ -605,7 +607,9 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
         LayoutMap layoutMap;
         std::wstring name(keyName);
-        return static_cast<int>(layoutMap.GetKeyFromName(name));
+        int keyCode = static_cast<int>(layoutMap.GetKeyFromName(name));
+        Logger::info(L"Key code for key name {0}: {1}", keyName, keyCode);
+        return keyCode;
     }
 
     // Function to get the type of a key (Win, Ctrl, Alt, Shift, or Action)
@@ -617,6 +621,8 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
     // Function to check if a shortcut is illegal
     bool IsShortcutIllegal(const wchar_t* shortcutKeys)
     {
+        Logger::info(L"Checking if shortcut is illegal: {0}", shortcutKeys ? shortcutKeys : L"null");
+
         if (!shortcutKeys)
         {
             return false;
