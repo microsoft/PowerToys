@@ -34,6 +34,7 @@ public:
     {
         this->eventHandle = e.eventHandle;
         e.eventHandle = nullptr;
+        return *this;
     }
 
     ~EventLocker()

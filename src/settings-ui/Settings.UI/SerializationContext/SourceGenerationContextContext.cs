@@ -10,7 +10,6 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using SettingsUILibrary = Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 
@@ -19,10 +18,12 @@ namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 [JsonSerializable(typeof(AlwaysOnTopSettings))]
 [JsonSerializable(typeof(ColorPickerSettings))]
 [JsonSerializable(typeof(CropAndLockSettings))]
+[JsonSerializable(typeof(CursorWrapSettings))]
 [JsonSerializable(typeof(Dictionary<string, List<string>>))]
 [JsonSerializable(typeof(FileLocksmithSettings))]
 [JsonSerializable(typeof(FindMyMouseSettings))]
 [JsonSerializable(typeof(IList<PowerToysReleaseInfo>))]
+[JsonSerializable(typeof(KeyboardManagerSettings))]
 [JsonSerializable(typeof(LightSwitchSettings))]
 [JsonSerializable(typeof(MeasureToolSettings))]
 [JsonSerializable(typeof(MouseHighlighterSettings))]
@@ -34,11 +35,16 @@ namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 [JsonSerializable(typeof(PowerLauncherSettings))]
 [JsonSerializable(typeof(PowerOcrSettings))]
 [JsonSerializable(typeof(PowerOcrSettings))]
+[JsonSerializable(typeof(PowerDisplaySettings))]
 [JsonSerializable(typeof(RegistryPreviewSettings))]
 [JsonSerializable(typeof(ShortcutConflictProperties))]
 [JsonSerializable(typeof(ShortcutGuideSettings))]
 [JsonSerializable(typeof(WINDOWPLACEMENT))]
 [JsonSerializable(typeof(WorkspacesSettings))]
+[JsonSerializable(typeof(ZoomItSettings))]
+[JsonSerializable(typeof(PasteAIConfiguration))]
+[JsonSerializable(typeof(PasteAIProviderDefinition))]
+[JsonSerializable(typeof(System.Collections.ObjectModel.ObservableCollection<PasteAIProviderDefinition>))]
 public sealed partial class SourceGenerationContextContext : JsonSerializerContext
 {
 }

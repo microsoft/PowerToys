@@ -261,7 +261,7 @@ namespace UITests_FancyZones
             }
 
             this.Find<NavigationViewItem>("FancyZones").Click();
-            this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
+            Find<ToggleSwitch>(By.AccessibilityId("EnableFancyZonesToggleSwitch")).Toggle(true);
             this.Session.SetMainWindowSize(WindowSize.Large);
 
             // fixed settings
@@ -322,7 +322,7 @@ namespace UITests_FancyZones
             this.Find<NavigationViewItem>("Hosts File Editor").Click();
             Task.Delay(1000).Wait();
 
-            this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
+            this.Find<ToggleSwitch>("Hosts File Editor").Toggle(true);
             this.Find<ToggleSwitch>("Open as administrator").Toggle(launchAsAdmin);
             this.Find<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
 

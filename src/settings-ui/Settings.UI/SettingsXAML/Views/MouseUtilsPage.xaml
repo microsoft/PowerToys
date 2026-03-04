@@ -54,6 +54,13 @@
                                     <ComboBoxItem x:Uid="MouseUtils_CursorWrap_WrapMode_HorizontalOnly" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorWrapActivationMode" x:Uid="MouseUtils_CursorWrap_ActivationMode">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.CursorWrapActivationMode, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorWrap_ActivationMode_Always" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorWrap_ActivationMode_HoldingCtrl" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorWrap_ActivationMode_HoldingShift" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}">
                                 <CheckBox x:Uid="MouseUtils_CursorWrap_DisableOnSingleMonitor" IsChecked="{x:Bind ViewModel.CursorWrapDisableOnSingleMonitor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
@@ -155,10 +162,16 @@
                         <tkcontrols:SettingsExpander.Items>
                             <!--  Overlay opacity removed; alpha now encoded in colors  -->
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseBackgroundColor" x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
-                                <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseBackgroundColorId"
+                                    IsAlphaEnabled="True"
+                                    SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightColor" x:Uid="MouseUtils_FindMyMouse_SpotlightColor">
-                                <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightColorId"
+                                    IsAlphaEnabled="True"
+                                    SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightRadius" x:Uid="MouseUtils_FindMyMouse_SpotlightRadius">
                                 <NumberBox

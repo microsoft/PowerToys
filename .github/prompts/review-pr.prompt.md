@@ -1,6 +1,5 @@
 ---
 agent: 'agent'
-model: 'GPT-5.1-Codex-Max'
 description: 'Perform a comprehensive PR review with per-step Markdown and machine-readable outputs'
 ---
 

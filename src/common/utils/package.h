@@ -21,9 +21,16 @@
 
 namespace package
 {
-    using namespace winrt::Windows::Foundation;
-    using namespace winrt::Windows::ApplicationModel;
-    using namespace winrt::Windows::Management::Deployment;
+    using winrt::Windows::ApplicationModel::Package;
+    using winrt::Windows::Foundation::IAsyncOperationWithProgress;
+    using winrt::Windows::Foundation::AsyncStatus;
+    using winrt::Windows::Foundation::Uri;
+    using winrt::Windows::Foundation::Collections::IVector;
+    using winrt::Windows::Management::Deployment::AddPackageOptions;
+    using winrt::Windows::Management::Deployment::DeploymentOptions;
+    using winrt::Windows::Management::Deployment::DeploymentProgress;
+    using winrt::Windows::Management::Deployment::DeploymentResult;
+    using winrt::Windows::Management::Deployment::PackageManager;
     using Microsoft::WRL::ComPtr;
 
     inline BOOL IsWin11OrGreater()
@@ -435,7 +442,7 @@ namespace package
             // Declare use of an external location
             DeploymentOptions options = DeploymentOptions::ForceTargetApplicationShutdown;
 
-            Collections::IVector<Uri> uris = winrt::single_threaded_vector<Uri>();
+            IVector<Uri> uris = winrt::single_threaded_vector<Uri>();
             if (!dependencies.empty())
             {
                 for (const auto& dependency : dependencies)

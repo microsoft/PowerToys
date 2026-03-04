@@ -105,17 +105,28 @@ public:
         }
     }
 
-    virtual bool on_hotkey(size_t /*hotkeyId*/) override
+    virtual bool on_hotkey(size_t hotkeyId) override
     {
         if (m_enabled)
         {
-            Logger::trace(L"AlwaysOnTop hotkey pressed");
+            Logger::trace(L"AlwaysOnTop hotkey pressed, id={}", hotkeyId);
             if (!is_process_running())
             {
                 Enable();
             }
 
-            SetEvent(m_hPinEvent);
+            if (hotkeyId == 0)
+            {
+                SetEvent(m_hPinEvent);
+            }
+            else if (hotkeyId == 1)
+            {
+                SetEvent(m_hIncreaseOpacityEvent);
+            }
+            else if (hotkeyId == 2)
+            {
+                SetEvent(m_hDecreaseOpacityEvent);
+            }
 
             return true;
         }
@@ -125,19 +136,48 @@ public:
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
+        size_t count = 0;
+        
+        // Hotkey 0: Pin/Unpin (e.g., Win+Ctrl+T)
         if (m_hotkey.key)
         {
-            if (hotkeys && buffer_size >= 1)
+            if (hotkeys && buffer_size > count)
             {
-                hotkeys[0] = m_hotkey;
+                hotkeys[count] = m_hotkey;
+                Logger::trace(L"AlwaysOnTop hotkey[0]: win={}, ctrl={}, shift={}, alt={}, key={}", 
+                    m_hotkey.win, m_hotkey.ctrl, m_hotkey.shift, m_hotkey.alt, m_hotkey.key);
             }
+            count++;
+        }
 
-            return 1;
-        }
-        else
+        // Hotkey 1: Increase opacity (same modifiers + VK_OEM_PLUS '=')
+        if (m_hotkey.key)
         {
-            return 0;
+            if (hotkeys && buffer_size > count)
+            {
+                hotkeys[count] = m_hotkey;
+                hotkeys[count].key = VK_OEM_PLUS; // '=' key
+                Logger::trace(L"AlwaysOnTop hotkey[1] (increase opacity): win={}, ctrl={}, shift={}, alt={}, key={}", 
+                    hotkeys[count].win, hotkeys[count].ctrl, hotkeys[count].shift, hotkeys[count].alt, hotkeys[count].key);
+            }
+            count++;
         }
+
+        // Hotkey 2: Decrease opacity (same modifiers + VK_OEM_MINUS '-')
+        if (m_hotkey.key)
+        {
+            if (hotkeys && buffer_size > count)
+            {
+                hotkeys[count] = m_hotkey;
+                hotkeys[count].key = VK_OEM_MINUS; // '-' key
+                Logger::trace(L"AlwaysOnTop hotkey[2] (decrease opacity): win={}, ctrl={}, shift={}, alt={}, key={}", 
+                    hotkeys[count].win, hotkeys[count].ctrl, hotkeys[count].shift, hotkeys[count].alt, hotkeys[count].key);
+            }
+            count++;
+        }
+
+        Logger::trace(L"AlwaysOnTop get_hotkeys returning count={}", count);
+        return count;
     }
 
     // Enable the powertoy
@@ -175,6 +215,8 @@ public:
         app_key = NonLocalizable::ModuleKey;
         m_hPinEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
         m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_TERMINATE_EVENT);
+        m_hIncreaseOpacityEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_INCREASE_OPACITY_EVENT);
+        m_hDecreaseOpacityEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_DECREASE_OPACITY_EVENT);
         init_settings();
     }
 
@@ -292,6 +334,8 @@ private:
     // Handle to event used to pin/unpin windows
     HANDLE m_hPinEvent;
     HANDLE m_hTerminateEvent;
+    HANDLE m_hIncreaseOpacityEvent;
+    HANDLE m_hDecreaseOpacityEvent;
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

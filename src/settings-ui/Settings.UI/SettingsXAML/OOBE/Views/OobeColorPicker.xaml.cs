@@ -5,6 +5,7 @@
 using System.Threading;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -20,15 +21,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeColorPicker()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.ColorPicker]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.ColorPicker);
             DataContext = ViewModel;
         }
 
         private void Start_ColorPicker_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.ColorPickerSharedEventCallback != null)
+            if (OobeWindow.ColorPickerSharedEventCallback != null)
             {
-                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeShellPage.ColorPickerSharedEventCallback()))
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeWindow.ColorPickerSharedEventCallback()))
                 {
                     eventHandle.Set();
                 }
@@ -39,9 +40,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(ColorPickerPage));
+                OobeWindow.OpenMainWindowCallback(typeof(ColorPickerPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
@@ -53,6 +54,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ColorPickerSettings settings = SettingsUtils.Default.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerSettings.ModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
 
             HotkeyControl.Keys = settings.Properties.ActivationShortcut.GetKeysList();
+
+            // Disable the Launch button if the module is disabled
+            var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
+            LaunchButton.IsEnabled = ModuleHelper.GetIsModuleEnabled(generalSettings, ManagedCommon.ModuleType.ColorPicker);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

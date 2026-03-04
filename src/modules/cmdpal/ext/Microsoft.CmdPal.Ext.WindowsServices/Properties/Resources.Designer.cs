@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.WindowsServices.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -57,6 +57,60 @@ namespace Microsoft.CmdPal.Ext.WindowsServices.Properties {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All Services.
+        /// </summary>
+        internal static string Filters_All_Name {
+            get {
+                return ResourceManager.GetString("Filters_All_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paused.
+        /// </summary>
+        internal static string Filters_Paused_Name {
+            get {
+                return ResourceManager.GetString("Filters_Paused_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Running.
+        /// </summary>
+        internal static string Filters_Running_Name {
+            get {
+                return ResourceManager.GetString("Filters_Running_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stopped.
+        /// </summary>
+        internal static string Filters_Stopped_Name {
+            get {
+                return ResourceManager.GetString("Filters_Stopped_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage Windows services.
+        /// </summary>
+        internal static string ManageWindowsServicesCommand_Title {
+            get {
+                return ResourceManager.GetString("ManageWindowsServicesCommand_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows Services.
+        /// </summary>
+        internal static string ServicesListPage_Name {
+            get {
+                return ResourceManager.GetString("ServicesListPage_Name", resourceCulture);
             }
         }
         
@@ -169,7 +223,7 @@ namespace Microsoft.CmdPal.Ext.WindowsServices.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Start (Enter).
+        ///   Looks up a localized string similar to Start.
         /// </summary>
         internal static string wox_plugin_service_start {
             get {
@@ -286,7 +340,7 @@ namespace Microsoft.CmdPal.Ext.WindowsServices.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Stop (Enter).
+        ///   Looks up a localized string similar to Stop.
         /// </summary>
         internal static string wox_plugin_service_stop {
             get {

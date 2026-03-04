@@ -48,4 +48,19 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
 
         return fallbacks.ToArray();
     }
+
+    public override ICommandItem? GetCommandItem(string id)
+    {
+        // First check top-level commands.
+        var allCommands = ModuleCommandCatalog.GetAllItems();
+        foreach (var li in allCommands)
+        {
+            if (li?.Command is ICommand cmd && cmd.Id == id)
+            {
+                return li;
+            }
+        }
+
+        return null;
+    }
 }

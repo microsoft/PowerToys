@@ -89,7 +89,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public StringProperty RecordFormat { get; set; }
 
+        public BoolProperty CaptureSystemAudio { get; set; }
+
         public BoolProperty CaptureAudio { get; set; }
+
+        public BoolProperty MicMonoMix { get; set; }
 
         public StringProperty MicrophoneDeviceId { get; set; }
     }

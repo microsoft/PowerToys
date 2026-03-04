@@ -39,13 +39,9 @@
             Grid.Row="1"
             Padding="4"
             IsClosable="False"
-            IsOpen="True"
-            Message="Foundry Local is still in Public Preview">
+            IsOpen="True">
             <InfoBar.ActionButton>
-                <HyperlinkButton
-                    x:Uid="AdvancedPaste_FL_LearnMoreFoundryLocal"
-                    Content="Learn more"
-                    NavigateUri="https://learn.microsoft.com/azure/ai-foundry/foundry-local/what-is-foundry-local" />
+                <HyperlinkButton x:Uid="AdvancedPaste_FL_LearnMoreFoundryLocal" NavigateUri="https://learn.microsoft.com/azure/ai-foundry/foundry-local/what-is-foundry-local" />
             </InfoBar.ActionButton>
         </InfoBar>
         <StackPanel

@@ -21,6 +21,49 @@ namespace NonLocalizable
 {
     const static wchar_t* TOOL_WINDOW_CLASS_NAME = L"AlwaysOnTopWindow";
     const static wchar_t* WINDOW_IS_PINNED_PROP = L"AlwaysOnTop_Pinned";
+    constexpr UINT SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND = 0xEFE0;
+    constexpr ULONG_PTR SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG = 0x414F5450;
+    constexpr DWORD SYSTEM_EVENT_MENU_POPUP_START = 0x0006;
+    constexpr DWORD SYSTEM_EVENT_MENU_POPUP_END = 0x0007;
+}
+
+namespace
+{
+    void UnsubscribeEvents(std::vector<HWINEVENTHOOK>& hooks) noexcept
+    {
+        for (const auto hook : hooks)
+        {
+            if (hook)
+            {
+                UnhookWinEvent(hook);
+            }
+        }
+
+        hooks.clear();
+    }
+
+    bool HasMenuCommand(HMENU menu, UINT commandId) noexcept
+    {
+        return menu && GetMenuState(menu, commandId, MF_BYCOMMAND) != static_cast<UINT>(-1);
+    }
+
+    bool IsAlwaysOnTopMenuCommand(HMENU menu) noexcept
+    {
+        if (!HasMenuCommand(menu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND))
+        {
+            return false;
+        }
+
+        MENUITEMINFOW menuItemInfo{};
+        menuItemInfo.cbSize = sizeof(menuItemInfo);
+        menuItemInfo.fMask = MIIM_DATA;
+
+        return GetMenuItemInfoW(menu,
+                                NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND,
+                                FALSE,
+                                &menuItemInfo) &&
+               menuItemInfo.dwItemData == NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG;
+    }
 }
 
 bool isExcluded(HWND window)
@@ -32,7 +75,7 @@ bool isExcluded(HWND window)
 }
 
 AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
-    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps}),
+    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps, SettingId::ShowInSystemMenu}),
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
     m_useCentralizedLLKH(useLLKH),
     m_mainThreadId(mainThreadId),
@@ -53,6 +96,11 @@ AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
         
         SubscribeToEvents();
         StartTrackingTopmostWindows();
+
+        if (HWND foregroundWindow = GetForegroundWindow())
+        {
+            UpdateSystemMenuItem(foregroundWindow);
+        }
     }
     else
     {
@@ -144,6 +192,13 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
         }
     }
     break;
+    case SettingId::ShowInSystemMenu:
+    {
+        UpdateSystemMenuEventHooks(AlwaysOnTopSettings::settings().showInSystemMenu);
+        m_lastSystemMenuWindow = nullptr;
+        UpdateSystemMenuItem(GetForegroundWindow());
+    }
+    break;
     default:
         break;
     }
@@ -153,9 +208,21 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
 {
     if (message == WM_HOTKEY)
     {
+        int hotkeyId = static_cast<int>(wparam);
         if (HWND fw{ GetForegroundWindow() })
         {
-            ProcessCommand(fw);
+            if (hotkeyId == static_cast<int>(HotkeyId::Pin))
+            {
+                ProcessCommand(fw);
+            }
+            else if (hotkeyId == static_cast<int>(HotkeyId::IncreaseOpacity))
+            {
+                StepWindowTransparency(fw, Settings::transparencyStep);
+            }
+            else if (hotkeyId == static_cast<int>(HotkeyId::DecreaseOpacity))
+            {
+                StepWindowTransparency(fw, -Settings::transparencyStep);
+            }
         }
     }
     else if (message == WM_PRIV_SETTINGS_CHANGED)
@@ -191,6 +258,10 @@ void AlwaysOnTop::ProcessCommand(HWND window)
                 m_topmostWindows.erase(iter);
             }
 
+            // Restore transparency when unpinning
+            RestoreWindowAlpha(window);
+            m_windowOriginalLayeredState.erase(window);
+
             Trace::AlwaysOnTop::UnpinWindow();
         }
     }
@@ -200,6 +271,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         {
             soundType = Sound::Type::On;
             AssignBorder(window);
+            
             Trace::AlwaysOnTop::PinWindow();
         }
     }
@@ -208,6 +280,8 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         m_sound.Play(soundType);    
     }
+
+    UpdateSystemMenuItem(window);
 }
 
 void AlwaysOnTop::StartTrackingTopmostWindows()
@@ -269,11 +343,22 @@ void AlwaysOnTop::RegisterHotkey() const
 {
     if (m_useCentralizedLLKH)
     {
+        // All hotkeys are handled by centralized LLKH
         return;
     }
 
+    // Register hotkeys only when not using centralized LLKH
     UnregisterHotKey(m_window, static_cast<int>(HotkeyId::Pin));
+    UnregisterHotKey(m_window, static_cast<int>(HotkeyId::IncreaseOpacity));
+    UnregisterHotKey(m_window, static_cast<int>(HotkeyId::DecreaseOpacity));
+
+    // Register pin hotkey
     RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), AlwaysOnTopSettings::settings().hotkey.get_modifiers(), AlwaysOnTopSettings::settings().hotkey.get_code());
+
+    // Register transparency hotkeys using the same modifiers as the pin hotkey
+    UINT modifiers = AlwaysOnTopSettings::settings().hotkey.get_modifiers();
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::IncreaseOpacity), modifiers, VK_OEM_PLUS);
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::DecreaseOpacity), modifiers, VK_OEM_MINUS);
 }
 
 void AlwaysOnTop::RegisterLLKH()
@@ -285,6 +370,8 @@ void AlwaysOnTop::RegisterLLKH()
 	
     m_hPinEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
     m_hTerminateEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_TERMINATE_EVENT);
+    m_hIncreaseOpacityEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_INCREASE_OPACITY_EVENT);
+    m_hDecreaseOpacityEvent = CreateEventW(nullptr, false, false, CommonSharedConstants::ALWAYS_ON_TOP_DECREASE_OPACITY_EVENT);
 
     if (!m_hPinEvent)
     {
@@ -298,30 +385,54 @@ void AlwaysOnTop::RegisterLLKH()
         return;
     }
 
-    HANDLE handles[2] = { m_hPinEvent,
-                          m_hTerminateEvent };
+    if (!m_hIncreaseOpacityEvent)
+    {
+        Logger::warn(L"Failed to create increaseOpacityEvent. {}", get_last_error_or_default(GetLastError()));
+    }
+
+    if (!m_hDecreaseOpacityEvent)
+    {
+        Logger::warn(L"Failed to create decreaseOpacityEvent. {}", get_last_error_or_default(GetLastError()));
+    }
+
+    HANDLE handles[4] = { m_hPinEvent,
+                          m_hTerminateEvent,
+                          m_hIncreaseOpacityEvent,
+                          m_hDecreaseOpacityEvent };
 
     m_thread = std::thread([this, handles]() {
         MSG msg;
         while (m_running)
         {
-            DWORD dwEvt = MsgWaitForMultipleObjects(2, handles, false, INFINITE, QS_ALLINPUT);
+            DWORD dwEvt = MsgWaitForMultipleObjects(4, handles, false, INFINITE, QS_ALLINPUT);
             if (!m_running)
             {
                 break;
             }
             switch (dwEvt)
             {
-            case WAIT_OBJECT_0:
+            case WAIT_OBJECT_0: // Pin event
                 if (HWND fw{ GetForegroundWindow() })
                 {
                     ProcessCommand(fw);
                 }
                 break;
-            case WAIT_OBJECT_0 + 1:
+            case WAIT_OBJECT_0 + 1: // Terminate event
                 PostThreadMessage(m_mainThreadId, WM_QUIT, 0, 0);
                 break;
-            case WAIT_OBJECT_0 + 2:
+            case WAIT_OBJECT_0 + 2: // Increase opacity event
+                if (HWND fw{ GetForegroundWindow() })
+                {
+                    StepWindowTransparency(fw, Settings::transparencyStep);
+                }
+                break;
+            case WAIT_OBJECT_0 + 3: // Decrease opacity event
+                if (HWND fw{ GetForegroundWindow() })
+                {
+                    StepWindowTransparency(fw, -Settings::transparencyStep);
+                }
+                break;
+            case WAIT_OBJECT_0 + 4: // Message queue
                 if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
                 {
                     TranslateMessage(&msg);
@@ -360,6 +471,92 @@ void AlwaysOnTop::SubscribeToEvents()
             Logger::error(L"Failed to set win event hook");
         }
     }
+
+    UpdateSystemMenuEventHooks(AlwaysOnTopSettings::settings().showInSystemMenu);
+}
+
+void AlwaysOnTop::UpdateSystemMenuEventHooks(bool enable)
+{
+    constexpr std::array<DWORD, 3> menu_events_to_subscribe = {
+        NonLocalizable::SYSTEM_EVENT_MENU_POPUP_START,
+        NonLocalizable::SYSTEM_EVENT_MENU_POPUP_END,
+        EVENT_OBJECT_INVOKED,
+    };
+
+    if (enable)
+    {
+        if (m_systemMenuWinEventHooks.size() == menu_events_to_subscribe.size())
+        {
+            return;
+        }
+
+        // Recover from any partial hook registration before re-registering.
+        UnsubscribeEvents(m_systemMenuWinEventHooks);
+
+        for (const auto event : menu_events_to_subscribe)
+        {
+            auto hook = SetWinEventHook(event, event, nullptr, WinHookProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+            if (hook)
+            {
+                m_systemMenuWinEventHooks.emplace_back(hook);
+            }
+            else
+            {
+                Logger::error(L"Failed to set system menu win event hook");
+            }
+        }
+    }
+    else
+    {
+        UnsubscribeEvents(m_systemMenuWinEventHooks);
+    }
+}
+
+void AlwaysOnTop::UpdateSystemMenuItem(HWND window) const noexcept
+{
+    if (!window || !IsWindow(window))
+    {
+        return;
+    }
+
+    const auto systemMenu = GetSystemMenu(window, false);
+    if (!systemMenu)
+    {
+        return;
+    }
+
+    if (!AlwaysOnTopSettings::settings().showInSystemMenu)
+    {
+        if (IsAlwaysOnTopMenuCommand(systemMenu))
+        {
+            RemoveMenu(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND);
+        }
+        return;
+    }
+
+    auto text = GET_RESOURCE_STRING(IDS_SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP);
+    MENUITEMINFOW menuItemInfo{};
+    menuItemInfo.cbSize = sizeof(menuItemInfo);
+    menuItemInfo.fMask = MIIM_ID | MIIM_STATE | MIIM_STRING | MIIM_DATA;
+    menuItemInfo.wID = NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND;
+    menuItemInfo.fState = IsPinned(window) ? MFS_CHECKED : MFS_UNCHECKED;
+    menuItemInfo.dwTypeData = text.data();
+    menuItemInfo.dwItemData = NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG;
+
+    if (!HasMenuCommand(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND))
+    {
+        InsertMenuItemW(systemMenu, SC_CLOSE, FALSE, &menuItemInfo);
+    }
+    else if (IsAlwaysOnTopMenuCommand(systemMenu))
+    {
+        menuItemInfo.fMask = MIIM_STATE | MIIM_STRING;
+        SetMenuItemInfoW(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, FALSE, &menuItemInfo);
+    }
+    else
+    {
+        Logger::warn(L"Skipping Always On Top system menu command registration because ID 0x{:X} is already in use by another item.",
+                     NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND);
+    }
 }
 
 void AlwaysOnTop::UnpinAll()
@@ -370,13 +567,19 @@ void AlwaysOnTop::UnpinAll()
         {
             Logger::error(L"Unpinning topmost window failed");
         }
+        // Restore transparency when unpinning all
+        RestoreWindowAlpha(topWindow);
     }
 
     m_topmostWindows.clear();
+    m_windowOriginalLayeredState.clear();
 }
 
 void AlwaysOnTop::CleanUp()
 {
+    UnsubscribeEvents(m_systemMenuWinEventHooks);
+    UnsubscribeEvents(m_staticWinEventHooks);
+
     UnpinAll();
     if (m_window)
     {
@@ -435,6 +638,78 @@ bool AlwaysOnTop::IsTracked(HWND window) const noexcept
 
 void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
+    switch (data->event)
+    {
+    case NonLocalizable::SYSTEM_EVENT_MENU_POPUP_START:
+    {
+        if (data->idObject == OBJID_SYSMENU && data->hwnd)
+        {
+            m_lastSystemMenuWindow = AlwaysOnTopSettings::settings().showInSystemMenu ? data->hwnd : nullptr;
+            UpdateSystemMenuItem(data->hwnd);
+        }
+    }
+    return;
+    case NonLocalizable::SYSTEM_EVENT_MENU_POPUP_END:
+    {
+        if (data->idObject == OBJID_SYSMENU && data->hwnd == m_lastSystemMenuWindow)
+        {
+            m_lastSystemMenuWindow = nullptr;
+        }
+    }
+    return;
+    case EVENT_OBJECT_INVOKED:
+    {
+        if (!AlwaysOnTopSettings::settings().showInSystemMenu)
+        {
+            return;
+        }
+
+        if (data->idChild != static_cast<LONG>(NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND))
+        {
+            return;
+        }
+
+        const bool isMenuRelatedObject = (data->idObject == OBJID_SYSMENU || data->idObject == OBJID_MENU || data->idObject == OBJID_CLIENT);
+        if (!isMenuRelatedObject && (!m_lastSystemMenuWindow || !IsWindow(m_lastSystemMenuWindow)))
+        {
+            return;
+        }
+
+        const auto hasToggleMenuItem = [](HWND window) -> bool {
+            if (!window || !IsWindow(window))
+            {
+                return false;
+            }
+
+            const auto systemMenu = GetSystemMenu(window, false);
+            return systemMenu && IsAlwaysOnTopMenuCommand(systemMenu);
+        };
+
+        HWND commandWindow = nullptr;
+        const auto trySetCommandWindow = [&](HWND candidate) noexcept {
+            if (!commandWindow && hasToggleMenuItem(candidate))
+            {
+                commandWindow = candidate;
+            }
+        };
+
+        if (m_lastSystemMenuWindow && IsWindow(m_lastSystemMenuWindow))
+        {
+            trySetCommandWindow(m_lastSystemMenuWindow);
+        }
+        trySetCommandWindow(data->hwnd);
+        trySetCommandWindow(GetForegroundWindow());
+
+        if (commandWindow)
+        {
+            ProcessCommand(commandWindow);
+        }
+    }
+    return;
+    default:
+        break;
+    }
+
     if (!AlwaysOnTopSettings::settings().enableFrame || !data->hwnd)
     {
         return;
@@ -456,6 +731,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     for (const auto window : toErase)
     {
         m_topmostWindows.erase(window);
+        m_windowOriginalLayeredState.erase(window);
     }
 
     switch (data->event)
@@ -508,6 +784,8 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     break;
     case EVENT_SYSTEM_FOREGROUND:
     {
+        UpdateSystemMenuItem(data->hwnd);
+
         if (!is_process_elevated() && IsProcessOfWindowElevated(data->hwnd))
         {
             m_notificationUtil->WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_ALWAYSONTOP),
@@ -554,6 +832,168 @@ void AlwaysOnTop::RefreshBorders()
             {
                 m_topmostWindows[window] = nullptr;
             }
+        }
+    }
+}
+
+HWND AlwaysOnTop::ResolveTransparencyTargetWindow(HWND window)
+{
+    if (!window || !IsWindow(window))
+    {
+        return nullptr;
+    }
+
+    // Only allow transparency changes on pinned windows
+    if (!IsPinned(window))
+    {
+        return nullptr;
+    }
+
+    return window;
+}
+
+
+void AlwaysOnTop::StepWindowTransparency(HWND window, int delta)
+{
+    HWND targetWindow = ResolveTransparencyTargetWindow(window);
+    if (!targetWindow)
+    {
+        return;
+    }
+
+    int currentTransparency = Settings::maxTransparencyPercentage;
+    LONG exStyle = GetWindowLong(targetWindow, GWL_EXSTYLE);
+    if (exStyle & WS_EX_LAYERED)
+    {
+        BYTE alpha = 255;
+        if (GetLayeredWindowAttributes(targetWindow, nullptr, &alpha, nullptr))
+        {
+            currentTransparency = (alpha * 100) / 255;
+        }
+    }
+
+    int newTransparency = (std::max)(Settings::minTransparencyPercentage, 
+                                     (std::min)(Settings::maxTransparencyPercentage, currentTransparency + delta));
+
+    if (newTransparency != currentTransparency)
+    {
+        ApplyWindowAlpha(targetWindow, newTransparency);
+
+        if (AlwaysOnTopSettings::settings().enableSound)
+        {
+            m_sound.Play(delta > 0 ? Sound::Type::IncreaseOpacity : Sound::Type::DecreaseOpacity);
+        }
+
+        Logger::debug(L"Transparency adjusted to {}%", newTransparency);
+    }
+}
+
+void AlwaysOnTop::ApplyWindowAlpha(HWND window, int percentage)
+{
+    if (!window || !IsWindow(window))
+    {
+        return;
+    }
+    
+    percentage = (std::max)(Settings::minTransparencyPercentage, 
+                            (std::min)(Settings::maxTransparencyPercentage, percentage));
+
+    LONG exStyle = GetWindowLong(window, GWL_EXSTYLE);
+    bool isCurrentlyLayered = (exStyle & WS_EX_LAYERED) != 0;
+
+    // Cache original state on first transparency application
+    if (m_windowOriginalLayeredState.find(window) == m_windowOriginalLayeredState.end())
+    {
+        WindowLayeredState state;
+        state.hadLayeredStyle = isCurrentlyLayered;
+        
+        if (isCurrentlyLayered)
+        {
+            BYTE alpha = 255;
+            COLORREF colorKey = 0;
+            DWORD flags = 0;
+            if (GetLayeredWindowAttributes(window, &colorKey, &alpha, &flags))
+            {
+                state.originalAlpha = alpha;
+                state.usedColorKey = (flags & LWA_COLORKEY) != 0;
+                state.colorKey = colorKey;
+            }
+            else
+            {
+                Logger::warn(L"GetLayeredWindowAttributes failed for layered window, skipping");
+                return;
+            }
+        }
+        m_windowOriginalLayeredState[window] = state;
+    }
+
+    // Clear WS_EX_LAYERED first to ensure SetLayeredWindowAttributes works
+    if (isCurrentlyLayered)
+    {
+        SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+        SetWindowPos(window, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        exStyle = GetWindowLong(window, GWL_EXSTYLE);
+    }
+
+    BYTE alphaValue = static_cast<BYTE>((255 * percentage) / 100);
+    SetWindowLong(window, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+    SetLayeredWindowAttributes(window, 0, alphaValue, LWA_ALPHA);
+}
+
+void AlwaysOnTop::RestoreWindowAlpha(HWND window)
+{
+    if (!window || !IsWindow(window))
+    {
+        return;
+    }
+
+    LONG exStyle = GetWindowLong(window, GWL_EXSTYLE);
+    auto it = m_windowOriginalLayeredState.find(window);
+    
+    if (it != m_windowOriginalLayeredState.end())
+    {
+        const auto& originalState = it->second;
+        
+        if (originalState.hadLayeredStyle)
+        {
+            // Window originally had WS_EX_LAYERED - restore original attributes
+            // Clear and re-add to ensure clean state
+            if (exStyle & WS_EX_LAYERED)
+            {
+                SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+                exStyle = GetWindowLong(window, GWL_EXSTYLE);
+            }
+            SetWindowLong(window, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+            
+            // Restore original alpha and/or color key
+            DWORD flags = LWA_ALPHA;
+            if (originalState.usedColorKey)
+            {
+                flags |= LWA_COLORKEY;
+            }
+            SetLayeredWindowAttributes(window, originalState.colorKey, originalState.originalAlpha, flags);
+            SetWindowPos(window, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        }
+        else
+        {
+            // Window originally didn't have WS_EX_LAYERED - remove it completely
+            if (exStyle & WS_EX_LAYERED)
+            {
+                SetLayeredWindowAttributes(window, 0, 255, LWA_ALPHA);
+                SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+                SetWindowPos(window, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+            }
+        }
+        
+        m_windowOriginalLayeredState.erase(it);
+    }
+    else
+    {
+        // Fallback: no cached state, just remove layered style
+        if (exStyle & WS_EX_LAYERED)
+        {
+            SetLayeredWindowAttributes(window, 0, 255, LWA_ALPHA);
+            SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
         }
     }
 }

@@ -4,19 +4,17 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Commands;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using CoreVirtualKeyStates = Windows.UI.Core.CoreVirtualKeyStates;
 using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -126,8 +124,7 @@ public sealed partial class SearchBar : UserControl,
             return;
         }
 
-        var ctrlPressed = (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down;
-        if (ctrlPressed && e.Key == VirtualKey.I)
+        if (KeyModifiers.GetCurrent().Ctrl && e.Key == VirtualKey.I)
         {
             // Today you learned that Ctrl+I in a TextBox will insert a tab
             // We don't want that, so we'll suppress it, this way it can be used for other purposes
@@ -421,7 +418,13 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    public void Receive(GoHomeMessage message) => ClearSearch();
+    public void Receive(GoHomeMessage message)
+    {
+        if (!Settings.KeepPreviousQuery)
+        {
+            ClearSearch();
+        }
+    }
 
     public void Receive(FocusSearchBoxMessage message) => FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 
