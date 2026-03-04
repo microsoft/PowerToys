@@ -480,7 +480,7 @@ struct StitchPerfCounters
     __int64 tMaskedFallback;    // Full-res masked coarse fallback
 
     StitchPerfCounters() { Reset(); QueryPerformanceFrequency( &freqQpc ); }
-    void Reset() { memset( &totalCalls, 0, (char*)(&tMaskedFallback + 1) - (char*)&totalCalls ); }
+    void Reset() { memset( &totalCalls, 0, reinterpret_cast<char*>(&tMaskedFallback + 1) - reinterpret_cast<char*>(&totalCalls) ); }
 
     double UsFromTicks( __int64 ticks ) const
     {
@@ -796,7 +796,7 @@ static void DumpPanoramaText( const std::wstring& debugDumpDirectory,
 #ifdef _DEBUG
 static HBITMAP LoadBitmapFromFile( const std::filesystem::path& filePath )
 {
-    return reinterpret_cast<HBITMAP>( LoadImageW( nullptr,
+    return static_cast<HBITMAP>( LoadImageW( nullptr,
                                                   filePath.c_str(),
                                                   IMAGE_BITMAP,
                                                   0,
@@ -2196,9 +2196,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         std::vector<BYTE> dilatedCurr( outCurrMask.size(), 0 );
         for( int y = 1; y < dsH - 1; ++y )
         {
-            const int rowOff = y * dsW;
             int x = 1;
 #if defined(_M_ARM64)
+            const int rowOff = y * dsW;
             const uint8x16_t vOne = vdupq_n_u8( 1 );
             for( ; x + 16 < dsW - 1; x += 16 )
             {
@@ -3611,19 +3611,19 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
         else if( rankScore == bestFineRankScore )
         {
-            const int tieAbsStep = abs( dy );
+            const int absStepInternal = abs( dy );
             const int absDx = abs( dx );
-            const int expectedDelta = ( expectedAbsStep > 0 ) ? abs( tieAbsStep - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
+            const int expectedDelta = ( expectedAbsStep > 0 ) ? abs( absStepInternal - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
 
             if( ( expectedAbsStep > 0 && expectedDelta < bestExpectedDelta ) ||
-                ( expectedAbsStep == 0 && tieAbsStep < bestAbsStep ) ||
+                ( expectedAbsStep == 0 && absStepInternal < bestAbsStep ) ||
                 ( expectedDelta == bestExpectedDelta &&
-                  ( tieAbsStep < bestAbsStep || ( tieAbsStep == bestAbsStep && absDx < bestAbsDx ) ) ) )
+                  ( absStepInternal < bestAbsStep || ( absStepInternal == bestAbsStep && absDx < bestAbsDx ) ) ) )
             {
                 bestDx = dx;
                 bestDy = dy;
                 bestCoarseDy = candidates[ci].dyDs;
-                bestAbsStep = tieAbsStep;
+                bestAbsStep = absStepInternal;
                 bestAbsDx = absDx;
                 bestExpectedDelta = expectedDelta;
             }
@@ -3631,9 +3631,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         else if( expectedAbsStep > 0 && bestFineRankScore != ( std::numeric_limits<unsigned __int64>::max )() )
         {
             unsigned __int64 scoreSlack = (std::max)( static_cast<unsigned __int64>( 2 ), bestFineRankScore / 80 );
-            const int candidateAbsStep = abs( dy );
+            const int absStepInternal = abs( dy );
             const int absDx = abs( dx );
-            const int expectedDelta = abs( candidateAbsStep - expectedAbsStep );
+            const int expectedDelta = abs( absStepInternal - expectedAbsStep );
             const bool preferExpectedStep = ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
                 expectedAbsStep >= 8;
 
@@ -3656,7 +3656,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 bestDx = dx;
                 bestDy = dy;
                 bestCoarseDy = candidates[ci].dyDs;
-                bestAbsStep = absStep;
+                bestAbsStep = absStepInternal;
                 bestAbsDx = absDx;
                 bestExpectedDelta = expectedDelta;
             }
@@ -7009,7 +7009,6 @@ bool RunPanoramaStitchSelfTest()
         constexpr int normalFrameCount = 5;
         constexpr int totalFrames = normalFrameCount + 1;  // +1 for the small-step frame
         const int canvasHeight = frameHeight + normalStep * normalFrameCount + smallStep + 100;
-        const int expectedStitchedHeight = frameHeight + normalStep * ( normalFrameCount - 1 ) + smallStep;
 
         std::vector<BYTE> syntheticCanvasPixels(
             static_cast<size_t>( frameWidth ) * static_cast<size_t>( canvasHeight ) * 4 );
@@ -7349,78 +7348,78 @@ bool RunPanoramaStitchSelfTest()
     basicTestsRun++;
     TestLog( L"  [%d/7] repro-vle-periodic-middledrop ...\n", basicTestsRun );
     {
-        constexpr int frameWidth = 1228;
-        constexpr int frameHeight = 1032;
+        constexpr int frameWidth2 = 1228;
+        constexpr int frameHeight2 = 1032;
         constexpr int stepY = 50;
-        constexpr int frameCount = 19;
-        constexpr int canvasHeight = frameHeight + stepY * ( frameCount + 2 );
-        constexpr int expectedStitchedHeight = frameHeight + stepY * ( frameCount - 1 );
+        constexpr int frameCount2 = 19;
+        constexpr int canvasHeight2 = frameHeight2 + stepY * ( frameCount2 + 2 );
+        constexpr int expectedStitchedHeight2 = frameHeight2 + stepY * ( frameCount2 - 1 );
 
-        std::vector<BYTE> syntheticCanvasPixels(
-            static_cast<size_t>( frameWidth ) * static_cast<size_t>( canvasHeight ) * 4,
+        std::vector<BYTE> syntheticCanvasPixelsInternal(
+            static_cast<size_t>( frameWidth2 ) * static_cast<size_t>( canvasHeight2 ) * 4,
             0 );
 
-        for( int y = 0; y < canvasHeight; ++y )
+        for( int y = 0; y < canvasHeight2; ++y )
         {
-            for( int x = 0; x < frameWidth; ++x )
+            for( int x = 0; x < frameWidth2; ++x )
             {
                 // Dark, low-contrast background with tiny deterministic noise.
                 BYTE base = static_cast<BYTE>( 14 + ( ( x * 3 + y * 5 ) & 0x03 ) );
-                const size_t index = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( x ) ) * 4;
-                syntheticCanvasPixels[index + 0] = base;
-                syntheticCanvasPixels[index + 1] = static_cast<BYTE>( base + 1 );
-                syntheticCanvasPixels[index + 2] = static_cast<BYTE>( base + 2 );
-                syntheticCanvasPixels[index + 3] = 0xFF;
+                const size_t index = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth2 ) + static_cast<size_t>( x ) ) * 4;
+                syntheticCanvasPixelsInternal[index + 0] = base;
+                syntheticCanvasPixelsInternal[index + 1] = static_cast<BYTE>( base + 1 );
+                syntheticCanvasPixelsInternal[index + 2] = static_cast<BYTE>( base + 2 );
+                syntheticCanvasPixelsInternal[index + 3] = 0xFF;
             }
         }
 
         // Add sparse periodic ruler lines and tiny left-gutter markers.
-        for( int band = 0; band * stepY < canvasHeight; ++band )
+        for( int band = 0; band * stepY < canvasHeight2; ++band )
         {
             const int y0 = band * stepY;
             for( int dy = 0; dy < 2; ++dy )
             {
                 const int yy = y0 + dy;
-                if( yy >= canvasHeight )
+                if( yy >= canvasHeight2 )
                     continue;
-                for( int x = 0; x < frameWidth; ++x )
+                for( int x = 0; x < frameWidth2; ++x )
                 {
-                    const size_t index = ( static_cast<size_t>( yy ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( x ) ) * 4;
-                    syntheticCanvasPixels[index + 0] = 38;
-                    syntheticCanvasPixels[index + 1] = 42;
-                    syntheticCanvasPixels[index + 2] = 46;
+                    const size_t index = ( static_cast<size_t>( yy ) * static_cast<size_t>( frameWidth2 ) + static_cast<size_t>( x ) ) * 4;
+                    syntheticCanvasPixelsInternal[index + 0] = 38;
+                    syntheticCanvasPixelsInternal[index + 1] = 42;
+                    syntheticCanvasPixelsInternal[index + 2] = 46;
                 }
             }
 
             // Sparse, weak non-periodic marker (line-number-like cue).
             // Keep it tiny so the frame remains very-low-entropy.
             const int x0 = 10 + ( ( band * 37 ) % 96 );
-            for( int yy = y0 + 10; yy < min( y0 + 12, canvasHeight ); ++yy )
+            for( int yy = y0 + 10; yy < min( y0 + 12, canvasHeight2 ); ++yy )
             {
-                for( int xx = x0; xx < min( x0 + 2, frameWidth ); ++xx )
+                for( int xx = x0; xx < min( x0 + 2, frameWidth2 ); ++xx )
                 {
-                    const size_t index = ( static_cast<size_t>( yy ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( xx ) ) * 4;
-                    syntheticCanvasPixels[index + 0] = 150;
-                    syntheticCanvasPixels[index + 1] = 156;
-                    syntheticCanvasPixels[index + 2] = 162;
+                    const size_t index = ( static_cast<size_t>( yy ) * static_cast<size_t>( frameWidth2 ) + static_cast<size_t>( xx ) ) * 4;
+                    syntheticCanvasPixelsInternal[index + 0] = 150;
+                    syntheticCanvasPixelsInternal[index + 1] = 156;
+                    syntheticCanvasPixelsInternal[index + 2] = 162;
                 }
             }
         }
 
-        std::vector<int> originsY;
-        originsY.reserve( frameCount );
-        for( int i = 0; i < frameCount; ++i )
+        std::vector<int> originsYInternal;
+        originsYInternal.reserve( frameCount2 );
+        for( int i = 0; i < frameCount2; ++i )
         {
-            originsY.push_back( i * stepY );
+            originsYInternal.push_back( i * stepY );
         }
 
         if( !runScenario( L"repro-vle-periodic-middledrop",
-                          frameWidth,
-                          frameHeight,
-                          originsY,
-                          syntheticCanvasPixels,
-                          canvasHeight,
-                          expectedStitchedHeight,
+                          frameWidth2,
+                          frameHeight2,
+                          originsYInternal,
+                          syntheticCanvasPixelsInternal,
+                          canvasHeight2,
+                          expectedStitchedHeight2,
                           8,
                           false ) )
         {
@@ -7433,21 +7432,21 @@ bool RunPanoramaStitchSelfTest()
     basicTestsRun++;
     TestLog( L"  [%d/7] repro-axis-defer-vle-vertical ...\n", basicTestsRun );
     {
-        constexpr int frameWidth = 1228;
-        constexpr int frameHeight = 1032;
+        constexpr int frameWidth3 = 1228;
+        constexpr int frameHeight3 = 1032;
         constexpr int shiftY = 50;
-        constexpr int canvasHeight = frameHeight + shiftY + 64;
+        constexpr int canvasHeight3 = frameHeight3 + shiftY + 64;
 
         std::vector<BYTE> canvasPixels(
-            static_cast<size_t>( frameWidth ) * static_cast<size_t>( canvasHeight ) * 4,
+            static_cast<size_t>( frameWidth3 ) * static_cast<size_t>( canvasHeight3 ) * 4,
             0 );
 
-        for( int y = 0; y < canvasHeight; ++y )
+        for( int y = 0; y < canvasHeight3; ++y )
         {
-            for( int x = 0; x < frameWidth; ++x )
+            for( int x = 0; x < frameWidth3; ++x )
             {
                 BYTE base = static_cast<BYTE>( 14 + ( ( x * 3 + y * 5 ) & 0x03 ) );
-                const size_t index = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( x ) ) * 4;
+                const size_t index = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth3 ) + static_cast<size_t>( x ) ) * 4;
                 canvasPixels[index + 0] = base;
                 canvasPixels[index + 1] = static_cast<BYTE>( base + 1 );
                 canvasPixels[index + 2] = static_cast<BYTE>( base + 2 );
@@ -7455,17 +7454,17 @@ bool RunPanoramaStitchSelfTest()
             }
         }
 
-        for( int band = 0; band * shiftY < canvasHeight; ++band )
+        for( int band = 0; band * shiftY < canvasHeight3; ++band )
         {
             const int y0 = band * shiftY;
             for( int dy = 0; dy < 2; ++dy )
             {
                 const int yy = y0 + dy;
-                if( yy >= canvasHeight )
+                if( yy >= canvasHeight3 )
                     continue;
-                for( int x = 0; x < frameWidth; ++x )
+                for( int x = 0; x < frameWidth3; ++x )
                 {
-                    const size_t index = ( static_cast<size_t>( yy ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( x ) ) * 4;
+                    const size_t index = ( static_cast<size_t>( yy ) * static_cast<size_t>( frameWidth3 ) + static_cast<size_t>( x ) ) * 4;
                     canvasPixels[index + 0] = 38;
                     canvasPixels[index + 1] = 42;
                     canvasPixels[index + 2] = 46;
@@ -7473,11 +7472,11 @@ bool RunPanoramaStitchSelfTest()
             }
 
             const int x0 = 10 + ( ( band * 37 ) % 96 );
-            for( int yy = y0 + 10; yy < min( y0 + 12, canvasHeight ); ++yy )
+            for( int yy = y0 + 10; yy < min( y0 + 12, canvasHeight3 ); ++yy )
             {
-                for( int xx = x0; xx < min( x0 + 2, frameWidth ); ++xx )
+                for( int xx = x0; xx < min( x0 + 2, frameWidth3 ); ++xx )
                 {
-                    const size_t index = ( static_cast<size_t>( yy ) * static_cast<size_t>( frameWidth ) + static_cast<size_t>( xx ) ) * 4;
+                    const size_t index = ( static_cast<size_t>( yy ) * static_cast<size_t>( frameWidth3 ) + static_cast<size_t>( xx ) ) * 4;
                     canvasPixels[index + 0] = 150;
                     canvasPixels[index + 1] = 156;
                     canvasPixels[index + 2] = 162;
@@ -7485,29 +7484,29 @@ bool RunPanoramaStitchSelfTest()
             }
         }
 
-        std::vector<BYTE> previousPixels( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) * 4 );
-        std::vector<BYTE> currentPixels( static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) * 4 );
-        for( int y = 0; y < frameHeight; ++y )
+        std::vector<BYTE> previousPixels( static_cast<size_t>( frameWidth3 ) * static_cast<size_t>( frameHeight3 ) * 4 );
+        std::vector<BYTE> currentPixels( static_cast<size_t>( frameWidth3 ) * static_cast<size_t>( frameHeight3 ) * 4 );
+        for( int y = 0; y < frameHeight3; ++y )
         {
-            const size_t srcPrev = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) ) * 4;
-            const size_t srcCurr = ( static_cast<size_t>( y + shiftY ) * static_cast<size_t>( frameWidth ) ) * 4;
-            const size_t dst = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) ) * 4;
-            memcpy( previousPixels.data() + dst, canvasPixels.data() + srcPrev, static_cast<size_t>( frameWidth ) * 4 );
-            memcpy( currentPixels.data() + dst, canvasPixels.data() + srcCurr, static_cast<size_t>( frameWidth ) * 4 );
+            const size_t srcPrev = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth3 ) ) * 4;
+            const size_t srcCurr = ( static_cast<size_t>( y + shiftY ) * static_cast<size_t>( frameWidth3 ) ) * 4;
+            const size_t dst = ( static_cast<size_t>( y ) * static_cast<size_t>( frameWidth3 ) ) * 4;
+            memcpy( previousPixels.data() + dst, canvasPixels.data() + srcPrev, static_cast<size_t>( frameWidth3 ) * 4 );
+            memcpy( currentPixels.data() + dst, canvasPixels.data() + srcCurr, static_cast<size_t>( frameWidth3 ) * 4 );
         }
 
         std::vector<BYTE> previousLuma;
         std::vector<BYTE> currentLuma;
-        BuildFullLumaFrame( previousPixels, frameWidth, frameHeight, previousLuma );
-        BuildFullLumaFrame( currentPixels, frameWidth, frameHeight, currentLuma );
+        BuildFullLumaFrame( previousPixels, frameWidth3, frameHeight3, previousLuma );
+        BuildFullLumaFrame( currentPixels, frameWidth3, frameHeight3, currentLuma );
 
         int bestDx = 0;
         int bestDy = 0;
         bool nearStationaryOverride = false;
         const bool found = FindBestFrameShift( previousPixels,
                                                currentPixels,
-                                               frameWidth,
-                                               frameHeight,
+                                               frameWidth3,
+                                               frameHeight3,
                                                0,
                                                0,
                                                bestDx,
@@ -7774,7 +7773,6 @@ bool RunPanoramaStitchSelfTest()
             const std::vector<int>& origins, int winH ) -> int
         {
             const int expectedH = origins.back() + winH;
-            const bool isStressScenario = wcsncmp( scenario, L"stress-", 7 ) == 0;
             const bool isStrictRangeScenario = wcsstr( scenario, L"legitjumps" ) != nullptr;
             const bool isFastScrollScenario = wcsstr( scenario, L"fastscroll" ) != nullptr ||
                                                 wcsstr( scenario, L"accelscroll" ) != nullptr;
