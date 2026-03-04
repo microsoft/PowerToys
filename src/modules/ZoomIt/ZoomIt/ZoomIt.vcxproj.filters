@@ -113,6 +113,9 @@
     <ClInclude Include="PanoramaCapture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\ZoomItBreak\BreakTimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="appicon.ico">
