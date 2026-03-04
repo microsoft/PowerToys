@@ -522,6 +522,13 @@ public:
         }
 
         m_hEditorProcess = sei.hProcess;
+        
+        // Log telemetry for editor launch
+        if (m_hEditorProcess)
+        {
+            Trace::LaunchEditor(true); // true = launched via hotkey/event
+        }
+        
         return m_hEditorProcess != nullptr;
     }
 
