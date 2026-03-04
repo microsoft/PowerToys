@@ -18,6 +18,7 @@
 // Globals shared with the main ZoomIt module.
 extern bool    g_PanoramaCaptureActive;
 extern bool    g_PanoramaStopRequested;
+extern bool    g_PanoramaDebugMode;
 
 // Run the panorama capture flow: select a region, capture frames while
 // scrolling, stitch them together, and copy the result to the clipboard.
