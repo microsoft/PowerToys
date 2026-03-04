@@ -69,7 +69,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <DisableSpecificWarnings>4100;4091;4245</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>..\..\..\;$(MSBuildThisFileDirectory)..\..\..\common\sysinternals;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\;$(MSBuildThisFileDirectory)..\..\..\common\sysinternals;..\ZoomItBreak;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -308,6 +308,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\ZoomItBreak\BreakTimer.h" />
     <ClInclude Include="AudioSampleGenerator.h" />
     <ClInclude Include="LoopbackCapture.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\common\sysinternals\Eula\Eula.h" />
