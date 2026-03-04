@@ -287,4 +287,8 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::POWER_DISPLAY_TERMINATE_APP_MESSAGE;
     }
+    hstring Constants::OpenNewKeyboardManagerEvent()
+    {
+        return CommonSharedConstants::OPEN_NEW_KEYBOARD_MANAGER_EVENT;
+    }
 }

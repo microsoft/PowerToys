@@ -72,6 +72,7 @@ namespace PowerToys
             static String PowerDisplayToggleMessage();
             static String PowerDisplayApplyProfileMessage();
             static String PowerDisplayTerminateAppMessage();
+            static String OpenNewKeyboardManagerEvent();
         }
     }
 }
