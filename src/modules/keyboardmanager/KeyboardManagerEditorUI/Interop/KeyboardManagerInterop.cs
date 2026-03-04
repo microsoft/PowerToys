@@ -109,7 +109,10 @@ namespace KeyboardManagerEditorUI.Interop
         internal static extern int GetKeyType(int keyCode);
 
         // Validation Functions
-        [DllImport(DllName)]
+        [DllImport(
+            DllName,
+            CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool IsShortcutIllegal([MarshalAs(UnmanagedType.LPWStr)] string shortcutKeys);
 
