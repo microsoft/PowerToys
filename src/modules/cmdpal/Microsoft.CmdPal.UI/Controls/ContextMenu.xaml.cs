@@ -23,6 +23,15 @@ public sealed partial class ContextMenu : UserControl,
     IRecipient<UpdateCommandBarMessage>,
     IRecipient<TryCommandKeybindingMessage>
 {
+    public static readonly DependencyProperty ShowFilterBoxProperty =
+        DependencyProperty.Register(nameof(ShowFilterBox), typeof(bool), typeof(ContextMenu), new PropertyMetadata(true));
+
+    public bool ShowFilterBox
+    {
+        get => (bool)GetValue(ShowFilterBoxProperty);
+        set => SetValue(ShowFilterBoxProperty, value);
+    }
+
     public ContextMenuViewModel ViewModel { get; }
 
     public ContextMenu()

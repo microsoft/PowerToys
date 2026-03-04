@@ -231,25 +231,7 @@ public sealed partial class ListPage : Page,
         if (_scrollOnNextSelectionChange)
         {
             _scrollOnNextSelectionChange = false;
-
-            var scrollTarget = li;
-
-            // If the previous item is a separator, also scroll it into view to provide
-            // better context for the user
-            var index = ItemView.Items.IndexOf(li);
-            if (index > 0)
-            {
-                var prevItem = ItemView.Items[index - 1] as ListItemViewModel;
-                if (prevItem?.Type == ListItemType.SectionHeader)
-                {
-                    scrollTarget = prevItem;
-                }
-            }
-
-            if (scrollTarget is not null)
-            {
-                ItemView.ScrollIntoView(scrollTarget);
-            }
+            ScrollToItem(li);
         }
 
         // Automation notification for screen readers
@@ -260,6 +242,28 @@ public sealed partial class ListPage : Page,
                 ItemsList,
                 li.Title,
                 "CommandPaletteSelectedItemChanged");
+        }
+    }
+
+    private void ScrollToItem(ListItemViewModel li)
+    {
+        var scrollTarget = li;
+
+        // If the previous item is a separator, also scroll it into view to provide
+        // better context for the user
+        var index = ItemView.Items.IndexOf(li);
+        if (index > 0)
+        {
+            var prevItem = ItemView.Items[index - 1] as ListItemViewModel;
+            if (prevItem?.Type == ListItemType.SectionHeader)
+            {
+                scrollTarget = prevItem;
+            }
+        }
+
+        if (scrollTarget is not null)
+        {
+            ItemView.ScrollIntoView(scrollTarget);
         }
     }
 
@@ -717,6 +721,8 @@ public sealed partial class ListPage : Page,
         {
             using (SuppressSelectionChangedScope())
             {
+                ListItemViewModel? stickyRestored = null;
+
                 if (!forceFirstItem &&
                     _stickySelectedItem is not null &&
                     items.Contains(_stickySelectedItem) &&
@@ -724,6 +730,7 @@ public sealed partial class ListPage : Page,
                 {
                     // Preserve sticky selection for nested dynamic updates.
                     ItemView.SelectedItem = _stickySelectedItem;
+                    stickyRestored = _stickySelectedItem;
                 }
                 else
                 {
@@ -741,7 +748,26 @@ public sealed partial class ListPage : Page,
                         return;
                     }
 
-                    ResetScrollToTop();
+                    if (stickyRestored is not null)
+                    {
+                        ScrollToItem(stickyRestored);
+                    }
+                    else
+                    {
+                        ResetScrollToTop();
+                    }
+                });
+            }
+        }
+        else
+        {
+            // Selection is valid and unchanged, just make sure the item is visible
+            if (_stickySelectedItem is ListItemViewModel li)
+            {
+                _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    ItemView.UpdateLayout();
+                    ScrollToItem(li);
                 });
             }
         }

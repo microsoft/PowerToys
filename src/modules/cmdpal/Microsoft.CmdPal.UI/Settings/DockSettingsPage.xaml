@@ -46,34 +46,23 @@
                     <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <!--  Dock Position  -->
-                    <controls:SettingsExpander x:Uid="DockAppearance_DockPosition_SettingsExpander" IsExpanded="True">
-                        <controls:SettingsExpander.HeaderIcon>
+                    <controls:SettingsCard x:Uid="DockAppearance_DockPosition_SettingsCard">
+                        <controls:SettingsCard.HeaderIcon>
                             <SymbolIcon Symbol="MoveToFolder" />
-                        </controls:SettingsExpander.HeaderIcon>
+                        </controls:SettingsCard.HeaderIcon>
                         <ComboBox
                             x:Name="DockPositionComboBox"
-                            MinWidth="120"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
                             SelectedIndex="{x:Bind SelectedSideIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="DockAppearance_DockPosition_Left" />
                             <ComboBoxItem x:Uid="DockAppearance_DockPosition_Top" />
                             <ComboBoxItem x:Uid="DockAppearance_DockPosition_Right" />
                             <ComboBoxItem x:Uid="DockAppearance_DockPosition_Bottom" />
                         </ComboBox>
-                        <controls:SettingsExpander.Items>
-
-                            <!--  Show Labels  -->
-                            <controls:SettingsCard ContentAlignment="Left">
-                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="DockAppearance_ShowLabels_CheckBox" IsChecked="{x:Bind ShowLabels, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                        </controls:SettingsExpander.Items>
-                    </controls:SettingsExpander>
-
-                    <!--  Theme Section  -->
-                    <TextBlock x:Uid="DockAppearance_ThemeSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="DockAppearance_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.DockAppearance.ThemeIndex, Mode=TwoWay}">
-
                             <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_System_Automation" Tag="Default">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon FontSize="16" Glyph="&#xE770;" />

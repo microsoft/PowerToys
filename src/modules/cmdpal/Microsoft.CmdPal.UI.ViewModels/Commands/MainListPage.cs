@@ -120,7 +120,7 @@ public sealed partial class MainListPage : DynamicListPage,
         }
         else
         {
-            RaiseItemsChanged();
+            RaiseItemsChanged(ListViewModel.IncrementalRefresh);
         }
     }
 
@@ -331,7 +331,7 @@ public sealed partial class MainListPage : DynamicListPage,
             {
                 _filteredItemsIncludesApps = _includeApps;
                 ClearResults();
-                RaiseItemsChanged(commands.Count);
+                RaiseItemsChanged();
                 return;
             }
 
@@ -503,7 +503,7 @@ public sealed partial class MainListPage : DynamicListPage,
                     return;
                 }
 
-                RaiseItemsChanged();
+                RaiseItemsChanged(ListViewModel.IncrementalRefresh);
             }
         },
             token);

@@ -311,15 +311,26 @@ public sealed partial class MainWindow : WindowEx,
 
         var rect = placement.rcNormalPosition;
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest) ?? DisplayArea.Primary;
+
+        // GetWindowPlacement returns rcNormalPosition in workspace coordinates for
+        // normal windows, but in screen coordinates for tool windows (WS_EX_TOOLWINDOW).
+        // HiddenOwnerWindowBehavior applies WS_EX_TOOLWINDOW to hide from taskbar/Alt+Tab,
+        // so we must check the current style before converting coordinates.
+        //
+        // To be on the safe side, we should consider the possibility that setting
+        // WS_EX_TOOLWINDOW failed or isn't applied while debugging.
+        var workArea = displayArea.WorkArea;
+        var isToolWindow = this.HasExtendedStyle(WINDOW_EX_STYLE.WS_EX_TOOLWINDOW);
+
         _currentWindowPosition = new WindowPosition
         {
-            X = rect.X,
-            Y = rect.Y,
+            X = rect.X + (isToolWindow ? 0 : workArea.X),
+            Y = rect.Y + (isToolWindow ? 0 : workArea.Y),
             Width = rect.Width,
             Height = rect.Height,
             Dpi = (int)this.GetDpiForWindow(),
-            ScreenWidth = displayArea.WorkArea.Width,
-            ScreenHeight = displayArea.WorkArea.Height,
+            ScreenWidth = workArea.Width,
+            ScreenHeight = workArea.Height,
         };
     }
 

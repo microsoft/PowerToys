@@ -763,9 +763,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_PageTitles_DockAppearancePage" xml:space="preserve">
     <value>Dock Appearance</value>
   </data>
-  <data name="DockAppearance_ThemeSettingsHeader.Text" xml:space="preserve">
-    <value>Theme</value>
-  </data>
   <data name="DockAppearance_AppTheme_SettingsCard.Header" xml:space="preserve">
     <value>Dock theme mode</value>
   </data>
@@ -891,8 +888,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="ConfigureShortcutText.Text" xml:space="preserve">
     <value>Assign shortcut</value>
   </data>
-  <data name="DockAppearance_DockPosition_SettingsExpander.Header" xml:space="preserve">
-    <value>Dock position and appearance</value>
+  <data name="DockAppearance_DockPosition_SettingsCard.Header" xml:space="preserve">
+    <value>Dock position</value>
   </data>
   <data name="DockAppearance_DockPosition_SettingsExpander.Description" xml:space="preserve">
     <value>Choose where the dock appears on your screen</value>
