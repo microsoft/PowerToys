@@ -3,76 +3,74 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace KeyboardManagerEditorUI.Interop
 {
     public static class KeyboardManagerInterop
     {
         private const string DllName = "Powertoys.KeyboardManagerEditorLibraryWrapper.dll";
+        private const CallingConvention Convention = CallingConvention.Cdecl;
 
         // Configuration Management
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         internal static extern IntPtr CreateMappingConfiguration();
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         internal static extern void DestroyMappingConfiguration(IntPtr config);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool LoadMappingSettings(IntPtr config);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool SaveMappingSettings(IntPtr config);
 
         // Get Mapping Functions
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         internal static extern int GetSingleKeyRemapCount(IntPtr config);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetSingleKeyRemap(IntPtr config, int index, ref SingleKeyMapping mapping);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         internal static extern int GetSingleKeyToTextRemapCount(IntPtr config);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetSingleKeyToTextRemap(IntPtr config, int index, ref KeyboardTextMapping mapping);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         internal static extern int GetShortcutRemapCount(IntPtr config);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetShortcutRemap(IntPtr config, int index, ref ShortcutMapping mapping);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         internal static extern int GetShortcutRemapCountByType(IntPtr config, int operationType);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetShortcutRemapByType(IntPtr config, int operationType, int index, ref ShortcutMapping mapping);
 
         // Add Mapping Functions
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AddSingleKeyRemap(IntPtr config, int originalKey, int targetKey);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AddSingleKeyToTextRemap(IntPtr config, int originalKey, [MarshalAs(UnmanagedType.LPWStr)] string targetText);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AddSingleKeyToShortcutRemap(IntPtr config, int originalKey, [MarshalAs(UnmanagedType.LPWStr)] string targetKeys);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AddShortcutRemap(
             IntPtr config,
@@ -88,40 +86,39 @@ namespace KeyboardManagerEditorUI.Interop
             int visibility = 0);
 
         // Delete Mapping Functions
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeleteSingleKeyRemap(IntPtr mappingConfiguration, int originalKey);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeleteSingleKeyToTextRemap(IntPtr config, int originalKey);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeleteShortcutRemap(IntPtr mappingConfiguration, [MarshalAs(UnmanagedType.LPWStr)] string originalKeys, [MarshalAs(UnmanagedType.LPWStr)] string targetApp);
 
         // Key Utility Functions
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         internal static extern int GetKeyCodeFromName([MarshalAs(UnmanagedType.LPWStr)] string keyName);
 
-        [DllImport(DllName, CharSet = CharSet.Unicode)]
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         internal static extern void GetKeyDisplayName(int keyCode, [Out] StringBuilder keyName, int maxLength);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         internal static extern int GetKeyType(int keyCode);
 
         // Validation Functions
-        [DllImport(
-            DllName,
-            CallingConvention = CallingConvention.Cdecl,
-            CharSet = CharSet.Unicode)]
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool IsShortcutIllegal([MarshalAs(UnmanagedType.LPWStr)] string shortcutKeys);
 
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AreShortcutsEqual([MarshalAs(UnmanagedType.LPWStr)] string lShort, [MarshalAs(UnmanagedType.LPWStr)] string rShortcut);
 
         // String Management Functions
-        [DllImport(DllName)]
+        [DllImport(DllName, CallingConvention = Convention)]
         internal static extern void FreeString(IntPtr str);
 
         public static string GetStringAndFree(IntPtr handle)
@@ -137,7 +134,7 @@ namespace KeyboardManagerEditorUI.Interop
         }
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct SingleKeyMapping
     {
         public int OriginalKey;
@@ -146,14 +143,14 @@ namespace KeyboardManagerEditorUI.Interop
         public bool IsShortcut;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct KeyboardTextMapping
     {
         public int OriginalKey;
         public IntPtr TargetText;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct ShortcutMapping
     {
         public IntPtr OriginalKeys;

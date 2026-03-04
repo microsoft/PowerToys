@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using KeyboardManagerEditorUI.Interop;
 using KeyboardManagerEditorUI.Settings;
+using ManagedCommon;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
@@ -234,6 +235,7 @@ namespace KeyboardManagerEditorUI.Helpers
         private static bool IsIllegalShortcut(List<string> keys, KeyboardMappingService mappingService)
         {
             string shortcutKeysString = BuildKeyCodeString(keys, mappingService);
+            Logger.LogInfo($"Checking if shortcut is illegal: {shortcutKeysString}");
             return KeyboardManagerInterop.IsShortcutIllegal(shortcutKeysString);
         }
 

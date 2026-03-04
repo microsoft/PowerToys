@@ -140,7 +140,9 @@ namespace KeyboardManagerEditorUI.Interop
                 return 0;
             }
 
-            return KeyboardManagerInterop.GetKeyCodeFromName(keyName);
+            int keyCode = KeyboardManagerInterop.GetKeyCodeFromName(keyName);
+            Logger.LogInfo($"Key code for key name {keyName}: {keyCode}");
+            return keyCode;
         }
 
         public bool AddSingleKeyMapping(int originalKey, int targetKey)
