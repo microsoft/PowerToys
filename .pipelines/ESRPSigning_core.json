@@ -109,13 +109,13 @@
             "PowerToys.KeyboardManager.dll",
 
             "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
-            "KeyboardManagerEditorUI\\PowerToys.KeyboardManagerEditorUI.exe",
             "KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe",
             "PowerToys.KeyboardManagerEditorLibraryWrapper.dll",
             "WinUI3Apps\\PowerToys.HostsModuleInterface.dll",
             "WinUI3Apps\\PowerToys.HostsUILib.dll",
             "WinUI3Apps\\PowerToys.Hosts.dll",
             "WinUI3Apps\\PowerToys.Hosts.exe",
+            "WinUI3Apps\\PowerToys.KeyboardManagerEditorUI.exe",
 
             "WinUI3Apps\\PowerToys.FileLocksmithLib.Interop.dll",
             "WinUI3Apps\\PowerToys.FileLocksmithExt.dll",
