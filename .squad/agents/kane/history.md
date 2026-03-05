@@ -11,6 +11,17 @@ Kane is the C# Extension Dev, specializing in built-in CmdPal extensions that sh
 
 ## Learnings
 
+### Rate Limit Error Handling in Extension Store (2026-03)
+- **Problem:** GitHub API limits hit 60/hr unauthenticated, users see silent failures
+- **Solution:** Three-layer error surfacing:
+  1. **Pipeline CLI** (`tools/pipeline/src/cli.ts`): Detect 429/403 errors, suggest GITHUB_TOKEN in `displayError()`
+  2. **Install UI** (`InstallExtensionCommand.cs`): `FormatErrorMessage()` parses rate limit/404 errors, shows toast instead of raw output
+  3. **Browse UI** (`BrowseExtensionsPage.cs`): Check `github.RateLimit.Remaining == 0`, show GITHUB_TOKEN hint in empty state
+- **Rate limits:** 60/hr unauthenticated, 5000/hr with token (100x improvement)
+- **Error detection:** Check for "API rate limit" text in message, or 403 status with 0 remaining requests
+- **UI Pattern:** Toast for transient failures, empty state message for browsing context
+- **Future:** Add environment variable detection in Setup/Preferences to guide users toward proper token setup
+
 ### GitHub API Client for Raycast Extensions (2025-07)
 - **Location:** `src/modules/cmdpal/extensionsdk/raycast-compat/tools/github-client/`
 - **Pattern:** Standalone TypeScript tool package under `tools/`, matching `manifest-translator` sibling layout (own `package.json`, `tsconfig.json`, `jest.config.js`)
@@ -41,3 +52,21 @@ Kane is the C# Extension Dev, specializing in built-in CmdPal extensions that sh
 - **Caching:** 10-min TTL for directory listings, 5-min for individual manifests
 - **Models:** 8 separate files under `GitHub/` for StyleCop SA1402 compliance (RaycastExtensionInfo, RaycastCommand, RaycastPackageJson, RaycastPackageCommand, GitTreeResponse, GitTreeEntry, GitHubContentResponse, GitHubRateLimit)
 - **Build:** Clean build with 0 errors, 0 warnings using `tools/build/build.cmd`
+
+### RaycastStore Extension Registration (2025-07)
+- **Registration pattern for built-in CmdPal extensions requires 3 touchpoints:**
+  1. **Solution filter** (`CommandPalette.slnf`): Add `.csproj` path to `projects` array
+  2. **App.xaml.cs**: Add `using` + `services.AddSingleton<ICommandProvider, ProviderClass>()` in `AddBuiltInCommands()`
+  3. **Microsoft.CmdPal.UI.csproj**: Add `<ProjectReference>` to the extension `.csproj`
+- Registration goes at the end of `AddBuiltInCommands()` (after `RemoteDesktopCommandProvider`), keeping core extensions first
+- Simple providers use generic `AddSingleton<ICommandProvider, T>()` form; WinGet is special-cased with an instance because it calls `SetAllLookup()`
+- Build command from extension directory: `& C:\sources\powertoys\tools\build\build.ps1` (PowerShell), not `build.cmd` (cmd.exe path resolution fails in PS)
+- Registration verified by clean build — runtime verification requires launching CmdPal
+
+### ext/ vs Extensions/ Directory Layout (2025-07)
+- **`ext/` is the canonical source location** for all built-in CmdPal extensions. Git tracks source files here.
+- **`Extensions/` is build output only** — contains only `obj/` and `x64/` artifacts, zero files tracked by git.
+- **PowerToys.slnx** and **CommandPalette.slnf** both reference `ext/` paths for every built-in extension (Apps, Bookmark, Calc, WinGet, RaycastStore, etc.)
+- **Microsoft.CmdPal.UI.csproj** references extensions via `..\ext\<ExtName>\<ExtName>.csproj`
+- **Do NOT move extensions from `ext/` to `Extensions/`** — this would break the build and be inconsistent with every other extension.
+- The `Extensions/` folder name is misleading but is a build artifact directory, not a source directory.

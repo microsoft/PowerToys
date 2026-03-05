@@ -117,3 +117,47 @@
 - Wait for Parker to fix StyleCop/analyzer issues in production code
 - Update test TODOs once JsonRpc types are finalized
 - Run tests once production code builds successfully
+
+### 2025-07-XX — Raycast Compat E2E Integration Tests
+
+**Task:** Write end-to-end integration tests covering the full Raycast→CmdPal pipeline.
+
+**Files Created:**
+- `__tests__/e2e/full-pipeline.test.ts` — 21 test cases across 5 describe blocks
+  - Full pipeline (bundle→render→query): 9 tests
+  - Manifest translator: 3 tests
+  - Error cases: 3 tests
+  - Performance baseline: 3 tests
+  - Bundle + Bridge lifecycle: 3 tests
+- `__tests__/e2e/fixtures/valid-extension/` — Realistic Raycast extension with List, useState, ActionPanel
+- `__tests__/e2e/fixtures/macos-only-extension/` — macOS-only extension for platform rejection
+- `__tests__/e2e/fixtures/unsupported-component-extension/` — Grid component (unsupported)
+- `__tests__/e2e/fixtures/missing-react-extension/` — Extension that throws during render
+
+**Files Modified:**
+- `src/components/markers.tsx` — Added `createMarkerWithChildProps()` to handle JSX-element props (actions, detail, content) as reconciled children
+- `src/reconciler/host-config.ts` — Fixed `commitUpdate` signature for react-reconciler 0.32+ (React 19 API change)
+
+**Bugs Found & Fixed:**
+
+1. **Actions-as-prop architectural gap** (markers.tsx):
+   - Raycast API: `<List.Item actions={<ActionPanel>...} />` passes actions as a JSX **prop**
+   - Generic markers passed this through as an opaque prop, never reconciled
+   - Translator's `extractActions()` only walked `node.children`, not `node.props.actions`
+   - **Fix:** `createMarkerWithChildProps()` extracts React-element props and renders them as children
+
+2. **react-reconciler 0.32 commitUpdate API change** (host-config.ts):
+   - Old API (≤0.31): `commitUpdate(instance, updatePayload, type, oldProps, newProps)`
+   - New API (0.32+): `commitUpdate(instance, type, oldProps, newProps, internalHandle)`
+   - The old code treated `type` (string) as `updatePayload`, overwriting props with the type string
+   - **Symptom:** After any React re-render, all VNode props became the type string (e.g., `"List.Item"`)
+   - **Fix:** Updated `commitUpdate` to use the new signature and `sanitizeProps(newProps)`
+
+**Key Learnings:**
+- React 19 / react-reconciler 0.32 changed `commitUpdate` — `prepareUpdate` return value is no longer passed as payload
+- `useState` setters called outside React event handlers batch asynchronously in React 19
+- `flushSyncWork()` does NOT flush programmatic useState updates — tests must use `setTimeout` pattern
+- esbuild bundling in tests must use `write: false` (in-memory) to avoid file I/O side effects
+- Pre-existing `__tests__/reconciler.test.ts` and `__tests__/edge-cases.test.ts` use stub factories and fail by design (specification-only)
+
+**Test Results:** All 21 e2e tests passing. All 17 bridge-provider tests passing. All 22 translator tests passing.

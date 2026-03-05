@@ -2,6 +2,28 @@
 
 ## Wave 2 Decisions (2026-03-04 — 2026-03-05)
 
+### 2026-03-05: Rate Limit Error Handling — User-Friendly Messages
+
+**Author:** Kane (C# Extension Dev)  
+**Status:** Implemented  
+**Scope:** `tools/pipeline/src/cli.ts`, `Microsoft.CmdPal.Ext.RaycastStore/Pages/`
+
+**Decision:** Surface GitHub API rate limit errors gracefully to users instead of failing silently. Three touchpoints:
+
+1. **Pipeline CLI** (`cli.ts`): Detect 429/403 errors with "rate limit" text, suggest GITHUB_TOKEN in `displayError()`
+2. **Install UI** (`InstallExtensionCommand.cs`): Added `FormatErrorMessage()` to parse rate limit/404 errors, show user-friendly toast instead of raw pipeline output
+3. **Browse UI** (`BrowseExtensionsPage.cs`): Check `github.RateLimit.Remaining == 0` and show GITHUB_TOKEN hint in empty state
+
+**Rationale:**
+- GitHub API limits: 60/hr unauthenticated, 5000/hr with GITHUB_TOKEN
+- Rate limiting is common during browsing without proper token setup
+- Users deserve actionable guidance, not generic "failed" messages
+- Consistent error handling across install and browse flows
+
+**Impact:** Users now see "Rate limit exceeded — set GITHUB_TOKEN environment variable" instead of silent failures. Improves discoverability of extension store feature.
+
+---
+
 ### 2026-03-05: VNode → CmdPal Translator — Standalone Classes
 
 **Author:** Ash (React/Reconciler Specialist)  
