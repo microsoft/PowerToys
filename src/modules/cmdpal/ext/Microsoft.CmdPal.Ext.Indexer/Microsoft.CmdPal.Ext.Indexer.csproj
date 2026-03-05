@@ -15,6 +15,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="WyHash" />
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
     <ProjectReference Include="..\..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />

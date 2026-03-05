@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,7 @@ using Microsoft.CmdPal.Ext.Indexer.Pages;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation.Metadata;
+using WyHash;
 using FileAttributes = System.IO.FileAttributes;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Data;
@@ -19,6 +21,12 @@ namespace Microsoft.CmdPal.Ext.Indexer.Data;
 internal sealed partial class IndexerListItem : ListItem
 {
     internal static readonly bool IsActionsFeatureEnabled = GetFeatureFlag();
+
+    /// <summary>
+    /// In-memory cache mapping generated IDs to full file paths.
+    /// Populated when IndexerListItems are created; read by IndexerCommandsProvider.GetCommandItem.
+    /// </summary>
+    internal static readonly ConcurrentDictionary<string, string> IdToPathCache = new();
 
     private static bool GetFeatureFlag()
     {
@@ -45,8 +53,17 @@ internal sealed partial class IndexerListItem : ListItem
         if (commands.Any())
         {
             Command = commands.First().Command;
+            (Command as Command).Id = GenerateFileId(FilePath);
             MoreCommands = commands.Skip(1).ToArray();
         }
+    }
+
+    internal static string GenerateFileId(string fullPath)
+    {
+        var result = WyHash64.ComputeHash64(fullPath.ToLowerInvariant(), seed: 0);
+        var id = $"indexer_{result}";
+        IdToPathCache[id] = fullPath;
+        return id;
     }
 
     public static IEnumerable<CommandContextItem> FileCommands(string fullPath)
