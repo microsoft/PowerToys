@@ -134,7 +134,13 @@ DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap );
 std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId );
 
 // Maximum number of frames the capture loop will collect before auto-stopping.
+// Temporary debugging limit: keep frame-limit captures short in Debug so the
+// limit-stop flow can be exercised quickly and repeatedly.
+#ifdef _DEBUG
+static constexpr size_t kMaxCaptureFrames = 120;
+#else
 static constexpr size_t kMaxCaptureFrames = 1024;
+#endif
 
 static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
                                      bool lowContrastMode,
@@ -5728,7 +5734,48 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     StitchLog( L"[Panorama/Stitch] AxisScan vertBest=%I64u dy=%d horizBest=%I64u dx=%d\n",
                bestVertScore, bestVertDy, bestHorizScore, bestHorizDx );
 
-    const bool verticalWins = bestVertScore <= bestHorizScore;
+    bool verticalWins = bestVertScore <= bestHorizScore;
+
+    // Geometry bias for first-pair VLE axis detection: narrow/tall capture
+    // portals are overwhelmingly used for vertical scroll captures.  On such
+    // strips, horizontal SAD can look deceptively better due to repeated
+    // line/text structure, causing permanent axis mis-lock.
+    const bool portraitPortal = frameHeight >= frameWidth * 2;
+    const bool landscapePortal = frameWidth >= frameHeight * 2;
+    if( portraitPortal && bestVertScore != ULLONG_MAX )
+    {
+        const unsigned __int64 horizAdvantage =
+            ( bestHorizScore != ULLONG_MAX && bestHorizScore < bestVertScore )
+                ? ( bestVertScore - bestHorizScore )
+                : 0;
+        const unsigned __int64 requiredAdvantage =
+            ( std::max )( static_cast<unsigned __int64>( 16 ), bestVertScore / 3 );
+        if( horizAdvantage < requiredAdvantage )
+        {
+            if( !verticalWins )
+            {
+                StitchLog( L"[Panorama/Stitch] AxisScan portrait-bias forcing vertical: vertBest=%I64u horizBest=%I64u dy=%d dx=%d\n",
+                           bestVertScore,
+                           bestHorizScore,
+                           bestVertDy,
+                           bestHorizDx );
+            }
+            verticalWins = true;
+        }
+    }
+    else if( landscapePortal && bestHorizScore != ULLONG_MAX )
+    {
+        const unsigned __int64 vertAdvantage =
+            ( bestVertScore != ULLONG_MAX && bestVertScore < bestHorizScore )
+                ? ( bestHorizScore - bestVertScore )
+                : 0;
+        const unsigned __int64 requiredAdvantage =
+            ( std::max )( static_cast<unsigned __int64>( 16 ), bestHorizScore / 3 );
+        if( vertAdvantage < requiredAdvantage )
+        {
+            verticalWins = false;
+        }
+    }
 
     if( verticalWins )
     {
@@ -7767,7 +7814,14 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                  minY,
                  maxX,
                  maxY );
-    if( stitchedWidth <= 0 || stitchedHeight <= 0 || stitchedWidth > 30000 || stitchedHeight > 30000 )
+    // Keep a hard upper bound to avoid pathological allocations while still
+    // allowing long captures that remain within GDI's practical 16-bit size
+    // envelope (signed range for bitmap dimensions).
+    constexpr int kMaxStitchedCanvasDimension = 32760;
+    if( stitchedWidth <= 0 ||
+        stitchedHeight <= 0 ||
+        stitchedWidth > kMaxStitchedCanvasDimension ||
+        stitchedHeight > kMaxStitchedCanvasDimension )
     {
         StitchLog( L"[Panorama/Stitch] Invalid stitched canvas size %dx%d\n", stitchedWidth, stitchedHeight );
         return nullptr;
@@ -8143,6 +8197,8 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             StitchLog( L"[Panorama/Debug] Dump directory: %s\n", debugDumpDirectory.c_str() );
         }
     }
+
+    StitchLog( L"[Panorama/Capture] Max frame limit=%zu\n", kMaxCaptureFrames );
     // RAII guard: close the stitch log on every return path.
     struct CaptureStitchLogGuard
     {
