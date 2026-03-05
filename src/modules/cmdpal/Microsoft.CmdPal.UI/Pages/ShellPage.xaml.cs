@@ -504,6 +504,23 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         });
     }
 
+    private void ToggleFilterFocus()
+    {
+        if (!FiltersDropDown.IsFilterVisible)
+        {
+            return;
+        }
+
+        if (FiltersDropDown.IsActive)
+        {
+            FiltersDropDown.CloseDropDownAndFocusSearch();
+        }
+        else
+        {
+            FiltersDropDown.OpenDropDown();
+        }
+    }
+
     private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
 
     private void RootFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -688,26 +705,24 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private static void ShellPage_OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
-                         InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
+        var modifiers = KeyModifiers.GetCurrent();
 
-        var onlyAlt = altPressed && !ctrlPressed && !shiftPressed && !winPressed;
-        var onlyCtrl = !altPressed && ctrlPressed && !shiftPressed && !winPressed;
         switch (e.Key)
         {
-            case VirtualKey.Left when onlyAlt: // Alt+Left arrow
+            case VirtualKey.Left when modifiers.OnlyAlt: // Alt+Left arrow
                 WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
                 e.Handled = true;
                 break;
-            case VirtualKey.Home when onlyAlt: // Alt+Home
+            case VirtualKey.Home when modifiers.OnlyAlt: // Alt+Home
                 WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(WithAnimation: false));
                 e.Handled = true;
                 break;
-            case (VirtualKey)188 when onlyCtrl: // Ctrl+,
+            case (VirtualKey)188 when modifiers.OnlyCtrl: // Ctrl+,
                 WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+                e.Handled = true;
+                break;
+            case VirtualKey.F when modifiers.OnlyAlt: // Alt+F: toggle filter focus
+                ((ShellPage)sender).ToggleFilterFocus();
                 e.Handled = true;
                 break;
             default:
@@ -715,7 +730,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     // The CommandBar is responsible for handling all the item keybindings,
                     // since the bound context item may need to then show another
                     // context menu
-                    TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+                    TryCommandKeybindingMessage msg = new(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
                     WeakReferenceMessenger.Default.Send(msg);
                     e.Handled = msg.Handled;
                     break;
@@ -725,8 +740,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private static void ShellPage_OnKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        if (ctrlPressed && e.Key == VirtualKey.Enter)
+        var mods = KeyModifiers.GetCurrent();
+        if (mods.Ctrl && e.Key == VirtualKey.Enter)
         {
             // ctrl+enter
             WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
@@ -737,7 +752,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
             e.Handled = true;
         }
-        else if (ctrlPressed && e.Key == VirtualKey.K)
+        else if (mods.Ctrl && e.Key == VirtualKey.K)
         {
             // ctrl+k
             WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
