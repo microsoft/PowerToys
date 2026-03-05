@@ -137,7 +137,7 @@ std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t*
 // Temporary debugging limit: keep frame-limit captures short in Debug so the
 // limit-stop flow can be exercised quickly and repeatedly.
 #ifdef _DEBUG
-static constexpr size_t kMaxCaptureFrames = 120;
+static constexpr size_t kMaxCaptureFrames = 1024;
 #else
 static constexpr size_t kMaxCaptureFrames = 1024;
 #endif
@@ -4108,13 +4108,18 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         scoreAtExpectedStep <= fineThreshold &&
         maskedStationaryScore <= 24 )
     {
+        // Only override to expected-step when it is genuinely competitive with
+        // the harmonic winner. This prevents replacing a clearly better
+        // alignment (often score=0) with a much worse expected-step fit.
+        const unsigned __int64 fallbackSlack = ( std::max )( static_cast<unsigned __int64>( 128 ), bestFineScore / 4 );
+        const bool expectedCompetitive = scoreAtExpectedStep <= bestFineScore + fallbackSlack;
         const int harmonicTolerance = max( 4, expectedAbsStep / 10 );
         const int harmonicResidual = bestAbsStep % expectedAbsStep;
         const bool nearHarmonicMultiple =
             harmonicResidual <= harmonicTolerance ||
             expectedAbsStep - harmonicResidual <= harmonicTolerance;
 
-        if( nearHarmonicMultiple )
+        if( nearHarmonicMultiple && expectedCompetitive )
         {
             StitchLog( L"[Panorama/Stitch] FindBestFrameShift hcf-harmonic-overshoot fallback expected=(%d,%d) harmonic=(%d,%d) harmonicScore=%llu expectedStep=(%d,%d) expectedScore=%llu\n",
                          expectedDx,
@@ -4133,6 +4138,94 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
             bestAbsStep = abs( bestDy );
             bestAbsDx = abs( bestDx );
             bestExpectedDelta = abs( bestAbsStep - expectedAbsStep );
+        }
+        else if( nearHarmonicMultiple && !expectedCompetitive )
+        {
+            StitchLog( L"[Panorama/Stitch] FindBestFrameShift hcf-harmonic-overshoot skip-noncompetitive expected=(%d,%d) harmonic=(%d,%d) harmonicScore=%llu expectedStep=(%d,%d) expectedScore=%llu slack=%llu\n",
+                       expectedDx,
+                       expectedDy,
+                       bestDx,
+                       bestDy,
+                       static_cast<unsigned long long>( bestFineScore ),
+                       dxAtExpectedStep,
+                       dyAtExpectedStep,
+                       static_cast<unsigned long long>( scoreAtExpectedStep ),
+                       static_cast<unsigned long long>( fallbackSlack ) );
+        }
+    }
+
+    // Temporal stability guard for HCF content: if the selected shift jumps
+    // far from the expected step while scores are near-degenerate, apply a
+    // jump penalty and prefer expected-step only when it wins after penalty.
+    if( highConstantFractionPair && expectedAbsStep >= 8 &&
+        bestFineScore != ( std::numeric_limits<unsigned __int64>::max )() &&
+        scoreAtExpectedStep != ( std::numeric_limits<unsigned __int64>::max )() )
+    {
+        const int jumpAllowance = max( 12, expectedAbsStep / 2 );
+        const int jumpAmount = abs( bestAbsStep - expectedAbsStep );
+        const bool largeJump = jumpAmount > jumpAllowance;
+
+        if( largeJump && bestFineScore <= 32 && maskedStationaryScore >= 32 )
+        {
+            const unsigned __int64 jumpPenalty = static_cast<unsigned __int64>( jumpAmount - jumpAllowance ) * 256ull;
+            const unsigned __int64 penalizedBest = bestFineScore + jumpPenalty;
+            if( penalizedBest >= scoreAtExpectedStep )
+            {
+                StitchLog( L"[Panorama/Stitch] FindBestFrameShift hcf-jump-suppress fallback expected=(%d,%d) best=(%d,%d) bestScore=%llu expectedStep=(%d,%d) expectedScore=%llu jumpAmount=%d penalty=%llu maskedStat=%llu\n",
+                           expectedDx,
+                           expectedDy,
+                           bestDx,
+                           bestDy,
+                           static_cast<unsigned long long>( bestFineScore ),
+                           dxAtExpectedStep,
+                           dyAtExpectedStep,
+                           static_cast<unsigned long long>( scoreAtExpectedStep ),
+                           jumpAmount,
+                           static_cast<unsigned long long>( jumpPenalty ),
+                           static_cast<unsigned long long>( maskedStationaryScore ) );
+
+                bestDx = dxAtExpectedStep;
+                bestDy = dyAtExpectedStep;
+                bestFineScore = scoreAtExpectedStep;
+                bestFineRankScore = scoreAtExpectedStep;
+                bestAbsStep = abs( bestDy );
+                bestAbsDx = abs( bestDx );
+                bestExpectedDelta = abs( bestAbsStep - expectedAbsStep );
+            }
+        }
+
+        // Catastrophic jump clamp: on HCF content, occasional giant shifts can
+        // score only marginally better than expected-step and then poison the
+        // expected-motion estimate for subsequent frames.
+        const int catastrophicAllowance = max( 64, frameHeight / 6 );
+        const bool catastrophicJump = bestAbsStep > expectedAbsStep + catastrophicAllowance;
+        if( catastrophicJump && maskedStationaryScore >= 32 )
+        {
+            const unsigned __int64 catSlack = ( std::max )( static_cast<unsigned __int64>( 1024 ), bestFineScore / 3 );
+            const bool expectedPlausible = scoreAtExpectedStep <= bestFineScore + catSlack;
+            if( expectedPlausible )
+            {
+                StitchLog( L"[Panorama/Stitch] FindBestFrameShift hcf-catastrophic-jump fallback expected=(%d,%d) best=(%d,%d) bestScore=%llu expectedStep=(%d,%d) expectedScore=%llu catAllowance=%d slack=%llu maskedStat=%llu\n",
+                           expectedDx,
+                           expectedDy,
+                           bestDx,
+                           bestDy,
+                           static_cast<unsigned long long>( bestFineScore ),
+                           dxAtExpectedStep,
+                           dyAtExpectedStep,
+                           static_cast<unsigned long long>( scoreAtExpectedStep ),
+                           catastrophicAllowance,
+                           static_cast<unsigned long long>( catSlack ),
+                           static_cast<unsigned long long>( maskedStationaryScore ) );
+
+                bestDx = dxAtExpectedStep;
+                bestDy = dyAtExpectedStep;
+                bestFineScore = scoreAtExpectedStep;
+                bestFineRankScore = scoreAtExpectedStep;
+                bestAbsStep = abs( bestDy );
+                bestAbsDx = abs( bestDx );
+                bestExpectedDelta = abs( bestAbsStep - expectedAbsStep );
+            }
         }
     }
 
@@ -9879,6 +9972,199 @@ bool RunPanoramaStitchSelfTest()
                                                                              { 50, 52, 48, 50, 51, 49,
                                                                                  50, 50, 52, 48, 50, 51, 49,
                                                                                  50, 50, 52, 48, 50, 51, 49 } );
+
+                // Harmonic-fallback regression stress: construct a case where
+                // the harmonic shift is a significantly better match than the
+                // expected-step candidate. The overshoot guard should not
+                // override to expected-step in this situation.
+                if( !stressEarlyExit )
+                {
+                    const wchar_t* regressionName = L"stress-vertical-hcf-overshoot-regression";
+                    if( stressScenarioMatches( regressionName ) )
+                    {
+                        if( stressFocusEnabled )
+                            stressFocusMatched = true;
+
+                        constexpr int w = 1228;
+                        constexpr int h = 1032;
+                        constexpr int trueStep = 64;
+                        constexpr int expectedStep = 31;
+                        constexpr int srcH = h + trueStep * 6 + 200;
+
+                        std::vector<BYTE> src( static_cast<size_t>( w ) * srcH * 4, 0 );
+
+                        auto paintSource = [&]( int phase )
+                        {
+                            for( int y = 0; y < srcH; ++y )
+                            {
+                                for( int x = 0; x < w; ++x )
+                                {
+                                    const BYTE base = static_cast<BYTE>( 15 + ( ( x * 5 + y * 3 + phase ) & 0x03 ) );
+                                    const size_t idx = ( static_cast<size_t>( y ) * w + x ) * 4;
+                                    src[idx + 0] = base;
+                                    src[idx + 1] = static_cast<BYTE>( base + 1 );
+                                    src[idx + 2] = static_cast<BYTE>( base + 2 );
+                                    src[idx + 3] = 255;
+                                }
+                            }
+
+                            for( int band = 0; ; ++band )
+                            {
+                                const int y0 = phase + band * trueStep;
+                                if( y0 >= srcH )
+                                    break;
+                                if( y0 < 1 )
+                                    continue;
+                                for( int by = y0; by < min( srcH - 1, y0 + 2 ); ++by )
+                                {
+                                    for( int x = 0; x < w; ++x )
+                                    {
+                                        const size_t idx = ( static_cast<size_t>( by ) * w + x ) * 4;
+                                        src[idx + 0] = 38;
+                                        src[idx + 1] = 42;
+                                        src[idx + 2] = 46;
+                                    }
+                                }
+                            }
+
+                            // Add weaker expected-step periodic traces to make
+                            // expected-step correlation deceptively plausible
+                            // while keeping true-step bands dominant.
+                            for( int band = 0; ; ++band )
+                            {
+                                const int y0 = phase / 2 + band * expectedStep;
+                                if( y0 >= srcH )
+                                    break;
+                                if( y0 < 1 )
+                                    continue;
+                                for( int by = y0; by < min( srcH - 1, y0 + 1 ); ++by )
+                                {
+                                    for( int x = 0; x < w; ++x )
+                                    {
+                                        const size_t idx = ( static_cast<size_t>( by ) * w + x ) * 4;
+                                        src[idx + 0] = static_cast<BYTE>( max( src[idx + 0], 28 ) );
+                                        src[idx + 1] = static_cast<BYTE>( max( src[idx + 1], 31 ) );
+                                        src[idx + 2] = static_cast<BYTE>( max( src[idx + 2], 34 ) );
+                                    }
+                                }
+                            }
+
+                            // Sparse anchors ensure a unique true shift while
+                            // preserving high-constant-fraction behavior.
+                            for( int ay = max( 2, 31 + phase ); ay < srcH - 5; ay += 173 )
+                            {
+                                const int x0 = 20 + ( ( ay * 29 + phase * 13 ) % ( w - 80 ) );
+                                for( int dy = 0; dy < 3; ++dy )
+                                {
+                                    for( int dx = 0; dx < 3; ++dx )
+                                    {
+                                        const size_t idx = ( static_cast<size_t>( ay + dy ) * w + x0 + dx ) * 4;
+                                        src[idx + 0] = 154;
+                                        src[idx + 1] = 160;
+                                        src[idx + 2] = 166;
+                                    }
+                                }
+                            }
+                        };
+
+                        auto buildFrame = [&]( int top, std::vector<BYTE>& outFrame )
+                        {
+                            outFrame.resize( static_cast<size_t>( w ) * h * 4 );
+                            for( int row = 0; row < h; ++row )
+                            {
+                                const BYTE* srcRow = src.data() +
+                                                     ( static_cast<size_t>( top + row ) * w * 4 );
+                                BYTE* dstRow = outFrame.data() + static_cast<size_t>( row ) * w * 4;
+                                memcpy( dstRow, srcRow, static_cast<size_t>( w ) * 4 );
+                            }
+                        };
+
+                        TestLog( L"[Panorama/Test] Running %s\n", regressionName );
+                        stressTestsRun++;
+
+                        int evaluated = 0;
+                        int nearTrueStep = 0;
+                        int nearExpectedStep = 0;
+                        int sampleBestDy = 0;
+
+                        for( int trial = 0; trial < 14; ++trial )
+                        {
+                            paintSource( trial );
+
+                            std::vector<BYTE> prevFrame;
+                            std::vector<BYTE> currFrame;
+                            const int top0 = 120;
+                            buildFrame( top0, prevFrame );
+                            buildFrame( top0 + trueStep, currFrame );
+
+                            int bestDx = 0;
+                            int bestDy = 0;
+                            const bool found = FindBestFrameShift( prevFrame,
+                                                                   currFrame,
+                                                                   w,
+                                                                   h,
+                                                                   0,
+                                                                   -expectedStep,
+                                                                   bestDx,
+                                                                   bestDy,
+                                                                   false );
+                            if( !found )
+                                continue;
+
+                            evaluated++;
+                            const int absDy = abs( bestDy );
+                            if( abs( absDy - trueStep ) <= 8 )
+                                nearTrueStep++;
+                            if( abs( absDy - expectedStep ) <= 6 )
+                                nearExpectedStep++;
+                            if( sampleBestDy == 0 )
+                                sampleBestDy = bestDy;
+                        }
+
+                        const bool enoughCoverage = evaluated >= 10;
+                        const bool resultPass = enoughCoverage && nearTrueStep >= evaluated * 3 / 4 && nearExpectedStep == 0;
+
+                        wchar_t msg[512]{};
+                        if( resultPass )
+                        {
+                            stressTestsPassed++;
+                            TestLog( L"  [%d] %s PASSED\n", stressTestsRun, regressionName );
+                            swprintf_s( msg,
+                                        L"PASS: %s (cases=%d nearTrue=%d nearExpected=%d)\n",
+                                        regressionName,
+                                        evaluated,
+                                        nearTrueStep,
+                                        nearExpectedStep );
+                        }
+                        else
+                        {
+                            TestLog( L"***** FAIL: %s (cases=%d nearTrue=%d nearExpected=%d sampleBestDy=%d) *****\n",
+                                     regressionName,
+                                     evaluated,
+                                     nearTrueStep,
+                                     nearExpectedStep,
+                                     sampleBestDy );
+                            swprintf_s( msg,
+                                        L"FAIL: %s (cases=%d nearTrue=%d nearExpected=%d sampleBestDy=%d)\n",
+                                        regressionName,
+                                        evaluated,
+                                        nearTrueStep,
+                                        nearExpectedStep,
+                                        sampleBestDy );
+                            stressFailLog += msg;
+                        }
+                        stressLog += msg;
+
+                        if( stressFocusEnabled )
+                        {
+                            TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                     regressionName,
+                                     resultPass ? L"PASS" : L"FAIL" );
+                            if( stressStopAfterFocus )
+                                stressEarlyExit = true;
+                        }
+                    }
+                }
 
                 // Harmonic-overshoot stress: with expected step established at
                 // -45, periodic low-detail bands can score better at harmonic
