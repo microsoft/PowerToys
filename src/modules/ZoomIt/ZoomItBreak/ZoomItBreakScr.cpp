@@ -29,7 +29,10 @@ static void DbgPrint( LPCTSTR fmt, ... )
 {
     TCHAR buf[512];
     va_list ap;
+#pragma warning( push )
+#pragma warning( disable : 26492 )
     va_start( ap, fmt );
+#pragma warning( pop )
     _vsntprintf( buf, _countof(buf), fmt, ap );
     va_end( ap );
     buf[_countof(buf)-1] = 0;
