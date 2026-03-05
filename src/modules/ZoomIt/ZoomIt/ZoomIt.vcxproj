@@ -109,7 +109,7 @@
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;_M_X64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(MSBuildThisFileDirectory)PowerToys;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(MSBuildThisFileDirectory)PowerToys;$(MSBuildThisFileDirectory)..\ZoomItBreak\$(Platform)\$(Configuration)\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -132,7 +132,7 @@
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;_M_ARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(MSBuildThisFileDirectory)PowerToys;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(MSBuildThisFileDirectory)PowerToys;$(MSBuildThisFileDirectory)..\ZoomItBreak\$(Platform)\$(Configuration)\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -196,7 +196,7 @@
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;_M_ARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(MSBuildThisFileDirectory)PowerToys;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(MSBuildThisFileDirectory)PowerToys;$(MSBuildThisFileDirectory)..\ZoomItBreak\$(Platform)\$(Configuration)\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>

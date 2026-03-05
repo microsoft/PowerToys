@@ -16,7 +16,10 @@ static void SelectRectangleDebugLog( const wchar_t* format, ... )
 #if _DEBUG
     wchar_t message[1024]{};
     va_list args;
+#pragma warning( push )
+#pragma warning( disable : 26492 )
     va_start( args, format );
+#pragma warning( pop )
     vswprintf_s( message, format, args );
     va_end( args );
     OutputDebugStringW( message );
