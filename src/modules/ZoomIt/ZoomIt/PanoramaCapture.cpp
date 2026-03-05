@@ -2132,6 +2132,8 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         return hash;
     };
 
+#pragma warning( push )
+#pragma warning( disable : 26495 )
     struct InformativeMaskCacheEntry
     {
         const BYTE* prevKey;
@@ -2144,6 +2146,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         std::vector<BYTE> currMask;
     };
     static thread_local std::vector<InformativeMaskCacheEntry> informativeMaskCache;
+#pragma warning( pop )
 
     auto buildInformativeMasks = [&]( std::vector<BYTE>& outPrevMask,
                                       std::vector<BYTE>& outCurrMask )
@@ -2197,8 +2200,8 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         for( int y = 1; y < dsH - 1; ++y )
         {
             int x = 1;
-#if defined(_M_ARM64)
             const int rowOff = y * dsW;
+#if defined(_M_ARM64)
             const uint8x16_t vOne = vdupq_n_u8( 1 );
             for( ; x + 16 < dsW - 1; x += 16 )
             {
