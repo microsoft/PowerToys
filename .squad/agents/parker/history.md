@@ -17,6 +17,21 @@
 ## Learnings
 <!-- Append new learnings below this line -->
 
+### Raycast API Stubs (2026-03-04)
+- Created 10 stub files in `src/modules/cmdpal/extensionsdk/raycast-compat/src/api-stubs/`
+- **Stub architecture**: Each Raycast API category is its own file — toast.ts, clipboard.ts, local-storage.ts, environment.ts, preferences.ts, icons.ts, colors.ts, navigation.ts, ai.ts, hooks.ts — with barrel export via index.ts
+- **Toast mapping**: Raycast's `showToast()` returns mutable `Toast` instances (extensions mutate then call `.show()`). For spike: console logging + state. CmdPal has `CommandResultKind.ShowToast` with `IToastArgs { message, dismissAfterMs }` — simpler model, but adaptable.
+- **LocalStorage**: File-backed JSON store at `<supportPath>/local-storage.json`. Lazy-loaded in-memory cache, sync writes on every mutation. Thread-safe because Node.js is single-threaded. The `_setStoragePath()` bootstrap function lets the compat runtime configure the directory.
+- **Environment**: Uses getter-based object so values reflect runtime reconfiguration. `_configureEnvironment()` called during extension bootstrap before user code runs.
+- **Preferences**: Read from `<supportPath>/preferences.json`, populated from manifest translator's `raycast-compat.json` preferences[] during install.
+- **Icon mapping strategy**: 170+ Raycast icon names mapped to Segoe MDL2 Assets glyphs (\uEXXX) or emoji. Generic fallback is \uE8A5 (Page icon). `resolveIcon()` handles Raycast's `{ source: Icon.X }` pattern.
+- **Color mapping**: Raycast colors are hex strings. `Color.Dynamic(light, dark)` returns light variant for now — CmdPal theme context not yet available.
+- **AI stub**: Throws clear error (not silently fails) — ensures extensions that require Raycast AI surface the limitation visibly.
+- **Navigation stubs**: `open()` uses `start ""` on Windows via child_process. `closeMainWindow()`, `popToRoot()` log warnings — CmdPal navigation is declarative via CommandResult.
+- **React hooks**: `useCachedPromise` and `useFetch` implemented as real hooks (useState/useEffect) so they work inside the reconciler. `useNavigation` is a shape-only stub.
+- **Bootstrap pattern**: Internal `_configureEnvironment()`, `_setStoragePath()`, `_setPreferencesPath()` are exported separately for the compat runtime to call before extension code runs. Extensions never call these directly.
+- **28 unit tests** covering all stub categories, all passing alongside Ash's 9 reconciler tests (37 total)
+
 ### Raycast Manifest Translator (2025-07-24)
 - Created CLI tool at `src/modules/cmdpal/extensionsdk/raycast-compat/tools/manifest-translator/`
 - Converts Raycast `package.json` → CmdPal `cmdpal.json` matching `JSExtensionManifest.cs` schema exactly
