@@ -928,6 +928,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Unpin from dock</value>
     <comment>Command name for unpinning an item from the dock</comment>
   </data>
+  <data name="dock_no_commands_available" xml:space="preserve">
+    <value>No commands available to pin</value>
+    <comment>Text shown in the dock add-band flyout when there are no commands available to pin</comment>
+  </data>
   <data name="FiltersDropDown.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Filters</value>
   </data>

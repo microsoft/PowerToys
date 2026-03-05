@@ -133,50 +133,7 @@
             </MenuFlyout>
 
             <!--  Add band flyout - used in edit mode to add bands to dock sections  -->
-            <Flyout
-                x:Name="AddBandFlyout"
-                Placement="Bottom"
-                ShouldConstrainToRootBounds="False">
-                <StackPanel Width="320">
-                    <TextBlock
-                        x:Name="NoAvailableBandsText"
-                        Padding="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="No commands available to pin"
-                        TextAlignment="Center"
-                        Visibility="Collapsed" />
-                    <ListView
-                        x:Name="AddBandListView"
-                        MaxHeight="300"
-                        HorizontalAlignment="Stretch"
-                        IsItemClickEnabled="True"
-                        ItemClick="AddBandListView_ItemClick"
-                        SelectionMode="None">
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="vm:TopLevelViewModel">
-                                <Grid Padding="4" ColumnSpacing="8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <cpcontrols:IconBox
-                                        Width="20"
-                                        Height="20"
-                                        VerticalAlignment="Center"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        SourceKey="{x:Bind IconViewModel, Mode=OneWay}"
-                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
-                                    <TextBlock
-                                        Grid.Column="1"
-                                        VerticalAlignment="Center"
-                                        Text="{x:Bind Title, Mode=OneWay}"
-                                        TextTrimming="CharacterEllipsis" />
-                                </Grid>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </StackPanel>
-            </Flyout>
+            <MenuFlyout x:Name="AddBandFlyout" ShouldConstrainToRootBounds="False" />
         </ResourceDictionary>
     </UserControl.Resources>
 

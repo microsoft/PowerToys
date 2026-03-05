@@ -494,6 +494,50 @@ public sealed partial class DockViewModel
     }
 
     /// <summary>
+    /// Gets all command providers with their available top-level commands,
+    /// excluding commands already pinned to the dock and disabled providers.
+    /// </summary>
+    public IEnumerable<(CommandProviderWrapper Provider, List<TopLevelViewModel> Commands)> GetCommandsByProvider()
+    {
+        // Get IDs of all bands currently in the dock
+        var pinnedBandIds = new HashSet<string>();
+        foreach (var band in StartItems)
+        {
+            pinnedBandIds.Add(band.Id);
+        }
+
+        foreach (var band in CenterItems)
+        {
+            pinnedBandIds.Add(band.Id);
+        }
+
+        foreach (var band in EndItems)
+        {
+            pinnedBandIds.Add(band.Id);
+        }
+
+        foreach (var provider in _topLevelCommandManager.CommandProviders)
+        {
+            // Skip disabled providers
+            var providerSettings = _settingsModel.GetProviderSettings(provider);
+            if (!providerSettings.IsEnabled)
+            {
+                continue;
+            }
+
+            // Collect top-level commands not already pinned
+            var availableCommands = provider.TopLevelItems
+                .Where(tlc => !pinnedBandIds.Contains(tlc.Id))
+                .ToList();
+
+            if (availableCommands.Count > 0)
+            {
+                yield return (provider, availableCommands);
+            }
+        }
+    }
+
+    /// <summary>
     /// Adds a band to the specified dock section.
     /// Does not save to disk - call SaveBandOrder() when done editing.
     /// </summary>

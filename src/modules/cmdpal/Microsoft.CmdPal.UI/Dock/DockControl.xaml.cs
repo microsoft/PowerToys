@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
@@ -19,6 +18,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -497,29 +497,80 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
                 _ => DockPinSide.Center,
             };
 
-            // Populate the list with available bands (not already in the dock)
+            AddBandFlyout.Items.Clear();
+
+            // Dock bands section
             var availableBands = ViewModel.GetAvailableBandsToAdd().ToList();
-            AddBandListView.ItemsSource = availableBands;
+            foreach (var topLevel in availableBands)
+            {
+                var item = CreateMenuFlyoutItem(topLevel);
+                AddBandFlyout.Items.Add(item);
+            }
 
-            // Show/hide empty state text based on whether there are bands to add
-            var hasAvailableBands = availableBands.Count > 0;
-            NoAvailableBandsText.Visibility = hasAvailableBands ? Visibility.Collapsed : Visibility.Visible;
-            AddBandListView.Visibility = hasAvailableBands ? Visibility.Visible : Visibility.Collapsed;
+            // Provider commands section
+            var providerGroups = ViewModel.GetCommandsByProvider().ToList();
 
-            // Show the flyout
+            if (availableBands.Count > 0 && providerGroups.Count > 0)
+            {
+                AddBandFlyout.Items.Add(new MenuFlyoutSeparator());
+            }
+
+            foreach (var (provider, commands) in providerGroups)
+            {
+                var subItem = new MenuFlyoutSubItem
+                {
+                    Text = provider.DisplayName,
+                    Icon = CreateIconBox(provider.Icon),
+                };
+
+                foreach (var command in commands)
+                {
+                    var commandItem = CreateMenuFlyoutItem(command);
+                    subItem.Items.Add(commandItem);
+                }
+
+                AddBandFlyout.Items.Add(subItem);
+            }
+
+            // Empty state
+            if (availableBands.Count == 0 && providerGroups.Count == 0)
+            {
+                AddBandFlyout.Items.Add(new MenuFlyoutItem
+                {
+                    Text = RS_.GetString("dock_no_commands_available"),
+                    IsEnabled = false,
+                });
+            }
+
             AddBandFlyout.ShowAt(button);
         }
     }
 
-    private void AddBandListView_ItemClick(object sender, ItemClickEventArgs e)
+    private MenuFlyoutItem CreateMenuFlyoutItem(TopLevelViewModel topLevel)
     {
-        if (e.ClickedItem is TopLevelViewModel topLevel)
+        var item = new MenuFlyoutItem
         {
-            // Add the band to the target section
+            Text = topLevel.Title,
+            Icon = CreateIconBox(topLevel.IconViewModel),
+        };
+        item.Click += (_, _) =>
+        {
             ViewModel.AddBandToSection(topLevel, _addBandTargetSide);
-
-            // Close the flyout
             AddBandFlyout.Hide();
-        }
+        };
+        return item;
+    }
+
+    private static Controls.ContentIcon CreateIconBox(IconInfoViewModel iconKey)
+    {
+        var iconBox = new Controls.IconBox
+        {
+            Width = 20,
+            Height = 20,
+        };
+        iconBox.SourceKey = iconKey;
+        iconBox.SourceRequested += Helpers.IconCacheProvider.SourceRequested20;
+
+        return new Controls.ContentIcon { Content = iconBox };
     }
 }
