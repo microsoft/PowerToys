@@ -243,3 +243,61 @@
 **Why:** Enables user customization and flexibility in extension management
 **Next Steps:** Update JavaScriptExtensionService to read settings; replace hardcoded paths; implement Node.js path resolution; add settings UI
 **Impact:** Ready for JavaScriptExtensionService integration once settings reading implemented
+
+### 2026-03-05T04:51:00Z: Bridge Provider Architecture
+**Author:** Ash (React/Reconciler Specialist)
+**Date:** 2026-03-04
+**Status:** Implemented
+**Scope:** `src/modules/cmdpal/extensionsdk/raycast-compat/src/bridge/`
+
+**Context:** The reconciler captures VNode trees from React, and the translator converts them to CmdPal SDK types. We needed a bridge layer to tie them together and expose everything through CmdPal's JSON-RPC protocol (stdin/stdout).
+
+**Key Decisions:**
+1. **Standalone bridge transport (not inheriting SDK classes)**: Bridge produces plain objects matching JSON wire shapes instead of extending abstract SDK classes. Trade-off: lose `instanceof` checks but avoid SDK build coupling.
+2. **flushSyncWork for search text forwarding**: After CmdPal sends `setSearchText`, we force synchronous React processing via `reconciler.flushSyncWork()` to ensure snapshot ready before RPC return.
+3. **Index-based action IDs**: Use `{pageId}::action::{itemIndex}::{actionIndex}` to avoid needing stable action identifiers. Limitation: stale indices if list changes between getItems/invokeCommand.
+4. **Minimal inline JSON-RPC transport**: Embedded ~100-line transport instead of importing SDK's, keeping `@cmdpal/raycast-compat` independently buildable.
+
+**Impact on Other Agents:**
+- Parker: API stubs (_configureEnvironment, _setStoragePath, Clipboard, navigation) must remain stable
+- Kane: Build tool must invoke `node dist/bridge/index.js --extension-dir <path>`
+- Lambert: 17 new bridge tests in `__tests__/bridge-provider.test.ts`
+
+**Open Items:** Action.Push navigation, form submission bridge, multiple concurrent command rendering
+
+### 2026-03-05T04:51:00Z: esbuild Bundler Architecture
+**Author:** Ash (React/Reconciler Specialist)
+**Date:** 2026-03-04
+**Status:** Implemented
+
+**Context:** Need a bundler taking Raycast extension source and producing CmdPal-compatible JS file, with `import { List } from "@raycast/api"` transparently resolving to compat shim — zero changes to extension code.
+
+**Key Decisions:**
+1. **React kept external, not bundled**: `react` and `react-reconciler` marked `external` to prevent "Invalid hook call" errors from duplicate instances. Trade-off: bridge process must have React in `node_modules` (already the case).
+2. **@raycast/utils gets its own shim**: Separate alias target from main API, allowing independent stubs for unsupported features (useExec, useSQL).
+3. **CJS output format**: `format: 'cjs'` not ESM. Synchronous `require()` matches bridge's loadCommandModule and CmdPal's JS loader expectations.
+
+**Impact:** Final extension pipeline piece. All downstream (E2E testing, gallery) depends on this.
+
+### 2026-03-05T04:51:00Z: Raycast Extension Store — C# Extension Architecture
+**By:** Kane (C# Extension Dev)
+**Date:** 2026-03-05
+**Status:** Implemented (browse/search/detail UI; install pipeline stubbed)
+
+**Scope:** `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.RaycastStore/`
+
+**What:** C# built-in extension letting users browse Windows-compatible Raycast extensions from `raycast/extensions` GitHub repo and view detailed metadata, with install functionality stubbed pending build pipeline library.
+
+**Key Technical Decisions:**
+1. **Direct HttpClient to GitHub API (not shelling out to TypeScript client)**: C# extension calls GitHub REST directly, avoiding Node.js dependency. TypeScript client remains available for JS runtime layer.
+2. **Git Trees API for extension listing**: `GET /repos/raycast/extensions/git/trees/main?recursive=1` returns full tree in one call; avoids Contents API truncation at ~1000 entries.
+3. **Progressive batch loading**: Manifests fetched 10 at a time with UI updates per batch. Same pattern as TypeScript client's `Promise.all` batching.
+4. **Node.js gate at provider level**: On first `TopLevelCommands()` call, async-checks for Node.js; swaps in `NodeJsRequiredPage` if missing. Runs once per session.
+5. **System.Text.Json source generators**: All GitHub API models use `[JsonSerializable]` for AOT compatibility. No System.Linq — all for-loops.
+6. **8 model files for StyleCop compliance**: SA1402 (one type per file) and SA1649 (filename matches type).
+
+**Why:** Self-contained browse works before JS runtime fully wired. Follows WinGet patterns. AOT-safe from day one. Install stub UI-complete.
+
+**Impact:** Team can demo browse/search/detail immediately. Parker's build pipeline lib just wires into `ExtensionDetailPage` install action. No new dependencies.
+
+**Open Items:** Install pipeline integration, README fetching from GitHub, consider persisting extension list to disk cache

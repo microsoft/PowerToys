@@ -57,3 +57,41 @@ Key architectural decisions from feasibility study:
 7. **`translateVNode` uses broad input type `{ type: string; props: Record<string, unknown>; children: unknown[] }`**: This accepts both the reconciler's `VNode` (children: `AnyVNode[]`) and test spec VNodes (children: `VNode[]`) without type conflicts.
 
 **Test results:** 34 translator tests pass (22 translator.test.ts + 12 edge-cases.test.ts), 9 existing reconciler spike tests still pass. 13 reconciler-dependent edge-case specs remain pending (expected — they need full reconciler wiring).
+
+### 2026-03-04: Bridge Provider — Completed
+**Files created:**
+- `src/bridge/bridge-provider.ts` — RaycastBridgeProvider class (~650 lines)
+- `src/bridge/index.ts` — Entry point script with BridgeTransport, CLI args, manifest loading, boot()
+- `__tests__/bridge-provider.test.ts` — 17 tests covering provider lifecycle, push-to-pull, search, actions
+- `src/index.ts` — Updated with bridge exports
+
+**Key findings:**
+1. **Push-to-pull model works via onCommit → translateVNode → snapshot storage**: The reconciler's `resetAfterCommit` fires the `onCommit` callback, which the bridge uses to re-translate the VNode tree and store the latest snapshot. When CmdPal calls `getItems()` or `getContent()`, the bridge returns the latest snapshot. The `listPage/itemsChanged` notification tells CmdPal to re-fetch.
+2. **Search text must go through VNode tree props, not translated page snapshot**: The translated `RaycastDynamicListPage` captures `onSearchTextChange` at translation time, but after each re-render a new snapshot is created. Going through `container.children` → root VNode → `props.onSearchTextChange` ensures we always call the latest React closure.
+3. **`reconciler.flushSyncWork()` is needed after external state updates**: When calling a React `useState` setter from outside React (e.g., from the bridge's `setSearchText`), the update is batched and deferred. Calling `reconciler.flushSyncWork()` forces React to process the update synchronously, ensuring the snapshot is ready before the bridge returns.
+4. **Standalone BridgeTransport avoids SDK coupling**: The bridge entry point uses its own minimal JSON-RPC transport (same LSP-style Content-Length framing) instead of importing the SDK's `JsonRpcTransport`. This keeps the compat package independent of the full SDK build.
+5. **Action dispatch uses index-based IDs**: Each list item's actions get IDs like `{pageId}::action::{itemIndex}::{actionIndex}`. The bridge looks up the VNode at that index and calls the original `onAction` callback. Special handling for `Action.Open`, `Action.OpenInBrowser`, and `Action.CopyToClipboard` delegates to the api-stubs.
+6. **Navigation stack for Action.Push is stubbed**: The bridge has a `_navStack` array for push/pop transitions, but full rendering of pushed components (rendering a new React tree for the target component) is deferred to the nav bridge layer.
+
+**Test results:** 17 bridge-provider tests pass. 4 suites pass (translator 22, api-stubs, reconciler.test.tsx 9, bridge-provider 17) = 88 passing. 34 pre-existing failures unchanged.
+
+### 2026-03-04: esbuild Bundler — Completed
+**Files created:**
+- `tools/bundler/package.json` — Package with esbuild dependency, jest test setup
+- `tools/bundler/tsconfig.json` — TypeScript config (ES2022, CJS output)
+- `tools/bundler/src/build.ts` — Core esbuild config: `bundleCommand()` + `bundleExtension()` APIs
+- `tools/bundler/src/bundle-extension.ts` — CLI wrapper with manifest translation, asset copying, reporting
+- `tools/bundler/jest.config.js` — Jest config using ts-jest
+- `tools/bundler/__fixtures__/sample-extension/` — Mock Raycast extension (package.json + src/index.tsx)
+- `tools/bundler/__tests__/bundler.test.ts` — 10 integration tests
+- `src/utils-shim.ts` — `@raycast/utils` compatibility shim (re-exports hooks, stubs useExec/useSQL/useForm)
+
+**Key findings:**
+1. **esbuild `alias` option is the linchpin**: `alias: { '@raycast/api': compatSrc, '@raycast/utils': utilsShim }` transparently redirects Raycast imports to our compat layer at build time. The extension code is never modified — esbuild resolves the alias and inlines the compat code. Zero developer effort.
+2. **React must be external to avoid dual-instance bugs**: If React is bundled into the extension AND the bridge process also loads React, React's internal module cache detects two copies and throws "Invalid hook call." Keeping `react` and `react-reconciler` external ensures the bundled extension resolves them from the bridge's `node_modules` at runtime — single instance, hooks work.
+3. **CJS format required by CmdPal's extension loader**: The bridge uses `require()` to load command modules. ESM would need `import()` (async) which complicates the synchronous boot flow. CJS + `module.exports.default` matches the bridge's `loadCommandModule` expectations.
+4. **Tree-shaking strips unused compat exports**: With `treeShaking: true`, if an extension only uses `List` and `showToast`, the bundled output won't include Detail/Form/Grid/AI stubs. This keeps bundles lean.
+5. **`absWorkingDir` must be the extension directory**: Without this, esbuild resolves relative imports from the bundler's directory instead of the extension's. This caused silent failures when extensions import from `./utils` or `./hooks`.
+6. **`@raycast/utils` needs its own shim**: Many extensions import `useFetch`, `showFailureToast`, etc. from `@raycast/utils` (not `@raycast/api`). Created `src/utils-shim.ts` that re-exports our hook implementations and stubs unsupported features (useExec, useSQL).
+
+**Test results:** 10 bundler tests pass (aliasing, CJS format, source maps, external react, error handling, multi-command). 37 existing compat layer tests unaffected (all pass).
