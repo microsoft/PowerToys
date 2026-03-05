@@ -7871,16 +7871,24 @@ bool RunPanoramaStitchSelfTest()
             const std::vector<BYTE>& imgPx, int imgW, int imgH,
             const std::vector<int>& origins, int winH ) -> int
         {
-            const int expectedH = origins.back() + winH;
             const bool isStrictRangeScenario = wcsstr( scenario, L"legitjumps" ) != nullptr;
             const bool isFastScrollScenario = wcsstr( scenario, L"fastscroll" ) != nullptr ||
                                                 wcsstr( scenario, L"accelscroll" ) != nullptr;
             const bool isHcfDarkScenario = wcsstr( scenario, L"hcfdark" ) != nullptr;
             const bool isHcfWhitespaceScenario = wcsstr( scenario, L"hcfwhitespace" ) != nullptr;
             const bool isMomentumReversalScenario = wcsstr( scenario, L"momentumreversal" ) != nullptr;
+            const bool isCapturePathScenario = wcsstr( scenario, L"capturepath" ) != nullptr;
 
             std::vector<HBITMAP> frames;
             frames.reserve( origins.size() );
+            std::vector<int> acceptedOrigins;
+            acceptedOrigins.reserve( origins.size() );
+
+            bool duplicateLowContrastMode = false;
+            bool haveDuplicateMode = false;
+            size_t grabbedFrames = 0;
+            size_t duplicateDrops = 0;
+            size_t subPixelDrops = 0;
             for( size_t fi = 0; fi < origins.size(); ++fi )
             {
                 const int originY = origins[fi];
@@ -7968,8 +7976,73 @@ bool RunPanoramaStitchSelfTest()
                     for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
                     return -1;
                 }
-                frames.push_back( bmp );
+
+                if( isCapturePathScenario )
+                {
+                    grabbedFrames++;
+                    if( frames.empty() )
+                    {
+                        double spread = 0.0;
+                        double stdDev = 0.0;
+                        double edgeDelta = 0.0;
+                        duplicateLowContrastMode = IsLowContrastSeedFrame( bmp, &spread, &stdDev, &edgeDelta );
+                        haveDuplicateMode = true;
+                        frames.push_back( bmp );
+                        acceptedOrigins.push_back( originY );
+                    }
+                    else
+                    {
+                        bool isSubPixelDrop = false;
+                        const bool nearDuplicate = AreFramesNearDuplicate( bmp,
+                                                                           frames.back(),
+                                                                           haveDuplicateMode ? duplicateLowContrastMode : false,
+                                                                           &isSubPixelDrop );
+                        if( nearDuplicate )
+                        {
+                            if( isSubPixelDrop )
+                                subPixelDrops++;
+                            else
+                                duplicateDrops++;
+                            DeleteObject( bmp );
+                            continue;
+                        }
+
+                        frames.push_back( bmp );
+                        acceptedOrigins.push_back( originY );
+                    }
+                }
+                else
+                {
+                    frames.push_back( bmp );
+                    acceptedOrigins.push_back( originY );
+                }
             }
+
+            if( acceptedOrigins.empty() )
+            {
+                for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
+                TestLog( L"[Panorama/Test] %s: no accepted frames\n", scenario );
+                return -1;
+            }
+
+            if( isCapturePathScenario )
+            {
+                TestLog( L"[Panorama/Test] %s capture-sim grabbed=%zu accepted=%zu duplicateDrops=%zu subPixelDrops=%zu\n",
+                         scenario,
+                         grabbedFrames,
+                         acceptedOrigins.size(),
+                         duplicateDrops,
+                         subPixelDrops );
+            }
+
+            if( acceptedOrigins.size() < 2 )
+            {
+                for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
+                TestLog( L"[Panorama/Test] %s: insufficient accepted frames=%zu\n", scenario, acceptedOrigins.size() );
+                return 0;
+            }
+
+            const int expectedH = acceptedOrigins.back() + winH;
 
             HBITMAP stitchedBmp = StitchPanoramaFrames( frames, false );
             for( HBITMAP hb : frames ) { if( hb ) DeleteObject( hb ); }
@@ -7989,9 +8062,10 @@ bool RunPanoramaStitchSelfTest()
             }
             DeleteObject( stitchedBmp );
 
+            const size_t acceptedCount = acceptedOrigins.size();
             const int htol = isStrictRangeScenario
-                ? max( 40, winH / 10 + static_cast<int>( origins.size() ) * 3 )
-                : ( winH / 4 + static_cast<int>( origins.size() ) * 8 );
+                ? max( 40, winH / 10 + static_cast<int>( acceptedCount ) * 3 )
+                : ( winH / 4 + static_cast<int>( acceptedCount ) * 8 );
             if( sH < expectedH - htol || sH > expectedH + htol )
             {
                 // Check if the source image is low-contrast.
@@ -8150,19 +8224,26 @@ bool RunPanoramaStitchSelfTest()
                 if( isStressScenario )
                 {
                     const size_t transitions = mappedSourceRows.size() - 1;
+                    const bool strictCaptureContinuity = isCapturePathScenario;
                     const bool tooManyDups = isMomentumReversalScenario
                         ? ( dupTransitions > transitions / 3 )
-                        : ( dupTransitions > transitions / 2 );
-                    const bool tooManyJumps = jumpTransitions > transitions / 6;
+                        : ( strictCaptureContinuity ? ( dupTransitions > transitions / 3 )
+                                                    : ( dupTransitions > transitions / 2 ) );
+                    const bool tooManyJumps = strictCaptureContinuity
+                        ? ( jumpTransitions > transitions / 10 )
+                        : ( jumpTransitions > transitions / 6 );
                     const size_t backtrackLimit = isMomentumReversalScenario
                         ? 0
-                        : ( isHcfDarkScenario ? transitions / 6 : transitions / 30 );
+                        : ( isHcfDarkScenario
+                            ? ( strictCaptureContinuity ? transitions / 20 : transitions / 6 )
+                            : ( strictCaptureContinuity ? 0 : transitions / 30 ) );
                     const bool tooManyBacktracks = backwardTransitions > backtrackLimit;
                     continuityOk = !( tooManyDups || tooManyJumps || tooManyBacktracks );
                 }
             }
 
-            const bool ok = samples > 0 && mrate < 0.15 && continuityOk;
+            const double mismatchThreshold = isCapturePathScenario ? 0.12 : 0.15;
+            const bool ok = samples > 0 && mrate < mismatchThreshold && continuityOk;
 
             // On low-vertical-contrast (HCF-dark) content, the per-row
             // search used for pixel comparison is unreliable because many
@@ -11075,6 +11156,72 @@ bool RunPanoramaStitchSelfTest()
                                          focusResult );
                             if( stressStopAfterFocus )
                                 stressEarlyExit = true;
+                        }
+                    }
+
+                    if( !stressEarlyExit )
+                    {
+                        const wchar_t* captureScenarioName = L"stress-vertical-hcfwhitespace-capturepath-trial0";
+                        if( stressScenarioMatches( captureScenarioName ) )
+                        {
+                            if( stressFocusEnabled )
+                                stressFocusMatched = true;
+
+                            TestLog( L"[Panorama/Test] Running %s firstOrigin=%d lastOrigin=%d n=%zu\n",
+                                         captureScenarioName,
+                                         originsY.front(),
+                                         originsY.back(),
+                                         originsY.size() );
+
+                            stressTestsRun++;
+                            const ULONGLONG wsCapStart = GetTickCount64();
+                            const int rawCaptureResult = stitchAndCompare( captureScenarioName, wsPx, wsW, wsH, originsY, winH );
+                            const ULONGLONG wsCapDurationMs = GetTickCount64() - wsCapStart;
+                            const bool captureTooSlow = wsCapDurationMs > 90000;
+                            const int captureResult = ( rawCaptureResult < 0 ) ? -1 : ( rawCaptureResult == 1 && !captureTooSlow ? 1 : 0 );
+
+                            wchar_t msg[512]{};
+                            if( captureResult < 0 )
+                            {
+                                TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", captureScenarioName );
+                                swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu, durMs=%llu)\n",
+                                            captureScenarioName, winH, originsY.size(), wsCapDurationMs );
+                                stressFailLog += msg;
+                            }
+                            else if( captureResult == 1 )
+                            {
+                                stressTestsPassed++;
+                                TestLog( L"  [%d] %s PASSED\n", stressTestsRun, captureScenarioName );
+                                swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu, durMs=%llu)\n",
+                                            captureScenarioName, winH, originsY.size(), wsCapDurationMs );
+                            }
+                            else
+                            {
+                                if( captureTooSlow )
+                                {
+                                    TestLog( L"***** FAIL: %s runtime too slow (%llums) *****\n", captureScenarioName, wsCapDurationMs );
+                                }
+                                else
+                                {
+                                    TestLog( L"***** FAIL: %s *****\n", captureScenarioName );
+                                }
+                                swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu, durMs=%llu)\n",
+                                            captureScenarioName, winH, originsY.size(), wsCapDurationMs );
+                                stressFailLog += msg;
+                            }
+                            stressLog += msg;
+
+                            if( stressFocusEnabled )
+                            {
+                                const wchar_t* focusResult = L"FAIL";
+                                if( captureResult < 0 ) focusResult = L"INFRA";
+                                else if( captureResult == 1 ) focusResult = L"PASS";
+                                TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                             captureScenarioName,
+                                             focusResult );
+                                if( stressStopAfterFocus )
+                                    stressEarlyExit = true;
+                            }
                         }
                     }
                 }
