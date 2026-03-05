@@ -207,3 +207,22 @@
 - **Lazy properties:** Adapters lazily extract values from JsonElement on access, avoiding upfront deserialization cost
 - **Protocol alignment:** All method names and parameter shapes match protocol.md spec exactly
 - **Phase 3 complete:** Full bidirectional JSON-RPC communication bridge operational
+
+### Raycast Install Pipeline (2025-07-25)
+- Created pipeline library at `src/modules/cmdpal/extensionsdk/raycast-compat/tools/pipeline/`
+- **6-stage orchestrator**: download → validate → dependencies → build → install → cleanup
+- **Download stage**: Uses `@cmdpal/raycast-github-client` to fetch extension source files to temp dir via Git Trees API
+- **Validate stage**: Checks package.json for required fields (name, title, commands) and Windows platform support. Raycast defaults to macOS-only when `platforms` absent — rejects unless "Windows" present.
+- **Dependencies stage**: Shells out to `npm install --production --no-audit --no-fund` with 2-minute timeout. Uses `npm.cmd` on Windows.
+- **Build stage**: Calls `@cmdpal/raycast-bundler` (esbuild with @raycast/api aliasing), generates cmdpal.json + raycast-compat.json, copies assets
+- **Install stage**: Copies built output to `%LOCALAPPDATA%/Microsoft/PowerToys/CommandPalette/JSExtensions/{name}/`, verifies manifest validity and entry point existence
+- **Cleanup stage**: Removes temp directories (best-effort, non-fatal on failure)
+- **Install marker**: `raycast-compat.json` includes `installedBy: "raycast-pipeline"` field to distinguish pipeline-installed extensions from manual installs
+- **Management functions**: `listInstalledExtensions()` scans JSExtensions/ for raycast-compat extensions by marker, `uninstallExtension()` removes by CmdPal name or original Raycast name
+- **CLI**: `node pipeline.js install <name>` / `uninstall <name>` / `list` with progress output and stage summary
+- **Interface**: `PipelineOptions` (extensionName, outputDir, githubToken, onProgress), `PipelineResult` (success, extensionPath, error, stages[])
+- **Error handling**: Each stage timed independently, failure at any stage skips remaining stages, temp dirs always cleaned up
+- **Naming convention**: Pipeline prefixes extensions with `raycast-` (consistent with manifest translator)
+- **Sibling dependencies**: Uses `file:` references to `@cmdpal/raycast-github-client` and `@cmdpal/raycast-bundler`
+- **47 unit tests** across 6 test suites — validate (12), install (8), dependencies (4), manage (11), cleanup (3), orchestrator (9) — all passing
+- Tests mock file system, child_process, and stage modules for isolation

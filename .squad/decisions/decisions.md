@@ -75,6 +75,48 @@
 
 ---
 
+### 2026-03-05: Pipeline Architecture for Raycast Extension Installation
+
+**Author:** Parker (Core/SDK Dev)  
+**Status:** Implemented  
+**Scope:** `tools/pipeline/`
+
+**Decision:** Built a 6-stage pipeline as a standalone TypeScript library with sibling `file:` dependencies on the github-client and bundler packages.
+
+**Key choices:**
+
+1. **Install marker in `raycast-compat.json`**: Added `installedBy: "raycast-pipeline"` field so `listInstalledExtensions()` can distinguish pipeline-managed extensions from manually-installed or native CmdPal extensions.
+
+2. **Fail-fast with full cleanup**: Any stage failure immediately stops the pipeline and cleans up temp dirs. Cleanup itself is non-fatal (best-effort), preventing half-installed extensions.
+
+3. **npm shell-out instead of programmatic**: Using `npm install` shell command is simpler and matches developer expectations. CmdPal store gate verifies Node.js is already installed.
+
+4. **Staging build directory**: Build output goes to a separate temp dir (not inside download temp), then copied to final install location. Failed installs leave no partial state in JSExtensions/.
+
+5. **Dual name lookup for uninstall**: `uninstallExtension()` accepts either the CmdPal name (`raycast-clipboard`) or the Raycast name (`clipboard-history`), checking installed extensions' metadata for both.
+
+**6-stage flow:**
+| Stage | Purpose | Key Logic |
+|-------|---------|-----------|
+| download | Fetch extension source from GitHub | GitHub client + tree fallback |
+| validate | Check `raycast-compat.json` + manifest schema | JSON schema validation |
+| dependencies | Install npm dependencies | `npm install` shell-out |
+| build | Run build script (tsc, webpack, etc.) | Read `package.json` build script |
+| install | Copy built output to JSExtensions/ | Atomic copy from staging dir |
+| cleanup | Remove temp directories | Best-effort; non-fatal on error |
+
+**API:**
+- `installRaycastExtension(name, options)` → Promise<PipelineResult>
+- `uninstallExtension(nameOrCmdpalName)` → Promise<void>
+- `listInstalledExtensions()` → Promise<Extension[]>
+- `onProgress` callback for real-time UI updates
+
+**Test coverage:** 47 tests across 6 suites (all passing)
+
+**Impact:** Store UI and future tools can call `installRaycastExtension()` with just an extension name and get a fully installed extension. Pipeline result objects support detailed error reporting per stage.
+
+---
+
 ## Wave 1 Decisions (2026-03-03 — 2026-03-04)
 
 *(To be backfilled from previous session logs if needed)*
