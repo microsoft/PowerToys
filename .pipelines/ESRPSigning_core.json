@@ -115,6 +115,7 @@
             "WinUI3Apps\\PowerToys.HostsUILib.dll",
             "WinUI3Apps\\PowerToys.Hosts.dll",
             "WinUI3Apps\\PowerToys.Hosts.exe",
+            "WinUI3Apps\\PowerToys.KeyboardManagerEditorUI.dll",
             "WinUI3Apps\\PowerToys.KeyboardManagerEditorUI.exe",
 
             "WinUI3Apps\\PowerToys.FileLocksmithLib.Interop.dll",
