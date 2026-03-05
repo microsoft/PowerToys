@@ -35,6 +35,14 @@ public interface IThemeService
     void Initialize();
 
     /// <summary>
+    /// Requests an immediate refresh for summon-time visuals.
+    /// </summary>
+    /// <remarks>
+    /// Used for activation-driven updates such as background slideshow rotation.
+    /// </remarks>
+    void RefreshThemeForActivation();
+
+    /// <summary>
     /// Gets the current theme settings.
     /// </summary>
     ThemeSnapshot Current { get; }

@@ -78,6 +78,12 @@ public partial class SettingsModel : ObservableObject
 
     public string? BackgroundImagePath { get; set; }
 
+    public string? BackgroundImageSlideshowFolderPath { get; set; }
+
+    public int BackgroundImageChangeIntervalMinutes { get; set; }
+
+    public bool BackgroundImageShuffle { get; set; } = true;
+
     public BackdropStyle BackdropStyle { get; set; }
 
     public int BackdropOpacity { get; set; } = 100;
