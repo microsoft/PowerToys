@@ -8195,6 +8195,7 @@ bool RunPanoramaStitchSelfTest()
             size_t dupTransitions = 0;
             size_t jumpTransitions = 0;
             size_t backwardTransitions = 0;
+            size_t catastrophicTransitions = 0;
             if( mappedSourceRows.size() >= 8 )
             {
                 for( size_t i = 1; i < mappedSourceRows.size(); ++i )
@@ -8211,6 +8212,8 @@ bool RunPanoramaStitchSelfTest()
                         dupTransitions++;
                     if( dy >= 36 )
                         jumpTransitions++;
+                    if( dy >= 96 )
+                        catastrophicTransitions++;
                     if( dy < -2 )
                         backwardTransitions++;
                 }
@@ -8227,10 +8230,10 @@ bool RunPanoramaStitchSelfTest()
                     const bool strictCaptureContinuity = isCapturePathScenario;
                     const bool tooManyDups = isMomentumReversalScenario
                         ? ( dupTransitions > transitions / 3 )
-                        : ( strictCaptureContinuity ? ( dupTransitions > transitions / 3 )
+                        : ( strictCaptureContinuity ? ( dupTransitions > transitions / 6 )
                                                     : ( dupTransitions > transitions / 2 ) );
                     const bool tooManyJumps = strictCaptureContinuity
-                        ? ( jumpTransitions > transitions / 10 )
+                        ? ( jumpTransitions > transitions / 14 )
                         : ( jumpTransitions > transitions / 6 );
                     const size_t backtrackLimit = isMomentumReversalScenario
                         ? 0
@@ -8238,11 +8241,12 @@ bool RunPanoramaStitchSelfTest()
                             ? ( strictCaptureContinuity ? transitions / 20 : transitions / 6 )
                             : ( strictCaptureContinuity ? 0 : transitions / 30 ) );
                     const bool tooManyBacktracks = backwardTransitions > backtrackLimit;
-                    continuityOk = !( tooManyDups || tooManyJumps || tooManyBacktracks );
+                    const bool hasCatastrophicJump = strictCaptureContinuity && catastrophicTransitions > 0;
+                    continuityOk = !( tooManyDups || tooManyJumps || tooManyBacktracks || hasCatastrophicJump );
                 }
             }
 
-            const double mismatchThreshold = isCapturePathScenario ? 0.12 : 0.15;
+            const double mismatchThreshold = isCapturePathScenario ? 0.10 : 0.15;
             const bool ok = samples > 0 && mrate < mismatchThreshold && continuityOk;
 
             // On low-vertical-contrast (HCF-dark) content, the per-row
@@ -8283,16 +8287,16 @@ bool RunPanoramaStitchSelfTest()
 
             if( !ok )
             {
-                StitchLog( L"[Panorama/Test] PIXELS-FAIL %s stitched=%dx%d mrate=%.2f%% continuity(dup=%zu jump=%zu back=%zu transitions=%zu)\n",
+                StitchLog( L"[Panorama/Test] PIXELS-FAIL %s stitched=%dx%d mrate=%.2f%% continuity(dup=%zu jump=%zu cat=%zu back=%zu transitions=%zu)\n",
                            scenario, sW, sH, mrate * 100.0,
-                           dupTransitions, jumpTransitions, backwardTransitions,
+                           dupTransitions, jumpTransitions, catastrophicTransitions, backwardTransitions,
                            mappedSourceRows.size() > 0 ? mappedSourceRows.size() - 1 : 0 );
                 if( !selfTestDumpDirectory.empty() )
                 {
                     wchar_t msg[512]{};
-                    swprintf_s( msg, L"PIXELS: %s stitched=%dx%d dx=%d mismatches=%zu/%zu (%.2f%%) continuity(dup=%zu jump=%zu back=%zu)",
+                    swprintf_s( msg, L"PIXELS: %s stitched=%dx%d dx=%d mismatches=%zu/%zu (%.2f%%) continuity(dup=%zu jump=%zu cat=%zu back=%zu)",
                                 scenario, sW, sH, bestDx, mismatches, samples, mrate * 100.0,
-                                dupTransitions, jumpTransitions, backwardTransitions );
+                                dupTransitions, jumpTransitions, catastrophicTransitions, backwardTransitions );
                     DumpPanoramaText( selfTestDumpDirectory, L"image_trial_failed.txt", msg );
                 }
             }
@@ -11222,6 +11226,141 @@ bool RunPanoramaStitchSelfTest()
                                 if( stressStopAfterFocus )
                                     stressEarlyExit = true;
                             }
+                        }
+                    }
+                }
+            }
+
+            // Scroll-wheel acceleration ramp stress: reproduces real
+            // capture behavior where mouse scroll-wheel creates repeated
+            // ramp-up / crash-down motion cycles (4 -> 100+ -> 4).
+            // The stitcher must skip low-overlap peak frames to avoid
+            // visible smearing and density variation.
+            if( !stressEarlyExit )
+            {
+                const wchar_t* rampName = L"stress-vertical-scrollramp-capturepath";
+                if( stressScenarioMatches( rampName ) )
+                {
+                    if( stressFocusEnabled )
+                        stressFocusMatched = true;
+
+                    // Generate a self-contained whitespace-style canvas.
+                    const int rampCanvasW = 998;
+                    const int rampCanvasH = 18000;
+                    std::vector<BYTE> rampPx( static_cast<size_t>( rampCanvasW ) * rampCanvasH * 4, 0 );
+                    for( size_t pi = 0; pi < static_cast<size_t>( rampCanvasW ) * rampCanvasH; ++pi )
+                    {
+                        rampPx[pi * 4 + 0] = 246;
+                        rampPx[pi * 4 + 1] = 246;
+                        rampPx[pi * 4 + 2] = 246;
+                        rampPx[pi * 4 + 3] = 255;
+                    }
+                    {
+                        unsigned int bs = 99173u;
+                        int by = 4500;
+                        while( by < rampCanvasH - 3 )
+                        {
+                            bs = bs * 1103515245u + 12345u;
+                            const int bh = 2 + static_cast<int>( ( bs >> 16 ) % 2 );
+                            bs = bs * 1103515245u + 12345u;
+                            const int br = 24 + static_cast<int>( ( bs >> 16 ) % 28 );
+                            bs = bs * 1103515245u + 12345u;
+                            const int bStart = 56 + static_cast<int>( ( bs >> 16 ) % 40 );
+                            bs = bs * 1103515245u + 12345u;
+                            const int bEnd = rampCanvasW - 54 - static_cast<int>( ( bs >> 16 ) % 40 );
+                            for( int row = by; row < min( by + bh, rampCanvasH ); ++row )
+                                for( int col = bStart; col < max( bStart + 1, bEnd ); ++col )
+                                {
+                                    const size_t idx = ( static_cast<size_t>( row ) * rampCanvasW + col ) * 4;
+                                    rampPx[idx + 0] = static_cast<BYTE>( br );
+                                    rampPx[idx + 1] = static_cast<BYTE>( br );
+                                    rampPx[idx + 2] = static_cast<BYTE>( br );
+                                }
+                            bs = bs * 1103515245u + 12345u;
+                            by += bh + 95 + static_cast<int>( ( bs >> 16 ) % 126 );
+                        }
+                    }
+                    const int rampWinH = 854;
+                    std::vector<int> rampOrigins;
+                    rampOrigins.push_back( 0 );
+                    int ry = 0;
+
+                    // Real ramp-up/crash-down step sequences extracted from
+                    // actual scroll-wheel captures.
+                    const int rampSteps[] = {
+                        4, 12, 23, 39, 55, 66, 99, 53, 33, 14, 4,
+                        4, 11, 19, 30, 45, 62, 76, 88, 87, 73, 55, 34, 13, 4,
+                        4, 12, 22, 37, 55, 69, 78, 74, 63, 47, 26, 11, 4,
+                        4, 11, 21, 37, 60, 81, 94, 93, 115, 49, 25, 9, 4,
+                        4, 14, 33, 35, 38, 39, 112, 92, 54, 19, 4,
+                        4, 26, 29, 25, 29, 50, 49, 46, 12, 4,
+                        23, 23, 35, 39, 38, 41, 44, 76, 67, 8, 4,
+                        11, 14, 18, 19, 117, 164, 42, 47, 10, 4,
+                        20, 29, 49, 72, 43, 46, 47, 73, 47, 22, 6, 4,
+                        23, 35, 35, 31, 28, 26, 22, 17, 4,
+                        23, 34, 67, 112, 139, 135, 106, 61, 22, 15,
+                        26, 51, 86, 114, 182, 110, 16, 9,
+                        38, 59, 63, 119, 107, 75, 34, 6, 4,
+                        16, 14, 17, 15, 17, 14, 10, 22, 9,
+                        21, 43, 69, 91, 103, 49, 45, 16, 4,
+                        15, 22, 32, 56, 16, 32, 5
+                    };
+
+                    for( int step : rampSteps )
+                    {
+                        const int nextY = ry + step;
+                        if( nextY + rampWinH > rampCanvasH )
+                            break;
+                        ry = nextY;
+                        rampOrigins.push_back( ry );
+                    }
+
+                    if( rampOrigins.size() >= 30 )
+                    {
+                        TestLog( L"[Panorama/Test] Running %s n=%zu lastOrigin=%d\n",
+                                     rampName,
+                                     rampOrigins.size(),
+                                     rampOrigins.back() );
+
+                        stressTestsRun++;
+                        const ULONGLONG rampStart = GetTickCount64();
+                        const int rampResult = stitchAndCompare( rampName, rampPx, rampCanvasW, rampCanvasH, rampOrigins, rampWinH );
+                        const ULONGLONG rampDurationMs = GetTickCount64() - rampStart;
+
+                        wchar_t msg[512]{};
+                        if( rampResult < 0 )
+                        {
+                            TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", rampName );
+                            swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu, durMs=%llu)\n",
+                                        rampName, rampWinH, rampOrigins.size(), rampDurationMs );
+                            stressFailLog += msg;
+                        }
+                        else if( rampResult == 1 )
+                        {
+                            stressTestsPassed++;
+                            TestLog( L"  [%d] %s PASSED\n", stressTestsRun, rampName );
+                            swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu, durMs=%llu)\n",
+                                        rampName, rampWinH, rampOrigins.size(), rampDurationMs );
+                        }
+                        else
+                        {
+                            TestLog( L"***** FAIL: %s *****\n", rampName );
+                            swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu, durMs=%llu)\n",
+                                        rampName, rampWinH, rampOrigins.size(), rampDurationMs );
+                            stressFailLog += msg;
+                        }
+                        stressLog += msg;
+
+                        if( stressFocusEnabled )
+                        {
+                            const wchar_t* focusResult = L"FAIL";
+                            if( rampResult < 0 ) focusResult = L"INFRA";
+                            else if( rampResult == 1 ) focusResult = L"PASS";
+                            TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                         rampName,
+                                         focusResult );
+                            if( stressStopAfterFocus )
+                                stressEarlyExit = true;
                         }
                     }
                 }
