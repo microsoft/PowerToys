@@ -134,7 +134,13 @@ DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap );
 std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId );
 
 // Maximum number of frames the capture loop will collect before auto-stopping.
+// Temporary debugging limit: keep frame-limit captures short in Debug so the
+// limit-stop flow can be exercised quickly and repeatedly.
+#ifdef _DEBUG
+static constexpr size_t kMaxCaptureFrames = 120;
+#else
 static constexpr size_t kMaxCaptureFrames = 1024;
+#endif
 
 static HBITMAP StitchPanoramaFrames( const std::vector<HBITMAP>& frames,
                                      bool lowContrastMode,
@@ -4541,7 +4547,48 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
     StitchLog( L"[Panorama/Stitch] AxisScan vertBest=%I64u dy=%d horizBest=%I64u dx=%d\n",
                bestVertScore, bestVertDy, bestHorizScore, bestHorizDx );
 
-    const bool verticalWins = bestVertScore <= bestHorizScore;
+    bool verticalWins = bestVertScore <= bestHorizScore;
+
+    // Geometry bias for first-pair VLE axis detection: narrow/tall capture
+    // portals are overwhelmingly used for vertical scroll captures.  On such
+    // strips, horizontal SAD can look deceptively better due to repeated
+    // line/text structure, causing permanent axis mis-lock.
+    const bool portraitPortal = frameHeight >= frameWidth * 2;
+    const bool landscapePortal = frameWidth >= frameHeight * 2;
+    if( portraitPortal && bestVertScore != ULLONG_MAX )
+    {
+        const unsigned __int64 horizAdvantage =
+            ( bestHorizScore != ULLONG_MAX && bestHorizScore < bestVertScore )
+                ? ( bestVertScore - bestHorizScore )
+                : 0;
+        const unsigned __int64 requiredAdvantage =
+            ( std::max )( static_cast<unsigned __int64>( 16 ), bestVertScore / 3 );
+        if( horizAdvantage < requiredAdvantage )
+        {
+            if( !verticalWins )
+            {
+                StitchLog( L"[Panorama/Stitch] AxisScan portrait-bias forcing vertical: vertBest=%I64u horizBest=%I64u dy=%d dx=%d\n",
+                           bestVertScore,
+                           bestHorizScore,
+                           bestVertDy,
+                           bestHorizDx );
+            }
+            verticalWins = true;
+        }
+    }
+    else if( landscapePortal && bestHorizScore != ULLONG_MAX )
+    {
+        const unsigned __int64 vertAdvantage =
+            ( bestVertScore != ULLONG_MAX && bestVertScore < bestHorizScore )
+                ? ( bestHorizScore - bestVertScore )
+                : 0;
+        const unsigned __int64 requiredAdvantage =
+            ( std::max )( static_cast<unsigned __int64>( 16 ), bestHorizScore / 3 );
+        if( vertAdvantage < requiredAdvantage )
+        {
+            verticalWins = false;
+        }
+    }
 
     if( verticalWins )
     {
@@ -5823,7 +5870,14 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                  minY,
                  maxX,
                  maxY );
-    if( stitchedWidth <= 0 || stitchedHeight <= 0 || stitchedWidth > 30000 || stitchedHeight > 30000 )
+    // Keep a hard upper bound to avoid pathological allocations while still
+    // allowing long captures that remain within GDI's practical 16-bit size
+    // envelope (signed range for bitmap dimensions).
+    constexpr int kMaxStitchedCanvasDimension = 32760;
+    if( stitchedWidth <= 0 ||
+        stitchedHeight <= 0 ||
+        stitchedWidth > kMaxStitchedCanvasDimension ||
+        stitchedHeight > kMaxStitchedCanvasDimension )
     {
         StitchLog( L"[Panorama/Stitch] Invalid stitched canvas size %dx%d\n", stitchedWidth, stitchedHeight );
         return nullptr;
@@ -6051,6 +6105,8 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             StitchLog( L"[Panorama/Debug] Dump directory: %s\n", debugDumpDirectory.c_str() );
         }
     }
+
+    StitchLog( L"[Panorama/Capture] Max frame limit=%zu\n", kMaxCaptureFrames );
     // RAII guard: close the stitch log on every return path.
     struct CaptureStitchLogGuard
     {
@@ -6199,6 +6255,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     size_t subPixelDropCount = 0;
     size_t tornFrameCount = 0;
     size_t captureIteration = 0;
+    bool frameLimitStop = false;
 
     // Resolve DwmFlush once for the capture loop.  Used to synchronize
     // with the DWM composition cycle so BitBlt captures fully-composed
@@ -6286,12 +6343,18 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         if( frames.size() >= kMaxCaptureFrames )
         {
             StitchLog( L"[Panorama/Capture] Reached frame limit (%zu), stopping capture\n", kMaxCaptureFrames );
+            // Treat auto-stop at frame limit the same as explicit user stop so
+            // downstream flow (stitch + clipboard/file output) follows the
+            // normal capture-stop path.
+            frameLimitStop = true;
+            g_PanoramaStopRequested = true;
             break;
         }
     }
 
-    StitchLog( L"[Panorama/Capture] Loop exited stopRequested=%d frames=%zu duplicates=%zu subpixel=%zu torn=%zu iterations=%zu\n",
+    StitchLog( L"[Panorama/Capture] Loop exited stopRequested=%d frameLimitStop=%d frames=%zu duplicates=%zu subpixel=%zu torn=%zu iterations=%zu\n",
                g_PanoramaStopRequested ? 1 : 0,
+               frameLimitStop ? 1 : 0,
                frames.size(),
                duplicateFrameCount,
                subPixelDropCount,
@@ -6302,13 +6365,14 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     {
         wchar_t statsText[256]{};
         swprintf_s( statsText,
-                    L"framesAccepted=%zu\nduplicates=%zu\nsubpixel=%zu\ntorn=%zu\niterations=%zu\nstopRequested=%d\n",
+                    L"framesAccepted=%zu\nduplicates=%zu\nsubpixel=%zu\ntorn=%zu\niterations=%zu\nstopRequested=%d\nframeLimitStop=%d\n",
                     frames.size(),
                     duplicateFrameCount,
                     subPixelDropCount,
                     tornFrameCount,
                     captureIteration,
-                    g_PanoramaStopRequested ? 1 : 0 );
+                    g_PanoramaStopRequested ? 1 : 0,
+                    frameLimitStop ? 1 : 0 );
         DumpPanoramaText( debugDumpDirectory, L"capture_stats.txt", statsText );
 
         for( size_t frameIndex = 0; frameIndex < frames.size(); ++frameIndex )
@@ -6359,6 +6423,13 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 
     if( panoramaBitmap == nullptr )
     {
+        if( frameLimitStop )
+        {
+            MessageBox( hWnd,
+                        L"Capture limit reached, but stitching failed.\nPlease check stitch_log.txt in the latest panorama debug dump.",
+                        L"ZoomIt",
+                        MB_OK | MB_ICONWARNING );
+        }
         StitchLog( L"[Panorama/Capture] Stitch result is null\n" );
         return false;
     }
@@ -6370,6 +6441,14 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 
     if( saveToFile )
     {
+        if( frameLimitStop )
+        {
+            MessageBox( hWnd,
+                        L"Capture limit reached. Image is ready.",
+                        L"ZoomIt",
+                        MB_OK | MB_ICONINFORMATION );
+        }
+
         // Show file save dialog and save as PNG.
         g_bSaveInProgress = true;
 
@@ -6510,6 +6589,15 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     }
 
     CloseClipboard();
+
+    if( frameLimitStop )
+    {
+        MessageBox( hWnd,
+                    L"Capture limit reached. Image is ready.",
+                    L"ZoomIt",
+                    MB_OK | MB_ICONINFORMATION );
+    }
+
     StitchLog( L"[Panorama/Capture] Success: DIB copied to clipboard (%dx%d)\n", bmpWidth, abs( bmpHeight ) );
     return true;
 }
@@ -8689,6 +8777,36 @@ bool RunPanoramaStitchSelfTest()
                         return true;
                     };
 
+                    auto cropVerticalStrip = [&]( const std::vector<BYTE>& srcPx,
+                                                  int srcW,
+                                                  int srcH,
+                                                  int startX,
+                                                  int stripW,
+                                                  std::vector<BYTE>& outPx,
+                                                  int& outW,
+                                                  int& outH ) -> bool
+                    {
+                        if( srcW <= 0 || srcH <= 0 || stripW <= 0 )
+                            return false;
+
+                        const int clampedW = min( stripW, srcW );
+                        const int clampedX = max( 0, min( startX, srcW - clampedW ) );
+
+                        outW = clampedW;
+                        outH = srcH;
+                        outPx.assign( static_cast<size_t>( outW ) * static_cast<size_t>( outH ) * 4, 0 );
+
+                        for( int y = 0; y < srcH; ++y )
+                        {
+                            const size_t srcOff = ( static_cast<size_t>( y ) * srcW + clampedX ) * 4;
+                            const size_t dstOff = ( static_cast<size_t>( y ) * outW ) * 4;
+                            memcpy( outPx.data() + dstOff,
+                                    srcPx.data() + srcOff,
+                                    static_cast<size_t>( outW ) * 4 );
+                        }
+                        return true;
+                    };
+
                     auto buildRandomOrigins = [&]( int winH, int maxStep, unsigned seed )
                     {
                         srand( seed );
@@ -8856,6 +8974,109 @@ bool RunPanoramaStitchSelfTest()
 
                         return originsY;
                     };
+
+                    // Real-capture regression: narrow portrait strip + VLE-ish
+                    // content can mis-lock axis detection on the first pair,
+                    // causing vertical scroll to be composed horizontally.
+                    if( !stressEarlyExit )
+                    {
+                        const wchar_t* narrowAxisName = L"stress-vertical-narrowstrip-axisflip";
+                        if( stressScenarioMatches( narrowAxisName ) )
+                        {
+                            if( stressFocusEnabled )
+                                stressFocusMatched = true;
+
+                            const int stripW = min( 357, max( 240, vW / 6 ) );
+                            const int stripX = max( 0, vW - stripW - 12 );
+                            std::vector<BYTE> stripPx;
+                            int stripOutW = 0;
+                            int stripOutH = 0;
+                            if( cropVerticalStrip( vPx, vW, vH, stripX, stripW, stripPx, stripOutW, stripOutH ) )
+                            {
+                                const int winH = min( 1093, max( 720, stripOutH / 2 ) );
+                                std::vector<int> originsY;
+                                originsY.push_back( 0 );
+                                int y = 0;
+                                const int scriptedSteps[] = {
+                                    7, 61, 59, 59, 59, 59, 59, 59,
+                                    57, 57, 55, 53, 51, 51, 51, 51,
+                                    49, 49, 49, 48, 48, 61, 61, 60,
+                                    59, 57, 55, 55, 61, 61, 61, 61
+                                };
+                                size_t si = 0;
+                                while( originsY.size() < 120 )
+                                {
+                                    const int step = scriptedSteps[si % _countof( scriptedSteps )];
+                                    si++;
+                                    const int nextY = y + step;
+                                    if( nextY + winH > stripOutH )
+                                        break;
+                                    y = nextY;
+                                    originsY.push_back( y );
+                                }
+
+                                if( originsY.size() >= 12 )
+                                {
+                                    stressTestsRun++;
+                                    const int result = stitchAndCompare( narrowAxisName,
+                                                                         stripPx,
+                                                                         stripOutW,
+                                                                         stripOutH,
+                                                                         originsY,
+                                                                         winH );
+                                    wchar_t msg[512]{};
+                                    if( result < 0 )
+                                    {
+                                        TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", narrowAxisName );
+                                        swprintf_s( msg, L"INFRA: %s (strip=%dx%d, winH=%d, nFrames=%zu)\n",
+                                                    narrowAxisName,
+                                                    stripOutW,
+                                                    stripOutH,
+                                                    winH,
+                                                    originsY.size() );
+                                        stressFailLog += msg;
+                                    }
+                                    else if( result == 1 )
+                                    {
+                                        stressTestsPassed++;
+                                        TestLog( L"  [%d] %s PASSED\n", stressTestsRun, narrowAxisName );
+                                        swprintf_s( msg, L"PASS: %s (strip=%dx%d, winH=%d, nFrames=%zu)\n",
+                                                    narrowAxisName,
+                                                    stripOutW,
+                                                    stripOutH,
+                                                    winH,
+                                                    originsY.size() );
+                                    }
+                                    else
+                                    {
+                                        TestLog( L"***** FAIL: %s COMPARISON FAILED *****\n", narrowAxisName );
+                                        swprintf_s( msg, L"FAIL: %s (strip=%dx%d, winH=%d, nFrames=%zu)\n",
+                                                    narrowAxisName,
+                                                    stripOutW,
+                                                    stripOutH,
+                                                    winH,
+                                                    originsY.size() );
+                                        stressFailLog += msg;
+                                    }
+                                    stressLog += msg;
+
+                                    if( stressFocusEnabled )
+                                    {
+                                        const wchar_t* focusResult = L"FAIL";
+                                        if( result < 0 ) focusResult = L"INFRA";
+                                        else if( result == 1 ) focusResult = L"PASS";
+                                        TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                                     narrowAxisName,
+                                                     focusResult );
+                                        if( stressStopAfterFocus )
+                                        {
+                                            stressEarlyExit = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     constexpr int kStressTrials = 5;
                     for( int trial = 0; trial < kStressTrials; ++trial )
@@ -9842,6 +10063,127 @@ bool RunPanoramaStitchSelfTest()
                         }
                     }
                 }
+
+        // Narrow-strip axis-flip stress: reproduces the real capture pattern
+        // where a tall, narrow portal with sparse horizontal structure can
+        // mis-lock first-pair axis detection to horizontal.
+        if( !stressEarlyExit )
+        {
+            const wchar_t* nsName = L"stress-vertical-narrowstrip-axisflip";
+            if( stressScenarioMatches( nsName ) )
+            {
+                if( stressFocusEnabled )
+                    stressFocusMatched = true;
+
+                const int nsW = 357;
+                const int nsWinH = 1093;
+                const int nsH = 16000;
+                std::vector<BYTE> nsPx( static_cast<size_t>( nsW ) * nsH * 4, 0 );
+
+                // Dark baseline.
+                for( size_t pi = 0; pi < static_cast<size_t>( nsW ) * nsH; ++pi )
+                {
+                    nsPx[pi * 4 + 0] = 15;
+                    nsPx[pi * 4 + 1] = 15;
+                    nsPx[pi * 4 + 2] = 15;
+                    nsPx[pi * 4 + 3] = 255;
+                }
+
+                // Repeating horizontal bands every ~57 px emulate line-based
+                // periodic content seen in vertical scroll captures.
+                for( int y0 = 0; y0 < nsH; y0 += 57 )
+                {
+                    for( int yy = y0; yy < min( nsH, y0 + 2 ); ++yy )
+                    {
+                        for( int x = 0; x < nsW; ++x )
+                        {
+                            const size_t idx = ( static_cast<size_t>( yy ) * nsW + x ) * 4;
+                            nsPx[idx + 0] = 42;
+                            nsPx[idx + 1] = 46;
+                            nsPx[idx + 2] = 50;
+                        }
+                    }
+                }
+
+                // Sparse deterministic anchors avoid total ambiguity while
+                // keeping the strip predominantly low-detail.
+                for( int y = 19; y < nsH - 4; y += 131 )
+                {
+                    const int x0 = 10 + ( ( y * 37 ) % max( 1, nsW - 20 ) );
+                    for( int dy = 0; dy < 3; ++dy )
+                    {
+                        for( int dx = 0; dx < 2; ++dx )
+                        {
+                            const int xx = x0 + dx;
+                            const int yy = y + dy;
+                            const size_t idx = ( static_cast<size_t>( yy ) * nsW + xx ) * 4;
+                            nsPx[idx + 0] = 160;
+                            nsPx[idx + 1] = 166;
+                            nsPx[idx + 2] = 172;
+                        }
+                    }
+                }
+
+                std::vector<int> originsY;
+                originsY.push_back( 0 );
+                int y = 0;
+                const int scriptedSteps[] = {
+                    7, 61, 59, 59, 59, 59, 59, 59,
+                    57, 57, 55, 53, 51, 51, 51, 51,
+                    49, 49, 49, 48, 48, 61, 61, 60,
+                    59, 57, 55, 55, 61, 61, 61, 61
+                };
+                size_t si = 0;
+                while( originsY.size() < 120 )
+                {
+                    const int step = scriptedSteps[si % _countof( scriptedSteps )];
+                    si++;
+                    const int nextY = y + step;
+                    if( nextY + nsWinH > nsH )
+                        break;
+                    y = nextY;
+                    originsY.push_back( y );
+                }
+
+                if( originsY.size() >= 12 )
+                {
+                    stressTestsRun++;
+                    const int rawResult = stitchAndCompare( nsName, nsPx, nsW, nsH, originsY, nsWinH );
+                    const size_t composedCount = countComposedVertical( nsPx, nsW, nsH, originsY, nsWinH );
+                    const int result = ( rawResult == 1 ) ? 1 : 0;
+                    wchar_t msg[512]{};
+                    if( result < 0 )
+                    {
+                        TestLog( L"***** FAIL: %s INFRASTRUCTURE ERROR *****\n", nsName );
+                        swprintf_s( msg, L"INFRA: %s (winH=%d, nFrames=%zu)\n", nsName, nsWinH, originsY.size() );
+                        stressFailLog += msg;
+                    }
+                    else if( result == 1 )
+                    {
+                        stressTestsPassed++;
+                        TestLog( L"  [%d] %s PASSED\n", stressTestsRun, nsName );
+                        swprintf_s( msg, L"PASS: %s (winH=%d, nFrames=%zu composed=%zu)\n", nsName, nsWinH, originsY.size(), composedCount );
+                    }
+                    else
+                    {
+                        TestLog( L"***** FAIL: %s COMPARISON FAILED *****\n", nsName );
+                        swprintf_s( msg, L"FAIL: %s (winH=%d, nFrames=%zu composed=%zu)\n", nsName, nsWinH, originsY.size(), composedCount );
+                        stressFailLog += msg;
+                    }
+                    stressLog += msg;
+
+                    if( stressFocusEnabled )
+                    {
+                        const wchar_t* focusResult = L"FAIL";
+                        if( result < 0 ) focusResult = L"INFRA";
+                        else if( result == 1 ) focusResult = L"PASS";
+                        TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n", nsName, focusResult );
+                        if( stressStopAfterFocus )
+                            stressEarlyExit = true;
+                    }
+                }
+            }
+        }
 
         // Wide-portal exhaustive-fallback test: when the search range
         // exceeds the candidate budget (kMaxCandidatesWithProbes=160),
