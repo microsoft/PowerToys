@@ -30,5 +30,21 @@
     "created_at": "2026-03-02T20:15:27Z",
     "legacy_named": false,
     "status": "active"
+  },
+  {
+    "persistent_name": "Kane",
+    "universe": "Alien",
+    "role": "C# Extension Dev",
+    "created_at": "2026-03-05T03:50:00Z",
+    "legacy_named": false,
+    "status": "active"
+  },
+  {
+    "persistent_name": "Ash",
+    "universe": "Alien",
+    "role": "React/Reconciler Specialist",
+    "created_at": "2026-03-05T03:50:00Z",
+    "legacy_named": false,
+    "status": "active"
   }
 ]

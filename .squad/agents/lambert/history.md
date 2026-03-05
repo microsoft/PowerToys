@@ -16,6 +16,52 @@
 ## Learnings
 <!-- Append new learnings below this line -->
 
+### 2026-03-04 — Raycast Compat Reconciler & Translator Test Specs
+
+**Task:** Write Jest test specifications for Ash's React reconciler and VNode-to-CmdPal translator.
+
+**Files Created:**
+- `src/modules/cmdpal/extensionsdk/raycast-compat/__tests__/types.ts`
+  - Shared VNode interface, ReconcilerRenderer interface, TranslateVNode type
+- `src/modules/cmdpal/extensionsdk/raycast-compat/__tests__/reconciler.test.ts`
+  - 22 test cases across 7 describe blocks: empty renders, List trees, Detail trees,
+    Form trees, ActionPanel trees, dynamic re-renders, text instance handling
+- `src/modules/cmdpal/extensionsdk/raycast-compat/__tests__/translator.test.ts`
+  - 20 test cases across 8 describe blocks: List→DynamicListPage, List.Item→ListItem,
+    Detail→ContentPage, ActionPanel→moreCommands, CopyToClipboard, OpenInBrowser,
+    unknown component fallback, Form→ContentPage
+- `src/modules/cmdpal/extensionsdk/raycast-compat/__tests__/edge-cases.test.ts`
+  - 22 test cases across 8 describe blocks: no-children components, deep nesting,
+    null/undefined props, conditional rendering, 150/500-item perf baselines,
+    mixed component types, unmount/cleanup, diverse prop types
+
+**Key Design Decisions:**
+- Tests use stub factories (createReconciler, translateVNode) that throw — they must
+  be swapped for real imports once Ash's implementation lands
+- VNode type defined as `{ type: string, props: Record<string, unknown>, children: VNode[] }`
+- Translator tests import REAL CmdPal SDK types (ListItem, DynamicListPage, ContentPage,
+  MarkdownContent) to validate the mapping target types
+- Performance baseline: 150 items < 500ms, 500 items < 2s
+- Used Jest (not MSTest) since this is TypeScript/Node.js code
+
+**CmdPal SDK Type Mapping Reference:**
+- `List` → DynamicListPage (searchable list, `_type: 'dynamicListPage'`)
+- `List.Item` → ListItem (title, subtitle, icon → IIconInfo, tags, details, section)
+- `List.Section` → sets `section` field on child ListItems
+- `Detail` → ContentPage (`_type: 'contentPage'`)
+- `Detail.Markdown` → MarkdownContent (body field)
+- `ActionPanel` → moreCommands[] on parent CommandItem/ListItem
+- `Action.CopyToClipboard` → InvokableCommand with clipboard behavior
+- `Action.OpenInBrowser` → InvokableCommand with URL behavior
+- `Form` → ContentPage with FormContent
+
+**Edge Cases Discovered:**
+- Null/false/undefined children from conditional rendering must be filtered
+- Empty string props must be preserved (not coerced to undefined)
+- Double unmount must not throw
+- Unknown component types must be skipped gracefully
+- Accessories array → tags or details.metadata mapping is ambiguous (needs Ash's decision)
+
 ### Cross-Agent: Parker's Implementations Complete (2026-03-03)
 - Parker completed all three Wave 1 components: Manifest, JsonRpc, TypeScript generator
 - JsonRpcConnection implements LSP framing with background read loop and thread-safe design

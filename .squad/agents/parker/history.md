@@ -17,6 +17,20 @@
 ## Learnings
 <!-- Append new learnings below this line -->
 
+### Raycast Manifest Translator (2025-07-24)
+- Created CLI tool at `src/modules/cmdpal/extensionsdk/raycast-compat/tools/manifest-translator/`
+- Converts Raycast `package.json` → CmdPal `cmdpal.json` matching `JSExtensionManifest.cs` schema exactly
+- **CmdPal manifest fields** (from `JSExtensionManifest.cs`): `name` (required), `displayName`, `version`, `description`, `icon`, `main` (required), `publisher`, `debug`, `debugPort`, `engines.node`, `capabilities` (string[])
+- `capabilities` is a flat string array (e.g., `["commands", "listPages"]`), not a nested object
+- Validation requires `IsValid()` = non-empty `name` + non-empty `main`
+- **Platform gate**: Raycast defaults to `["macOS"]` when `platforms` absent — tool rejects unless "Windows" explicitly present
+- **Naming**: Prefixes Raycast extension names with `raycast-` to avoid collisions with native CmdPal extensions
+- **Two output files**: `cmdpal.json` (CmdPal-native) + `raycast-compat.json` (preserves Raycast commands/preferences/platforms for runtime compat layer)
+- Icon mapping: bare filenames normalized to `assets/<filename>` path convention
+- Entry point hardcoded to `dist/index.js` — the Raycast compat runtime shim will be the actual entry point
+- Tool is standalone TypeScript/Node.js, no external deps beyond `@types/node` + `typescript`
+- Run: `node dist/translate-manifest.js <raycast-package.json> [--output <path>]`
+
 ### TypeScript Extension Scaffolding Tool (2026-03-03)
 - Created `cmdpal-init.ts` CLI tool for initializing new TypeScript extension projects
 - Accepts extension name, display name, description via interactive prompts or command-line arguments

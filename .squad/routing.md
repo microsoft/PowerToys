@@ -14,6 +14,9 @@
 | Architecture, design, scope, trade-off, review, refactor strategy | Ripley | Lead makes structural calls |
 | Performance, memory, profiling, hot path | Ripley + Parker | Lead + Core for perf work |
 | New extension / new plugin | Parker (implement) + Lambert (tests) | Parallel: build + test |
+| Built-in C# extension, WinGet pattern, MSIX packaging | Kane | C# extension specialist |
+| React reconciler, @raycast/api shim, Raycast compat bridge | Ash | React/reconciler specialist |
+| Raycast store extension (C# host + Node.js build pipeline) | Kane (C# UI) + Ash (bridge/shim) | Parallel: C# ext + JS bridge |
 | Bug fix (UI) | Dallas (fix) + Lambert (verify) | Parallel: fix + regression test |
 | Bug fix (core/SDK) | Parker (fix) + Lambert (verify) | Parallel: fix + regression test |
 

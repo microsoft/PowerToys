@@ -7,7 +7,9 @@
       { "name": "Ripley", "role": "Lead" },
       { "name": "Dallas", "role": "UI Dev" },
       { "name": "Parker", "role": "Core/SDK Dev" },
-      { "name": "Lambert", "role": "Tester" }
+      { "name": "Lambert", "role": "Tester" },
+      { "name": "Kane", "role": "C# Extension Dev" },
+      { "name": "Ash", "role": "React/Reconciler Specialist" }
     ]
   }
 ]

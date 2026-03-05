@@ -23,6 +23,8 @@
 | Dallas | UI Dev | WinUI 3, XAML, ViewModels, AOT | ⚛️ Frontend |
 | Parker | Core/SDK Dev | Extensions SDK, WinRT interop, C++ native | 🔧 Backend |
 | Lambert | Tester | Unit tests, extension tests, edge cases | 🧪 Tester |
+| Kane | C# Extension Dev | Built-in CmdPal extensions, WinGet pattern, MSIX | 🔧 Backend |
+| Ash | React/Reconciler Specialist | React reconciler, @raycast/api shim, bridge layer | 🔧 Backend |
 | Scribe | Session Logger | Memory, decisions, session logs | 📋 Scribe |
 | Ralph | Work Monitor | Work queue, backlog, keep-alive | 🔄 Monitor |
 
