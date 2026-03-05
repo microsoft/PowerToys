@@ -71,7 +71,12 @@ public partial class IconBox : ContentControl
                     @this.Content = null;
                     break;
                 case FontIconSource fontIco:
-                    fontIco.FontSize = double.IsNaN(@this.Width) ? @this.Height : @this.Width;
+                    var size = !double.IsNaN(@this.Width) ? @this.Width
+                             : !double.IsNaN(@this.Height) ? @this.Height
+                             : @this.ActualWidth > 0 ? @this.ActualWidth
+                             : @this.ActualHeight > 0 ? @this.ActualHeight
+                             : 16;
+                    fontIco.FontSize = size;
 
                     // For inexplicable reasons, FontIconSource.CreateIconElement
                     // doesn't work, so do it ourselves

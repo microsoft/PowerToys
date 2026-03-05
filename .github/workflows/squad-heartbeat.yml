@@ -1,0 +1,316 @@
+name: Squad Heartbeat (Ralph)
+
+on:
+  # schedule:
+    # Cron disabled by default — runs too many Actions minutes across repos.
+    # Uncomment below (and the 'schedule:' key) for proactive 30-min polling:
+    # - cron: '*/30 * * * *'
+
+  # React to completed work or new squad work
+  issues:
+    types: [closed, labeled]
+  pull_request:
+    types: [closed]
+
+  # Manual trigger
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+  pull-requests: read
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ralph — Check for squad work
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read team roster — check .squad/ first, fall back to .ai-team/
+            let teamFile = '.squad/team.md';
+            if (!fs.existsSync(teamFile)) {
+              teamFile = '.ai-team/team.md';
+            }
+            if (!fs.existsSync(teamFile)) {
+              core.info('No .squad/team.md or .ai-team/team.md found — Ralph has nothing to monitor');
+              return;
+            }
+
+            const content = fs.readFileSync(teamFile, 'utf8');
+
+            // Check if Ralph is on the roster
+            if (!content.includes('Ralph') || !content.includes('🔄')) {
+              core.info('Ralph not on roster — heartbeat disabled');
+              return;
+            }
+
+            // Parse members from roster
+            const lines = content.split('\n');
+            const members = [];
+            let inMembersTable = false;
+            for (const line of lines) {
+              if (line.match(/^##\s+(Members|Team Roster)/i)) {
+                inMembersTable = true;
+                continue;
+              }
+              if (inMembersTable && line.startsWith('## ')) break;
+              if (inMembersTable && line.startsWith('|') && !line.includes('---') && !line.includes('Name')) {
+                const cells = line.split('|').map(c => c.trim()).filter(Boolean);
+                if (cells.length >= 2 && !['Scribe', 'Ralph'].includes(cells[0])) {
+                  members.push({
+                    name: cells[0],
+                    role: cells[1],
+                    label: `squad:${cells[0].toLowerCase()}`
+                  });
+                }
+              }
+            }
+
+            if (members.length === 0) {
+              core.info('No squad members found — nothing to monitor');
+              return;
+            }
+
+            // 1. Find untriaged issues (labeled "squad" but no "squad:{member}" label)
+            const { data: squadIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'squad',
+              state: 'open',
+              per_page: 20
+            });
+
+            const memberLabels = members.map(m => m.label);
+            const untriaged = squadIssues.filter(issue => {
+              const issueLabels = issue.labels.map(l => l.name);
+              return !memberLabels.some(ml => issueLabels.includes(ml));
+            });
+
+            // 2. Find assigned but unstarted issues (has squad:{member} label, no assignee)
+            const unstarted = [];
+            for (const member of members) {
+              try {
+                const { data: memberIssues } = await github.rest.issues.listForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  labels: member.label,
+                  state: 'open',
+                  per_page: 10
+                });
+                for (const issue of memberIssues) {
+                  if (!issue.assignees || issue.assignees.length === 0) {
+                    unstarted.push({ issue, member });
+                  }
+                }
+              } catch (e) {
+                // Label may not exist yet
+              }
+            }
+
+            // 3. Find squad issues missing triage verdict (no go:* label)
+            const missingVerdict = squadIssues.filter(issue => {
+              const labels = issue.labels.map(l => l.name);
+              return !labels.some(l => l.startsWith('go:'));
+            });
+
+            // 4. Find go:yes issues missing release target
+            const goYesIssues = squadIssues.filter(issue => {
+              const labels = issue.labels.map(l => l.name);
+              return labels.includes('go:yes') && !labels.some(l => l.startsWith('release:'));
+            });
+
+            // 4b. Find issues missing type: label
+            const missingType = squadIssues.filter(issue => {
+              const labels = issue.labels.map(l => l.name);
+              return !labels.some(l => l.startsWith('type:'));
+            });
+
+            // 5. Find open PRs that need attention
+            const { data: openPRs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 20
+            });
+
+            const squadPRs = openPRs.filter(pr =>
+              pr.labels.some(l => l.name.startsWith('squad'))
+            );
+
+            // Build status summary
+            const summary = [];
+            if (untriaged.length > 0) {
+              summary.push(`🔴 **${untriaged.length} untriaged issue(s)** need triage`);
+            }
+            if (unstarted.length > 0) {
+              summary.push(`🟡 **${unstarted.length} assigned issue(s)** have no assignee`);
+            }
+            if (missingVerdict.length > 0) {
+              summary.push(`⚪ **${missingVerdict.length} issue(s)** missing triage verdict (no \`go:\` label)`);
+            }
+            if (goYesIssues.length > 0) {
+              summary.push(`⚪ **${goYesIssues.length} approved issue(s)** missing release target (no \`release:\` label)`);
+            }
+            if (missingType.length > 0) {
+              summary.push(`⚪ **${missingType.length} issue(s)** missing \`type:\` label`);
+            }
+            if (squadPRs.length > 0) {
+              const drafts = squadPRs.filter(pr => pr.draft).length;
+              const ready = squadPRs.length - drafts;
+              if (drafts > 0) summary.push(`🟡 **${drafts} draft PR(s)** in progress`);
+              if (ready > 0) summary.push(`🟢 **${ready} PR(s)** open for review/merge`);
+            }
+
+            if (summary.length === 0) {
+              core.info('📋 Board is clear — Ralph found no pending work');
+              return;
+            }
+
+            core.info(`🔄 Ralph found work:\n${summary.join('\n')}`);
+
+            // Auto-triage untriaged issues
+            for (const issue of untriaged) {
+              const issueText = `${issue.title}\n${issue.body || ''}`.toLowerCase();
+              let assignedMember = null;
+              let reason = '';
+
+              // Simple keyword-based routing
+              for (const member of members) {
+                const role = member.role.toLowerCase();
+                if ((role.includes('frontend') || role.includes('ui')) &&
+                    (issueText.includes('ui') || issueText.includes('frontend') ||
+                     issueText.includes('css') || issueText.includes('component'))) {
+                  assignedMember = member;
+                  reason = 'Matches frontend/UI domain';
+                  break;
+                }
+                if ((role.includes('backend') || role.includes('api') || role.includes('server')) &&
+                    (issueText.includes('api') || issueText.includes('backend') ||
+                     issueText.includes('database') || issueText.includes('endpoint'))) {
+                  assignedMember = member;
+                  reason = 'Matches backend/API domain';
+                  break;
+                }
+                if ((role.includes('test') || role.includes('qa')) &&
+                    (issueText.includes('test') || issueText.includes('bug') ||
+                     issueText.includes('fix') || issueText.includes('regression'))) {
+                  assignedMember = member;
+                  reason = 'Matches testing/QA domain';
+                  break;
+                }
+              }
+
+              // Default to Lead
+              if (!assignedMember) {
+                const lead = members.find(m =>
+                  m.role.toLowerCase().includes('lead') ||
+                  m.role.toLowerCase().includes('architect')
+                );
+                if (lead) {
+                  assignedMember = lead;
+                  reason = 'No domain match — routed to Lead';
+                }
+              }
+
+              if (assignedMember) {
+                // Add member label
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  labels: [assignedMember.label]
+                });
+
+                // Post triage comment
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: [
+                    `### 🔄 Ralph — Auto-Triage`,
+                    '',
+                    `**Assigned to:** ${assignedMember.name} (${assignedMember.role})`,
+                    `**Reason:** ${reason}`,
+                    '',
+                    `> Ralph auto-triaged this issue via the squad heartbeat. To reassign, swap the \`squad:*\` label.`
+                  ].join('\n')
+                });
+
+                core.info(`Auto-triaged #${issue.number} → ${assignedMember.name}`);
+              }
+            }
+
+      # Copilot auto-assign step (uses PAT if available)
+      - name: Ralph — Assign @copilot issues
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.COPILOT_ASSIGN_TOKEN || secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            let teamFile = '.squad/team.md';
+            if (!fs.existsSync(teamFile)) {
+              teamFile = '.ai-team/team.md';
+            }
+            if (!fs.existsSync(teamFile)) return;
+
+            const content = fs.readFileSync(teamFile, 'utf8');
+
+            // Check if @copilot is on the team with auto-assign
+            const hasCopilot = content.includes('🤖 Coding Agent') || content.includes('@copilot');
+            const autoAssign = content.includes('<!-- copilot-auto-assign: true -->');
+            if (!hasCopilot || !autoAssign) return;
+
+            // Find issues labeled squad:copilot with no assignee
+            try {
+              const { data: copilotIssues } = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: 'squad:copilot',
+                state: 'open',
+                per_page: 5
+              });
+
+              const unassigned = copilotIssues.filter(i =>
+                !i.assignees || i.assignees.length === 0
+              );
+
+              if (unassigned.length === 0) {
+                core.info('No unassigned squad:copilot issues');
+                return;
+              }
+
+              // Get repo default branch
+              const { data: repoData } = await github.rest.repos.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+
+              for (const issue of unassigned) {
+                try {
+                  await github.request('POST /repos/{owner}/{repo}/issues/{issue_number}/assignees', {
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    assignees: ['copilot-swe-agent[bot]'],
+                    agent_assignment: {
+                      target_repo: `${context.repo.owner}/${context.repo.repo}`,
+                      base_branch: repoData.default_branch,
+                      custom_instructions: `Read .squad/team.md (or .ai-team/team.md) for team context and .squad/routing.md (or .ai-team/routing.md) for routing rules.`
+                    }
+                  });
+                  core.info(`Assigned copilot-swe-agent[bot] to #${issue.number}`);
+                } catch (e) {
+                  core.warning(`Failed to assign @copilot to #${issue.number}: ${e.message}`);
+                }
+              }
+            } catch (e) {
+              core.info(`No squad:copilot label found or error: ${e.message}`);
+            }

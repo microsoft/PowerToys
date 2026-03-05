@@ -1,0 +1,28 @@
+name: Squad CI
+# dotnet project — configure build/test commands below
+
+on:
+  pull_request:
+    branches: [dev, preview, main, insider]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [dev, insider]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and test
+        run: |
+          # TODO: Add your dotnet build/test commands here
+          # Go:            go test ./...
+          # Python:        pip install -r requirements.txt && pytest
+          # .NET:          dotnet test
+          # Java (Maven):  mvn test
+          # Java (Gradle): ./gradlew test
+          echo "No build commands configured — update squad-ci.yml"

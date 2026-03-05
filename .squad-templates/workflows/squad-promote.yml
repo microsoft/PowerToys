@@ -1,0 +1,121 @@
+name: Squad Promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run — show what would happen without pushing'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+
+permissions:
+  contents: write
+
+jobs:
+  dev-to-preview:
+    name: Promote dev → preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch all branches
+        run: git fetch --all
+
+      - name: Show current state (dry run info)
+        run: |
+          echo "=== dev HEAD ===" && git log origin/dev -1 --oneline
+          echo "=== preview HEAD ===" && git log origin/preview -1 --oneline
+          echo "=== Files that would be stripped ==="
+          git diff origin/preview..origin/dev --name-only | grep -E "^(\.(ai-team|squad|ai-team-templates|squad-templates)|team-docs/|docs/proposals/)" || echo "(none)"
+
+      - name: Merge dev → preview (strip forbidden paths)
+        if: ${{ inputs.dry_run == 'false' }}
+        run: |
+          git checkout preview
+          git merge origin/dev --no-commit --no-ff -X theirs || true
+
+          # Strip forbidden paths from merge commit
+          git rm -rf --cached --ignore-unmatch \
+            .ai-team/ \
+            .squad/ \
+            .ai-team-templates/ \
+            .squad-templates/ \
+            team-docs/ \
+            "docs/proposals/" || true
+
+          # Commit if there are staged changes
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: promote dev → preview (v$(node -e "console.log(require('./package.json').version)"))"
+            git push origin preview
+            echo "✅ Pushed preview branch"
+          else
+            echo "ℹ️ Nothing to commit — preview is already up to date"
+          fi
+
+      - name: Dry run complete
+        if: ${{ inputs.dry_run == 'true' }}
+        run: echo "🔍 Dry run complete — no changes pushed."
+
+  preview-to-main:
+    name: Promote preview → main (release)
+    needs: dev-to-preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch all branches
+        run: git fetch --all
+
+      - name: Show current state
+        run: |
+          echo "=== preview HEAD ===" && git log origin/preview -1 --oneline
+          echo "=== main HEAD ===" && git log origin/main -1 --oneline
+          echo "=== Version ===" && node -e "console.log('v' + require('./package.json').version)"
+
+      - name: Validate preview is release-ready
+        run: |
+          git checkout preview
+          VERSION=$(node -e "console.log(require('./package.json').version)")
+          if ! grep -q "## \[$VERSION\]" CHANGELOG.md 2>/dev/null; then
+            echo "::error::Version $VERSION not found in CHANGELOG.md — update before releasing"
+            exit 1
+          fi
+          echo "✅ Version $VERSION has CHANGELOG entry"
+
+          # Verify no forbidden files on preview
+          FORBIDDEN=$(git ls-files | grep -E "^(\.(ai-team|squad|ai-team-templates|squad-templates)/|team-docs/|docs/proposals/)" || true)
+          if [ -n "$FORBIDDEN" ]; then
+            echo "::error::Forbidden files found on preview: $FORBIDDEN"
+            exit 1
+          fi
+          echo "✅ No forbidden files on preview"
+
+      - name: Merge preview → main
+        if: ${{ inputs.dry_run == 'false' }}
+        run: |
+          git checkout main
+          git merge origin/preview --no-ff -m "chore: promote preview → main (v$(node -e "console.log(require('./package.json').version)"))"
+          git push origin main
+          echo "✅ Pushed main — squad-release.yml will tag and publish the release"
+
+      - name: Dry run complete
+        if: ${{ inputs.dry_run == 'true' }}
+        run: echo "🔍 Dry run complete — no changes pushed."

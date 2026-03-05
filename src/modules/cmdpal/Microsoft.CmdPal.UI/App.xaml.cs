@@ -132,6 +132,7 @@ public partial class App : Application
         // Core services
         services.AddSingleton<IExtensionService, BuiltInExtensionService>();
         services.AddSingleton<IExtensionService, WinRTExtensionService>();
+        services.AddSingleton<IExtensionService, JavaScriptExtensionService>();
 
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
         services.AddSingleton<IRecentCommandsManager, RecentCommandsManager>();

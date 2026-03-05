@@ -1,0 +1,17 @@
+{
+  "name": "sample-settings-ts",
+  "displayName": "Sample Settings (TypeScript)",
+  "version": "1.0.0",
+  "description": "Demonstrates extension settings using the TypeScript SDK",
+  "icon": "\uE713",
+  "main": "dist/bundle.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "capabilities": [
+    "commands",
+    "contentPages",
+    "forms",
+    "settings"
+  ]
+}

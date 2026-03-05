@@ -1,0 +1,34 @@
+name: Squad Insider Release
+# dotnet project — configure build, test, and insider release commands below
+
+on:
+  push:
+    branches: [insider]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build and test
+        run: |
+          # TODO: Add your dotnet build/test commands here
+          # Go:            go test ./...
+          # Python:        pip install -r requirements.txt && pytest
+          # .NET:          dotnet test
+          # Java (Maven):  mvn test
+          # Java (Gradle): ./gradlew test
+          echo "No build commands configured — update squad-insider-release.yml"
+
+      - name: Create insider release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # TODO: Add your insider/pre-release commands here
+          echo "No release commands configured — update squad-insider-release.yml"

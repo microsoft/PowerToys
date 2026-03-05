@@ -72,6 +72,10 @@ public partial class SettingsModel : ObservableObject
 
     public string? BackgroundImagePath { get; set; }
 
+    public List<string> JavaScriptExtensionPaths { get; set; } = ["%LOCALAPPDATA%\\Microsoft\\PowerToys\\CommandPalette\\JSExtensions"];
+
+    public string? NodeJsPath { get; set; }
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 

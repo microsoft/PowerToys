@@ -1,0 +1,24 @@
+{
+  "name": "@cmdpal/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for building Command Palette extensions",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "generate-types": "npx ts-node tools/idl-to-ts.ts",
+    "create-extension": "npx ts-node tools/cmdpal-init.ts"
+  },
+  "keywords": [
+    "powertoys",
+    "command-palette",
+    "extensions"
+  ],
+  "author": "PowerToys Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.19.35",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

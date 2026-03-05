@@ -487,6 +487,7 @@
             CornerRadius="{ThemeResource ControlCornerRadius}">
             <InfoBar
                 CornerRadius="{ThemeResource ControlCornerRadius}"
+                Closed="StatusInfoBar_Closed"
                 IsOpen="{x:Bind viewModel.CurrentPage.HasStatusMessage, Mode=OneWay}"
                 Message="{x:Bind viewModel.CurrentPage.MostRecentStatusMessage.Message, Mode=OneWay}"
                 Severity="{x:Bind viewModel.CurrentPage.MostRecentStatusMessage.State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}">

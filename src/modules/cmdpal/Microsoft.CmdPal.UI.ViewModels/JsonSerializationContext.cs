@@ -18,6 +18,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 [JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
 [JsonSerializable(typeof(List<HistoryItem>), TypeInfoPropertyName = "HistoryList")]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
+[JsonSerializable(typeof(string[]))]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Just used here")]
 internal sealed partial class JsonSerializationContext : JsonSerializerContext

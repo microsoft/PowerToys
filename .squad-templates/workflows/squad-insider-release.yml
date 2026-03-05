@@ -1,0 +1,61 @@
+name: Squad Insider Release
+
+on:
+  push:
+    branches: [insider]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run tests
+        run: node --test test/*.test.js
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          VERSION=$(node -e "console.log(require('./package.json').version)")
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          INSIDER_VERSION="${VERSION}-insider+${SHORT_SHA}"
+          INSIDER_TAG="v${INSIDER_VERSION}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
+          echo "insider_version=$INSIDER_VERSION" >> "$GITHUB_OUTPUT"
+          echo "insider_tag=$INSIDER_TAG" >> "$GITHUB_OUTPUT"
+          echo "📦 Base Version: $VERSION (Short SHA: $SHORT_SHA)"
+          echo "🏷️ Insider Version: $INSIDER_VERSION"
+          echo "🔖 Insider Tag: $INSIDER_TAG"
+
+      - name: Create git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.insider_tag }}" -m "Insider Release ${{ steps.version.outputs.insider_tag }}"
+          git push origin "${{ steps.version.outputs.insider_tag }}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.insider_tag }}" \
+            --title "${{ steps.version.outputs.insider_tag }}" \
+            --notes "This is an insider/development build of Squad. Install with:\`\`\`bash\nnpx github:bradygaster/squad#${{ steps.version.outputs.insider_tag }}\n\`\`\`\n\n**Note:** Insider builds may be unstable and are intended for early adopters and testing only." \
+            --prerelease
+
+      - name: Verify release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "${{ steps.version.outputs.insider_tag }}"
+          echo "✅ Insider Release ${{ steps.version.outputs.insider_tag }} created and verified."

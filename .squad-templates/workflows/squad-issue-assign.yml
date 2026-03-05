@@ -1,0 +1,161 @@
+name: Squad Issue Assign
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  assign-work:
+    # Only trigger on squad:{member} labels (not the base "squad" label)
+    if: startsWith(github.event.label.name, 'squad:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Identify assigned member and trigger work
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const issue = context.payload.issue;
+            const label = context.payload.label.name;
+
+            // Extract member name from label (e.g., "squad:ripley" → "ripley")
+            const memberName = label.replace('squad:', '').toLowerCase();
+
+            // Read team roster — check .squad/ first, fall back to .ai-team/
+            let teamFile = '.squad/team.md';
+            if (!fs.existsSync(teamFile)) {
+              teamFile = '.ai-team/team.md';
+            }
+            if (!fs.existsSync(teamFile)) {
+              core.warning('No .squad/team.md or .ai-team/team.md found — cannot assign work');
+              return;
+            }
+
+            const content = fs.readFileSync(teamFile, 'utf8');
+            const lines = content.split('\n');
+
+            // Check if this is a coding agent assignment
+            const isCopilotAssignment = memberName === 'copilot';
+
+            let assignedMember = null;
+            if (isCopilotAssignment) {
+              assignedMember = { name: '@copilot', role: 'Coding Agent' };
+            } else {
+              let inMembersTable = false;
+              for (const line of lines) {
+                if (line.match(/^##\s+(Members|Team Roster)/i)) {
+                  inMembersTable = true;
+                  continue;
+                }
+                if (inMembersTable && line.startsWith('## ')) {
+                  break;
+                }
+                if (inMembersTable && line.startsWith('|') && !line.includes('---') && !line.includes('Name')) {
+                  const cells = line.split('|').map(c => c.trim()).filter(Boolean);
+                  if (cells.length >= 2 && cells[0].toLowerCase() === memberName) {
+                    assignedMember = { name: cells[0], role: cells[1] };
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (!assignedMember) {
+              core.warning(`No member found matching label "${label}"`);
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `⚠️ No squad member found matching label \`${label}\`. Check \`.squad/team.md\` (or \`.ai-team/team.md\`) for valid member names.`
+              });
+              return;
+            }
+
+            // Post assignment acknowledgment
+            let comment;
+            if (isCopilotAssignment) {
+              comment = [
+                `### 🤖 Routed to @copilot (Coding Agent)`,
+                '',
+                `**Issue:** #${issue.number} — ${issue.title}`,
+                '',
+                `@copilot has been assigned and will pick this up automatically.`,
+                '',
+                `> The coding agent will create a \`copilot/*\` branch and open a draft PR.`,
+                `> Review the PR as you would any team member's work.`,
+              ].join('\n');
+            } else {
+              comment = [
+                `### 📋 Assigned to ${assignedMember.name} (${assignedMember.role})`,
+                '',
+                `**Issue:** #${issue.number} — ${issue.title}`,
+                '',
+                `${assignedMember.name} will pick this up in the next Copilot session.`,
+                '',
+                `> **For Copilot coding agent:** If enabled, this issue will be worked automatically.`,
+                `> Otherwise, start a Copilot session and say:`,
+                `> \`${assignedMember.name}, work on issue #${issue.number}\``,
+              ].join('\n');
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: comment
+            });
+
+            core.info(`Issue #${issue.number} assigned to ${assignedMember.name} (${assignedMember.role})`);
+
+      # Separate step: assign @copilot using PAT (required for coding agent)
+      - name: Assign @copilot coding agent
+        if: github.event.label.name == 'squad:copilot'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.COPILOT_ASSIGN_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.payload.issue.number;
+
+            // Get the default branch name (main, master, etc.)
+            const { data: repoData } = await github.rest.repos.get({ owner, repo });
+            const baseBranch = repoData.default_branch;
+
+            try {
+              await github.request('POST /repos/{owner}/{repo}/issues/{issue_number}/assignees', {
+                owner,
+                repo,
+                issue_number,
+                assignees: ['copilot-swe-agent[bot]'],
+                agent_assignment: {
+                  target_repo: `${owner}/${repo}`,
+                  base_branch: baseBranch,
+                  custom_instructions: '',
+                  custom_agent: '',
+                  model: ''
+                },
+                headers: {
+                  'X-GitHub-Api-Version': '2022-11-28'
+                }
+              });
+              core.info(`Assigned copilot-swe-agent to issue #${issue_number} (base: ${baseBranch})`);
+            } catch (err) {
+              core.warning(`Assignment with agent_assignment failed: ${err.message}`);
+              // Fallback: try without agent_assignment
+              try {
+                await github.rest.issues.addAssignees({
+                  owner, repo, issue_number,
+                  assignees: ['copilot-swe-agent']
+                });
+                core.info(`Fallback assigned copilot-swe-agent to issue #${issue_number}`);
+              } catch (err2) {
+                core.warning(`Fallback also failed: ${err2.message}`);
+              }
+            }

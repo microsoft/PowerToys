@@ -104,6 +104,15 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         }
     }
 
+    public void DismissCurrentStatusMessage()
+    {
+        var current = MostRecentStatusMessage;
+        if (current != null)
+        {
+            ExtensionHost.StatusMessages.Remove(current);
+        }
+    }
+
     //// Run on background thread from ListPage.xaml.cs
     [RelayCommand]
     internal Task<bool> InitializeAsync()

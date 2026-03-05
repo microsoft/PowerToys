@@ -1,0 +1,27 @@
+name: Squad Docs — Build & Deploy
+# dotnet project — configure documentation build commands below
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [preview]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/squad-docs.yml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build docs
+        run: |
+          # TODO: Add your documentation build commands here
+          # This workflow is optional — remove or customize it for your project
+          echo "No docs build commands configured — update or remove squad-docs.yml"

@@ -1,0 +1,50 @@
+name: Squad Docs — Build & Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [preview]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/squad-docs.yml'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install build dependencies
+        run: npm install --no-save markdown-it markdown-it-anchor
+
+      - name: Build docs site
+        run: node docs/build.js --out _site --base /squad
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

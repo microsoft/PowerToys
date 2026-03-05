@@ -1,0 +1,18 @@
+{
+  "name": "@cmdpal/sample-pages",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sample extension demonstrating Command Palette TypeScript SDK features",
+  "main": "dist/bundle.js",
+  "scripts": {
+    "build": "tsc && esbuild dist/index.js --bundle --platform=node --target=node18 --outfile=dist/bundle.js",
+    "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "@cmdpal/sdk": "file:../../"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.3",
+    "typescript": "^5.3.0"
+  }
+}

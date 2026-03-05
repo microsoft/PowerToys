@@ -529,6 +529,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
 
+    private void StatusInfoBar_Closed(Microsoft.UI.Xaml.Controls.InfoBar sender, Microsoft.UI.Xaml.Controls.InfoBarClosedEventArgs args)
+    {
+        viewModel.CurrentPage?.DismissCurrentStatusMessage();
+    }
+
     private void RootFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
     {
         // This listens to the root frame to ensure that we also track the content's page VM as well that we passed as a parameter.

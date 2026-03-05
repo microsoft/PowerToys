@@ -92,6 +92,21 @@ public sealed partial class CommandProviderWrapper
         HotkeyManager hotkeyManager,
         AliasManager aliasManager,
         ILogger logger)
+        : this(extension, null, mainThread, hotkeyManager, aliasManager, logger)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CommandProviderWrapper"/> class
+    /// with a pre-resolved ICommandProvider (used by JS extensions where GetExtensionObject returns null).
+    /// </summary>
+    public CommandProviderWrapper(
+        IExtensionWrapper extension,
+        ICommandProvider? resolvedProvider,
+        TaskScheduler mainThread,
+        HotkeyManager hotkeyManager,
+        AliasManager aliasManager,
+        ILogger logger)
     {
         _taskScheduler = mainThread;
         _logger = logger;
@@ -104,11 +119,21 @@ public sealed partial class CommandProviderWrapper
             throw new ArgumentException("You forgot to start the extension. This is a CmdPal error - we need to make sure to call StartExtensionAsync");
         }
 
-        var extensionImpl = extension.GetExtensionObject();
-        var providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
-        if (providerObject is not ICommandProvider provider)
+        ICommandProvider provider;
+        if (resolvedProvider != null)
         {
-            throw new ArgumentException("extension didn't actually implement ICommandProvider");
+            provider = resolvedProvider;
+        }
+        else
+        {
+            var extensionImpl = extension.GetExtensionObject();
+            var providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
+            if (providerObject is not ICommandProvider comProvider)
+            {
+                throw new ArgumentException("extension didn't actually implement ICommandProvider");
+            }
+
+            provider = comProvider;
         }
 
         _commandProvider = new(provider);
