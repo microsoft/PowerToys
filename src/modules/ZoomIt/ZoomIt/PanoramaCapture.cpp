@@ -8526,8 +8526,27 @@ bool RunPanoramaStitchSelfTest()
         int stressTestsRun = 0;
         bool stressEarlyExit = false;
 
-        const std::wstring stressFocusScenario = readSelfTestArg( L"/panorama-stress-focus" );
+        std::wstring stressFocusScenario = readSelfTestArg( L"/panorama-stress-focus" );
+        if( stressFocusScenario.empty() )
+        {
+            // Backward-compatible alias used in ad-hoc local runs.
+            stressFocusScenario = readSelfTestArg( L"/panorama-selftest-stress-scenario" );
+        }
         const bool stressFocusEnabled = !stressFocusScenario.empty();
+
+        bool stressEnableDroppedbandRepro =
+            readSelfTestBoolArg( L"/panorama-stress-enable-droppedband-repro", false ) ||
+            readSelfTestBoolArg( L"/panorama-selftest-stress-enable-droppedband-repro", false );
+        const bool stressDroppedbandExpectAbsent =
+            readSelfTestBoolArg( L"/panorama-stress-droppedband-expect-absent", false ) ||
+            readSelfTestBoolArg( L"/panorama-selftest-stress-droppedband-expect-absent", false );
+
+        if( stressFocusEnabled &&
+            wcsstr( stressFocusScenario.c_str(), L"droppedband-repro-signature" ) != nullptr )
+        {
+            // If user focuses this scenario explicitly, auto-enable it.
+            stressEnableDroppedbandRepro = true;
+        }
 
         bool stressStopAfterFocus = false;
         if( stressFocusEnabled )
@@ -11362,6 +11381,231 @@ bool RunPanoramaStitchSelfTest()
                             if( stressStopAfterFocus )
                                 stressEarlyExit = true;
                         }
+                    }
+                }
+            }
+
+            // Reproduction-signature regression stress: deterministic HCF scene
+            // that used to trigger dropped-band shape (large harmonic jump
+            // followed by short corrective steps). This passes only when the
+            // bad signature is absent.
+            if( !stressEarlyExit && stressEnableDroppedbandRepro )
+            {
+                const wchar_t* reproName = L"stress-vertical-hcf-droppedband-repro-signature";
+                if( stressScenarioMatches( reproName ) )
+                {
+                    if( stressFocusEnabled )
+                        stressFocusMatched = true;
+
+                    stressTestsRun++;
+
+                    constexpr int reproW = 998;
+                    constexpr int reproH = 854;
+                    constexpr int reproStep = 24;
+                    constexpr int reproFrames = 76;
+                    const int reproSrcH = reproH + reproStep * ( reproFrames + 10 ) + 512;
+
+                    std::vector<BYTE> reproSource( static_cast<size_t>( reproW ) * reproSrcH * 4, 0 );
+
+                    for( size_t pi = 0; pi < static_cast<size_t>( reproW ) * reproSrcH; ++pi )
+                    {
+                        reproSource[pi * 4 + 0] = 246;
+                        reproSource[pi * 4 + 1] = 246;
+                        reproSource[pi * 4 + 2] = 246;
+                        reproSource[pi * 4 + 3] = 255;
+                    }
+
+                    // Dominant periodic bands: strongly ambiguous for vertical
+                    // matching and prone to harmonic aliases.
+                    for( int band = 0; ; ++band )
+                    {
+                        const int y0 = 220 + band * 19;
+                        if( y0 >= reproSrcH )
+                            break;
+                        for( int yy = y0; yy < min( y0 + 2, reproSrcH ); ++yy )
+                        {
+                            for( int xx = 54; xx < reproW - 54; ++xx )
+                            {
+                                const size_t idx = ( static_cast<size_t>( yy ) * reproW + xx ) * 4;
+                                reproSource[idx + 0] = 30;
+                                reproSource[idx + 1] = 34;
+                                reproSource[idx + 2] = 38;
+                            }
+                        }
+                    }
+
+                    // Weak secondary periodic texture to create competing peaks.
+                    for( int band = 0; ; ++band )
+                    {
+                        const int y0 = 230 + band * 38;
+                        if( y0 >= reproSrcH )
+                            break;
+                        for( int yy = y0; yy < min( y0 + 1, reproSrcH ); ++yy )
+                        {
+                            for( int xx = 70; xx < reproW - 70; ++xx )
+                            {
+                                const size_t idx = ( static_cast<size_t>( yy ) * reproW + xx ) * 4;
+                                reproSource[idx + 0] = static_cast<BYTE>( max( reproSource[idx + 0], 44 ) );
+                                reproSource[idx + 1] = static_cast<BYTE>( max( reproSource[idx + 1], 48 ) );
+                                reproSource[idx + 2] = static_cast<BYTE>( max( reproSource[idx + 2], 52 ) );
+                            }
+                        }
+                    }
+
+                    std::vector<int> reproOrigins;
+                    reproOrigins.reserve( reproFrames );
+                    reproOrigins.push_back( 0 );
+                    int top = 0;
+                    while( static_cast<int>( reproOrigins.size() ) < reproFrames )
+                    {
+                        const int nextTop = top + reproStep;
+                        if( nextTop + reproH > reproSrcH )
+                            break;
+                        top = nextTop;
+                        reproOrigins.push_back( top );
+                    }
+
+                    auto buildFrame = [&]( int frameTop, std::vector<BYTE>& outFrame )
+                    {
+                        outFrame.resize( static_cast<size_t>( reproW ) * reproH * 4 );
+                        for( int row = 0; row < reproH; ++row )
+                        {
+                            const BYTE* srcRow = reproSource.data() +
+                                                 ( static_cast<size_t>( frameTop + row ) * reproW * 4 );
+                            BYTE* dstRow = outFrame.data() + static_cast<size_t>( row ) * reproW * 4;
+                            memcpy( dstRow, srcRow, static_cast<size_t>( reproW ) * 4 );
+                        }
+                    };
+
+                    const int replayExpectedSteps[] = {
+                        65, 274, 21, 6, 4, 8, 18, 33, 54, 72, 168, 84,
+                        74, 58, 46, 49, 4, 9, 19, 38, 63, 63, 160
+                    };
+                    int foundPairs = 0;
+                    int harmonicOvershoots = 0;
+                    int spikeRecoveries = 0;
+                    int tinySteps = 0;
+                    int prevDetected = 0;
+                    std::vector<int> detectedSteps;
+                    detectedSteps.reserve( reproOrigins.size() );
+
+                    for( size_t fi = 1; fi < reproOrigins.size(); ++fi )
+                    {
+                        const int expectedStep = replayExpectedSteps[( fi - 1 ) % _countof( replayExpectedSteps )];
+                        const int expectedDy = -expectedStep;
+
+                        std::vector<BYTE> prevFrame;
+                        std::vector<BYTE> currFrame;
+                        buildFrame( reproOrigins[fi - 1], prevFrame );
+                        buildFrame( reproOrigins[fi], currFrame );
+
+                        int bestDx = 0;
+                        int bestDy = 0;
+                        const bool found = FindBestFrameShift( prevFrame,
+                                                               currFrame,
+                                                               reproW,
+                                                               reproH,
+                                                               0,
+                                                               expectedDy,
+                                                               bestDx,
+                                                               bestDy,
+                                                               false );
+                        if( !found )
+                            continue;
+
+                        const int detected = abs( bestDy );
+                        detectedSteps.push_back( detected );
+                        foundPairs++;
+
+                        if( detected >= reproStep * 5 )
+                            harmonicOvershoots++;
+                        if( detected <= 8 )
+                            tinySteps++;
+                        if( prevDetected >= reproStep * 5 && detected <= reproStep * 2 )
+                            spikeRecoveries++;
+
+                        prevDetected = detected;
+                    }
+
+                    int firstLargeStep = 0;
+                    int firstRecoveryStep = 0;
+                    for( size_t i = 0; i < detectedSteps.size(); ++i )
+                    {
+                        if( firstLargeStep == 0 && detectedSteps[i] >= reproStep * 5 )
+                        {
+                            firstLargeStep = detectedSteps[i];
+                            continue;
+                        }
+                        if( firstLargeStep != 0 && detectedSteps[i] <= reproStep * 2 )
+                        {
+                            firstRecoveryStep = detectedSteps[i];
+                            break;
+                        }
+                    }
+
+                    const bool enoughCoverage = foundPairs >= 48;
+                    const bool signaturePresent =
+                        harmonicOvershoots >= 2 &&
+                        spikeRecoveries >= 1 &&
+                        tinySteps >= 4 &&
+                        firstLargeStep >= reproStep * 5 &&
+                        firstRecoveryStep > 0;
+                    const bool signatureAbsent =
+                        harmonicOvershoots <= 1 &&
+                        spikeRecoveries == 0 &&
+                        firstLargeStep < reproStep * 5 &&
+                        firstRecoveryStep == 0;
+                    const bool regressionPass =
+                        enoughCoverage &&
+                        ( stressDroppedbandExpectAbsent ? signatureAbsent : signaturePresent );
+
+                    wchar_t msg[512]{};
+                    if( regressionPass )
+                    {
+                        stressTestsPassed++;
+                        TestLog( L"  [%d] %s PASSED\n", stressTestsRun, reproName );
+                        swprintf_s( msg,
+                                    L"PASS: %s (expectAbsent=%d pairs=%d overshoots=%d recoveries=%d tiny=%d firstLarge=%d firstRecovery=%d)\n",
+                                    reproName,
+                                    stressDroppedbandExpectAbsent ? 1 : 0,
+                                    foundPairs,
+                                    harmonicOvershoots,
+                                    spikeRecoveries,
+                                    tinySteps,
+                                    firstLargeStep,
+                                    firstRecoveryStep );
+                    }
+                    else
+                    {
+                        TestLog( L"***** FAIL: %s (pairs=%d overshoots=%d recoveries=%d tiny=%d firstLarge=%d firstRecovery=%d) *****\n",
+                                 reproName,
+                                 foundPairs,
+                                 harmonicOvershoots,
+                                 spikeRecoveries,
+                                 tinySteps,
+                                 firstLargeStep,
+                                 firstRecoveryStep );
+                        swprintf_s( msg,
+                                    L"FAIL: %s (expectAbsent=%d pairs=%d overshoots=%d recoveries=%d tiny=%d firstLarge=%d firstRecovery=%d)\n",
+                                    reproName,
+                                    stressDroppedbandExpectAbsent ? 1 : 0,
+                                    foundPairs,
+                                    harmonicOvershoots,
+                                    spikeRecoveries,
+                                    tinySteps,
+                                    firstLargeStep,
+                                    firstRecoveryStep );
+                        stressFailLog += msg;
+                    }
+                    stressLog += msg;
+
+                    if( stressFocusEnabled )
+                    {
+                        TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                 reproName,
+                                 regressionPass ? L"PASS" : L"FAIL" );
+                        if( stressStopAfterFocus )
+                            stressEarlyExit = true;
                     }
                 }
             }
