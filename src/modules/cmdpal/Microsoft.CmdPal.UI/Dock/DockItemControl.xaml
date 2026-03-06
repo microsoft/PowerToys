@@ -62,8 +62,7 @@
                     <ControlTemplate TargetType="local:DockItemControl">
                         <Grid
                             x:Name="PART_HitTestGrid"
-                            Background="Transparent"
-                            ToolTipService.ToolTip="{TemplateBinding ToolTip}">
+                            Background="Transparent">
                             <Grid
                                 x:Name="PART_RootGrid"
                                 MinWidth="32"
