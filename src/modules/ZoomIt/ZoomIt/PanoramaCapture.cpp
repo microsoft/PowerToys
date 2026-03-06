@@ -5580,6 +5580,25 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
             const int expectedAxisStepNow = mostlyVerticalExpected ? abs( expectedDy ) : abs( expectedDx );
             const int axisStepNow = mostlyVerticalExpected ? abs( stepY ) : abs( stepX );
 
+            // Early expected-small giant-jump guard: when expected motion is
+            // still small on low-detail pairs, reject abrupt large-step
+            // aliases before continuity history fully forms.
+            if( veryLowEntropy != 0 && nearLowDetailPairNow && expectedAxisStepNow >= 8 && expectedAxisStepNow <= 32 &&
+                axisStepNow >= 100 && axisStepNow <= 240 && axisStepNow >= expectedAxisStepNow * 4 )
+            {
+                StitchLog( L"[Panorama/Stitch] Frame %zu rejected: expected-small-giant-jump-early step=(%d,%d) axisStep=%d expected=(%d,%d) expectedAxis=%d lastConst=%.3f curConst=%.3f\n",
+                             i,
+                             stepX,
+                             stepY,
+                             axisStepNow,
+                             expectedDx,
+                             expectedDy,
+                             expectedAxisStepNow,
+                             lastConstFracNow,
+                             curConstFracNow );
+                continue;
+            }
+
             if( veryLowEntropy == 0 && nearLowDetailPairNow && expectedAxisStepNow >= 4 && expectedAxisStepNow <= 96 &&
                 axisStepNow >= 120 )
             {
@@ -5696,6 +5715,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 std::vector<int> sorted = recentAxisSteps;
                 std::sort( sorted.begin(), sorted.end() );
                 const int medianAxisStep = sorted[sorted.size() / 2];
+                const int p75AxisStep = sorted[sorted.size() * 3 / 4];
                 int outlierStepThreshold = max( ( axisFrame * 2 ) / 5, max( minProgress * 6, medianAxisStep * 5 ) );
                 const int lowOverlapThreshold = ( axisFrame * 3 ) / 5;
                 int expectedSpikeThreshold = max( axisFrame / 3, max( minProgress * 5, expectedAxisStep * 3 ) );
@@ -5820,7 +5840,6 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 // steps were large the user was actively scrolling and
                 // a big step is more likely genuine acceleration than a
                 // harmonic artifact.
-                const int p75AxisStep = sorted[sorted.size() * 3 / 4];
                 if( medianAxisStep < axisFrame / 20 &&
                     p75AxisStep < axisFrame / 10 &&
                     axisStep > max( medianAxisStep * 20, minProgress * 4 ) )
