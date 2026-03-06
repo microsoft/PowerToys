@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Dock.DockControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -108,23 +108,23 @@
 
             <!--  Edit mode context menu for dock bands  -->
             <MenuFlyout x:Name="EditModeContextMenu" ShouldConstrainToRootBounds="False">
-                <MenuFlyoutSubItem x:Uid="Dock_EditMode_Labels" x:Name="LabelsSubMenu">
+                <MenuFlyoutSubItem x:Name="LabelsSubMenu" x:Uid="Dock_EditMode_Labels">
                     <MenuFlyoutSubItem.Icon>
                         <FontIcon Glyph="&#xE8EC;" />
                     </MenuFlyoutSubItem.Icon>
                     <ToggleMenuFlyoutItem
-                        x:Uid="Dock_EditMode_ShowTitles"
                         x:Name="ShowTitlesMenuItem"
+                        x:Uid="Dock_EditMode_ShowTitles"
                         Click="ShowTitlesMenuItem_Click" />
                     <ToggleMenuFlyoutItem
-                        x:Uid="Dock_EditMode_ShowSubtitles"
                         x:Name="ShowSubtitlesMenuItem"
+                        x:Uid="Dock_EditMode_ShowSubtitles"
                         Click="ShowSubtitlesMenuItem_Click" />
                 </MenuFlyoutSubItem>
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem
-                    x:Uid="Dock_EditMode_Unpin"
                     x:Name="UnpinBandMenuItem"
+                    x:Uid="Dock_EditMode_Unpin"
                     Click="UnpinBandMenuItem_Click">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE77A;" />
@@ -139,8 +139,8 @@
                 ShouldConstrainToRootBounds="False">
                 <StackPanel Width="320">
                     <TextBlock
-                        x:Uid="Dock_AddBand_NoCommandsAvailable"
                         x:Name="NoAvailableBandsText"
+                        x:Uid="Dock_AddBand_NoCommandsAvailable"
                         Padding="12"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextAlignment="Center"
@@ -211,8 +211,8 @@
             </local:DockContentControl.StartSource>
             <local:DockContentControl.StartActionButton>
                 <Button
-                    x:Uid="Dock_AddBand_StartTooltip"
                     x:Name="StartAddButton"
+                    x:Uid="Dock_AddBand_StartTooltip"
                     MinHeight="30"
                     Click="AddBandButton_Click"
                     Style="{StaticResource SubtleButtonStyle}"
@@ -241,8 +241,8 @@
             </local:DockContentControl.CenterSource>
             <local:DockContentControl.CenterActionButton>
                 <Button
-                    x:Uid="Dock_AddBand_CenterTooltip"
                     x:Name="CenterAddButton"
+                    x:Uid="Dock_AddBand_CenterTooltip"
                     MinHeight="30"
                     Click="AddBandButton_Click"
                     Style="{StaticResource SubtleButtonStyle}"
@@ -274,8 +274,8 @@
             </local:DockContentControl.EndSource>
             <local:DockContentControl.EndActionButton>
                 <Button
-                    x:Uid="Dock_AddBand_EndTooltip"
                     x:Name="EndAddButton"
+                    x:Uid="Dock_AddBand_EndTooltip"
                     MinHeight="30"
                     Click="AddBandButton_Click"
                     Style="{StaticResource SubtleButtonStyle}"
