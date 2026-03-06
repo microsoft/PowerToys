@@ -5735,6 +5735,29 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                     continue;
                 }
 
+                // VLE wrap-sized jump guard: when expected motion is moderate
+                // and recent motion has remained moderate, reject sudden
+                // near-frame-sized jumps that frequently duplicate previously
+                // captured bands.
+                if( veryLowEntropy != 0 && recentAxisSteps.size() >= 8 &&
+                    expectedAxisStep >= 24 && expectedAxisStep <= 96 &&
+                    medianAxisStep <= 96 && p75AxisStep <= 128 &&
+                    axisStep >= ( axisFrame * 2 ) / 3 &&
+                    axisStep >= expectedAxisStep * 8 )
+                {
+                    StitchLog( L"[Panorama/Stitch] Frame %zu rejected: vle-wrap-giant-jump step=(%d,%d) axisStep=%d expectedAxis=%d median=%d p75=%d overlap=%d/%d\n",
+                                 i,
+                                 stepX,
+                                 stepY,
+                                 axisStep,
+                                 expectedAxisStep,
+                                 medianAxisStep,
+                                 p75AxisStep,
+                                 axisOverlap,
+                                 axisFrame );
+                    continue;
+                }
+
                 // Very-low-entropy content can produce long runs of small
                 // accepted steps followed by a legitimate large jump.
                 // Raise the outlier floor so those jumps are judged by the
