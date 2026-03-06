@@ -38,7 +38,6 @@
                     <!--  'Activation' section  -->
                     <HyperlinkButton
                         x:Uid="CmdPal_LearnMore"
-                        Margin="0,0,0,16"
                         Padding="0"
                         FontWeight="SemiBold"
                         NavigateUri="https://aka.ms/cmdpal" />
