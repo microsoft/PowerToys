@@ -5566,6 +5566,37 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         int stepX = -dx;
         int stepY = -dy;
 
+        const double lastConstFracNow = frameConstantFraction[composedFrameIndices.back()];
+        const double curConstFracNow = frameConstantFraction[i];
+        const bool nearLowDetailPairNow = ( veryLowEntropy != 0 ) ||
+                                          ( lastConstFracNow > 0.52 ) ||
+                                          ( curConstFracNow > 0.52 );
+
+        // Early low-detail giant-jump guard: in HCF/VLE captures, harmonic
+        // aliases can produce a large jump while expected motion is still
+        // modest. Reject these spikes before they can create dropped bands.
+        {
+            const bool mostlyVerticalExpected = abs( expectedDy ) >= abs( expectedDx );
+            const int expectedAxisStepNow = mostlyVerticalExpected ? abs( expectedDy ) : abs( expectedDx );
+            const int axisStepNow = mostlyVerticalExpected ? abs( stepY ) : abs( stepX );
+
+            if( veryLowEntropy == 0 && nearLowDetailPairNow && expectedAxisStepNow >= 4 && expectedAxisStepNow <= 96 &&
+                axisStepNow >= 120 )
+            {
+                StitchLog( L"[Panorama/Stitch] Frame %zu rejected: lowdetail-giant-jump step=(%d,%d) axisStep=%d expected=(%d,%d) expectedAxis=%d lastConst=%.3f curConst=%.3f\n",
+                             i,
+                             stepX,
+                             stepY,
+                             axisStepNow,
+                             expectedDx,
+                             expectedDy,
+                             expectedAxisStepNow,
+                             lastConstFracNow,
+                             curConstFracNow );
+                continue;
+            }
+        }
+
         // After establishing a predominantly vertical or horizontal scroll
         // direction, clamp the perpendicular component to zero.  Subpixel
         // rendering noise (e.g. ClearType) causes the fine refinement to
@@ -5668,6 +5699,21 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 int outlierStepThreshold = max( ( axisFrame * 2 ) / 5, max( minProgress * 6, medianAxisStep * 5 ) );
                 const int lowOverlapThreshold = ( axisFrame * 3 ) / 5;
                 int expectedSpikeThreshold = max( axisFrame / 3, max( minProgress * 5, expectedAxisStep * 3 ) );
+
+                if( veryLowEntropy == 0 && nearLowDetailPairNow && expectedAxisStep >= 4 && expectedAxisStep <= 96 &&
+                    axisStep >= 120 )
+                {
+                    StitchLog( L"[Panorama/Stitch] Frame %zu rejected: lowdetail-range-giant-jump step=(%d,%d) axisStep=%d expectedAxis=%d median=%d overlap=%d/%d\n",
+                                 i,
+                                 stepX,
+                                 stepY,
+                                 axisStep,
+                                 expectedAxisStep,
+                                 medianAxisStep,
+                                 axisOverlap,
+                                 axisFrame );
+                    continue;
+                }
 
                 // Very-low-entropy content can produce long runs of small
                 // accepted steps followed by a legitimate large jump.
