@@ -112,7 +112,7 @@
                                         <TextBlock
                                             x:Name="SubtitleText"
                                             MaxWidth="100"
-                                            Margin="0,-4,0,0"
+                                            Margin="0,-2,0,0"
                                             HorizontalAlignment="Left"
                                             VerticalAlignment="Center"
                                             FontFamily="Segoe UI"
