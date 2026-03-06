@@ -23,12 +23,23 @@ public sealed partial class DockItemControl : Control
     }
 
     public static readonly DependencyProperty ToolTipProperty =
-        DependencyProperty.Register(nameof(ToolTip), typeof(string), typeof(DockItemControl), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(ToolTip), typeof(string), typeof(DockItemControl), new PropertyMetadata(null, OnToolTipPropertyChanged));
 
     public string ToolTip
     {
         get => (string)GetValue(ToolTipProperty);
         set => SetValue(ToolTipProperty, value);
+    }
+
+    private static void OnToolTipPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            // Collapse the tooltip when the string is null or empty so an
+            // empty tooltip bubble doesn't appear on hover.
+            var text = e.NewValue as string;
+            ToolTipService.SetToolTip(control, string.IsNullOrEmpty(text) ? null : text);
+        }
     }
 
     public static readonly DependencyProperty TitleProperty =

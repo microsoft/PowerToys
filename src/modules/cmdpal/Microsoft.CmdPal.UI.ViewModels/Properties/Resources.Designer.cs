@@ -484,7 +484,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Edit dock.
+        ///   Looks up a localized string similar to Edit Dock.
         /// </summary>
         public static string dock_edit_dock_name {
             get {
@@ -511,7 +511,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dock settings.
+        ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string dock_settings_name {
             get {
