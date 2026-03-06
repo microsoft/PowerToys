@@ -428,7 +428,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Description" xml:space="preserve">
     <value>Disable animations when switching between pages</value>
   </data>
-    <data name="Settings_GeneralPage_EnableDock_SettingsCard.Header" xml:space="preserve">
+  <data name="Settings_GeneralPage_EnableDock_SettingsCard.Header" xml:space="preserve">
     <value>Enable Dock</value>
   </data>
   <data name="Settings_GeneralPage_EnableDock_SettingsCard.Description" xml:space="preserve">
@@ -876,7 +876,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>K</value>
     <comment>Keyboard key</comment>
   </data>
-    <data name="ConfigureShortcut" xml:space="preserve">
+  <data name="ConfigureShortcut" xml:space="preserve">
     <value>Configure shortcut</value>
   </data>
   <data name="ConfigureShortcutText.Text" xml:space="preserve">
@@ -966,5 +966,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Dock_EditMode_Discard.Content" xml:space="preserve">
     <value>Discard</value>
+  </data>
+  <data name="CmdPal_LearnMore.Content" xml:space="preserve">
+    <value>Learn more about Command Palette</value>
+  </data>
+  <data name="CmdPalDock_LearnMore.Content" xml:space="preserve">
+    <value>Learn more about Command Palette Dock</value>
   </data>
 </root>

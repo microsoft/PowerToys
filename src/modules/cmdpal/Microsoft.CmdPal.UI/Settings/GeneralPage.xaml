@@ -19,7 +19,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <ScrollViewer Grid.Row="1">
-            <Grid Padding="16">
+            <Grid Padding="16,0,16,16">
                 <StackPanel
                     MaxWidth="1000"
                     HorizontalAlignment="Stretch"
@@ -36,6 +36,12 @@
               </StackPanel.ChildrenTransitions>-->
 
                     <!--  'Activation' section  -->
+                    <HyperlinkButton
+                        x:Uid="CmdPal_LearnMore"
+                        Margin="0,0,0,16"
+                        Padding="0"
+                        FontWeight="SemiBold"
+                        NavigateUri="https://aka.ms/cmdpal" />
 
                     <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <controls:SettingsExpander
