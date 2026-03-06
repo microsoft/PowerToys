@@ -217,6 +217,7 @@ CONTEXTHELP
 CONTEXTMENUHANDLER
 contractversion
 CONTROLPARENT
+cooldown
 copiedcolorrepresentation
 COPYPEN
 COREWINDOW
