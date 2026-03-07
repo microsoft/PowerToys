@@ -6065,6 +6065,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     size_t subPixelDropCount = 0;
     size_t tornFrameCount = 0;
     size_t captureIteration = 0;
+    bool frameLimitStop = false;
 
     // Resolve DwmFlush once for the capture loop.  Used to synchronize
     // with the DWM composition cycle so BitBlt captures fully-composed
@@ -6152,12 +6153,18 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         if( frames.size() >= kMaxCaptureFrames )
         {
             StitchLog( L"[Panorama/Capture] Reached frame limit (%zu), stopping capture\n", kMaxCaptureFrames );
+            // Treat auto-stop at frame limit the same as explicit user stop so
+            // downstream flow (stitch + clipboard/file output) follows the
+            // normal capture-stop path.
+            frameLimitStop = true;
+            g_PanoramaStopRequested = true;
             break;
         }
     }
 
-    StitchLog( L"[Panorama/Capture] Loop exited stopRequested=%d frames=%zu duplicates=%zu subpixel=%zu torn=%zu iterations=%zu\n",
+    StitchLog( L"[Panorama/Capture] Loop exited stopRequested=%d frameLimitStop=%d frames=%zu duplicates=%zu subpixel=%zu torn=%zu iterations=%zu\n",
                g_PanoramaStopRequested ? 1 : 0,
+               frameLimitStop ? 1 : 0,
                frames.size(),
                duplicateFrameCount,
                subPixelDropCount,
@@ -6168,13 +6175,14 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     {
         wchar_t statsText[256]{};
         swprintf_s( statsText,
-                    L"framesAccepted=%zu\nduplicates=%zu\nsubpixel=%zu\ntorn=%zu\niterations=%zu\nstopRequested=%d\n",
+                    L"framesAccepted=%zu\nduplicates=%zu\nsubpixel=%zu\ntorn=%zu\niterations=%zu\nstopRequested=%d\nframeLimitStop=%d\n",
                     frames.size(),
                     duplicateFrameCount,
                     subPixelDropCount,
                     tornFrameCount,
                     captureIteration,
-                    g_PanoramaStopRequested ? 1 : 0 );
+                    g_PanoramaStopRequested ? 1 : 0,
+                    frameLimitStop ? 1 : 0 );
         DumpPanoramaText( debugDumpDirectory, L"capture_stats.txt", statsText );
 
         for( size_t frameIndex = 0; frameIndex < frames.size(); ++frameIndex )
@@ -6225,6 +6233,13 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 
     if( panoramaBitmap == nullptr )
     {
+        if( frameLimitStop )
+        {
+            MessageBox( hWnd,
+                        L"Capture limit reached, but stitching failed.\nPlease check stitch_log.txt in the latest panorama debug dump.",
+                        L"ZoomIt",
+                        MB_OK | MB_ICONWARNING );
+        }
         StitchLog( L"[Panorama/Capture] Stitch result is null\n" );
         return false;
     }
@@ -6236,6 +6251,14 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
 
     if( saveToFile )
     {
+        if( frameLimitStop )
+        {
+            MessageBox( hWnd,
+                        L"Capture limit reached. Image is ready.",
+                        L"ZoomIt",
+                        MB_OK | MB_ICONINFORMATION );
+        }
+
         // Show file save dialog and save as PNG.
         g_bSaveInProgress = true;
 
@@ -6376,6 +6399,15 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     }
 
     CloseClipboard();
+
+    if( frameLimitStop )
+    {
+        MessageBox( hWnd,
+                    L"Capture limit reached. Image is ready.",
+                    L"ZoomIt",
+                    MB_OK | MB_ICONINFORMATION );
+    }
+
     StitchLog( L"[Panorama/Capture] Success: DIB copied to clipboard (%dx%d)\n", bmpWidth, abs( bmpHeight ) );
     return true;
 }
