@@ -176,6 +176,33 @@
                                     <VisualState x:Name="IconHidden">
                                         <VisualState.Setters>
                                             <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
+                                            <Setter Target="IconPresenter.Visibility" Value="Collapsed" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="TextAlignmentStates">
+                                    <VisualState x:Name="TextLeftAligned">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.HorizontalAlignment" Value="Left" />
+                                            <Setter Target="TitleText.TextAlignment" Value="Left" />
+                                            <Setter Target="SubtitleText.HorizontalAlignment" Value="Left" />
+                                            <Setter Target="SubtitleText.TextAlignment" Value="Left" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="TextCentered">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.HorizontalAlignment" Value="Center" />
+                                            <Setter Target="TitleText.TextAlignment" Value="Center" />
+                                            <Setter Target="SubtitleText.HorizontalAlignment" Value="Center" />
+                                            <Setter Target="SubtitleText.TextAlignment" Value="Center" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="TextStretched">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.HorizontalAlignment" Value="Stretch" />
+                                            <Setter Target="TitleText.TextAlignment" Value="Left" />
+                                            <Setter Target="SubtitleText.HorizontalAlignment" Value="Stretch" />
+                                            <Setter Target="SubtitleText.TextAlignment" Value="Left" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>

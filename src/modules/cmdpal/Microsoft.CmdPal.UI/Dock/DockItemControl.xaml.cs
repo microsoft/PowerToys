@@ -127,26 +127,18 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateIconVisibility()
     {
-        if (Icon is IconBox icon)
+        var shouldShowIcon = ShouldShowIcon();
+        if (_iconPresenter is not null)
         {
-            var dt = icon.DataContext;
-            var src = icon.Source;
-
-            if (_iconPresenter is not null)
-            {
-                // n.b. this might be wrong - I think we always have an Icon (an IconBox),
-                // we need to check if the box has an icon
-                _iconPresenter.Visibility = Icon is null ? Visibility.Collapsed : Visibility.Visible;
-            }
-
-            UpdateIconVisibilityState();
+            _iconPresenter.Visibility = shouldShowIcon ? Visibility.Visible : Visibility.Collapsed;
         }
+
+        UpdateIconVisibilityState();
     }
 
     private void UpdateIconVisibilityState()
     {
-        var hasIcon = Icon is not null;
-        VisualStateManager.GoToState(this, hasIcon ? "IconVisible" : "IconHidden", true);
+        VisualStateManager.GoToState(this, ShouldShowIcon() ? "IconVisible" : "IconHidden", true);
     }
 
     private void UpdateAlignment()
@@ -155,22 +147,40 @@ public sealed partial class DockItemControl : Control
         // icons don't wobble if the text changes.
         //
         // Otherwise, center align.
-        var requestedTheme = ActualTheme;
-        var isLight = requestedTheme == ElementTheme.Light;
         var showText = HasText;
-        if (Icon is IconBox icoBox &&
-            icoBox.DataContext is DockItemViewModel item &&
-            item.Icon is IconInfoViewModel icon)
+        var verticalDock = _parentDock?.DockSide is DockSide.Left or DockSide.Right;
+        if (showText && ShouldShowIcon() && !verticalDock)
         {
-            var showIcon = icon is not null && icon.HasIcon(isLight);
-            if (showText && showIcon)
-            {
-                HorizontalAlignment = HorizontalAlignment.Left;
-                return;
-            }
+            HorizontalAlignment = HorizontalAlignment.Left;
+        }
+        else
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch;
         }
 
-        HorizontalAlignment = HorizontalAlignment.Stretch;
+        UpdateTextAlignmentState();
+    }
+
+    private bool ShouldShowIcon()
+    {
+        if (Icon is IconBox icoBox)
+        {
+            if (icoBox.SourceKey is IconInfoViewModel icon)
+            {
+                return icon.HasIcon(ActualTheme == ElementTheme.Light);
+            }
+
+            return icoBox.Source is not null;
+        }
+
+        return Icon is not null;
+    }
+
+    private void UpdateTextAlignmentState()
+    {
+        var verticalDock = _parentDock?.DockSide is DockSide.Left or DockSide.Right;
+        var shouldCenterText = verticalDock && !ShouldShowIcon();
+        VisualStateManager.GoToState(this, shouldCenterText ? "TextCentered" : (verticalDock ? "TextStretched" : "TextLeftAligned"), true);
     }
 
     private void UpdateAllVisibility()
@@ -184,12 +194,14 @@ public sealed partial class DockItemControl : Control
     {
         base.OnApplyTemplate();
         IsEnabledChanged -= OnIsEnabledChanged;
+        ActualThemeChanged -= DockItemControl_ActualThemeChanged;
 
         PointerEntered -= Control_PointerEntered;
         PointerExited -= Control_PointerExited;
         Loaded -= DockItemControl_Loaded;
         Unloaded -= DockItemControl_Unloaded;
 
+        ActualThemeChanged += DockItemControl_ActualThemeChanged;
         PointerEntered += Control_PointerEntered;
         PointerExited += Control_PointerExited;
         Loaded += DockItemControl_Loaded;
@@ -218,10 +230,17 @@ public sealed partial class DockItemControl : Control
         {
             _parentDock = dock;
             UpdateInnerMarginForDockSide(dock.DockSide);
+            UpdateAllVisibility();
             _dockSideCallbackToken = dock.RegisterPropertyChangedCallback(
                 DockControl.DockSideProperty,
                 OnParentDockSideChanged);
         }
+    }
+
+    private void DockItemControl_ActualThemeChanged(FrameworkElement sender, object args)
+    {
+        UpdateIconVisibility();
+        UpdateAlignment();
     }
 
     private void DockItemControl_Unloaded(object sender, RoutedEventArgs e)
@@ -241,6 +260,7 @@ public sealed partial class DockItemControl : Control
         if (sender is DockControl dock)
         {
             UpdateInnerMarginForDockSide(dock.DockSide);
+            UpdateAlignment();
         }
     }
 
