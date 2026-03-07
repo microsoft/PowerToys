@@ -18,7 +18,7 @@ internal sealed class MouseWithoutBordersModuleCommandProvider : ModuleCommandPr
         var title = SettingsWindow.MouseWithoutBorders.ModuleDisplayName();
         var icon = SettingsWindow.MouseWithoutBorders.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.MouseWithoutBorders, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.MouseWithoutBorders, title) { Id = "com.microsoft.powertoys.mouseWithoutBorders.openSettings" })
         {
             Title = title,
             Subtitle = Resources.MouseWithoutBorders_Settings_Subtitle,

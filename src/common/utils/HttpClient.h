@@ -1,6 +1,7 @@
 #pragma once
 
-#include <future>
+#include <functional>
+#include <string>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.Web.Http.h>
@@ -21,15 +22,15 @@ namespace http
             headers.UserAgent().TryParseAdd(USER_AGENT);
         }
 
-        std::future<std::wstring> request(const winrt::Windows::Foundation::Uri& url)
+        winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> request(winrt::Windows::Foundation::Uri url)
         {
             auto response = co_await m_client.GetAsync(url);
             (void)response.EnsureSuccessStatusCode();
             auto body = co_await response.Content().ReadAsStringAsync();
-            co_return std::wstring(body);
+            co_return body;
         }
 
-        std::future<void> download(const winrt::Windows::Foundation::Uri& url, const std::wstring& dstFilePath)
+        winrt::Windows::Foundation::IAsyncAction download(winrt::Windows::Foundation::Uri url, std::wstring dstFilePath)
         {
             auto response = co_await m_client.GetAsync(url);
             (void)response.EnsureSuccessStatusCode();
@@ -38,7 +39,7 @@ namespace http
             file_stream.Close();
         }
 
-        std::future<void> download(const winrt::Windows::Foundation::Uri& url, const std::wstring& dstFilePath, const std::function<void(float)>& progressUpdateCallback)
+        winrt::Windows::Foundation::IAsyncAction download(winrt::Windows::Foundation::Uri url, std::wstring dstFilePath, std::function<void(float)> progressUpdateCallback)
         {
             auto response = co_await m_client.GetAsync(url, HttpCompletionOption::ResponseHeadersRead);
             response.EnsureSuccessStatusCode();

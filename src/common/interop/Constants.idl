@@ -74,6 +74,7 @@ namespace PowerToys
             static String PowerDisplayTerminateAppMessage();
             static String MWBToggleEasyMouseEvent();
             static String MWBReconnectEvent();
+            static String OpenNewKeyboardManagerEvent();
         }
     }
 }

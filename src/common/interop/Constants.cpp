@@ -295,4 +295,9 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::MWB_RECONNECT_EVENT;
     }
+
+    hstring Constants::OpenNewKeyboardManagerEvent()
+    {
+        return CommonSharedConstants::OPEN_NEW_KEYBOARD_MANAGER_EVENT;
+    }
 }

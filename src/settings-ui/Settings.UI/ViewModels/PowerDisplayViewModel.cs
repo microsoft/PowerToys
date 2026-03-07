@@ -36,6 +36,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public PowerDisplayViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
+            // Set up localized VCP code names for UI display
+            VcpNames.LocalizedCodeNameProvider = GetLocalizedVcpCodeName;
+
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
@@ -56,8 +59,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
+            // Subscribe to collection changes for HasProfiles binding
+            _profiles.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasProfiles));
+
             // Load profiles
             LoadProfiles();
+
+            // Load custom VCP mappings
+            LoadCustomVcpMappings();
 
             // Listen for monitor refresh events from PowerDisplay.exe
             NativeEventWaiter.WaitForEventLoop(
@@ -446,21 +455,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // Profile-related fields
         private ObservableCollection<PowerDisplayProfile> _profiles = new ObservableCollection<PowerDisplayProfile>();
 
+        // Custom VCP mapping fields
+        private ObservableCollection<CustomVcpValueMapping> _customVcpMappings;
+
         /// <summary>
-        /// Gets or sets collection of available profiles (for button display)
+        /// Gets collection of custom VCP value name mappings
         /// </summary>
-        public ObservableCollection<PowerDisplayProfile> Profiles
-        {
-            get => _profiles;
-            set
-            {
-                if (_profiles != value)
-                {
-                    _profiles = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        public ObservableCollection<CustomVcpValueMapping> CustomVcpMappings => _customVcpMappings;
+
+        /// <summary>
+        /// Gets whether there are any custom VCP mappings (for UI binding)
+        /// </summary>
+        public bool HasCustomVcpMappings => _customVcpMappings?.Count > 0;
+
+        /// <summary>
+        /// Gets collection of available profiles (for button display)
+        /// </summary>
+        public ObservableCollection<PowerDisplayProfile> Profiles => _profiles;
+
+        /// <summary>
+        /// Gets whether there are any profiles (for UI binding)
+        /// </summary>
+        public bool HasProfiles => _profiles?.Count > 0;
 
         public void RefreshEnabledState()
         {
@@ -645,6 +661,109 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 Logger.LogError($"Failed to delete profile: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Load custom VCP mappings from settings
+        /// </summary>
+        private void LoadCustomVcpMappings()
+        {
+            List<CustomVcpValueMapping> mappings;
+            try
+            {
+                mappings = _settings.Properties.CustomVcpMappings ?? new List<CustomVcpValueMapping>();
+                Logger.LogInfo($"Loaded {mappings.Count} custom VCP mappings");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load custom VCP mappings: {ex.Message}");
+                mappings = new List<CustomVcpValueMapping>();
+            }
+
+            _customVcpMappings = new ObservableCollection<CustomVcpValueMapping>(mappings);
+            _customVcpMappings.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasCustomVcpMappings));
+            OnPropertyChanged(nameof(CustomVcpMappings));
+            OnPropertyChanged(nameof(HasCustomVcpMappings));
+        }
+
+        /// <summary>
+        /// Add a new custom VCP mapping.
+        /// No duplicate checking - mappings are resolved by order (first match wins in VcpNames).
+        /// </summary>
+        public void AddCustomVcpMapping(CustomVcpValueMapping mapping)
+        {
+            if (mapping == null)
+            {
+                return;
+            }
+
+            CustomVcpMappings.Add(mapping);
+            Logger.LogInfo($"Added custom VCP mapping: VCP=0x{mapping.VcpCode:X2}, Value=0x{mapping.Value:X2} -> {mapping.CustomName}");
+            SaveCustomVcpMappings();
+        }
+
+        /// <summary>
+        /// Update an existing custom VCP mapping
+        /// </summary>
+        public void UpdateCustomVcpMapping(CustomVcpValueMapping oldMapping, CustomVcpValueMapping newMapping)
+        {
+            if (oldMapping == null || newMapping == null)
+            {
+                return;
+            }
+
+            var index = CustomVcpMappings.IndexOf(oldMapping);
+            if (index >= 0)
+            {
+                CustomVcpMappings[index] = newMapping;
+                Logger.LogInfo($"Updated custom VCP mapping at index {index}");
+                SaveCustomVcpMappings();
+            }
+        }
+
+        /// <summary>
+        /// Delete a custom VCP mapping
+        /// </summary>
+        public void DeleteCustomVcpMapping(CustomVcpValueMapping mapping)
+        {
+            if (mapping == null)
+            {
+                return;
+            }
+
+            if (CustomVcpMappings.Remove(mapping))
+            {
+                Logger.LogInfo($"Deleted custom VCP mapping: VCP=0x{mapping.VcpCode:X2}, Value=0x{mapping.Value:X2}");
+                SaveCustomVcpMappings();
+            }
+        }
+
+        /// <summary>
+        /// Save custom VCP mappings to settings
+        /// </summary>
+        private void SaveCustomVcpMappings()
+        {
+            _settings.Properties.CustomVcpMappings = CustomVcpMappings.ToList();
+            NotifySettingsChanged();
+
+            // Signal PowerDisplay to reload settings
+            SignalSettingsUpdated();
+        }
+
+        /// <summary>
+        /// Provides localized VCP code names for UI display.
+        /// Looks for resource string with pattern "PowerDisplay_VcpCode_Name_0xXX".
+        /// Returns null for unknown codes to use the default MCCS name.
+        /// </summary>
+#nullable enable
+        private static string? GetLocalizedVcpCodeName(byte vcpCode)
+        {
+            var resourceKey = $"PowerDisplay_VcpCode_Name_0x{vcpCode:X2}";
+            var localizedName = ResourceLoaderInstance.ResourceLoader.GetString(resourceKey);
+
+            // ResourceLoader returns empty string if key not found
+            return string.IsNullOrEmpty(localizedName) ? null : localizedName;
+        }
+#nullable restore
 
         private void NotifySettingsChanged()
         {

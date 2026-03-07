@@ -279,6 +279,16 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     // Advanced control display logic
     public bool HasAdvancedControls => ShowContrast || ShowVolume;
 
+    /// <summary>
+    /// Gets a value indicating whether this monitor supports contrast control via VCP 0x12
+    /// </summary>
+    public bool SupportsContrast => _monitor.SupportsContrast;
+
+    /// <summary>
+    /// Gets a value indicating whether this monitor supports volume control via VCP 0x62
+    /// </summary>
+    public bool SupportsVolume => _monitor.SupportsVolume;
+
     public bool ShowContrast
     {
         get => _showContrast;
@@ -456,8 +466,10 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     /// <summary>
     /// Gets human-readable color temperature preset name (e.g., "6500K", "sRGB")
+    /// Uses custom mappings if available; falls back to built-in names if not.
     /// </summary>
-    public string ColorTemperaturePresetName => _monitor.ColorTemperaturePresetName;
+    public string ColorTemperaturePresetName =>
+        Common.Utils.VcpNames.GetFormattedValueName(0x14, _monitor.CurrentColorTemperature, _mainViewModel?.CustomVcpMappings, _monitor.Id);
 
     /// <summary>
     /// Gets a value indicating whether this monitor supports color temperature via VCP 0x14
@@ -537,7 +549,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         _availableColorPresets = presetValues.Select(value => new ColorTemperatureItem
         {
             VcpValue = value,
-            DisplayName = Common.Utils.VcpNames.GetFormattedValueName(0x14, value),
+            DisplayName = Common.Utils.VcpNames.GetFormattedValueName(0x14, value, _mainViewModel?.CustomVcpMappings, _monitor.Id),
             IsSelected = value == _monitor.CurrentColorTemperature,
             MonitorId = _monitor.Id,
         }).ToList();
@@ -557,8 +569,11 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
 
     /// <summary>
     /// Gets human-readable current input source name (e.g., "HDMI-1", "DisplayPort-1")
+    /// Uses custom mappings if available; falls back to built-in names if not.
     /// </summary>
-    public string CurrentInputSourceName => _monitor.InputSourceName;
+    public string CurrentInputSourceName =>
+        Common.Utils.VcpNames.GetValueName(0x60, _monitor.CurrentInputSource, _mainViewModel?.CustomVcpMappings, _monitor.Id)
+        ?? $"Source 0x{_monitor.CurrentInputSource:X2}";
 
     private List<InputSourceItem>? _availableInputSources;
 
@@ -593,11 +608,28 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         _availableInputSources = supportedSources.Select(value => new InputSourceItem
         {
             Value = value,
-            Name = Common.Utils.VcpNames.GetValueName(0x60, value) ?? $"Source 0x{value:X2}",
+            Name = Common.Utils.VcpNames.GetValueName(0x60, value, _mainViewModel?.CustomVcpMappings, _monitor.Id) ?? $"Source 0x{value:X2}",
             SelectionVisibility = value == _monitor.CurrentInputSource ? Visibility.Visible : Visibility.Collapsed,
             MonitorId = _monitor.Id,
         }).ToList();
 
+        OnPropertyChanged(nameof(AvailableInputSources));
+    }
+
+    /// <summary>
+    /// Refresh custom VCP name displays after settings change.
+    /// Called when CustomVcpMappings is updated from Settings UI.
+    /// </summary>
+    public void RefreshCustomVcpNames()
+    {
+        // Refresh color temperature names
+        OnPropertyChanged(nameof(ColorTemperaturePresetName));
+        _availableColorPresets = null;  // Force rebuild with new custom names
+        OnPropertyChanged(nameof(AvailableColorPresets));
+
+        // Refresh input source names
+        OnPropertyChanged(nameof(CurrentInputSourceName));
+        _availableInputSources = null;  // Force rebuild with new custom names
         OnPropertyChanged(nameof(AvailableInputSources));
     }
 

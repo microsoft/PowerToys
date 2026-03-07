@@ -71,6 +71,10 @@ namespace PowerDisplay
                 _hotkeyService.Initialize(this);
                 Logger.LogTrace("MainWindow constructor: HotkeyService initialized");
 
+                Logger.LogTrace("MainWindow constructor: Setting IsShownInSwitchers property");
+                this.SetIsShownInSwitchers(false);
+                Logger.LogTrace("MainWindow constructor: Set IsShownInSwitchers property successfully");
+
                 // Note: ViewModel handles all async initialization internally.
                 // We listen to InitializationCompleted event to know when data is ready.
                 // No duplicate initialization here - single responsibility in ViewModel.

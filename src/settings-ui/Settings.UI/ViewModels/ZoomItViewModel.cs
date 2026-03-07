@@ -8,8 +8,8 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using AllExperiments;
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -873,6 +873,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.CaptureAudio.Value = value;
                     OnPropertyChanged(nameof(RecordCaptureAudio));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool RecordMicMonoMix
+        {
+            get => _zoomItSettings.Properties.MicMonoMix.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.MicMonoMix.Value != value)
+                {
+                    _zoomItSettings.Properties.MicMonoMix.Value = value;
+                    OnPropertyChanged(nameof(RecordMicMonoMix));
                     NotifySettingsChanged();
                 }
             }

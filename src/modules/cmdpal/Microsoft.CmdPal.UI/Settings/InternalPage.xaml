@@ -57,6 +57,13 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7BB;}">
                         <Button Click="OpenCurrentLogCardClicked" Content="Open log" />
                     </controls:SettingsCard>
+                    <controls:SettingsCard
+                        x:Name="ToggleDevRibbonVisibilitySettingsCard"
+                        Description="This is only temporary and state is not saved"
+                        Header="Toggle dev ribbon visibility"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8EC;}">
+                        <Button Click="ToggleDevRibbonClicked" Content="Toggle dev ribbon" />
+                    </controls:SettingsCard>
 
                     <!--  Data Section  -->
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Data and Files" />

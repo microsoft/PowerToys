@@ -77,6 +77,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring PowerDisplayTerminateAppMessage();
         static hstring MWBToggleEasyMouseEvent();
         static hstring MWBReconnectEvent();
+        static hstring OpenNewKeyboardManagerEvent();
     };
 }
 

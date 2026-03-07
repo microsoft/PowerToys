@@ -43,6 +43,10 @@ public partial class MainViewModel
             // UpdateMonitorList already handles filtering hidden monitors
             UpdateMonitorList(_monitorManager.Monitors, isInitialLoad: false);
 
+            // Reload UI display settings first (includes custom VCP mappings)
+            // Must be loaded before ApplyUIConfiguration so names are available for UI refresh
+            LoadUIDisplaySettings();
+
             // Apply UI configuration changes only (feature visibility toggles, etc.)
             // Hardware parameters (brightness, color temperature) are applied via custom actions
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
@@ -51,8 +55,11 @@ public partial class MainViewModel
             // Reload profiles in case they were added/updated/deleted in Settings UI
             LoadProfiles();
 
-            // Reload UI display settings (profile switcher, identify button, color temp switcher)
-            LoadUIDisplaySettings();
+            // Notify MonitorViewModels to refresh their custom VCP name displays
+            foreach (var monitor in Monitors)
+            {
+                monitor.RefreshCustomVcpNames();
+            }
         }
         catch (Exception ex)
         {
@@ -304,7 +311,8 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Apply feature visibility settings to a monitor ViewModel
+    /// Apply feature visibility settings to a monitor ViewModel.
+    /// Only shows features that are both enabled by user AND supported by hardware.
     /// </summary>
     private void ApplyFeatureVisibility(MonitorViewModel monitorVm, PowerDisplaySettings settings)
     {
@@ -313,12 +321,13 @@ public partial class MainViewModel
 
         if (monitorSettings != null)
         {
-            monitorVm.ShowContrast = monitorSettings.EnableContrast;
-            monitorVm.ShowVolume = monitorSettings.EnableVolume;
-            monitorVm.ShowInputSource = monitorSettings.EnableInputSource;
+            // Only show features that are both enabled by user AND supported by hardware
+            monitorVm.ShowContrast = monitorSettings.EnableContrast && monitorVm.SupportsContrast;
+            monitorVm.ShowVolume = monitorSettings.EnableVolume && monitorVm.SupportsVolume;
+            monitorVm.ShowInputSource = monitorSettings.EnableInputSource && monitorVm.SupportsInputSource;
             monitorVm.ShowRotation = monitorSettings.EnableRotation;
-            monitorVm.ShowColorTemperature = monitorSettings.EnableColorTemperature;
-            monitorVm.ShowPowerState = monitorSettings.EnablePowerState;
+            monitorVm.ShowColorTemperature = monitorSettings.EnableColorTemperature && monitorVm.SupportsColorTemperature;
+            monitorVm.ShowPowerState = monitorSettings.EnablePowerState && monitorVm.SupportsPowerState;
         }
     }
 

@@ -6,7 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CommandPalette.Extensions;
@@ -14,7 +15,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
-public sealed partial class AppListItem : ListItem
+public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 {
     private readonly AppCommand _appCommand;
     private readonly AppItem _app;
@@ -24,6 +25,35 @@ public sealed partial class AppListItem : ListItem
 
     private InterlockedBoolean _isLoadingIcon;
     private InterlockedBoolean _isLoadingDetails;
+
+    private FuzzyTargetCache _titleCache;
+    private FuzzyTargetCache _subtitleCache;
+
+    public override string Title
+    {
+        get => base.Title;
+        set
+        {
+            if (!string.Equals(base.Title, value, StringComparison.Ordinal))
+            {
+                base.Title = value;
+                _titleCache.Invalidate();
+            }
+        }
+    }
+
+    public override string Subtitle
+    {
+        get => base.Subtitle;
+        set
+        {
+            if (!string.Equals(value, base.Subtitle, StringComparison.Ordinal))
+            {
+                base.Subtitle = value;
+                _subtitleCache.Invalidate();
+            }
+        }
+    }
 
     public override IDetails? Details
     {
@@ -57,7 +87,7 @@ public sealed partial class AppListItem : ListItem
 
     public AppItem App => _app;
 
-    public AppListItem(AppItem app, bool useThumbnails, bool isPinned)
+    public AppListItem(AppItem app, bool useThumbnails)
     {
         Command = _appCommand = new AppCommand(app);
         _app = app;
@@ -65,7 +95,7 @@ public sealed partial class AppListItem : ListItem
         Subtitle = app.Subtitle;
         Icon = Icons.GenericAppIcon;
 
-        MoreCommands = AddPinCommands(_app.Commands!, isPinned);
+        MoreCommands = _app.Commands?.ToArray() ?? [];
 
         _detailsLoadTask = new Lazy<Task<Details>>(BuildDetails);
         _iconLoadTask = new Lazy<Task<IconInfo?>>(async () => await FetchIcon(useThumbnails).ConfigureAwait(false));
@@ -176,7 +206,7 @@ public sealed partial class AppListItem : ListItem
         {
             Title = this.Title,
             HeroImage = CoalesceIcon(CoalesceIcon(heroImage, this.Icon as IconInfo)),
-            Metadata = [..metadata],
+            Metadata = [.. metadata],
         };
     }
 
@@ -207,35 +237,6 @@ public sealed partial class AppListItem : ListItem
         return icon;
     }
 
-    private IContextItem[] AddPinCommands(List<IContextItem> commands, bool isPinned)
-    {
-        var newCommands = new List<IContextItem>();
-        newCommands.AddRange(commands);
-
-        newCommands.Add(new Separator());
-
-        if (isPinned)
-        {
-            newCommands.Add(
-                new CommandContextItem(
-                    new UnpinAppCommand(this.AppIdentifier))
-                {
-                    RequestedShortcut = KeyChords.TogglePin,
-                });
-        }
-        else
-        {
-            newCommands.Add(
-                new CommandContextItem(
-                    new PinAppCommand(this.AppIdentifier))
-                {
-                    RequestedShortcut = KeyChords.TogglePin,
-                });
-        }
-
-        return newCommands.ToArray();
-    }
-
     private async Task<IconInfo?> TryLoadThumbnail(string path, bool jumbo, bool logOnFailure)
     {
         return await Task.Run(async () =>
@@ -259,4 +260,10 @@ public sealed partial class AppListItem : ListItem
             return null;
         }).ConfigureAwait(false);
     }
+
+    public FuzzyTarget GetTitleTarget(IPrecomputedFuzzyMatcher matcher)
+        => _titleCache.GetOrUpdate(matcher, Title);
+
+    public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
+        => _subtitleCache.GetOrUpdate(matcher, Subtitle);
 }

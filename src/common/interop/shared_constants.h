@@ -170,6 +170,9 @@ namespace CommonSharedConstants
     const wchar_t LIGHT_SWITCH_LIGHT_THEME_EVENT[] = L"Local\\PowerToysLightSwitch-LightThemeEvent-50077121-2ffc-4841-9c86-ab1bd3f9baca";
     const wchar_t LIGHT_SWITCH_DARK_THEME_EVENT[] = L"Local\\PowerToysLightSwitch-DarkThemeEvent-b3a835c0-eaa2-49b0-b8eb-f793e3df3368";
 
+    // Path to events used by Keyboard Manager
+    const wchar_t OPEN_NEW_KEYBOARD_MANAGER_EVENT[] = L"Local\\PowerToysOpenNewKeyboardManagerEvent-9c1d2e3f-4b5a-6c7d-8e9f-0a1b2c3d4e5f";
+
     // used from quick access window
     const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";
     const wchar_t CMDPAL_EXIT_EVENT[] = L"Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd";

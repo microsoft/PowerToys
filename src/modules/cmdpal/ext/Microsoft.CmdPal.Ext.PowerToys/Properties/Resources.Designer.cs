@@ -862,6 +862,24 @@ namespace PowerToysExtension.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Keyboard Manager: Open Editor.
+        /// </summary>
+        internal static string KeyboardManager_OpenNewEditor_Title {
+            get {
+                return ResourceManager.GetString("KeyboardManager_OpenNewEditor_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open the Keyboard Manager remap editor.
+        /// </summary>
+        internal static string KeyboardManager_OpenNewEditor_Subtitle {
+            get {
+                return ResourceManager.GetString("KeyboardManager_OpenNewEditor_Subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open Light Switch settings.
         /// </summary>
         internal static string LightSwitch_Settings_Subtitle {
