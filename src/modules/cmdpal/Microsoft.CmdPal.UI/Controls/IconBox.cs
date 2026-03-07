@@ -18,7 +18,7 @@ public partial class IconBox : ContentControl
 {
     private const double DefaultIconFontSize = 16.0;
 
-    private double _lastScale = 1.0;
+    private double _lastScale;
     private ElementTheme _lastTheme;
     private double _lastFontSize;
 
@@ -262,7 +262,11 @@ public partial class IconBox : ContentControl
                 return;
             }
 
-            var eventArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, iconBox._lastScale);
+            var scale = iconBox._lastScale > 0
+                ? iconBox._lastScale
+                : (iconBox.XamlRoot?.RasterizationScale > 0 ? iconBox.XamlRoot.RasterizationScale : 1.0);
+
+            var eventArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, scale);
             await iconBoxSourceRequestedHandler.InvokeAsync(iconBox, eventArgs);
 
             // After the await:
