@@ -60,10 +60,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:DockItemControl">
-                        <Grid
-                            x:Name="PART_HitTestGrid"
-                            Background="Transparent"
-                            ToolTipService.ToolTip="{TemplateBinding ToolTip}">
+                        <Grid x:Name="PART_HitTestGrid" Background="Transparent">
                             <Grid
                                 x:Name="PART_RootGrid"
                                 MinWidth="32"
@@ -113,7 +110,7 @@
                                         <TextBlock
                                             x:Name="SubtitleText"
                                             MaxWidth="100"
-                                            Margin="0,-4,0,0"
+                                            Margin="0,-2,0,0"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"
                                             FontFamily="Segoe UI"

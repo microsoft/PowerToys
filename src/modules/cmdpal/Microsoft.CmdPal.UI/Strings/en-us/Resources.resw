@@ -428,7 +428,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Description" xml:space="preserve">
     <value>Disable animations when switching between pages</value>
   </data>
-    <data name="Settings_GeneralPage_EnableDock_SettingsCard.Header" xml:space="preserve">
+  <data name="Settings_GeneralPage_EnableDock_SettingsCard.Header" xml:space="preserve">
     <value>Enable Dock</value>
   </data>
   <data name="Settings_GeneralPage_EnableDock_SettingsCard.Description" xml:space="preserve">
@@ -757,23 +757,17 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_VersionNo" xml:space="preserve">
     <value>Version {0}</value>
   </data>
-  <data name="Settings_NavigationViewItem_DockAppearance.Content" xml:space="preserve">
-    <value>Dock Appearance</value>
-  </data>
-  <data name="Settings_PageTitles_DockAppearancePage" xml:space="preserve">
-    <value>Dock Appearance</value>
-  </data>
   <data name="DockAppearance_AppTheme_SettingsCard.Header" xml:space="preserve">
-    <value>Dock theme mode</value>
+    <value>Theme mode</value>
   </data>
   <data name="DockAppearance_AppTheme_SettingsCard.Description" xml:space="preserve">
-    <value>Select which theme to display for the dock</value>
+    <value>Select which theme to display</value>
   </data>
   <data name="DockAppearance_Backdrop_SettingsCard.Header" xml:space="preserve">
     <value>Material</value>
   </data>
   <data name="DockAppearance_Backdrop_SettingsCard.Description" xml:space="preserve">
-    <value>Select the visual material used for the dock</value>
+    <value>Select the visual material</value>
   </data>
   <data name="DockAppearance_Backdrop_Mica.Content" xml:space="preserve">
     <value>Mica</value>
@@ -882,17 +876,17 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>K</value>
     <comment>Keyboard key</comment>
   </data>
-    <data name="ConfigureShortcut" xml:space="preserve">
+  <data name="ConfigureShortcut" xml:space="preserve">
     <value>Configure shortcut</value>
   </data>
   <data name="ConfigureShortcutText.Text" xml:space="preserve">
     <value>Assign shortcut</value>
   </data>
   <data name="DockAppearance_DockPosition_SettingsCard.Header" xml:space="preserve">
-    <value>Dock position</value>
+    <value>Position</value>
   </data>
   <data name="DockAppearance_DockPosition_SettingsExpander.Description" xml:space="preserve">
-    <value>Choose where the dock appears on your screen</value>
+    <value>Choose where the Dock appears on your screen</value>
   </data>
   <data name="DockAppearance_DockPosition_Left.Content" xml:space="preserve">
     <value>Left</value>
@@ -906,12 +900,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="DockAppearance_DockPosition_Bottom.Content" xml:space="preserve">
     <value>Bottom</value>
   </data>
-  <data name="DockAppearance_ShowLabels_CheckBox.Header" xml:space="preserve">
-    <value>Show labels</value>
-  </data>
-  <data name="DockAppearance_ShowLabels_CheckBox.Description" xml:space="preserve">
-    <value>Show labels for dock items by default</value>
-  </data>
   <data name="top_level_pin_command_name" xml:space="preserve">
     <value>Pin to home</value>
     <comment>Command name for pinning an item to the top level list of commands</comment>
@@ -921,11 +909,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Command name for unpinning an item from the top level list of commands</comment>
   </data>
   <data name="dock_pin_command_name" xml:space="preserve">
-    <value>Pin to dock</value>
+    <value>Pin to Dock</value>
     <comment>Command name for pinning an item to the dock</comment>
   </data>
   <data name="dock_unpin_command_name" xml:space="preserve">
-    <value>Unpin from dock</value>
+    <value>Unpin from Dock</value>
     <comment>Command name for unpinning an item from the dock</comment>
   </data>
   <data name="FiltersDropDown.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -948,5 +936,41 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="FiltersDropDown_NoResults.Text" xml:space="preserve">
     <value>No results</value>
+  </data>
+  <data name="Dock_EditMode_Labels.Text" xml:space="preserve">
+    <value>Labels</value>
+  </data>
+  <data name="Dock_EditMode_ShowTitles.Text" xml:space="preserve">
+    <value>Show titles</value>
+  </data>
+  <data name="Dock_EditMode_ShowSubtitles.Text" xml:space="preserve">
+    <value>Show subtitles</value>
+  </data>
+  <data name="Dock_EditMode_Unpin.Text" xml:space="preserve">
+    <value>Unpin</value>
+  </data>
+  <data name="Dock_AddBand_NoCommandsAvailable.Text" xml:space="preserve">
+    <value>No commands available to pin</value>
+  </data>
+  <data name="Dock_AddBand_StartTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Add band to start</value>
+  </data>
+  <data name="Dock_AddBand_CenterTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Add band to center</value>
+  </data>
+  <data name="Dock_AddBand_EndTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Add band to end</value>
+  </data>
+  <data name="Dock_EditMode_Save.Content" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Dock_EditMode_Discard.Content" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="CmdPal_LearnMore.Content" xml:space="preserve">
+    <value>Learn more about Command Palette</value>
+  </data>
+  <data name="CmdPalDock_LearnMore.Content" xml:space="preserve">
+    <value>Learn more about Command Palette Dock</value>
   </data>
 </root>

@@ -76,7 +76,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         UpdateEditMode(false);
     }
 
-    private void CenterItems_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    private void CenterItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         UpdateCenterVisibility();
     }
@@ -308,6 +308,12 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void RootGrid_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
     {
+        // Don't show the dock context menu while in edit mode
+        if (IsEditMode)
+        {
+            return;
+        }
+
         var pos = e.GetPosition(null);
         var item = this.ViewModel.GetContextMenuForDock();
         if (item.HasMoreCommands)
@@ -384,16 +390,19 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     private void StartListView_Drop(object sender, DragEventArgs e)
     {
         HandleCrossListDrop(DockPinSide.Start, e);
+        ResetListViewState(sender);
     }
 
     private void CenterListView_Drop(object sender, DragEventArgs e)
     {
         HandleCrossListDrop(DockPinSide.Center, e);
+        ResetListViewState(sender);
     }
 
     private void EndListView_Drop(object sender, DragEventArgs e)
     {
         HandleCrossListDrop(DockPinSide.End, e);
+        ResetListViewState(sender);
     }
 
     private void HandleCrossListDrop(DockPinSide targetSide, DragEventArgs e)
@@ -520,6 +529,29 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
             // Close the flyout
             AddBandFlyout.Hide();
+        }
+    }
+
+    private void BandListView_DragEnter(object sender, DragEventArgs e)
+    {
+        if (sender is ListView view)
+        {
+            view.Background = Application.Current.Resources["ControlAltFillColorQuarternaryBrush"] as SolidColorBrush;
+            e.DragUIOverride.IsGlyphVisible = false;
+            e.DragUIOverride.IsCaptionVisible = false;
+        }
+    }
+
+    private void BandListView_DragLeave(object sender, DragEventArgs e)
+    {
+        ResetListViewState(sender);
+    }
+
+    private void ResetListViewState(object sender)
+    {
+        if (sender is ListView listView)
+        {
+            listView.Background = new SolidColorBrush(Colors.Transparent);
         }
     }
 }
