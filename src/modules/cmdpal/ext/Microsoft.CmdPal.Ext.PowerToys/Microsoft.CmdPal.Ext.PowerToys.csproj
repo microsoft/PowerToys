@@ -81,6 +81,20 @@
 		</EmbeddedResource>
 	</ItemGroup>
 
+	<ItemGroup>
+		<None Remove="Assets\KeyboardManager\KeyboardManagerListeningOn.svg" />
+		<None Remove="Assets\KeyboardManager\KeyboardManagerListeningOff.svg" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Update="Assets\KeyboardManager\KeyboardManagerListeningOn.svg">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Update="Assets\KeyboardManager\KeyboardManagerListeningOff.svg">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
 	<PropertyGroup>
 		<!-- Always build/publish AOT so the extension ships as native code -->
 		<SelfContained>true</SelfContained>

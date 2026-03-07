@@ -18,7 +18,8 @@ internal sealed partial class PowerToysListPage : ListPage
         Icon = PowerToysResourcesHelper.ProviderIcon();
         Name = Title = Resources.PowerToys_DisplayName;
         Id = "com.microsoft.cmdpal.powertoys";
-        SettingsChangeNotifier.SettingsChanged += OnSettingsChanged;
+        SettingsChangeNotifier.SettingsChanged += OnItemsChanged;
+        KeyboardManagerStateService.StatusChanged += OnItemsChanged;
         _empty = new CommandItem()
         {
             Icon = PowerToysResourcesHelper.ProviderIcon(),
@@ -28,7 +29,7 @@ internal sealed partial class PowerToysListPage : ListPage
         EmptyContent = _empty;
     }
 
-    private void OnSettingsChanged()
+    private void OnItemsChanged()
     {
         RaiseItemsChanged(0);
     }

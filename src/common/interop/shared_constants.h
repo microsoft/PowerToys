@@ -172,6 +172,8 @@ namespace CommonSharedConstants
 
     // Path to events used by Keyboard Manager
     const wchar_t OPEN_NEW_KEYBOARD_MANAGER_EVENT[] = L"Local\\PowerToysOpenNewKeyboardManagerEvent-9c1d2e3f-4b5a-6c7d-8e9f-0a1b2c3d4e5f";
+    const wchar_t TOGGLE_KEYBOARD_MANAGER_ACTIVE_EVENT[] = L"Local\\PowerToysToggleKeyboardManagerActiveEvent-7f3a1d5c-2e94-4ff4-8b6a-90fd2bc4d2a7";
+    const wchar_t KEYBOARD_MANAGER_ENGINE_INSTANCE_MUTEX[] = L"Local\\PowerToys_KBMEngine_InstanceMutex";
 
     // used from quick access window
     const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";
@@ -184,3 +186,4 @@ namespace CommonSharedConstants
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
 }
+

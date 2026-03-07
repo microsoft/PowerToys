@@ -25,6 +25,9 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
                 Subtitle = Resources.PowerToys_Subtitle,
             },
         ];
+
+        SettingsChangeNotifier.SettingsChanged += RaiseModuleItemsChanged;
+        KeyboardManagerStateService.StatusChanged += RaiseModuleItemsChanged;
     }
 
     public override ICommandItem[] TopLevelCommands()
@@ -62,5 +65,10 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
         }
 
         return null;
+    }
+
+    private void RaiseModuleItemsChanged()
+    {
+        RaiseItemsChanged();
     }
 }
