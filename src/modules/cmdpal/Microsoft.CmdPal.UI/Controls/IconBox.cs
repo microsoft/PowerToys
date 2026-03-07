@@ -18,7 +18,7 @@ public partial class IconBox : ContentControl
 {
     private const double DefaultIconFontSize = 16.0;
 
-    private double _lastScale;
+    private double _lastScale = 1.0;
     private ElementTheme _lastTheme;
     private double _lastFontSize;
 
@@ -135,6 +135,8 @@ public partial class IconBox : ContentControl
             _lastScale = XamlRoot.RasterizationScale;
             XamlRoot.Changed += OnXamlRootChanged;
         }
+
+        Refresh();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -149,10 +151,13 @@ public partial class IconBox : ContentControl
     {
         var newScale = sender.RasterizationScale;
         var changedLastTheme = _lastTheme != ActualTheme;
+        var changedScale = Math.Abs(newScale - _lastScale) > 0.01;
+
+        _lastScale = newScale;
         _lastTheme = ActualTheme;
-        if ((changedLastTheme || Math.Abs(newScale - _lastScale) > 0.01) && SourceKey is not null)
+
+        if ((changedLastTheme || changedScale) && SourceKey is not null)
         {
-            _lastScale = newScale;
             UpdateSourceKey(this, SourceKey);
         }
     }
