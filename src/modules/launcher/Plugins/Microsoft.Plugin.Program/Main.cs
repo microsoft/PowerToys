@@ -15,6 +15,7 @@ using Microsoft.Plugin.Program.Storage;
 using Wox.Infrastructure.Storage;
 using Wox.Plugin;
 using Wox.Plugin.Common;
+using Wox.Plugin.Logger;
 
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
@@ -181,6 +182,11 @@ namespace Microsoft.Plugin.Program
                 ArgumentNullException.ThrowIfNull(runProcess);
 
                 ArgumentNullException.ThrowIfNull(info);
+
+                if (Settings.EnableRunAuditLogging)
+                {
+                    Log.Info($"Program executed: {info.FileName}", typeof(Main));
+                }
 
                 runProcess(info);
             }

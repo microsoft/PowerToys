@@ -152,6 +152,11 @@ namespace Microsoft.Plugin.Program.Programs
                                 var info = ShellCommand.SetProcessStartInfo(command, verb: "runas");
                                 info.UseShellExecute = true;
                                 info.Arguments = queryArguments;
+                                if (Main.Settings.EnableRunAuditLogging)
+                                {
+                                    Log.Info($"Program executed as admin: {DisplayName} ({UniqueIdentifier})", GetType());
+                                }
+
                                 Process.Start(info);
                                 return true;
                             },
@@ -211,6 +216,11 @@ namespace Microsoft.Plugin.Program.Programs
             {
                 try
                 {
+                    if (Main.Settings.EnableRunAuditLogging)
+                    {
+                        Log.Info($"Program executed: {DisplayName} ({UserModelId})", GetType());
+                    }
+
                     appManager.ActivateApplication(UserModelId, queryArguments, noFlags, out var unusedPid);
                 }
                 catch (Exception ex)

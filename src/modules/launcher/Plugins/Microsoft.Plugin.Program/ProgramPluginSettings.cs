@@ -29,6 +29,8 @@ namespace Microsoft.Plugin.Program
 
         public double MinScoreThreshold { get; set; } = 0.75;
 
+        public bool EnableRunAuditLogging { get; set; }
+
         internal const char SuffixSeparator = ';';
     }
 }
