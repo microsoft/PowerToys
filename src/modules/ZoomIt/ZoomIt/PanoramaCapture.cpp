@@ -9349,9 +9349,10 @@ bool RunPanoramaStitchSelfTest()
         if( !stressEarlyExit && stressReplayEnabled )
         {
             const wchar_t* replayScenario = L"stress-replay-capturepath-quality";
-            if( stressScenarioMatches( replayScenario ) )
+            const bool replayScenarioIsFocusMatch = stressScenarioMatches( replayScenario );
+            if( !stressFocusEnabled || replayScenarioIsFocusMatch )
             {
-                if( stressFocusEnabled )
+                if( replayScenarioIsFocusMatch )
                     stressFocusMatched = true;
                 bool replayScenarioPassed = false;
 
@@ -9441,7 +9442,7 @@ bool RunPanoramaStitchSelfTest()
                     }
                 }
 
-                if( stressFocusEnabled )
+                if( replayScenarioIsFocusMatch )
                 {
                     TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
                                  replayScenario,
