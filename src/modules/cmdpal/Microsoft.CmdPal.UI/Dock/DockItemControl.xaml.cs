@@ -143,21 +143,7 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateAlignment()
     {
-        // If this item has both an icon and a label, left align so that the
-        // icons don't wobble if the text changes.
-        //
-        // Otherwise, center align.
-        var showText = HasText;
-        var verticalDock = _parentDock?.DockSide is DockSide.Left or DockSide.Right;
-        if (showText && ShouldShowIcon() && !verticalDock)
-        {
-            HorizontalAlignment = HorizontalAlignment.Left;
-        }
-        else
-        {
-            HorizontalAlignment = HorizontalAlignment.Stretch;
-        }
-
+        HorizontalAlignment = HorizontalAlignment.Stretch;
         UpdateTextAlignmentState();
     }
 
@@ -180,7 +166,7 @@ public sealed partial class DockItemControl : Control
     {
         var verticalDock = _parentDock?.DockSide is DockSide.Left or DockSide.Right;
         var shouldCenterText = verticalDock && !ShouldShowIcon();
-        VisualStateManager.GoToState(this, shouldCenterText ? "TextCentered" : (verticalDock ? "TextStretched" : "TextLeftAligned"), true);
+        VisualStateManager.GoToState(this, shouldCenterText ? "TextCentered" : "TextLeftAligned", true);
     }
 
     private void UpdateAllVisibility()

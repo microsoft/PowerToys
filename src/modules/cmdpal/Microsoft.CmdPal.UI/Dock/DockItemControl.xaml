@@ -95,13 +95,14 @@
                                     <StackPanel
                                         x:Name="TextPanel"
                                         Grid.Column="1"
+                                        HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center"
                                         Visibility="{TemplateBinding TextVisibility}">
                                         <TextBlock
                                             x:Name="TitleText"
                                             MinWidth="24"
                                             MaxWidth="100"
-                                            HorizontalAlignment="Left"
+                                            HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"
                                             FontFamily="Segoe UI"
                                             FontSize="12"
@@ -113,13 +114,13 @@
                                             x:Name="SubtitleText"
                                             MaxWidth="100"
                                             Margin="0,-4,0,0"
-                                            HorizontalAlignment="Left"
+                                            HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"
                                             FontFamily="Segoe UI"
                                             FontSize="10"
                                             Foreground="{ThemeResource TextFillColorTertiary}"
                                             Text="{TemplateBinding Subtitle}"
-                                            TextAlignment="Center"
+                                            TextAlignment="Left"
                                             TextTrimming="CharacterEllipsis"
                                             TextWrapping="NoWrap" />
                                     </StackPanel>
@@ -183,26 +184,14 @@
                                 <VisualStateGroup x:Name="TextAlignmentStates">
                                     <VisualState x:Name="TextLeftAligned">
                                         <VisualState.Setters>
-                                            <Setter Target="TitleText.HorizontalAlignment" Value="Left" />
                                             <Setter Target="TitleText.TextAlignment" Value="Left" />
-                                            <Setter Target="SubtitleText.HorizontalAlignment" Value="Left" />
                                             <Setter Target="SubtitleText.TextAlignment" Value="Left" />
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="TextCentered">
                                         <VisualState.Setters>
-                                            <Setter Target="TitleText.HorizontalAlignment" Value="Center" />
                                             <Setter Target="TitleText.TextAlignment" Value="Center" />
-                                            <Setter Target="SubtitleText.HorizontalAlignment" Value="Center" />
                                             <Setter Target="SubtitleText.TextAlignment" Value="Center" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="TextStretched">
-                                        <VisualState.Setters>
-                                            <Setter Target="TitleText.HorizontalAlignment" Value="Stretch" />
-                                            <Setter Target="TitleText.TextAlignment" Value="Left" />
-                                            <Setter Target="SubtitleText.HorizontalAlignment" Value="Stretch" />
-                                            <Setter Target="SubtitleText.TextAlignment" Value="Left" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>
