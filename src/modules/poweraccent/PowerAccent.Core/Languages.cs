@@ -224,7 +224,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_X => new[] { "ẋ", "×" },
                 LetterKey.VK_Y => new[] { "ẏ", "ꝡ" },
                 LetterKey.VK_Z => new[] { "ʒ", "ǯ", "ℤ" },
-                LetterKey.VK_COMMA => new[] { "∙", "₋", "⁻", "–", "√", "‟", "《", "》", "‛", "〈", "〉", "″", "‴", "⁗" }, // – is in VK_MINUS for other languages, but not VK_COMMA, so we add it here.
+                LetterKey.VK_COMMA => new[] { "∙", "₋", "⁻", "–", "√", "‟", "《", "》", "‛", "〈", "〉", "″", "‴", "⁗" }, // Keep '–' en-dash available on both comma and minus keys.
                 LetterKey.VK_PERIOD => new[] { "…", "⁝", "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030B", "\u030C" },
                 LetterKey.VK_MINUS => new[] { "~", "‐", "‑", "‒", "–", "—", "―", "⁓", "−", "⸺", "⸻", "∓" },
                 LetterKey.VK_SLASH_ => new[] { "÷", "√" },
