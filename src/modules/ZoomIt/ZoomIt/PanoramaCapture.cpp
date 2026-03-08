@@ -982,6 +982,154 @@ static void LogStitchedBandDiagnostics( const std::vector<BYTE>& stitchedPixels,
     }
 }
 
+static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPixels,
+                                            const std::vector<BYTE>& currentPixels,
+                                            int frameWidth,
+                                            int frameHeight,
+                                            int expectedDx,
+                                            int expectedDy,
+                                            int& bestDx,
+                                            int& bestDy,
+                                            bool lowContrastMode,
+                                            const std::vector<BYTE>& precomputedPrevLuma,
+                                            const std::vector<BYTE>& precomputedCurrLuma,
+                                            int precomputedVeryLowEntropy,
+                                            bool* outNearStationaryOverride,
+                                            bool allowHighConstStationaryRelax,
+                                            unsigned __int64* outMaskedStationaryScore,
+                                            bool forceExhaustiveProbeBudget,
+                                            bool forceExhaustiveFineDx );
+
+static void LogGapBridgeProbeDiagnostics( size_t frameIndex,
+                                          size_t lastAcceptedIndex,
+                                          int gap,
+                                          int acceptedDx,
+                                          int acceptedDy,
+                                          int expectedDx,
+                                          int expectedDy,
+                                          int frameWidth,
+                                          int frameHeight,
+                                          bool lowContrastMode,
+                                          const std::vector<std::vector<BYTE>>& framePixels,
+                                          const std::vector<std::vector<BYTE>>& frameLuma,
+                                          const std::vector<double>& frameConstantFraction,
+                                          const std::vector<POINT>& composedFrameSteps )
+{
+    if( gap <= 1 || frameIndex == 0 || lastAcceptedIndex >= frameIndex )
+    {
+        return;
+    }
+
+    int histAbsX = 0;
+    int histAbsY = 0;
+    for( size_t si = 1; si < composedFrameSteps.size(); ++si )
+    {
+        histAbsX += abs( composedFrameSteps[si].x );
+        histAbsY += abs( composedFrameSteps[si].y );
+    }
+
+    const bool mostlyVerticalHist = histAbsY > histAbsX * 3;
+    const bool mostlyHorizontalHist = histAbsX > histAbsY * 3;
+    std::vector<int> recentAxisAbs;
+    recentAxisAbs.reserve( 8 );
+    for( int si = static_cast<int>( composedFrameSteps.size() ) - 1;
+         si >= 1 && static_cast<int>( recentAxisAbs.size() ) < 8;
+         --si )
+    {
+        const int axisValue = mostlyVerticalHist
+            ? abs( composedFrameSteps[static_cast<size_t>( si )].y )
+            : ( mostlyHorizontalHist
+                ? abs( composedFrameSteps[static_cast<size_t>( si )].x )
+                : 0 );
+        if( axisValue > 0 )
+        {
+            recentAxisAbs.push_back( axisValue );
+        }
+    }
+
+    int recentMedian = 0;
+    if( !recentAxisAbs.empty() )
+    {
+        std::sort( recentAxisAbs.begin(), recentAxisAbs.end() );
+        recentMedian = recentAxisAbs[recentAxisAbs.size() / 2];
+    }
+
+    StitchLog( L"[Panorama/Stitch] GapBridgeProbe begin frame=%zu ref=%zu gap=%d accepted=(%d,%d) expected=(%d,%d) recentMedian=%d mode=%ls\n",
+                 frameIndex,
+                 lastAcceptedIndex,
+                 gap,
+                 acceptedDx,
+                 acceptedDy,
+                 expectedDx,
+                 expectedDy,
+                 recentMedian,
+                 mostlyVerticalHist ? L"vertical" : ( mostlyHorizontalHist ? L"horizontal" : L"neutral" ) );
+
+    int bridgeProbeDx = 0;
+    int bridgeProbeDy = 0;
+    bool bridgeProbeNearStationary = false;
+    const int bridgeVle = ( frameConstantFraction[lastAcceptedIndex] > 0.58 &&
+                            frameConstantFraction[frameIndex] > 0.58 ) ? 1 : 0;
+    const bool bridgeProbeOk = FindBestFrameShiftVerticalOnly( framePixels[lastAcceptedIndex],
+                                                               framePixels[frameIndex],
+                                                               frameWidth,
+                                                               frameHeight,
+                                                               expectedDx * gap,
+                                                               expectedDy * gap,
+                                                               bridgeProbeDx,
+                                                               bridgeProbeDy,
+                                                               lowContrastMode,
+                                                               frameLuma[lastAcceptedIndex],
+                                                               frameLuma[frameIndex],
+                                                               bridgeVle,
+                                                               &bridgeProbeNearStationary,
+                                                               false,
+                                                               nullptr,
+                                                               true,
+                                                               true );
+    StitchLog( L"[Panorama/Stitch] GapBridgeProbe bridge-pair frame=%zu ref=%zu ok=%d probe=(%d,%d) expectedTotal=(%d,%d) nearStationary=%d\n",
+                 frameIndex,
+                 lastAcceptedIndex,
+                 bridgeProbeOk ? 1 : 0,
+                 bridgeProbeDx,
+                 bridgeProbeDy,
+                 expectedDx * gap,
+                 expectedDy * gap,
+                 bridgeProbeNearStationary ? 1 : 0 );
+
+    int adjacentProbeDx = 0;
+    int adjacentProbeDy = 0;
+    bool adjacentProbeNearStationary = false;
+    const int adjacentVle = ( frameConstantFraction[frameIndex - 1] > 0.58 &&
+                              frameConstantFraction[frameIndex] > 0.58 ) ? 1 : 0;
+    const bool adjacentProbeOk = FindBestFrameShiftVerticalOnly( framePixels[frameIndex - 1],
+                                                                 framePixels[frameIndex],
+                                                                 frameWidth,
+                                                                 frameHeight,
+                                                                 expectedDx,
+                                                                 expectedDy,
+                                                                 adjacentProbeDx,
+                                                                 adjacentProbeDy,
+                                                                 lowContrastMode,
+                                                                 frameLuma[frameIndex - 1],
+                                                                 frameLuma[frameIndex],
+                                                                 adjacentVle,
+                                                                 &adjacentProbeNearStationary,
+                                                                 false,
+                                                                 nullptr,
+                                                                 true,
+                                                                 true );
+    StitchLog( L"[Panorama/Stitch] GapBridgeProbe adjacent-pair frame=%zu prev=%zu ok=%d probe=(%d,%d) expectedSingle=(%d,%d) nearStationary=%d\n",
+                 frameIndex,
+                 frameIndex - 1,
+                 adjacentProbeOk ? 1 : 0,
+                 adjacentProbeDx,
+                 adjacentProbeDy,
+                 expectedDx,
+                 expectedDy,
+                 adjacentProbeNearStationary ? 1 : 0 );
+}
+
 //----------------------------------------------------------------------------
 //
 // Performance profiling for FindBestFrameShiftVerticalOnly
@@ -5638,6 +5786,26 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                     continue;
                 }
             }
+        }
+
+        const size_t lastAcceptedIndex = composedFrameIndices.back();
+        const int acceptedGap = static_cast<int>( i - lastAcceptedIndex );
+        if( acceptedGap > 1 )
+        {
+            LogGapBridgeProbeDiagnostics( i,
+                                          lastAcceptedIndex,
+                                          acceptedGap,
+                                          dx,
+                                          dy,
+                                          expectedDx,
+                                          expectedDy,
+                                          frameWidth,
+                                          frameHeight,
+                                          lowContrastMode,
+                                          framePixels,
+                                          frameLuma,
+                                          frameConstantFraction,
+                                          composedFrameSteps );
         }
         duplicateRetryStreak = 0;
         consecutiveNonDupRejectCount = 0;
