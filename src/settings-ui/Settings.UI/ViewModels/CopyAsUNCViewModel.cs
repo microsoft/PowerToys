@@ -61,7 +61,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void InitializeEnabledValue()
         {
             // TODO: Replace with GPOWrapper.GetConfiguredCopyAsUNCEnabledValue() once GPO entry is added
-            _enabledGpoRuleConfiguration = GpoRuleConfigured.Unavailable;
             _enabledStateIsGPOConfigured = false;
             _isCopyAsUNCEnabled = GeneralSettingsConfig.Enabled.CopyAsUNC;
         }
@@ -123,7 +122,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private bool _isCopyAsUNCEnabled;
         private bool _copyAsUNCEnabledOnContextExtendedMenu;
