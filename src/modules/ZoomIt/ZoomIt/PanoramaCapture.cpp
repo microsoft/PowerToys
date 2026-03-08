@@ -1418,6 +1418,209 @@ static void LogStitchedBandDiagnostics( const std::vector<BYTE>& stitchedPixels,
     }
 }
 
+// Post-composition content-duplication diagnostic.
+// For each composed frame, compute how many of its "unique" (non-overlap)
+// rows are pixel-identical to rows elsewhere on the canvas.  This reveals
+// whether the matcher placed frames redundantly or the source content is
+// genuinely repetitive.
+static void LogContentDuplicationDiagnostics( const std::vector<BYTE>& stitchedPixels,
+                                              const std::vector<int>& stitchedOwner,
+                                              int stitchedWidth,
+                                              int stitchedHeight,
+                                              const std::vector<size_t>& composedFrameIndices,
+                                              const std::vector<POINT>& composedFrameOrigins,
+                                              const std::vector<POINT>& composedFrameSteps,
+                                              int frameWidth,
+                                              int frameHeight,
+                                              int minX,
+                                              int minY )
+{
+    if( !PanoramaDebugEnabled() || stitchedWidth <= 0 || stitchedHeight <= 0 ||
+        stitchedPixels.size() != static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ) * 4 ||
+        composedFrameIndices.size() < 2 ||
+        composedFrameOrigins.size() != composedFrameIndices.size() ||
+        composedFrameSteps.size() != composedFrameIndices.size() )
+    {
+        return;
+    }
+
+    // Helper: compute average per-pixel RGB difference between two canvas rows.
+    auto rowDifference = [&]( int yA, int yB ) -> double
+    {
+        if( yA < 0 || yA >= stitchedHeight || yB < 0 || yB >= stitchedHeight )
+            return 999.0;
+        const size_t baseA = static_cast<size_t>( yA ) * static_cast<size_t>( stitchedWidth ) * 4;
+        const size_t baseB = static_cast<size_t>( yB ) * static_cast<size_t>( stitchedWidth ) * 4;
+        long long sum = 0;
+        // Sample every 4th pixel for speed.
+        int count = 0;
+        for( int x = 0; x < stitchedWidth; x += 4 )
+        {
+            const size_t offA = baseA + static_cast<size_t>( x ) * 4;
+            const size_t offB = baseB + static_cast<size_t>( x ) * 4;
+            sum += abs( static_cast<int>( stitchedPixels[offA + 0] ) - static_cast<int>( stitchedPixels[offB + 0] ) )
+                 + abs( static_cast<int>( stitchedPixels[offA + 1] ) - static_cast<int>( stitchedPixels[offB + 1] ) )
+                 + abs( static_cast<int>( stitchedPixels[offA + 2] ) - static_cast<int>( stitchedPixels[offB + 2] ) );
+            ++count;
+        }
+        return count > 0 ? static_cast<double>( sum ) / ( count * 3.0 ) : 999.0;
+    };
+
+    // Helper: compute the dominant owner frame for a canvas row.
+    auto rowDominantOwner = [&]( int y ) -> int
+    {
+        if( y < 0 || y >= stitchedHeight )
+            return -1;
+        const size_t rowBase = static_cast<size_t>( y ) * static_cast<size_t>( stitchedWidth );
+        // Count the first owner seen (they're usually uniform for full-width frames).
+        return stitchedOwner[rowBase + static_cast<size_t>( stitchedWidth / 2 )];
+    };
+
+    // Helper: average luma of a canvas row.
+    auto rowAverageLuma = [&]( int y ) -> int
+    {
+        if( y < 0 || y >= stitchedHeight )
+            return -1;
+        const size_t base = static_cast<size_t>( y ) * static_cast<size_t>( stitchedWidth ) * 4;
+        unsigned long long totalLuma = 0;
+        for( int x = 0; x < stitchedWidth; x += 4 )
+        {
+            const size_t off = base + static_cast<size_t>( x ) * 4;
+            totalLuma += ( static_cast<unsigned long long>( stitchedPixels[off + 2] ) * 77 +
+                           static_cast<unsigned long long>( stitchedPixels[off + 1] ) * 150 +
+                           static_cast<unsigned long long>( stitchedPixels[off + 0] ) * 29 ) >> 8;
+        }
+        const int sampleCount = ( stitchedWidth + 3 ) / 4;
+        return static_cast<int>( totalLuma / max( 1, sampleCount ) );
+    };
+
+    StitchLog( L"[Panorama/Stitch] Content duplication diagnostics begin\n" );
+
+    // Only inspect the last ~40% of composed transitions where artifacts cluster.
+    const size_t startTransition = composedFrameIndices.size() / 2;
+
+    int totalDuplicateTransitions = 0;
+    for( size_t i = startTransition; i < composedFrameIndices.size(); ++i )
+    {
+        const int stepY = composedFrameSteps[i].y;
+        const int absStepY = abs( stepY );
+        const int destY = composedFrameOrigins[i].y - minY;
+
+        // Determine the "new content" region: rows that should be unique.
+        // For downward scrolling (stepY > 0 i.e. step on canvas is positive),
+        // the new content is the bottom portion: rows [destY + overlapHeight, destY + frameHeight).
+        // For upward, the new content is the top portion.
+        const int overlapHeight = max( 0, frameHeight - absStepY );
+
+        int newContentStart = -1;
+        int newContentEnd = -1;
+        if( stepY > 0 && absStepY > 0 )
+        {
+            // Downward scroll: new content at the bottom of this frame's span.
+            newContentStart = destY + overlapHeight;
+            newContentEnd = destY + frameHeight;
+        }
+        else if( stepY < 0 && absStepY > 0 )
+        {
+            // Upward scroll: new content at the top.
+            newContentStart = destY;
+            newContentEnd = destY + absStepY;
+        }
+        else
+        {
+            continue; // No movement, skip.
+        }
+
+        // Clamp to canvas bounds.
+        newContentStart = max( 0, min( stitchedHeight, newContentStart ) );
+        newContentEnd = max( 0, min( stitchedHeight, newContentEnd ) );
+        const int newContentRows = newContentEnd - newContentStart;
+        if( newContentRows <= 0 )
+            continue;
+
+        // Check each new-content row against the canvas row that is
+        // exactly one step above. If pixel-identical, the frame is
+        // painting redundant content.
+        int identicalToStepAbove = 0;
+        int nearIdenticalToStepAbove = 0;
+        // Also check if it matches row at offset = overlapHeight above (full frame repeat).
+        int identicalToOverlapAbove = 0;
+        // Also scan for best-matching row within a search window above.
+        int identicalToBestMatch = 0;
+        int bestMatchSampleOffset = 0;
+
+        for( int row = newContentStart; row < newContentEnd; ++row )
+        {
+            // Compare to the row absStepY rows above (one "frame step" earlier).
+            const double diffStep = rowDifference( row, row - absStepY );
+            if( diffStep <= 0.5 )
+                ++identicalToStepAbove;
+            else if( diffStep <= 4.0 )
+                ++nearIdenticalToStepAbove;
+
+            // Compare to row overlapHeight above.
+            const double diffOverlap = rowDifference( row, row - overlapHeight );
+            if( diffOverlap <= 0.5 )
+                ++identicalToOverlapAbove;
+        }
+
+        // Sample a few rows for the best-match scan to keep it fast.
+        const int sampleRow = ( newContentStart + newContentEnd ) / 2;
+        double bestSampleDiff = 999.0;
+        for( int offset = 24; offset < min( stitchedHeight, 800 ); ++offset )
+        {
+            if( sampleRow - offset < 0 )
+                break;
+            const double d = rowDifference( sampleRow, sampleRow - offset );
+            if( d < bestSampleDiff )
+            {
+                bestSampleDiff = d;
+                bestMatchSampleOffset = offset;
+            }
+        }
+        if( bestSampleDiff <= 0.5 )
+            ++identicalToBestMatch;
+
+        const int gap = ( i > 0 ) ? static_cast<int>( composedFrameIndices[i] - composedFrameIndices[i - 1] ) : 0;
+        const bool significantDuplication =
+            identicalToStepAbove > newContentRows / 3 ||
+            identicalToOverlapAbove > newContentRows / 3 ||
+            nearIdenticalToStepAbove > newContentRows * 2 / 3;
+
+        if( significantDuplication )
+            ++totalDuplicateTransitions;
+
+        // Log every transition in the tail region regardless of whether it's duplicate,
+        // so we can see the pattern. But use a compact format.
+        StitchLog( L"[Panorama/Stitch] FrameDup trans=%zu frame=%zu gap=%d step=(%d,%d) dest=%d newRows=%d..%d(%d) "
+                   L"identStep=%d nearStep=%d identOverlap=%d bestMatchOff=%d bestMatchDiff=%.1f "
+                   L"ownerAtNew=%d ownerAbove=%d lumaNew=%d lumaAbove=%d%ls\n",
+                   i,
+                   composedFrameIndices[i],
+                   gap,
+                   composedFrameSteps[i].x,
+                   composedFrameSteps[i].y,
+                   destY,
+                   newContentStart,
+                   newContentEnd,
+                   newContentRows,
+                   identicalToStepAbove,
+                   nearIdenticalToStepAbove,
+                   identicalToOverlapAbove,
+                   bestMatchSampleOffset,
+                   bestSampleDiff,
+                   rowDominantOwner( ( newContentStart + newContentEnd ) / 2 ),
+                   rowDominantOwner( ( newContentStart + newContentEnd ) / 2 - absStepY ),
+                   rowAverageLuma( ( newContentStart + newContentEnd ) / 2 ),
+                   rowAverageLuma( ( newContentStart + newContentEnd ) / 2 - absStepY ),
+                   significantDuplication ? L" [DUPLICATE]" : L"" );
+    }
+
+    StitchLog( L"[Panorama/Stitch] Content duplication diagnostics end duplicateTransitions=%d/%zu\n",
+               totalDuplicateTransitions,
+               composedFrameIndices.size() - startTransition );
+}
+
 static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPixels,
                                             const std::vector<BYTE>& currentPixels,
                                             int frameWidth,
@@ -7249,6 +7452,17 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                                 composedFrameIndices,
                                 composedFrameOrigins,
                                 minY );
+    LogContentDuplicationDiagnostics( stitchedPixels,
+                                      stitchedOwner,
+                                      stitchedWidth,
+                                      stitchedHeight,
+                                      composedFrameIndices,
+                                      composedFrameOrigins,
+                                      composedFrameSteps,
+                                      frameWidth,
+                                      frameHeight,
+                                      minX,
+                                      minY );
 
     HBITMAP stitchedBitmap = CreateBitmapFromPixels32( stitchedPixels, stitchedWidth, stitchedHeight );
     if( stitchedBitmap == nullptr )
