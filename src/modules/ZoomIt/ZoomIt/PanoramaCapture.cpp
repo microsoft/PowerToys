@@ -452,6 +452,536 @@ static void StitchLog( const wchar_t* format, ... )
     }
 }
 
+// Emit a compact transition trace for composed frames so capture repros can
+// pinpoint skipped-content jumps and zero-overlap seams without changing
+// stitch behavior.
+static void LogComposedFrameDiagnostics( const std::vector<size_t>& composedFrameIndices,
+                                         const std::vector<POINT>& composedFrameOrigins,
+                                         const std::vector<POINT>& composedFrameSteps,
+                                         int frameWidth,
+                                         int frameHeight )
+{
+    if( !PanoramaDebugEnabled() || composedFrameIndices.size() < 2 ||
+        composedFrameOrigins.size() != composedFrameIndices.size() ||
+        composedFrameSteps.size() != composedFrameIndices.size() )
+    {
+        return;
+    }
+
+    StitchLog( L"[Panorama/Stitch] Composed transition diagnostics begin count=%zu\n",
+               composedFrameIndices.size() );
+
+    std::vector<int> recentAxisSteps;
+    recentAxisSteps.reserve( 8 );
+    for( size_t i = 1; i < composedFrameIndices.size(); ++i )
+    {
+        const POINT& step = composedFrameSteps[i];
+        const POINT& origin = composedFrameOrigins[i];
+        const int gap = static_cast<int>( composedFrameIndices[i] - composedFrameIndices[i - 1] );
+        const bool mostlyVertical = abs( step.y ) >= abs( step.x );
+        const int axisFrame = mostlyVertical ? frameHeight : frameWidth;
+        const int axisStep = max( abs( step.x ), abs( step.y ) );
+        const int axisOverlap = axisFrame - axisStep;
+
+        int recentMedian = 0;
+        if( !recentAxisSteps.empty() )
+        {
+            std::vector<int> sorted = recentAxisSteps;
+            std::sort( sorted.begin(), sorted.end() );
+            recentMedian = sorted[sorted.size() / 2];
+        }
+
+        const bool suspiciousGapBridge = gap > 1;
+        const bool suspiciousMissingOverlap = axisOverlap <= 0;
+        const bool suspiciousSpike = recentMedian > 0 &&
+                                     axisStep >= max( axisFrame / 6, recentMedian * 3 ) &&
+                                     axisOverlap < axisFrame * 3 / 4;
+
+        StitchLog( L"[Panorama/Stitch] Transition %zu: frames %zu->%zu gap=%d step=(%d,%d) axis=%ls axisStep=%d overlap=%d origin=(%d,%d)%ls%ls%ls recentMedian=%d\n",
+                   i,
+                   composedFrameIndices[i - 1],
+                   composedFrameIndices[i],
+                   gap,
+                   step.x,
+                   step.y,
+                   mostlyVertical ? L"vertical" : L"horizontal",
+                   axisStep,
+                   axisOverlap,
+                   origin.x,
+                   origin.y,
+                   suspiciousGapBridge ? L" [gap-bridge]" : L"",
+                   suspiciousMissingOverlap ? L" [no-overlap]" : L"",
+                   suspiciousSpike ? L" [spike]" : L"",
+                   recentMedian );
+
+        recentAxisSteps.push_back( axisStep );
+        if( recentAxisSteps.size() > 8 )
+        {
+            recentAxisSteps.erase( recentAxisSteps.begin() );
+        }
+    }
+
+    StitchLog( L"[Panorama/Stitch] Composed transition diagnostics end\n" );
+}
+
+// Emit row-level ownership diagnostics after composition so seam artifacts can
+// be traced back to specific frames, blended handoffs, or true unwritten gaps.
+static void LogCompositionCoverageDiagnostics( const std::vector<int>& stitchedOwner,
+                                               const std::vector<BYTE>& stitchedWritten,
+                                               const std::vector<BYTE>& stitchedBlended,
+                                               int stitchedWidth,
+                                               int stitchedHeight )
+{
+    if( !PanoramaDebugEnabled() || stitchedWidth <= 0 || stitchedHeight <= 0 ||
+        stitchedOwner.size() != stitchedWritten.size() ||
+        stitchedWritten.size() != stitchedBlended.size() )
+    {
+        return;
+    }
+
+    struct SuspiciousRowInfo
+    {
+        int y;
+        int unwrittenCount;
+        int blendedCount;
+        size_t segmentCount;
+        bool smallSegment;
+        std::wstring summary;
+    };
+
+    const int smallSegmentWidth = max( 4, min( 24, stitchedWidth / 40 ) );
+    std::vector<SuspiciousRowInfo> suspiciousRows;
+    suspiciousRows.reserve( 16 );
+    int rowsWithGaps = 0;
+    int rowsWithBlend = 0;
+
+    for( int y = 0; y < stitchedHeight; ++y )
+    {
+        const size_t rowBase = static_cast<size_t>( y ) * static_cast<size_t>( stitchedWidth );
+        int unwrittenCount = 0;
+        int blendedCount = 0;
+        std::vector<std::pair<int, int>> segments;
+        segments.reserve( 12 );
+
+        auto markerForPixel = [&]( size_t idx )
+        {
+            if( stitchedWritten[idx] == 0 )
+            {
+                return -1;
+            }
+            if( stitchedBlended[idx] != 0 )
+            {
+                return -2;
+            }
+            return stitchedOwner[idx];
+        };
+
+        int currentMarker = markerForPixel( rowBase );
+        int currentLength = 0;
+        for( int x = 0; x < stitchedWidth; ++x )
+        {
+            const size_t idx = rowBase + static_cast<size_t>( x );
+            const int marker = markerForPixel( idx );
+            if( stitchedWritten[idx] == 0 )
+            {
+                ++unwrittenCount;
+            }
+            if( stitchedBlended[idx] != 0 )
+            {
+                ++blendedCount;
+            }
+
+            if( marker != currentMarker )
+            {
+                segments.push_back( { currentMarker, currentLength } );
+                currentMarker = marker;
+                currentLength = 1;
+            }
+            else
+            {
+                ++currentLength;
+            }
+        }
+        segments.push_back( { currentMarker, currentLength } );
+
+        bool smallSegment = false;
+        for( size_t si = 1; si + 1 < segments.size(); ++si )
+        {
+            const int marker = segments[si].first;
+            const int length = segments[si].second;
+            if( marker != -1 && length <= smallSegmentWidth )
+            {
+                smallSegment = true;
+                break;
+            }
+        }
+
+        if( unwrittenCount > 0 )
+        {
+            ++rowsWithGaps;
+        }
+        if( blendedCount > 0 )
+        {
+            ++rowsWithBlend;
+        }
+
+        const bool suspiciousRow = unwrittenCount > 0 || smallSegment ||
+                                   ( blendedCount > max( 8, stitchedWidth / 12 ) && segments.size() >= 4 );
+        if( !suspiciousRow )
+        {
+            continue;
+        }
+
+        std::wstring summary;
+        for( size_t si = 0; si < segments.size() && si < 8; ++si )
+        {
+            if( si > 0 )
+            {
+                summary += L"|";
+            }
+
+            wchar_t segmentText[48]{};
+            const int marker = segments[si].first;
+            const int length = segments[si].second;
+            if( marker == -1 )
+            {
+                swprintf_s( segmentText, L"gap:%d", length );
+            }
+            else if( marker == -2 )
+            {
+                swprintf_s( segmentText, L"blend:%d", length );
+            }
+            else
+            {
+                swprintf_s( segmentText, L"f%d:%d", marker, length );
+            }
+            summary += segmentText;
+        }
+        if( segments.size() > 8 )
+        {
+            summary += L"|...";
+        }
+
+        suspiciousRows.push_back( { y, unwrittenCount, blendedCount, segments.size(), smallSegment, summary } );
+    }
+
+    StitchLog( L"[Panorama/Stitch] Coverage diagnostics rowsWithGaps=%d rowsWithBlend=%d suspiciousRows=%zu\n",
+               rowsWithGaps,
+               rowsWithBlend,
+               suspiciousRows.size() );
+    if( suspiciousRows.empty() )
+    {
+        return;
+    }
+
+    const size_t maxRowsToLog = 40;
+    for( size_t i = 0; i < suspiciousRows.size() && i < maxRowsToLog; ++i )
+    {
+        const auto& row = suspiciousRows[i];
+        StitchLog( L"[Panorama/Stitch] Coverage row y=%d unwritten=%d blended=%d segments=%zu smallSegment=%d summary=%s\n",
+                   row.y,
+                   row.unwrittenCount,
+                   row.blendedCount,
+                   row.segmentCount,
+                   row.smallSegment ? 1 : 0,
+                   row.summary.c_str() );
+    }
+    if( suspiciousRows.size() > maxRowsToLog )
+    {
+        StitchLog( L"[Panorama/Stitch] Coverage diagnostics truncated %zu additional suspicious row(s)\n",
+                   suspiciousRows.size() - maxRowsToLog );
+    }
+}
+
+// Detect visually dark stitched bands even when the canvas has no unwritten
+// gaps so we can correlate full-width artifacts with a specific frame handoff.
+static void LogStitchedBandDiagnostics( const std::vector<BYTE>& stitchedPixels,
+                                        const std::vector<int>& stitchedOwner,
+                                        const std::vector<BYTE>& stitchedWritten,
+                                        const std::vector<BYTE>& stitchedBlended,
+                                        int stitchedWidth,
+                                        int stitchedHeight,
+                                        const std::vector<size_t>& composedFrameIndices,
+                                        const std::vector<POINT>& composedFrameOrigins,
+                                        int minY )
+{
+    if( !PanoramaDebugEnabled() || stitchedWidth <= 0 || stitchedHeight <= 0 ||
+        stitchedPixels.size() != static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ) * 4 ||
+        stitchedOwner.size() != stitchedWritten.size() ||
+        stitchedWritten.size() != stitchedBlended.size() )
+    {
+        return;
+    }
+
+    std::vector<int> rowLuma( stitchedHeight, 0 );
+    std::vector<int> rowBlended( stitchedHeight, 0 );
+    std::vector<int> rowWritten( stitchedHeight, 0 );
+    for( int y = 0; y < stitchedHeight; ++y )
+    {
+        const size_t pixelRowBase = static_cast<size_t>( y ) * static_cast<size_t>( stitchedWidth ) * 4;
+        const size_t maskRowBase = static_cast<size_t>( y ) * static_cast<size_t>( stitchedWidth );
+        unsigned __int64 totalLuma = 0;
+        for( int x = 0; x < stitchedWidth; ++x )
+        {
+            const size_t pixelIdx = pixelRowBase + static_cast<size_t>( x ) * 4;
+            totalLuma += ( static_cast<unsigned __int64>( stitchedPixels[pixelIdx + 2] ) * 77 +
+                           static_cast<unsigned __int64>( stitchedPixels[pixelIdx + 1] ) * 150 +
+                           static_cast<unsigned __int64>( stitchedPixels[pixelIdx + 0] ) * 29 ) >> 8;
+
+            const size_t maskIdx = maskRowBase + static_cast<size_t>( x );
+            if( stitchedWritten[maskIdx] != 0 )
+            {
+                ++rowWritten[y];
+            }
+            if( stitchedBlended[maskIdx] != 0 )
+            {
+                ++rowBlended[y];
+            }
+        }
+        rowLuma[y] = static_cast<int>( totalLuma / max( 1, stitchedWidth ) );
+    }
+
+    struct DarkBandInfo
+    {
+        int startY;
+        int endY;
+        int centerY;
+        int avgLuma;
+        int referenceLuma;
+        int delta;
+    };
+
+    auto buildRowSummary = [&]( int y )
+    {
+        std::wstring summary;
+        if( y < 0 || y >= stitchedHeight )
+        {
+            return summary;
+        }
+
+        const size_t rowBase = static_cast<size_t>( y ) * static_cast<size_t>( stitchedWidth );
+        auto markerForPixel = [&]( size_t idx )
+        {
+            if( stitchedWritten[idx] == 0 )
+            {
+                return -1;
+            }
+            if( stitchedBlended[idx] != 0 )
+            {
+                return -2;
+            }
+            return stitchedOwner[idx];
+        };
+
+        int currentMarker = markerForPixel( rowBase );
+        int currentLength = 0;
+        size_t emittedSegments = 0;
+        for( int x = 0; x < stitchedWidth; ++x )
+        {
+            const int marker = markerForPixel( rowBase + static_cast<size_t>( x ) );
+            if( marker != currentMarker )
+            {
+                if( emittedSegments > 0 )
+                {
+                    summary += L"|";
+                }
+
+                wchar_t segmentText[48]{};
+                if( currentMarker == -1 )
+                {
+                    swprintf_s( segmentText, L"gap:%d", currentLength );
+                }
+                else if( currentMarker == -2 )
+                {
+                    swprintf_s( segmentText, L"blend:%d", currentLength );
+                }
+                else
+                {
+                    swprintf_s( segmentText, L"f%d:%d", currentMarker, currentLength );
+                }
+                summary += segmentText;
+
+                ++emittedSegments;
+                if( emittedSegments >= 8 )
+                {
+                    summary += L"|...";
+                    return summary;
+                }
+
+                currentMarker = marker;
+                currentLength = 1;
+            }
+            else
+            {
+                ++currentLength;
+            }
+        }
+
+        if( emittedSegments > 0 )
+        {
+            summary += L"|";
+        }
+        wchar_t segmentText[48]{};
+        if( currentMarker == -1 )
+        {
+            swprintf_s( segmentText, L"gap:%d", currentLength );
+        }
+        else if( currentMarker == -2 )
+        {
+            swprintf_s( segmentText, L"blend:%d", currentLength );
+        }
+        else
+        {
+            swprintf_s( segmentText, L"f%d:%d", currentMarker, currentLength );
+        }
+        summary += segmentText;
+        return summary;
+    };
+
+    const int referenceRadius = max( 8, min( 24, stitchedHeight / 40 ) );
+    const int minBandThickness = 2;
+    const int maxBandsToLog = 12;
+    std::vector<DarkBandInfo> darkBands;
+    std::vector<BYTE> darkRowMask( stitchedHeight, 0 );
+
+    for( int y = referenceRadius; y < stitchedHeight - referenceRadius; ++y )
+    {
+        if( rowWritten[y] < stitchedWidth * 9 / 10 )
+        {
+            continue;
+        }
+
+        unsigned __int64 neighborhoodTotal = 0;
+        int neighborhoodCount = 0;
+        for( int offset = -referenceRadius; offset <= referenceRadius; ++offset )
+        {
+            if( offset == 0 || abs( offset ) <= 2 )
+            {
+                continue;
+            }
+
+            const int sampleY = y + offset;
+            neighborhoodTotal += static_cast<unsigned __int64>( rowLuma[sampleY] );
+            ++neighborhoodCount;
+        }
+        if( neighborhoodCount <= 0 )
+        {
+            continue;
+        }
+
+        const int referenceLuma = static_cast<int>( neighborhoodTotal / neighborhoodCount );
+        const int delta = referenceLuma - rowLuma[y];
+        const bool isDarkOutlier = referenceLuma >= 24 &&
+                                   delta >= max( 18, referenceLuma / 5 ) &&
+                                   rowBlended[y] >= stitchedWidth / 3;
+        if( isDarkOutlier )
+        {
+            darkRowMask[y] = 1;
+        }
+    }
+
+    for( int y = 0; y < stitchedHeight; )
+    {
+        if( darkRowMask[y] == 0 )
+        {
+            ++y;
+            continue;
+        }
+
+        const int startY = y;
+        int endY = y;
+        while( endY + 1 < stitchedHeight && darkRowMask[endY + 1] != 0 )
+        {
+            ++endY;
+        }
+
+        if( endY - startY + 1 >= minBandThickness )
+        {
+            unsigned __int64 bandLumaTotal = 0;
+            unsigned __int64 refLumaTotal = 0;
+            for( int bandY = startY; bandY <= endY; ++bandY )
+            {
+                bandLumaTotal += static_cast<unsigned __int64>( rowLuma[bandY] );
+
+                unsigned __int64 neighborhoodTotal = 0;
+                int neighborhoodCount = 0;
+                for( int offset = -referenceRadius; offset <= referenceRadius; ++offset )
+                {
+                    if( abs( offset ) <= 2 )
+                    {
+                        continue;
+                    }
+
+                    const int sampleY = bandY + offset;
+                    if( sampleY < 0 || sampleY >= stitchedHeight )
+                    {
+                        continue;
+                    }
+                    neighborhoodTotal += static_cast<unsigned __int64>( rowLuma[sampleY] );
+                    ++neighborhoodCount;
+                }
+                if( neighborhoodCount > 0 )
+                {
+                    refLumaTotal += neighborhoodTotal / neighborhoodCount;
+                }
+            }
+
+            const int rowCount = endY - startY + 1;
+            const int avgLuma = static_cast<int>( bandLumaTotal / rowCount );
+            const int referenceLuma = static_cast<int>( refLumaTotal / rowCount );
+            darkBands.push_back( { startY, endY, ( startY + endY ) / 2, avgLuma, referenceLuma, referenceLuma - avgLuma } );
+        }
+
+        y = endY + 1;
+    }
+
+    StitchLog( L"[Panorama/Stitch] Band diagnostics darkBands=%zu referenceRadius=%d\n",
+               darkBands.size(),
+               referenceRadius );
+    if( darkBands.empty() )
+    {
+        return;
+    }
+
+    for( size_t i = 0; i < darkBands.size() && i < maxBandsToLog; ++i )
+    {
+        const auto& band = darkBands[i];
+        int nearestBoundaryRow = -1;
+        size_t nearestBoundaryFrame = static_cast<size_t>( -1 );
+        int nearestBoundaryDistance = ( std::numeric_limits<int>::max )();
+        for( size_t framePos = 0; framePos < composedFrameIndices.size() && framePos < composedFrameOrigins.size(); ++framePos )
+        {
+            const int boundaryRow = composedFrameOrigins[framePos].y - minY;
+            const int distance = abs( boundaryRow - band.centerY );
+            if( distance < nearestBoundaryDistance )
+            {
+                nearestBoundaryDistance = distance;
+                nearestBoundaryRow = boundaryRow;
+                nearestBoundaryFrame = composedFrameIndices[framePos];
+            }
+        }
+
+        StitchLog( L"[Panorama/Stitch] Dark band y=%d..%d rows=%d avgLuma=%d refLuma=%d delta=%d blendedCenter=%d writtenCenter=%d nearestBoundaryRow=%d nearestBoundaryFrame=%zu boundaryDistance=%d summary=%s\n",
+                   band.startY,
+                   band.endY,
+                   band.endY - band.startY + 1,
+                   band.avgLuma,
+                   band.referenceLuma,
+                   band.delta,
+                   rowBlended[band.centerY],
+                   rowWritten[band.centerY],
+                   nearestBoundaryRow,
+                   nearestBoundaryFrame,
+                   nearestBoundaryDistance,
+                   buildRowSummary( band.centerY ).c_str() );
+    }
+    if( darkBands.size() > maxBandsToLog )
+    {
+        StitchLog( L"[Panorama/Stitch] Band diagnostics truncated %zu additional dark band(s)\n",
+                   darkBands.size() - maxBandsToLog );
+    }
+}
+
 //----------------------------------------------------------------------------
 //
 // Performance profiling for FindBestFrameShiftVerticalOnly
@@ -5687,6 +6217,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
     std::vector<BYTE> stitchedPixels( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ) * 4, 0 );
     std::vector<BYTE> stitchedWritten( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ), 0 );
+    std::vector<int> stitchedOwner( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ), -1 );
+    std::vector<BYTE> stitchedBlended( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ), 0 );
     const int verticalFeather = max( 4, min( 28, frameHeight / 18 ) );
     const int horizontalFeather = max( 4, min( 28, frameWidth / 18 ) );
 
@@ -5719,6 +6251,19 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         const bool mostlyHorizontalMove = i > 0 && absStepX >= minProgress && abs( stepY ) <= max( 12, frameHeight / 20 );
         const int overlapHeight = mostlyVerticalMove ? max( 0, frameHeight - absStepY ) : 0;
         const int overlapWidth = mostlyHorizontalMove ? max( 0, frameWidth - absStepX ) : 0;
+
+        StitchLog( L"[Panorama/Stitch] Compose frame %zu src=%zu dest=(%d,%d) spanY=%d..%d step=(%d,%d) overlap=(%d,%d) mode=%ls\n",
+               i,
+               frameIndex,
+               destinationX,
+               destinationY,
+               destinationY,
+               destinationY + frameHeight,
+               stepX,
+               stepY,
+               overlapWidth,
+               overlapHeight,
+               mostlyVerticalMove ? L"vertical" : ( mostlyHorizontalMove ? L"horizontal" : L"neutral" ) );
 
         // Parallelize row loop: each row y maps to a unique canvasY,
         // so rows write to disjoint canvas memory -- no data races.
@@ -5834,6 +6379,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                     stitchedPixels[dstIndex + 2] = sourcePixels[srcIndex + 2];
                     stitchedPixels[dstIndex + 3] = 0xFF;
                     stitchedWritten[dstMaskIndex] = 1;
+                    stitchedOwner[dstMaskIndex] = static_cast<int>( frameIndex );
+                    stitchedBlended[dstMaskIndex] = 0;
                     continue;
                 }
 
@@ -5848,6 +6395,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                     stitchedPixels[dstIndex + 1] = sourcePixels[srcIndex + 1];
                     stitchedPixels[dstIndex + 2] = sourcePixels[srcIndex + 2];
                     stitchedPixels[dstIndex + 3] = 0xFF;
+                    stitchedOwner[dstMaskIndex] = static_cast<int>( frameIndex );
+                    stitchedBlended[dstMaskIndex] = 0;
                     continue;
                 }
 
@@ -5859,9 +6408,30 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 stitchedPixels[dstIndex + 2] = static_cast<BYTE>( ( static_cast<int>( stitchedPixels[dstIndex + 2] ) * oldWeight +
                                                                     static_cast<int>( sourcePixels[srcIndex + 2] ) * static_cast<int>( weightNew ) ) / 255 );
                 stitchedPixels[dstIndex + 3] = 0xFF;
+                stitchedBlended[dstMaskIndex] = 1;
             }
         } );
     }
+
+    LogComposedFrameDiagnostics( composedFrameIndices,
+                                 composedFrameOrigins,
+                                 composedFrameSteps,
+                                 frameWidth,
+                                 frameHeight );
+    LogCompositionCoverageDiagnostics( stitchedOwner,
+                                      stitchedWritten,
+                                      stitchedBlended,
+                                      stitchedWidth,
+                                      stitchedHeight );
+    LogStitchedBandDiagnostics( stitchedPixels,
+                                stitchedOwner,
+                                stitchedWritten,
+                                stitchedBlended,
+                                stitchedWidth,
+                                stitchedHeight,
+                                composedFrameIndices,
+                                composedFrameOrigins,
+                                minY );
 
     HBITMAP stitchedBitmap = CreateBitmapFromPixels32( stitchedPixels, stitchedWidth, stitchedHeight );
     if( stitchedBitmap == nullptr )
