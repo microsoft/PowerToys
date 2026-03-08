@@ -91,5 +91,26 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             loadingLanguageListDontTriggerSelectionChanged = false;
         }
+
+        private void LanguageSettingsCard_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateLanguageListMaxWidth(sender as Control);
+        }
+
+        private void LanguageSettingsCard_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateLanguageListMaxWidth(sender as Control);
+        }
+
+        private void UpdateLanguageListMaxWidth(Control card)
+        {
+            if (card is null)
+            {
+                return;
+            }
+
+            QuickAccent_Language_Select.MaxWidth =
+                card.ActualWidth - card.Padding.Left - card.Padding.Right;
+        }
     }
 }
