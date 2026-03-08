@@ -693,12 +693,441 @@ static void LogCompositionCoverageDiagnostics( const std::vector<int>& stitchedO
     }
 }
 
+static std::wstring BuildStitchedRowSummary( const std::vector<int>& stitchedOwner,
+                                             const std::vector<BYTE>& stitchedWritten,
+                                             const std::vector<BYTE>& stitchedBlended,
+                                             int stitchedWidth,
+                                             int stitchedHeight,
+                                             int y,
+                                             size_t maxSegments = 8 )
+{
+    std::wstring summary;
+    if( stitchedWidth <= 0 || stitchedHeight <= 0 || y < 0 || y >= stitchedHeight ||
+        stitchedOwner.size() != stitchedWritten.size() ||
+        stitchedWritten.size() != stitchedBlended.size() )
+    {
+        return summary;
+    }
+
+    const size_t rowBase = static_cast<size_t>( y ) * static_cast<size_t>( stitchedWidth );
+    auto markerForPixel = [&]( size_t idx )
+    {
+        if( stitchedWritten[idx] == 0 )
+        {
+            return -1;
+        }
+        if( stitchedBlended[idx] != 0 )
+        {
+            return -2;
+        }
+        return stitchedOwner[idx];
+    };
+
+    int currentMarker = markerForPixel( rowBase );
+    int currentLength = 0;
+    size_t emittedSegments = 0;
+    for( int x = 0; x < stitchedWidth; ++x )
+    {
+        const int marker = markerForPixel( rowBase + static_cast<size_t>( x ) );
+        if( marker != currentMarker )
+        {
+            if( emittedSegments > 0 )
+            {
+                summary += L"|";
+            }
+
+            wchar_t segmentText[48]{};
+            if( currentMarker == -1 )
+            {
+                swprintf_s( segmentText, L"gap:%d", currentLength );
+            }
+            else if( currentMarker == -2 )
+            {
+                swprintf_s( segmentText, L"blend:%d", currentLength );
+            }
+            else
+            {
+                swprintf_s( segmentText, L"f%d:%d", currentMarker, currentLength );
+            }
+            summary += segmentText;
+
+            ++emittedSegments;
+            if( emittedSegments >= maxSegments )
+            {
+                summary += L"|...";
+                return summary;
+            }
+
+            currentMarker = marker;
+            currentLength = 1;
+        }
+        else
+        {
+            ++currentLength;
+        }
+    }
+
+    if( emittedSegments > 0 )
+    {
+        summary += L"|";
+    }
+    wchar_t segmentText[48]{};
+    if( currentMarker == -1 )
+    {
+        swprintf_s( segmentText, L"gap:%d", currentLength );
+    }
+    else if( currentMarker == -2 )
+    {
+        swprintf_s( segmentText, L"blend:%d", currentLength );
+    }
+    else
+    {
+        swprintf_s( segmentText, L"f%d:%d", currentLength == 0 ? -1 : currentMarker, currentLength );
+    }
+    summary += segmentText;
+    return summary;
+}
+
+static void LogSuspiciousTransitionWindowDiagnostics( const std::vector<BYTE>& stitchedPixels,
+                                                      const std::vector<int>& stitchedOwner,
+                                                      const std::vector<BYTE>& stitchedWritten,
+                                                      const std::vector<BYTE>& stitchedBlended,
+                                                      const std::vector<int>& rowBlendPixelCount,
+                                                      const std::vector<int>& rowBlendWeightSum,
+                                                      const std::vector<int>& rowBlendWeightMin,
+                                                      const std::vector<int>& rowBlendWeightMax,
+                                                      const std::vector<int>& rowBlendDominantFrame,
+                                                      const std::vector<int>& rowBlendDominantPixels,
+                                                      const std::vector<int>& rowFullWidthBlendFirstFrame,
+                                                      const std::vector<int>& rowFullWidthBlendFirstPass,
+                                                      const std::vector<int>& rowFullWidthBlendFirstWeight,
+                                                      const std::vector<int>& rowFullWidthBlendLastFrame,
+                                                      const std::vector<int>& rowFullWidthBlendLastPass,
+                                                      const std::vector<int>& rowFullWidthBlendLastWeight,
+                                                      const std::vector<int>& rowFullWidthBlendPassCount,
+                                                      int stitchedWidth,
+                                                      int stitchedHeight,
+                                                      const std::vector<size_t>& composedFrameIndices,
+                                                      const std::vector<POINT>& composedFrameOrigins,
+                                                      const std::vector<POINT>& composedFrameSteps,
+                                                      int frameWidth,
+                                                      int frameHeight,
+                                                      int verticalFeather,
+                                                      int horizontalFeather,
+                                                      int minX,
+                                                      int minY )
+{
+    if( !PanoramaDebugEnabled() || stitchedWidth <= 0 || stitchedHeight <= 0 ||
+        stitchedPixels.size() != static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ) * 4 ||
+        stitchedOwner.size() != stitchedWritten.size() ||
+        stitchedWritten.size() != stitchedBlended.size() ||
+        rowBlendPixelCount.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowBlendWeightSum.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowBlendWeightMin.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowBlendWeightMax.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowBlendDominantFrame.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowBlendDominantPixels.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendFirstFrame.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendFirstPass.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendFirstWeight.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendLastFrame.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendLastPass.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendLastWeight.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendPassCount.size() != static_cast<size_t>( stitchedHeight ) ||
+        composedFrameIndices.size() < 2 ||
+        composedFrameOrigins.size() != composedFrameIndices.size() ||
+        composedFrameSteps.size() != composedFrameIndices.size() )
+    {
+        return;
+    }
+
+    int totalAbsStepX = 0;
+    int totalAbsStepY = 0;
+    for( size_t i = 1; i < composedFrameSteps.size(); ++i )
+    {
+        totalAbsStepX += abs( composedFrameSteps[i].x );
+        totalAbsStepY += abs( composedFrameSteps[i].y );
+    }
+
+    const bool mostlyVerticalCapture = totalAbsStepY >= totalAbsStepX;
+    const int axisFrame = mostlyVerticalCapture ? frameHeight : frameWidth;
+    const int windowRadius = max( 12, min( 48, axisFrame / 10 ) );
+    const int minWrittenForSignal = stitchedWidth * 9 / 10;
+    const int maxPriorityTransitionsToLog = 12;
+    const int maxNonPriorityTransitionsToLog = 10;
+    int loggedTransitions = 0;
+    int loggedPriorityTransitions = 0;
+    int loggedNonPriorityTransitions = 0;
+
+    auto rowAverageLuma = [&]( int y )
+    {
+        if( y < 0 || y >= stitchedHeight )
+        {
+            return -1;
+        }
+
+        const size_t pixelRowBase = static_cast<size_t>( y ) * static_cast<size_t>( stitchedWidth ) * 4;
+        unsigned __int64 totalLuma = 0;
+        for( int x = 0; x < stitchedWidth; ++x )
+        {
+            const size_t pixelIdx = pixelRowBase + static_cast<size_t>( x ) * 4;
+            totalLuma += ( static_cast<unsigned __int64>( stitchedPixels[pixelIdx + 2] ) * 77 +
+                           static_cast<unsigned __int64>( stitchedPixels[pixelIdx + 1] ) * 150 +
+                           static_cast<unsigned __int64>( stitchedPixels[pixelIdx + 0] ) * 29 ) >> 8;
+        }
+        return static_cast<int>( totalLuma / max( 1, stitchedWidth ) );
+    };
+
+    auto rowWrittenCount = [&]( int y )
+    {
+        if( y < 0 || y >= stitchedHeight )
+        {
+            return 0;
+        }
+
+        const size_t rowBase = static_cast<size_t>( y ) * static_cast<size_t>( stitchedWidth );
+        int written = 0;
+        for( int x = 0; x < stitchedWidth; ++x )
+        {
+            written += stitchedWritten[rowBase + static_cast<size_t>( x )] != 0 ? 1 : 0;
+        }
+        return written;
+    };
+
+    auto rowBlendedCount = [&]( int y )
+    {
+        if( y < 0 || y >= stitchedHeight )
+        {
+            return 0;
+        }
+
+        const size_t rowBase = static_cast<size_t>( y ) * static_cast<size_t>( stitchedWidth );
+        int blended = 0;
+        for( int x = 0; x < stitchedWidth; ++x )
+        {
+            blended += stitchedBlended[rowBase + static_cast<size_t>( x )] != 0 ? 1 : 0;
+        }
+        return blended;
+    };
+
+    auto rowBlendAverageWeight = [&]( int y )
+    {
+        if( y < 0 || y >= stitchedHeight || rowBlendPixelCount[y] <= 0 )
+        {
+            return 0;
+        }
+        return rowBlendWeightSum[y] / rowBlendPixelCount[y];
+    };
+
+    StitchLog( L"[Panorama/Stitch] Seam window diagnostics begin axis=%ls radius=%d\n",
+               mostlyVerticalCapture ? L"vertical" : L"horizontal",
+               windowRadius );
+
+    for( size_t i = 1; i < composedFrameIndices.size(); ++i )
+    {
+        const POINT& step = composedFrameSteps[i];
+        const int gap = static_cast<int>( composedFrameIndices[i] - composedFrameIndices[i - 1] );
+        const int axisStep = mostlyVerticalCapture ? abs( step.y ) : abs( step.x );
+        const int axisOverlap = axisFrame - axisStep;
+        const bool suspiciousTransition =
+            gap > 1 || axisOverlap < axisFrame * 3 / 4 || axisStep >= axisFrame / 6;
+        const bool priorityTransition =
+            gap > 1 || i + 4 >= composedFrameIndices.size();
+        if( !suspiciousTransition )
+        {
+            continue;
+        }
+        if( priorityTransition )
+        {
+            if( loggedPriorityTransitions >= maxPriorityTransitionsToLog )
+            {
+                continue;
+            }
+        }
+        else if( loggedNonPriorityTransitions >= maxNonPriorityTransitionsToLog )
+        {
+            continue;
+        }
+
+        const int boundary = mostlyVerticalCapture
+            ? ( composedFrameOrigins[i].y - minY )
+            : ( composedFrameOrigins[i].x - minX );
+        const int windowStart = max( 0, boundary - windowRadius );
+        const int windowEnd = min( stitchedHeight - 1, boundary + windowRadius );
+        int featherStart = -1;
+        int featherEnd = -1;
+        int featherStartWeight = -1;
+        if( mostlyVerticalCapture && axisOverlap > 0 )
+        {
+            const int destinationY = composedFrameOrigins[i].y - minY;
+            if( step.y > 0 )
+            {
+                featherStart = destinationY + max( 0, axisOverlap - verticalFeather );
+                featherEnd = destinationY + max( 0, axisOverlap - 1 );
+            }
+            else if( step.y < 0 )
+            {
+                featherStart = destinationY + abs( step.y );
+                featherEnd = featherStart + max( 0, verticalFeather - 1 );
+            }
+            if( featherStart >= 0 )
+            {
+                featherStartWeight = 255 / max( 1, verticalFeather );
+            }
+        }
+        else if( !mostlyVerticalCapture && axisOverlap > 0 )
+        {
+            const int destinationX = composedFrameOrigins[i].x - minX;
+            if( step.x > 0 )
+            {
+                featherStart = destinationX + max( 0, axisOverlap - horizontalFeather );
+                featherEnd = destinationX + max( 0, axisOverlap - 1 );
+            }
+            else if( step.x < 0 )
+            {
+                featherStart = destinationX + abs( step.x );
+                featherEnd = featherStart + max( 0, horizontalFeather - 1 );
+            }
+            if( featherStart >= 0 )
+            {
+                featherStartWeight = 255 / max( 1, horizontalFeather );
+            }
+        }
+
+        int darkestRow = -1;
+        int darkestLuma = ( std::numeric_limits<int>::max )();
+        int maxBlendRow = -1;
+        int maxBlendCount = -1;
+        for( int y = windowStart; y <= windowEnd; ++y )
+        {
+            const int writtenCount = rowWrittenCount( y );
+            if( writtenCount < minWrittenForSignal )
+            {
+                continue;
+            }
+
+            const int luma = rowAverageLuma( y );
+            if( luma >= 0 && luma < darkestLuma )
+            {
+                darkestLuma = luma;
+                darkestRow = y;
+            }
+
+            const int blendedCount = rowBlendedCount( y );
+            if( blendedCount > maxBlendCount )
+            {
+                maxBlendCount = blendedCount;
+                maxBlendRow = y;
+            }
+        }
+
+        StitchLog( L"[Panorama/Stitch] Seam transition %zu frames %zu->%zu gap=%d boundary=%d axisStep=%d overlap=%d feather=%d..%d featherStartWeight=%d window=%d..%d darkestRow=%d darkestLuma=%d maxBlendRow=%d maxBlend=%d\n",
+                   i,
+                   composedFrameIndices[i - 1],
+                   composedFrameIndices[i],
+                   gap,
+                   boundary,
+                   axisStep,
+                   axisOverlap,
+                   featherStart,
+                   featherEnd,
+                   featherStartWeight,
+                   windowStart,
+                   windowEnd,
+                   darkestRow,
+                   darkestLuma == ( std::numeric_limits<int>::max )() ? -1 : darkestLuma,
+                   maxBlendRow,
+                   maxBlendCount );
+
+        const int featherMid = ( featherStart >= 0 && featherEnd >= featherStart )
+            ? ( featherStart + featherEnd ) / 2
+            : -1;
+        const int sampleRows[] = { boundary - 1, boundary, boundary + 1, featherStart, featherMid, featherEnd, darkestRow, maxBlendRow };
+        const wchar_t* sampleLabels[] = { L"boundary-1", L"boundary", L"boundary+1", L"featherStart", L"featherMid", L"featherEnd", L"darkest", L"maxBlend" };
+        for( int sampleIndex = 0; sampleIndex < ARRAYSIZE( sampleRows ); ++sampleIndex )
+        {
+            const int sampleRow = sampleRows[sampleIndex];
+            if( sampleRow < 0 || sampleRow >= stitchedHeight )
+            {
+                continue;
+            }
+
+            bool alreadyLogged = false;
+            for( int prior = 0; prior < sampleIndex; ++prior )
+            {
+                if( sampleRows[prior] == sampleRow )
+                {
+                    alreadyLogged = true;
+                    break;
+                }
+            }
+            if( alreadyLogged )
+            {
+                continue;
+            }
+
+            StitchLog( L"[Panorama/Stitch] Seam row transition=%zu label=%ls y=%d luma=%d written=%d blended=%d blendPixels=%d blendAvg=%d blendMin=%d blendMax=%d blendDominantFrame=%d blendDominantPixels=%d fullBlendFirst=(frame:%d pass:%d weight:%d) fullBlendLast=(frame:%d pass:%d weight:%d) fullBlendPasses=%d summary=%s\n",
+                       i,
+                       sampleLabels[sampleIndex],
+                       sampleRow,
+                       rowAverageLuma( sampleRow ),
+                       rowWrittenCount( sampleRow ),
+                       rowBlendedCount( sampleRow ),
+                       rowBlendPixelCount[sampleRow],
+                       rowBlendAverageWeight( sampleRow ),
+                       rowBlendPixelCount[sampleRow] > 0 ? rowBlendWeightMin[sampleRow] : 0,
+                       rowBlendPixelCount[sampleRow] > 0 ? rowBlendWeightMax[sampleRow] : 0,
+                       rowBlendDominantFrame[sampleRow],
+                       rowBlendDominantPixels[sampleRow],
+                       rowFullWidthBlendFirstFrame[sampleRow],
+                       rowFullWidthBlendFirstPass[sampleRow],
+                       rowFullWidthBlendFirstWeight[sampleRow],
+                       rowFullWidthBlendLastFrame[sampleRow],
+                       rowFullWidthBlendLastPass[sampleRow],
+                       rowFullWidthBlendLastWeight[sampleRow],
+                       rowFullWidthBlendPassCount[sampleRow],
+                       BuildStitchedRowSummary( stitchedOwner,
+                                                stitchedWritten,
+                                                stitchedBlended,
+                                                stitchedWidth,
+                                                stitchedHeight,
+                                                sampleRow ).c_str() );
+        }
+
+        ++loggedTransitions;
+        if( priorityTransition )
+        {
+            ++loggedPriorityTransitions;
+        }
+        else
+        {
+            ++loggedNonPriorityTransitions;
+        }
+    }
+
+    StitchLog( L"[Panorama/Stitch] Seam window diagnostics end logged=%d priority=%d nonPriority=%d\n",
+               loggedTransitions,
+               loggedPriorityTransitions,
+               loggedNonPriorityTransitions );
+}
+
 // Detect visually dark stitched bands even when the canvas has no unwritten
 // gaps so we can correlate full-width artifacts with a specific frame handoff.
 static void LogStitchedBandDiagnostics( const std::vector<BYTE>& stitchedPixels,
                                         const std::vector<int>& stitchedOwner,
                                         const std::vector<BYTE>& stitchedWritten,
                                         const std::vector<BYTE>& stitchedBlended,
+                                        const std::vector<int>& rowBlendPixelCount,
+                                        const std::vector<int>& rowBlendWeightSum,
+                                        const std::vector<int>& rowBlendWeightMin,
+                                        const std::vector<int>& rowBlendWeightMax,
+                                        const std::vector<int>& rowFullWidthBlendFirstFrame,
+                                        const std::vector<int>& rowFullWidthBlendFirstPass,
+                                        const std::vector<int>& rowFullWidthBlendFirstWeight,
+                                        const std::vector<int>& rowFullWidthBlendLastFrame,
+                                        const std::vector<int>& rowFullWidthBlendLastPass,
+                                        const std::vector<int>& rowFullWidthBlendLastWeight,
+                                        const std::vector<int>& rowFullWidthBlendPassCount,
                                         int stitchedWidth,
                                         int stitchedHeight,
                                         const std::vector<size_t>& composedFrameIndices,
@@ -708,7 +1137,18 @@ static void LogStitchedBandDiagnostics( const std::vector<BYTE>& stitchedPixels,
     if( !PanoramaDebugEnabled() || stitchedWidth <= 0 || stitchedHeight <= 0 ||
         stitchedPixels.size() != static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ) * 4 ||
         stitchedOwner.size() != stitchedWritten.size() ||
-        stitchedWritten.size() != stitchedBlended.size() )
+        stitchedWritten.size() != stitchedBlended.size() ||
+        rowBlendPixelCount.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowBlendWeightSum.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowBlendWeightMin.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowBlendWeightMax.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendFirstFrame.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendFirstPass.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendFirstWeight.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendLastFrame.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendLastPass.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendLastWeight.size() != static_cast<size_t>( stitchedHeight ) ||
+        rowFullWidthBlendPassCount.size() != static_cast<size_t>( stitchedHeight ) )
     {
         return;
     }
@@ -716,6 +1156,32 @@ static void LogStitchedBandDiagnostics( const std::vector<BYTE>& stitchedPixels,
     std::vector<int> rowLuma( stitchedHeight, 0 );
     std::vector<int> rowBlended( stitchedHeight, 0 );
     std::vector<int> rowWritten( stitchedHeight, 0 );
+    std::vector<std::pair<int, int>> darkBandFirstPassCounts;
+    std::vector<std::pair<int, int>> darkBandLastPassCounts;
+    auto incrementPassCount = []( std::vector<std::pair<int, int>>& counts, int pass )
+    {
+        if( pass < 0 )
+        {
+            return;
+        }
+        for( auto& entry : counts )
+        {
+            if( entry.first == pass )
+            {
+                entry.second++;
+                return;
+            }
+        }
+        counts.push_back( { pass, 1 } );
+    };
+    auto rowBlendAverageWeight = [&]( int y )
+    {
+        if( y < 0 || y >= stitchedHeight || rowBlendPixelCount[y] <= 0 )
+        {
+            return 0;
+        }
+        return rowBlendWeightSum[y] / rowBlendPixelCount[y];
+    };
     for( int y = 0; y < stitchedHeight; ++y )
     {
         const size_t pixelRowBase = static_cast<size_t>( y ) * static_cast<size_t>( stitchedWidth ) * 4;
@@ -749,93 +1215,6 @@ static void LogStitchedBandDiagnostics( const std::vector<BYTE>& stitchedPixels,
         int avgLuma;
         int referenceLuma;
         int delta;
-    };
-
-    auto buildRowSummary = [&]( int y )
-    {
-        std::wstring summary;
-        if( y < 0 || y >= stitchedHeight )
-        {
-            return summary;
-        }
-
-        const size_t rowBase = static_cast<size_t>( y ) * static_cast<size_t>( stitchedWidth );
-        auto markerForPixel = [&]( size_t idx )
-        {
-            if( stitchedWritten[idx] == 0 )
-            {
-                return -1;
-            }
-            if( stitchedBlended[idx] != 0 )
-            {
-                return -2;
-            }
-            return stitchedOwner[idx];
-        };
-
-        int currentMarker = markerForPixel( rowBase );
-        int currentLength = 0;
-        size_t emittedSegments = 0;
-        for( int x = 0; x < stitchedWidth; ++x )
-        {
-            const int marker = markerForPixel( rowBase + static_cast<size_t>( x ) );
-            if( marker != currentMarker )
-            {
-                if( emittedSegments > 0 )
-                {
-                    summary += L"|";
-                }
-
-                wchar_t segmentText[48]{};
-                if( currentMarker == -1 )
-                {
-                    swprintf_s( segmentText, L"gap:%d", currentLength );
-                }
-                else if( currentMarker == -2 )
-                {
-                    swprintf_s( segmentText, L"blend:%d", currentLength );
-                }
-                else
-                {
-                    swprintf_s( segmentText, L"f%d:%d", currentMarker, currentLength );
-                }
-                summary += segmentText;
-
-                ++emittedSegments;
-                if( emittedSegments >= 8 )
-                {
-                    summary += L"|...";
-                    return summary;
-                }
-
-                currentMarker = marker;
-                currentLength = 1;
-            }
-            else
-            {
-                ++currentLength;
-            }
-        }
-
-        if( emittedSegments > 0 )
-        {
-            summary += L"|";
-        }
-        wchar_t segmentText[48]{};
-        if( currentMarker == -1 )
-        {
-            swprintf_s( segmentText, L"gap:%d", currentLength );
-        }
-        else if( currentMarker == -2 )
-        {
-            swprintf_s( segmentText, L"blend:%d", currentLength );
-        }
-        else
-        {
-            swprintf_s( segmentText, L"f%d:%d", currentMarker, currentLength );
-        }
-        summary += segmentText;
-        return summary;
     };
 
     const int referenceRadius = max( 8, min( 24, stitchedHeight / 40 ) );
@@ -961,7 +1340,10 @@ static void LogStitchedBandDiagnostics( const std::vector<BYTE>& stitchedPixels,
             }
         }
 
-        StitchLog( L"[Panorama/Stitch] Dark band y=%d..%d rows=%d avgLuma=%d refLuma=%d delta=%d blendedCenter=%d writtenCenter=%d nearestBoundaryRow=%d nearestBoundaryFrame=%zu boundaryDistance=%d summary=%s\n",
+        incrementPassCount( darkBandFirstPassCounts, rowFullWidthBlendFirstPass[band.centerY] );
+        incrementPassCount( darkBandLastPassCounts, rowFullWidthBlendLastPass[band.centerY] );
+
+        StitchLog( L"[Panorama/Stitch] Dark band y=%d..%d rows=%d avgLuma=%d refLuma=%d delta=%d blendedCenter=%d writtenCenter=%d blendPixelsCenter=%d blendAvgCenter=%d blendMinCenter=%d blendMaxCenter=%d fullBlendFirst=(frame:%d pass:%d weight:%d) fullBlendLast=(frame:%d pass:%d weight:%d) fullBlendPasses=%d nearestBoundaryRow=%d nearestBoundaryFrame=%zu boundaryDistance=%d summary=%s\n",
                    band.startY,
                    band.endY,
                    band.endY - band.startY + 1,
@@ -970,10 +1352,64 @@ static void LogStitchedBandDiagnostics( const std::vector<BYTE>& stitchedPixels,
                    band.delta,
                    rowBlended[band.centerY],
                    rowWritten[band.centerY],
+                   rowBlendPixelCount[band.centerY],
+                   rowBlendAverageWeight( band.centerY ),
+                   rowBlendPixelCount[band.centerY] > 0 ? rowBlendWeightMin[band.centerY] : 0,
+                   rowBlendPixelCount[band.centerY] > 0 ? rowBlendWeightMax[band.centerY] : 0,
+                   rowFullWidthBlendFirstFrame[band.centerY],
+                   rowFullWidthBlendFirstPass[band.centerY],
+                   rowFullWidthBlendFirstWeight[band.centerY],
+                   rowFullWidthBlendLastFrame[band.centerY],
+                   rowFullWidthBlendLastPass[band.centerY],
+                   rowFullWidthBlendLastWeight[band.centerY],
+                   rowFullWidthBlendPassCount[band.centerY],
                    nearestBoundaryRow,
                    nearestBoundaryFrame,
                    nearestBoundaryDistance,
-                   buildRowSummary( band.centerY ).c_str() );
+                   BuildStitchedRowSummary( stitchedOwner,
+                                            stitchedWritten,
+                                            stitchedBlended,
+                                            stitchedWidth,
+                                            stitchedHeight,
+                                            band.centerY ).c_str() );
+    }
+    if( !darkBandFirstPassCounts.empty() )
+    {
+        std::sort( darkBandFirstPassCounts.begin(), darkBandFirstPassCounts.end(), []( const auto& lhs, const auto& rhs )
+        {
+            return lhs.second > rhs.second;
+        } );
+        std::sort( darkBandLastPassCounts.begin(), darkBandLastPassCounts.end(), []( const auto& lhs, const auto& rhs )
+        {
+            return lhs.second > rhs.second;
+        } );
+
+        std::wstring firstSummary;
+        std::wstring lastSummary;
+        for( size_t idx = 0; idx < darkBandFirstPassCounts.size() && idx < 6; ++idx )
+        {
+            if( idx > 0 )
+            {
+                firstSummary += L"|";
+            }
+            wchar_t buffer[32]{};
+            swprintf_s( buffer, L"p%d:%d", darkBandFirstPassCounts[idx].first, darkBandFirstPassCounts[idx].second );
+            firstSummary += buffer;
+        }
+        for( size_t idx = 0; idx < darkBandLastPassCounts.size() && idx < 6; ++idx )
+        {
+            if( idx > 0 )
+            {
+                lastSummary += L"|";
+            }
+            wchar_t buffer[32]{};
+            swprintf_s( buffer, L"p%d:%d", darkBandLastPassCounts[idx].first, darkBandLastPassCounts[idx].second );
+            lastSummary += buffer;
+        }
+
+        StitchLog( L"[Panorama/Stitch] Dark band provenance firstPasses=%s lastPasses=%s\n",
+                   firstSummary.c_str(),
+                   lastSummary.c_str() );
     }
     if( darkBands.size() > maxBandsToLog )
     {
@@ -1128,6 +1564,21 @@ static void LogGapBridgeProbeDiagnostics( size_t frameIndex,
                  expectedDx,
                  expectedDy,
                  adjacentProbeNearStationary ? 1 : 0 );
+}
+
+static int DivideRounded( int value, int divisor )
+{
+    if( divisor <= 1 )
+    {
+        return value;
+    }
+
+    if( value >= 0 )
+    {
+        return ( value + divisor / 2 ) / divisor;
+    }
+
+    return -( ( -value + divisor / 2 ) / divisor );
 }
 
 //----------------------------------------------------------------------------
@@ -5790,6 +6241,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
         const size_t lastAcceptedIndex = composedFrameIndices.back();
         const int acceptedGap = static_cast<int>( i - lastAcceptedIndex );
+        bool hasNextExpectedOverride = false;
+        int overrideNextExpectedDx = 0;
+        int overrideNextExpectedDy = 0;
+        int overrideEligibilityStep = 0;
+
         if( acceptedGap > 1 )
         {
             LogGapBridgeProbeDiagnostics( i,
@@ -5806,6 +6262,107 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                                           frameLuma,
                                           frameConstantFraction,
                                           composedFrameSteps );
+
+            const bool expectedMostlyVertical = abs( expectedDy ) >= max( abs( expectedDx ) * 2, minProgress );
+            const bool expectedMostlyHorizontal = abs( expectedDx ) >= max( abs( expectedDy ) * 2, minProgress );
+            if( expectedMostlyVertical || expectedMostlyHorizontal )
+            {
+                int bridgeDx = 0;
+                int bridgeDy = 0;
+                bool bridgeNearStationary = false;
+                const int bridgeVle = ( frameConstantFraction[lastAcceptedIndex] > 0.58 &&
+                                        frameConstantFraction[i] > 0.58 ) ? 1 : 0;
+                const bool bridgeOk = FindBestFrameShiftVerticalOnly( framePixels[lastAcceptedIndex],
+                                                                      framePixels[i],
+                                                                      frameWidth,
+                                                                      frameHeight,
+                                                                      expectedDx * acceptedGap,
+                                                                      expectedDy * acceptedGap,
+                                                                      bridgeDx,
+                                                                      bridgeDy,
+                                                                      lowContrastMode,
+                                                                      frameLuma[lastAcceptedIndex],
+                                                                      frameLuma[i],
+                                                                      bridgeVle,
+                                                                      &bridgeNearStationary,
+                                                                      false,
+                                                                      nullptr,
+                                                                      true,
+                                                                      true );
+
+                int adjacentDx = 0;
+                int adjacentDy = 0;
+                bool adjacentNearStationary = false;
+                const int adjacentVle = ( frameConstantFraction[i - 1] > 0.58 &&
+                                          frameConstantFraction[i] > 0.58 ) ? 1 : 0;
+                const bool adjacentOk = FindBestFrameShiftVerticalOnly( framePixels[i - 1],
+                                                                        framePixels[i],
+                                                                        frameWidth,
+                                                                        frameHeight,
+                                                                        expectedDx,
+                                                                        expectedDy,
+                                                                        adjacentDx,
+                                                                        adjacentDy,
+                                                                        lowContrastMode,
+                                                                        frameLuma[i - 1],
+                                                                        frameLuma[i],
+                                                                        adjacentVle,
+                                                                        &adjacentNearStationary,
+                                                                        false,
+                                                                        nullptr,
+                                                                        true,
+                                                                        true );
+
+                const int expectedAxisSigned = expectedMostlyVertical ? expectedDy : expectedDx;
+                const int acceptedAxisSigned = expectedMostlyVertical ? dy : dx;
+                const int bridgeAxisSigned = expectedMostlyVertical ? bridgeDy : bridgeDx;
+                const int adjacentAxisSigned = expectedMostlyVertical ? adjacentDy : adjacentDx;
+                const int axisFrame = expectedMostlyVertical ? frameHeight : frameWidth;
+                const int expectedAxisAbs = abs( expectedAxisSigned );
+                const int acceptedAxisAbs = abs( acceptedAxisSigned );
+                const int bridgeAxisAbs = abs( bridgeAxisSigned );
+                const int adjacentAxisAbs = abs( adjacentAxisSigned );
+                const int expectedTotalAbs = expectedAxisAbs * acceptedGap;
+                const bool bridgeSameDirection = bridgeOk && bridgeAxisSigned != 0 &&
+                                                ( ( bridgeAxisSigned > 0 ) == ( expectedAxisSigned > 0 ) );
+                const bool adjacentSameDirection = !adjacentOk || adjacentAxisSigned == 0 ||
+                                                  ( ( adjacentAxisSigned > 0 ) == ( expectedAxisSigned > 0 ) );
+                const int bridgeTolerance = max( 12, expectedAxisAbs / 3 );
+                const bool bridgeMatchesExpectedTotal =
+                    bridgeSameDirection &&
+                    bridgeAxisAbs >= max( expectedTotalAbs - bridgeTolerance, expectedTotalAbs * 4 / 5 ) &&
+                    bridgeAxisAbs <= min( axisFrame - minProgress, expectedTotalAbs + max( 24, expectedAxisAbs / 2 ) );
+                const bool acceptedClearlyUnderAdvanced =
+                    acceptedAxisAbs > 0 &&
+                    acceptedAxisAbs <= max( expectedAxisAbs, expectedTotalAbs / 2 );
+                const bool adjacentNearStationaryGap =
+                    adjacentSameDirection &&
+                    adjacentAxisAbs <= max( minProgress / 2, expectedAxisAbs / 4 );
+
+                if( bridgeMatchesExpectedTotal && acceptedClearlyUnderAdvanced && adjacentNearStationaryGap )
+                {
+                    const int originalDx = dx;
+                    const int originalDy = dy;
+                    dx = bridgeDx;
+                    dy = bridgeDy;
+                    overrideNextExpectedDx = DivideRounded( bridgeDx, acceptedGap );
+                    overrideNextExpectedDy = DivideRounded( bridgeDy, acceptedGap );
+                    overrideEligibilityStep = max( abs( overrideNextExpectedDx ), abs( overrideNextExpectedDy ) );
+                    hasNextExpectedOverride = true;
+                    nearStationaryOverride = false;
+                    StitchLog( L"[Panorama/Stitch] Frame %zu normalized: gap-bridge-total accepted=(%d,%d) bridge=(%d,%d) adjacent=(%d,%d) gap=%d nextExpected=(%d,%d)\n",
+                                 i,
+                                 originalDx,
+                                 originalDy,
+                                 bridgeDx,
+                                 bridgeDy,
+                                 adjacentDx,
+                                 adjacentDy,
+                                 acceptedGap,
+                                 overrideNextExpectedDx,
+                                 overrideNextExpectedDy );
+                }
+            }
         }
         duplicateRetryStreak = 0;
         consecutiveNonDupRejectCount = 0;
@@ -6262,11 +6819,16 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         POINT nextOrigin = composedFrameOrigins.back();
         nextOrigin.x += stepX;
         nextOrigin.y += stepY;
+        const int nextExpectedDx = hasNextExpectedOverride ? overrideNextExpectedDx : dx;
+        const int nextExpectedDy = hasNextExpectedOverride ? overrideNextExpectedDy : dy;
+        const int acceptedEligibilityStep = hasNextExpectedOverride
+            ? overrideEligibilityStep
+            : max( abs( dx ), abs( dy ) );
         composedFrameIndices.push_back( i );
         composedFrameOrigins.push_back( nextOrigin );
         composedFrameSteps.push_back( { stepX, stepY } );
-        expectedDx = dx;
-        expectedDy = dy;
+        expectedDx = nextExpectedDx;
+        expectedDy = nextExpectedDy;
 
         // After a retry spanning multiple frame intervals, normalize
         // the eligibility step to a single-frame estimate so the
@@ -6279,7 +6841,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         }
         else
         {
-            retryEligibilityStep = max( abs( dx ), abs( dy ) );
+            retryEligibilityStep = acceptedEligibilityStep;
             if( retryStreakUsed == 0 )
                 retryNormalizationBudget = 5;
         }
@@ -6387,8 +6949,21 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
     std::vector<BYTE> stitchedWritten( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ), 0 );
     std::vector<int> stitchedOwner( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ), -1 );
     std::vector<BYTE> stitchedBlended( static_cast<size_t>( stitchedWidth ) * static_cast<size_t>( stitchedHeight ), 0 );
-    const int verticalFeather = max( 4, min( 28, frameHeight / 18 ) );
-    const int horizontalFeather = max( 4, min( 28, frameWidth / 18 ) );
+    std::vector<int> rowBlendPixelCount( static_cast<size_t>( stitchedHeight ), 0 );
+    std::vector<int> rowBlendWeightSum( static_cast<size_t>( stitchedHeight ), 0 );
+    std::vector<int> rowBlendWeightMin( static_cast<size_t>( stitchedHeight ), 255 );
+    std::vector<int> rowBlendWeightMax( static_cast<size_t>( stitchedHeight ), 0 );
+    std::vector<int> rowBlendDominantFrame( static_cast<size_t>( stitchedHeight ), -1 );
+    std::vector<int> rowBlendDominantPixels( static_cast<size_t>( stitchedHeight ), 0 );
+    std::vector<int> rowFullWidthBlendFirstFrame( static_cast<size_t>( stitchedHeight ), -1 );
+    std::vector<int> rowFullWidthBlendFirstPass( static_cast<size_t>( stitchedHeight ), -1 );
+    std::vector<int> rowFullWidthBlendFirstWeight( static_cast<size_t>( stitchedHeight ), -1 );
+    std::vector<int> rowFullWidthBlendLastFrame( static_cast<size_t>( stitchedHeight ), -1 );
+    std::vector<int> rowFullWidthBlendLastPass( static_cast<size_t>( stitchedHeight ), -1 );
+    std::vector<int> rowFullWidthBlendLastWeight( static_cast<size_t>( stitchedHeight ), -1 );
+    std::vector<int> rowFullWidthBlendPassCount( static_cast<size_t>( stitchedHeight ), 0 );
+    const int verticalFeather = max( 2, min( 12, frameHeight / 36 ) );
+    const int horizontalFeather = max( 2, min( 12, frameWidth / 36 ) );
 
     for( size_t i = 0; i < composedFrameIndices.size(); ++i )
     {
@@ -6446,6 +7021,10 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
             const size_t srcRowBase = static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) * 4;
             const size_t dstRowBase = static_cast<size_t>( canvasY ) * static_cast<size_t>( stitchedWidth ) * 4;
             const size_t dstMaskRowBase = static_cast<size_t>( canvasY ) * static_cast<size_t>( stitchedWidth );
+            int rowBlendPixelsThisFrame = 0;
+            int rowBlendWeightSumThisFrame = 0;
+            int rowBlendWeightMinThisFrame = 255;
+            int rowBlendWeightMaxThisFrame = 0;
 
             for( int x = 0; x < frameWidth; ++x )
             {
@@ -6577,6 +7156,37 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                                                                     static_cast<int>( sourcePixels[srcIndex + 2] ) * static_cast<int>( weightNew ) ) / 255 );
                 stitchedPixels[dstIndex + 3] = 0xFF;
                 stitchedBlended[dstMaskIndex] = 1;
+                ++rowBlendPixelsThisFrame;
+                rowBlendWeightSumThisFrame += static_cast<int>( weightNew );
+                rowBlendWeightMinThisFrame = min( rowBlendWeightMinThisFrame, static_cast<int>( weightNew ) );
+                rowBlendWeightMaxThisFrame = max( rowBlendWeightMaxThisFrame, static_cast<int>( weightNew ) );
+            }
+
+            if( rowBlendPixelsThisFrame > 0 )
+            {
+                rowBlendPixelCount[canvasY] += rowBlendPixelsThisFrame;
+                rowBlendWeightSum[canvasY] += rowBlendWeightSumThisFrame;
+                rowBlendWeightMin[canvasY] = min( rowBlendWeightMin[canvasY], rowBlendWeightMinThisFrame );
+                rowBlendWeightMax[canvasY] = max( rowBlendWeightMax[canvasY], rowBlendWeightMaxThisFrame );
+                if( rowBlendPixelsThisFrame > rowBlendDominantPixels[canvasY] )
+                {
+                    rowBlendDominantFrame[canvasY] = static_cast<int>( frameIndex );
+                    rowBlendDominantPixels[canvasY] = rowBlendPixelsThisFrame;
+                }
+                if( rowBlendPixelsThisFrame == stitchedWidth )
+                {
+                    const int fullWidthAverageWeight = rowBlendWeightSumThisFrame / rowBlendPixelsThisFrame;
+                    if( rowFullWidthBlendFirstPass[canvasY] < 0 )
+                    {
+                        rowFullWidthBlendFirstFrame[canvasY] = static_cast<int>( frameIndex );
+                        rowFullWidthBlendFirstPass[canvasY] = static_cast<int>( i );
+                        rowFullWidthBlendFirstWeight[canvasY] = fullWidthAverageWeight;
+                    }
+                    rowFullWidthBlendLastFrame[canvasY] = static_cast<int>( frameIndex );
+                    rowFullWidthBlendLastPass[canvasY] = static_cast<int>( i );
+                    rowFullWidthBlendLastWeight[canvasY] = fullWidthAverageWeight;
+                    rowFullWidthBlendPassCount[canvasY] += 1;
+                }
             }
         } );
     }
@@ -6591,10 +7201,49 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                                       stitchedBlended,
                                       stitchedWidth,
                                       stitchedHeight );
+    LogSuspiciousTransitionWindowDiagnostics( stitchedPixels,
+                                              stitchedOwner,
+                                              stitchedWritten,
+                                              stitchedBlended,
+                                              rowBlendPixelCount,
+                                              rowBlendWeightSum,
+                                              rowBlendWeightMin,
+                                              rowBlendWeightMax,
+                                              rowBlendDominantFrame,
+                                              rowBlendDominantPixels,
+                                              rowFullWidthBlendFirstFrame,
+                                              rowFullWidthBlendFirstPass,
+                                              rowFullWidthBlendFirstWeight,
+                                              rowFullWidthBlendLastFrame,
+                                              rowFullWidthBlendLastPass,
+                                              rowFullWidthBlendLastWeight,
+                                              rowFullWidthBlendPassCount,
+                                              stitchedWidth,
+                                              stitchedHeight,
+                                              composedFrameIndices,
+                                              composedFrameOrigins,
+                                              composedFrameSteps,
+                                              frameWidth,
+                                              frameHeight,
+                                              verticalFeather,
+                                              horizontalFeather,
+                                              minX,
+                                              minY );
     LogStitchedBandDiagnostics( stitchedPixels,
                                 stitchedOwner,
                                 stitchedWritten,
                                 stitchedBlended,
+                                rowBlendPixelCount,
+                                rowBlendWeightSum,
+                                rowBlendWeightMin,
+                                rowBlendWeightMax,
+                                rowFullWidthBlendFirstFrame,
+                                rowFullWidthBlendFirstPass,
+                                rowFullWidthBlendFirstWeight,
+                                rowFullWidthBlendLastFrame,
+                                rowFullWidthBlendLastPass,
+                                rowFullWidthBlendLastWeight,
+                                rowFullWidthBlendPassCount,
                                 stitchedWidth,
                                 stitchedHeight,
                                 composedFrameIndices,
