@@ -478,13 +478,13 @@
     <value>Toggle Easy Mouse</value>
   </data>
   <data name="MouseWithoutBorders_ToggleEasyMouse_Subtitle" xml:space="preserve">
-    <value>Toggle Easy Mouse feature on/off</value>
+    <value>Mouse Without Borders: Toggle Easy Mouse feature on/off</value>
   </data>
   <data name="MouseWithoutBorders_Reconnect_Title" xml:space="preserve">
     <value>Reconnect</value>
   </data>
   <data name="MouseWithoutBorders_Reconnect_Subtitle" xml:space="preserve">
-    <value>Reconnect to all machines</value>
+    <value>Mouse Without Borders: Reconnect to all machines</value>
   </data>
   <!-- New+ Module -->
   <data name="NewPlus_Settings_Subtitle" xml:space="preserve">

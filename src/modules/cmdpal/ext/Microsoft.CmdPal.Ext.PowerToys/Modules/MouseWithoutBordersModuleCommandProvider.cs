@@ -17,6 +17,8 @@ internal sealed class MouseWithoutBordersModuleCommandProvider : ModuleCommandPr
     {
         var title = SettingsWindow.MouseWithoutBorders.ModuleDisplayName();
         var icon = SettingsWindow.MouseWithoutBorders.ModuleIcon();
+        var easyMouseIcon = new IconInfo("\uE962");
+        var reconnectIcon = new IconInfo("\uE72C");
 
         yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.MouseWithoutBorders, title) { Id = "com.microsoft.powertoys.mouseWithoutBorders.openSettings" })
         {
@@ -29,14 +31,14 @@ internal sealed class MouseWithoutBordersModuleCommandProvider : ModuleCommandPr
         {
             Title = Resources.MouseWithoutBorders_ToggleEasyMouse_Title,
             Subtitle = Resources.MouseWithoutBorders_ToggleEasyMouse_Subtitle,
-            Icon = icon,
+            Icon = easyMouseIcon,
         };
 
         yield return new ListItem(new MWBReconnectCommand())
         {
             Title = Resources.MouseWithoutBorders_Reconnect_Title,
             Subtitle = Resources.MouseWithoutBorders_Reconnect_Subtitle,
-            Icon = icon,
+            Icon = reconnectIcon,
         };
     }
 }
