@@ -5063,7 +5063,10 @@ The break timer font matches the text font.</value>
     <value>Helps us make PowerToys faster, more stable, and better over time</value>
   </data>
   <data name="AlwaysOnTop_Sound.Header" xml:space="preserve">
-    <value>Play a sound when pinning a window</value>
+    <value>Play a sound when pinning or unpinning a window</value>
+  </data>
+  <data name="AlwaysOnTop_OpacitySound.Header" xml:space="preserve">
+    <value>Play a sound when changing a window's opacity</value>
   </data>
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>

@@ -14,6 +14,7 @@ namespace NonLocalizable
 
     const static wchar_t* HotkeyID = L"hotkey";
     const static wchar_t* SoundEnabledID = L"sound-enabled";
+    const static wchar_t* OpacitySoundEnabledID = L"opacity-sound-enabled";
     const static wchar_t* ShowInSystemMenuID = L"show-in-system-menu";
     const static wchar_t* FrameEnabledID = L"frame-enabled";
     const static wchar_t* FrameThicknessID = L"frame-thickness";
@@ -65,6 +66,7 @@ AlwaysOnTopSettings& AlwaysOnTopSettings::instance()
 void AlwaysOnTopSettings::InitFileWatcher()
 {
     const std::wstring& settingsFileName = GetSettingsFileName();
+    Logger::info(L"Initializing AlwaysOnTop settings watcher for {}", settingsFileName);
     m_settingsFileWatcher = std::make_unique<FileWatcher>(settingsFileName, [&]() {
         PostMessageW(HWND_BROADCAST, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
     });
@@ -92,8 +94,11 @@ void AlwaysOnTopSettings::RemoveObserver(SettingsObserver& observer)
 
 void AlwaysOnTopSettings::LoadSettings()
 {
+    const auto settingsFileName = GetSettingsFileName();
+
     try
     {
+        Logger::info(L"Loading AlwaysOnTop settings from {}", settingsFileName);
         PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::load_from_settings_file(NonLocalizable::ModuleKey);
 
         if (const auto jsonVal = values.get_json(NonLocalizable::HotkeyID))
@@ -106,13 +111,32 @@ void AlwaysOnTopSettings::LoadSettings()
             }
         }
         
-        if (const auto jsonVal = values.get_bool_value(NonLocalizable::SoundEnabledID))
+        const auto soundEnabledValue = values.get_bool_value(NonLocalizable::SoundEnabledID);
+        const auto opacitySoundEnabledValue = values.get_bool_value(NonLocalizable::OpacitySoundEnabledID);
+
+        Logger::info(L"AlwaysOnTop settings payload: sound-enabled present={} value={}, opacity-sound-enabled present={} value={}",
+                     soundEnabledValue.has_value(),
+                     soundEnabledValue.value_or(m_settings.enableSound),
+                     opacitySoundEnabledValue.has_value(),
+                     opacitySoundEnabledValue.value_or(m_settings.enableOpacitySound));
+
+        if (soundEnabledValue)
         {
-            auto val = *jsonVal;
+            auto val = *soundEnabledValue;
             if (m_settings.enableSound != val)
             {
                 m_settings.enableSound = val;
                 NotifyObservers(SettingId::SoundEnabled);
+            }
+        }
+
+        if (opacitySoundEnabledValue)
+        {
+            auto val = *opacitySoundEnabledValue;
+            if (m_settings.enableOpacitySound != val)
+            {
+                m_settings.enableOpacitySound = val;
+                NotifyObservers(SettingId::OpacitySoundEnabled);
             }
         }
 
@@ -219,11 +243,16 @@ void AlwaysOnTopSettings::LoadSettings()
                 NotifyObservers(SettingId::FrameAccentColor);
             }
         }
+
+        Logger::info(L"AlwaysOnTop effective settings after load: sound-enabled={}, opacity-sound-enabled={}",
+                     m_settings.enableSound,
+                     m_settings.enableOpacitySound);
+
     }
     catch (...)
     {
         // Log error message and continue with default settings.
-        Logger::error("Failed to read settings");
+        Logger::error(L"Failed to read AlwaysOnTop settings from {}", settingsFileName);
         // TODO: show localized message
     }
 }

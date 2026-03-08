@@ -227,6 +227,7 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
     }
     else if (message == WM_PRIV_SETTINGS_CHANGED)
     {
+        Logger::info(L"Received AlwaysOnTop settings change notification.");
         AlwaysOnTopSettings::instance().LoadSettings();
     }
     
@@ -879,7 +880,13 @@ void AlwaysOnTop::StepWindowTransparency(HWND window, int delta)
     {
         ApplyWindowAlpha(targetWindow, newTransparency);
 
-        if (AlwaysOnTopSettings::settings().enableSound)
+        Logger::info(L"Opacity adjustment requested. current={} new={} delta={} opacity-sound-enabled={}",
+                     currentTransparency,
+                     newTransparency,
+                     delta,
+                     AlwaysOnTopSettings::settings().enableOpacitySound);
+
+        if (AlwaysOnTopSettings::settings().enableOpacitySound)
         {
             m_sound.Play(delta > 0 ? Sound::Type::IncreaseOpacity : Sound::Type::DecreaseOpacity);
         }

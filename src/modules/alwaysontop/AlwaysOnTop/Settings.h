@@ -21,6 +21,7 @@ struct Settings
     bool showInSystemMenu = false;
     bool enableFrame = true;
     bool enableSound = true;
+    bool enableOpacitySound = false;
     bool roundCornersEnabled = true;
     bool blockInGameMode = true;
     bool frameAccentColor = true;

@@ -108,6 +108,10 @@
                     <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_Sound" HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.SoundEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_OpacitySound" HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.OpacitySoundEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
