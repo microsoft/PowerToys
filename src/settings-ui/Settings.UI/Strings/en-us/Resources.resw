@@ -3762,6 +3762,38 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Press duration before showing taskbar icon shortcuts (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
+  <data name="CopyAsUNC.ModuleTitle" xml:space="preserve">
+    <value>Copy as UNC path</value>
+    <comment>Product name: do not loc</comment>
+  </data>
+  <data name="CopyAsUNC.ModuleDescription" xml:space="preserve">
+    <value>Copies a network path for files and folders on mapped drives to the clipboard as a UNC path (e.g. \\server\share\...).</value>
+    <comment>{Locked="UNC"}</comment>
+  </data>
+  <data name="Shell_CopyAsUNC.Content" xml:space="preserve">
+    <value>Copy as UNC path</value>
+    <comment>Product name: Navigation view item name for Copy as UNC path</comment>
+  </data>
+  <data name="CopyAsUNC_Enable.Header" xml:space="preserve">
+    <value>Copy as UNC path</value>
+    <comment>Copy as UNC path is the name of the utility</comment>
+  </data>
+  <data name="CopyAsUNC_ShellIntegration.Header" xml:space="preserve">
+    <value>Shell integration</value>
+    <comment>This refers to directly integrating in with Windows</comment>
+  </data>
+  <data name="CopyAsUNC_Toggle_ContextMenu.Header" xml:space="preserve">
+    <value>Show Copy as UNC path in</value>
+  </data>
+  <data name="CopyAsUNC_Toggle_StandardContextMenu.Content" xml:space="preserve">
+    <value>Default and extended context menu</value>
+  </data>
+  <data name="CopyAsUNC_Toggle_ExtendedContextMenu.Content" xml:space="preserve">
+    <value>Extended context menu only</value>
+  </data>
+  <data name="LearnMore_CopyAsUNC.Text" xml:space="preserve">
+    <value>Learn more about Copy as UNC path</value>
+  </data>
   <data name="FileLocksmith.ModuleDescription" xml:space="preserve">
     <value>A Windows shell extension to find out which processes are using the selected files and directories.</value>
     <comment>{Locked="Windows"}</comment>

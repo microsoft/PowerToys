@@ -15,6 +15,7 @@ namespace ManagedCommon
         CursorWrap,
         EnvironmentVariables,
         FancyZones,
+        CopyAsUNC,
         FileLocksmith,
         FindMyMouse,
         Hosts,
