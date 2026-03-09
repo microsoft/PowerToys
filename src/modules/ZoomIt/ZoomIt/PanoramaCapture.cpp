@@ -5879,6 +5879,17 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
             return nullptr;
         }
 
+        // Reject blank/transition frames where virtually all pixels are
+        // identical (constFrac > 0.95).  These frames carry no scroll
+        // information and will produce wrong matcher results if accepted.
+        if( frameConstantFraction[i] > 0.95 )
+        {
+            StitchLog( L"[Panorama/Stitch] Frame %zu rejected: blank frame constFrac=%.3f\n",
+                         i, frameConstantFraction[i] );
+            consecutiveNonDupRejectCount++;
+            continue;
+        }
+
         int dx = expectedDx;
         int dy = expectedDy;
         int retryStreakUsed = 0;
@@ -6896,8 +6907,10 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                                  bestAnchorY, bestAnchorVar,
                                  frameConstantFraction[refIdx],
                                  useCurAsSrc ? 1 : 0 );
-                    dy = anchorScrollDy;
-                    dx = 0;
+                    // Disabled: anchor off-by-1 corrections on dark content
+                    // introduce small seam artifacts that outweigh the benefit.
+                    // dy = anchorScrollDy;
+                    // dx = 0;
                 }
                 else
                 {
