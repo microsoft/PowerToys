@@ -18,11 +18,11 @@ public record UpdateCommandBarMessage(ICommandBarContext? ViewModel)
 
 public interface IContextMenuContext : INotifyPropertyChanged
 {
-    public IEnumerable<IContextItemViewModel> MoreCommands { get; }
+    public IReadOnlyList<IContextItemViewModel> MoreCommands { get; }
 
     public bool HasMoreCommands { get; }
 
-    public List<IContextItemViewModel> AllCommands { get; }
+    public IReadOnlyList<IContextItemViewModel> AllCommands { get; }
 
     /// <summary>
     /// Generates a mapping of key -> command item for this particular item's
