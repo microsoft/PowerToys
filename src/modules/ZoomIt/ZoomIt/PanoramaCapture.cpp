@@ -5863,6 +5863,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
     int nearStationaryCount = 0;
     int duplicateRetryStreak = 0;
     int consecutiveNonDupRejectCount = 0;
+    int consecutiveMomentumCollapseCount = 0;
 
     int minX = 0;
     int minY = 0;
@@ -5881,6 +5882,9 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         int dx = expectedDx;
         int dy = expectedDy;
         int retryStreakUsed = 0;
+        bool momentumCollapseApplied = false;
+        int momentumCollapseDetectedDx = 0;
+        int momentumCollapseDetectedDy = 0;
         const int veryLowEntropy = ( frameConstantFraction[composedFrameIndices.back()] > 0.58 && frameConstantFraction[i] > 0.58 ) ? 1 : 0;
         bool nearStationaryOverride = false;
         bool foundShift = FindBestFrameShift( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, expectedDx, expectedDy, dx, dy, lowContrastMode, frameLuma[composedFrameIndices.back()], frameLuma[i], veryLowEntropy, &nearStationaryOverride );
@@ -6710,25 +6714,79 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
             // same-direction steps are often harmonic aliases.  Normalize
             // to expected motion rather than rejecting, so the stitcher
             // keeps advancing and does not get stuck on an old reference.
+            //
+            // However, if multiple consecutive frames trigger this guard,
+            // the scroll has genuinely slowed down — the tiny steps are
+            // real, not aliases.  Continuing to normalize creates a
+            // feedback loop that over-advances the canvas, producing
+            // repeated content and dark gaps.  Cap at 2 consecutive
+            // normalizations to break the loop.
             if( axisFrame > 0 && expectedAxisSigned != 0 && candidateAxisSigned != 0 &&
                 ( ( expectedAxisSigned > 0 ) == ( candidateAxisSigned > 0 ) ) &&
                 recentMedianAbs >= axisFrame / 10 &&
                 recentMaxAbs >= axisFrame / 4 &&
                 expectedAxisTrustedForNormalization &&
                 abs( expectedAxisSigned ) >= axisFrame / 8 &&
-                abs( candidateAxisSigned ) <= max( 16, abs( expectedAxisSigned ) / 5 ) )
+                abs( candidateAxisSigned ) <= max( 16, abs( expectedAxisSigned ) / 5 ) &&
+                consecutiveMomentumCollapseCount < 2 )
             {
-                StitchLog( L"[Panorama/Stitch] Frame %zu normalized: momentum-collapse-harmonic shift=(%d,%d) expected=(%d,%d) median=%d max=%d\n",
+                // Save the pre-normalization detected shift.  After
+                // composing this frame at the expected step, propagate
+                // the detected value as next-expected so that if the
+                // scroll genuinely decelerated the expected step decays
+                // rather than staying locked at the historical peak.
+                momentumCollapseDetectedDx = dx;
+                momentumCollapseDetectedDy = dy;
+                momentumCollapseApplied = true;
+                StitchLog( L"[Panorama/Stitch] Frame %zu normalized: momentum-collapse-harmonic shift=(%d,%d) expected=(%d,%d) median=%d max=%d consecutiveCollapse=%d\n",
                              i,
                              dx,
                              dy,
                              expectedDx,
                              expectedDy,
                              recentMedianAbs,
-                             recentMaxAbs );
+                             recentMaxAbs,
+                             consecutiveMomentumCollapseCount + 1 );
                 dx = expectedDx;
                 dy = expectedDy;
+                ++consecutiveMomentumCollapseCount;
             }
+            else if( axisFrame > 0 && expectedAxisSigned != 0 && candidateAxisSigned != 0 &&
+                     ( ( expectedAxisSigned > 0 ) == ( candidateAxisSigned > 0 ) ) &&
+                     abs( candidateAxisSigned ) <= max( 16, abs( expectedAxisSigned ) / 5 ) &&
+                     consecutiveMomentumCollapseCount >= 2 )
+            {
+                // Scroll genuinely decelerated — accept the small step
+                // and let expected motion adapt naturally.
+                StitchLog( L"[Panorama/Stitch] Frame %zu momentum-collapse-capped: shift=(%d,%d) expected=(%d,%d) consecutiveCollapse=%d (accepting small step)\n",
+                             i,
+                             dx,
+                             dy,
+                             expectedDx,
+                             expectedDy,
+                             consecutiveMomentumCollapseCount );
+                consecutiveMomentumCollapseCount = 0;
+            }
+            else
+            {
+                // Frame was not momentum-collapse normalized — reset the
+                // consecutive counter so future genuine decelerations are
+                // detected fresh.
+                consecutiveMomentumCollapseCount = 0;
+            }
+        }
+
+        // After momentum-collapse normalization, propagate the DETECTED
+        // (pre-normalization) shift as the next expected step.  This lets
+        // the expected step decay toward actual scroll speed rather than
+        // staying locked at the historical peak, which would cause a
+        // feedback loop that over-advances the canvas.
+        int momentumCollapseNextExpectedDx = 0;
+        int momentumCollapseNextExpectedDy = 0;
+        if( momentumCollapseApplied )
+        {
+            momentumCollapseNextExpectedDx = momentumCollapseDetectedDx;
+            momentumCollapseNextExpectedDy = momentumCollapseDetectedDy;
         }
 
         int stepX = -dx;
@@ -7022,8 +7080,10 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         POINT nextOrigin = composedFrameOrigins.back();
         nextOrigin.x += stepX;
         nextOrigin.y += stepY;
-        const int nextExpectedDx = hasNextExpectedOverride ? overrideNextExpectedDx : dx;
-        const int nextExpectedDy = hasNextExpectedOverride ? overrideNextExpectedDy : dy;
+        const int nextExpectedDx = hasNextExpectedOverride ? overrideNextExpectedDx :
+                                   momentumCollapseApplied ? momentumCollapseNextExpectedDx : dx;
+        const int nextExpectedDy = hasNextExpectedOverride ? overrideNextExpectedDy :
+                                   momentumCollapseApplied ? momentumCollapseNextExpectedDy : dy;
         const int acceptedEligibilityStep = hasNextExpectedOverride
             ? overrideEligibilityStep
             : max( abs( dx ), abs( dy ) );
