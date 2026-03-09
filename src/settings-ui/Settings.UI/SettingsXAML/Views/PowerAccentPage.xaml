@@ -91,7 +91,7 @@
                                     SelectionMode="Multiple">
                                     <ListView.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <ItemsWrapGrid ItemWidth="280" Orientation="Horizontal" />
+                                            <ItemsWrapGrid Orientation="Horizontal" />
                                         </ItemsPanelTemplate>
                                     </ListView.ItemsPanel>
                                     <ListView.ItemContainerStyle>
