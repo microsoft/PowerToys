@@ -50,13 +50,13 @@ public partial class SettingsService
 
         if (migratedAny)
         {
-            SaveSettings(settings);
+            SaveSettings(settings, false);
         }
 
         return settings;
     }
 
-    public void SaveSettings(SettingsModel model)
+    public void SaveSettings(SettingsModel model, bool hotReload = false)
     {
         PersistenceService.SaveObject(
                         model,
@@ -64,14 +64,21 @@ public partial class SettingsService
                         JsonSerializationContext.Default.SettingsModel,
                         JsonSerializationContext.Default.Options,
                         beforeWriteMutation: obj => obj.Remove(DeprecatedHotkeyGoesHomeKey),
-                        afterWriteCallback: m => FinalizeSettingsSave(m),
+                        afterWriteCallback: m => FinalizeSettingsSave(m, hotReload),
                         _logger);
     }
 
-    private void FinalizeSettingsSave(SettingsModel model)
+    private void FinalizeSettingsSave(SettingsModel model, bool hotReload)
     {
         _settingsModel = model;
-        SettingsChanged?.Invoke(model, null);
+
+        // TODO: Instead of just raising the event here, we should
+        // have a file change watcher on the settings file, and
+        // reload the settings then
+        if (hotReload)
+        {
+            SettingsChanged?.Invoke(model, null);
+        }
     }
 
     private bool ApplyMigrations(JsonObject root, SettingsModel model)

@@ -14,8 +14,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-      <CsWinRTIncludes>Microsoft.Management.Deployment</CsWinRTIncludes>
-      <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <CsWinRTIncludes>Microsoft.Management.Deployment</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
   </PropertyGroup>
 
   <ItemGroup>

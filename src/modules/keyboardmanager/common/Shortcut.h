@@ -39,7 +39,8 @@ public:
     {
         RemapShortcut = 0,
         RunProgram = 1,
-        OpenURI = 2
+        OpenURI = 2,
+        RemapText = 3
     };
 
     enum StartWindowType
@@ -47,7 +48,7 @@ public:
         Normal = 0,
         Hidden = 1,
         Minimized = 2,
-        Maximized = 2
+        Maximized = 3
     };
 
     enum ProgramAlreadyRunningAction

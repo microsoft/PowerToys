@@ -22,7 +22,7 @@ public partial class IconInfoViewModel : ObservableObject, IIconInfo
 
     public IconDataViewModel Dark { get; private set; }
 
-    public IconDataViewModel IconForTheme(bool light) => Light = light ? Light : Dark;
+    public IconDataViewModel IconForTheme(bool light) => light ? Light : Dark;
 
     public bool HasIcon(bool light) => IconForTheme(light).HasIcon;
 

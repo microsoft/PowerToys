@@ -67,6 +67,7 @@ ARPINSTALLLOCATION
 ARPPRODUCTICON
 ARRAYSIZE
 ARROWKEYS
+arrowshape
 asf
 AShortcut
 ASingle
@@ -128,6 +129,7 @@ bthprops
 bti
 BTNFACE
 bugreport
+bugreportfile
 BUILDARCH
 BUILDNUMBER
 buildtransitive
@@ -204,6 +206,7 @@ comdlg
 comexp
 cominterop
 commandpalette
+commoncontrols
 compmgmt
 COMPOSITIONFULL
 CONFIGW
@@ -215,6 +218,7 @@ CONTEXTHELP
 CONTEXTMENUHANDLER
 contractversion
 CONTROLPARENT
+cooldown
 copiedcolorrepresentation
 COPYPEN
 COREWINDOW
@@ -537,6 +541,8 @@ HIBYTE
 hicon
 HIDEWINDOW
 Hif
+highlightbackground
+highlightthickness
 HIMAGELIST
 himl
 hinst
@@ -627,6 +633,7 @@ inetcpl
 Infobar
 INFOEXAMPLE
 Infotip
+initialfile
 INITDIALOG
 INITGUID
 INITTOLOGFONTSTRUCT
@@ -673,6 +680,7 @@ jpnime
 Jsons
 jsonval
 jxr
+kbmcontrols
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -790,6 +798,7 @@ MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
 MARKDOWNPREVIEWHANDLERCPP
+MAXDWORD
 MAXSHORTCUTSIZE
 maxversiontested
 MBM
@@ -809,6 +818,7 @@ Metadatas
 metafile
 metapackage
 mfc
+mfalse
 Mgmt
 Microwaved
 midl
@@ -867,6 +877,7 @@ msrc
 msstore
 msvcp
 MTND
+mtrue
 MULTIPLEUSE
 multizone
 muxc
@@ -976,6 +987,7 @@ NTAPI
 ntdll
 NTSTATUS
 NTSYSAPI
+nullability
 NULLCURSOR
 nullonfailure
 numberbox
@@ -1017,6 +1029,8 @@ OWNDC
 OWNERDRAWFIXED
 Packagemanager
 PACL
+padx
+pady
 PAINTSTRUCT
 PALETTEWINDOW
 PARENTNOTIFY
@@ -1448,6 +1462,7 @@ STYLECHANGING
 subkeys
 sublang
 SUBMODULEUPDATE
+sug
 Superbar
 sut
 svchost
@@ -1520,6 +1535,7 @@ tlc
 TPMLEFTALIGN
 TPMRETURNCMD
 TNP
+Toggleable
 Toolhelp
 toolwindow
 TOPDOWNDIB
@@ -2032,6 +2048,7 @@ metadatamatters
 middleclickaction
 MIIM
 mikeclayton
+mikehall
 minimizebox
 modelcontextprotocol
 mousehighlighter
@@ -2152,6 +2169,7 @@ taskbar
 TESTONLY
 TEXTBOXNEWLINE
 textextractor
+textvariable
 tgamma
 THEMECHANGED
 thickframe
@@ -2191,6 +2209,7 @@ wft
 wikimedia
 wikipedia
 windowedge
+WINDOWSAPPRUNTIME
 windowsml
 winexe
 winforms

@@ -26,8 +26,25 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     [ObservableProperty]
     public partial string ErrorMessage { get; protected set; } = string.Empty;
 
+    /// <summary>
+    /// Explicitly: is this page, the VM for the root page. This is used
+    /// slightly differently than being "nested". When we open CmdPal as a
+    /// transient window, we want that page to not have a back button, but that
+    /// page is _not_ the root page.
+    ///
+    /// Later in ListViewModel, we will have logic that checks if it is the root
+    /// page, and modify how selection is handled when the list changes.
+    /// </summary>
     [ObservableProperty]
-    public partial bool IsNested { get; set; } = true;
+    public partial bool IsRootPage { get; set; } = true;
+
+    /// <summary>
+    /// This is used to determine whether to show the back button on this page.
+    /// When a nested page is opened for the transient "dock flyout" window,
+    /// then we don't want to show the back button.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool HasBackButton { get; set; } = true;
 
     // This is set from the SearchBar
     [ObservableProperty]
@@ -76,9 +93,9 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public IconInfoViewModel Icon { get; protected set; }
 
-    public CommandProviderContext ProviderContext { get; protected set; }
+    public ICommandProviderContext ProviderContext { get; protected set; }
 
-    public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost, CommandProviderContext providerContext)
+    public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost, ICommandProviderContext providerContext)
         : base(scheduler)
     {
         InitializeSelfAsPageContext();
@@ -267,6 +284,8 @@ public interface IPageContext
     void ShowException(Exception ex, string? extensionHint = null);
 
     TaskScheduler Scheduler { get; }
+
+    ICommandProviderContext ProviderContext { get; }
 }
 
 public interface IPageViewModelFactoryService
@@ -278,5 +297,5 @@ public interface IPageViewModelFactoryService
     /// <param name="nested">Indicates whether the page is not the top-level page.</param>
     /// <param name="host">The command palette host that will host the page (for status messages)</param>
     /// <returns>A new instance of the page view model.</returns>
-    PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host, CommandProviderContext providerContext);
+    PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host, ICommandProviderContext providerContext);
 }
