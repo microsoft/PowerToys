@@ -7077,6 +7077,102 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
             }
         }
 
+        // Cross-verification diagnostic: after all guards, independently
+        // verify the accepted shift by finding the most distinctive row
+        // in the reference frame and searching for it in the current frame.
+        // This exposes harmonic aliases where the matcher found a plausible
+        // but incorrect offset.
+        if( PanoramaDebugEnabled() && composedFrameSteps.size() >= 6 )
+        {
+            const size_t refIdx = composedFrameIndices.back();
+            const std::vector<BYTE>& refPx = framePixels[refIdx];
+            const std::vector<BYTE>& curPx = framePixels[i];
+
+            // Find the most distinctive row in the reference frame
+            // (highest variance across horizontal pixel samples).
+            int bestVarRow = frameHeight / 2;
+            double bestVar = 0;
+            for( int y = frameHeight / 10; y < frameHeight * 9 / 10; y += 3 )
+            {
+                double sum = 0, sumSq = 0;
+                int count = 0;
+                for( int x = frameWidth / 8; x < frameWidth * 7 / 8; x += 8 )
+                {
+                    const size_t idx = static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) * 4 + static_cast<size_t>( x ) * 4;
+                    const double val = refPx[idx + 2]; // R channel
+                    sum += val;
+                    sumSq += val * val;
+                    ++count;
+                }
+                if( count > 0 )
+                {
+                    const double mean = sum / count;
+                    const double var = ( sumSq / count ) - ( mean * mean );
+                    if( var > bestVar )
+                    {
+                        bestVar = var;
+                        bestVarRow = y;
+                    }
+                }
+            }
+
+            // Search for the reference row in the current frame.
+            if( bestVar > 100 )
+            {
+                const int searchRange = min( frameHeight - 1, 600 );
+                double bestMatchDiff = 1e9;
+                int bestMatchDy = 0;
+                for( int probe = -searchRange; probe <= 0; ++probe )
+                {
+                    const int ty = bestVarRow + probe;
+                    if( ty < 0 || ty >= frameHeight )
+                        continue;
+                    double diff = 0;
+                    int count = 0;
+                    for( int x = frameWidth / 8; x < frameWidth * 7 / 8; x += 6 )
+                    {
+                        const size_t refOff = static_cast<size_t>( bestVarRow ) * static_cast<size_t>( frameWidth ) * 4 + static_cast<size_t>( x ) * 4;
+                        const size_t curOff = static_cast<size_t>( ty ) * static_cast<size_t>( frameWidth ) * 4 + static_cast<size_t>( x ) * 4;
+                        diff += abs( static_cast<int>( refPx[refOff + 0] ) - static_cast<int>( curPx[curOff + 0] ) )
+                              + abs( static_cast<int>( refPx[refOff + 1] ) - static_cast<int>( curPx[curOff + 1] ) )
+                              + abs( static_cast<int>( refPx[refOff + 2] ) - static_cast<int>( curPx[curOff + 2] ) );
+                        ++count;
+                    }
+                    diff /= max( 1, count * 3 );
+                    if( diff < bestMatchDiff )
+                    {
+                        bestMatchDiff = diff;
+                        bestMatchDy = probe;
+                    }
+                }
+
+                const int matcherDy = dy;
+                const int verifyDy = bestMatchDy;
+                const int discrepancy = abs( matcherDy ) - abs( verifyDy );
+                if( abs( discrepancy ) > max( 8, abs( matcherDy ) / 4 ) )
+                {
+                    StitchLog( L"[Panorama/Stitch] CrossVerify MISMATCH frame=%zu ref=%zu matcherDy=%d verifyDy=%d discrepancy=%d verifyDiff=%.1f refRow=%d refVar=%.0f\n",
+                               i,
+                               refIdx,
+                               matcherDy,
+                               verifyDy,
+                               discrepancy,
+                               bestMatchDiff,
+                               bestVarRow,
+                               bestVar );
+                }
+                else
+                {
+                    StitchLog( L"[Panorama/Stitch] CrossVerify OK frame=%zu ref=%zu matcherDy=%d verifyDy=%d verifyDiff=%.1f\n",
+                               i,
+                               refIdx,
+                               matcherDy,
+                               verifyDy,
+                               bestMatchDiff );
+                }
+            }
+        }
+
         POINT nextOrigin = composedFrameOrigins.back();
         nextOrigin.x += stepX;
         nextOrigin.y += stepY;
