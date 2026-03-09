@@ -17,13 +17,15 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 {
     private readonly ExtensionObject<IContentPage> _model;
+    private volatile IContextItemViewModel[] _moreCommands = [];
+    private volatile CommandContextItemViewModel[] _actualCommands = [];
 
     [ObservableProperty]
     public partial ObservableCollection<ContentViewModel> Content { get; set; } = [];
 
     public List<IContextItemViewModel> Commands { get; private set; } = [];
 
-    public bool HasCommands => ActualCommands.Count > 0;
+    public bool HasCommands => _actualCommands.Length > 0;
 
     public DetailsViewModel? Details { get; private set; }
 
@@ -31,19 +33,17 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     public bool HasDetails => Details is not null;
 
     /////// ICommandBarContext ///////
-    public IEnumerable<IContextItemViewModel> MoreCommands => Commands.Skip(1);
+    public IReadOnlyList<IContextItemViewModel> MoreCommands => _moreCommands;
 
-    private List<CommandContextItemViewModel> ActualCommands => Commands.OfType<CommandContextItemViewModel>().ToList();
-
-    public bool HasMoreCommands => ActualCommands.Count > 1;
+    public bool HasMoreCommands => _actualCommands.Length > 1;
 
     public string SecondaryCommandName => SecondaryCommand?.Name ?? string.Empty;
 
-    public CommandItemViewModel? PrimaryCommand => HasCommands ? ActualCommands[0] : null;
+    public CommandItemViewModel? PrimaryCommand => HasCommands ? _actualCommands[0] : null;
 
-    public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? ActualCommands[1] : null;
+    public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? _actualCommands[1] : null;
 
-    public List<IContextItemViewModel> AllCommands => Commands;
+    public IReadOnlyList<IContextItemViewModel> AllCommands => Commands;
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -132,6 +132,8 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 contextItem.InitializeProperties();
             });
 
+        RefreshCommandSnapshots();
+
         var extensionDetails = model.Details;
         if (extensionDetails is not null)
         {
@@ -201,6 +203,8 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                     Commands.Clear();
                 }
 
+                RefreshCommandSnapshots();
+
                 UpdateProperty(nameof(PrimaryCommand));
                 UpdateProperty(nameof(SecondaryCommand));
                 UpdateProperty(nameof(SecondaryCommandName));
@@ -241,6 +245,12 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                     WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
                 }
             });
+    }
+
+    private void RefreshCommandSnapshots()
+    {
+        _actualCommands = [.. Commands.OfType<CommandContextItemViewModel>()];
+        _moreCommands = Commands.Count > 1 ? [.. Commands.Skip(1)] : [];
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator

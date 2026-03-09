@@ -21,6 +21,12 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private readonly IContextMenuFactory? _contextMenuFactory;
 
+    private readonly Lock _moreCommandsLock = new();
+    private readonly List<IContextItemViewModel> _moreCommands = [];
+    private volatile CommandContextItemViewModel? _secondaryMoreCommand;
+    private volatile IContextItemViewModel[] _moreCommandsSnapshot = [];
+    private volatile IContextItemViewModel[] _allCommandsSnapshot = [];
+
     private ExtensionObject<IExtendedAttributesProvider>? ExtendedAttributesProvider { get; set; }
 
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
@@ -63,33 +69,22 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public CommandViewModel Command { get; private set; }
 
-    public List<IContextItemViewModel> MoreCommands { get; private set; } = [];
+    // Reuse a cached read-only snapshot so repeated reads don't allocate.
+    public IReadOnlyList<IContextItemViewModel> MoreCommands => _moreCommandsSnapshot;
 
-    IEnumerable<IContextItemViewModel> IContextMenuContext.MoreCommands => MoreCommands;
+    IReadOnlyList<IContextItemViewModel> IContextMenuContext.MoreCommands => _moreCommandsSnapshot;
 
-    private List<CommandContextItemViewModel> ActualCommands => MoreCommands.OfType<CommandContextItemViewModel>().ToList();
+    protected Lock MoreCommandsLock => _moreCommandsLock;
 
-    public bool HasMoreCommands => ActualCommands.Count > 0;
+    protected List<IContextItemViewModel> UnsafeMoreCommands => _moreCommands;
 
-    public string SecondaryCommandName => SecondaryCommand?.Name ?? string.Empty;
+    public bool HasMoreCommands => _secondaryMoreCommand is not null;
+
+    public string SecondaryCommandName => _secondaryMoreCommand?.Name ?? string.Empty;
 
     public CommandItemViewModel? PrimaryCommand => this;
 
-    public CommandItemViewModel? SecondaryCommand
-    {
-        get
-        {
-            if (HasMoreCommands)
-            {
-                if (MoreCommands[0] is CommandContextItemViewModel command)
-                {
-                    return command;
-                }
-            }
-
-            return null;
-        }
-    }
+    public CommandItemViewModel? SecondaryCommand => _secondaryMoreCommand;
 
     public bool ShouldBeVisible => !string.IsNullOrEmpty(Name);
 
@@ -101,18 +96,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public DataPackageView? DataPackage { get; private set; }
 
-    public List<IContextItemViewModel> AllCommands
-    {
-        get
-        {
-            List<IContextItemViewModel> l = _defaultCommandContextItemViewModel is null ?
-                new() :
-                [_defaultCommandContextItemViewModel];
-
-            l.AddRange(MoreCommands);
-            return l;
-        }
-    }
+    public IReadOnlyList<IContextItemViewModel> AllCommands => _allCommandsSnapshot;
 
     private static readonly IconInfoViewModel _errorIcon;
 
@@ -246,6 +230,11 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             UpdateDefaultContextItemIcon();
         }
 
+        lock (_moreCommandsLock)
+        {
+            RefreshMoreCommandStateUnsafe();
+        }
+
         Initialized |= InitializedState.SelectionInitialized;
         UpdateProperty(nameof(MoreCommands));
         UpdateProperty(nameof(AllCommands));
@@ -265,7 +254,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             Command = new(null, PageContext);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
-            MoreCommands = [];
+            ClearMoreCommands();
             _icon = _errorIcon;
             _titleCache.Invalidate();
             _subtitleCache.Invalidate();
@@ -304,7 +293,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             Command = new(null, PageContext);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
-            MoreCommands = [];
+            ClearMoreCommands();
             _icon = _errorIcon;
             _titleCache.Invalidate();
             _subtitleCache.Invalidate();
@@ -385,9 +374,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
             case nameof(model.MoreCommands):
                 BuildAndInitMoreCommands();
-                UpdateProperty(nameof(SecondaryCommand));
-                UpdateProperty(nameof(SecondaryCommandName));
-                UpdateProperty(nameof(HasMoreCommands));
+                UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands), nameof(AllCommands));
 
                 break;
             case nameof(DataPackage):
@@ -478,9 +465,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         var results = factory.UnsafeBuildAndInitMoreCommands(more, this);
 
         List<IContextItemViewModel>? freedItems;
-        lock (MoreCommands)
+        lock (_moreCommandsLock)
         {
-            ListHelpers.InPlaceUpdateList(MoreCommands, results, out freedItems);
+            ListHelpers.InPlaceUpdateList(_moreCommands, results, out freedItems);
+            RefreshMoreCommandStateUnsafe();
         }
 
         freedItems.OfType<CommandContextItemViewModel>()
@@ -516,19 +504,29 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     {
         base.UnsafeCleanup();
 
-        lock (MoreCommands)
+        List<IContextItemViewModel> freedItems;
+        CommandContextItemViewModel? freedDefault;
+        lock (_moreCommandsLock)
         {
-            MoreCommands.OfType<CommandContextItemViewModel>()
-                        .ToList()
-                        .ForEach(c => c.SafeCleanup());
-            MoreCommands.Clear();
+            freedItems = [.. _moreCommands];
+            _moreCommands.Clear();
+
+            // Null out here so the single RefreshMoreCommandStateUnsafe call
+            // produces an _allCommandsSnapshot that excludes the default command.
+            freedDefault = _defaultCommandContextItemViewModel;
+            _defaultCommandContextItemViewModel = null;
+
+            RefreshMoreCommandStateUnsafe();
         }
+
+        // Cleanup outside lock to avoid holding it during RPC calls
+        freedItems.OfType<CommandContextItemViewModel>()
+                  .ToList()
+                  .ForEach(c => c.SafeCleanup());
+        freedDefault?.SafeCleanup();
 
         // _listItemIcon.SafeCleanup();
         _icon = new(null); // necessary?
-
-        _defaultCommandContextItemViewModel?.SafeCleanup();
-        _defaultCommandContextItemViewModel = null;
 
         Command.PropertyChanged -= Command_PropertyChanged;
         Command.SafeCleanup();
@@ -544,6 +542,40 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     {
         base.SafeCleanup();
         Initialized |= InitializedState.CleanedUp;
+    }
+
+    protected void RefreshMoreCommandStateUnsafe()
+    {
+        _moreCommandsSnapshot = [.. _moreCommands];
+
+        _secondaryMoreCommand = null;
+        foreach (var item in _moreCommands)
+        {
+            if (item is CommandContextItemViewModel command)
+            {
+                _secondaryMoreCommand = command;
+                break;
+            }
+        }
+
+        _allCommandsSnapshot = _defaultCommandContextItemViewModel is null ?
+            _moreCommandsSnapshot :
+            [_defaultCommandContextItemViewModel, .. _moreCommandsSnapshot];
+    }
+
+    private void ClearMoreCommands()
+    {
+        List<IContextItemViewModel> freedItems;
+        lock (_moreCommandsLock)
+        {
+            freedItems = [.. _moreCommands];
+            _moreCommands.Clear();
+            RefreshMoreCommandStateUnsafe();
+        }
+
+        freedItems.OfType<CommandContextItemViewModel>()
+                  .ToList()
+                  .ForEach(c => c.SafeCleanup());
     }
 }
 
