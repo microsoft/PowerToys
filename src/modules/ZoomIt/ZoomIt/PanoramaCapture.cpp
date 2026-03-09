@@ -6641,6 +6641,128 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         dx = max( -maxAbsDx, min( maxAbsDx, dx ) );
         dy = max( -maxAbsDy, min( maxAbsDy, dy ) );
 
+        // Full-overlap harmonic verification for high-constant-fraction content.
+        // When the matcher returns a step that differs from expected on HCF
+        // content, compare the FULL overlap region at both the matcher's
+        // candidate and the expected offset.  The full overlap (~500+ rows)
+        // creates a unique vertical fingerprint that no harmonic can fake,
+        // unlike per-row MAD which repeats at ~40-77 row intervals.
+        // Only compares two candidates (matcher vs expected) so cost is
+        // negligible (~0.2ms per frame).
+        if( composedFrameSteps.size() >= 6 &&
+            frameConstantFraction[composedFrameIndices.back()] > 0.50 &&
+            abs( dy ) > max( 12, minProgress ) &&
+            abs( dy ) >= abs( dx ) * 2 )
+        {
+            // Try the expected step as an alternative candidate.
+            // Also try the minimum of the two as a near-stationary probe.
+            const int candidateDy = dy;
+            const int altDy1 = ( abs( expectedDy ) > 0 && abs( expectedDy ) < abs( candidateDy ) ) ? expectedDy : 0;
+            // Estimate smallest plausible step from recent composed history.
+            int recentMinStep = abs( candidateDy );
+            for( int si = static_cast<int>( composedFrameSteps.size() ) - 1;
+                 si >= 1 && si >= static_cast<int>( composedFrameSteps.size() ) - 6;
+                 --si )
+            {
+                const int s = abs( composedFrameSteps[static_cast<size_t>( si )].y );
+                if( s > 0 && s < recentMinStep )
+                    recentMinStep = s;
+            }
+            const int altDy2 = ( recentMinStep > 0 && recentMinStep < abs( candidateDy ) )
+                ? ( ( candidateDy < 0 ) ? -recentMinStep : recentMinStep )
+                : 0;
+
+            if( altDy1 != 0 || altDy2 != 0 )
+        {
+            const size_t refIdx = composedFrameIndices.back();
+            const std::vector<BYTE>& refPx = framePixels[refIdx];
+            const std::vector<BYTE>& curPx = framePixels[i];
+            const int xMargin = max( 10, frameWidth / 8 );
+            const int xStep = max( 1, ( frameWidth - 2 * xMargin ) / 50 );
+
+            // Compute full-overlap MAD for a candidate dy.
+            auto fullOverlapMAD = [&]( int candidateDy ) -> double
+            {
+                const int overlapRows = max( 0, frameHeight - abs( candidateDy ) );
+                if( overlapRows < frameHeight / 3 )
+                    return 9999.0;
+                const int startRow = ( candidateDy < 0 ) ? 0 : candidateDy;
+                const int refStartRow = ( candidateDy < 0 ) ? -candidateDy : 0;
+                double totalDiff = 0;
+                int totalSamples = 0;
+                for( int row = 0; row < overlapRows; ++row )
+                {
+                    const int refY = refStartRow + row;
+                    const int curY = startRow + row;
+                    if( refY < 0 || refY >= frameHeight || curY < 0 || curY >= frameHeight )
+                        continue;
+                    for( int x = xMargin; x < frameWidth - xMargin; x += xStep )
+                    {
+                        const size_t refOff = static_cast<size_t>( refY ) * static_cast<size_t>( frameWidth ) * 4 +
+                                              static_cast<size_t>( x ) * 4;
+                        const size_t curOff = static_cast<size_t>( curY ) * static_cast<size_t>( frameWidth ) * 4 +
+                                              static_cast<size_t>( x ) * 4;
+                        totalDiff += abs( static_cast<int>( refPx[refOff + 0] ) - static_cast<int>( curPx[curOff + 0] ) )
+                                   + abs( static_cast<int>( refPx[refOff + 1] ) - static_cast<int>( curPx[curOff + 1] ) )
+                                   + abs( static_cast<int>( refPx[refOff + 2] ) - static_cast<int>( curPx[curOff + 2] ) );
+                        ++totalSamples;
+                    }
+                }
+                return totalSamples > 0 ? totalDiff / ( totalSamples * 3.0 ) : 9999.0;
+            };
+
+            const double matcherScore = fullOverlapMAD( dy );
+
+            // Test alternative candidates and pick the best.
+            double bestAltScore = matcherScore;
+            int bestAltDy = dy;
+            if( altDy1 != 0 )
+            {
+                const double s = fullOverlapMAD( altDy1 );
+                if( s < bestAltScore - 0.3 )
+                {
+                    bestAltScore = s;
+                    bestAltDy = altDy1;
+                }
+            }
+            if( altDy2 != 0 && altDy2 != altDy1 )
+            {
+                const double s = fullOverlapMAD( altDy2 );
+                if( s < bestAltScore - 0.3 )
+                {
+                    bestAltScore = s;
+                    bestAltDy = altDy2;
+                }
+            }
+
+            if( bestAltDy != dy &&
+                bestAltScore < matcherScore - 0.3 &&
+                bestAltScore < 4.0 )
+            {
+                StitchLog( L"[Panorama/Stitch] Frame %zu OverlapVerify override: matcherDy=%d matcherScore=%.2f bestDy=%d bestScore=%.2f alt1=%d alt2=%d constFrac=%.2f\n",
+                             i,
+                             dy,
+                             matcherScore,
+                             bestAltDy,
+                             bestAltScore,
+                             altDy1,
+                             altDy2,
+                             frameConstantFraction[refIdx] );
+                dy = bestAltDy;
+                dx = 0;
+            }
+            else if( matcherScore > 3.0 )
+            {
+                StitchLog( L"[Panorama/Stitch] Frame %zu OverlapVerify kept: matcherDy=%d matcherScore=%.2f bestAltDy=%d bestAltScore=%.2f\n",
+                             i,
+                             dy,
+                             matcherScore,
+                             bestAltDy,
+                             bestAltScore );
+            }
+            }
+        }
+
         // Early growth-outlier guard for low-entropy startup/recovery.
         // This catches the first large harmonic jump (e.g. 330 -> 800)
         // before long-enough history exists for continuity statistics.
