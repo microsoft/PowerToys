@@ -40,7 +40,6 @@ body:
       - Other (please specify in "Steps to Reproduce")
   validations:
     required: true
-
 - type: dropdown
   attributes:
     label: Area(s) with issue?
@@ -106,7 +105,13 @@ body:
     placeholder: What happened instead?
   validations:
     required: false
-
+- type: upload
+  id: Bug Report 
+  attributes:
+    label: Upload Bug Report ZIP-file
+    description: Right-clicking on the PowerToys tray icon in the taskbar allows you to select "Report bug" which generates a ZIP-file useful for understanding your setup and getting insights into the PowerToys logs.
+  validations:
+    required: false
 - id: additionalInfo
   type: textarea
   attributes:
