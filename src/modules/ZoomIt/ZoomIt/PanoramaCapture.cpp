@@ -6548,6 +6548,67 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
                 if( bridgeMatchesExpectedTotal && acceptedClearlyUnderAdvanced && adjacentNearStationaryGap )
                 {
+                    // Don't trust the gap-bridge when any intermediate frame
+                    // is nearly uniform (e.g. an all-dark screen capture).
+                    // The bridge matcher produces harmonic aliases on uniform
+                    // content and the adjacent pair provides no alignment
+                    // signal.  In this case, keep the direct match result.
+                    bool intermediateFrameNearlyUniform = false;
+                    for( size_t skip = lastAcceptedIndex + 1; skip < i; ++skip )
+                    {
+                        // Check both constant fraction AND average pixel brightness.
+                        // A nearly-black frame (avgPixel < 25) with elevated constFrac
+                        // is a blank/dark screen capture that provides no alignment signal.
+                        const double skipConstFrac = frameConstantFraction[skip];
+                        bool skipIsNearlyUniform = skipConstFrac > 0.55;
+                        if( skipIsNearlyUniform )
+                        {
+                            // Verify it's actually a low-content frame by checking
+                            // average pixel brightness. Sample the center of the frame.
+                            const std::vector<BYTE>& skipPx = framePixels[skip];
+                            long long pixSum = 0;
+                            int pixCount = 0;
+                            const int sampleMargin = frameWidth / 6;
+                            for( int sy = frameHeight / 4; sy < frameHeight * 3 / 4; sy += 8 )
+                            {
+                                for( int sx = sampleMargin; sx < frameWidth - sampleMargin; sx += 8 )
+                                {
+                                    const size_t off = static_cast<size_t>( sy ) * static_cast<size_t>( frameWidth ) * 4 +
+                                                       static_cast<size_t>( sx ) * 4;
+                                    pixSum += skipPx[off + 0] + skipPx[off + 1] + skipPx[off + 2];
+                                    ++pixCount;
+                                }
+                            }
+                            const double avgPx = pixCount > 0 ? static_cast<double>( pixSum ) / ( pixCount * 3.0 ) : 128.0;
+                            // Nearly-black or nearly-white uniform frames have no useful structure.
+                            skipIsNearlyUniform = ( avgPx < 65.0 || avgPx > 240.0 );
+
+                            StitchLog( L"[Panorama/Stitch] Frame %zu gap-bridge skip-check: intermediate=%zu constFrac=%.3f avgPx=%.1f uniform=%d\n",
+                                         i,
+                                         skip,
+                                         skipConstFrac,
+                                         avgPx,
+                                         skipIsNearlyUniform ? 1 : 0 );
+                        }
+                        if( skipIsNearlyUniform )
+                        {
+                            intermediateFrameNearlyUniform = true;
+                            break;
+                        }
+                    }
+
+                    if( intermediateFrameNearlyUniform )
+                    {
+                        StitchLog( L"[Panorama/Stitch] Frame %zu gap-bridge-skipped: intermediate frame nearly uniform accepted=(%d,%d) bridge=(%d,%d) gap=%d\n",
+                                     i,
+                                     dx,
+                                     dy,
+                                     bridgeDx,
+                                     bridgeDy,
+                                     acceptedGap );
+                    }
+                    else
+                    {
                     const int originalDx = dx;
                     const int originalDy = dy;
                     dx = bridgeDx;
@@ -6568,6 +6629,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                                  acceptedGap,
                                  overrideNextExpectedDx,
                                  overrideNextExpectedDy );
+                    }
                 }
             }
         }
@@ -6578,97 +6640,6 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         const int maxAbsDy = frameHeight - minProgress;
         dx = max( -maxAbsDx, min( maxAbsDx, dx ) );
         dy = max( -maxAbsDy, min( maxAbsDy, dy ) );
-
-        // Multi-row block verification for high-constant-fraction content.
-        // When the content is mostly dark/uniform, the single-row MAD matcher
-        // often locks onto harmonic aliases because individual rows repeat at
-        // multiple offsets.  A block of consecutive rows creates a unique
-        // vertical fingerprint that disambiguates the correct small shift from
-        // larger harmonics.  Only fires on HCF content with established motion.
-        if( composedFrameSteps.size() >= 6 &&
-            frameConstantFraction[composedFrameIndices.back()] > 0.50 &&
-            abs( dy ) > max( 12, minProgress ) &&
-            abs( dy ) >= abs( dx ) * 2 )
-        {
-            const size_t refIdx = composedFrameIndices.back();
-            const std::vector<BYTE>& refPx = framePixels[refIdx];
-            const std::vector<BYTE>& curPx = framePixels[i];
-            const int matcherDy = dy;
-            const int blockHeight = max( 30, min( 60, frameHeight / 12 ) );
-            // Center the verification block in the middle third of the frame.
-            const int blockCenterY = frameHeight / 2;
-            const int blockStartY = max( 0, blockCenterY - blockHeight / 2 );
-            const int blockEndY = min( frameHeight, blockStartY + blockHeight );
-            const int xMargin = max( 10, frameWidth / 10 );
-            const int xStep = max( 1, ( frameWidth - 2 * xMargin ) / 60 );
-
-            // Score a candidate dy by computing block MAD across all rows.
-            auto blockMAD = [&]( int candidateDy ) -> double
-            {
-                double totalDiff = 0;
-                int totalSamples = 0;
-                for( int by = blockStartY; by < blockEndY; ++by )
-                {
-                    const int srcY = by + candidateDy;
-                    if( srcY < 0 || srcY >= frameHeight )
-                        continue;
-                    for( int x = xMargin; x < frameWidth - xMargin; x += xStep )
-                    {
-                        const size_t refOff = static_cast<size_t>( by ) * static_cast<size_t>( frameWidth ) * 4 +
-                                              static_cast<size_t>( x ) * 4;
-                        const size_t curOff = static_cast<size_t>( srcY ) * static_cast<size_t>( frameWidth ) * 4 +
-                                              static_cast<size_t>( x ) * 4;
-                        totalDiff += abs( static_cast<int>( refPx[refOff + 0] ) - static_cast<int>( curPx[curOff + 0] ) )
-                                   + abs( static_cast<int>( refPx[refOff + 1] ) - static_cast<int>( curPx[curOff + 1] ) )
-                                   + abs( static_cast<int>( refPx[refOff + 2] ) - static_cast<int>( curPx[curOff + 2] ) );
-                        ++totalSamples;
-                    }
-                }
-                return totalSamples > 0 ? totalDiff / ( totalSamples * 3.0 ) : 9999.0;
-            };
-
-            const double matcherBlockScore = blockMAD( matcherDy );
-
-            // Probe smaller offsets in the same direction.
-            const int sign = ( matcherDy < 0 ) ? -1 : 1;
-            const int probeMax = min( abs( matcherDy ) - 1, frameHeight / 3 );
-            double bestProbeScore = matcherBlockScore;
-            int bestProbeDy = matcherDy;
-            for( int probe = 1; probe <= probeMax; ++probe )
-            {
-                const int candidateDy = sign * probe;
-                const double score = blockMAD( candidateDy );
-                if( score < bestProbeScore - 0.5 )
-                {
-                    bestProbeScore = score;
-                    bestProbeDy = candidateDy;
-                }
-            }
-
-            if( bestProbeDy != matcherDy &&
-                bestProbeScore < matcherBlockScore * 0.5 &&
-                bestProbeScore < 6.0 )
-            {
-                StitchLog( L"[Panorama/Stitch] Frame %zu BlockVerify override: matcherDy=%d blockScore=%.1f probeDy=%d probeScore=%.1f blockH=%d constFrac=%.2f\n",
-                             i,
-                             matcherDy,
-                             matcherBlockScore,
-                             bestProbeDy,
-                             bestProbeScore,
-                             blockEndY - blockStartY,
-                             frameConstantFraction[refIdx] );
-                dy = bestProbeDy;
-                dx = 0; // Vertical scroll, zero horizontal.
-            }
-            else if( matcherBlockScore > 2.0 )
-            {
-                StitchLog( L"[Panorama/Stitch] Frame %zu BlockVerify confirmed: matcherDy=%d blockScore=%.1f (poor) constFrac=%.2f\n",
-                             i,
-                             matcherDy,
-                             matcherBlockScore,
-                             frameConstantFraction[refIdx] );
-            }
-        }
 
         // Early growth-outlier guard for low-entropy startup/recovery.
         // This catches the first large harmonic jump (e.g. 330 -> 800)
