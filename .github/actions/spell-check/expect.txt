@@ -129,6 +129,7 @@ bthprops
 bti
 BTNFACE
 bugreport
+bugreportfile
 BUILDARCH
 BUILDNUMBER
 buildtransitive
