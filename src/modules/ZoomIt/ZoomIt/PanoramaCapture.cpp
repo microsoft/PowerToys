@@ -6641,125 +6641,199 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         dx = max( -maxAbsDx, min( maxAbsDx, dx ) );
         dy = max( -maxAbsDy, min( maxAbsDy, dy ) );
 
-        // Full-overlap harmonic verification for high-constant-fraction content.
-        // When the matcher returns a step that differs from expected on HCF
-        // content, compare the FULL overlap region at both the matcher's
-        // candidate and the expected offset.  The full overlap (~500+ rows)
-        // creates a unique vertical fingerprint that no harmonic can fake,
-        // unlike per-row MAD which repeats at ~40-77 row intervals.
-        // Only compares two candidates (matcher vs expected) so cost is
-        // negligible (~0.2ms per frame).
-        if( composedFrameSteps.size() >= 6 &&
-            frameConstantFraction[composedFrameIndices.back()] > 0.50 &&
-            abs( dy ) > max( 12, minProgress ) &&
-            abs( dy ) >= abs( dx ) * 2 )
-        {
-            // Try the expected step as an alternative candidate.
-            // Also try the minimum of the two as a near-stationary probe.
-            const int candidateDy = dy;
-            const int altDy1 = ( abs( expectedDy ) > 0 && abs( expectedDy ) < abs( candidateDy ) ) ? expectedDy : 0;
-            // Estimate smallest plausible step from recent composed history.
-            int recentMinStep = abs( candidateDy );
-            for( int si = static_cast<int>( composedFrameSteps.size() ) - 1;
-                 si >= 1 && si >= static_cast<int>( composedFrameSteps.size() ) - 6;
-                 --si )
-            {
-                const int s = abs( composedFrameSteps[static_cast<size_t>( si )].y );
-                if( s > 0 && s < recentMinStep )
-                    recentMinStep = s;
-            }
-            const int altDy2 = ( recentMinStep > 0 && recentMinStep < abs( candidateDy ) )
-                ? ( ( candidateDy < 0 ) ? -recentMinStep : recentMinStep )
-                : 0;
-
-            if( altDy1 != 0 || altDy2 != 0 )
+        // Distinctive-row anchor verification for high-constant-fraction content.
+        // On dark/uniform frames the matcher picks harmonic aliases because
+        // ~60% of pixels are identical at every offset.  Instead of averaging
+        // over all rows, find a unique high-variance row in the previous frame
+        // and search for it in the current frame.  A unique row (one with no
+        // near-duplicate elsewhere in the same frame) provides an unambiguous
+        // MAD minimum that breaks harmonics.
+        if( composedFrameSteps.size() >= 4 &&
+            frameConstantFraction[composedFrameIndices.back()] > 0.45 &&
+            abs( dy ) >= abs( dx ) * 2 &&
+            abs( dy ) > 0 )
         {
             const size_t refIdx = composedFrameIndices.back();
             const std::vector<BYTE>& refPx = framePixels[refIdx];
             const std::vector<BYTE>& curPx = framePixels[i];
             const int xMargin = max( 10, frameWidth / 8 );
-            const int xStep = max( 1, ( frameWidth - 2 * xMargin ) / 50 );
+            const int sigXStep = max( 1, ( frameWidth - 2 * xMargin ) / 120 );
 
-            // Compute full-overlap MAD for a candidate dy.
-            auto fullOverlapMAD = [&]( int candidateDy ) -> double
+            // Step 1: Collect the top candidate anchor rows by variance.
+            struct AnchorCandidate { int y; double var; };
+            std::vector<AnchorCandidate> candidates;
+            candidates.reserve( 256 );
+            const int varScanStep = 3;
+            const int varXStep = max( 1, ( frameWidth - 2 * xMargin ) / 80 );
+            for( int y = 10; y < frameHeight - 10; y += varScanStep )
             {
-                const int overlapRows = max( 0, frameHeight - abs( candidateDy ) );
-                if( overlapRows < frameHeight / 3 )
-                    return 9999.0;
-                const int startRow = ( candidateDy < 0 ) ? 0 : candidateDy;
-                const int refStartRow = ( candidateDy < 0 ) ? -candidateDy : 0;
-                double totalDiff = 0;
-                int totalSamples = 0;
-                for( int row = 0; row < overlapRows; ++row )
+                double sum = 0, sumSq = 0;
+                int n = 0;
+                for( int x = xMargin; x < frameWidth - xMargin; x += varXStep )
                 {
-                    const int refY = refStartRow + row;
-                    const int curY = startRow + row;
-                    if( refY < 0 || refY >= frameHeight || curY < 0 || curY >= frameHeight )
-                        continue;
-                    for( int x = xMargin; x < frameWidth - xMargin; x += xStep )
-                    {
-                        const size_t refOff = static_cast<size_t>( refY ) * static_cast<size_t>( frameWidth ) * 4 +
-                                              static_cast<size_t>( x ) * 4;
-                        const size_t curOff = static_cast<size_t>( curY ) * static_cast<size_t>( frameWidth ) * 4 +
-                                              static_cast<size_t>( x ) * 4;
-                        totalDiff += abs( static_cast<int>( refPx[refOff + 0] ) - static_cast<int>( curPx[curOff + 0] ) )
-                                   + abs( static_cast<int>( refPx[refOff + 1] ) - static_cast<int>( curPx[curOff + 1] ) )
-                                   + abs( static_cast<int>( refPx[refOff + 2] ) - static_cast<int>( curPx[curOff + 2] ) );
-                        ++totalSamples;
-                    }
+                    const size_t off = static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) * 4 +
+                                       static_cast<size_t>( x ) * 4;
+                    const double luma = refPx[off + 2] * 0.299 + refPx[off + 1] * 0.587 + refPx[off + 0] * 0.114;
+                    sum += luma;
+                    sumSq += luma * luma;
+                    ++n;
                 }
-                return totalSamples > 0 ? totalDiff / ( totalSamples * 3.0 ) : 9999.0;
+                if( n > 0 )
+                {
+                    const double mean = sum / n;
+                    const double var = sumSq / n - mean * mean;
+                    if( var > 500.0 )
+                        candidates.push_back( { y, var } );
+                }
+            }
+
+            // Sort descending by variance so we try the best rows first.
+            std::sort( candidates.begin(), candidates.end(),
+                       []( const AnchorCandidate& a, const AnchorCandidate& b ) { return a.var > b.var; } );
+
+            // Limit to top 20 candidates for performance.
+            if( candidates.size() > 20 )
+                candidates.resize( 20 );
+
+            // Helper: extract a row signature from the reference frame.
+            auto extractSig = [&]( int y, std::vector<int>& sigR, std::vector<int>& sigG, std::vector<int>& sigB )
+            {
+                sigR.clear(); sigG.clear(); sigB.clear();
+                for( int x = xMargin; x < frameWidth - xMargin; x += sigXStep )
+                {
+                    const size_t off = static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) * 4 +
+                                       static_cast<size_t>( x ) * 4;
+                    sigB.push_back( refPx[off + 0] );
+                    sigG.push_back( refPx[off + 1] );
+                    sigR.push_back( refPx[off + 2] );
+                }
             };
 
-            const double matcherScore = fullOverlapMAD( dy );
-
-            // Test alternative candidates and pick the best.
-            double bestAltScore = matcherScore;
-            int bestAltDy = dy;
-            if( altDy1 != 0 )
+            // Helper: compute MAD between two signatures.
+            auto sigMAD = [&]( const std::vector<int>& sigR, const std::vector<int>& sigG,
+                               const std::vector<int>& sigB, const std::vector<BYTE>& px, int y ) -> double
             {
-                const double s = fullOverlapMAD( altDy1 );
-                if( s < bestAltScore - 0.3 )
+                if( y < 0 || y >= frameHeight )
+                    return 9999.0;
+                const int len = static_cast<int>( sigR.size() );
+                double diff = 0;
+                for( int si = 0; si < len; ++si )
                 {
-                    bestAltScore = s;
-                    bestAltDy = altDy1;
+                    const int x = xMargin + si * sigXStep;
+                    const size_t off = static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) * 4 +
+                                       static_cast<size_t>( x ) * 4;
+                    diff += abs( sigB[si] - static_cast<int>( px[off + 0] ) )
+                          + abs( sigG[si] - static_cast<int>( px[off + 1] ) )
+                          + abs( sigR[si] - static_cast<int>( px[off + 2] ) );
+                }
+                return diff / ( len * 3.0 );
+            };
+
+            // Step 2: Find the first candidate row that is UNIQUE within the
+            // reference frame (no near-duplicate row within ±(frameHeight/2)).
+            int bestAnchorY = -1;
+            double bestAnchorVar = 0;
+            std::vector<int> anchorSigR, anchorSigG, anchorSigB;
+
+            for( const auto& cand : candidates )
+            {
+                extractSig( cand.y, anchorSigR, anchorSigG, anchorSigB );
+
+                // Check for duplicates in the reference frame.
+                bool hasDuplicate = false;
+                for( int checkY = 10; checkY < frameHeight - 10; checkY += varScanStep )
+                {
+                    if( abs( checkY - cand.y ) < 20 )
+                        continue; // Skip nearby rows (same feature).
+                    const double mad = sigMAD( anchorSigR, anchorSigG, anchorSigB, refPx, checkY );
+                    if( mad < 3.0 )
+                    {
+                        hasDuplicate = true;
+                        break;
+                    }
+                }
+
+                if( !hasDuplicate )
+                {
+                    bestAnchorY = cand.y;
+                    bestAnchorVar = cand.var;
+                    break; // Found a unique distinctive row.
                 }
             }
-            if( altDy2 != 0 && altDy2 != altDy1 )
-            {
-                const double s = fullOverlapMAD( altDy2 );
-                if( s < bestAltScore - 0.3 )
-                {
-                    bestAltScore = s;
-                    bestAltDy = altDy2;
-                }
-            }
 
-            if( bestAltDy != dy &&
-                bestAltScore < matcherScore - 0.3 &&
-                bestAltScore < 4.0 )
+            if( bestAnchorY >= 0 )
             {
-                StitchLog( L"[Panorama/Stitch] Frame %zu OverlapVerify override: matcherDy=%d matcherScore=%.2f bestDy=%d bestScore=%.2f alt1=%d alt2=%d constFrac=%.2f\n",
-                             i,
-                             dy,
-                             matcherScore,
-                             bestAltDy,
-                             bestAltScore,
-                             altDy1,
-                             altDy2,
-                             frameConstantFraction[refIdx] );
-                dy = bestAltDy;
-                dx = 0;
-            }
-            else if( matcherScore > 3.0 )
-            {
-                StitchLog( L"[Panorama/Stitch] Frame %zu OverlapVerify kept: matcherDy=%d matcherScore=%.2f bestAltDy=%d bestAltScore=%.2f\n",
-                             i,
-                             dy,
-                             matcherScore,
-                             bestAltDy,
-                             bestAltScore );
-            }
+                const int sigLen = static_cast<int>( anchorSigR.size() );
+
+                // Step 3: Search the current frame for this unique signature.
+                // Also count near-best matches to detect ambiguity.
+                const int searchRadius = max( abs( dy ) + 20, frameHeight / 2 );
+                const int searchLo = max( -( frameHeight - 1 ), dy - searchRadius );
+                const int searchHi = min( 0, dy + searchRadius );
+
+                double bestMatchMAD = 9999.0;
+                int bestMatchDy = dy;
+                double matcherAnchorMAD = 9999.0;
+
+                // Store all match scores so we can check for ambiguity.
+                struct MatchResult { int candDy; double mad; };
+                std::vector<MatchResult> goodMatches;
+
+                for( int candDy = searchLo; candDy <= searchHi; ++candDy )
+                {
+                    const int targetY = bestAnchorY + candDy;
+                    if( targetY < 0 || targetY >= frameHeight )
+                        continue;
+
+                    const double mad = sigMAD( anchorSigR, anchorSigG, anchorSigB, curPx, targetY );
+
+                    if( candDy == dy )
+                        matcherAnchorMAD = mad;
+
+                    if( mad < bestMatchMAD )
+                    {
+                        bestMatchMAD = mad;
+                        bestMatchDy = candDy;
+                    }
+
+                    if( mad < 3.0 )
+                        goodMatches.push_back( { candDy, mad } );
+                }
+
+                // Count distinct match clusters (merge matches within ±3).
+                int distinctMatches = 0;
+                for( size_t mi = 0; mi < goodMatches.size(); ++mi )
+                {
+                    if( mi == 0 || abs( goodMatches[mi].candDy - goodMatches[mi - 1].candDy ) > 3 )
+                        ++distinctMatches;
+                }
+
+                // Step 4: Override only if the anchor found a confident,
+                // different, unambiguous answer (single distinct match).
+                const bool anchorConfident = bestMatchMAD < 3.0;
+                const bool anchorDiffers = bestMatchDy != dy;
+                const bool anchorSmaller = abs( bestMatchDy ) < abs( dy );
+                const bool anchorUnambiguous = distinctMatches == 1;
+
+                if( anchorConfident && anchorDiffers && anchorSmaller && anchorUnambiguous &&
+                    ( matcherAnchorMAD - bestMatchMAD ) > 1.0 )
+                {
+                    // Diagnostic only: log when the anchor would override.
+                    // Override is disabled because off-by-1 corrections on
+                    // highly-uniform dark content introduce seam artifacts.
+                    StitchLog( L"[Panorama/Stitch] Frame %zu AnchorWouldOverride: matcherDy=%d anchorDy=%d anchorMAD=%.2f matcherMAD=%.2f anchorY=%d anchorVar=%.0f constFrac=%.2f distinct=%d\n",
+                                 i, dy, bestMatchDy, bestMatchMAD, matcherAnchorMAD,
+                                 bestAnchorY, bestAnchorVar,
+                                 frameConstantFraction[refIdx], distinctMatches );
+                }
+                else
+                {
+                    StitchLog( L"[Panorama/Stitch] Frame %zu AnchorKept: matcherDy=%d anchorBestDy=%d anchorMAD=%.2f matcherMAD=%.2f anchorY=%d anchorVar=%.0f confident=%d differs=%d smaller=%d unambig=%d distinct=%d\n",
+                                 i, dy, bestMatchDy, bestMatchMAD, matcherAnchorMAD,
+                                 bestAnchorY, bestAnchorVar,
+                                 anchorConfident ? 1 : 0, anchorDiffers ? 1 : 0, anchorSmaller ? 1 : 0,
+                                 anchorUnambiguous ? 1 : 0, distinctMatches );
+                }
             }
         }
 
