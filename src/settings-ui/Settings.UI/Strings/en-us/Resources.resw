@@ -594,6 +594,10 @@ opera.exe</value>
     <value>Set and manage your remappings</value>
     <comment>Description for the new editor button</comment>
   </data>
+  <data name="Dashboard_KeyboardManager_OpenEditor" xml:space="preserve">
+    <value>Open Keyboard Manager</value>
+    <comment>Label for the Keyboard Manager editor shortcut on the dashboard page</comment>
+  </data>
   <data name="KeyboardManager_GoBackClassic.Content" xml:space="preserve">
     <value>Switch back to the classic editor</value>
     <comment>Keyboard Manager link to switch back to the classic editor UI</comment>
