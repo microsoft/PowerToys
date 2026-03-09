@@ -2554,11 +2554,11 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="MouseUtils_CursorWrap_ActivationMode_HoldingCtrl.Content" xml:space="preserve">
     <value>Holding Ctrl</value>
-    <comment>CursorWrap: Activation mode - disable wrap when Ctrl held</comment>
+    <comment>CursorWrap: Activation mode - wrap only when Ctrl held</comment>
   </data>
   <data name="MouseUtils_CursorWrap_ActivationMode_HoldingShift.Content" xml:space="preserve">
     <value>Holding Shift</value>
-    <comment>CursorWrap: Activation mode - disable wrap when Shift held</comment>
+    <comment>CursorWrap: Activation mode - wrap only when Shift held</comment>
   </data>		
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
