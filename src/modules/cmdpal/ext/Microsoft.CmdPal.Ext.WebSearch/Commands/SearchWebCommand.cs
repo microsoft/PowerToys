@@ -6,11 +6,12 @@ using System;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers.Browser;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Commands;
 
-internal sealed partial class SearchWebCommand : InvokableCommand
+internal sealed partial class SearchWebCommand : InvokableCommand2
 {
     private readonly ISettingsInterface _settingsManager;
     private readonly IBrowserInfoService _browserInfoService;
@@ -27,8 +28,14 @@ internal sealed partial class SearchWebCommand : InvokableCommand
     }
 
     public override CommandResult Invoke()
+        => InvokeSearch(Arguments);
+
+    public override ICommandResult InvokeWithArgs(object? sender, IFallbackCommandInvocationArgs args)
+        => InvokeSearch(args.Query);
+
+    private CommandResult InvokeSearch(string arguments)
     {
-        var uri = BuildUri();
+        var uri = BuildUri(arguments);
 
         if (!_browserInfoService.Open(uri))
         {
@@ -39,17 +46,17 @@ internal sealed partial class SearchWebCommand : InvokableCommand
         // remember only the query, not the full URI
         if (_settingsManager.HistoryItemCount != 0)
         {
-            _settingsManager.AddHistoryItem(new HistoryItem(Arguments, DateTime.Now));
+            _settingsManager.AddHistoryItem(new HistoryItem(arguments, DateTime.Now));
         }
 
         return CommandResult.Dismiss();
     }
 
-    private string BuildUri()
+    private string BuildUri(string arguments)
     {
         if (string.IsNullOrWhiteSpace(_settingsManager.CustomSearchUri))
         {
-            return $"? " + Arguments;
+            return $"? " + arguments;
         }
 
         // if the custom search URI contains query placeholder, replace it with the actual query
@@ -60,12 +67,12 @@ internal sealed partial class SearchWebCommand : InvokableCommand
         {
             if (_settingsManager.CustomSearchUri.Contains(placeholder, StringComparison.OrdinalIgnoreCase))
             {
-                return _settingsManager.CustomSearchUri.Replace(placeholder, Uri.EscapeDataString(Arguments), StringComparison.OrdinalIgnoreCase);
+                return _settingsManager.CustomSearchUri.Replace(placeholder, Uri.EscapeDataString(arguments), StringComparison.OrdinalIgnoreCase);
             }
         }
 
         // is this too smart?
         var separator = _settingsManager.CustomSearchUri.Contains('?') ? '&' : '?';
-        return $"{_settingsManager.CustomSearchUri}{separator}q={Uri.EscapeDataString(Arguments)}";
+        return $"{_settingsManager.CustomSearchUri}{separator}q={Uri.EscapeDataString(arguments)}";
     }
 }

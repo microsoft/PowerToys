@@ -241,7 +241,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Find file from path.
+        ///   Looks up a localized string similar to Find files by name.
         /// </summary>
         internal static string Indexer_Find_Path_fallback_display_title {
             get {

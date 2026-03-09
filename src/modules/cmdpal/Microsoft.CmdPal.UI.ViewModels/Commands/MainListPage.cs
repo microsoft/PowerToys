@@ -45,7 +45,6 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly SettingsModel _settings;
     private readonly AppStateModel _appStateModel;
     private readonly ScoringFunction<IListItem> _scoringFunction;
-    private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
     // Stable separator instances so that the VM cache and InPlaceUpdateList
@@ -53,17 +52,22 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly Separator _resultsSeparator = new(Resources.results);
     private readonly Separator _fallbacksSeparator = new(Resources.fallbacks);
     private readonly Separator _commandsSeparator = new(Resources.home_sections_commands_title);
+    private readonly Dictionary<string, Separator> _fallbackSourceSeparators = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, CachedFallbackRenderBlock> _fallbackRenderBlocks = new(StringComparer.Ordinal);
 
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
-
-    // Keep as IEnumerable for deferred execution. Fallback item titles are updated
-    // asynchronously, so scoring must happen lazily when GetItems is called.
-    private IEnumerable<RoScored<IListItem>>? _scoredFallbackItems;
-    private IEnumerable<RoScored<IListItem>>? _fallbackItems;
+    private IReadOnlyList<TopLevelViewModel> _globalFallbackSources = [];
+    private IReadOnlyList<TopLevelViewModel> _rankedFallbackSources = [];
+    private IReadOnlyList<FallbackDescriptor> _fallbackDescriptors = [];
+    private FuzzyQuery _currentSearchQuery;
+    private string _currentSearchQueryText = string.Empty;
+    private string _fallbackRenderQueryText = string.Empty;
 
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
+    private bool _fallbackDescriptorsDirty = true;
+    private uint _fallbackRenderMatcherSchemaId;
 
     private int AppResultLimit => AllAppsCommandProvider.TopLevelResultLimit;
 
@@ -95,7 +99,6 @@ public sealed partial class MainListPage : DynamicListPage,
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
         _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateModel.RecentCommands, _fuzzyMatcherProvider.Current);
-        _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settings.FallbackRanks);
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
@@ -168,6 +171,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
+        InvalidateFallbackDescriptorCache();
         if (_includeApps != _filteredItemsIncludesApps)
         {
             ReapplySearchInBackground();
@@ -278,19 +282,15 @@ public sealed partial class MainListPage : DynamicListPage,
             }
             else
             {
-                var validScoredFallbacks = _scoredFallbackItems?
-                    .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
-                    .ToList();
-
-                var validFallbacks = _fallbackItems?
-                    .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
-                    .ToList();
+                var fallbackRenderPlan = BuildFallbackRenderPlan(GetCurrentSearchQuery());
 
                 return MainListPageResultFactory.Create(
                     _filteredItems,
-                    validScoredFallbacks,
+                    fallbackRenderPlan.ScoredGlobalItems,
                     _filteredApps,
-                    validFallbacks,
+                    fallbackRenderPlan.LeadingItems,
+                    fallbackRenderPlan.TrailingGlobalItems,
+                    fallbackRenderPlan.OrderedFallbackItems,
                     _resultsSeparator,
                     _fallbacksSeparator,
                     AppResultLimit);
@@ -302,8 +302,60 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _filteredItems = null;
         _filteredApps = null;
-        _fallbackItems = null;
-        _scoredFallbackItems = null;
+        _currentSearchQuery = default;
+        _currentSearchQueryText = string.Empty;
+        InvalidateFallbackRenderBlocks();
+    }
+
+    private void InvalidateFallbackDescriptorCache()
+    {
+        _fallbackDescriptors = [];
+        _fallbackDescriptorsDirty = true;
+        InvalidateFallbackRenderBlocks();
+    }
+
+    private void InvalidateFallbackRenderBlocks()
+    {
+        _fallbackRenderBlocks.Clear();
+        _fallbackRenderQueryText = string.Empty;
+        _fallbackRenderMatcherSchemaId = 0;
+    }
+
+    private void SetFallbackSources(IReadOnlyList<TopLevelViewModel> globalFallbackSources, IReadOnlyList<TopLevelViewModel> rankedFallbackSources)
+    {
+        var fallbackTopologyChanged = !SameFallbackSources(_globalFallbackSources, globalFallbackSources) ||
+            !SameFallbackSources(_rankedFallbackSources, rankedFallbackSources);
+
+        _globalFallbackSources = globalFallbackSources;
+        _rankedFallbackSources = rankedFallbackSources;
+
+        if (fallbackTopologyChanged)
+        {
+            InvalidateFallbackDescriptorCache();
+        }
+    }
+
+    private static bool SameFallbackSources(IReadOnlyList<TopLevelViewModel> left, IReadOnlyList<TopLevelViewModel> right)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < left.Count; i++)
+        {
+            if (!ReferenceEquals(left[i], right[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -337,9 +389,10 @@ public sealed partial class MainListPage : DynamicListPage,
 
             if (aliases.CheckAlias(newSearch))
             {
-                if (_filteredItemsIncludesApps != _includeApps)
+                lock (_tlcManager.TopLevelCommands)
                 {
-                    lock (_tlcManager.TopLevelCommands)
+                    CancelFallbackQueries(_tlcManager.TopLevelCommands);
+                    if (_filteredItemsIncludesApps != _includeApps)
                     {
                         _filteredItemsIncludesApps = _includeApps;
                         ClearResults();
@@ -385,7 +438,13 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            _fallbackUpdateManager.BeginUpdate(SearchText, [.. specialFallbacks, .. commonFallbacks], token);
+            SetFallbackSources(specialFallbacks, commonFallbacks);
+            var allFallbacks = new List<TopLevelViewModel>(specialFallbacks.Count + commonFallbacks.Count);
+            allFallbacks.AddRange(specialFallbacks);
+            allFallbacks.AddRange(commonFallbacks);
+
+            UpdateInlineFallbacks(newSearch, allFallbacks);
+            _fallbackUpdateManager.BeginUpdate(newSearch, GetRemoteFallbacks(allFallbacks), token);
 
             if (token.IsCancellationRequested)
             {
@@ -395,6 +454,8 @@ public sealed partial class MainListPage : DynamicListPage,
             // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
             if (string.IsNullOrWhiteSpace(newSearch))
             {
+                CancelFallbackQueries(specialFallbacks);
+                CancelFallbackQueries(commonFallbacks);
                 _filteredItemsIncludesApps = _includeApps;
                 ClearResults();
                 var wasAlreadyEmpty = string.IsNullOrWhiteSpace(oldSearch);
@@ -422,7 +483,6 @@ public sealed partial class MainListPage : DynamicListPage,
             }
 
             var newFilteredItems = Enumerable.Empty<IListItem>();
-            var newFallbacks = Enumerable.Empty<IListItem>();
             var newApps = Enumerable.Empty<IListItem>();
 
             if (_filteredItems is not null)
@@ -445,26 +505,11 @@ public sealed partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            if (_fallbackItems is not null)
-            {
-                newFallbacks = _fallbackItems.Select(s => s.Item);
-            }
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
             // If we don't have any previous filter results to work with, start
             // with a list of all our commands & apps.
             if (!newFilteredItems.Any() && !newApps.Any())
             {
                 newFilteredItems = commands.Where(s => !s.IsFallback);
-
-                // Fallbacks are always included in the list, even if they
-                // don't match the search text. But we don't want to
-                // consider them when filtering the list.
-                newFallbacks = commonFallbacks;
 
                 if (token.IsCancellationRequested)
                 {
@@ -499,24 +544,11 @@ public sealed partial class MainListPage : DynamicListPage,
             }
 
             var searchQuery = _fuzzyMatcherProvider.Current.PrecomputeQuery(SearchText);
+            _currentSearchQuery = searchQuery;
+            _currentSearchQueryText = SearchText;
 
             // Produce a list of everything that matches the current filter.
             _filteredItems = InternalListHelpers.FilterListWithScores(newFilteredItems, searchQuery, _scoringFunction);
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && globalFallbacks.Contains(s.Id));
-            _scoredFallbackItems = InternalListHelpers.FilterListWithScores(newFallbacksForScoring, searchQuery, _scoringFunction);
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            _fallbackItems = InternalListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], searchQuery, _fallbackScoringFunction);
 
             if (token.IsCancellationRequested)
             {
@@ -602,6 +634,30 @@ public sealed partial class MainListPage : DynamicListPage,
                 isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query.Original, StringComparison.CurrentCultureIgnoreCase);
             }
         }
+        else if (topLevelOrAppItem is FallbackQueryResultItem cachedFallbackResult)
+        {
+            isFallback = true;
+            extensionDisplayNameTarget = cachedFallbackResult.GetExtensionNameTarget(precomputedFuzzyMatcher);
+
+            if (cachedFallbackResult.HasAlias)
+            {
+                var alias = cachedFallbackResult.AliasText;
+                isAliasMatch = alias == query.Original;
+                isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query.Original, StringComparison.CurrentCultureIgnoreCase);
+            }
+        }
+        else if (topLevelOrAppItem is IFallbackResultItem fallbackResult)
+        {
+            isFallback = true;
+            extensionDisplayNameTarget = precomputedFuzzyMatcher.PrecomputeTarget(fallbackResult.ExtensionName);
+
+            if (fallbackResult.HasAlias)
+            {
+                var alias = fallbackResult.AliasText;
+                isAliasMatch = alias == query.Original;
+                isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query.Original, StringComparison.CurrentCultureIgnoreCase);
+            }
+        }
 
         // Handle whitespace query separately - FuzzySearch doesn't handle it well
         if (string.IsNullOrWhiteSpace(query.Original))
@@ -664,12 +720,11 @@ public sealed partial class MainListPage : DynamicListPage,
 
         if (topLevelOrAppItem is TopLevelViewModel topLevelViewModel)
         {
-            var index = Array.IndexOf(fallbackRanks, topLevelViewModel.Id);
-
-            if (index >= 0)
-            {
-                finalScore = fallbackRanks.Length - index + 1;
-            }
+            return ScoreFallbackSourceId(topLevelViewModel.Id, fallbackRanks);
+        }
+        else if (topLevelOrAppItem is IFallbackResultItem fallbackResultItem)
+        {
+            return ScoreFallbackSourceId(fallbackResultItem.FallbackSourceId, fallbackRanks);
         }
 
         return finalScore;
@@ -696,14 +751,316 @@ public sealed partial class MainListPage : DynamicListPage,
         }
     }
 
+    private FuzzyQuery GetCurrentSearchQuery()
+    {
+        if (!string.Equals(_currentSearchQueryText, SearchText, StringComparison.Ordinal))
+        {
+            _currentSearchQuery = _fuzzyMatcherProvider.Current.PrecomputeQuery(SearchText);
+            _currentSearchQueryText = SearchText;
+        }
+
+        return _currentSearchQuery;
+    }
+
+    private FallbackRenderPlan BuildFallbackRenderPlan(in FuzzyQuery searchQuery)
+    {
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            return FallbackRenderPlan.Empty;
+        }
+
+        EnsureFallbackRenderBlocksForQuery(in searchQuery);
+
+        List<RoScored<IListItem>> scoredGlobalItems = [];
+        List<IListItem> leadingItems = [];
+        List<IListItem> trailingGlobalItems = [];
+        List<RoScored<IListItem>> orderedFallbackItems = [];
+        HashSet<string> activeSourceIds = new(StringComparer.Ordinal);
+
+        foreach (var descriptor in GetFallbackDescriptors())
+        {
+            activeSourceIds.Add(descriptor.SourceId);
+
+            var block = GetOrCreateFallbackRenderBlock(descriptor, in searchQuery);
+            if (block.LeadingItems.Length > 0)
+            {
+                leadingItems.AddRange(block.LeadingItems);
+            }
+
+            if (block.ScoredGlobalItems.Length > 0)
+            {
+                scoredGlobalItems.AddRange(block.ScoredGlobalItems);
+            }
+
+            if (block.TrailingGlobalItems.Length > 0)
+            {
+                trailingGlobalItems.AddRange(block.TrailingGlobalItems);
+            }
+
+            if (block.OrderedFallbackItems.Length > 0)
+            {
+                orderedFallbackItems.AddRange(block.OrderedFallbackItems);
+            }
+        }
+
+        TrimUnusedFallbackRenderBlocks(activeSourceIds);
+
+        return new FallbackRenderPlan(scoredGlobalItems, leadingItems, trailingGlobalItems, orderedFallbackItems);
+    }
+
+    private IReadOnlyList<FallbackDescriptor> GetFallbackDescriptors()
+    {
+        if (!_fallbackDescriptorsDirty)
+        {
+            return _fallbackDescriptors;
+        }
+
+        List<FallbackDescriptor> descriptors = new(_globalFallbackSources.Count + _rankedFallbackSources.Count);
+        for (var i = 0; i < _globalFallbackSources.Count; i++)
+        {
+            descriptors.Add(CreateFallbackDescriptor(_globalFallbackSources[i], treatAsGlobal: true, score: 0, index: i));
+        }
+
+        foreach (var entry in GetOrderedRankedFallbackSources())
+        {
+            descriptors.Add(CreateFallbackDescriptor(entry.Source, treatAsGlobal: false, entry.Score, entry.Index));
+        }
+
+        _fallbackDescriptors = [.. descriptors];
+        _fallbackDescriptorsDirty = false;
+        return _fallbackDescriptors;
+    }
+
+    private FallbackDescriptor CreateFallbackDescriptor(TopLevelViewModel source, bool treatAsGlobal, int score, int index)
+    {
+        return new FallbackDescriptor(
+            Source: source,
+            SourceId: source.Id,
+            TreatAsGlobal: treatAsGlobal,
+            Score: score,
+            Index: index,
+            DisplayOptions: GetFallbackDisplayOptions(source),
+            ExecutionPolicy: source.GetFallbackExecutionPolicy(),
+            UsesInlineEvaluation: source.UsesInlineFallbackEvaluation,
+            UsesAsyncEvaluation: source.UsesAsyncFallbackEvaluation,
+            HostMatchKind: source.FallbackHostMatchKind);
+    }
+
+    private IEnumerable<OrderedFallbackSource> GetOrderedRankedFallbackSources()
+    {
+        return _rankedFallbackSources
+            .Select((source, index) => new OrderedFallbackSource(source, ScoreFallbackSourceId(source.Id, _settings.FallbackRanks), index))
+            .OrderByDescending(entry => entry.Score)
+            .ThenBy(entry => entry.Index);
+    }
+
+    private static int ScoreFallbackSourceId(string fallbackSourceId, string[] fallbackRanks)
+    {
+        var index = Array.IndexOf(fallbackRanks, fallbackSourceId);
+        return index >= 0 ? fallbackRanks.Length - index + 1 : 1;
+    }
+
+    private FallbackDisplayOptions GetFallbackDisplayOptions(TopLevelViewModel fallbackSource)
+    {
+        return TryGetFallbackSettings(fallbackSource, out var fallbackSettings)
+            ? new FallbackDisplayOptions(
+                fallbackSettings.ShowResultsInDedicatedSection,
+                fallbackSettings.ShowResultsInDedicatedSection && fallbackSettings.ShowResultsBeforeMainResults)
+            : FallbackDisplayOptions.Default;
+    }
+
+    private bool TryGetFallbackSettings(TopLevelViewModel fallbackSource, out FallbackSettings fallbackSettings)
+    {
+        fallbackSettings = default!;
+
+        if (!_settings.ProviderSettings.TryGetValue(fallbackSource.CommandProviderId, out var providerSettings))
+        {
+            return false;
+        }
+
+        if (providerSettings.FallbackCommands.TryGetValue(fallbackSource.Id, out var settings) && settings is not null)
+        {
+            fallbackSettings = settings;
+            return true;
+        }
+
+        return false;
+    }
+
+    private void EnsureFallbackRenderBlocksForQuery(in FuzzyQuery searchQuery)
+    {
+        var matcherSchemaId = _fuzzyMatcherProvider.Current.SchemaId;
+        if (string.Equals(_fallbackRenderQueryText, searchQuery.Original, StringComparison.Ordinal) &&
+            _fallbackRenderMatcherSchemaId == matcherSchemaId)
+        {
+            return;
+        }
+
+        _fallbackRenderQueryText = searchQuery.Original;
+        _fallbackRenderMatcherSchemaId = matcherSchemaId;
+        _fallbackRenderBlocks.Clear();
+    }
+
+    private FallbackRenderBlock GetOrCreateFallbackRenderBlock(FallbackDescriptor descriptor, in FuzzyQuery searchQuery)
+    {
+        var currentItems = descriptor.Source.GetCurrentFallbackItems();
+        var sectionSeparator = (descriptor.DisplayOptions.ShowResultsInDedicatedSection || descriptor.DisplayOptions.ShowBeforeMainResults)
+            ? GetFallbackSectionSeparator(descriptor.Source)
+            : null;
+
+        if (_fallbackRenderBlocks.TryGetValue(descriptor.SourceId, out var cachedBlock) &&
+            cachedBlock.CanReuse(currentItems, descriptor))
+        {
+            return cachedBlock.Block;
+        }
+
+        var block = FallbackRenderBlockFactory.Create(
+            currentItems,
+            descriptor.TreatAsGlobal,
+            descriptor.Score,
+            descriptor.DisplayOptions.ShowResultsInDedicatedSection,
+            descriptor.DisplayOptions.ShowBeforeMainResults,
+            sectionSeparator,
+            searchQuery,
+            _scoringFunction);
+
+        _fallbackRenderBlocks[descriptor.SourceId] = new CachedFallbackRenderBlock(currentItems, descriptor, block);
+        return block;
+    }
+
+    private void TrimUnusedFallbackRenderBlocks(HashSet<string> activeSourceIds)
+    {
+        if (_fallbackRenderBlocks.Count <= activeSourceIds.Count)
+        {
+            return;
+        }
+
+        var staleSourceIds = _fallbackRenderBlocks.Keys
+            .Where(sourceId => !activeSourceIds.Contains(sourceId))
+            .ToArray();
+
+        for (var i = 0; i < staleSourceIds.Length; i++)
+        {
+            _fallbackRenderBlocks.Remove(staleSourceIds[i]);
+        }
+    }
+
+    private Separator GetFallbackSectionSeparator(TopLevelViewModel fallbackSource)
+    {
+        var title = !string.IsNullOrWhiteSpace(fallbackSource.DisplayTitle)
+            ? fallbackSource.DisplayTitle
+            : !string.IsNullOrWhiteSpace(fallbackSource.Title)
+                ? fallbackSource.Title
+                : fallbackSource.ExtensionName;
+
+        if (!_fallbackSourceSeparators.TryGetValue(fallbackSource.Id, out var separator))
+        {
+            separator = new Separator(title);
+            _fallbackSourceSeparators[fallbackSource.Id] = separator;
+        }
+        else if (!string.Equals(separator.Title, title, StringComparison.Ordinal))
+        {
+            separator.Title = title;
+        }
+
+        return separator;
+    }
+
+    private readonly record struct FallbackRenderPlan(
+        List<RoScored<IListItem>> ScoredGlobalItems,
+        List<IListItem> LeadingItems,
+        List<IListItem> TrailingGlobalItems,
+        List<RoScored<IListItem>> OrderedFallbackItems)
+    {
+        public static readonly FallbackRenderPlan Empty = new([], [], [], []);
+    }
+
+    private readonly record struct FallbackDescriptor(
+        TopLevelViewModel Source,
+        string SourceId,
+        bool TreatAsGlobal,
+        int Score,
+        int Index,
+        FallbackDisplayOptions DisplayOptions,
+        FallbackExecutionPolicy ExecutionPolicy,
+        bool UsesInlineEvaluation,
+        bool UsesAsyncEvaluation,
+        HostMatchKind? HostMatchKind);
+
+    private readonly record struct CachedFallbackRenderBlock(
+        IListItem[] SourceItems,
+        FallbackDescriptor Descriptor,
+        FallbackRenderBlock Block)
+    {
+        internal bool CanReuse(IListItem[] currentItems, FallbackDescriptor descriptor)
+        {
+            return ReferenceEquals(SourceItems, currentItems) &&
+                Descriptor.TreatAsGlobal == descriptor.TreatAsGlobal &&
+                Descriptor.Score == descriptor.Score &&
+                Descriptor.DisplayOptions == descriptor.DisplayOptions;
+        }
+    }
+
+    private readonly record struct OrderedFallbackSource(TopLevelViewModel Source, int Score, int Index);
+
+    private readonly record struct FallbackDisplayOptions(bool ShowResultsInDedicatedSection, bool ShowBeforeMainResults)
+    {
+        public static readonly FallbackDisplayOptions Default = new(false, false);
+    }
+
+    private static void CancelFallbackQueries(IEnumerable<TopLevelViewModel> commands)
+    {
+        foreach (var command in commands)
+        {
+            if (command.IsFallback)
+            {
+                command.CancelOutstandingFallbackQuery();
+            }
+        }
+    }
+
+    private static IReadOnlyList<TopLevelViewModel> GetRemoteFallbacks(IEnumerable<TopLevelViewModel> commands)
+    {
+        List<TopLevelViewModel> remoteFallbacks = [];
+        foreach (var command in commands)
+        {
+            if (!command.UsesInlineFallbackEvaluation)
+            {
+                remoteFallbacks.Add(command);
+            }
+        }
+
+        return remoteFallbacks;
+    }
+
+    private static void UpdateInlineFallbacks(string query, IEnumerable<TopLevelViewModel> commands)
+    {
+        foreach (var command in commands)
+        {
+            if (command.UsesInlineFallbackEvaluation)
+            {
+                command.SafeUpdateFallbackTextInline(query);
+            }
+        }
+    }
+
     public void Receive(ClearSearchMessage message) => SearchText = string.Empty;
 
     public void Receive(UpdateFallbackItemsMessage message)
     {
-        RequestRefresh(fullRefresh: false);
+        RequestRefresh(fullRefresh: false, interval: RaiseItemsChangedThrottleForUserInput);
     }
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
+    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    {
+        InvalidateFallbackDescriptorCache();
+        HotReloadSettings(sender);
+
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            RequestRefresh(fullRefresh: true, interval: TimeSpan.Zero);
+        }
+    }
 
     private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
 
@@ -712,6 +1069,10 @@ public sealed partial class MainListPage : DynamicListPage,
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _fallbackUpdateManager.Dispose();
+        lock (_tlcManager.TopLevelCommands)
+        {
+            CancelFallbackQueries(_tlcManager.TopLevelCommands);
+        }
 
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;

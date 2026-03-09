@@ -1,18 +1,26 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
+using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public class ProviderSettings
 {
     // List of built-in fallbacks that should not have global results enabled by default
-    private readonly string[] _excludedBuiltInFallbacks = [
+    private static readonly string[] ExcludedBuiltInFallbacks = [
         "com.microsoft.cmdpal.builtin.indexer.fallback",
         "com.microsoft.cmdpal.builtin.calculator.fallback",
         ];
+
+    private static readonly Dictionary<string, FallbackSettingsDefaults> DefaultFallbackSettings = new(StringComparer.Ordinal)
+    {
+        ["com.microsoft.cmdpal.builtin.indexer.fallback"] = new(QueryDelayMilliseconds: 120, MinQueryLength: 2),
+        ["com.microsoft.cmdpal.builtin.remotedesktop.fallback"] = new(QueryDelayMilliseconds: 75, MinQueryLength: 2),
+        ["com.microsoft.cmdpal.builtin.shell.fallback"] = new(QueryDelayMilliseconds: 100, MinQueryLength: 2),
+    };
 
     public bool IsEnabled { get; set; } = true;
 
@@ -51,10 +59,11 @@ public class ProviderSettings
         {
             foreach (var fallback in wrapper.FallbackItems)
             {
-                if (!FallbackCommands.ContainsKey(fallback.Id))
+                if (!FallbackCommands.TryGetValue(fallback.Id, out var fallbackSettings))
                 {
-                    var enableGlobalResults = IsBuiltin && !_excludedBuiltInFallbacks.Contains(fallback.Id);
-                    FallbackCommands[fallback.Id] = new FallbackSettings(enableGlobalResults);
+                    var enableGlobalResults = IsBuiltin && !ExcludedBuiltInFallbacks.Contains(fallback.Id);
+                    fallbackSettings = new FallbackSettings(enableGlobalResults);
+                    FallbackCommands[fallback.Id] = fallbackSettings;
                 }
             }
         }
@@ -64,4 +73,34 @@ public class ProviderSettings
             throw new InvalidDataException("Did you add a built-in command and forget to set the Id? Make sure you do that!");
         }
     }
+
+    internal static uint? GetSuggestedFallbackQueryDelayMilliseconds(string fallbackId, IFallbackCommandItemDefaults? defaults = null)
+    {
+        if (defaults is not null && defaults.SuggestedQueryDelayMilliseconds.HasValue)
+        {
+            return defaults.SuggestedQueryDelayMilliseconds.Value;
+        }
+
+        return DefaultFallbackSettings.TryGetValue(fallbackId, out var fallbackDefaults) ? fallbackDefaults.QueryDelayMilliseconds : null;
+    }
+
+    internal static uint? GetSuggestedFallbackMinQueryLength(string fallbackId, IFallbackCommandItemDefaults? defaults = null)
+    {
+        if (defaults is not null && defaults.SuggestedMinQueryLength.HasValue)
+        {
+            return defaults.SuggestedMinQueryLength.Value;
+        }
+
+        return DefaultFallbackSettings.TryGetValue(fallbackId, out var fallbackDefaults) ? fallbackDefaults.MinQueryLength : null;
+    }
+
+    internal static FallbackExecutionPolicy GetEffectiveFallbackExecutionPolicy(string fallbackId, FallbackSettings? fallbackSettings, IFallbackCommandItemDefaults? defaults = null)
+    {
+        var delayMilliseconds = fallbackSettings?.QueryDelayMilliseconds ?? GetSuggestedFallbackQueryDelayMilliseconds(fallbackId, defaults);
+        var minQueryLength = fallbackSettings?.MinQueryLength ?? GetSuggestedFallbackMinQueryLength(fallbackId, defaults);
+        var delay = delayMilliseconds is uint value ? TimeSpan.FromMilliseconds(value) : TimeSpan.Zero;
+        return new FallbackExecutionPolicy(delay, minQueryLength ?? 0);
+    }
+
+    private readonly record struct FallbackSettingsDefaults(uint? QueryDelayMilliseconds, uint? MinQueryLength);
 }

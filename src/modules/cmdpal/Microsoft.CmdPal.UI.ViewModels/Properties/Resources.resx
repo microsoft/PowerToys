@@ -299,4 +299,16 @@
   <data name="home_sections_commands_title" xml:space="preserve">
     <value>Commands</value>
   </data>
+  <data name="FallbackQueryDelayDescriptionWithSuggestion" xml:space="preserve">
+    <value>Delay expensive fallback queries. Suggested default: {0} ms.</value>
+  </data>
+  <data name="FallbackQueryDelayDescriptionWithoutSuggestion" xml:space="preserve">
+    <value>Delay expensive fallback queries when this fallback needs extra time.</value>
+  </data>
+  <data name="FallbackMinQueryLengthDescriptionWithSuggestion" xml:space="preserve">
+    <value>Skip this fallback on very short queries. Suggested default: {0} characters.</value>
+  </data>
+  <data name="FallbackMinQueryLengthDescriptionWithoutSuggestion" xml:space="preserve">
+    <value>Skip this fallback on very short queries.</value>
+  </data>
 </root>

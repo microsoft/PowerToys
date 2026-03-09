@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Globalization;
 using System.Text;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
@@ -11,7 +12,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Commands;
 
-internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
+internal sealed partial class FallbackExecuteSearchItem : FormattedFallbackCommandItem
 {
     private const string _id = "com.microsoft.cmdpal.builtin.websearch.execute.fallback";
     private readonly SearchWebCommand _executeItem;
@@ -21,7 +22,12 @@ internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
     private readonly IBrowserInfoService _browserInfoService;
 
     public FallbackExecuteSearchItem(ISettingsInterface settings, IBrowserInfoService browserInfoService)
-        : base(new SearchWebCommand(string.Empty, settings, browserInfoService) { Id = _id }, Resources.command_item_title, _id)
+        : base(
+            new SearchWebCommand(string.Empty, settings, browserInfoService) { Id = _id },
+            Resources.command_item_title,
+            _id,
+            titleTemplate: string.Empty,
+            subtitleTemplate: string.Empty)
     {
         _executeItem = (SearchWebCommand)Command!;
         _browserInfoService = browserInfoService;
@@ -30,6 +36,10 @@ internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
         _executeItem.Name = string.Empty;
         Icon = Icons.WebSearch;
     }
+
+    public override string TitleTemplate => UpdateBrowserName(_browserInfoService);
+
+    public override string SubtitleTemplate => Resources.web_search_fallback_subtitle.Replace("{0}", "{query}", StringComparison.Ordinal);
 
     private static string UpdateBrowserName(IBrowserInfoService browserInfoService)
     {

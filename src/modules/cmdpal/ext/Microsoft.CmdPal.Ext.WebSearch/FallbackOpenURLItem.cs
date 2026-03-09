@@ -9,20 +9,28 @@ using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers.Browser;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WebSearch;
 
-internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
+internal sealed partial class FallbackOpenURLItem : FormattedFallbackCommandItem, IHostMatchedFallbackCommandItem
 {
-    private const string _id = "com.microsoft.cmdpal.builtin.websearch.openurl.fallback";
+    private const string FallbackId = "com.microsoft.cmdpal.builtin.websearch.openurl.fallback";
+    private const string MatchPattern = @"(?:(?:https?|ftp|file)://)?[^\s]+\.[^\s]+";
+
     private readonly IBrowserInfoService _browserInfoService;
     private readonly OpenURLCommand _executeItem;
     private static readonly CompositeFormat PluginOpenURL = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url);
     private static readonly CompositeFormat PluginOpenUrlInBrowser = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url_in_browser);
 
     public FallbackOpenURLItem(ISettingsInterface settings, IBrowserInfoService browserInfoService)
-        : base(new OpenURLCommand(string.Empty, browserInfoService), Resources.open_url_fallback_title, _id)
+        : base(
+            new OpenURLCommand(string.Empty, browserInfoService),
+            Resources.open_url_fallback_title,
+            FallbackId,
+            titleTemplate: string.Empty,
+            subtitleTemplate: string.Empty)
     {
         ArgumentNullException.ThrowIfNull(browserInfoService);
 
@@ -34,9 +42,17 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
         Icon = Icons.WebSearch;
     }
 
+    public override string TitleTemplate => Resources.plugin_open_url.Replace("{0}", "{query}", StringComparison.Ordinal);
+
+    public override string SubtitleTemplate => GetSubtitle();
+
+    public HostMatchKind MatchKind => HostMatchKind.Regex;
+
+    public string MatchValue => MatchPattern;
+
     public override void UpdateQuery(string query)
     {
-        if (!IsValidUrl(query))
+        if (!OpenURLCommand.TryNormalizeUrl(query, out var normalizedUrl))
         {
             _executeItem.Url = string.Empty;
             _executeItem.Name = string.Empty;
@@ -45,53 +61,18 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
             return;
         }
 
-        var success = Uri.TryCreate(query, UriKind.Absolute, out _);
+        _executeItem.Url = normalizedUrl;
+        _executeItem.Name = string.IsNullOrEmpty(normalizedUrl) ? string.Empty : Resources.open_in_default_browser;
 
-        // if url not contain schema, add http:// by default.
-        if (!success)
-        {
-            query = "https://" + query;
-        }
-
-        _executeItem.Url = query;
-        _executeItem.Name = string.IsNullOrEmpty(query) ? string.Empty : Resources.open_in_default_browser;
-
-        Title = string.Format(CultureInfo.CurrentCulture, PluginOpenURL, query);
-
-        var browserName = _browserInfoService.GetDefaultBrowser()?.Name;
-        Subtitle = string.IsNullOrWhiteSpace(browserName) ? Resources.open_in_default_browser : string.Format(CultureInfo.CurrentCulture, PluginOpenUrlInBrowser, browserName);
+        Title = string.Format(CultureInfo.CurrentCulture, PluginOpenURL, normalizedUrl);
+        Subtitle = GetSubtitle();
     }
 
-    private static bool IsValidUrl(string url)
+    private string GetSubtitle()
     {
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            return false;
-        }
-
-        if (!url.Contains('.', StringComparison.OrdinalIgnoreCase))
-        {
-            // eg: 'com', 'org'. We don't think it's a valid url.
-            // This can simplify the logic of checking if the url is valid.
-            return false;
-        }
-
-        if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
-        {
-            return true;
-        }
-
-        if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-            !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) &&
-            !url.StartsWith("ftp://", StringComparison.OrdinalIgnoreCase) &&
-            !url.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
-        {
-            if (Uri.IsWellFormedUriString("https://" + url, UriKind.Absolute))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        var browserName = _browserInfoService.GetDefaultBrowser()?.Name;
+        return string.IsNullOrWhiteSpace(browserName)
+            ? Resources.open_in_default_browser
+            : string.Format(CultureInfo.CurrentCulture, PluginOpenUrlInBrowser, browserName);
     }
 }

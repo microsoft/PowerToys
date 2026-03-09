@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 
 public partial class IndexerCommandsProvider : CommandProvider
 {
-    private readonly FallbackOpenFileItem _fallbackFileItem = new();
+    private readonly FallbackOpenFilesItem _fallbackFileItem = new();
 
     public IndexerCommandsProvider()
     {

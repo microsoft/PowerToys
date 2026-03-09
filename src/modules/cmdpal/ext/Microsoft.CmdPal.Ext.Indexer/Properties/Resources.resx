@@ -151,7 +151,7 @@
     <value>This is a file, not a folder</value>
   </data>
   <data name="Indexer_Find_Path_fallback_display_title" xml:space="preserve">
-    <value>Find file from path</value>
+    <value>Find files by name</value>
   </data>
   <data name="Indexer_Folder_Is_Empty" xml:space="preserve">
     <value>This folder is empty</value>

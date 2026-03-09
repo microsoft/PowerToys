@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -24,6 +24,8 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             ResourceLoaderInstance.GetString("shell_command_display_title"),
             _id)
     {
+        SuggestedQueryDelayMilliseconds = new(true, 100);
+        SuggestedMinQueryLength = new(true, 2);
         Title = string.Empty;
         Subtitle = ResourceLoaderInstance.GetString("generic_run_command");
         Icon = Icons.RunV2Icon; // Defined in Icons.cs and contains the execute command icon.

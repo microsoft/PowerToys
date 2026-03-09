@@ -25,6 +25,59 @@ internal static class MainListPageResultFactory
         IListItem fallbacksSeparator,
         int appResultLimit)
     {
+        return Create(
+            filteredItems,
+            scoredFallbackItems,
+            filteredApps,
+            null,
+            null,
+            fallbackItems,
+            resultsSeparator,
+            fallbacksSeparator,
+            appResultLimit);
+    }
+
+    /// <summary>
+    /// Creates a merged and ordered array of results from multiple scored input lists,
+    /// while also allowing dedicated fallback section blocks to be appended after merged results.
+    /// </summary>
+    public static IListItem[] Create(
+        IList<RoScored<IListItem>>? filteredItems,
+        IList<RoScored<IListItem>>? scoredFallbackItems,
+        IList<RoScored<IListItem>>? filteredApps,
+        IList<IListItem>? sectionedGlobalFallbackItems,
+        IList<RoScored<IListItem>>? fallbackItems,
+        IListItem resultsSeparator,
+        IListItem fallbacksSeparator,
+        int appResultLimit)
+    {
+        return Create(
+            filteredItems,
+            scoredFallbackItems,
+            filteredApps,
+            null,
+            sectionedGlobalFallbackItems,
+            fallbackItems,
+            resultsSeparator,
+            fallbacksSeparator,
+            appResultLimit);
+    }
+
+    /// <summary>
+    /// Creates a merged and ordered array of results from multiple scored input lists,
+    /// while also allowing dedicated fallback section blocks to appear before or after merged results.
+    /// </summary>
+    public static IListItem[] Create(
+        IList<RoScored<IListItem>>? filteredItems,
+        IList<RoScored<IListItem>>? scoredFallbackItems,
+        IList<RoScored<IListItem>>? filteredApps,
+        IList<IListItem>? leadingFallbackItems,
+        IList<IListItem>? sectionedGlobalFallbackItems,
+        IList<RoScored<IListItem>>? fallbackItems,
+        IListItem resultsSeparator,
+        IListItem fallbacksSeparator,
+        int appResultLimit)
+    {
         if (appResultLimit < 0)
         {
             throw new ArgumentOutOfRangeException(
@@ -39,6 +92,9 @@ internal static class MainListPageResultFactory
         // Apps are pre-sorted, so we just need to take the top N, limited by appResultLimit.
         int len3 = Math.Min(filteredApps?.Count ?? 0, appResultLimit);
 
+        int leadingCount = leadingFallbackItems?.Count ?? 0;
+        int len4 = sectionedGlobalFallbackItems?.Count ?? 0;
+
         int nonEmptyFallbackCount = fallbackItems?.Count ?? 0;
 
         // Allocate the exact size of the result array.
@@ -46,7 +102,7 @@ internal static class MainListPageResultFactory
         // and another for the "Results" section header when merged results exist.
         int mergedCount = len1 + len2 + len3;
         bool needsResultsHeader = mergedCount > 0;
-        int totalCount = mergedCount + nonEmptyFallbackCount
+        int totalCount = leadingCount + mergedCount + len4 + nonEmptyFallbackCount
             + (needsResultsHeader ? 1 : 0)
             + (nonEmptyFallbackCount > 0 ? 1 : 0);
 
@@ -55,6 +111,14 @@ internal static class MainListPageResultFactory
         // Three-way stable merge of already-sorted lists.
         int idx1 = 0, idx2 = 0, idx3 = 0;
         int writePos = 0;
+
+        if (leadingFallbackItems is not null)
+        {
+            for (int i = 0; i < leadingFallbackItems.Count; i++)
+            {
+                result[writePos++] = leadingFallbackItems[i];
+            }
+        }
 
         // Add "Results" section header when merged results will precede the fallbacks.
         if (needsResultsHeader)
@@ -136,6 +200,14 @@ internal static class MainListPageResultFactory
         while (idx3 < len3)
         {
             result[writePos++] = filteredApps![idx3++].Item;
+        }
+
+        if (sectionedGlobalFallbackItems is not null)
+        {
+            for (int i = 0; i < sectionedGlobalFallbackItems.Count; i++)
+            {
+                result[writePos++] = sectionedGlobalFallbackItems[i];
+            }
         }
 
         // Append filtered fallback items. Fallback items are added post-sort so they are

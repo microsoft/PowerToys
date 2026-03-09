@@ -19,6 +19,9 @@ public partial class MainListPageResultFactoryTests
 {
     private static readonly Separator _resultsSeparator = new("Results");
     private static readonly Separator _fallbacksSeparator = new("Fallbacks");
+    private static readonly string[] _expectedLeadingFallbackTitles = ["Files", "file-0.txt", "Results", "F1"];
+    private static readonly string[] _expectedSectionedGlobalFallbackTitles = ["Results", "F1", "Files", "file-1.txt", "file-2.txt"];
+    private static readonly string[] _expectedSectionedFallbackTitles = ["Fallbacks", "FB1", "Files", "file-1.txt", "file-2.txt"];
 
     private sealed partial class MockListItem : IListItem
     {
@@ -245,5 +248,91 @@ public partial class MainListPageResultFactoryTests
 
         Assert.IsNotNull(result);
         Assert.AreEqual(0, result.Length);
+    }
+
+    [TestMethod]
+    public void Merge_AppendsSectionedGlobalFallbackItemsAfterMergedResults()
+    {
+        var filtered = new List<RoScored<IListItem>>
+        {
+            S("F1", 100),
+        };
+
+        IListItem[] sectionedGlobalFallbacks =
+        [
+            new Separator("Files"),
+            new MockListItem { Title = "file-1.txt" },
+            new MockListItem { Title = "file-2.txt" },
+        ];
+
+        var result = MainListPageResultFactory.Create(
+            filtered,
+            null,
+            null,
+            sectionedGlobalFallbacks,
+            null,
+            _resultsSeparator,
+            _fallbacksSeparator,
+            appResultLimit: 10);
+
+        CollectionAssert.AreEqual(
+            _expectedSectionedGlobalFallbackTitles,
+            result.Select(item => item.Title).ToArray());
+    }
+
+    [TestMethod]
+    public void Merge_PrependsLeadingFallbackItemsBeforeResults()
+    {
+        var filtered = new List<RoScored<IListItem>>
+        {
+            S("F1", 100),
+        };
+
+        IListItem[] leadingFallbackItems =
+        [
+            new Separator("Files"),
+            new MockListItem { Title = "file-0.txt" },
+        ];
+
+        var result = MainListPageResultFactory.Create(
+            filtered,
+            null,
+            null,
+            leadingFallbackItems,
+            null,
+            null,
+            _resultsSeparator,
+            _fallbacksSeparator,
+            appResultLimit: 10);
+
+        CollectionAssert.AreEqual(
+            _expectedLeadingFallbackTitles,
+            result.Select(item => item.Title).ToArray());
+    }
+
+    [TestMethod]
+    public void Merge_PreservesSectionedFallbackItemsInsideFallbackArea()
+    {
+        var fallbacks = new List<RoScored<IListItem>>
+        {
+            S("FB1", 0),
+            new(new Separator("Files"), 0),
+            S("file-1.txt", 0),
+            S("file-2.txt", 0),
+        };
+
+        var result = MainListPageResultFactory.Create(
+            null,
+            null,
+            null,
+            null,
+            fallbacks,
+            _resultsSeparator,
+            _fallbacksSeparator,
+            appResultLimit: 10);
+
+        CollectionAssert.AreEqual(
+            _expectedSectionedFallbackTitles,
+            result.Select(item => item.Title).ToArray());
     }
 }

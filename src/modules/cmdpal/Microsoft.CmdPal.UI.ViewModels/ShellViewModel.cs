@@ -261,6 +261,21 @@ public partial class ShellViewModel : ObservableObject,
             return;
         }
 
+        if (message.Context is IFallbackResultItem fallbackResultItem && !fallbackResultItem.IsCurrent)
+        {
+            FallbackRefreshNotifier.RequestRefresh();
+            return;
+        }
+
+        if (message.Context is TopLevelViewModel topLevelFallback &&
+            topLevelFallback.IsFallback &&
+            message.FallbackCommandInvocationArgs is not null &&
+            !topLevelFallback.IsCurrentFallbackQueryId(message.FallbackCommandInvocationArgs.QueryId))
+        {
+            FallbackRefreshNotifier.RequestRefresh();
+            return;
+        }
+
         var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
         var providerContext = _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
 
@@ -372,7 +387,12 @@ public partial class ShellViewModel : ObservableObject,
             // Call out to extension process.
             // * May fail!
             // * May never return!
-            var result = invokable.Invoke(message.Context);
+            var result = invokable switch
+            {
+                IInvokableCommand2 invokable2 when message.FallbackCommandInvocationArgs is not null
+                    => invokable2.InvokeWithArgs(message.Context, message.FallbackCommandInvocationArgs),
+                _ => invokable.Invoke(message.Context),
+            };
 
             // But if it did succeed, we need to handle the result.
             UnsafeHandleCommandResult(result);

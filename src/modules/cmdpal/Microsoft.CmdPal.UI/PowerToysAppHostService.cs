@@ -22,6 +22,10 @@ internal sealed class PowerToysAppHostService : IAppHostService
         {
             topLevelHost = topLevelViewModel.ExtensionHost;
         }
+        else if (context is IFallbackResultItem fallbackResultItem)
+        {
+            topLevelHost = fallbackResultItem.ExtensionHost;
+        }
 
         return topLevelHost ?? currentHost ?? CommandPaletteHost.Instance;
     }
@@ -32,6 +36,10 @@ internal sealed class PowerToysAppHostService : IAppHostService
         if (command is TopLevelViewModel topLevelViewModel)
         {
             topLevelId = topLevelViewModel.ProviderContext;
+        }
+        else if (command is IFallbackResultItem fallbackResultItem)
+        {
+            topLevelId = fallbackResultItem.ProviderContext;
         }
 
         return topLevelId ?? currentContext ?? throw new InvalidOperationException("No command provider context could be found for the given command, and no current context was provided.");

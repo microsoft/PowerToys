@@ -4,7 +4,7 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class FallbackCommandItem : CommandItem, IFallbackCommandItem, IFallbackHandler, IFallbackCommandItem2, IExtendedAttributesProvider
+public partial class FallbackCommandItem : CommandItem, IFallbackCommandItem, IFallbackHandler, IFallbackCommandItem2, IFallbackCommandItemDefaults, IExtendedAttributesProvider
 {
     private readonly IFallbackHandler? _fallbackHandler;
 
@@ -39,6 +39,10 @@ public partial class FallbackCommandItem : CommandItem, IFallbackCommandItem, IF
     public virtual string Id { get; }
 
     public virtual string DisplayTitle { get; }
+
+    public virtual OptionalUInt32 SuggestedQueryDelayMilliseconds { get; set; }
+
+    public virtual OptionalUInt32 SuggestedMinQueryLength { get; set; }
 
     public virtual void UpdateQuery(string query) => _fallbackHandler?.UpdateQuery(query);
 }

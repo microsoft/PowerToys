@@ -73,6 +73,25 @@ internal sealed partial class FallbackUpdateManager : IDisposable
         Logger.LogDebug($"UpdateFallbacks: Batch start {batchNumber} for query '{query}'");
 #endif
 
+        List<TopLevelViewModel> immediateCommands = [];
+        foreach (var command in commands)
+        {
+            var delay = command.GetFallbackExecutionPolicy().GetDelayForQuery(query);
+            if (delay > TimeSpan.Zero)
+            {
+                ScheduleDelayedFallbackUpdate(command, query, delay, cancellationToken);
+            }
+            else
+            {
+                immediateCommands.Add(command);
+            }
+        }
+
+        if (immediateCommands.Count == 0)
+        {
+            return;
+        }
+
         // Adaptive dispatch on dedicated threads — same semantics as the old
         // ParallelHelper.AdaptiveForEachAdaptiveAsync, but without any ThreadPool involvement:
         // - Start 2 workers; each claims commands via a shared atomic index (FIFO, no double-work).
@@ -80,7 +99,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
         //     remaining fast commands aren't blocked waiting in the worker's loop.
         // - _onFallbackChanged is called on the dedicated thread when a result changes
         var sharedIndex = 0;
-        var totalCommands = commands.Count;
+        var totalCommands = immediateCommands.Count;
         var startingWorkers = Math.Min(InitialFallbackWorkers, totalCommands);
         var activeWorkerCount = startingWorkers;
 
@@ -94,16 +113,13 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                     return;
                 }
 
-                var command = commands[i];
+                var command = immediateCommands[i];
                 var counter = _inflightFallbacks.GetOrAdd(command.Id, static _ => new InflightCounter());
                 if (!counter.TryClaim(MaxInflightPerFallback))
                 {
                     // At capacity — store this query as a pending retry so it runs
                     // when one of the in-flight calls finishes. Latest query wins.
-                    var pendingCommand = command;
-                    var pendingQuery = query;
-                    var pendingCt = cancellationToken;
-                    counter.SetPending(() => RetryFallbackUpdate(pendingCommand, pendingQuery, pendingCt, counter), pendingCt);
+                    counter.SetPending(() => RetryFallbackUpdate(command, query, counter, cancellationToken), cancellationToken);
                     continue;
                 }
 
@@ -134,30 +150,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                 var changed = false;
                 try
                 {
-#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
-                    var sw = Stopwatch.StartNew();
-                    Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updating with '{query}'");
-#endif
-                    changed = command.SafeUpdateFallbackTextSynchronous(query);
-#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
-                    var elapsed = sw.Elapsed;
-                    var tail = elapsed > FallbackItemSlowTimeout ? " is slow" : string.Empty;
-                    if (elapsed > FallbackItemUltraSlowTimeout)
-                    {
-                        tail += " <---------------- (ultra slow)";
-                    }
-
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updated with '{query}' processed in {elapsed}, has {(changed ? "changed" : "not changed")} and title is '{command.Title}'{tail}");
-#endif
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' failed to update fallback text with '{query}'", ex);
+                    changed = RunFallbackUpdate(command, query, cancellationToken);
                 }
                 finally
                 {
@@ -173,61 +166,127 @@ internal sealed partial class FallbackUpdateManager : IDisposable
             }
         }
 
-        // Dispatches a pending work item to the dedicated pool. The pending's
-        // own CT is forwarded so the pool can skip it at dequeue time when the
-        // originating query batch has been superseded by a newer keystroke.
-        void DispatchPending(PendingWork? pending)
-        {
-            if (pending == null)
-            {
-                return;
-            }
-
-            _ = _fallbackThreadPool.QueueAsync(pending.Work, pending.CancellationToken);
-        }
-
         for (var i = 0; i < startingWorkers; i++)
         {
             _ = _fallbackThreadPool.QueueAsync(Worker, cancellationToken);
         }
+    }
 
-        return;
+    private void ScheduleDelayedFallbackUpdate(TopLevelViewModel command, string query, TimeSpan delay, CancellationToken cancellationToken)
+    {
+        _ = Task.Run(
+            async () =>
+            {
+                try
+                {
+                    await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
 
-        // One-shot retry for a command that was skipped due to MaxInflightPerFallback.
-        // Claims a slot, runs the COM call, releases, and propagates the next pending (if any).
-        void RetryFallbackUpdate(TopLevelViewModel cmd, string q, CancellationToken ct, InflightCounter ctr)
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                var counter = _inflightFallbacks.GetOrAdd(command.Id, static _ => new InflightCounter());
+                if (!counter.TryClaim(MaxInflightPerFallback))
+                {
+                    counter.SetPending(() => RetryFallbackUpdate(command, query, counter, cancellationToken), cancellationToken);
+                    return;
+                }
+
+                try
+                {
+                    var changed = RunFallbackUpdate(command, query, cancellationToken);
+                    if (changed && !cancellationToken.IsCancellationRequested)
+                    {
+                        _onFallbackChanged();
+                    }
+                }
+                finally
+                {
+                    counter.Release();
+                    DispatchPending(counter.TakePending());
+                }
+            },
+            CancellationToken.None);
+    }
+
+    // Dispatches a pending work item to the dedicated pool. The pending's
+    // own CT is forwarded so the pool can skip it at dequeue time when the
+    // originating query batch has been superseded by a newer keystroke.
+    private void DispatchPending(PendingWork? pending)
+    {
+        if (pending == null)
         {
-            if (ct.IsCancellationRequested)
-            {
-                return;
-            }
+            return;
+        }
 
-            if (!ctr.TryClaim(MaxInflightPerFallback))
-            {
-                // Still at capacity (a newer worker claimed the freed slot first).
-                // The pending was already consumed from TakePending, so it's dropped here.
-                return;
-            }
+        _ = _fallbackThreadPool.QueueAsync(pending.Work, pending.CancellationToken);
+    }
 
-            var changed = false;
-            try
-            {
-                changed = cmd.SafeUpdateFallbackTextSynchronous(q);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"UpdateFallbacks: Pending retry: command id '{cmd.Id}', '{cmd.DisplayTitle}' failed with '{q}'", ex);
-            }
-            finally
-            {
-                ctr.Release();
-                DispatchPending(ctr.TakePending());
-            }
+    // One-shot retry for a command that was skipped due to MaxInflightPerFallback.
+    // Claims a slot, runs the COM call, releases, and propagates the next pending (if any).
+    private void RetryFallbackUpdate(TopLevelViewModel command, string query, InflightCounter counter, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
-            if (changed && !ct.IsCancellationRequested)
+        if (!counter.TryClaim(MaxInflightPerFallback))
+        {
+            // Still at capacity (a newer worker claimed the freed slot first).
+            // The pending was already consumed from TakePending, so it's dropped here.
+            return;
+        }
+
+        try
+        {
+            var changed = RunFallbackUpdate(command, query, cancellationToken);
+            if (changed && !cancellationToken.IsCancellationRequested)
             {
                 _onFallbackChanged();
             }
+        }
+        finally
+        {
+            counter.Release();
+            DispatchPending(counter.TakePending());
+        }
+    }
+
+    private static bool RunFallbackUpdate(TopLevelViewModel command, string query, CancellationToken cancellationToken)
+    {
+        try
+        {
+#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
+            var sw = Stopwatch.StartNew();
+            Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updating with '{query}'");
+#endif
+            var changed = command.SafeUpdateFallbackTextSynchronous(query);
+#if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
+            var elapsed = sw.Elapsed;
+            var tail = elapsed > FallbackItemSlowTimeout ? " is slow" : string.Empty;
+            if (elapsed > FallbackItemUltraSlowTimeout)
+            {
+                tail += " <---------------- (ultra slow)";
+            }
+
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updated with '{query}' processed in {elapsed}, has {(changed ? "changed" : "not changed")} and title is '{command.Title}'{tail}");
+            }
+#endif
+            return changed;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' failed to update fallback text with '{query}'", ex);
+            return false;
         }
     }
 

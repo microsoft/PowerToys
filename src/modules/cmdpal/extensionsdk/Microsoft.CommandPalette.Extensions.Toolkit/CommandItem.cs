@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,7 +8,7 @@ using WinRT;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class CommandItem : BaseObservable, ICommandItem
+public partial class CommandItem : BaseObservable, ICommandItem, IObjectWithIdentity
 {
     // NOTE TO MAINTAINERS: Do NOT implement `IExtendedAttributesProvider` here
     // directly. Instead, implement it in derived classes like `ListItem` where
@@ -42,6 +42,8 @@ public partial class CommandItem : BaseObservable, ICommandItem
     }
 
     public virtual string Subtitle { get; set => SetProperty(ref field, value); } = string.Empty;
+
+    public virtual string Identity { get; set => SetProperty(ref field, value); } = string.Empty;
 
     public virtual ICommand? Command
     {
@@ -128,6 +130,7 @@ public partial class CommandItem : BaseObservable, ICommandItem
     {
         Command = other.Command;
         Subtitle = other.Subtitle;
+        Identity = other is IObjectWithIdentity identifiable ? identifiable.Identity : string.Empty;
         Icon = (IconInfo?)other.Icon;
         MoreCommands = other.MoreCommands;
     }

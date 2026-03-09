@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
@@ -15,6 +16,8 @@ public record PerformCommandMessage
     public ExtensionObject<ICommand> Command { get; }
 
     public object? Context { get; }
+
+    public IFallbackCommandInvocationArgs? FallbackCommandInvocationArgs { get; }
 
     public bool WithAnimation { get; set; } = true;
 
@@ -30,18 +33,28 @@ public record PerformCommandMessage
     {
         Command = command;
         Context = context.Unsafe;
+        FallbackCommandInvocationArgs = (context.Unsafe as IFallbackResultItem)?.InvocationArgs;
+    }
+
+    public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<IListItem> context, IFallbackCommandInvocationArgs? fallbackCommandInvocationArgs)
+    {
+        Command = command;
+        Context = context.Unsafe;
+        FallbackCommandInvocationArgs = fallbackCommandInvocationArgs ?? (context.Unsafe as IFallbackResultItem)?.InvocationArgs;
     }
 
     public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<ICommandItem> context)
     {
         Command = command;
         Context = context.Unsafe;
+        FallbackCommandInvocationArgs = (context.Unsafe as IFallbackResultItem)?.InvocationArgs;
     }
 
     public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<ICommandContextItem> context)
     {
         Command = command;
         Context = context.Unsafe;
+        FallbackCommandInvocationArgs = (context.Unsafe as IFallbackResultItem)?.InvocationArgs;
     }
 
     public PerformCommandMessage(CommandContextItemViewModel contextCommand)

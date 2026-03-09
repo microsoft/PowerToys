@@ -520,6 +520,42 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Skip this fallback on very short queries..
+        /// </summary>
+        public static string FallbackMinQueryLengthDescriptionWithoutSuggestion {
+            get {
+                return ResourceManager.GetString("FallbackMinQueryLengthDescriptionWithoutSuggestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skip this fallback on very short queries. Suggested default: {0} characters..
+        /// </summary>
+        public static string FallbackMinQueryLengthDescriptionWithSuggestion {
+            get {
+                return ResourceManager.GetString("FallbackMinQueryLengthDescriptionWithSuggestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delay expensive fallback queries when this fallback needs extra time..
+        /// </summary>
+        public static string FallbackQueryDelayDescriptionWithoutSuggestion {
+            get {
+                return ResourceManager.GetString("FallbackQueryDelayDescriptionWithoutSuggestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delay expensive fallback queries. Suggested default: {0} ms..
+        /// </summary>
+        public static string FallbackQueryDelayDescriptionWithSuggestion {
+            get {
+                return ResourceManager.GetString("FallbackQueryDelayDescriptionWithSuggestion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Fallbacks.
         /// </summary>
         public static string fallbacks {

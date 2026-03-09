@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -32,7 +32,6 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private string IdFromModel => IsFallback && !string.IsNullOrWhiteSpace(_fallbackId) ? _fallbackId : _commandItemViewModel.Command.Id;
 
     private string _fallbackId = string.Empty;
-
     private string _generatedId = string.Empty;
 
     private HotkeySettings? _hotkey;
@@ -41,6 +40,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private FuzzyTargetCache _titleCache;
     private FuzzyTargetCache _subtitleCache;
     private FuzzyTargetCache _extensionNameCache;
+    private FallbackExecutionState? _fallbackExecutionState;
+    private IFallbackCommandItemDefaults? _fallbackCommandItemDefaults;
+    private FallbackSnapshotItemCache? _fallbackSnapshotItemCache;
+    private bool _usesAsyncFallbackEvaluation;
+    private HostMatchKind? _fallbackHostMatchKind;
 
     private CommandAlias? Alias { get; set; }
 
@@ -90,6 +94,15 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     // Fallback items
     public string DisplayTitle { get; private set; } = string.Empty;
+
+    internal bool UsesInlineFallbackEvaluation
+    {
+        get
+        {
+            CacheFallbackInterfaces(_commandItemViewModel.Model.Unsafe);
+            return _fallbackExecutionState?.UsesInlineEvaluation ?? false;
+        }
+    }
 
     public HotkeySettings? Hotkey
     {
@@ -245,15 +258,41 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         if (IsFallback)
         {
             var model = _commandItemViewModel.Model.Unsafe;
-
-            // RPC to check type
-            if (model is IFallbackCommandItem fallback)
-            {
-                DisplayTitle = fallback.DisplayTitle;
-            }
+            CacheFallbackInterfaces(model);
 
             UpdateInitialIcon(false);
         }
+    }
+
+    private void CacheFallbackInterfaces(object? model)
+    {
+        if (!IsFallback || _fallbackExecutionState is not null || model is not IFallbackCommandItem fallback)
+        {
+            return;
+        }
+
+        if (model is IFallbackCommandItem2 fallback2)
+        {
+            _fallbackId = fallback2.Id;
+        }
+
+        var asyncFallbackHandler = fallback.FallbackHandler as IFallbackHandler2;
+        var hostMatchedFallbackCommandItem = model as IHostMatchedFallbackCommandItem;
+
+        _fallbackExecutionState = new FallbackExecutionState(
+            fallback,
+            asyncFallbackHandler,
+            model as IFormattedFallbackCommandItem,
+            hostMatchedFallbackCommandItem,
+            GetFallbackExecutionPolicy,
+            MaterializeSnapshotItems,
+            FallbackRefreshNotifier.RequestRefresh);
+        _fallbackCommandItemDefaults = model as IFallbackCommandItemDefaults;
+        _fallbackSnapshotItemCache = new FallbackSnapshotItemCache(ExtensionHost, ProviderContext, Id, ExtensionName);
+        _usesAsyncFallbackEvaluation = asyncFallbackHandler is not null;
+        _fallbackHostMatchKind = hostMatchedFallbackCommandItem?.MatchKind;
+
+        DisplayTitle = fallback.DisplayTitle;
     }
 
     private void Item_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -398,55 +437,159 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     internal bool SafeUpdateFallbackTextSynchronous(string newQuery)
     {
-        if (!IsFallback)
+        if (!IsFallback || !IsEnabled)
         {
             return false;
         }
 
-        if (!IsEnabled)
+        CacheFallbackInterfaces(_commandItemViewModel.Model.Unsafe);
+        if (_fallbackExecutionState is null)
         {
             return false;
         }
 
         try
         {
-            return UnsafeUpdateFallbackSynchronous(newQuery);
+            return _fallbackExecutionState.UpdateSynchronous(newQuery, this);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex.ToString());
+            return false;
         }
-
-        return false;
     }
 
-    /// <summary>
-    /// Calls UpdateQuery on our command, if we're a fallback item. This does
-    /// RPC work, so make sure you're calling it on a BG thread.
-    /// </summary>
-    /// <param name="newQuery">The new search text to pass to the extension</param>
-    /// <returns>true if our Title changed across this call</returns>
-    private bool UnsafeUpdateFallbackSynchronous(string newQuery)
+    internal bool SafeUpdateFallbackTextInline(string newQuery)
     {
-        var model = _commandItemViewModel.Model.Unsafe;
-
-        // RPC to check type
-        if (model is IFallbackCommandItem fallback)
+        if (!IsFallback || !IsEnabled)
         {
-            var wasEmpty = string.IsNullOrEmpty(Title);
-
-            // RPC for method
-            fallback.FallbackHandler.UpdateQuery(newQuery);
-            var isEmpty = string.IsNullOrEmpty(Title);
-            return wasEmpty != isEmpty;
+            return false;
         }
 
-        return false;
+        CacheFallbackInterfaces(_commandItemViewModel.Model.Unsafe);
+        if (_fallbackExecutionState is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            return _fallbackExecutionState.UpdateInline(newQuery, this);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.ToString());
+            return false;
+        }
+    }
+
+    internal IListItem[] GetCurrentFallbackItems()
+    {
+        CacheFallbackInterfaces(_commandItemViewModel.Model.Unsafe);
+        return _fallbackExecutionState?.GetCurrentItems() ?? [];
+    }
+
+    internal void CancelOutstandingFallbackQuery()
+    {
+        if (!IsFallback)
+        {
+            return;
+        }
+
+        CacheFallbackInterfaces(_commandItemViewModel.Model.Unsafe);
+        _fallbackExecutionState?.CancelOutstandingQuery();
+        _fallbackSnapshotItemCache?.Clear();
+    }
+
+    internal bool IsCurrentFallbackQueryId(string queryId)
+    {
+        CacheFallbackInterfaces(_commandItemViewModel.Model.Unsafe);
+        return _fallbackExecutionState?.IsCurrentQueryId(queryId) ?? false;
+    }
+
+    internal bool UsesAsyncFallbackEvaluation
+    {
+        get
+        {
+            CacheFallbackInterfaces(_commandItemViewModel.Model.Unsafe);
+            return _usesAsyncFallbackEvaluation;
+        }
+    }
+
+    internal HostMatchKind? FallbackHostMatchKind
+    {
+        get
+        {
+            CacheFallbackInterfaces(_commandItemViewModel.Model.Unsafe);
+            return _fallbackHostMatchKind;
+        }
+    }
+
+    internal FallbackExecutionPolicy GetFallbackExecutionPolicy()
+    {
+        CacheFallbackInterfaces(_commandItemViewModel.Model.Unsafe);
+        if (string.IsNullOrEmpty(_fallbackId))
+        {
+            return FallbackExecutionPolicy.Empty;
+        }
+
+        _providerSettings.FallbackCommands.TryGetValue(_fallbackId, out var fallbackSettings);
+        return ProviderSettings.GetEffectiveFallbackExecutionPolicy(_fallbackId, fallbackSettings, _fallbackCommandItemDefaults);
+    }
+
+    internal uint? GetSuggestedFallbackQueryDelayMilliseconds()
+    {
+        CacheFallbackInterfaces(_commandItemViewModel.Model.Unsafe);
+        return string.IsNullOrEmpty(_fallbackId)
+            ? null
+            : ProviderSettings.GetSuggestedFallbackQueryDelayMilliseconds(_fallbackId, _fallbackCommandItemDefaults);
+    }
+
+    internal uint? GetSuggestedFallbackMinQueryLength()
+    {
+        CacheFallbackInterfaces(_commandItemViewModel.Model.Unsafe);
+        return string.IsNullOrEmpty(_fallbackId)
+            ? null
+            : ProviderSettings.GetSuggestedFallbackMinQueryLength(_fallbackId, _fallbackCommandItemDefaults);
+    }
+
+    private IListItem[] MaterializeSnapshotItems(string query, string queryId, IReadOnlyList<FallbackSnapshotDefinition> snapshotItems)
+    {
+        _fallbackSnapshotItemCache ??= new FallbackSnapshotItemCache(ExtensionHost, ProviderContext, Id, ExtensionName);
+
+        var invocationArgs = new FallbackCommandInvocationArgs()
+        {
+            Query = query,
+            QueryId = queryId,
+        };
+
+        return _fallbackSnapshotItemCache.Materialize(
+            snapshotItems,
+            AliasText,
+            HasAlias,
+            invocationArgs,
+            () => IsCurrentFallbackQueryId(queryId));
+    }
+
+    internal static bool IsRegexMatch(string pattern, string query)
+    {
+        return FallbackExecutionState.IsRegexMatch(pattern, query);
     }
 
     public PerformCommandMessage GetPerformCommandMessage()
     {
-        return new PerformCommandMessage(this.CommandViewModel.Model, new Models.ExtensionObject<IListItem>(this));
+        return new PerformCommandMessage(this.CommandViewModel.Model, new Models.ExtensionObject<IListItem>(this), GetCurrentFallbackInvocationArgs());
+    }
+
+    private IFallbackCommandInvocationArgs? GetCurrentFallbackInvocationArgs()
+    {
+        if (!IsFallback)
+        {
+            return null;
+        }
+
+        CacheFallbackInterfaces(_commandItemViewModel.Model.Unsafe);
+        return _fallbackExecutionState?.GetCurrentInvocationArgs();
     }
 
     public override string ToString()

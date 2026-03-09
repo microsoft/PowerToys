@@ -11,7 +11,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.Commands;
 
-internal sealed partial class OpenRemoteDesktopCommand : BaseObservable, IInvokableCommand
+internal sealed partial class OpenRemoteDesktopCommand : BaseObservable, IInvokableCommand2
 {
     private static readonly CompositeFormat ProcessErrorFormat =
         CompositeFormat.Parse(Resources.remotedesktop_log_mstsc_error);
@@ -37,41 +37,57 @@ internal sealed partial class OpenRemoteDesktopCommand : BaseObservable, IInvoka
     }
 
     public ICommandResult Invoke(object sender)
+        => InvokeCore(_rdpHost);
+
+    public ICommandResult InvokeWithArgs(object sender, IFallbackCommandInvocationArgs args)
+        => InvokeCore(args.Query);
+
+    internal static bool TryGetValidatedHost(string host, out string validatedHost)
+    {
+        validatedHost = host.Trim();
+        if (string.IsNullOrWhiteSpace(host))
+        {
+            return true;
+        }
+
+        // Strip port suffix (e.g. "localhost:3389") before validation,
+        // since Uri.CheckHostName does not accept host:port strings.
+        var hostForValidation = validatedHost;
+        var lastColon = validatedHost.LastIndexOf(':');
+        if (lastColon > 0 && lastColon < validatedHost.Length - 1)
+        {
+            var portPart = validatedHost[(lastColon + 1)..];
+            if (ushort.TryParse(portPart, out _))
+            {
+                hostForValidation = validatedHost[..lastColon];
+            }
+        }
+
+        return Uri.CheckHostName(hostForValidation) != UriHostNameType.Unknown;
+    }
+
+    private ICommandResult InvokeCore(string host)
     {
         using var process = new Process();
         process.StartInfo.UseShellExecute = false;
         process.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         process.StartInfo.FileName = "mstsc";
 
-        if (!string.IsNullOrWhiteSpace(_rdpHost))
+        if (!TryGetValidatedHost(host, out var validatedHost))
         {
-            // validate that _rdpHost is a proper hostname or IP address
-            // Strip port suffix (e.g. "localhost:3389") before validation,
-            // since Uri.CheckHostName does not accept host:port strings.
-            var hostForValidation = _rdpHost;
-            var lastColon = _rdpHost.LastIndexOf(':');
-            if (lastColon > 0 && lastColon < _rdpHost.Length - 1)
+            return CommandResult.ShowToast(new ToastArgs()
             {
-                var portPart = _rdpHost.Substring(lastColon + 1);
-                if (ushort.TryParse(portPart, out _))
-                {
-                    hostForValidation = _rdpHost.Substring(0, lastColon);
-                }
-            }
+                Message = string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    InvalidHostnameFormat,
+                    host),
+                Result = CommandResult.KeepOpen(),
+            });
+        }
 
-            if (Uri.CheckHostName(hostForValidation) == UriHostNameType.Unknown)
-            {
-                return CommandResult.ShowToast(new ToastArgs()
-                {
-                    Message = string.Format(
-                        System.Globalization.CultureInfo.CurrentCulture,
-                        InvalidHostnameFormat,
-                        _rdpHost),
-                    Result = CommandResult.KeepOpen(),
-                });
-            }
-
-            process.StartInfo.Arguments = $"/v:{_rdpHost}";
+        if (!string.IsNullOrWhiteSpace(validatedHost))
+        {
+            process.StartInfo.Arguments = $"/v:{validatedHost}";
         }
 
         try

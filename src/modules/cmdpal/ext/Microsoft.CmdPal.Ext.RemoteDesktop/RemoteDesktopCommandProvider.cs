@@ -16,6 +16,7 @@ public partial class RemoteDesktopCommandProvider : CommandProvider
 {
     private readonly CommandItem listPageCommand;
     private readonly FallbackRemoteDesktopItem fallback;
+    private readonly HostMatchedRemoteDesktopItem hostMatchedFallback;
 
     public RemoteDesktopCommandProvider()
     {
@@ -28,6 +29,7 @@ public partial class RemoteDesktopCommandProvider : CommandProvider
         var listPage = new RemoteDesktopListPage(rdpConnectionsManager);
 
         fallback = new FallbackRemoteDesktopItem(rdpConnectionsManager);
+        hostMatchedFallback = new HostMatchedRemoteDesktopItem();
 
         listPageCommand = new CommandItem(listPage)
         {
@@ -40,5 +42,5 @@ public partial class RemoteDesktopCommandProvider : CommandProvider
 
     public override ICommandItem[] TopLevelCommands() => [listPageCommand];
 
-    public override IFallbackCommandItem[] FallbackCommands() => [fallback];
+    public override IFallbackCommandItem[] FallbackCommands() => [fallback, hostMatchedFallback];
 }

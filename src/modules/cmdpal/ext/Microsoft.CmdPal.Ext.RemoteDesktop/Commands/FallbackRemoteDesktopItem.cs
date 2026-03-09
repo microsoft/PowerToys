@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -16,12 +16,6 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
 {
     private const string _id = "com.microsoft.cmdpal.builtin.remotedesktop.fallback";
 
-    private static readonly UriHostNameType[] ValidUriHostNameTypes = [
-        UriHostNameType.IPv6,
-        UriHostNameType.IPv4,
-        UriHostNameType.Dns
-        ];
-
     private static readonly CompositeFormat RemoteDesktopOpenHostFormat = CompositeFormat.Parse(Resources.remotedesktop_open_host);
 
     private readonly IRdpConnectionsManager _rdpConnectionsManager;
@@ -32,6 +26,8 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
     {
         _rdpConnectionsManager = rdpConnectionsManager;
 
+        SuggestedQueryDelayMilliseconds = new(true, 75);
+        SuggestedMinQueryLength = new(true, 2);
         Command = _emptyCommand;
         Title = string.Empty;
         Subtitle = string.Empty;
@@ -55,39 +51,15 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
         if (queryConnection is not null && !string.IsNullOrWhiteSpace(queryConnection.ConnectionName))
         {
             var connectionName = queryConnection.ConnectionName;
-
             Command = new OpenRemoteDesktopCommand(connectionName);
             Title = connectionName;
             Subtitle = string.Format(CultureInfo.CurrentCulture, RemoteDesktopOpenHostFormat, connectionName);
         }
         else
         {
-            // Strip port suffix (e.g. "localhost:3389") before validation,
-            // since Uri.CheckHostName does not accept host:port strings.
-            var hostForValidation = query.Trim();
-            var lastColon = hostForValidation.LastIndexOf(':');
-            if (lastColon > 0 && lastColon < hostForValidation.Length - 1)
-            {
-                var portPart = hostForValidation.Substring(lastColon + 1);
-                if (ushort.TryParse(portPart, out _))
-                {
-                    hostForValidation = hostForValidation.Substring(0, lastColon);
-                }
-            }
-
-            if (ValidUriHostNameTypes.Contains(Uri.CheckHostName(hostForValidation)))
-            {
-                var connectionName = query.Trim();
-                Command = new OpenRemoteDesktopCommand(connectionName);
-                Title = string.Format(CultureInfo.CurrentCulture, RemoteDesktopOpenHostFormat, connectionName);
-                Subtitle = Resources.remotedesktop_title;
-            }
-            else
-            {
-                Title = string.Empty;
-                Subtitle = string.Empty;
-                Command = _emptyCommand;
-            }
+            Title = string.Empty;
+            Subtitle = string.Empty;
+            Command = _emptyCommand;
         }
     }
 }

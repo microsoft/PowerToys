@@ -180,6 +180,66 @@
                                                             IsChecked="{x:Bind IncludeInGlobalResults, Mode=TwoWay}"
                                                             IsEnabled="{x:Bind IsEnabled, Mode=OneWay}" />
                                                     </controls:SettingsCard>
+                                                    <controls:SettingsCard ContentAlignment="Left">
+                                                        <ptcontrols:CheckBoxWithDescriptionControl
+                                                            x:Uid="Settings_FallbacksPage_SeparateSection_SettingsCard"
+                                                            IsChecked="{x:Bind ShowResultsInDedicatedSection, Mode=TwoWay}"
+                                                            IsEnabled="{x:Bind IsEnabled, Mode=OneWay}" />
+                                                    </controls:SettingsCard>
+                                                    <controls:SettingsCard ContentAlignment="Left">
+                                                        <ptcontrols:CheckBoxWithDescriptionControl
+                                                            x:Uid="Settings_FallbacksPage_BeforeResults_SettingsCard"
+                                                            IsChecked="{x:Bind ShowResultsBeforeMainResults, Mode=TwoWay}"
+                                                            IsEnabled="{x:Bind CanShowResultsBeforeMainResults, Mode=OneWay}" />
+                                                    </controls:SettingsCard>
+                                                    <controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind IsEnabled, Mode=OneWay}">
+                                                        <controls:SettingsCard.Header>
+                                                            <TextBlock x:Uid="Settings_FallbacksPage_QueryDelay_SettingsCard.Header" />
+                                                        </controls:SettingsCard.Header>
+                                                        <controls:SettingsCard.Description>
+                                                            <TextBlock Text="{x:Bind QueryDelayDescription, Mode=OneWay}" TextWrapping="WrapWholeWords" />
+                                                        </controls:SettingsCard.Description>
+                                                        <StackPanel Spacing="12">
+                                                            <ToggleSwitch
+                                                                x:Uid="Settings_FallbacksPage_QueryDelayOverride_ToggleSwitch"
+                                                                IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
+                                                                IsOn="{x:Bind HasQueryDelayOverride, Mode=TwoWay}" />
+                                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                <NumberBox
+                                                                    Width="140"
+                                                                    IsEnabled="{x:Bind CanEditQueryDelayMilliseconds, Mode=OneWay}"
+                                                                    Minimum="0"
+                                                                    SmallChange="25"
+                                                                    SpinButtonPlacementMode="Inline"
+                                                                    Value="{x:Bind QueryDelayMillisecondsValue, Mode=TwoWay}" />
+                                                                <TextBlock x:Uid="Settings_FallbacksPage_QueryDelayUnits_TextBlock" VerticalAlignment="Center" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </controls:SettingsCard>
+                                                    <controls:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind IsEnabled, Mode=OneWay}">
+                                                        <controls:SettingsCard.Header>
+                                                            <TextBlock x:Uid="Settings_FallbacksPage_MinQueryLength_SettingsCard.Header" />
+                                                        </controls:SettingsCard.Header>
+                                                        <controls:SettingsCard.Description>
+                                                            <TextBlock Text="{x:Bind MinQueryLengthDescription, Mode=OneWay}" TextWrapping="WrapWholeWords" />
+                                                        </controls:SettingsCard.Description>
+                                                        <StackPanel Spacing="12">
+                                                            <ToggleSwitch
+                                                                x:Uid="Settings_FallbacksPage_MinQueryLengthOverride_ToggleSwitch"
+                                                                IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
+                                                                IsOn="{x:Bind HasMinQueryLengthOverride, Mode=TwoWay}" />
+                                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                                <NumberBox
+                                                                    Width="140"
+                                                                    IsEnabled="{x:Bind CanEditMinQueryLength, Mode=OneWay}"
+                                                                    Minimum="0"
+                                                                    SmallChange="1"
+                                                                    SpinButtonPlacementMode="Inline"
+                                                                    Value="{x:Bind MinQueryLengthValue, Mode=TwoWay}" />
+                                                                <TextBlock x:Uid="Settings_FallbacksPage_MinQueryLengthUnits_TextBlock" VerticalAlignment="Center" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </controls:SettingsCard>
                                                 </controls:SettingsExpander.Items>
                                             </controls:SettingsExpander>
                                         </DataTemplate>
