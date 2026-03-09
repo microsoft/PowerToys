@@ -6579,6 +6579,97 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         dx = max( -maxAbsDx, min( maxAbsDx, dx ) );
         dy = max( -maxAbsDy, min( maxAbsDy, dy ) );
 
+        // Multi-row block verification for high-constant-fraction content.
+        // When the content is mostly dark/uniform, the single-row MAD matcher
+        // often locks onto harmonic aliases because individual rows repeat at
+        // multiple offsets.  A block of consecutive rows creates a unique
+        // vertical fingerprint that disambiguates the correct small shift from
+        // larger harmonics.  Only fires on HCF content with established motion.
+        if( composedFrameSteps.size() >= 6 &&
+            frameConstantFraction[composedFrameIndices.back()] > 0.50 &&
+            abs( dy ) > max( 12, minProgress ) &&
+            abs( dy ) >= abs( dx ) * 2 )
+        {
+            const size_t refIdx = composedFrameIndices.back();
+            const std::vector<BYTE>& refPx = framePixels[refIdx];
+            const std::vector<BYTE>& curPx = framePixels[i];
+            const int matcherDy = dy;
+            const int blockHeight = max( 30, min( 60, frameHeight / 12 ) );
+            // Center the verification block in the middle third of the frame.
+            const int blockCenterY = frameHeight / 2;
+            const int blockStartY = max( 0, blockCenterY - blockHeight / 2 );
+            const int blockEndY = min( frameHeight, blockStartY + blockHeight );
+            const int xMargin = max( 10, frameWidth / 10 );
+            const int xStep = max( 1, ( frameWidth - 2 * xMargin ) / 60 );
+
+            // Score a candidate dy by computing block MAD across all rows.
+            auto blockMAD = [&]( int candidateDy ) -> double
+            {
+                double totalDiff = 0;
+                int totalSamples = 0;
+                for( int by = blockStartY; by < blockEndY; ++by )
+                {
+                    const int srcY = by + candidateDy;
+                    if( srcY < 0 || srcY >= frameHeight )
+                        continue;
+                    for( int x = xMargin; x < frameWidth - xMargin; x += xStep )
+                    {
+                        const size_t refOff = static_cast<size_t>( by ) * static_cast<size_t>( frameWidth ) * 4 +
+                                              static_cast<size_t>( x ) * 4;
+                        const size_t curOff = static_cast<size_t>( srcY ) * static_cast<size_t>( frameWidth ) * 4 +
+                                              static_cast<size_t>( x ) * 4;
+                        totalDiff += abs( static_cast<int>( refPx[refOff + 0] ) - static_cast<int>( curPx[curOff + 0] ) )
+                                   + abs( static_cast<int>( refPx[refOff + 1] ) - static_cast<int>( curPx[curOff + 1] ) )
+                                   + abs( static_cast<int>( refPx[refOff + 2] ) - static_cast<int>( curPx[curOff + 2] ) );
+                        ++totalSamples;
+                    }
+                }
+                return totalSamples > 0 ? totalDiff / ( totalSamples * 3.0 ) : 9999.0;
+            };
+
+            const double matcherBlockScore = blockMAD( matcherDy );
+
+            // Probe smaller offsets in the same direction.
+            const int sign = ( matcherDy < 0 ) ? -1 : 1;
+            const int probeMax = min( abs( matcherDy ) - 1, frameHeight / 3 );
+            double bestProbeScore = matcherBlockScore;
+            int bestProbeDy = matcherDy;
+            for( int probe = 1; probe <= probeMax; ++probe )
+            {
+                const int candidateDy = sign * probe;
+                const double score = blockMAD( candidateDy );
+                if( score < bestProbeScore - 0.5 )
+                {
+                    bestProbeScore = score;
+                    bestProbeDy = candidateDy;
+                }
+            }
+
+            if( bestProbeDy != matcherDy &&
+                bestProbeScore < matcherBlockScore * 0.5 &&
+                bestProbeScore < 6.0 )
+            {
+                StitchLog( L"[Panorama/Stitch] Frame %zu BlockVerify override: matcherDy=%d blockScore=%.1f probeDy=%d probeScore=%.1f blockH=%d constFrac=%.2f\n",
+                             i,
+                             matcherDy,
+                             matcherBlockScore,
+                             bestProbeDy,
+                             bestProbeScore,
+                             blockEndY - blockStartY,
+                             frameConstantFraction[refIdx] );
+                dy = bestProbeDy;
+                dx = 0; // Vertical scroll, zero horizontal.
+            }
+            else if( matcherBlockScore > 2.0 )
+            {
+                StitchLog( L"[Panorama/Stitch] Frame %zu BlockVerify confirmed: matcherDy=%d blockScore=%.1f (poor) constFrac=%.2f\n",
+                             i,
+                             matcherDy,
+                             matcherBlockScore,
+                             frameConstantFraction[refIdx] );
+            }
+        }
+
         // Early growth-outlier guard for low-entropy startup/recovery.
         // This catches the first large harmonic jump (e.g. 330 -> 800)
         // before long-enough history exists for continuity statistics.
