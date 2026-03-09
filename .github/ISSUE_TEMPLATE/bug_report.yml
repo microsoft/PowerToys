@@ -109,7 +109,7 @@ body:
   id: bugreportfile 
   attributes:
     label: Upload Bug Report ZIP-file
-    description: Right-clicking on the PowerToys tray icon in the taskbar allows you to select "Report bug" which generates a ZIP-file useful for understanding your setup and getting insights into the PowerToys logs.
+    description: Right-clicking the PowerToys tray icon in the taskbar and selecting “Report bug” generates a ZIP file containing diagnostic information about your setup and PowerToys logs, helping us better understand and troubleshoot the issue.
   validations:
     required: false
 - id: additionalInfo
