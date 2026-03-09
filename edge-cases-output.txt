@@ -1,0 +1,274 @@
+FAIL __tests__/edge-cases.test.ts
+  Edge cases ΓÇö components with no children
+    ├ù List with zero items produces valid VNode with empty children (7 ms)
+    ΓêÜ translator handles List with zero items gracefully (1 ms)
+    ΓêÜ ActionPanel with zero actions produces empty VNode children (1 ms)
+    ├ù Detail with no markdown child still produces valid VNode (1 ms)
+    ΓêÜ translator handles Detail with no markdown (1 ms)
+  Edge cases ΓÇö deeply nested components
+    ├ù 3-level nesting: List > Section > Item with ActionPanel (1 ms)
+    ΓêÜ translator handles 3-level nesting end-to-end (1 ms)
+    ΓêÜ Detail with nested metadata containing tag lists (1 ms)
+  Edge cases ΓÇö props with undefined/null values
+    ├ù List.Item with undefined subtitle is captured without error
+    ├ù List.Item with null icon is captured without error
+    ΓêÜ translator handles null/undefined props gracefully
+    ΓêÜ Action with null onAction does not crash (1 ms)
+    ├ù empty string props are preserved, not coerced to undefined
+  Edge cases ΓÇö conditional rendering
+    ├ù null child in children array is filtered out (1 ms)
+    ├ù false / undefined children are ignored
+    ΓêÜ translator ignores null VNode children (1 ms)
+  Edge cases ΓÇö large list performance
+    ├ù reconciler handles 100+ items without timeout (< 500ms)
+    ΓêÜ translator handles 100+ items without timeout (< 500ms)
+    ├ù reconciler handles 500 items (stress test) (1 ms)
+  Edge cases ΓÇö mixed component types
+    ΓêÜ List.Item with both ActionPanel and accessories
+  Edge cases ΓÇö unmount and cleanup
+    ΓêÜ unmount clears the VNode tree
+    ΓêÜ double unmount does not throw
+  Edge cases ΓÇö diverse prop types
+    ├ù boolean prop (isLoading) is captured as boolean, not string
+    ├ù numeric props are preserved
+    ├ù object props (e.g., shortcut) are preserved by reference (1 ms)
+    ├ù array props (e.g., keywords) are preserved (1 ms)
+
+  ΓùÅ Edge cases ΓÇö components with no children ΓÇ║ List with zero items produces valid VNode with empty children
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "List"
+    Received: "__stub__"
+
+      68 |     const root = renderer.render(el('List', { navigationTitle: 'Empty' }));
+      69 |
+    > 70 |     expect(root.type).toBe('List');
+         |                       ^
+      71 |     expect(root.children).toEqual([]);
+      72 |   });
+      73 |
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:70:23)
+
+  ΓùÅ Edge cases ΓÇö components with no children ΓÇ║ Detail with no markdown child still produces valid VNode
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "Detail"
+    Received: "__stub__"
+
+      89 |     const root = renderer.render(el('Detail', { navigationTitle: 'Blank' }));
+      90 |
+    > 91 |     expect(root.type).toBe('Detail');
+         |                       ^
+      92 |     expect(root.children).toHaveLength(0);
+      93 |   });
+      94 |
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:91:23)
+
+  ΓùÅ Edge cases ΓÇö deeply nested components ΓÇ║ 3-level nesting: List > Section > Item with ActionPanel
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "List"
+    Received: "__stub__"
+
+      142 |     const root = renderer.render(tree);
+      143 |
+    > 144 |     expect(root.type).toBe('List');
+          |                       ^
+      145 |     const section = root.children[0];
+      146 |     expect(section.type).toBe('List.Section');
+      147 |     const item = section.children[0];
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:144:23)
+
+  ΓùÅ Edge cases ΓÇö props with undefined/null values ΓÇ║ List.Item with undefined subtitle is captured without error
+
+    TypeError: Cannot read properties of undefined (reading 'props')
+
+      214 |     const item = root.children[0];
+      215 |
+    > 216 |     expect(item.props.title).toBe('Test');
+          |                 ^
+      217 |     // subtitle should be undefined or missing, not cause a crash
+      218 |     expect(item.props.subtitle).toBeUndefined();
+      219 |   });
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:216:17)
+
+  ΓùÅ Edge cases ΓÇö props with undefined/null values ΓÇ║ List.Item with null icon is captured without error
+
+    TypeError: Cannot read properties of undefined (reading 'props')
+
+      227 |
+      228 |     const root = renderer.render(tree);
+    > 229 |     expect(root.children[0].props.icon).toBeNull();
+          |                             ^
+      230 |   });
+      231 |
+      232 |   test('translator handles null/undefined props gracefully', () => {
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:229:29)
+
+  ΓùÅ Edge cases ΓÇö props with undefined/null values ΓÇ║ empty string props are preserved, not coerced to undefined
+
+    TypeError: Cannot read properties of undefined (reading 'props')
+
+      263 |
+      264 |     const root = renderer.render(tree);
+    > 265 |     expect(root.children[0].props.title).toBe('');
+          |                             ^
+      266 |     expect(root.children[0].props.subtitle).toBe('');
+      267 |   });
+      268 | });
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:265:29)
+
+  ΓùÅ Edge cases ΓÇö conditional rendering ΓÇ║ null child in children array is filtered out
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 2
+    Received length: 0
+    Received array:  []
+
+      297 |     // Null children should be filtered ΓÇö only real items remain
+      298 |     const realChildren = root.children.filter((c: VNode) => c.type !== '__null__');
+    > 299 |     expect(realChildren).toHaveLength(2);
+          |                          ^
+      300 |     expect(realChildren[0].props.title).toBe('Visible');
+      301 |     expect(realChildren[1].props.title).toBe('Also Visible');
+      302 |   });
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:299:26)
+
+  ΓùÅ Edge cases ΓÇö conditional rendering ΓÇ║ false / undefined children are ignored
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 1
+    Received length: 0
+    Received array:  []
+
+      315 |       (c: VNode) => c && c.type && c.type !== '__null__',
+      316 |     );
+    > 317 |     expect(realChildren).toHaveLength(1);
+          |                          ^
+      318 |   });
+      319 |
+      320 |   test('translator ignores null VNode children', () => {
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:317:26)
+
+  ΓùÅ Edge cases ΓÇö large list performance ΓÇ║ reconciler handles 100+ items without timeout (< 500ms)
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 150
+    Received length: 0
+    Received array:  []
+
+      355 |     const elapsed = performance.now() - start;
+      356 |
+    > 357 |     expect(root.children).toHaveLength(150);
+          |                           ^
+      358 |     expect(elapsed).toBeLessThan(500); // 500ms budget
+      359 |
+      360 |     renderer.unmount();
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:357:27)
+
+  ΓùÅ Edge cases ΓÇö large list performance ΓÇ║ reconciler handles 500 items (stress test)
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 500
+    Received length: 0
+    Received array:  []
+
+      394 |     const elapsed = performance.now() - start;
+      395 |
+    > 396 |     expect(root.children).toHaveLength(500);
+          |                           ^
+      397 |     expect(elapsed).toBeLessThan(2000); // 2s budget for 500 items
+      398 |
+      399 |     renderer.unmount();
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:396:27)
+
+  ΓùÅ Edge cases ΓÇö diverse prop types ΓÇ║ boolean prop (isLoading) is captured as boolean, not string
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: undefined
+
+      472 |   test('boolean prop (isLoading) is captured as boolean, not string', () => {
+      473 |     const root = renderer.render(el('List', { isLoading: true }));
+    > 474 |     expect(root.props.isLoading).toBe(true);
+          |                                  ^
+      475 |     expect(typeof root.props.isLoading).toBe('boolean');
+      476 |   });
+      477 |
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:474:34)
+
+  ΓùÅ Edge cases ΓÇö diverse prop types ΓÇ║ numeric props are preserved
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 42
+    Received: undefined
+
+      480 |       el('List.Item', { title: 'Test', rank: 42 }),
+      481 |     );
+    > 482 |     expect(root.props.rank).toBe(42);
+          |                             ^
+      483 |     expect(typeof root.props.rank).toBe('number');
+      484 |   });
+      485 |
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:482:29)
+
+  ΓùÅ Edge cases ΓÇö diverse prop types ΓÇ║ object props (e.g., shortcut) are preserved by reference
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: {"key": "k", "modifiers": ["cmd"]}
+    Received: undefined
+
+      489 |       el('Action', { title: 'Act', shortcut }),
+      490 |     );
+    > 491 |     expect(root.props.shortcut).toEqual(shortcut);
+          |                                 ^
+      492 |   });
+      493 |
+      494 |   test('array props (e.g., keywords) are preserved', () => {
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:491:33)
+
+  ΓùÅ Edge cases ΓÇö diverse prop types ΓÇ║ array props (e.g., keywords) are preserved
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: ["react", "typescript", "testing"]
+    Received: undefined
+
+      497 |       el('List.Item', { title: 'Item', keywords }),
+      498 |     );
+    > 499 |     expect(root.props.keywords).toEqual(keywords);
+          |                                 ^
+      500 |   });
+      501 | });
+      502 |
+
+      at Object.<anonymous> (__tests__/edge-cases.test.ts:499:33)
+
+Test Suites: 1 failed, 1 total
+Tests:       14 failed, 12 passed, 26 total
+Snapshots:   0 total
+Time:        2.049 s
+Ran all test suites matching /__tests__\\edge-cases.test.ts/i.

@@ -39,6 +39,7 @@
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.System\\Microsoft.CmdPal.Ext.System.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.TimeDate\\Microsoft.CmdPal.Ext.TimeDate.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.WebSearch\\Microsoft.CmdPal.Ext.WebSearch.csproj",
+      "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.RaycastStore\\Microsoft.CmdPal.Ext.RaycastStore.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.WinGet\\Microsoft.CmdPal.Ext.WinGet.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.WindowWalker\\Microsoft.CmdPal.Ext.WindowWalker.csproj",
       "src\\modules\\cmdpal\\ext\\Microsoft.CmdPal.Ext.WindowsServices\\Microsoft.CmdPal.Ext.WindowsServices.csproj",

@@ -1,0 +1,21 @@
+{
+  "name": "@cmdpal/raycast-manifest-translator",
+  "version": "1.0.0",
+  "description": "Translates Raycast extension package.json to CmdPal cmdpal.json manifest format",
+  "main": "dist/translate-manifest.js",
+  "scripts": {
+    "build": "tsc",
+    "translate": "node dist/translate-manifest.js"
+  },
+  "keywords": [
+    "cmdpal",
+    "raycast",
+    "manifest",
+    "translator"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.5.0"
+  }
+}

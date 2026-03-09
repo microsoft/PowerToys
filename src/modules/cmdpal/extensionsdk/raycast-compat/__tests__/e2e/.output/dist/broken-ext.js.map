@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../fixtures/missing-react-extension/src/index.tsx"],
+  "sourcesContent": ["// This extension's default export throws during render to simulate a broken extension.\r\nexport default function Command() {\r\n  throw new Error(\"Simulated broken extension: missing dependency\");\r\n}\r\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AACe,SAAR,UAA2B;AAChC,QAAM,IAAI,MAAM,gDAAgD;AAClE;",
+  "names": []
+}

@@ -1,0 +1,19 @@
+{
+  "name": "missing-react-ext",
+  "title": "Missing React Extension",
+  "description": "Extension with a broken component that will fail at render",
+  "icon": "icon.png",
+  "author": "test-author",
+  "version": "1.0.0",
+  "commands": [
+    {
+      "name": "index",
+      "title": "Broken Command",
+      "mode": "view"
+    }
+  ],
+  "platforms": ["macOS", "Windows"],
+  "dependencies": {
+    "@raycast/api": "^1.0.0"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "hello-world",
+  "title": "Hello World",
+  "description": "A test Raycast extension for e2e validation",
+  "icon": "icon.png",
+  "author": "test-author",
+  "version": "1.0.0",
+  "commands": [
+    {
+      "name": "index",
+      "title": "Search Items",
+      "description": "Search through a list of items",
+      "mode": "view"
+    }
+  ],
+  "preferences": [
+    {
+      "name": "apiKey",
+      "title": "API Key",
+      "description": "Enter your API key",
+      "type": "textfield",
+      "required": false
+    }
+  ],
+  "platforms": ["macOS", "Windows"],
+  "categories": ["Productivity"],
+  "dependencies": {
+    "@raycast/api": "^1.0.0"
+  },
+  "devDependencies": {
+    "@raycast/api": "^1.0.0"
+  }
+}

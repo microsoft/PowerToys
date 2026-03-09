@@ -1,0 +1,31 @@
+{
+  "name": "@cmdpal/raycast-bundler",
+  "version": "1.0.0",
+  "description": "Bundles Raycast extensions for CmdPal with @raycast/api module aliasing via esbuild",
+  "main": "dist/build.js",
+  "bin": {
+    "bundle-extension": "dist/bundle-extension.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "bundle": "node dist/bundle-extension.js",
+    "test": "jest --verbose"
+  },
+  "keywords": [
+    "cmdpal",
+    "raycast",
+    "esbuild",
+    "bundler"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.5.0"
+  }
+}

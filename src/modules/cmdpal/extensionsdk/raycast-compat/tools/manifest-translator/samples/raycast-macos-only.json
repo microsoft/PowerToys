@@ -1,0 +1,22 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "macos-clipboard",
+  "title": "macOS Clipboard Manager",
+  "description": "A clipboard manager that uses macOS-specific APIs",
+  "icon": "clipboard-icon.png",
+  "author": "mac-dev",
+  "categories": ["System"],
+  "license": "MIT",
+  "version": "2.0.0",
+  "commands": [
+    {
+      "name": "view-clipboard",
+      "title": "View Clipboard History",
+      "description": "View your clipboard history",
+      "mode": "view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.83.1"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@cmdpal/raycast-github-client",
+  "version": "1.0.0",
+  "description": "GitHub API client for browsing and downloading Raycast extensions from raycast/extensions",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --verbose",
+    "test:ci": "jest --verbose --ci",
+    "list-windows": "node dist/list-windows.js"
+  },
+  "keywords": [
+    "cmdpal",
+    "raycast",
+    "github",
+    "extensions"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.5.0"
+  }
+}

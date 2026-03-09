@@ -147,6 +147,7 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowsSettings\Microsoft.CmdPal.Ext.WindowsSettings.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowsTerminal\Microsoft.CmdPal.Ext.WindowsTerminal.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowWalker\Microsoft.CmdPal.Ext.WindowWalker.csproj" />
+    <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.RaycastStore\Microsoft.CmdPal.Ext.RaycastStore.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WinGet\Microsoft.CmdPal.Ext.WinGet.csproj" />
 
     <ProjectReference Include="$(ProjectDir)\..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">

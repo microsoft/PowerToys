@@ -1,0 +1,25 @@
+{
+  "name": "sample-raycast-extension",
+  "title": "Sample Extension",
+  "description": "A minimal Raycast extension for testing the CmdPal bundler",
+  "icon": "icon.png",
+  "author": "test-author",
+  "version": "1.0.0",
+  "commands": [
+    {
+      "name": "index",
+      "title": "Search Items",
+      "description": "Search through a list of items",
+      "mode": "view"
+    }
+  ],
+  "platforms": ["macOS", "Windows"],
+  "dependencies": {
+    "@raycast/api": "^1.80.0",
+    "@raycast/utils": "^1.17.0"
+  },
+  "devDependencies": {
+    "@raycast/api": "^1.80.0",
+    "typescript": "^5.5.0"
+  }
+}

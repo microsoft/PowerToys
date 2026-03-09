@@ -1,0 +1,1 @@
+{"version":3,"file":"vnode.js","sourceRoot":"","sources":["../../src/reconciler/vnode.ts"],"names":[],"mappings":";AAAA,sCAAsC;AACtC,6EAA6E;AAC7E,iEAAiE;;AAsCjE,kCAEC;AAED,wCAEC;AAND,SAAgB,WAAW,CAAC,IAAc;IACxC,OAAO,IAAI,CAAC,IAAI,KAAK,OAAO,CAAC;AAC/B,CAAC;AAED,SAAgB,cAAc,CAAC,IAAc;IAC3C,OAAO,IAAI,CAAC,IAAI,KAAK,OAAO,CAAC;AAC/B,CAAC"}

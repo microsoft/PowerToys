@@ -227,6 +227,10 @@
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
     </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.RaycastStore/Microsoft.CmdPal.Ext.RaycastStore.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Registry/Microsoft.CmdPal.Ext.Registry.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

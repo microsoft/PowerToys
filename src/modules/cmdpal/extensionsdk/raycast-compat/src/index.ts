@@ -70,6 +70,9 @@ export {
   getPreferenceValues, openExtensionPreferences, openCommandPreferences,
   // Navigation & actions
   open, closeMainWindow, popToRoot, launchCommand, confirmAlert,
+  // System utilities
+  showInFinder, trash, showHUD, getSelectedText,
+  getSelectedFinderItems, getApplications, getDefaultApplication, getFrontmostApplication,
   // Icons & colors
   Icon, resolveIcon, Color, ColorDynamic, resolveColor,
   // AI (stub)
@@ -83,4 +86,5 @@ export {
 export type {
   ToastOptions, ToastAction, LaunchContext, EnvironmentConfig,
   IconKey, ColorKey,
+  FileSystemItem, Application,
 } from './api-stubs';

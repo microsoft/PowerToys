@@ -1,0 +1,1 @@
+{"version":3,"file":"stage-validate.d.ts","sourceRoot":"","sources":["../src/stage-validate.ts"],"names":[],"mappings":"AAYA,MAAM,WAAW,gBAAgB;IAC/B,iCAAiC;IACjC,KAAK,EAAE,OAAO,CAAC;IACf,iDAAiD;IACjD,MAAM,EAAE,MAAM,EAAE,CAAC;IACjB,6BAA6B;IAC7B,QAAQ,EAAE,MAAM,EAAE,CAAC;CACpB;AAiBD;;;;;;;;GAQG;AACH,wBAAgB,iBAAiB,CAAC,YAAY,EAAE,MAAM,GAAG,gBAAgB,CAiFxE"}

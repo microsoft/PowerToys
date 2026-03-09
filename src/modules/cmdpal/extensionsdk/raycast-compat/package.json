@@ -1,0 +1,33 @@
+{
+  "name": "@cmdpal/raycast-compat",
+  "version": "0.1.0",
+  "description": "Raycast API compatibility layer for CmdPal — custom React reconciler that captures VNode trees",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --verbose",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [
+    "powertoys",
+    "command-palette",
+    "raycast",
+    "react-reconciler"
+  ],
+  "author": "PowerToys Team",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-reconciler": "^0.32.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.19.35",
+    "@types/react": "^19.1.8",
+    "@types/react-reconciler": "^0.28.9",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.9.3"
+  }
+}

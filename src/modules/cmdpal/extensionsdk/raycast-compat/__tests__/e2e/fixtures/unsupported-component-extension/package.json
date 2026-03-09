@@ -1,0 +1,19 @@
+{
+  "name": "unsupported-ext",
+  "title": "Unsupported Component Extension",
+  "description": "Extension using a component the translator does not handle",
+  "icon": "icon.png",
+  "author": "test-author",
+  "version": "1.0.0",
+  "commands": [
+    {
+      "name": "index",
+      "title": "Unsupported View",
+      "mode": "view"
+    }
+  ],
+  "platforms": ["macOS", "Windows"],
+  "dependencies": {
+    "@raycast/api": "^1.0.0"
+  }
+}

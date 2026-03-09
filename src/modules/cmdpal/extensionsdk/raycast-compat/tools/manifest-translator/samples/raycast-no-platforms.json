@@ -1,0 +1,23 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "simple-timer",
+  "title": "Simple Timer",
+  "description": "A simple countdown timer",
+  "icon": "timer-icon.png",
+  "author": "timer-dev",
+  "categories": ["Productivity"],
+  "license": "MIT",
+  "version": "1.0.0",
+  "platforms": ["macOS"],
+  "commands": [
+    {
+      "name": "start-timer",
+      "title": "Start Timer",
+      "description": "Start a countdown timer",
+      "mode": "no-view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.83.1"
+  }
+}

@@ -43,6 +43,16 @@ export interface RaycastCommandManifest {
   mode?: 'view' | 'no-view' | 'menu-bar';
 }
 
+/** A Raycast extension preference definition. */
+export interface RaycastPreference {
+  name: string;
+  type: string;
+  title?: string;
+  description?: string;
+  default?: unknown;
+  data?: Array<{ title: string; value: string }>;
+}
+
 /** Shape of a Raycast extension's package.json. */
 export interface RaycastExtensionManifest {
   name: string;
@@ -50,6 +60,7 @@ export interface RaycastExtensionManifest {
   description?: string;
   icon?: string;
   commands: RaycastCommandManifest[];
+  preferences?: RaycastPreference[];
 }
 
 /** A Raycast command module — the default export is a React component. */
@@ -155,21 +166,33 @@ export class RaycastBridgeProvider {
    * Each Raycast manifest command becomes a CmdPal ICommandItem.
    */
   topLevelCommands(): Array<Record<string, unknown>> {
+    // Detect grid commands from manifest preferences (e.g. gridItemSize)
+    const gridProps = this._inferGridPropertiesFromManifest();
+
     return this._manifest.commands.map((cmd) => {
       const commandId = this._commandId(cmd.name);
       const icon: IconInfo | undefined = cmd.icon
         ? { light: { icon: cmd.icon }, dark: { icon: cmd.icon } }
         : this.icon;
 
+      const command: Record<string, unknown> = {
+        _type: 'dynamicListPage',
+        id: commandId,
+        name: cmd.title,
+        icon,
+        placeholderText: `Search ${cmd.title}…`,
+        showDetails: false,
+      };
+
+      if (gridProps) {
+        command.gridProperties = gridProps;
+      }
+
       return {
         title: cmd.title,
         subtitle: cmd.subtitle ?? this._manifest.title,
         icon,
-        command: {
-          id: commandId,
-          name: cmd.title,
-          icon,
-        },
+        command,
       };
     });
   }
@@ -230,7 +253,7 @@ export class RaycastBridgeProvider {
     if (!this._container) return;
 
     const root = this._findRootVNode(this._container.children);
-    if (!root || root.type !== 'List') return;
+    if (!root || (root.type !== 'List' && root.type !== 'Grid')) return;
 
     const onSearchTextChange = root.props.onSearchTextChange as
       | ((text: string) => void)
@@ -247,6 +270,19 @@ export class RaycastBridgeProvider {
       } else if (typeof rec.flushSync === 'function') {
         (rec.flushSync as (fn?: () => void) => void)();
       }
+    }
+  }
+
+  /**
+   * Ensure the React command for a given pageId is mounted.
+   * Called lazily by page-level RPC handlers (getItems, setSearchText, etc.)
+   * since the IPage navigation path skips getCommand() and invokeCommand().
+   */
+  ensureMounted(pageId: string): void {
+    if (this._activeCommandId === pageId) return;
+    const cmdName = this._commandNameFromId(pageId);
+    if (cmdName && this._commandModules.has(cmdName)) {
+      this._mountCommand(cmdName, pageId);
     }
   }
 
@@ -275,7 +311,7 @@ export class RaycastBridgeProvider {
       return this._handlePushAction(itemIdx, actionIdx);
     }
 
-    // Default: it's a top-level command, mount it
+    // Default: top-level command (handled via IPage path, not invoke)
     return { kind: 4 }; // KeepOpen
   }
 
@@ -440,7 +476,7 @@ export class RaycastBridgeProvider {
   ): Record<string, unknown> {
     if (this._snapshot?.kind === 'list') {
       const page = this._snapshot.page;
-      return {
+      const wire: Record<string, unknown> = {
         _type: 'dynamicListPage',
         id: commandId,
         name: page.name || manifestCmd.title,
@@ -450,6 +486,10 @@ export class RaycastBridgeProvider {
         showDetails: page.showDetails,
         hasMoreItems: page.hasMoreItems,
       };
+      if (page.gridProperties) {
+        wire.gridProperties = page.gridProperties;
+      }
+      return wire;
     }
 
     if (this._snapshot?.kind === 'content') {
@@ -525,6 +565,36 @@ export class RaycastBridgeProvider {
     };
   }
 
+  /**
+   * Detect grid extensions from manifest preferences.
+   * If the manifest has grid-related preferences (e.g. gridItemSize),
+   * this is a grid command — return default grid properties.
+   */
+  private _inferGridPropertiesFromManifest(): Record<string, unknown> | null {
+    const prefs = this._manifest.preferences ?? [];
+    const gridPref = prefs.find((p) =>
+      p.name.toLowerCase().includes('griditemsize') ||
+      p.name.toLowerCase().includes('gridsize') ||
+      p.name.toLowerCase().includes('grid_item_size'),
+    );
+
+    if (!gridPref) return null;
+
+    // Map the preference default to a CmdPal grid layout
+    const prefDefault = (gridPref.default as string) ?? 'medium';
+    const layoutMap: Record<string, string> = {
+      small: 'small',
+      medium: 'medium',
+      large: 'gallery',
+    };
+    const layout = layoutMap[prefDefault] ?? 'medium';
+    return {
+      layout,
+      showTitle: layout !== 'small',
+      showSubtitle: layout === 'gallery',
+    };
+  }
+
   // ══════════════════════════════════════════════════════════════════════
   // Internal: Action execution
   // ══════════════════════════════════════════════════════════════════════
@@ -534,26 +604,46 @@ export class RaycastBridgeProvider {
    * Action's onAction callback from the VNode tree.
    */
   private _invokeItemAction(itemIndex: number, actionIndex: number): void {
-    if (!this._container) return;
+    if (!this._container) {
+      console.error('[Bridge] invokeItemAction: no container mounted');
+      return;
+    }
 
     const root = this._findRootVNode(this._container.children);
-    if (!root || root.type !== 'List') return;
+    if (!root || (root.type !== 'List' && root.type !== 'Grid')) {
+      console.error(`[Bridge] invokeItemAction: root type is ${root?.type ?? 'null'}`);
+      return;
+    }
 
-    // Collect all List.Item VNodes (including inside sections)
+    // Collect all item VNodes (including inside sections)
     const itemVNodes = this._collectListItems(root);
     const itemVNode = itemVNodes[itemIndex];
-    if (!itemVNode) return;
+    if (!itemVNode) {
+      console.error(`[Bridge] invokeItemAction: no item at index ${itemIndex} (total: ${itemVNodes.length})`);
+      return;
+    }
 
     // Find the action at actionIndex
     const actions = this._collectActions(itemVNode);
     const action = actions[actionIndex];
-    if (!action) return;
+    if (!action) {
+      console.error(`[Bridge] invokeItemAction: no action at index ${actionIndex} (total: ${actions.length})`);
+      return;
+    }
 
-    // Call the onAction callback if present
-    const onAction = action.props.onAction as ((...args: unknown[]) => void) | undefined;
+    console.error(`[Bridge] invokeItemAction: item=${itemIndex} action=${actionIndex} type="${action.type}" title="${action.props.title ?? ''}"`);
+
+    // Call the onAction callback if present (may be async)
+    const onAction = action.props.onAction as ((...args: unknown[]) => unknown) | undefined;
     if (typeof onAction === 'function') {
       try {
-        onAction();
+        const result = onAction();
+        // Handle async callbacks — catch rejected promises to prevent crashes
+        if (result && typeof (result as Promise<unknown>).then === 'function') {
+          (result as Promise<unknown>).catch((err) => {
+            console.error('[Bridge] Action async error:', err);
+          });
+        }
       } catch (err) {
         console.error('[Bridge] Action error:', err);
       }
@@ -561,19 +651,41 @@ export class RaycastBridgeProvider {
 
     // Special handling for Action.Open and Action.OpenInBrowser
     if (action.type === 'Action.Open' || action.type === 'Action.OpenInBrowser') {
-      const target = action.props.target as string | undefined;
+      // Action.Open uses 'target', Action.OpenInBrowser uses 'url'
+      const target = (action.props.url ?? action.props.target) as string | undefined;
       if (target) {
-        import('../api-stubs/navigation').then((nav) => nav.open(target)).catch(() => {});
+        import('../api-stubs/navigation').then((nav) => nav.open(target)).catch((err) => {
+          console.error('[Bridge] open() error:', err);
+        });
+      } else {
+        console.error(`[Bridge] ${action.type} has no url/target prop. Props: ${Object.keys(action.props).join(', ')}`);
       }
     }
 
     // Special handling for Action.CopyToClipboard
     if (action.type === 'Action.CopyToClipboard') {
+      const content = action.props.content as string | { text?: string } | undefined;
+      const text = typeof content === 'string' ? content : content?.text;
+      if (text) {
+        import('../api-stubs/clipboard').then((clip) =>
+          clip.Clipboard.copy(text),
+        ).catch((err) => {
+          console.error('[Bridge] Clipboard.copy() error:', err);
+        });
+      } else {
+        console.error(`[Bridge] Action.CopyToClipboard has no content. Props: ${Object.keys(action.props).join(', ')}`);
+      }
+    }
+
+    // Special handling for Action.Paste
+    if (action.type === 'Action.Paste') {
       const content = action.props.content as string | undefined;
       if (content) {
         import('../api-stubs/clipboard').then((clip) =>
-          clip.Clipboard.copy(content),
-        ).catch(() => {});
+          clip.Clipboard.paste(content),
+        ).catch((err) => {
+          console.error('[Bridge] Clipboard.paste() error:', err);
+        });
       }
     }
   }
@@ -612,16 +724,16 @@ export class RaycastBridgeProvider {
     return { kind: 4 };
   }
 
-  /** Collect all List.Item VNodes from a List root (flattening sections). */
+  /** Collect all List.Item/Grid.Item VNodes from a List or Grid root (flattening sections). */
   private _collectListItems(listNode: VNode): VNode[] {
     const items: VNode[] = [];
     for (const child of listNode.children) {
       if (!isElementVNode(child)) continue;
-      if (child.type === 'List.Item') {
+      if (child.type === 'List.Item' || child.type === 'Grid.Item') {
         items.push(child);
-      } else if (child.type === 'List.Section') {
+      } else if (child.type === 'List.Section' || child.type === 'Grid.Section') {
         for (const sectionChild of child.children) {
-          if (isElementVNode(sectionChild) && sectionChild.type === 'List.Item') {
+          if (isElementVNode(sectionChild) && (sectionChild.type === 'List.Item' || sectionChild.type === 'Grid.Item')) {
             items.push(sectionChild);
           }
         }

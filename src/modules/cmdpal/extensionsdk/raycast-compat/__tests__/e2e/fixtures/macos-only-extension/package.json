@@ -1,0 +1,19 @@
+{
+  "name": "macos-only-tool",
+  "title": "macOS Only Tool",
+  "description": "A Raycast extension that only supports macOS",
+  "icon": "icon.png",
+  "author": "test-author",
+  "version": "1.0.0",
+  "commands": [
+    {
+      "name": "index",
+      "title": "macOS Command",
+      "mode": "view"
+    }
+  ],
+  "platforms": ["macOS"],
+  "dependencies": {
+    "@raycast/api": "^1.0.0"
+  }
+}

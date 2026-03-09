@@ -26,6 +26,26 @@ import type { RaycastExtensionManifest, RaycastCommandModule } from './bridge-pr
 import { _configureEnvironment, LaunchType } from '../api-stubs/environment';
 import { _setStoragePath } from '../api-stubs/local-storage';
 
+// CRITICAL: Redirect console.log to stderr.
+// stdout is the JSON-RPC transport — ANY console.log output from extension
+// code or third-party dependencies will corrupt the LSP message framing
+// and crash the bridge. All logging must go through stderr.
+const _origLog = console.log;
+console.log = (...args: unknown[]) => {
+  console.error('[redirected-log]', ...args);
+};
+
+// Prevent unhandled promise rejections from crashing the bridge process.
+// Raycast extension callbacks are often async and may reject when our stubs
+// don't fully support the requested operation.
+process.on('unhandledRejection', (reason) => {
+  console.error('[Bridge] Unhandled promise rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[Bridge] Uncaught exception:', err);
+});
+
 // Re-export bridge types for consumers
 export { RaycastBridgeProvider } from './bridge-provider';
 export type {
@@ -152,7 +172,7 @@ class BridgeTransport {
 // Bootstrap
 // ══════════════════════════════════════════════════════════════════════════
 
-/** Parse CLI arguments. */
+/** Parse CLI arguments. Falls back to cwd when no args are provided. */
 function parseArgs(): { extensionDir: string; command?: string } {
   const args = process.argv.slice(2);
   let extensionDir = '';
@@ -166,27 +186,61 @@ function parseArgs(): { extensionDir: string; command?: string } {
     }
   }
 
+  // When no --extension-dir is provided, use the directory containing
+  // this script's parent (i.e. the extension root). This supports the
+  // installed layout where index.js lives at the extension root and
+  // the bridge is in a bridge/ subdirectory.
   if (!extensionDir) {
-    console.error('Usage: node bridge/index.js --extension-dir <path> [--command <name>]');
-    process.exit(1);
+    extensionDir = path.resolve(__dirname, '..');
   }
 
   return { extensionDir, command };
 }
 
-/** Load the Raycast extension manifest from package.json. */
+/**
+ * Load the extension manifest.
+ *
+ * Supports two layouts:
+ * 1. Development: reads package.json (Raycast format)
+ * 2. Installed: reads cmdpal.json + raycast-compat.json (pipeline output)
+ */
 function loadManifest(extensionDir: string): RaycastExtensionManifest {
+  // Try package.json first (development / source layout)
   const pkgPath = path.join(extensionDir, 'package.json');
-  if (!fs.existsSync(pkgPath)) {
-    throw new Error(`No package.json found at ${pkgPath}`);
+  if (fs.existsSync(pkgPath)) {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    return {
+      name: pkg.name ?? path.basename(extensionDir),
+      title: pkg.title ?? pkg.name ?? 'Raycast Extension',
+      description: pkg.description,
+      icon: pkg.icon,
+      commands: pkg.commands ?? [],
+      preferences: pkg.preferences ?? [],
+    };
   }
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+  // Fall back to installed layout: cmdpal.json + raycast-compat.json
+  const cmdpalPath = path.join(extensionDir, 'cmdpal.json');
+  const compatPath = path.join(extensionDir, 'raycast-compat.json');
+
+  if (!fs.existsSync(cmdpalPath)) {
+    throw new Error(
+      `No package.json or cmdpal.json found in ${extensionDir}`,
+    );
+  }
+
+  const cmdpal = JSON.parse(fs.readFileSync(cmdpalPath, 'utf8'));
+  const compat = fs.existsSync(compatPath)
+    ? JSON.parse(fs.readFileSync(compatPath, 'utf8'))
+    : { commands: [], raycastOriginalName: '', preferences: [] };
+
   return {
-    name: pkg.name ?? path.basename(extensionDir),
-    title: pkg.title ?? pkg.name ?? 'Raycast Extension',
-    description: pkg.description,
-    icon: pkg.icon,
-    commands: pkg.commands ?? [],
+    name: compat.raycastOriginalName || cmdpal.name || path.basename(extensionDir),
+    title: cmdpal.displayName || cmdpal.name || 'Raycast Extension',
+    description: cmdpal.description,
+    icon: cmdpal.icon,
+    commands: compat.commands ?? [],
+    preferences: compat.preferences ?? [],
   };
 }
 
@@ -269,6 +323,7 @@ function registerHandlers(
   transport.onRequest('listPage/getItems', async (params: unknown) => {
     const { pageId } = params as { pageId: string };
     if (!pageId) throw new Error('Missing pageId parameter');
+    provider.ensureMounted(pageId);
     const items = provider.getItems();
     return { items, totalItems: items.length };
   });
@@ -276,6 +331,7 @@ function registerHandlers(
   transport.onRequest('listPage/setSearchText', async (params: unknown) => {
     const { pageId, searchText } = params as { pageId: string; searchText: string };
     if (!pageId) throw new Error('Missing pageId parameter');
+    provider.ensureMounted(pageId);
     provider.setSearchText(searchText ?? '');
     const items = provider.getItems();
     return { updatedItemCount: items.length };
@@ -284,6 +340,7 @@ function registerHandlers(
   transport.onRequest('listPage/loadMore', async (params: unknown) => {
     const { pageId } = params as { pageId: string };
     if (!pageId) throw new Error('Missing pageId parameter');
+    provider.ensureMounted(pageId);
     // Raycast extensions don't have explicit loadMore — they load everything
     const items = provider.getItems();
     return { newItemCount: items.length };
@@ -292,6 +349,7 @@ function registerHandlers(
   transport.onRequest('contentPage/getContent', async (params: unknown) => {
     const { pageId } = params as { pageId: string };
     if (!pageId) throw new Error('Missing pageId parameter');
+    provider.ensureMounted(pageId);
     return { content: provider.getContent() };
   });
 

@@ -1,0 +1,1 @@
+{"version":3,"file":"stage-download.d.ts","sourceRoot":"","sources":["../src/stage-download.ts"],"names":[],"mappings":"AAiBA,MAAM,WAAW,cAAc;IAC7B,sEAAsE;IACtE,OAAO,EAAE,MAAM,CAAC;IAChB,uCAAuC;IACvC,KAAK,EAAE,MAAM,EAAE,CAAC;CACjB;AAED;;;;;GAKG;AACH,wBAAsB,iBAAiB,CACrC,aAAa,EAAE,MAAM,EACrB,WAAW,CAAC,EAAE,MAAM,GACnB,OAAO,CAAC,cAAc,CAAC,CAiCzB"}

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "quick-notes",
+  "title": "Quick Notes",
+  "description": "Create and manage quick notes from your command palette",
+  "icon": "command-icon.png",
+  "author": "jane-dev",
+  "categories": ["Productivity", "Developer Tools"],
+  "license": "MIT",
+  "version": "1.2.0",
+  "platforms": ["macOS", "Windows"],
+  "commands": [
+    {
+      "name": "create-note",
+      "title": "Create Note",
+      "description": "Create a new quick note",
+      "mode": "view",
+      "icon": "create-icon.png",
+      "keywords": ["note", "new", "create"]
+    },
+    {
+      "name": "list-notes",
+      "title": "List Notes",
+      "description": "Browse and search your notes",
+      "mode": "view",
+      "icon": "list-icon.png",
+      "keywords": ["notes", "browse", "search"]
+    },
+    {
+      "name": "quick-capture",
+      "title": "Quick Capture",
+      "description": "Quickly capture a note without opening the full UI",
+      "mode": "no-view",
+      "keywords": ["capture", "quick"]
+    }
+  ],
+  "preferences": [
+    {
+      "name": "storageLocation",
+      "title": "Storage Location",
+      "description": "Where to store your notes",
+      "type": "textfield",
+      "required": true,
+      "default": "~/Documents/QuickNotes",
+      "placeholder": "Path to notes directory"
+    },
+    {
+      "name": "defaultFormat",
+      "title": "Default Format",
+      "description": "Default format for new notes",
+      "type": "dropdown",
+      "required": false,
+      "default": "markdown",
+      "data": [
+        { "title": "Markdown", "value": "markdown" },
+        { "title": "Plain Text", "value": "text" }
+      ]
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.83.1",
+    "@raycast/utils": "^1.17.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.11",
+    "typescript": "^5.4.5"
+  }
+}
