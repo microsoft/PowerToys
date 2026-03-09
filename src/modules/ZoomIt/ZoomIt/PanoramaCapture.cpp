@@ -6644,12 +6644,16 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         // Distinctive-row anchor verification for high-constant-fraction content.
         // On dark/uniform frames the matcher picks harmonic aliases because
         // ~60% of pixels are identical at every offset.  Instead of averaging
-        // over all rows, find a unique high-variance row in the previous frame
-        // and search for it in the current frame.  A unique row (one with no
-        // near-duplicate elsewhere in the same frame) provides an unambiguous
-        // MAD minimum that breaks harmonics.
+        // over all rows, find a unique high-variance row and search for it
+        // across frames.  A unique row provides an unambiguous MAD minimum
+        // that breaks harmonics.
+        //
+        // We scan the CURRENT frame for distinctive rows (not the reference
+        // frame) because in some cases the reference frame's pixel data may
+        // have constFrac=1.0 (e.g., during gap-bridge transitions).
         if( composedFrameSteps.size() >= 4 &&
-            frameConstantFraction[composedFrameIndices.back()] > 0.45 &&
+            ( frameConstantFraction[composedFrameIndices.back()] > 0.45 ||
+              frameConstantFraction[i] > 0.45 ) &&
             abs( dy ) >= abs( dx ) * 2 &&
             abs( dy ) > 0 )
         {
@@ -6658,6 +6662,14 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
             const std::vector<BYTE>& curPx = framePixels[i];
             const int xMargin = max( 10, frameWidth / 8 );
             const int sigXStep = max( 1, ( frameWidth - 2 * xMargin ) / 120 );
+
+            // Decide which frame to use as the "source" for finding
+            // distinctive rows.  Prefer the one with lower constFrac
+            // (more varied content), falling back to the current frame.
+            const bool useCurAsSrc = frameConstantFraction[refIdx] > frameConstantFraction[i] + 0.1
+                                  || frameConstantFraction[refIdx] > 0.95;
+            const std::vector<BYTE>& srcPx = useCurAsSrc ? curPx : refPx;
+            const std::vector<BYTE>& tgtPx = useCurAsSrc ? refPx : curPx;
 
             // Step 1: Collect the top candidate anchor rows by variance.
             struct AnchorCandidate { int y; double var; };
@@ -6673,7 +6685,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 {
                     const size_t off = static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) * 4 +
                                        static_cast<size_t>( x ) * 4;
-                    const double luma = refPx[off + 2] * 0.299 + refPx[off + 1] * 0.587 + refPx[off + 0] * 0.114;
+                    const double luma = srcPx[off + 2] * 0.299 + srcPx[off + 1] * 0.587 + srcPx[off + 0] * 0.114;
                     sum += luma;
                     sumSq += luma * luma;
                     ++n;
@@ -6703,9 +6715,9 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 {
                     const size_t off = static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) * 4 +
                                        static_cast<size_t>( x ) * 4;
-                    sigB.push_back( refPx[off + 0] );
-                    sigG.push_back( refPx[off + 1] );
-                    sigR.push_back( refPx[off + 2] );
+                    sigB.push_back( srcPx[off + 0] );
+                    sigG.push_back( srcPx[off + 1] );
+                    sigR.push_back( srcPx[off + 2] );
                 }
             };
 
@@ -6730,7 +6742,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
             };
 
             // Step 2: Find the first candidate row that is UNIQUE within the
-            // reference frame (no near-duplicate row within ±(frameHeight/2)).
+            // reference frame AND matchable in the current frame.
             int bestAnchorY = -1;
             double bestAnchorVar = 0;
             std::vector<int> anchorSigR, anchorSigG, anchorSigB;
@@ -6745,7 +6757,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 {
                     if( abs( checkY - cand.y ) < 20 )
                         continue; // Skip nearby rows (same feature).
-                    const double mad = sigMAD( anchorSigR, anchorSigG, anchorSigB, refPx, checkY );
+                    const double mad = sigMAD( anchorSigR, anchorSigG, anchorSigB, srcPx, checkY );
                     if( mad < 3.0 )
                     {
                         hasDuplicate = true;
@@ -6753,31 +6765,85 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                     }
                 }
 
-                if( !hasDuplicate )
+                if( hasDuplicate )
+                    continue;
+
+                // Verify the row is actually findable in the current frame.
+                // Use a loose threshold here — the purpose is to exclude rows
+                // that changed entirely between frames (MAD > 50), not to
+                // require pixel-perfect matches.  The final search (step 3)
+                // enforces the tight confidence threshold.
+                // Scan every row (step=1) because pixel-perfect matches can
+                // be missed even at step=3 (e.g., MAD=0 at y=205 but MAD=80
+                // at y=204 and y=207).
+                double bestProbeMAD = 9999.0;
+                for( int probeY = 10; probeY < frameHeight - 10; ++probeY )
+                {
+                    const double mad = sigMAD( anchorSigR, anchorSigG, anchorSigB, tgtPx, probeY );
+                    if( mad < bestProbeMAD )
+                        bestProbeMAD = mad;
+                    if( bestProbeMAD < 1.0 )
+                        break; // Found a near-perfect match, no need to continue.
+                }
+
+                if( bestProbeMAD < 30.0 )
                 {
                     bestAnchorY = cand.y;
                     bestAnchorVar = cand.var;
-                    break; // Found a unique distinctive row.
+                    break; // Found a unique, matchable distinctive row.
                 }
+            }
+
+            if( bestAnchorY < 0 )
+            {
+                // Log why no anchor was found — useful for debugging.
+                int totalUnique = 0, totalMatchable = 0;
+                for( const auto& cand : candidates )
+                {
+                    extractSig( cand.y, anchorSigR, anchorSigG, anchorSigB );
+                    bool hasDup = false;
+                    for( int checkY = 10; checkY < frameHeight - 10; checkY += varScanStep )
+                    {
+                        if( abs( checkY - cand.y ) < 20 ) continue;
+                        if( sigMAD( anchorSigR, anchorSigG, anchorSigB, refPx, checkY ) < 3.0 ) { hasDup = true; break; }
+                    }
+                    if( !hasDup )
+                    {
+                        ++totalUnique;
+                        double bestP = 9999.0;
+                        for( int probeY = 10; probeY < frameHeight - 10; ++probeY )
+                        {
+                            const double m = sigMAD( anchorSigR, anchorSigG, anchorSigB, curPx, probeY );
+                            if( m < bestP ) bestP = m;
+                            if( bestP < 1.0 ) break;
+                        }
+                        if( bestP < 30.0 ) ++totalMatchable;
+                    }
+                }
+                StitchLog( L"[Panorama/Stitch] Frame %zu AnchorNoCandidate: totalCandidates=%zu unique=%d matchable=%d refIdx=%zu constFrac=%.2f dy=%d refPxSize=%zu\n",
+                             i, candidates.size(), totalUnique, totalMatchable, refIdx,
+                             frameConstantFraction[refIdx], dy, refPx.size() );
             }
 
             if( bestAnchorY >= 0 )
             {
                 const int sigLen = static_cast<int>( anchorSigR.size() );
 
-                // Step 3: Search the current frame for this unique signature.
-                // Also count near-best matches to detect ambiguity.
+                // Step 3: Search the target frame for this unique signature.
+                // When useCurAsSrc, the search finds the offset in refPx, and
+                // we negate it to get the true scroll direction.
                 const int searchRadius = max( abs( dy ) + 20, frameHeight / 2 );
-                const int searchLo = max( -( frameHeight - 1 ), dy - searchRadius );
-                const int searchHi = min( 0, dy + searchRadius );
+                // When searching ref→cur (normal): dy is negative, search negative range.
+                // When searching cur→ref (inverted): search positive range (inverted scroll).
+                const int effectiveDy = useCurAsSrc ? -dy : dy;
+                const int searchLo = max( -( frameHeight - 1 ), effectiveDy - searchRadius );
+                const int searchHi = min( frameHeight - 1, effectiveDy + searchRadius );
 
                 double bestMatchMAD = 9999.0;
-                int bestMatchDy = dy;
+                int bestMatchDy = effectiveDy;
+                double secondBestMAD = 9999.0;
+                int secondBestDy = effectiveDy;
                 double matcherAnchorMAD = 9999.0;
-
-                // Store all match scores so we can check for ambiguity.
-                struct MatchResult { int candDy; double mad; };
-                std::vector<MatchResult> goodMatches;
 
                 for( int candDy = searchLo; candDy <= searchHi; ++candDy )
                 {
@@ -6785,54 +6851,62 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                     if( targetY < 0 || targetY >= frameHeight )
                         continue;
 
-                    const double mad = sigMAD( anchorSigR, anchorSigG, anchorSigB, curPx, targetY );
+                    const double mad = sigMAD( anchorSigR, anchorSigG, anchorSigB, tgtPx, targetY );
 
-                    if( candDy == dy )
+                    if( candDy == effectiveDy )
                         matcherAnchorMAD = mad;
 
                     if( mad < bestMatchMAD )
                     {
+                        // Demote previous best to second-best if not nearby.
+                        if( abs( bestMatchDy - candDy ) > 5 )
+                        {
+                            secondBestMAD = bestMatchMAD;
+                            secondBestDy = bestMatchDy;
+                        }
                         bestMatchMAD = mad;
                         bestMatchDy = candDy;
                     }
-
-                    if( mad < 3.0 )
-                        goodMatches.push_back( { candDy, mad } );
+                    else if( mad < secondBestMAD && abs( candDy - bestMatchDy ) > 5 )
+                    {
+                        secondBestMAD = mad;
+                        secondBestDy = candDy;
+                    }
                 }
 
-                // Count distinct match clusters (merge matches within ±3).
-                int distinctMatches = 0;
-                for( size_t mi = 0; mi < goodMatches.size(); ++mi )
-                {
-                    if( mi == 0 || abs( goodMatches[mi].candDy - goodMatches[mi - 1].candDy ) > 3 )
-                        ++distinctMatches;
-                }
+                // Step 4: Override if the anchor found a confident, different answer.
+                // Confident = best match is significantly better than second-best
+                // (i.e., there's a clear unique winner, not multiple harmonics).
+                // For adjacent frames, bestMAD ≈ 0 and secondBestMAD > 50 (trivial).
+                // For gap-bridge frames, bestMAD ≈ 20 and secondBestMAD > 50 (still clear).
+                // Convert anchor result back to actual scroll direction.
+                const int anchorScrollDy = useCurAsSrc ? -bestMatchDy : bestMatchDy;
 
-                // Step 4: Override only if the anchor found a confident,
-                // different, unambiguous answer (single distinct match).
-                const bool anchorConfident = bestMatchMAD < 3.0;
-                const bool anchorDiffers = bestMatchDy != dy;
-                const bool anchorSmaller = abs( bestMatchDy ) < abs( dy );
-                const bool anchorUnambiguous = distinctMatches == 1;
+                const double separation = secondBestMAD - bestMatchMAD;
+                const bool anchorConfident = bestMatchMAD < 30.0 && separation > 5.0;
+                const bool anchorDiffers = anchorScrollDy != dy;
+                const bool anchorSmaller = abs( anchorScrollDy ) < abs( dy );
+                const bool matcherWorse = matcherAnchorMAD > bestMatchMAD + 3.0;
 
-                if( anchorConfident && anchorDiffers && anchorSmaller && anchorUnambiguous &&
-                    ( matcherAnchorMAD - bestMatchMAD ) > 1.0 )
+                if( anchorConfident && anchorDiffers && anchorSmaller && matcherWorse )
                 {
-                    // Diagnostic only: log when the anchor would override.
-                    // Override is disabled because off-by-1 corrections on
-                    // highly-uniform dark content introduce seam artifacts.
-                    StitchLog( L"[Panorama/Stitch] Frame %zu AnchorWouldOverride: matcherDy=%d anchorDy=%d anchorMAD=%.2f matcherMAD=%.2f anchorY=%d anchorVar=%.0f constFrac=%.2f distinct=%d\n",
-                                 i, dy, bestMatchDy, bestMatchMAD, matcherAnchorMAD,
+                    StitchLog( L"[Panorama/Stitch] Frame %zu AnchorOverride: matcherDy=%d anchorDy=%d anchorMAD=%.2f matcherMAD=%.2f secondMAD=%.2f sep=%.1f anchorY=%d anchorVar=%.0f constFrac=%.2f inverted=%d\n",
+                                 i, dy, anchorScrollDy, bestMatchMAD, matcherAnchorMAD,
+                                 secondBestMAD, separation,
                                  bestAnchorY, bestAnchorVar,
-                                 frameConstantFraction[refIdx], distinctMatches );
+                                 frameConstantFraction[refIdx],
+                                 useCurAsSrc ? 1 : 0 );
+                    dy = anchorScrollDy;
+                    dx = 0;
                 }
                 else
                 {
-                    StitchLog( L"[Panorama/Stitch] Frame %zu AnchorKept: matcherDy=%d anchorBestDy=%d anchorMAD=%.2f matcherMAD=%.2f anchorY=%d anchorVar=%.0f confident=%d differs=%d smaller=%d unambig=%d distinct=%d\n",
-                                 i, dy, bestMatchDy, bestMatchMAD, matcherAnchorMAD,
+                    StitchLog( L"[Panorama/Stitch] Frame %zu AnchorKept: matcherDy=%d anchorBestDy=%d anchorMAD=%.2f matcherMAD=%.2f secondMAD=%.2f sep=%.1f anchorY=%d anchorVar=%.0f confident=%d differs=%d smaller=%d matcherWorse=%d inverted=%d\n",
+                                 i, dy, anchorScrollDy, bestMatchMAD, matcherAnchorMAD,
+                                 secondBestMAD, separation,
                                  bestAnchorY, bestAnchorVar,
                                  anchorConfident ? 1 : 0, anchorDiffers ? 1 : 0, anchorSmaller ? 1 : 0,
-                                 anchorUnambiguous ? 1 : 0, distinctMatches );
+                                 matcherWorse ? 1 : 0, useCurAsSrc ? 1 : 0 );
                 }
             }
         }
