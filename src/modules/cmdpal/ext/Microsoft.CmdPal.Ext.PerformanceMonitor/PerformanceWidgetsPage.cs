@@ -32,7 +32,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     public override string Title => Resources.GetResource("Performance_Monitor_Title");
 
-    public override IconInfo Icon => Icons.StackedAreaIcon;
+    public override IconInfo Icon => Icons.PerformanceMonitorIcon;
 
     private readonly bool _isBandPage;
 

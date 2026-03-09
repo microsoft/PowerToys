@@ -54,7 +54,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
         Id = "Bookmarks";
         DisplayName = Resources.bookmarks_display_name;
-        Icon = Icons.PinIcon;
+        Icon = Icons.BookmarksExtensionIcon;
 
         var addBookmarkPage = new AddBookmarkPage(null);
         addBookmarkPage.AddedCommand += (_, e) => _bookmarksManager.Add(e.Name, e.Bookmark);

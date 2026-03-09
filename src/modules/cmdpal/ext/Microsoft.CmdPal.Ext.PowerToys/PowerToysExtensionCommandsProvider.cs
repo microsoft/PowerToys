@@ -17,7 +17,7 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
     public PowerToysExtensionCommandsProvider()
     {
         DisplayName = Resources.PowerToys_DisplayName;
-        Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png");
+        Icon = PowerToysResourcesHelper.ProviderIcon();
         _commands = [
             new CommandItem(new Pages.PowerToysListPage())
             {
@@ -25,6 +25,9 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
                 Subtitle = Resources.PowerToys_Subtitle,
             },
         ];
+
+        SettingsChangeNotifier.SettingsChanged += RaiseModuleItemsChanged;
+        KeyboardManagerStateService.StatusChanged += RaiseModuleItemsChanged;
     }
 
     public override ICommandItem[] TopLevelCommands()
@@ -62,5 +65,10 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
         }
 
         return null;
+    }
+
+    private void RaiseModuleItemsChanged()
+    {
+        RaiseItemsChanged();
     }
 }

@@ -18,8 +18,22 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsWindow.KBM.ModuleDisplayName();
-        var icon = SettingsWindow.KBM.ModuleIcon();
+        var module = SettingsWindow.KBM;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
+
+        if (ModuleEnablementService.IsModuleEnabled(module))
+        {
+            var isListening = KeyboardManagerStateService.IsListening();
+            yield return new ListItem(new ToggleKeyboardManagerListeningCommand() { Id = "com.microsoft.powertoys.keyboardManager.toggleListening" })
+            {
+                Title = GetResourceString("KeyboardManager_ToggleListening_Title", "Keyboard Manager: Toggle active state"),
+                Subtitle = isListening
+                    ? GetResourceString("KeyboardManager_ToggleListening_On_Subtitle", "Keyboard Manager is active. Invoke to stop listening.")
+                    : GetResourceString("KeyboardManager_ToggleListening_Off_Subtitle", "Keyboard Manager is paused. Invoke to start listening."),
+                Icon = PowerToysResourcesHelper.KeyboardManagerListeningIcon(isListening),
+            };
+        }
 
         if (IsUseNewEditorEnabled())
         {
@@ -31,12 +45,17 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.KBM, title) { Id = "com.microsoft.powertoys.keyboardManager.openSettings" })
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.keyboardManager.openSettings" })
         {
             Title = title,
             Subtitle = Resources.KeyboardManager_Settings_Subtitle,
             Icon = icon,
         };
+    }
+
+    private static string GetResourceString(string resourceName, string fallback)
+    {
+        return Resources.ResourceManager.GetString(resourceName, Resources.Culture) ?? fallback;
     }
 
     private static bool IsUseNewEditorEnabled()
