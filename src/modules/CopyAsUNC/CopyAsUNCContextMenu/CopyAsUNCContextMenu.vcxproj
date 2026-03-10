@@ -57,7 +57,9 @@
 MakeAppx.exe pack /d . /p $(OutDir)CopyAsUNCContextMenuPackage.msix /nv</Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>signtool sign /fd SHA256 /sha1 FEC796EDBEA46EEE1EDF32E2BA54899087B0960B "$(OutDir)CopyAsUNCContextMenuPackage.msix"</Command>
+      <Command>signtool sign /fd SHA256 /sha1 FEC796EDBEA46EEE1EDF32E2BA54899087B0960B "$(OutDir)CopyAsUNCContextMenuPackage.msix"
+if not exist "$(OutDir)Assets\CopyAsUNC\" mkdir "$(OutDir)Assets\CopyAsUNC\"
+xcopy /Y "$(ProjectDir)Assets\CopyAsUNC\CopyAsUNC.ico" "$(OutDir)Assets\CopyAsUNC\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -84,7 +86,9 @@ MakeAppx.exe pack /d . /p $(OutDir)CopyAsUNCContextMenuPackage.msix /nv</Command
 MakeAppx.exe pack /d . /p $(OutDir)CopyAsUNCContextMenuPackage.msix /nv</Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>signtool sign /fd SHA256 /sha1 FEC796EDBEA46EEE1EDF32E2BA54899087B0960B "$(OutDir)CopyAsUNCContextMenuPackage.msix"</Command>
+      <Command>signtool sign /fd SHA256 /sha1 FEC796EDBEA46EEE1EDF32E2BA54899087B0960B "$(OutDir)CopyAsUNCContextMenuPackage.msix"
+if not exist "$(OutDir)Assets\CopyAsUNC\" mkdir "$(OutDir)Assets\CopyAsUNC\"
+xcopy /Y "$(ProjectDir)Assets\CopyAsUNC\CopyAsUNC.ico" "$(OutDir)Assets\CopyAsUNC\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
