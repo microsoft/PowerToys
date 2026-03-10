@@ -22,7 +22,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>
+public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>
 {
     private DockViewModel _viewModel;
 
@@ -69,6 +69,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         InitializeComponent();
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExitDockEditModeMessage>(this);
 
         ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
 
@@ -151,13 +152,30 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         ViewModel.RestoreBandOrder();
     }
 
+    public void Receive(ExitDockEditModeMessage message)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (message.Discard)
+            {
+                DiscardEditMode();
+            }
+            else
+            {
+                ExitEditMode();
+            }
+        });
+    }
+
     private void DoneEditingButton_Click(object sender, RoutedEventArgs e)
     {
+        WeakReferenceMessenger.Default.Send(new ExitDockEditModeMessage(false));
         ExitEditMode();
     }
 
     private void DiscardEditingButton_Click(object sender, RoutedEventArgs e)
     {
+        WeakReferenceMessenger.Default.Send(new ExitDockEditModeMessage(true));
         DiscardEditMode();
     }
 
