@@ -5,7 +5,9 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -29,6 +31,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
 
     private readonly SettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly IMonitorService? _monitorService;
 
     private SettingsModel _settings;
 
@@ -235,20 +238,80 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
 
     public SettingsExtensionsViewModel Extensions { get; }
 
+    /// <summary>
+    /// Gets the list of per-monitor dock configuration ViewModels, one per
+    /// connected monitor. Built by merging <see cref="IMonitorService"/> data
+    /// with existing <see cref="DockSettings.MonitorConfigs"/>.
+    /// </summary>
+    public List<DockMonitorConfigViewModel> MonitorConfigItems { get; private set; } = [];
+
+    /// <summary>
+    /// Rebuilds <see cref="MonitorConfigItems"/> from the current monitor set
+    /// and persisted settings. Call when monitors change or on init.
+    /// </summary>
+    public void RefreshMonitorConfigs()
+    {
+        if (_monitorService is null)
+        {
+            MonitorConfigItems = [];
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MonitorConfigItems)));
+            return;
+        }
+
+        var monitors = _monitorService.GetMonitors();
+        var dockSettings = _settings.DockSettings;
+        var existingConfigs = dockSettings.MonitorConfigs;
+
+        // Reconcile stale DeviceIds (they change across reboots).
+        var needsSave = MonitorConfigReconciler.Reconcile(existingConfigs, monitors);
+
+        // Build ViewModels for each monitor's config.
+        var items = new List<DockMonitorConfigViewModel>(monitors.Count);
+        foreach (var monitor in monitors)
+        {
+            DockMonitorConfig? config = null;
+            foreach (var existing in existingConfigs)
+            {
+                if (string.Equals(existing.MonitorDeviceId, monitor.DeviceId, StringComparison.Ordinal))
+                {
+                    config = existing;
+                    break;
+                }
+            }
+
+            if (config is not null)
+            {
+                items.Add(new DockMonitorConfigViewModel(config, monitor, _settingsService));
+            }
+        }
+
+        MonitorConfigItems = items;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MonitorConfigItems)));
+
+        if (needsSave)
+        {
+            _settingsService.SaveSettings(_settings, true);
+        }
+    }
+
     public SettingsViewModel(
         SettingsService settingsService,
         TopLevelCommandManager topLevelCommandManager,
         TaskScheduler scheduler,
-        IThemeService themeService)
+        IThemeService themeService,
+        IMonitorService? monitorService = null)
     {
         _settingsService = settingsService;
         _settings = _settingsService.CurrentSettings;
         _topLevelCommandManager = topLevelCommandManager;
+        _monitorService = monitorService;
 
         _settingsService.SettingsChanged += SettingsService_SettingsChanged;
 
         Appearance = new AppearanceSettingsViewModel(themeService, _settingsService);
         DockAppearance = new DockAppearanceSettingsViewModel(themeService, _settingsService);
+
+        RefreshMonitorConfigs();
 
         var activeProviders = GetCommandProviders();
         var allProviderSettings = _settings.ProviderSettings;

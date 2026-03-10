@@ -37,6 +37,8 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
+using MonitorInfo = Microsoft.CmdPal.UI.ViewModels.Models.MonitorInfo;
+
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Microsoft.CmdPal.UI;
@@ -198,6 +200,7 @@ public partial class App : Application, IDisposable
         services.AddSingleton(appStateService);
 
         // Services
+        services.AddSingleton<IMonitorService, MonitorService>();
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();

@@ -16,6 +16,7 @@ using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
@@ -26,7 +27,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using WinUIEx;
+
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using MonitorInfo = Microsoft.CmdPal.UI.ViewModels.Models.MonitorInfo;
 using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Pages;
@@ -66,7 +69,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
     private SettingsWindow? _settingsWindow;
-    private DockWindow? _dockWindow;
+    private DockWindowManager? _dockManager;
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
@@ -110,12 +113,20 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
 
+        Loaded += ShellPage_Loaded;
+    }
+
+    private void ShellPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        Loaded -= ShellPage_Loaded;
+
         var settingsService = App.Current.Services.GetService<SettingsService>()!;
 
         if (settingsService.CurrentSettings.EnableDock)
         {
-            _dockWindow = new DockWindow();
-            _dockWindow.Show();
+            var monitorService = App.Current.Services.GetService<IMonitorService>()!;
+            _dockManager = new DockWindowManager(monitorService, settingsService, DispatcherQueue);
+            _dockManager.ShowDocks();
         }
     }
 
@@ -493,17 +504,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             if (message.ShowDock)
             {
-                if (_dockWindow is null)
+                if (_dockManager is null)
                 {
-                    _dockWindow = new DockWindow();
+                    var monitorService = App.Current.Services.GetService<IMonitorService>()!;
+                    var settingsService = App.Current.Services.GetService<SettingsService>()!;
+                    _dockManager = new DockWindowManager(monitorService, settingsService, DispatcherQueue);
                 }
 
-                _dockWindow.Show();
+                _dockManager.ShowDocks();
             }
-            else if (_dockWindow is not null)
+            else
             {
-                _dockWindow.Close();
-                _dockWindow = null;
+                _dockManager?.HideDocks();
             }
         });
     }
@@ -795,6 +807,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _focusAfterLoadedCts?.Dispose();
         _focusAfterLoadedCts = null;
 
-        _dockWindow?.Dispose();
+        _dockManager?.Dispose();
     }
 }

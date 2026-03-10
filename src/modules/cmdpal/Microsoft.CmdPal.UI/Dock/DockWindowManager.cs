@@ -37,6 +37,7 @@ public sealed partial class DockWindowManager : IDisposable
         _dispatcherQueue = dispatcherQueue;
 
         _monitorService.MonitorsChanged += OnMonitorsChanged;
+        _settingsService.SettingsChanged += OnSettingsChanged;
     }
 
     /// <summary>
@@ -102,6 +103,13 @@ public sealed partial class DockWindowManager : IDisposable
         }
 
         var dockSettings = settings.DockSettings;
+
+        // Reconcile stale DeviceIds before matching configs to monitors.
+        if (MonitorConfigReconciler.Reconcile(dockSettings.MonitorConfigs, _monitorService.GetMonitors()))
+        {
+            _settingsService.SaveSettings(settings, true);
+        }
+
         var configs = GetEffectiveConfigs(dockSettings);
         var desiredMonitorIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -165,6 +173,17 @@ public sealed partial class DockWindowManager : IDisposable
         });
     }
 
+    private void OnSettingsChanged(SettingsModel sender, object? args)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            if (!_disposed)
+            {
+                SyncDocksToSettings();
+            }
+        });
+    }
+
     /// <summary>
     /// Returns the effective list of monitor configs. If the settings have
     /// no explicit configs (legacy / first-run), synthesizes one for the
@@ -200,6 +219,7 @@ public sealed partial class DockWindowManager : IDisposable
 
         _disposed = true;
         _monitorService.MonitorsChanged -= OnMonitorsChanged;
+        _settingsService.SettingsChanged -= OnSettingsChanged;
 
         foreach (var (_, window) in _dockWindows)
         {

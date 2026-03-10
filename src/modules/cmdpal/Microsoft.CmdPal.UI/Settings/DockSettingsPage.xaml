@@ -67,6 +67,66 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
+                    <!--  Monitors Section  -->
+                    <controls:SettingsExpander
+                        x:Uid="DockSettings_Monitors_SettingsExpander"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
+                        IsExpanded="False">
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                                <controls:SettingsCard.Content>
+                                    <ItemsRepeater ItemsSource="{x:Bind MonitorConfigItems}">
+                                        <ItemsRepeater.Layout>
+                                            <StackLayout Spacing="2" />
+                                        </ItemsRepeater.Layout>
+                                        <ItemsRepeater.ItemTemplate>
+                                            <DataTemplate x:DataType="dockVm:DockMonitorConfigViewModel">
+                                                <Grid Padding="0,8" RowSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <StackPanel Grid.Row="0" Grid.Column="0" Spacing="2">
+                                                        <TextBlock
+                                                            Style="{ThemeResource BodyTextBlockStyle}"
+                                                            Text="{x:Bind DisplayName, Mode=OneWay}" />
+                                                        <TextBlock
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                                            Text="{x:Bind Resolution, Mode=OneWay}" />
+                                                    </StackPanel>
+
+                                                    <ToggleSwitch
+                                                        Grid.Row="0"
+                                                        Grid.Column="1"
+                                                        IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+
+                                                    <ComboBox
+                                                        Grid.Row="1"
+                                                        Grid.Column="0"
+                                                        Grid.ColumnSpan="2"
+                                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                        SelectedIndex="{x:Bind SideOverrideIndex, Mode=TwoWay}">
+                                                        <ComboBoxItem x:Uid="DockSettings_MonitorPosition_Default" />
+                                                        <ComboBoxItem x:Uid="DockSettings_MonitorPosition_Left" />
+                                                        <ComboBoxItem x:Uid="DockSettings_MonitorPosition_Top" />
+                                                        <ComboBoxItem x:Uid="DockSettings_MonitorPosition_Right" />
+                                                        <ComboBoxItem x:Uid="DockSettings_MonitorPosition_Bottom" />
+                                                    </ComboBox>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsRepeater.ItemTemplate>
+                                    </ItemsRepeater>
+                                </controls:SettingsCard.Content>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+
                     <controls:SettingsCard x:Uid="DockAppearance_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.DockAppearance.ThemeIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_System_Automation" Tag="Default">

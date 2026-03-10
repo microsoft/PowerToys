@@ -6,6 +6,7 @@ using System.Diagnostics;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +25,8 @@ public sealed partial class DockSettingsPage : Page
 
     public List<DockBandSettingsViewModel> AllDockBandItems => GetAllBandSettings();
 
+    public List<DockMonitorConfigViewModel> MonitorConfigItems => ViewModel.MonitorConfigItems;
+
     public DockSettingsPage()
     {
         this.InitializeComponent();
@@ -31,8 +34,9 @@ public sealed partial class DockSettingsPage : Page
         var settingsService = App.Current.Services.GetService<SettingsService>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+        var monitorService = App.Current.Services.GetService<IMonitorService>();
 
-        ViewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
+        ViewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService, monitorService);
 
         // Initialize UI state
         InitializeSettings();

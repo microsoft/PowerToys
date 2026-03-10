@@ -16,6 +16,10 @@ namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 /// </summary>
 public class DockSettings
 {
+    /// <summary>
+    /// Gets or sets the default dock side. Used as fallback for monitors that
+    /// don't have a per-monitor config entry.
+    /// </summary>
     public DockSide Side { get; set; } = DockSide.Top;
 
     public DockSize DockSize { get; set; } = DockSize.Small;
@@ -52,6 +56,13 @@ public class DockSettings
     public List<DockBandSettings> EndBands { get; set; } = [];
 
     public bool ShowLabels { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets per-monitor dock configurations. Each entry enables the dock
+    /// on a specific monitor and optionally overrides the dock side.
+    /// When empty, the dock displays only on the primary monitor using <see cref="Side"/>.
+    /// </summary>
+    public List<DockMonitorConfig> MonitorConfigs { get; set; } = [];
 
     [JsonIgnore]
     public IEnumerable<(string ProviderId, string CommandId)> AllPinnedCommands =>
@@ -146,6 +157,44 @@ public class DockBandSettings
             ShowSubtitles = this.ShowSubtitles,
         };
     }
+}
+
+/// <summary>
+/// Per-monitor dock configuration. Allows the user to enable the dock on
+/// specific monitors with an optional side override.
+/// </summary>
+public class DockMonitorConfig
+{
+    /// <summary>
+    /// Gets or sets the device identifier of the target monitor (e.g. "\\.\DISPLAY1").
+    /// This value may change across reboots; <see cref="IsPrimary"/> is used as a
+    /// stable fallback when the device id no longer matches any connected monitor.
+    /// </summary>
+    public required string MonitorDeviceId { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the dock is enabled on this monitor.
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the dock side for this monitor. If null, falls back to
+    /// the dock-wide <see cref="DockSettings.Side"/> value.
+    /// </summary>
+    public DockSide? Side { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this config was for the primary
+    /// monitor. Used as a stable matching key when <see cref="MonitorDeviceId"/>
+    /// changes across reboots.
+    /// </summary>
+    public bool IsPrimary { get; set; }
+
+    /// <summary>
+    /// Resolves the effective dock side for this monitor, falling back to the
+    /// dock-wide default when no per-monitor override is set.
+    /// </summary>
+    public DockSide ResolveSide(DockSide defaultSide) => Side ?? defaultSide;
 }
 
 public enum DockSide

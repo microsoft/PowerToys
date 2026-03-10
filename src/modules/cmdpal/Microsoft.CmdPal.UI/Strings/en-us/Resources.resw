@@ -973,4 +973,25 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="CmdPalDock_LearnMore.Content" xml:space="preserve">
     <value>Learn more about Command Palette Dock</value>
   </data>
+  <data name="DockSettings_Monitors_SettingsExpander.Header" xml:space="preserve">
+    <value>Monitors</value>
+  </data>
+  <data name="DockSettings_Monitors_SettingsExpander.Description" xml:space="preserve">
+    <value>Configure which monitors display the dock</value>
+  </data>
+  <data name="DockSettings_MonitorPosition_Default.Content" xml:space="preserve">
+    <value>Use default</value>
+  </data>
+  <data name="DockSettings_MonitorPosition_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="DockSettings_MonitorPosition_Top.Content" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="DockSettings_MonitorPosition_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="DockSettings_MonitorPosition_Bottom.Content" xml:space="preserve">
+    <value>Bottom</value>
+  </data>
 </root>
