@@ -1,4 +1,4 @@
-﻿//============================================================================
+//============================================================================
 //
 // PanoramaCapture.cpp
 //
@@ -8990,7 +8990,7 @@ bool RunPanoramaStitchSelfTest()
         }
 
         basicTestsRun++;
-        TestLog( L"  [%d/7] baseline-uniform-scroll ...\n", basicTestsRun );
+        TestLog( L"  [%d/8] baseline-uniform-scroll ...\n", basicTestsRun );
         if( !runScenario( L"baseline-uniform-scroll",
                           frameWidth,
                           frameHeight,
@@ -9005,7 +9005,7 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
         basicTestsPassed++;
-        TestLog( L"  [%d/7] baseline-uniform-scroll PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/8] baseline-uniform-scroll PASSED\n", basicTestsRun );
     }
 
     // Test: small-step frames must not overwrite previously composed content.
@@ -9018,7 +9018,7 @@ bool RunPanoramaStitchSelfTest()
     // the fix: a tampered small-step frame's overlap markers must NOT
     // appear in the output.
     basicTestsRun++;
-    TestLog( L"  [%d/7] small-step-no-overwrite ...\n", basicTestsRun );
+    TestLog( L"  [%d/8] small-step-no-overwrite ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 420;
         constexpr int frameHeight = 320;
@@ -9203,12 +9203,12 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
 
-        TestLog( L"  [%d/7] small-step-no-overwrite PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/8] small-step-no-overwrite PASSED\n", basicTestsRun );
         basicTestsPassed++;
     }
 
     basicTestsRun++;
-    TestLog( L"  [%d/7] repro-1099x336-variable-steps-tail ...\n", basicTestsRun );
+    TestLog( L"  [%d/8] repro-1099x336-variable-steps-tail ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 1099;
         constexpr int frameHeight = 336;
@@ -9293,11 +9293,11 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
         basicTestsPassed++;
-        TestLog( L"  [%d/7] repro-1099x336-variable-steps-tail PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/8] repro-1099x336-variable-steps-tail PASSED\n", basicTestsRun );
     }
 
     basicTestsRun++;
-    TestLog( L"  [%d/7] repro-realcapture-variable-large-steps ...\n", basicTestsRun );
+    TestLog( L"  [%d/8] repro-realcapture-variable-large-steps ...\n", basicTestsRun );
     {
         constexpr int frameWidth = 1079;
         constexpr int frameHeight = 341;
@@ -9360,13 +9360,13 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
         basicTestsPassed++;
-        TestLog( L"  [%d/7] repro-realcapture-variable-large-steps PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/8] repro-realcapture-variable-large-steps PASSED\n", basicTestsRun );
 
     // Regression test for very-low-entropy periodic content where early
     // frames can be rejected at expected=(0,0), causing a large recovery
     // gap and dropped middle content.
     basicTestsRun++;
-    TestLog( L"  [%d/7] repro-vle-periodic-middledrop ...\n", basicTestsRun );
+    TestLog( L"  [%d/8] repro-vle-periodic-middledrop ...\n", basicTestsRun );
     {
         constexpr int frameWidth2 = 1228;
         constexpr int frameHeight2 = 1032;
@@ -9447,10 +9447,10 @@ bool RunPanoramaStitchSelfTest()
             return false;
         }
         basicTestsPassed++;
-        TestLog( L"  [%d/7] repro-vle-periodic-middledrop PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/8] repro-vle-periodic-middledrop PASSED\n", basicTestsRun );
 
     basicTestsRun++;
-    TestLog( L"  [%d/7] repro-axis-defer-vle-vertical ...\n", basicTestsRun );
+    TestLog( L"  [%d/8] repro-axis-defer-vle-vertical ...\n", basicTestsRun );
     {
         constexpr int frameWidth3 = 1228;
         constexpr int frameHeight3 = 1032;
@@ -9548,7 +9548,7 @@ bool RunPanoramaStitchSelfTest()
         }
 
         basicTestsPassed++;
-        TestLog( L"  [%d/7] repro-axis-defer-vle-vertical PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/8] repro-axis-defer-vle-vertical PASSED\n", basicTestsRun );
     }
 
     }
@@ -9556,7 +9556,7 @@ bool RunPanoramaStitchSelfTest()
 
     // Drop-logic test: exercise AreFramesNearDuplicate directly
     basicTestsRun++;
-    TestLog( L"  [%d/7] drop-logic-near-duplicate ...\n", basicTestsRun );
+    TestLog( L"  [%d/8] drop-logic-near-duplicate ...\n", basicTestsRun );
     {
         constexpr int dW = 200;
         constexpr int dH = 200;
@@ -9677,7 +9677,142 @@ bool RunPanoramaStitchSelfTest()
         }
 
         basicTestsPassed++;
-        TestLog( L"  [%d/7] drop-logic-near-duplicate PASSED\n", basicTestsRun );
+        TestLog( L"  [%d/8] drop-logic-near-duplicate PASSED\n", basicTestsRun );
+    }
+
+    // Harmonic false-match test.
+    //
+    // Dark-themed code editors produce frames where ~65-75% of rows are
+    // identical (constant background) and a subtle ~60 px periodic
+    // structure exists (line separators, code indentation bands).  When a
+    // frame scrolls by the period length (~60 px), the matcher can lock
+    // onto a harmonic (2x, 3x, or 4x the real offset) because the MAD
+    // score is near zero at every multiple.  This test synthesizes such
+    // content and verifies the stitcher produces the correct output.
+    //
+    // Reproduces the T10 bug from panorama_20260310_063946_40956 where
+    // matcherDy=-238 but actual scroll was -60 (4x harmonic).
+    basicTestsRun++;
+    TestLog( L"  [%d/8] harmonic-dark-theme-override ...\n", basicTestsRun );
+    {
+        // Dimensions matching the real capture scenario.
+        constexpr int frameWidth = 446;
+        constexpr int frameHeight = 1044;
+        constexpr int period = 60;
+
+        // Build a sequence: several large steps (scrolling fast), then a
+        // deceleration step of exactly one period (60 px), then more
+        // frames.  The harmonic error occurs at the deceleration step.
+        const int steps[] = { 130, 180, 242, 238, period, 12, 9, 31, 51, 95 };
+        constexpr int frameCount = 1 + _countof( steps );  // initial frame + one per step
+        int totalScroll = 0;
+        for( int s : steps )
+            totalScroll += s;
+        const int canvasHeight = frameHeight + totalScroll + 200;
+        const int expectedStitchedHeight = frameHeight + totalScroll;
+
+        // Synthetic canvas mimicking a dark code editor:
+        //   - Background: dark grey (R=G=B=41), which matches real luma ≈ 41
+        //   - Every `period` rows: a 2-row separator with luma 82
+        //   - A unique, non-periodic anchor feature: a bright block near the
+        //     top that does NOT repeat at any harmonic, allowing the anchor
+        //     tracker to correctly identify the true offset.
+        std::vector<BYTE> canvas(
+            static_cast<size_t>( frameWidth ) * static_cast<size_t>( canvasHeight ) * 4 );
+
+        for( int y = 0; y < canvasHeight; ++y )
+        {
+            const bool isSeparator = ( y % period ) < 2;
+            for( int x = 0; x < frameWidth; ++x )
+            {
+                const size_t idx = ( static_cast<size_t>( y ) * frameWidth + x ) * 4;
+
+                if( isSeparator )
+                {
+                    // Periodic separator: slightly brighter, mimics
+                    // code editor horizontal rule / line boundary.
+                    canvas[idx + 0] = 82;   // B
+                    canvas[idx + 1] = 82;   // G
+                    canvas[idx + 2] = 82;   // R
+                }
+                else
+                {
+                    // Dark background with very subtle per-pixel noise
+                    // (±2 levels) so rows are not perfectly identical
+                    // but still have very high constant fraction.
+                    BYTE noise = static_cast<BYTE>( 41 + ( ( x * 3 + y * 7 ) & 0x03 ) );
+                    canvas[idx + 0] = noise;
+                    canvas[idx + 1] = noise;
+                    canvas[idx + 2] = noise;
+                }
+                canvas[idx + 3] = 0xFF;
+            }
+        }
+
+        // Add a unique anchor marker at every `period` rows that is NOT
+        // periodic — this is analogous to real line numbers or syntax
+        // coloring that lets the anchor tracker distinguish true shift
+        // from harmonics.  The marker x-position varies pseudo-randomly
+        // with y so different rows are visually distinct.
+        for( int band = 0; band * period < canvasHeight; ++band )
+        {
+            const int y0 = band * period + period / 2;
+            if( y0 + 4 >= canvasHeight )
+                break;
+
+            // Unique marker: position and color depend on band index.
+            const int xBase = 20 + ( ( band * 37 ) % ( frameWidth - 50 ) );
+            const BYTE markerR = static_cast<BYTE>( 80 + ( band * 19 ) % 120 );
+            const BYTE markerG = static_cast<BYTE>( 60 + ( band * 23 ) % 140 );
+            const BYTE markerB = static_cast<BYTE>( 50 + ( band * 31 ) % 150 );
+
+            for( int dy = 0; dy < 4; ++dy )
+            {
+                for( int dx = 0; dx < 8; ++dx )
+                {
+                    const int xx = xBase + dx;
+                    const int yy = y0 + dy;
+                    if( xx >= frameWidth || yy >= canvasHeight )
+                        continue;
+                    const size_t idx = ( static_cast<size_t>( yy ) * frameWidth + xx ) * 4;
+                    canvas[idx + 0] = markerB;
+                    canvas[idx + 1] = markerG;
+                    canvas[idx + 2] = markerR;
+                }
+            }
+        }
+
+        // Build frame origins from the step sequence.
+        std::vector<int> originsY;
+        originsY.reserve( frameCount );
+        originsY.push_back( 0 );
+        int cumulative = 0;
+        for( int s : steps )
+        {
+            cumulative += s;
+            originsY.push_back( cumulative );
+        }
+
+        if( !runScenario( L"harmonic-dark-theme-override",
+                          frameWidth,
+                          frameHeight,
+                          originsY,
+                          canvas,
+                          canvasHeight,
+                          expectedStitchedHeight,
+                          8,   // tolerance: small height tolerance for feather edge effects
+                          false ) )
+        {
+            TestLog( L"***** FAIL: harmonic-dark-theme-override *****\n" );
+            if( !selfTestDumpDirectory.empty() )
+            {
+                DumpPanoramaText( selfTestDumpDirectory, L"scenario_fail_detail.txt",
+                                  L"HARMONIC: matcher picked a harmonic offset instead of the true offset on dark periodic content" );
+            }
+            return false;
+        }
+        basicTestsPassed++;
+        TestLog( L"  [%d/8] harmonic-dark-theme-override PASSED\n", basicTestsRun );
     }
 
     } // !selfTestStressOnly — end of Phase 1
