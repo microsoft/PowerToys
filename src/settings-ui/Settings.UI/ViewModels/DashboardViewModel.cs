@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI.Controls;
 using global::PowerToys.GPOWrapper;
@@ -23,6 +24,7 @@ using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using PowerToys.Interop;
 using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -503,6 +505,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.MouseHighlighter => GetModuleItemsMouseHighlighter(),
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
                 ModuleType.MousePointerCrosshairs => GetModuleItemsMousePointerCrosshairs(),
+                ModuleType.MouseWithoutBorders => GetModuleItemsMouseWithoutBorders(),
                 ModuleType.Peek => GetModuleItemsPeek(),
                 ModuleType.PowerDisplay => GetModuleItemsPowerDisplay(),
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
@@ -679,6 +682,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsMouseWithoutBorders()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("MouseWithoutBorders_ReconnectButton/Text"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("MouseWithoutBorders_ReconnectTooltip/Text"), ButtonGlyph = "ms-appx:///Assets/Settings/Icons/MouseWithoutBorders.png", ButtonClickHandler = MouseWithoutBordersReconnectClicked },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
         private ObservableCollection<DashboardModuleItem> GetModuleItemsAdvancedPaste()
         {
             ISettingsRepository<AdvancedPasteSettings> moduleSettingsRepository = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default);
@@ -851,6 +863,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var actionName = "Launch";
             SendConfigMSG("{\"action\":{\"PowerDisplay\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+        }
+
+        private void MouseWithoutBordersReconnectClicked(object sender, RoutedEventArgs e)
+        {
+            using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MWBReconnectEvent());
+            eventHandle.Set();
         }
 
         internal void DashboardListItemClick(object sender)
