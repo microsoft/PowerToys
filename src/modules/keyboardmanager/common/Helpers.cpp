@@ -505,8 +505,6 @@ namespace Helpers
 
     // Function to send text via clipboard paste (Ctrl+V).
     // Saves the previous clipboard content and restores it asynchronously.
-    // The clipboard entry is excluded from clipboard history via
-    // ExcludeClipboardContentFromMonitorProcessing (set in SetClipboardText).
     bool SendTextViaClipboard(const std::wstring& text)
     {
         // Lazily start the worker on first use.
@@ -526,11 +524,7 @@ namespace Helpers
         });
 
         // Enqueue the text and return immediately so we never block the
-        // low-level keyboard hook (WH_KEYBOARD_LL).  Windows enforces a
-        // ~300 ms timeout on hook callbacks; blocking longer causes the
-        // OS to silently remove the hook.
-        // Cap the queue at one pending item so that key-repeat events
-        // don't pile up and keep pasting long after the key is released.
+        // low-level keyboard hook (WH_KEYBOARD_LL).  
         {
             std::lock_guard<std::mutex> lock(s_queueMutex);
             if (!s_clipboardQueue.empty())
