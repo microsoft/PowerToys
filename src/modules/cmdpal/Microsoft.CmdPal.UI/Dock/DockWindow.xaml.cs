@@ -5,9 +5,11 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +28,8 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinRT.Interop;
 using WinUIEx;
+
+using MonitorInfo = Microsoft.CmdPal.UI.ViewModels.Models.MonitorInfo;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -59,16 +63,55 @@ public sealed partial class DockWindow : WindowEx,
     private SystemBackdropConfiguration? _configurationSource;
     private DockSize _lastSize;
 
+    /// <summary>
+    /// The monitor this dock window is displayed on. Null means primary monitor (legacy behavior).
+    /// </summary>
+    private MonitorInfo? _targetMonitor;
+
+    /// <summary>
+    /// Gets or sets the per-monitor dock side override. Null means use the global setting.
+    /// </summary>
+    private DockSide? _sideOverride;
+
+    /// <summary>
+    /// Gets the effective dock side for this window.
+    /// </summary>
+    private DockSide EffectiveSide => _sideOverride ?? _settings.Side;
+
+    private readonly IMonitorService? _monitorService;
+
     // Store the original WndProc
     private WNDPROC? _originalWndProc;
     private WNDPROC? _customWndProc;
 
     // internal Settings CurrentSettings => _settings;
+
+    /// <summary>
+    /// Creates a dock window for a specific monitor with an optional side override.
+    /// </summary>
+    public DockWindow(MonitorInfo targetMonitor, DockSide? sideOverride = null)
+        : this()
+    {
+        _targetMonitor = targetMonitor;
+        _sideOverride = sideOverride;
+
+        // The base constructor positioned the AppBar for the primary monitor
+        // before these fields were set. Destroy and recreate at the correct
+        // monitor / side now that the target is known.
+        if (_appBarData.hWnd != IntPtr.Zero)
+        {
+            DestroyAppBar(_hwnd);
+        }
+
+        CreateAppBar(_hwnd);
+    }
+
     public DockWindow()
     {
         var serviceProvider = App.Current.Services;
         _settingsService = serviceProvider.GetService<SettingsService>()!;
         _settingsService.SettingsChanged += SettingsChangedHandler;
+        _monitorService = serviceProvider.GetService<IMonitorService>();
         var mainSettings = _settingsService.CurrentSettings;
 
         _settings = mainSettings.DockSettings;
@@ -165,7 +208,7 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         _dock.UpdateSettings(_settings);
-        var side = DockSettingsToViews.GetAppBarEdge(_settings.Side);
+        var side = DockSettingsToViews.GetAppBarEdge(EffectiveSide);
 
         if (_appBarData.hWnd != IntPtr.Zero)
         {
@@ -293,7 +336,7 @@ public sealed partial class DockWindow : WindowEx,
         var frameWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXFRAME);
 
         var scaleFactor = dpi / 96.0;
-        UpdateAppBarDataForEdge(_settings.Side, _settings.DockSize, scaleFactor);
+        UpdateAppBarDataForEdge(EffectiveSide, _settings.DockSize, scaleFactor);
 
         // Query and set position
         PInvoke.SHAppBarMessage(PInvoke.ABM_QUERYPOS, ref _appBarData);
@@ -304,7 +347,7 @@ public sealed partial class DockWindow : WindowEx,
         // bar keeps its correct size. Without this, a second bar docked to
         // the same side would get a zero-height/width rect and fail to
         // reserve work-area space.
-        switch (_settings.Side)
+        switch (EffectiveSide)
         {
             case DockSide.Top:
                 _appBarData.rc.bottom = _appBarData.rc.top + (int)(DockSettingsToViews.HeightForSize(_settings.DockSize) * scaleFactor);
@@ -351,46 +394,64 @@ public sealed partial class DockWindow : WindowEx,
         Logger.LogDebug("UpdateAppBarDataForEdge");
         var horizontalHeightDips = DockSettingsToViews.HeightForSize(size);
         var verticalWidthDips = DockSettingsToViews.WidthForSize(size);
-        var screenHeight = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
-        var screenWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
+
+        // Use monitor-specific bounds when available; fall back to primary screen metrics
+        int monLeft, monTop, monRight, monBottom;
+        if (_targetMonitor is not null)
+        {
+            monLeft = _targetMonitor.Bounds.Left;
+            monTop = _targetMonitor.Bounds.Top;
+            monRight = _targetMonitor.Bounds.Right;
+            monBottom = _targetMonitor.Bounds.Bottom;
+        }
+        else
+        {
+            monLeft = 0;
+            monTop = 0;
+            monRight = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
+            monBottom = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
+        }
+
+        var screenWidth = monRight - monLeft;
+        var screenHeight = monBottom - monTop;
 
         if (side == DockSide.Top)
         {
             _appBarData.uEdge = PInvoke.ABE_TOP;
-            _appBarData.rc.left = 0;
-            _appBarData.rc.top = 0;
-            _appBarData.rc.right = screenWidth;
-            _appBarData.rc.bottom = (int)(horizontalHeightDips * scaleFactor);
+            _appBarData.rc.left = monLeft;
+            _appBarData.rc.top = monTop;
+            _appBarData.rc.right = monRight;
+            _appBarData.rc.bottom = monTop + (int)(horizontalHeightDips * scaleFactor);
         }
         else if (side == DockSide.Bottom)
         {
             var heightPixels = (int)(horizontalHeightDips * scaleFactor);
 
             _appBarData.uEdge = PInvoke.ABE_BOTTOM;
-            _appBarData.rc.left = 0;
-            _appBarData.rc.top = screenHeight - heightPixels;
-            _appBarData.rc.right = screenWidth;
-            _appBarData.rc.bottom = screenHeight;
+            _appBarData.rc.left = monLeft;
+            _appBarData.rc.top = monBottom - heightPixels;
+            _appBarData.rc.right = monRight;
+            _appBarData.rc.bottom = monBottom;
         }
         else if (side == DockSide.Left)
         {
             var widthPixels = (int)(verticalWidthDips * scaleFactor);
 
             _appBarData.uEdge = PInvoke.ABE_LEFT;
-            _appBarData.rc.left = 0;
-            _appBarData.rc.top = 0;
-            _appBarData.rc.right = widthPixels;
-            _appBarData.rc.bottom = screenHeight;
+            _appBarData.rc.left = monLeft;
+            _appBarData.rc.top = monTop;
+            _appBarData.rc.right = monLeft + widthPixels;
+            _appBarData.rc.bottom = monBottom;
         }
         else if (side == DockSide.Right)
         {
             var widthPixels = (int)(verticalWidthDips * scaleFactor);
 
             _appBarData.uEdge = PInvoke.ABE_RIGHT;
-            _appBarData.rc.left = screenWidth - widthPixels;
-            _appBarData.rc.top = 0;
-            _appBarData.rc.right = screenWidth;
-            _appBarData.rc.bottom = screenHeight;
+            _appBarData.rc.left = monRight - widthPixels;
+            _appBarData.rc.top = monTop;
+            _appBarData.rc.right = monRight;
+            _appBarData.rc.bottom = monBottom;
         }
         else
         {
@@ -414,6 +475,9 @@ public sealed partial class DockWindow : WindowEx,
         else if (msg == PInvoke.WM_DISPLAYCHANGE)
         {
             Logger.LogDebug("WM_DISPLAYCHANGE");
+
+            // Refresh the monitor enumeration so DockWindowManager can react
+            (_monitorService as MonitorService)?.RefreshMonitors();
 
             // Use dispatcher to ensure we're on the UI thread
             DispatcherQueue.TryEnqueue(() => UpdateWindowPosition());
@@ -553,8 +617,23 @@ public sealed partial class DockWindow : WindowEx,
         var scaleFactor = dpi / 96.0;
         var screenPosPixels = new Point(screenPosDips.X * scaleFactor, screenPosDips.Y * scaleFactor);
 
-        var screenWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
-        var screenHeight = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
+        // Use monitor-specific bounds when available
+        int screenWidth, screenHeight;
+        if (_targetMonitor is not null)
+        {
+            screenWidth = _targetMonitor.Bounds.Width;
+            screenHeight = _targetMonitor.Bounds.Height;
+
+            // Adjust to monitor-local coordinates for quadrant calculation
+            screenPosPixels = new Point(
+                screenPosPixels.X - _targetMonitor.Bounds.Left,
+                screenPosPixels.Y - _targetMonitor.Bounds.Top);
+        }
+        else
+        {
+            screenWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
+            screenHeight = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
+        }
 
         // Now we're going to find the best position for the palette.
 
@@ -576,7 +655,7 @@ public sealed partial class DockWindow : WindowEx,
         var onRightHalf = !onLeftHalf;
         var onBottomHalf = !onTopHalf;
 
-        var anchorPoint = _settings.Side switch
+        var anchorPoint = EffectiveSide switch
         {
             DockSide.Top => onLeftHalf ? AnchorPoint.TopLeft : AnchorPoint.TopRight,
             DockSide.Bottom => onLeftHalf ? AnchorPoint.BottomLeft : AnchorPoint.BottomRight,
@@ -591,7 +670,7 @@ public sealed partial class DockWindow : WindowEx,
         PInvoke.GetWindowRect(_hwnd, out var ourRect);
 
         // Depending on the side we're on, we need to offset differently
-        switch (_settings.Side)
+        switch (EffectiveSide)
         {
             case DockSide.Top:
                 screenPosPixels.Y = ourRect.bottom + paddingPixels;
