@@ -34,6 +34,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
       call move /Y ..\..\..\CmdPal.wxs.bk ..\..\..\CmdPal.wxs
       call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
+      call move /Y ..\..\..\CopyAsUNC.wxs.bk ..\..\..\CopyAsUNC.wxs
       call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
       call move /Y ..\..\..\DscResources.wxs.bk ..\..\..\DscResources.wxs
       call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs
@@ -114,6 +115,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="BaseApplications.wxs" />
     <Compile Include="CmdPal.wxs" />
     <Compile Include="ColorPicker.wxs" />
+    <Compile Include="CopyAsUNC.wxs" />
     <Compile Include="EnvironmentVariables.wxs" />
     <Compile Include="FileExplorerPreview.wxs" />
     <Compile Include="FileLocksmith.wxs" />

@@ -125,6 +125,10 @@
             "FileLocksmithContextMenuPackage.msix",
             "FileLocksmithCLI.exe",
 
+            "WinUI3Apps\\PowerToys.CopyAsUNCExt.dll",
+            "WinUI3Apps\\PowerToys.CopyAsUNCContextMenu.dll",
+            "CopyAsUNCContextMenuPackage.msix",
+
             "WinUI3Apps\\Peek.Common.dll",
             "WinUI3Apps\\Peek.FilePreviewer.dll",
             "WinUI3Apps\\Powertoys.Peek.UI.dll",
