@@ -973,4 +973,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="CmdPalDock_LearnMore.Content" xml:space="preserve">
     <value>Learn more about Command Palette Dock</value>
   </data>
+  <data name="SettingsPage_NewInfoBadge.Text" xml:space="preserve">
+    <value>NEW</value>
+	<comment>Must be all caps</comment>  
+  </data>
 </root>
