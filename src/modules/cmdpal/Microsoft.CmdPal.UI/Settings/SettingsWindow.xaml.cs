@@ -159,6 +159,11 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
+    internal void NavigateToExtension(ProviderSettingsViewModel extension)
+    {
+        NavFrame.Navigate(typeof(ExtensionPage), extension);
+    }
+
     private void Navigate(ProviderSettingsViewModel extension)
     {
         NavFrame.Navigate(typeof(ExtensionPage), extension);

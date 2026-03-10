@@ -281,7 +281,30 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _settingsWindow.Activate();
         _settingsWindow.BringToFront();
-        _settingsWindow.Navigate(pageTag);
+
+        // Check if pageTag is a provider ID for extension deep-linking
+        var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+        CommandProviderWrapper? matchingWrapper = null;
+        foreach (var provider in topLevelCommandManager.CommandProviders)
+        {
+            if (provider.ProviderId == pageTag)
+            {
+                matchingWrapper = provider;
+                break;
+            }
+        }
+
+        if (matchingWrapper is not null)
+        {
+            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            var providerSettings = settings.GetProviderSettings(matchingWrapper);
+            var providerVM = new ProviderSettingsViewModel(matchingWrapper, providerSettings, settings);
+            _settingsWindow.NavigateToExtension(providerVM);
+        }
+        else
+        {
+            _settingsWindow.Navigate(pageTag);
+        }
     }
 
     public void Receive(ShowDetailsMessage message)

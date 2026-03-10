@@ -4,6 +4,7 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -127,9 +128,30 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         List<IContextItem> moreCommands = [];
         var commandItem = topLevelItem.ItemViewModel;
 
+        // Replace settings content page context items with commands that
+        // open the settings window for this provider.
+        var providerId = providerContext.ProviderId;
+        for (var i = 0; i < contextItems.Count; i++)
+        {
+            if (contextItems[i] is ICommandContextItem cci)
+            {
+                try
+                {
+                    if (cci.Command is IContentPage)
+                    {
+                        var replacement = new OpenExtensionSettingsCommand(providerId, cci);
+                        contextItems[i] = new CommandContextItem(replacement);
+                    }
+                }
+                catch
+                {
+                    // Extension object may be unavailable
+                }
+            }
+        }
+
         // Add pin/unpin commands for pinning items to the top-level or to
         // the dock.
-        var providerId = providerContext.ProviderId;
         if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
         {
             var providerSettings = _settingsModel.GetProviderSettings(provider);
@@ -319,6 +341,47 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         {
             PinToDockMessage message = new(_providerId, _commandId, false);
             WeakReferenceMessenger.Default.Send(message);
+        }
+    }
+
+    private sealed partial class OpenExtensionSettingsCommand : InvokableCommand
+    {
+        private readonly string _providerId;
+
+        public OpenExtensionSettingsCommand(string providerId, ICommandContextItem original)
+        {
+            _providerId = providerId;
+            Name = "Settings";
+            Icon = new IconInfo("\uE713");
+
+            // Preserve original name and icon when available
+            try
+            {
+                if (!string.IsNullOrEmpty(original.Command?.Name))
+                {
+                    Name = original.Command.Name;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (original.Command?.Icon is IconInfo icon)
+                {
+                    Icon = icon;
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        public override CommandResult Invoke()
+        {
+            WeakReferenceMessenger.Default.Send(new OpenSettingsMessage(_providerId));
+            return CommandResult.KeepOpen();
         }
     }
 }
