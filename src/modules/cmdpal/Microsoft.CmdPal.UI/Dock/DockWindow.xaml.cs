@@ -64,6 +64,12 @@ public sealed partial class DockWindow : WindowEx,
     private DockSize _lastSize;
 
     /// <summary>
+    /// Set when the window has been closed. Guards against accessing WinUI
+    /// properties after the native backing has been torn down.
+    /// </summary>
+    private bool _closed;
+
+    /// <summary>
     /// The monitor this dock window is displayed on. Null means primary monitor (legacy behavior).
     /// </summary>
     private MonitorInfo? _targetMonitor;
@@ -175,6 +181,22 @@ public sealed partial class DockWindow : WindowEx,
     private void SettingsChangedHandler(SettingsModel sender, object? args)
     {
         _settings = sender.DockSettings;
+
+        // Refresh the per-monitor side override from persisted config so that
+        // EffectiveSide returns the current value, not the stale construction-time snapshot.
+        if (_targetMonitor is not null)
+        {
+            _sideOverride = null;
+            foreach (var cfg in _settings.MonitorConfigs)
+            {
+                if (string.Equals(cfg.MonitorDeviceId, _targetMonitor.DeviceId, StringComparison.Ordinal))
+                {
+                    _sideOverride = cfg.Side;
+                    break;
+                }
+            }
+        }
+
         DispatcherQueue.TryEnqueue(UpdateSettingsOnUiThread);
     }
 
@@ -197,6 +219,11 @@ public sealed partial class DockWindow : WindowEx,
 
     private void UpdateSettingsOnUiThread()
     {
+        if (_closed)
+        {
+            return;
+        }
+
         this.viewModel.UpdateSettings(_settings);
 
         SystemBackdrop = DockSettingsToViews.GetSystemBackdrop(_settings.Backdrop);
@@ -701,6 +728,7 @@ public sealed partial class DockWindow : WindowEx,
 
     private void DockWindow_Closed(object sender, WindowEventArgs args)
     {
+        _closed = true;
         _settingsService?.SettingsChanged -= SettingsChangedHandler;
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
         DisposeAcrylic();
