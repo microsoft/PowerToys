@@ -1,0 +1,23 @@
+{
+  "assignment_cast_snapshots": {
+    "repl-cast-2026-03-10T03:10:51.216Z": {
+      "created_at": "2026-03-10T03:10:51.216Z",
+      "agents": [
+        "neo",
+        "trinity",
+        "morpheus",
+        "tank",
+        "oracle",
+        "scribe",
+        "ralph"
+      ],
+      "universe": "The Matrix"
+    }
+  },
+  "universe_usage_history": [
+    {
+      "universe": "The Matrix",
+      "used_at": "2026-03-10T03:10:51.216Z"
+    }
+  ]
+}
