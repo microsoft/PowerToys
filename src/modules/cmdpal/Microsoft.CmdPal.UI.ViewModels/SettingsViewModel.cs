@@ -12,7 +12,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsViewModel : INotifyPropertyChanged
+public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
 {
     private static readonly List<TimeSpan> AutoGoHomeIntervals =
     [
@@ -27,9 +27,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         TimeSpan.FromSeconds(180),
     ];
 
-    private readonly SettingsModel _settings;
     private readonly SettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+
+    private SettingsModel _settings;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -42,9 +43,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.Hotkey;
         set
         {
-            _settings.Hotkey = value ?? SettingsModel.DefaultActivationShortcut;
+            Save(_settings with { Hotkey = value ?? SettingsModel.DefaultActivationShortcut });
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
-            Save();
         }
     }
 
@@ -53,9 +53,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.UseLowLevelGlobalHotkey;
         set
         {
-            _settings.UseLowLevelGlobalHotkey = value;
+            Save(_settings with { UseLowLevelGlobalHotkey = value });
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
-            Save();
         }
     }
 
@@ -64,8 +63,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.AllowExternalReload;
         set
         {
-            _settings.AllowExternalReload = value;
-            Save();
+            Save(_settings with { AllowExternalReload = value });
         }
     }
 
@@ -74,8 +72,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.ShowAppDetails;
         set
         {
-            _settings.ShowAppDetails = value;
-            Save();
+            Save(_settings with { ShowAppDetails = value });
         }
     }
 
@@ -84,8 +81,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.BackspaceGoesBack;
         set
         {
-            _settings.BackspaceGoesBack = value;
-            Save();
+            Save(_settings with { BackspaceGoesBack = value });
         }
     }
 
@@ -94,8 +90,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.SingleClickActivates;
         set
         {
-            _settings.SingleClickActivates = value;
-            Save();
+            Save(_settings with { SingleClickActivates = value });
         }
     }
 
@@ -104,8 +99,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.HighlightSearchOnActivate;
         set
         {
-            _settings.HighlightSearchOnActivate = value;
-            Save();
+            Save(_settings with { HighlightSearchOnActivate = value });
         }
     }
 
@@ -114,8 +108,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.KeepPreviousQuery;
         set
         {
-            _settings.KeepPreviousQuery = value;
-            Save();
+            Save(_settings with { KeepPreviousQuery = value });
         }
     }
 
@@ -124,8 +117,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => (int)_settings.SummonOn;
         set
         {
-            _settings.SummonOn = (MonitorBehavior)value;
-            Save();
+            Save(_settings with { SummonOn = (MonitorBehavior)value });
         }
     }
 
@@ -134,8 +126,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.ShowSystemTrayIcon;
         set
         {
-            _settings.ShowSystemTrayIcon = value;
-            Save();
+            Save(_settings with { ShowSystemTrayIcon = value });
         }
     }
 
@@ -144,8 +135,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.IgnoreShortcutWhenFullscreen;
         set
         {
-            _settings.IgnoreShortcutWhenFullscreen = value;
-            Save();
+            Save(_settings with { IgnoreShortcutWhenFullscreen = value });
         }
     }
 
@@ -154,8 +144,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.DisableAnimations;
         set
         {
-            _settings.DisableAnimations = value;
-            Save();
+            Save(_settings with { DisableAnimations = value });
         }
     }
 
@@ -171,10 +160,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         {
             if (value >= 0 && value < AutoGoHomeIntervals.Count)
             {
-                _settings.AutoGoHomeInterval = AutoGoHomeIntervals[value];
+                Save(_settings with { AutoGoHomeInterval = AutoGoHomeIntervals[value] });
             }
-
-            Save();
         }
     }
 
@@ -183,8 +170,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => (int)_settings.EscapeKeyBehaviorSetting;
         set
         {
-            _settings.EscapeKeyBehaviorSetting = (EscapeKeyBehavior)value;
-            Save();
+            Save(_settings with { EscapeKeyBehaviorSetting = (EscapeKeyBehavior)value });
         }
     }
 
@@ -193,8 +179,9 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.DockSettings.Side;
         set
         {
-            _settings.DockSettings.Side = value;
-            Save();
+            var dockSettings = _settings.DockSettings;
+            dockSettings.Side = value;
+            Save(_settings with { DockSettings = dockSettings });
         }
     }
 
@@ -203,8 +190,9 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.DockSettings.DockSize;
         set
         {
-            _settings.DockSettings.DockSize = value;
-            Save();
+            var dockSettings = _settings.DockSettings;
+            dockSettings.DockSize = value;
+            Save(_settings with { DockSettings = dockSettings });
         }
     }
 
@@ -213,8 +201,9 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.DockSettings.Backdrop;
         set
         {
-            _settings.DockSettings.Backdrop = value;
-            Save();
+            var dockSettings = _settings.DockSettings;
+            dockSettings.Backdrop = value;
+            Save(_settings with { DockSettings = dockSettings });
         }
     }
 
@@ -223,8 +212,9 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.DockSettings.ShowLabels;
         set
         {
-            _settings.DockSettings.ShowLabels = value;
-            Save();
+            var dockSettings = _settings.DockSettings;
+            dockSettings.ShowLabels = value;
+            Save(_settings with { DockSettings = dockSettings });
         }
     }
 
@@ -233,8 +223,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settings.EnableDock;
         set
         {
-            _settings.EnableDock = value;
-            Save();
+            Save(_settings with { EnableDock = value });
             WeakReferenceMessenger.Default.Send(new ShowHideDockMessage(value));
             WeakReferenceMessenger.Default.Send(new ReloadCommandsMessage()); // TODO! we need to update the MoreCommands of all top level items, but we don't _really_ want to reload
         }
@@ -255,6 +244,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         _settingsService = settingsService;
         _settings = _settingsService.CurrentSettings;
         _topLevelCommandManager = topLevelCommandManager;
+
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
 
         Appearance = new AppearanceSettingsViewModel(themeService, _settingsService);
         DockAppearance = new DockAppearanceSettingsViewModel(themeService, _settingsService);
@@ -304,6 +295,11 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    {
+        _settings = sender;
+    }
+
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()
     {
         var allProviders = _topLevelCommandManager.CommandProviders;
@@ -312,10 +308,19 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public void ApplyFallbackSort()
     {
-        _settings.FallbackRanks = FallbackRankings.Select(s => s.Id).ToArray();
-        Save();
+        Save(_settings with { FallbackRanks = FallbackRankings.Select(s => s.Id).ToArray() });
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
     }
 
-    private void Save() => _settingsService.SaveSettings(_settings, true);
+    private void Save(SettingsModel settings)
+    {
+        _settings = settings;
+        _settingsService.SaveSettings(settings, true);
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
+    }
 }

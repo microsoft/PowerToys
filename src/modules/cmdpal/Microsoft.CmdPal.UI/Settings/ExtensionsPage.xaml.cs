@@ -14,7 +14,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class ExtensionsPage : Page
+public sealed partial class ExtensionsPage : Page, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
@@ -57,5 +57,11 @@ public sealed partial class ExtensionsPage : Page
         {
             Logger.LogError("Error when showing FallbackRankerDialog", ex);
         }
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        viewModel?.Dispose();
     }
 }

@@ -873,8 +873,7 @@ public sealed partial class MainWindow : WindowEx,
             // a quick sanity check, so we don't overwrite correct values
             if (_currentWindowPosition.IsSizeValid)
             {
-                settings.LastWindowPosition = _currentWindowPosition;
-                settingsService.SaveSettings(settings);
+                settingsService.SaveSettings(settings with { LastWindowPosition = _currentWindowPosition });
             }
         }
 

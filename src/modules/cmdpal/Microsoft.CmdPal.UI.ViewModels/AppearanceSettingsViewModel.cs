@@ -112,10 +112,9 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.Theme != value)
             {
-                _settings.Theme = value;
+                Save(_settings with { Theme = value });
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ThemeIndex));
-                Save();
             }
         }
     }
@@ -127,7 +126,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.ColorizationMode != value)
             {
-                _settings.ColorizationMode = value;
+                Save(_settings with { ColorizationMode = value });
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ColorizationModeIndex));
                 OnPropertyChanged(nameof(IsCustomTintVisible));
@@ -145,8 +144,6 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
                 }
 
                 IsColorizationDetailsExpanded = value != ColorizationMode.None;
-
-                Save();
             }
         }
     }
@@ -164,16 +161,13 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.CustomThemeColor != value)
             {
-                _settings.CustomThemeColor = value;
-
+                Save(_settings with { CustomThemeColor = value });
                 OnPropertyChanged();
 
                 if (ColorIntensity == 0)
                 {
                     ColorIntensity = 100;
                 }
-
-                Save();
             }
         }
     }
@@ -183,10 +177,9 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         get => _settings.CustomThemeColorIntensity;
         set
         {
-            _settings.CustomThemeColorIntensity = value;
+            Save(_settings with { CustomThemeColorIntensity = value });
             OnPropertyChanged();
             OnPropertyChanged(nameof(EffectiveTintIntensity));
-            Save();
         }
     }
 
@@ -195,10 +188,9 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         get => _settings.BackgroundImageTintIntensity;
         set
         {
-            _settings.BackgroundImageTintIntensity = value;
+            Save(_settings with { BackgroundImageTintIntensity = value });
             OnPropertyChanged();
             OnPropertyChanged(nameof(EffectiveTintIntensity));
-            Save();
         }
     }
 
@@ -209,15 +201,13 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.BackgroundImagePath != value)
             {
-                _settings.BackgroundImagePath = value;
+                Save(_settings with { BackgroundImagePath = value });
                 OnPropertyChanged();
 
                 if (BackgroundImageOpacity == 0)
                 {
                     BackgroundImageOpacity = 100;
                 }
-
-                Save();
             }
         }
     }
@@ -229,9 +219,8 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.BackgroundImageOpacity != value)
             {
-                _settings.BackgroundImageOpacity = value;
+                Save(_settings with { BackgroundImageOpacity = value });
                 OnPropertyChanged();
-                Save();
             }
         }
     }
@@ -243,9 +232,8 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.BackgroundImageBrightness != value)
             {
-                _settings.BackgroundImageBrightness = value;
+                Save(_settings with { BackgroundImageBrightness = value });
                 OnPropertyChanged();
-                Save();
             }
         }
     }
@@ -257,9 +245,8 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.BackgroundImageBlurAmount != value)
             {
-                _settings.BackgroundImageBlurAmount = value;
+                Save(_settings with { BackgroundImageBlurAmount = value });
                 OnPropertyChanged();
-                Save();
             }
         }
     }
@@ -271,10 +258,9 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.BackgroundImageFit != value)
             {
-                _settings.BackgroundImageFit = value;
+                Save(_settings with { BackgroundImageFit = value });
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(BackgroundImageFitIndex));
-                Save();
             }
         }
     }
@@ -305,11 +291,10 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         {
             if (_settings.BackdropOpacity != value)
             {
-                _settings.BackdropOpacity = value;
+                Save(_settings with { BackdropOpacity = value });
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(EffectiveBackdropStyle));
                 OnPropertyChanged(nameof(EffectiveImageOpacity));
-                Save();
             }
         }
     }
@@ -322,8 +307,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
             var newStyle = (BackdropStyle)value;
             if (_settings.BackdropStyle != newStyle)
             {
-                _settings.BackdropStyle = newStyle;
-
+                Save(_settings with { BackdropStyle = newStyle });
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsBackdropOpacityVisible));
                 OnPropertyChanged(nameof(IsMicaBackdropDescriptionVisible));
@@ -334,8 +318,6 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
                 {
                     IsColorizationDetailsExpanded = false;
                 }
-
-                Save();
             }
         }
     }
@@ -458,6 +440,8 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
     {
         _settings = sender;
+        Reapply();
+        IsColorizationDetailsExpanded = _settings.ColorizationMode != ColorizationMode.None && IsBackgroundSettingsEnabled;
     }
 
     private void UiSettingsOnColorValuesChanged(UISettings sender, object args) => _uiDispatcher.TryEnqueue(() => UpdateAccentColor(sender));
@@ -476,9 +460,10 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 
-    private void Save()
+    private void Save(SettingsModel settings)
     {
-        _settingsService.SaveSettings(_settings);
+        _settings = settings;
+        _settingsService.SaveSettings(settings, true);
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 

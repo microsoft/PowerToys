@@ -9,36 +9,35 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class AppStateService
 {
-    private readonly Extensions.Logging.ILogger _logger;
-    private readonly string _filePath;
+    private const string FileName = "state.json";
+
+    private readonly PersistenceService _persistenceService;
     private AppStateModel _appStateModel;
 
     public event TypedEventHandler<AppStateModel, object?>? StateChanged;
 
     public AppStateModel CurrentSettings => _appStateModel;
 
-    public AppStateService(Extensions.Logging.ILogger logger)
+    public AppStateService(PersistenceService persistenceService)
     {
-        _logger = logger;
-        _filePath = PersistenceService.SettingsJsonPath("state.json");
+        _persistenceService = persistenceService;
         _appStateModel = LoadState();
     }
 
     private AppStateModel LoadState()
     {
-        return PersistenceService.LoadObject<AppStateModel>(_filePath, JsonSerializationContext.Default.AppStateModel!, _logger);
+        return _persistenceService.LoadObject<AppStateModel>(FileName, JsonSerializationContext.Default.AppStateModel!);
     }
 
     public void SaveSettings(AppStateModel model)
     {
-        PersistenceService.SaveObject(
+        _persistenceService.SaveObject(
                         model,
-                        _filePath,
+                        FileName,
                         JsonSerializationContext.Default.AppStateModel,
                         JsonSerializationContext.Default.Options,
                         null,
-                        afterWriteCallback: m => FinalizeStateSave(m),
-                        _logger);
+                        afterWriteCallback: m => FinalizeStateSave(m));
     }
 
     private void FinalizeStateSave(AppStateModel model)

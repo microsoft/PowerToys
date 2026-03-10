@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
-public sealed partial class FallbackRanker : UserControl
+public sealed partial class FallbackRanker : UserControl, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
     private SettingsViewModel? viewModel;
@@ -22,6 +22,12 @@ public sealed partial class FallbackRanker : UserControl
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         viewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        viewModel?.Dispose();
     }
 
     private void ListView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)

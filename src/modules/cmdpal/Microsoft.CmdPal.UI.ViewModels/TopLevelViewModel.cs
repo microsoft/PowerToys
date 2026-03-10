@@ -19,14 +19,20 @@ using WyHash;
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem
+public sealed partial class TopLevelViewModel :
+    ObservableObject,
+    IListItem,
+    IExtendedAttributesProvider,
+    IPrecomputedListItem,
+    IDisposable
 {
-    private readonly SettingsModel _settings;
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
     private readonly SettingsService _settingsService;
     private readonly CommandItemViewModel _commandItemViewModel;
     private readonly IContextMenuFactory _contextMenuFactory;
+
+    private SettingsModel _settings;
 
     public ICommandProviderContext ProviderContext { get; private set; }
 
@@ -217,12 +223,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     {
         _serviceProvider = serviceProvider;
         _settingsService = settingsService;
-        _settings = settingsService.CurrentSettings;
         _providerSettings = providerSettings;
         ProviderContext = commandProviderContext;
         _commandItemViewModel = item;
 
         _contextMenuFactory = contextMenuFactory ?? DefaultContextMenuFactory.Instance;
+        _settings = settingsService.CurrentSettings;
 
         IsFallback = topLevelType == TopLevelType.Fallback;
         IsDockBand = topLevelType == TopLevelType.DockBand;
@@ -233,6 +239,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
 
         item.PropertyChangedBackground += Item_PropertyChanged;
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+    }
+
+    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    {
+        _settings = sender;
     }
 
     internal void InitializeProperties()
@@ -508,6 +520,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         var item = new PinnedDockItem(item: this, id: Id);
 
         return item;
+    }
+
+    public void Dispose()
+    {
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 }
 

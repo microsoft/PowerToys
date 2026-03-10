@@ -14,7 +14,10 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class SettingsService
 {
+    private const string FileName = "settings.json";
+
     private readonly ILogger _logger;
+    private readonly PersistenceService _persistenceService;
     private readonly string _filePath;
     private const string DeprecatedHotkeyGoesHomeKey = "HotkeyGoesHome";
     private SettingsModel _settingsModel;
@@ -23,16 +26,18 @@ public partial class SettingsService
 
     public SettingsModel CurrentSettings => _settingsModel;
 
-    public SettingsService(ILogger logger)
+    public SettingsService(PersistenceService persistenceService, ILogger logger)
     {
-        this._logger = logger;
-        _filePath = PersistenceService.SettingsJsonPath("settings.json");
+        _logger = logger;
+        _persistenceService = persistenceService;
+
+        _filePath = _persistenceService.SettingsJsonPath(FileName);
         _settingsModel = LoadSettings();
     }
 
     private SettingsModel LoadSettings()
     {
-        var settings = PersistenceService.LoadObject<SettingsModel>(_filePath, JsonSerializationContext.Default.SettingsModel!, _logger);
+        var settings = _persistenceService.LoadObject<SettingsModel>(FileName, JsonSerializationContext.Default.SettingsModel!);
 
         var migratedAny = false;
         try
@@ -40,7 +45,7 @@ public partial class SettingsService
             var jsonContent = File.Exists(_filePath) ? File.ReadAllText(_filePath) : "{}";
             if (JsonNode.Parse(jsonContent) is JsonObject root)
             {
-                migratedAny |= ApplyMigrations(root, settings);
+                migratedAny |= ApplyMigrations(root, ref settings);
             }
         }
         catch (Exception ex)
@@ -58,14 +63,13 @@ public partial class SettingsService
 
     public void SaveSettings(SettingsModel model, bool hotReload = false)
     {
-        PersistenceService.SaveObject(
+        _persistenceService.SaveObject(
                         model,
-                        _filePath,
+                        FileName,
                         JsonSerializationContext.Default.SettingsModel,
                         JsonSerializationContext.Default.Options,
                         beforeWriteMutation: obj => obj.Remove(DeprecatedHotkeyGoesHomeKey),
-                        afterWriteCallback: m => FinalizeSettingsSave(m, hotReload),
-                        _logger);
+                        afterWriteCallback: m => FinalizeSettingsSave(m, hotReload));
     }
 
     private void FinalizeSettingsSave(SettingsModel model, bool hotReload)
@@ -81,23 +85,23 @@ public partial class SettingsService
         }
     }
 
-    private bool ApplyMigrations(JsonObject root, SettingsModel model)
+    private bool ApplyMigrations(JsonObject root, ref SettingsModel model)
     {
         var migrated = false;
 
         migrated |= TryMigrate(
             "Migration #1: HotkeyGoesHome (bool) -> AutoGoHomeInterval (TimeSpan)",
             root,
-            model,
+            ref model,
             nameof(SettingsModel.AutoGoHomeInterval),
             DeprecatedHotkeyGoesHomeKey,
-            (settingsModel, goesHome) => settingsModel.AutoGoHomeInterval = goesHome ? TimeSpan.Zero : Timeout.InfiniteTimeSpan,
+            (settingsModel, goesHome) => settingsModel with { AutoGoHomeInterval = goesHome ? TimeSpan.Zero : Timeout.InfiniteTimeSpan },
             JsonSerializationContext.Default.Boolean);
 
         return migrated;
     }
 
-    private bool TryMigrate<T>(string migrationName, JsonObject root, SettingsModel model, string newKey, string oldKey, Action<SettingsModel, T> apply, JsonTypeInfo<T> jsonTypeInfo)
+    private bool TryMigrate<T>(string migrationName, JsonObject root, ref SettingsModel model, string newKey, string oldKey, Func<SettingsModel, T, SettingsModel> apply, JsonTypeInfo<T> jsonTypeInfo)
     {
         try
         {
@@ -109,7 +113,7 @@ public partial class SettingsService
             if (root.TryGetPropertyValue(oldKey, out var oldNode) && oldNode is not null)
             {
                 var value = oldNode.Deserialize<T>(jsonTypeInfo);
-                apply(model, value!);
+                model = apply(model, value!);
                 return true;
             }
         }

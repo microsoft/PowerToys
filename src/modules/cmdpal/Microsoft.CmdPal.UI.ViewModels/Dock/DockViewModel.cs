@@ -59,6 +59,7 @@ public sealed partial class DockViewModel : IDisposable
     private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
     {
         _settingsModel = sender;
+        _settings = sender.DockSettings;
     }
 
     private void DockBands_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

@@ -28,11 +28,11 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
 
     private readonly UISettings _uiSettings;
     private readonly SettingsService _settingsService;
-    private readonly SettingsModel _settings;
     private readonly ResourceSwapper _resourceSwapper;
     private readonly NormalThemeProvider _normalThemeProvider;
     private readonly ColorfulThemeProvider _colorfulThemeProvider;
 
+    private SettingsModel _settings;
     private DispatcherQueue? _dispatcherQueue;
     private DispatcherQueueTimer? _dispatcherQueueTimer;
     private bool _isInitialized;
@@ -323,6 +323,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
 
     private void SettingsOnSettingsChanged(SettingsModel sender, object? args)
     {
+        _settings = sender;
         RequestReload();
     }
 

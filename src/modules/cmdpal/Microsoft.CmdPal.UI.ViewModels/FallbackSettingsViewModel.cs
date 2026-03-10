@@ -81,7 +81,7 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
     private void Save()
     {
-        _settingsService.SaveSettings(_settings);
+        _settingsService.SaveSettings(_settingsService.CurrentSettings, true);
         WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
     }
 }

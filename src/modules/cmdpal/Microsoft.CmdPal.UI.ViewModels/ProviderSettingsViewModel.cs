@@ -192,7 +192,7 @@ public partial class ProviderSettingsViewModel : ObservableObject
         FallbackCommands = fallbackViewModels;
     }
 
-    private void Save() => _settingsService.SaveSettings(_settings);
+    private void Save() => _settingsService.SaveSettings(_settingsService.CurrentSettings, true);
 
     private void InitializeSettingsPage()
     {

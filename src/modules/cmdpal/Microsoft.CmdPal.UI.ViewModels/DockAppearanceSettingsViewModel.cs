@@ -313,7 +313,7 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
 
     private void Save()
     {
-        _settingsService.SaveSettings(_settings);
+        _settingsService.SaveSettings(_settingsService.CurrentSettings, true);
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 
