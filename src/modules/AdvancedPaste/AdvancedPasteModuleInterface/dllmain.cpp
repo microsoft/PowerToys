@@ -407,6 +407,7 @@ private:
                         // Define the expected order to ensure consistent hotkey ID assignment
                         const std::vector<winrt::hstring> expectedOrder = {
                             L"image-to-text",
+                            L"fix-spelling-and-grammar",
                             L"paste-as-file",
                             L"transcode"
                         };

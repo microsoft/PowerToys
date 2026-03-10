@@ -1927,8 +1927,8 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
 	<data name="KeyboardManager_LaunchEditor_Button.Content" xml:space="preserve">
     <value>Open editor</value>
-  </data>	
-	<data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
+  </data>
+  <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
     <value>Paste as plain text directly</value>
   </data>
   <data name="AdvancedPasteUI_Actions.Header" xml:space="preserve">
@@ -1980,6 +1980,24 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="ImageToText.Header" xml:space="preserve">
     <value>Image to text</value>
+  </data>
+  <data name="FixSpellingAndGrammar.Header" xml:space="preserve">
+    <value>Fix spelling and grammar</value>
+  </data>
+  <data name="FixSpellingAndGrammar_CustomPrompt.Header" xml:space="preserve">
+    <value>Custom prompt</value>
+  </data>
+  <data name="FixSpellingAndGrammar_CustomPrompt.Description" xml:space="preserve">
+    <value>Override the default AI prompt used for fixing spelling and grammar. Leave empty to use the default prompt.</value>
+  </data>
+  <data name="FixSpellingAndGrammar_CustomPromptTextBox.PlaceholderText" xml:space="preserve">
+    <value>Fix all spelling and grammar errors in the following text. Return only the corrected text without any additional explanation or commentary.</value>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingEnabled.Header" xml:space="preserve">
+    <value>Coaching mode</value>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingEnabled.Description" xml:space="preserve">
+    <value>When enabled, shows a preview with an explanation of what was fixed and why, even when using a direct keyboard shortcut.</value>
   </data>
   <data name="PasteAsFile.Header" xml:space="preserve">
     <value>Paste as file</value>
@@ -2563,7 +2581,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_ActivationMode_HoldingShift.Content" xml:space="preserve">
     <value>Holding Shift</value>
     <comment>CursorWrap: Activation mode - wrap only when Shift held</comment>
-  </data>		
+  </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>

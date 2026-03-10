@@ -164,7 +164,7 @@
                                     </InfoBar.IconSource>
                                 </InfoBar>
                             </tkcontrols:SettingsExpander.ItemsHeader>
-                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
                                     <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
@@ -195,7 +195,7 @@
                             Name="PasteAsPlainTextShortcut"
                             x:Uid="PasteAsPlainText_Shortcut"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
-                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard
                             Name="PasteAsMarkdownShortcut"
@@ -222,6 +222,38 @@
                             HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
                             <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
                         </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander
+                            Name="FixSpellingAndGrammar"
+                            x:Uid="FixSpellingAndGrammar"
+                            DataContext="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar, Mode=OneWay}"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE8E2;}"
+                            IsExpanded="{Binding IsShown, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.Content>
+                                <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                            </tkcontrols:SettingsExpander.Content>
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard Visibility="Collapsed" />
+                                <tkcontrols:SettingsCard
+                                    x:Uid="FixSpellingAndGrammar_CustomPrompt"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}">
+                                    <TextBox
+                                        x:Uid="FixSpellingAndGrammar_CustomPromptTextBox"
+                                        MinWidth="400"
+                                        AcceptsReturn="True"
+                                        Text="{Binding Prompt, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                        TextWrapping="Wrap" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Uid="FixSpellingAndGrammar_CoachingEnabled"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}">
+                                    <ToggleSwitch
+                                        IsOn="{Binding CoachingEnabled, Mode=TwoWay}"
+                                        OffContent=""
+                                        OnContent="" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard Visibility="Collapsed" />
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
                         <tkcontrols:SettingsExpander
                             Name="PasteAsFile"
                             x:Uid="PasteAsFile"
