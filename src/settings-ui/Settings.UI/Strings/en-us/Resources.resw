@@ -4448,6 +4448,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Hide the built-in "New" context menu</value>
     <comment>Localize New in accordance with Windows New</comment>
   </data>
+  <data name="NewPlus_BuiltInNewRegistryUpdateError" xml:space="preserve">
+    <value>Couldn't update the built-in "New" context menu setting.</value>
+    <comment>User-facing error shown when New+ fails to update the built-in New registry setting</comment>
+  </data>
   <data name="NewPlus_behavior.Header" xml:space="preserve">
     <value>Behavior</value>
     <comment>New+ behavior related settings label</comment>
