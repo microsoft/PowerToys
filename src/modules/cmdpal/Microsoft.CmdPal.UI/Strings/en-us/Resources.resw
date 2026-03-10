@@ -916,6 +916,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Unpin from Dock</value>
     <comment>Command name for unpinning an item from the dock</comment>
   </data>
+  <data name="open_extension_settings_command_name" xml:space="preserve">
+    <value>Settings</value>
+    <comment>Command name for opening the owning extension settings page</comment>
+  </data>
+  <data name="change_alias_command_name" xml:space="preserve">
+    <value>Change alias</value>
+    <comment>Command name for opening settings to edit a command alias</comment>
+  </data>
+  <data name="change_global_hotkey_command_name" xml:space="preserve">
+    <value>Change global hotkey</value>
+    <comment>Command name for opening settings to edit a command global hotkey</comment>
+  </data>
   <data name="FiltersDropDown.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Filters</value>
   </data>

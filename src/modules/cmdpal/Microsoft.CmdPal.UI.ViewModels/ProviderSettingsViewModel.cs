@@ -41,6 +41,8 @@ public partial class ProviderSettingsViewModel : ObservableObject
         BuildFallbackViewModels();
     }
 
+    public string ProviderId => _provider.ProviderId;
+
     public string DisplayName => _provider.DisplayName;
 
     public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? Resources.builtin_extension_name;
