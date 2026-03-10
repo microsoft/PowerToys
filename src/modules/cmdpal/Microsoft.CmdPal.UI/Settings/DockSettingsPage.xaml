@@ -241,7 +241,7 @@
                                 </controls:SettingsCard>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>  -->
+                    </ItemsRepeater>-->
                 </StackPanel>
             </Grid>
         </ScrollViewer>
