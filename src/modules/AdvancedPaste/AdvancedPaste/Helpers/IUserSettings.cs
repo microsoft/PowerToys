@@ -25,6 +25,10 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<PasteFormats> AdditionalActions { get; }
 
+        public string FixSpellingAndGrammarPrompt { get; }
+
+        public bool FixSpellingAndGrammarCoachingEnabled { get; }
+
         public PasteAIConfiguration PasteAIConfiguration { get; }
 
         public event EventHandler Changed;

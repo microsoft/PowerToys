@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Services;
+using AdvancedPaste.Services.CustomActions;
 using AdvancedPaste.Settings;
 using Common.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -41,6 +42,7 @@ namespace AdvancedPaste.ViewModels
         private readonly IUserSettings _userSettings;
         private readonly IPasteFormatExecutor _pasteFormatExecutor;
         private readonly IAICredentialsProvider _credentialsProvider;
+        private readonly ICustomActionTransformService _customActionTransformService;
 
         private CancellationTokenSource _pasteActionCancellationTokenSource;
 
@@ -258,11 +260,12 @@ namespace AdvancedPaste.ViewModels
 
         public event EventHandler PreviewRequested;
 
-        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider credentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor)
+        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider credentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor, ICustomActionTransformService customActionTransformService)
         {
             _credentialsProvider = credentialsProvider;
             _userSettings = userSettings;
             _pasteFormatExecutor = pasteFormatExecutor;
+            _customActionTransformService = customActionTransformService;
 
             GeneratedResponses = [];
             GeneratedResponses.CollectionChanged += (s, e) =>
@@ -539,6 +542,7 @@ namespace AdvancedPaste.ViewModels
         {
             PasteActionError = PasteActionError.None;
             Query = string.Empty;
+            CoachingExplanation = null;
 
             await ReadClipboardAsync();
 
@@ -615,6 +619,12 @@ namespace AdvancedPaste.ViewModels
 
         [ObservableProperty]
         private string _customFormatResult;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasCoachingExplanation))]
+        private string _coachingExplanation;
+
+        public bool HasCoachingExplanation => !string.IsNullOrEmpty(CoachingExplanation);
 
         [RelayCommand]
         public async Task PasteCustomAsync()
@@ -704,12 +714,29 @@ namespace AdvancedPaste.ViewModels
                 await delayTask;
 
                 var outputText = await dataPackage.GetView().GetTextOrEmptyAsync();
+                bool isCoachingAction = pasteFormat.Format == PasteFormats.FixSpellingAndGrammar && _userSettings.FixSpellingAndGrammarCoachingEnabled;
                 bool shouldPreview = pasteFormat.Metadata.CanPreview && _userSettings.ShowCustomPreview && !string.IsNullOrEmpty(outputText) && source != PasteActionSource.GlobalKeyboardShortcut;
+
+                // Coaching mode forces preview even for global keyboard shortcuts
+                if (isCoachingAction && !string.IsNullOrEmpty(outputText))
+                {
+                    shouldPreview = true;
+                }
 
                 if (shouldPreview)
                 {
                     GeneratedResponses.Add(outputText);
                     CurrentResponseIndex = GeneratedResponses.Count - 1;
+
+                    if (isCoachingAction)
+                    {
+                        await GenerateCoachingExplanationAsync(outputText);
+                    }
+                    else
+                    {
+                        CoachingExplanation = null;
+                    }
+
                     PreviewRequested?.Invoke(this, EventArgs.Empty);
                 }
                 else
@@ -728,6 +755,152 @@ namespace AdvancedPaste.ViewModels
             _pasteActionCancellationTokenSource = null;
             elapsedWatch.Stop();
             Logger.LogDebug($"Finished executing {pasteFormat.Format} from source {source}; timeTakenMs={elapsedWatch.ElapsedMilliseconds}");
+        }
+
+        private async Task GenerateCoachingExplanationAsync(string correctedText)
+        {
+            try
+            {
+                var originalText = ClipboardData != null ? await ClipboardData.GetTextOrEmptyAsync() : string.Empty;
+
+                if (string.IsNullOrEmpty(originalText))
+                {
+                    CoachingExplanation = null;
+                    return;
+                }
+
+                var diffs = ComputeWordDiffs(originalText, correctedText);
+
+                if (diffs.Count == 0)
+                {
+                    CoachingExplanation = null;
+                    return;
+                }
+
+                // Build a diff summary and ask AI only to explain *why* each pre-identified change matters
+                var diffLines = new System.Text.StringBuilder();
+                for (int i = 0; i < diffs.Count; i++)
+                {
+                    diffLines.AppendLine(
+                        CultureInfo.CurrentCulture,
+                        $"Change {i + 1}: \"{diffs[i].Original}\" → \"{diffs[i].Corrected}\"");
+                }
+
+                var coachingPrompt = $"Here is the corrected sentence for context:\n\"{correctedText}\"\n\nHere are the exact changes that were made:\n{diffLines}\nFor each change, provide the change number and a brief one-sentence explanation of why the correction improves the text.";
+
+                var coachingSystemPrompt = "You are a writing coach. You will be given a corrected sentence and a list of exact text changes already identified by a diff algorithm. Your ONLY job is to explain WHY each change improves the text. Do not verify or re-check the changes - they are correct. Just explain the linguistic reason for each one in one sentence.";
+
+                var result = await _customActionTransformService.TransformAsync(
+                    coachingPrompt,
+                    diffLines.ToString(),
+                    null,
+                    _pasteActionCancellationTokenSource?.Token ?? CancellationToken.None,
+                    null,
+                    coachingSystemPrompt);
+
+                CoachingExplanation = result?.Content;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error generating coaching explanation", ex);
+                CoachingExplanation = null;
+            }
+        }
+
+        private record struct TextDiff(string Original, string Corrected);
+
+        private static List<TextDiff> ComputeWordDiffs(string original, string corrected)
+        {
+            var diffs = new List<TextDiff>();
+            var originalWords = original.Split(' ', StringSplitOptions.None);
+            var correctedWords = corrected.Split(' ', StringSplitOptions.None);
+
+            // Normalize smart quotes/dashes for comparison so invisible typographic changes don't appear as diffs
+            static string NormalizeForComparison(string s) =>
+                s.Replace('\u2018', '\'') // left single quote
+                 .Replace('\u2019', '\'') // right single quote / apostrophe
+                 .Replace('\u201C', '"') // left double quote
+                 .Replace('\u201D', '"') // right double quote
+                 .Replace('\u2013', '-') // en dash
+                 .Replace('\u2014', '-'); // em dash
+
+            // Use longest common subsequence to align words
+            int n = originalWords.Length, m = correctedWords.Length;
+            var dp = new int[n + 1, m + 1];
+
+            for (int i = 1; i <= n; i++)
+            {
+                for (int j = 1; j <= m; j++)
+                {
+                    dp[i, j] = NormalizeForComparison(originalWords[i - 1]) == NormalizeForComparison(correctedWords[j - 1])
+                        ? dp[i - 1, j - 1] + 1
+                        : Math.Max(dp[i - 1, j], dp[i, j - 1]);
+                }
+            }
+
+            // Backtrack to find diff regions
+            var origChanges = new List<(int Start, int End)>();
+            var corrChanges = new List<(int Start, int End)>();
+            int oi = n, ci = m;
+            int origEnd = n, corrEnd = m;
+
+            while (oi > 0 || ci > 0)
+            {
+                if (oi > 0 && ci > 0 && NormalizeForComparison(originalWords[oi - 1]) == NormalizeForComparison(correctedWords[ci - 1]))
+                {
+                    if (origEnd != oi || corrEnd != ci)
+                    {
+                        origChanges.Add((oi, origEnd));
+                        corrChanges.Add((ci, corrEnd));
+                    }
+
+                    oi--;
+                    ci--;
+                    origEnd = oi;
+                    corrEnd = ci;
+                }
+                else if (ci > 0 && (oi == 0 || dp[oi, ci - 1] >= dp[oi - 1, ci]))
+                {
+                    ci--;
+                }
+                else
+                {
+                    oi--;
+                }
+            }
+
+            if (origEnd != 0 || corrEnd != 0)
+            {
+                origChanges.Add((0, origEnd));
+                corrChanges.Add((0, corrEnd));
+            }
+
+            origChanges.Reverse();
+            corrChanges.Reverse();
+
+            for (int i = 0; i < origChanges.Count; i++)
+            {
+                var origSlice = string.Join(' ', originalWords[origChanges[i].Start..origChanges[i].End]);
+                var corrSlice = string.Join(' ', correctedWords[corrChanges[i].Start..corrChanges[i].End]);
+
+                if (NormalizeForComparison(origSlice) != NormalizeForComparison(corrSlice))
+                {
+                    // Add surrounding context (1 word each side) for readability
+                    var ctxStart = Math.Max(0, origChanges[i].Start - 1);
+                    var ctxEnd = Math.Min(originalWords.Length, origChanges[i].End + 1);
+                    var corrCtxStart = Math.Max(0, corrChanges[i].Start - 1);
+                    var corrCtxEnd = Math.Min(correctedWords.Length, corrChanges[i].End + 1);
+
+                    var origContext = string.Join(' ', originalWords[ctxStart..ctxEnd]);
+                    var corrContext = string.Join(' ', correctedWords[corrCtxStart..corrCtxEnd]);
+
+                    diffs.Add(new TextDiff(
+                        Original: origSlice.Length > 0 ? $"{origContext}" : "(removed)",
+                        Corrected: corrSlice.Length > 0 ? $"{corrContext}" : "(removed)"));
+                }
+            }
+
+            return diffs;
         }
 
         internal async Task ExecutePasteFormatAsync(VirtualKey key)

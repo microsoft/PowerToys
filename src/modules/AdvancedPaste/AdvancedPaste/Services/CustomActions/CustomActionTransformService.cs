@@ -40,10 +40,15 @@ namespace AdvancedPaste.Services.CustomActions
             this.userSettings = userSettings;
         }
 
-        public async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress, string systemPromptOverride = null)
         {
             var pasteConfig = userSettings?.PasteAIConfiguration;
             var providerConfig = BuildProviderConfig(pasteConfig);
+
+            if (systemPromptOverride != null)
+            {
+                providerConfig.SystemPrompt = systemPromptOverride;
+            }
 
             return await TransformAsync(prompt, inputText, imageBytes, providerConfig, cancellationToken, progress);
         }

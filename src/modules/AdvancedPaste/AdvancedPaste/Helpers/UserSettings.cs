@@ -46,6 +46,10 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
+        public string FixSpellingAndGrammarPrompt { get; private set; } = string.Empty;
+
+        public bool FixSpellingAndGrammarCoachingEnabled { get; private set; }
+
         public PasteAIConfiguration PasteAIConfiguration { get; private set; }
 
         public UserSettings(IFileSystem fileSystem)
@@ -113,10 +117,15 @@ namespace AdvancedPaste.Settings
                                 EnableClipboardPreview = properties.EnableClipboardPreview;
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
 
+                                var fixSpellingAction = properties.AdditionalActions.FixSpellingAndGrammar;
+                                FixSpellingAndGrammarPrompt = fixSpellingAction.Prompt ?? string.Empty;
+                                FixSpellingAndGrammarCoachingEnabled = fixSpellingAction.CoachingEnabled;
+
                                 var sourceAdditionalActions = properties.AdditionalActions;
                                 (PasteFormats Format, IAdvancedPasteAction[] Actions)[] additionalActionFormats =
                                 [
                                     (PasteFormats.ImageToText, [sourceAdditionalActions.ImageToText]),
+                                    (PasteFormats.FixSpellingAndGrammar, [sourceAdditionalActions.FixSpellingAndGrammar]),
                                     (PasteFormats.PasteAsTxtFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsTxtFile]),
                                     (PasteFormats.PasteAsPngFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsPngFile]),
                                     (PasteFormats.PasteAsHtmlFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsHtmlFile]),
