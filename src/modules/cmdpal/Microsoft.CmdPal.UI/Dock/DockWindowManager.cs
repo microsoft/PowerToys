@@ -177,6 +177,11 @@ public sealed partial class DockWindowManager : IDisposable
         var window = new DockWindow(monitor, config.Side, viewModel);
         _dockWindows[config.MonitorDeviceId] = window;
         window.Show();
+
+        // Initialize bands after the window is shown so the UI scheduler
+        // is available. Calling SetupBands() during construction causes
+        // ExecutionEngineException in AOT because the scheduler isn't ready.
+        viewModel.InitializeBands();
     }
 
     private DockViewModel CreateDockViewModel(string monitorDeviceId)

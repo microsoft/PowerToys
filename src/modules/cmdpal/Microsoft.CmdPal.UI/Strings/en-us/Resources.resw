@@ -994,16 +994,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="DockSettings_MonitorPosition_Bottom.Content" xml:space="preserve">
     <value>Bottom</value>
   </data>
-  <data name="DockSettings_MonitorCustomizeBands.Header" xml:space="preserve">
+  <data name="DockSettings_MonitorCustomizeBands.Text" xml:space="preserve">
     <value>Customize bands</value>
-  </data>
-  <data name="DockSettings_MonitorBand_Start.Content" xml:space="preserve">
-    <value>Start</value>
-  </data>
-  <data name="DockSettings_MonitorBand_Center.Content" xml:space="preserve">
-    <value>Center</value>
-  </data>
-  <data name="DockSettings_MonitorBand_End.Content" xml:space="preserve">
-    <value>End</value>
   </data>
 </root>

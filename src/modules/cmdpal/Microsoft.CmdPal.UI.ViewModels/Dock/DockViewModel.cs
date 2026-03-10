@@ -174,6 +174,14 @@ public sealed partial class DockViewModel : IDisposable
         SetupBands();
     }
 
+    /// <summary>
+    /// Performs the initial band setup. Call once after the DockWindow has been
+    /// created and shown so the UI scheduler is available. The constructor
+    /// intentionally skips this to avoid <see cref="System.ExecutionEngineException"/>
+    /// in AOT builds where the scheduler isn't ready during construction.
+    /// </summary>
+    public void InitializeBands() => SetupBands();
+
     private void SetupBands()
     {
         Logger.LogDebug($"Setting up dock bands");

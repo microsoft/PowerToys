@@ -282,11 +282,6 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
             if (config is not null)
             {
                 var vm = new DockMonitorConfigViewModel(config, monitor, _settingsService);
-                if (config.IsCustomized)
-                {
-                    vm.PopulateBandItems(GetAvailableBands());
-                }
-
                 items.Add(vm);
             }
         }
@@ -298,24 +293,6 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
         {
             _settingsService.SaveSettings(_settings, true);
         }
-    }
-
-    /// <summary>
-    /// Returns a list of all known dock bands with display name, provider ID,
-    /// and command ID. Used to populate per-monitor band configurations.
-    /// </summary>
-    public List<(string Name, string ProviderId, string CommandId)> GetAvailableBands()
-    {
-        var result = new List<(string, string, string)>();
-        foreach (var band in _topLevelCommandManager.GetDockBandsSnapshot())
-        {
-            if (band.IsDockBand)
-            {
-                result.Add((band.Title, band.CommandProviderId, band.Id));
-            }
-        }
-
-        return result;
     }
 
     public SettingsViewModel(

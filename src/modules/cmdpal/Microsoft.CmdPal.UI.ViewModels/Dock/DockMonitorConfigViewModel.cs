@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -134,39 +133,11 @@ public partial class DockMonitorConfigViewModel : ObservableObject
                     _config.StartBands = null;
                     _config.CenterBands = null;
                     _config.EndBands = null;
-                    BandItems.Clear();
                 }
 
                 Save();
                 OnPropertyChanged();
             }
-        }
-    }
-
-    /// <summary>
-    /// Gets the per-monitor band ViewModels. Only populated when
-    /// <see cref="IsCustomized"/> is true.
-    /// </summary>
-    public ObservableCollection<MonitorBandSettingsViewModel> BandItems { get; } = new();
-
-    /// <summary>
-    /// Populates <see cref="BandItems"/> from the available bands supplied
-    /// externally (typically from <c>TopLevelCommandManager</c>).
-    /// </summary>
-    /// <param name="availableBands">
-    /// List of (Name, ProviderId, CommandId) tuples for all known dock bands.
-    /// </param>
-    public void PopulateBandItems(List<(string Name, string ProviderId, string CommandId)> availableBands)
-    {
-        BandItems.Clear();
-        foreach (var (name, providerId, commandId) in availableBands)
-        {
-            BandItems.Add(new MonitorBandSettingsViewModel(
-                name,
-                providerId,
-                commandId,
-                _config,
-                _settingsService));
         }
     }
 
