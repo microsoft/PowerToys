@@ -124,7 +124,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         // Re-enable built-in New handler when NewPlus is disabled if allowed by GPO
                         if (!IsNewPlusHideBuiltInNewToggleSettingGPOConfigured)
                         {
-                            EnableBuiltInNewViaRegistry();
+                            if (EnableBuiltInNewViaRegistry())
+                            {
+                                UpdateHideBuiltInNewState(false);
+                            }
                         }
                     }
                 }
@@ -253,22 +256,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_disableBuiltInNew != value)
                 {
                     // Update New visibility right now
-                    if (_disableBuiltInNew)
+                    bool registryUpdateSucceeded = value ? DisableBuiltInNewViaRegistry() : EnableBuiltInNewViaRegistry();
+
+                    if (!registryUpdateSucceeded)
                     {
-                        EnableBuiltInNewViaRegistry();
-                    }
-                    else
-                    {
-                        DisableBuiltInNewViaRegistry();
+                        return;
                     }
 
-                    _disableBuiltInNew = value;
-                    OnPropertyChanged(nameof(HideBuiltInNew));
-
-                    // Set the user preference for New visibility, which we then also use in powertoys_module.cpp to ensure
-                    // that backup/restore of settings work without having to update settings
-                    Settings.Properties.BuiltInNewHidePreference.Value = value;
-                    NotifySettingsChanged();
+                    UpdateHideBuiltInNewState(value);
                 }
             }
         }
@@ -393,6 +388,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 using (var newKey = Registry.CurrentUser.OpenSubKey(BuiltInNewRegistryPath, writable: false))
                 {
+                    if (newKey is null)
+                    {
+                        // Missing key means Explorer is using the built-in handler state, which is enabled.
+                        return true;
+                    }
+
                     string builtInNewHandlerValue = newKey.GetValue(null, null) as string;
 
                     if (builtInNewHandlerValue is null || string.Equals(builtInNewHandlerValue, BuiltNewCOMGuid, StringComparison.OrdinalIgnoreCase))
@@ -412,18 +413,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return false;
         }
 
-        private void DisableBuiltInNewViaRegistry()
+        private void UpdateHideBuiltInNewState(bool hideBuiltInNew)
+        {
+            _disableBuiltInNew = hideBuiltInNew;
+            OnPropertyChanged(nameof(HideBuiltInNew));
+
+            // Set the user preference for New visibility, which we then also use in powertoys_module.cpp to ensure
+            // that backup/restore of settings work without having to update settings
+            Settings.Properties.BuiltInNewHidePreference.Value = hideBuiltInNew;
+            NotifySettingsChanged();
+        }
+
+        private bool DisableBuiltInNewViaRegistry()
         {
             try
             {
-                using (var newKey = Registry.CurrentUser.OpenSubKey(BuiltInNewRegistryPath, writable: true))
+                using (var newKey = Registry.CurrentUser.CreateSubKey(BuiltInNewRegistryPath, writable: true))
                 {
+                    if (newKey is null)
+                    {
+                        throw new InvalidOperationException("Failed to open or create the registry key for built-in New.");
+                    }
+
                     string builtInNewHandlerValue = newKey.GetValue(null, null) as string;
 
                     if (!string.IsNullOrEmpty(builtInNewHandlerValue) && builtInNewHandlerValue.StartsWith(NewDisabledValuePrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         // Already disabled
-                        return;
+                        return true;
                     }
 
                     // Any string value will disable the built-in New handler
@@ -431,42 +448,50 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     newKey.SetValue(string.Empty, newDisabledValue);
                 }
 
-                HideBuiltInNew = true;
-                OnPropertyChanged(nameof(HideBuiltInNew));
+                return true;
             }
             catch (Exception ex)
             {
                 Logger.LogError("Failed to disable built-in New in the registry.", ex);
                 MessageBox.Show(ex.Message);
             }
+
+            return false;
         }
 
-        private void EnableBuiltInNewViaRegistry()
+        private bool EnableBuiltInNewViaRegistry()
         {
             try
             {
                 using (var newKey = Registry.CurrentUser.OpenSubKey(BuiltInNewRegistryPath, writable: true))
                 {
+                    if (newKey is null)
+                    {
+                        // Missing key means the built-in New handler is already enabled.
+                        return true;
+                    }
+
                     string builtInNewHandlerValue = newKey.GetValue(null, null) as string;
 
                     if (builtInNewHandlerValue is null)
                     {
                         // Already enabled
-                        return;
+                        return true;
                     }
 
                     // Null key default value enables built-in New handler
                     newKey.DeleteValue(null, true);
                 }
 
-                HideBuiltInNew = false;
-                OnPropertyChanged(nameof(HideBuiltInNew));
+                return true;
             }
             catch (Exception ex)
             {
                 Logger.LogError("Failed to enable built-in New in the registry.", ex);
                 MessageBox.Show(ex.Message);
             }
+
+            return false;
         }
     }
 }
