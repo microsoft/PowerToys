@@ -213,7 +213,7 @@
                     </controls:SettingsExpander>
 
                     <!--  Bands Section  -->
-                    <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <!--  <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <ItemsRepeater ItemsSource="{x:Bind AllDockBandItems}">
                         <ItemsRepeater.Layout>
@@ -241,7 +241,7 @@
                                 </controls:SettingsCard>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
+                    </ItemsRepeater>  -->
                 </StackPanel>
             </Grid>
         </ScrollViewer>

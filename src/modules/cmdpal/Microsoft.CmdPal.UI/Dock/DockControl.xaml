@@ -139,15 +139,18 @@
                 ShouldConstrainToRootBounds="False">
                 <StackPanel Width="320">
                     <TextBlock
+                        Margin="8,0,8,12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Bands" />
+                    <TextBlock
                         x:Name="NoAvailableBandsText"
                         x:Uid="Dock_AddBand_NoCommandsAvailable"
                         Padding="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextAlignment="Center"
                         Visibility="Collapsed" />
                     <ListView
                         x:Name="AddBandListView"
                         MaxHeight="300"
+                        Margin="-12,0,-12,0"
                         HorizontalAlignment="Stretch"
                         IsItemClickEnabled="True"
                         ItemClick="AddBandListView_ItemClick"
@@ -175,6 +178,17 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+                    <Rectangle
+                        Height="1"
+                        Margin="-16,16,-16,0"
+                        HorizontalAlignment="Stretch"
+                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    <TextBlock
+                        Margin="8,24,0,0"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        Text="To pin commands, files or other extensions. Use the Pin to Dock command in Command Palette itself."
+                        TextWrapping="Wrap" />
                 </StackPanel>
             </Flyout>
         </ResourceDictionary>
