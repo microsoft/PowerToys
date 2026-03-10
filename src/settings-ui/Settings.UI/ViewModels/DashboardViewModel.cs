@@ -686,7 +686,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("MouseWithoutBorders_ReconnectButton/Text"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("MouseWithoutBorders_ReconnectTooltip/Text"), ButtonGlyph = "ms-appx:///Assets/Settings/Icons/MouseWithoutBorders.png", ButtonClickHandler = MouseWithoutBordersReconnectClicked },
+                new DashboardModuleButtonItem()
+                {
+                    ButtonTitle = resourceLoader.GetString("MouseWithoutBorders_ReconnectButton/Text"),
+                    IsButtonDescriptionVisible = true,
+                    ButtonDescription = resourceLoader.GetString("MouseWithoutBorders_ReconnectTooltip/Text"),
+                    ButtonGlyph = "ms-appx:///Assets/Settings/Icons/MouseWithoutBorders.png",
+                    ButtonClickHandler = MouseWithoutBordersReconnectClicked,
+                },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
