@@ -322,6 +322,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             try
             {
+                DetailsContent.ChangeView(null, 0, null, true);
                 ViewModel.Details = details;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
                 ViewModel.IsDetailsVisible = true;
