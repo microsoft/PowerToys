@@ -130,6 +130,7 @@ bthprops
 bti
 BTNFACE
 bugreport
+bugreportfile
 BUILDARCH
 BUILDNUMBER
 buildtransitive
@@ -224,6 +225,7 @@ CONTEXTMENUHANDLER
 contractversion
 CONTROLPARENT
 Convs
+cooldown
 copiedcolorrepresentation
 COPYPEN
 COREWINDOW
@@ -835,6 +837,7 @@ MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
 MARKDOWNPREVIEWHANDLERCPP
+MAXDWORD
 MAXSHORTCUTSIZE
 maxversiontested
 MBM

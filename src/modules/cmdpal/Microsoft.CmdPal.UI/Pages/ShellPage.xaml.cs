@@ -586,12 +586,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (shouldSearchBoxBeVisible || page is not ContentPage)
         {
+            ViewModel.IsSearchBoxVisible = shouldSearchBoxBeVisible;
+
             if (HostWindow?.IsVisibleToUser != true)
             {
                 return;
             }
 
-            ViewModel.IsSearchBoxVisible = shouldSearchBoxBeVisible;
             SearchBox.Focus(FocusState.Programmatic);
             SearchBox.SelectSearch();
         }
