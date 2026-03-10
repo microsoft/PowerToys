@@ -18,10 +18,11 @@ public sealed partial class DockViewModel : IDisposable
     private readonly SettingsService _settingsService;
     private readonly DockPageContext _pageContext; // only to be used for our own context menu - not for dock bands themselves
     private readonly IContextMenuFactory _contextMenuFactory;
+    private readonly string? _monitorDeviceId;
 
     private SettingsModel _settingsModel;
-
     private DockSettings _settings;
+    private DockMonitorConfig? _monitorConfig;
 
     public TaskScheduler Scheduler { get; }
 
@@ -37,14 +38,18 @@ public sealed partial class DockViewModel : IDisposable
         TopLevelCommandManager tlcManager,
         IContextMenuFactory contextMenuFactory,
         SettingsService settingsService,
-        TaskScheduler scheduler)
+        TaskScheduler scheduler,
+        string? monitorDeviceId = null)
     {
         _topLevelCommandManager = tlcManager;
         _contextMenuFactory = contextMenuFactory;
         _settingsService = settingsService;
+        _monitorDeviceId = monitorDeviceId;
 
         _settingsModel = _settingsService.CurrentSettings;
         _settings = _settingsModel.DockSettings;
+
+        RefreshMonitorConfig();
 
         _settingsService.SettingsChanged += SettingsService_SettingsChanged;
 
@@ -60,6 +65,99 @@ public sealed partial class DockViewModel : IDisposable
     {
         _settingsModel = sender;
         _settings = sender.DockSettings;
+        RefreshMonitorConfig();
+    }
+
+    /// <summary>
+    /// Looks up the <see cref="DockMonitorConfig"/> for this VM's monitor from
+    /// the current settings. Called on construction and whenever settings change
+    /// so the reference stays fresh.
+    /// </summary>
+    private void RefreshMonitorConfig()
+    {
+        if (_monitorDeviceId is null)
+        {
+            _monitorConfig = null;
+            return;
+        }
+
+        _monitorConfig = null;
+        foreach (var config in _settings.MonitorConfigs)
+        {
+            if (string.Equals(config.MonitorDeviceId, _monitorDeviceId, StringComparison.OrdinalIgnoreCase))
+            {
+                _monitorConfig = config;
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Returns the band lists this VM should read from and write to.
+    /// When a per-monitor config is active and customized, returns the
+    /// monitor's own lists; otherwise the global dock settings lists.
+    /// </summary>
+    private (List<DockBandSettings> Start, List<DockBandSettings> Center, List<DockBandSettings> End) GetActiveBandLists()
+    {
+        if (_monitorConfig is not null && _monitorConfig.IsCustomized
+            && _monitorConfig.StartBands is not null
+            && _monitorConfig.CenterBands is not null
+            && _monitorConfig.EndBands is not null)
+        {
+            return (_monitorConfig.StartBands, _monitorConfig.CenterBands, _monitorConfig.EndBands);
+        }
+
+        return (_settings.StartBands, _settings.CenterBands, _settings.EndBands);
+    }
+
+    /// <summary>
+    /// If this VM targets a specific monitor that hasn't been customized yet,
+    /// forks the global bands into per-monitor lists so subsequent mutations
+    /// only affect this monitor.
+    /// </summary>
+    private void EnsureMonitorForked()
+    {
+        if (_monitorConfig is not null && !_monitorConfig.IsCustomized)
+        {
+            _monitorConfig.ForkFromGlobal(_settings);
+        }
+    }
+
+    /// <summary>
+    /// Finds a <see cref="DockBandSettings"/> by command ID across the three
+    /// supplied lists without LINQ.
+    /// </summary>
+    private static DockBandSettings? FindBandSettingsById(
+        string bandId,
+        List<DockBandSettings> start,
+        List<DockBandSettings> center,
+        List<DockBandSettings> end)
+    {
+        foreach (var b in start)
+        {
+            if (b.CommandId == bandId)
+            {
+                return b;
+            }
+        }
+
+        foreach (var b in center)
+        {
+            if (b.CommandId == bandId)
+            {
+                return b;
+            }
+        }
+
+        foreach (var b in end)
+        {
+            if (b.CommandId == bandId)
+            {
+                return b;
+            }
+        }
+
+        return null;
     }
 
     private void DockBands_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -79,9 +177,10 @@ public sealed partial class DockViewModel : IDisposable
     private void SetupBands()
     {
         Logger.LogDebug($"Setting up dock bands");
-        SetupBands(_settings.StartBands, StartItems);
-        SetupBands(_settings.CenterBands, CenterItems);
-        SetupBands(_settings.EndBands, EndItems);
+        var (startBands, centerBands, endBands) = GetActiveBandLists();
+        SetupBands(startBands, StartItems);
+        SetupBands(centerBands, CenterItems);
+        SetupBands(endBands, EndItems);
     }
 
     private void SetupBands(
@@ -206,11 +305,10 @@ public sealed partial class DockViewModel : IDisposable
     public void SyncBandPosition(DockBandViewModel band, DockPinSide targetSide, int targetIndex)
     {
         var bandId = band.Id;
-        var dockSettings = _settingsModel.DockSettings;
+        EnsureMonitorForked();
+        var (startBands, centerBands, endBands) = GetActiveBandLists();
 
-        var bandSettings = dockSettings.StartBands.FirstOrDefault(b => b.CommandId == bandId)
-                        ?? dockSettings.CenterBands.FirstOrDefault(b => b.CommandId == bandId)
-                        ?? dockSettings.EndBands.FirstOrDefault(b => b.CommandId == bandId);
+        var bandSettings = FindBandSettingsById(bandId, startBands, centerBands, endBands);
 
         if (bandSettings == null)
         {
@@ -218,17 +316,17 @@ public sealed partial class DockViewModel : IDisposable
         }
 
         // Remove from all settings lists
-        dockSettings.StartBands.RemoveAll(b => b.CommandId == bandId);
-        dockSettings.CenterBands.RemoveAll(b => b.CommandId == bandId);
-        dockSettings.EndBands.RemoveAll(b => b.CommandId == bandId);
+        startBands.RemoveAll(b => b.CommandId == bandId);
+        centerBands.RemoveAll(b => b.CommandId == bandId);
+        endBands.RemoveAll(b => b.CommandId == bandId);
 
         // Add to target settings list at the correct index
         var targetSettings = targetSide switch
         {
-            DockPinSide.Start => dockSettings.StartBands,
-            DockPinSide.Center => dockSettings.CenterBands,
-            DockPinSide.End => dockSettings.EndBands,
-            _ => dockSettings.StartBands,
+            DockPinSide.Start => startBands,
+            DockPinSide.Center => centerBands,
+            DockPinSide.End => endBands,
+            _ => startBands,
         };
         var insertIndex = Math.Min(targetIndex, targetSettings.Count);
         targetSettings.Insert(insertIndex, bandSettings);
@@ -241,11 +339,10 @@ public sealed partial class DockViewModel : IDisposable
     public void MoveBandWithoutSaving(DockBandViewModel band, DockPinSide targetSide, int targetIndex)
     {
         var bandId = band.Id;
-        var dockSettings = _settingsModel.DockSettings;
+        EnsureMonitorForked();
+        var (startBands, centerBands, endBands) = GetActiveBandLists();
 
-        var bandSettings = dockSettings.StartBands.FirstOrDefault(b => b.CommandId == bandId)
-                        ?? dockSettings.CenterBands.FirstOrDefault(b => b.CommandId == bandId)
-                        ?? dockSettings.EndBands.FirstOrDefault(b => b.CommandId == bandId);
+        var bandSettings = FindBandSettingsById(bandId, startBands, centerBands, endBands);
 
         if (bandSettings == null)
         {
@@ -254,9 +351,9 @@ public sealed partial class DockViewModel : IDisposable
         }
 
         // Remove from all sides (settings and UI)
-        dockSettings.StartBands.RemoveAll(b => b.CommandId == bandId);
-        dockSettings.CenterBands.RemoveAll(b => b.CommandId == bandId);
-        dockSettings.EndBands.RemoveAll(b => b.CommandId == bandId);
+        startBands.RemoveAll(b => b.CommandId == bandId);
+        centerBands.RemoveAll(b => b.CommandId == bandId);
+        endBands.RemoveAll(b => b.CommandId == bandId);
         StartItems.Remove(band);
         CenterItems.Remove(band);
         EndItems.Remove(band);
@@ -266,8 +363,8 @@ public sealed partial class DockViewModel : IDisposable
         {
             case DockPinSide.Start:
                 {
-                    var settingsIndex = Math.Min(targetIndex, dockSettings.StartBands.Count);
-                    dockSettings.StartBands.Insert(settingsIndex, bandSettings);
+                    var settingsIndex = Math.Min(targetIndex, startBands.Count);
+                    startBands.Insert(settingsIndex, bandSettings);
 
                     var uiIndex = Math.Min(targetIndex, StartItems.Count);
                     StartItems.Insert(uiIndex, band);
@@ -276,8 +373,8 @@ public sealed partial class DockViewModel : IDisposable
 
             case DockPinSide.Center:
                 {
-                    var settingsIndex = Math.Min(targetIndex, dockSettings.CenterBands.Count);
-                    dockSettings.CenterBands.Insert(settingsIndex, bandSettings);
+                    var settingsIndex = Math.Min(targetIndex, centerBands.Count);
+                    centerBands.Insert(settingsIndex, bandSettings);
 
                     var uiIndex = Math.Min(targetIndex, CenterItems.Count);
                     CenterItems.Insert(uiIndex, band);
@@ -286,8 +383,8 @@ public sealed partial class DockViewModel : IDisposable
 
             case DockPinSide.End:
                 {
-                    var settingsIndex = Math.Min(targetIndex, dockSettings.EndBands.Count);
-                    dockSettings.EndBands.Insert(settingsIndex, bandSettings);
+                    var settingsIndex = Math.Min(targetIndex, endBands.Count);
+                    endBands.Insert(settingsIndex, bandSettings);
 
                     var uiIndex = Math.Min(targetIndex, EndItems.Count);
                     EndItems.Insert(uiIndex, band);
@@ -305,7 +402,17 @@ public sealed partial class DockViewModel : IDisposable
     public void SaveBandOrder()
     {
         // Save ShowLabels for all bands
-        foreach (var band in StartItems.Concat(CenterItems).Concat(EndItems))
+        foreach (var band in StartItems)
+        {
+            band.SaveShowLabels();
+        }
+
+        foreach (var band in CenterItems)
+        {
+            band.SaveShowLabels();
+        }
+
+        foreach (var band in EndItems)
         {
             band.SaveShowLabels();
         }
@@ -329,15 +436,40 @@ public sealed partial class DockViewModel : IDisposable
     /// </summary>
     public void SnapshotBandOrder()
     {
-        var dockSettings = _settingsModel.DockSettings;
-        _snapshotStartBands = dockSettings.StartBands.Select(b => b.Clone()).ToList();
-        _snapshotCenterBands = dockSettings.CenterBands.Select(b => b.Clone()).ToList();
-        _snapshotEndBands = dockSettings.EndBands.Select(b => b.Clone()).ToList();
+        var (startBands, centerBands, endBands) = GetActiveBandLists();
+
+        _snapshotStartBands = new List<DockBandSettings>(startBands.Count);
+        foreach (var b in startBands)
+        {
+            _snapshotStartBands.Add(b.Clone());
+        }
+
+        _snapshotCenterBands = new List<DockBandSettings>(centerBands.Count);
+        foreach (var b in centerBands)
+        {
+            _snapshotCenterBands.Add(b.Clone());
+        }
+
+        _snapshotEndBands = new List<DockBandSettings>(endBands.Count);
+        foreach (var b in endBands)
+        {
+            _snapshotEndBands.Add(b.Clone());
+        }
 
         // Snapshot band ViewModels so we can restore unpinned bands
         // Use a dictionary but handle potential duplicates gracefully
         _snapshotBandViewModels = new Dictionary<string, DockBandViewModel>();
-        foreach (var band in StartItems.Concat(CenterItems).Concat(EndItems))
+        foreach (var band in StartItems)
+        {
+            _snapshotBandViewModels.TryAdd(band.Id, band);
+        }
+
+        foreach (var band in CenterItems)
+        {
+            _snapshotBandViewModels.TryAdd(band.Id, band);
+        }
+
+        foreach (var band in EndItems)
         {
             _snapshotBandViewModels.TryAdd(band.Id, band);
         }
@@ -371,29 +503,29 @@ public sealed partial class DockViewModel : IDisposable
             band.RestoreShowLabels();
         }
 
-        var dockSettings = _settingsModel.DockSettings;
+        var (startBands, centerBands, endBands) = GetActiveBandLists();
 
         // Restore settings from snapshot
-        dockSettings.StartBands.Clear();
-        dockSettings.CenterBands.Clear();
-        dockSettings.EndBands.Clear();
+        startBands.Clear();
+        centerBands.Clear();
+        endBands.Clear();
 
         foreach (var bandSnapshot in _snapshotStartBands)
         {
             var bandSettings = bandSnapshot.Clone();
-            dockSettings.StartBands.Add(bandSettings);
+            startBands.Add(bandSettings);
         }
 
         foreach (var bandSnapshot in _snapshotCenterBands)
         {
             var bandSettings = bandSnapshot.Clone();
-            dockSettings.CenterBands.Add(bandSettings);
+            centerBands.Add(bandSettings);
         }
 
         foreach (var bandSnapshot in _snapshotEndBands)
         {
             var bandSettings = bandSnapshot.Clone();
-            dockSettings.EndBands.Add(bandSettings);
+            endBands.Add(bandSettings);
         }
 
         // Rebuild UI collections from restored settings using the snapshotted ViewModels
@@ -413,13 +545,13 @@ public sealed partial class DockViewModel : IDisposable
             return;
         }
 
-        var dockSettings = _settingsModel.DockSettings;
+        var (startBands, centerBands, endBands) = GetActiveBandLists();
 
         StartItems.Clear();
         CenterItems.Clear();
         EndItems.Clear();
 
-        foreach (var bandSettings in dockSettings.StartBands)
+        foreach (var bandSettings in startBands)
         {
             if (_snapshotBandViewModels.TryGetValue(bandSettings.CommandId, out var bandVM))
             {
@@ -427,7 +559,7 @@ public sealed partial class DockViewModel : IDisposable
             }
         }
 
-        foreach (var bandSettings in dockSettings.CenterBands)
+        foreach (var bandSettings in centerBands)
         {
             if (_snapshotBandViewModels.TryGetValue(bandSettings.CommandId, out var bandVM))
             {
@@ -435,7 +567,7 @@ public sealed partial class DockViewModel : IDisposable
             }
         }
 
-        foreach (var bandSettings in dockSettings.EndBands)
+        foreach (var bandSettings in endBands)
         {
             if (_snapshotBandViewModels.TryGetValue(bandSettings.CommandId, out var bandVM))
             {
@@ -446,16 +578,30 @@ public sealed partial class DockViewModel : IDisposable
 
     private void RebuildUICollections()
     {
-        var dockSettings = _settingsModel.DockSettings;
+        var (startBands, centerBands, endBands) = GetActiveBandLists();
 
         // Create a lookup of all current band ViewModels
-        var allBands = StartItems.Concat(CenterItems).Concat(EndItems).ToDictionary(b => b.Id);
+        var allBands = new Dictionary<string, DockBandViewModel>();
+        foreach (var band in StartItems)
+        {
+            allBands.TryAdd(band.Id, band);
+        }
+
+        foreach (var band in CenterItems)
+        {
+            allBands.TryAdd(band.Id, band);
+        }
+
+        foreach (var band in EndItems)
+        {
+            allBands.TryAdd(band.Id, band);
+        }
 
         StartItems.Clear();
         CenterItems.Clear();
         EndItems.Clear();
 
-        foreach (var bandSettings in dockSettings.StartBands)
+        foreach (var bandSettings in startBands)
         {
             if (allBands.TryGetValue(bandSettings.CommandId, out var bandVM))
             {
@@ -463,7 +609,7 @@ public sealed partial class DockViewModel : IDisposable
             }
         }
 
-        foreach (var bandSettings in dockSettings.CenterBands)
+        foreach (var bandSettings in centerBands)
         {
             if (allBands.TryGetValue(bandSettings.CommandId, out var bandVM))
             {
@@ -471,7 +617,7 @@ public sealed partial class DockViewModel : IDisposable
             }
         }
 
-        foreach (var bandSettings in dockSettings.EndBands)
+        foreach (var bandSettings in endBands)
         {
             if (allBands.TryGetValue(bandSettings.CommandId, out var bandVM))
             {
@@ -483,7 +629,7 @@ public sealed partial class DockViewModel : IDisposable
     /// <summary>
     /// Gets the list of dock bands that are not currently pinned to any section.
     /// </summary>
-    public IEnumerable<TopLevelViewModel> GetAvailableBandsToAdd()
+    public List<TopLevelViewModel> GetAvailableBandsToAdd()
     {
         // Get IDs of all bands currently in the dock
         var pinnedBandIds = new HashSet<string>();
@@ -503,7 +649,16 @@ public sealed partial class DockViewModel : IDisposable
         }
 
         // Return all dock bands that are not already pinned
-        return AllItems.Where(tlc => !pinnedBandIds.Contains(tlc.Id));
+        var result = new List<TopLevelViewModel>();
+        foreach (var tlc in AllItems)
+        {
+            if (!pinnedBandIds.Contains(tlc.Id))
+            {
+                result.Add(tlc);
+            }
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -521,9 +676,11 @@ public sealed partial class DockViewModel : IDisposable
             return;
         }
 
+        EnsureMonitorForked();
+        var (startBands, centerBands, endBands) = GetActiveBandLists();
+
         // Create settings for the new band
         var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId, ShowLabels = null };
-        var dockSettings = _settingsModel.DockSettings;
 
         // Create the band view model
         var bandVm = CreateBandItem(bandSettings, topLevel.ItemViewModel);
@@ -532,15 +689,15 @@ public sealed partial class DockViewModel : IDisposable
         switch (targetSide)
         {
             case DockPinSide.Start:
-                dockSettings.StartBands.Add(bandSettings);
+                startBands.Add(bandSettings);
                 StartItems.Add(bandVm);
                 break;
             case DockPinSide.Center:
-                dockSettings.CenterBands.Add(bandSettings);
+                centerBands.Add(bandSettings);
                 CenterItems.Add(bandVm);
                 break;
             case DockPinSide.End:
-                dockSettings.EndBands.Add(bandSettings);
+                endBands.Add(bandSettings);
                 EndItems.Add(bandVm);
                 break;
         }
@@ -563,12 +720,13 @@ public sealed partial class DockViewModel : IDisposable
     public void UnpinBand(DockBandViewModel band)
     {
         var bandId = band.Id;
-        var dockSettings = _settingsModel.DockSettings;
+        EnsureMonitorForked();
+        var (startBands, centerBands, endBands) = GetActiveBandLists();
 
         // Remove from settings
-        dockSettings.StartBands.RemoveAll(b => b.CommandId == bandId);
-        dockSettings.CenterBands.RemoveAll(b => b.CommandId == bandId);
-        dockSettings.EndBands.RemoveAll(b => b.CommandId == bandId);
+        startBands.RemoveAll(b => b.CommandId == bandId);
+        centerBands.RemoveAll(b => b.CommandId == bandId);
+        endBands.RemoveAll(b => b.CommandId == bandId);
 
         // Remove from UI collections
         StartItems.Remove(band);
@@ -632,12 +790,26 @@ public sealed partial class DockViewModel : IDisposable
         var isDockEnabled = _settingsModel.EnableDock;
         var dockSide = isDockEnabled ? _settings.Side.ToString().ToLowerInvariant() : "none";
 
-        static string FormatBands(List<DockBandSettings> bands) =>
-            string.Join("\n", bands.Select(b => $"{b.ProviderId}/{b.CommandId}"));
+        static string FormatBands(List<DockBandSettings> bands)
+        {
+            if (bands.Count == 0)
+            {
+                return string.Empty;
+            }
 
-        var startBands = isDockEnabled ? FormatBands(_settings.StartBands) : string.Empty;
-        var centerBands = isDockEnabled ? FormatBands(_settings.CenterBands) : string.Empty;
-        var endBands = isDockEnabled ? FormatBands(_settings.EndBands) : string.Empty;
+            var parts = new string[bands.Count];
+            for (var i = 0; i < bands.Count; i++)
+            {
+                parts[i] = $"{bands[i].ProviderId}/{bands[i].CommandId}";
+            }
+
+            return string.Join("\n", parts);
+        }
+
+        var (activeBandStart, activeBandCenter, activeBandEnd) = GetActiveBandLists();
+        var startBands = isDockEnabled ? FormatBands(activeBandStart) : string.Empty;
+        var centerBands = isDockEnabled ? FormatBands(activeBandCenter) : string.Empty;
+        var endBands = isDockEnabled ? FormatBands(activeBandEnd) : string.Empty;
 
         WeakReferenceMessenger.Default.Send(new TelemetryDockConfigurationMessage(
             isDockEnabled, dockSide, startBands, centerBands, endBands));

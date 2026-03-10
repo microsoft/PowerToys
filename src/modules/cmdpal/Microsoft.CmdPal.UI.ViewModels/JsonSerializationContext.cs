@@ -17,6 +17,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 [JsonSerializable(typeof(RecentCommandsManager))]
 [JsonSerializable(typeof(Settings.DockMonitorConfig))]
 [JsonSerializable(typeof(List<Settings.DockMonitorConfig>), TypeInfoPropertyName = "DockMonitorConfigList")]
+[JsonSerializable(typeof(Settings.DockBandSettings))]
+[JsonSerializable(typeof(List<Settings.DockBandSettings>), TypeInfoPropertyName = "DockBandSettingsList")]
 [JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
 [JsonSerializable(typeof(List<HistoryItem>), TypeInfoPropertyName = "HistoryList")]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]

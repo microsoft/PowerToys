@@ -27,6 +27,18 @@ public sealed partial class DockSettingsPage : Page
 
     public List<DockMonitorConfigViewModel> MonitorConfigItems => ViewModel.MonitorConfigItems;
 
+    /// <summary>
+    /// Called from XAML when a monitor's "Customize bands" toggle changes.
+    /// When turning on, populates the monitor's band items from known bands.
+    /// </summary>
+    internal void OnMonitorCustomizeToggled(DockMonitorConfigViewModel monitorVm)
+    {
+        if (monitorVm.IsCustomized && monitorVm.BandItems.Count == 0)
+        {
+            monitorVm.PopulateBandItems(ViewModel.GetAvailableBands());
+        }
+    }
+
     public DockSettingsPage()
     {
         this.InitializeComponent();
@@ -200,23 +212,29 @@ public sealed partial class DockSettingsPage : Page
         // var allBands = GetAllBands();
         var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var settingsService = App.Current.Services.GetService<SettingsService>()!;
-        var dockViewModel = App.Current.Services.GetService<DockViewModel>()!;
         var allBands = tlcManager.GetDockBandsSnapshot();
         foreach (var band in allBands)
         {
             var setting = band.DockBandSettings;
             if (setting is not null)
             {
-                var bandVm = dockViewModel.FindBandByTopLevel(band);
                 allSettings.Add(new(
                     dockSettingsModel: setting,
                     topLevelAdapter: band,
-                    bandViewModel: bandVm,
+                    bandViewModel: null,
                     settingsService: settingsService
                 ));
             }
         }
 
         return allSettings;
+    }
+
+    private void MonitorCustomizeBands_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (sender is ToggleSwitch toggle && toggle.DataContext is DockMonitorConfigViewModel monitorVm)
+        {
+            OnMonitorCustomizeToggled(monitorVm);
+        }
     }
 }

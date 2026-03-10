@@ -161,7 +161,7 @@ public class DockBandSettings
 
 /// <summary>
 /// Per-monitor dock configuration. Allows the user to enable the dock on
-/// specific monitors with an optional side override.
+/// specific monitors with an optional side override and per-monitor band pinning.
 /// </summary>
 public class DockMonitorConfig
 {
@@ -191,10 +191,83 @@ public class DockMonitorConfig
     public bool IsPrimary { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether this monitor has custom band
+    /// pinning. When false, the monitor inherits bands from the global
+    /// <see cref="DockSettings"/>. When true, <see cref="StartBands"/>,
+    /// <see cref="CenterBands"/>, and <see cref="EndBands"/> are used.
+    /// </summary>
+    public bool IsCustomized { get; set; }
+
+    /// <summary>
+    /// Gets or sets per-monitor start bands. Only used when <see cref="IsCustomized"/>
+    /// is true. Null means inherit from global dock settings.
+    /// </summary>
+    public List<DockBandSettings>? StartBands { get; set; }
+
+    /// <summary>
+    /// Gets or sets per-monitor center bands. Only used when <see cref="IsCustomized"/>
+    /// is true. Null means inherit from global dock settings.
+    /// </summary>
+    public List<DockBandSettings>? CenterBands { get; set; }
+
+    /// <summary>
+    /// Gets or sets per-monitor end bands. Only used when <see cref="IsCustomized"/>
+    /// is true. Null means inherit from global dock settings.
+    /// </summary>
+    public List<DockBandSettings>? EndBands { get; set; }
+
+    /// <summary>
     /// Resolves the effective dock side for this monitor, falling back to the
     /// dock-wide default when no per-monitor override is set.
     /// </summary>
     public DockSide ResolveSide(DockSide defaultSide) => Side ?? defaultSide;
+
+    /// <summary>
+    /// Resolves the effective start bands for this monitor. Returns per-monitor
+    /// bands when customized, otherwise the global bands.
+    /// </summary>
+    public List<DockBandSettings> ResolveStartBands(List<DockBandSettings> globalBands)
+        => IsCustomized && StartBands is not null ? StartBands : globalBands;
+
+    /// <summary>
+    /// Resolves the effective center bands for this monitor.
+    /// </summary>
+    public List<DockBandSettings> ResolveCenterBands(List<DockBandSettings> globalBands)
+        => IsCustomized && CenterBands is not null ? CenterBands : globalBands;
+
+    /// <summary>
+    /// Resolves the effective end bands for this monitor.
+    /// </summary>
+    public List<DockBandSettings> ResolveEndBands(List<DockBandSettings> globalBands)
+        => IsCustomized && EndBands is not null ? EndBands : globalBands;
+
+    /// <summary>
+    /// Forks this monitor's band configuration from the global settings.
+    /// Copies the global bands into per-monitor lists and sets
+    /// <see cref="IsCustomized"/> to true.
+    /// </summary>
+    public void ForkFromGlobal(DockSettings globalSettings)
+    {
+        StartBands = new List<DockBandSettings>();
+        foreach (var b in globalSettings.StartBands)
+        {
+            StartBands.Add(b.Clone());
+        }
+
+        CenterBands = new List<DockBandSettings>();
+        foreach (var b in globalSettings.CenterBands)
+        {
+            CenterBands.Add(b.Clone());
+        }
+
+        EndBands = new List<DockBandSettings>();
+        foreach (var b in globalSettings.EndBands)
+        {
+            EndBands.Add(b.Clone());
+        }
+
+        IsCustomized = true;
+    }
 }
 
 public enum DockSide

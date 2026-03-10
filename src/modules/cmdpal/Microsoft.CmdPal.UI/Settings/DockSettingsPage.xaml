@@ -89,6 +89,8 @@
                                                     <Grid.RowDefinitions>
                                                         <RowDefinition Height="Auto" />
                                                         <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
                                                     </Grid.RowDefinitions>
 
                                                     <StackPanel Grid.Row="0" Grid.Column="0" Spacing="2">
@@ -118,6 +120,57 @@
                                                         <ComboBoxItem x:Uid="DockSettings_MonitorPosition_Right" />
                                                         <ComboBoxItem x:Uid="DockSettings_MonitorPosition_Bottom" />
                                                     </ComboBox>
+
+                                                    <!--  Customize bands toggle  -->
+                                                    <ToggleSwitch
+                                                        x:Uid="DockSettings_MonitorCustomizeBands"
+                                                        Grid.Row="2"
+                                                        Grid.Column="0"
+                                                        Grid.ColumnSpan="2"
+                                                        IsOn="{x:Bind IsCustomized, Mode=TwoWay}"
+                                                        Toggled="MonitorCustomizeBands_Toggled"
+                                                        Visibility="{x:Bind IsEnabled, Mode=OneWay}" />
+
+                                                    <!--  Per-monitor band list (visible when customized)  -->
+                                                    <ItemsRepeater
+                                                        Grid.Row="3"
+                                                        Grid.Column="0"
+                                                        Grid.ColumnSpan="2"
+                                                        ItemsSource="{x:Bind BandItems}"
+                                                        Visibility="{x:Bind IsCustomized, Mode=OneWay}">
+                                                        <ItemsRepeater.Layout>
+                                                            <StackLayout Spacing="4" />
+                                                        </ItemsRepeater.Layout>
+                                                        <ItemsRepeater.ItemTemplate>
+                                                            <DataTemplate x:DataType="dockVm:MonitorBandSettingsViewModel">
+                                                                <Grid Padding="8,4" ColumnSpacing="8">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*" />
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock
+                                                                        Grid.Column="0"
+                                                                        VerticalAlignment="Center"
+                                                                        Style="{ThemeResource BodyTextBlockStyle}"
+                                                                        Text="{x:Bind Name, Mode=OneWay}" />
+                                                                    <ComboBox
+                                                                        Grid.Column="1"
+                                                                        MinWidth="100"
+                                                                        VerticalAlignment="Center"
+                                                                        SelectedIndex="{x:Bind PinSideIndex, Mode=TwoWay}"
+                                                                        Visibility="{x:Bind IsPinned, Mode=OneWay}">
+                                                                        <ComboBoxItem x:Uid="DockSettings_MonitorBand_Start" />
+                                                                        <ComboBoxItem x:Uid="DockSettings_MonitorBand_Center" />
+                                                                        <ComboBoxItem x:Uid="DockSettings_MonitorBand_End" />
+                                                                    </ComboBox>
+                                                                    <ToggleSwitch
+                                                                        Grid.Column="2"
+                                                                        IsOn="{x:Bind IsPinned, Mode=TwoWay}" />
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsRepeater.ItemTemplate>
+                                                    </ItemsRepeater>
                                                 </Grid>
                                             </DataTemplate>
                                         </ItemsRepeater.ItemTemplate>

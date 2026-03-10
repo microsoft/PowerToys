@@ -95,8 +95,8 @@ public sealed partial class DockWindow : WindowEx,
     /// <summary>
     /// Creates a dock window for a specific monitor with an optional side override.
     /// </summary>
-    public DockWindow(MonitorInfo targetMonitor, DockSide? sideOverride = null)
-        : this()
+    public DockWindow(MonitorInfo targetMonitor, DockSide? sideOverride, DockViewModel dockViewModel)
+        : this(dockViewModel)
     {
         _targetMonitor = targetMonitor;
         _sideOverride = sideOverride;
@@ -112,7 +112,7 @@ public sealed partial class DockWindow : WindowEx,
         CreateAppBar(_hwnd);
     }
 
-    public DockWindow()
+    private DockWindow(DockViewModel dockViewModel)
     {
         var serviceProvider = App.Current.Services;
         _settingsService = serviceProvider.GetService<SettingsService>()!;
@@ -123,7 +123,7 @@ public sealed partial class DockWindow : WindowEx,
         _settings = mainSettings.DockSettings;
         _lastSize = _settings.DockSize;
 
-        viewModel = serviceProvider.GetService<DockViewModel>()!;
+        viewModel = dockViewModel;
         _themeService = serviceProvider.GetRequiredService<IThemeService>();
         _themeService.ThemeChanged += ThemeService_ThemeChanged;
         _windowViewModel = new DockWindowViewModel(_themeService);

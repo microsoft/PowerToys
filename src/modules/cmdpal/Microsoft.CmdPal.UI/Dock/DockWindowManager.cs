@@ -5,6 +5,7 @@
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,7 @@ public sealed partial class DockWindowManager : IDisposable
     private readonly SettingsService _settingsService;
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly Dictionary<string, DockWindow> _dockWindows = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, DockViewModel> _dockViewModels = new(StringComparer.OrdinalIgnoreCase);
     private bool _disposed;
 
     public DockWindowManager(
@@ -86,6 +88,13 @@ public sealed partial class DockWindowManager : IDisposable
         }
 
         _dockWindows.Clear();
+
+        foreach (var (_, vm) in _dockViewModels)
+        {
+            vm.Dispose();
+        }
+
+        _dockViewModels.Clear();
     }
 
     /// <summary>
@@ -150,16 +159,34 @@ public sealed partial class DockWindowManager : IDisposable
             {
                 window.Close();
             }
+
+            if (_dockViewModels.Remove(id, out var vm))
+            {
+                vm.Dispose();
+            }
         }
     }
 
     private void CreateDockForMonitor(MonitorInfo monitor, DockMonitorConfig config, DockSettings dockSettings)
     {
+        var viewModel = CreateDockViewModel(config.MonitorDeviceId);
+        _dockViewModels[config.MonitorDeviceId] = viewModel;
+
         // Pass the per-monitor override (nullable) so EffectiveSide follows
         // the global setting dynamically when no override is configured.
-        var window = new DockWindow(monitor, config.Side);
+        var window = new DockWindow(monitor, config.Side, viewModel);
         _dockWindows[config.MonitorDeviceId] = window;
         window.Show();
+    }
+
+    private DockViewModel CreateDockViewModel(string monitorDeviceId)
+    {
+        var serviceProvider = App.Current.Services;
+        var tlcManager = serviceProvider.GetRequiredService<TopLevelCommandManager>();
+        var contextMenuFactory = serviceProvider.GetRequiredService<IContextMenuFactory>();
+        var scheduler = serviceProvider.GetRequiredService<TaskScheduler>();
+
+        return new DockViewModel(tlcManager, contextMenuFactory, _settingsService, scheduler, monitorDeviceId);
     }
 
     private void OnMonitorsChanged()
@@ -227,5 +254,12 @@ public sealed partial class DockWindowManager : IDisposable
         }
 
         _dockWindows.Clear();
+
+        foreach (var (_, vm) in _dockViewModels)
+        {
+            vm.Dispose();
+        }
+
+        _dockViewModels.Clear();
     }
 }
