@@ -343,12 +343,6 @@
                             helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
                             AutomationProperties.AutomationId="PowerPreviewNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}" />
-                        <NavigationViewItem
-                            x:Name="CopyAsUNCNavigationItem"
-                            x:Uid="Shell_CopyAsUNC"
-                            helpers:NavHelper.NavigateTo="views:CopyAsUNCPage"
-                            AutomationProperties.AutomationId="CopyAsUNCNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CopyAsUNC.png}" />
                         <!--  File Explorer Thumbnails  -->
                         <NavigationViewItem
                             x:Name="FileLocksmithNavigationItem"

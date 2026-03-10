@@ -422,7 +422,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "ColorPicker": return typeof(ColorPickerPage);
                 case "LightSwitch": return typeof(LightSwitchPage);
                 case "FancyZones": return typeof(FancyZonesPage);
-                case "CopyAsUNC": return typeof(CopyAsUNCPage);
                 case "FileLocksmith": return typeof(FileLocksmithPage);
                 case "Run": return typeof(PowerLauncherPage);
                 case "ImageResizer": return typeof(ImageResizerPage);
