@@ -5880,9 +5880,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         }
 
         // Reject blank/transition frames where virtually all pixels are
-        // identical (constFrac > 0.95).  These frames carry no scroll
-        // information and will produce wrong matcher results if accepted.
-        if( frameConstantFraction[i] > 0.95 )
+        // identical.  These frames carry no scroll information and will
+        // produce wrong matcher results if accepted.  Real blank frames
+        // have constFrac = 1.000; selftest synthetic frames can reach
+        // ~0.996, so use 0.999 to avoid false rejections.
+        if( frameConstantFraction[i] > 0.999 )
         {
             StitchLog( L"[Panorama/Stitch] Frame %zu rejected: blank frame constFrac=%.3f\n",
                          i, frameConstantFraction[i] );
@@ -5896,6 +5898,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
         bool momentumCollapseApplied = false;
         int momentumCollapseDetectedDx = 0;
         int momentumCollapseDetectedDy = 0;
+        bool anchorVerifiedShift = false;
         const int veryLowEntropy = ( frameConstantFraction[composedFrameIndices.back()] > 0.58 && frameConstantFraction[i] > 0.58 ) ? 1 : 0;
         bool nearStationaryOverride = false;
         bool foundShift = FindBestFrameShift( framePixels[composedFrameIndices.back()], framePixels[i], frameWidth, frameHeight, expectedDx, expectedDy, dx, dy, lowContrastMode, frameLuma[composedFrameIndices.back()], frameLuma[i], veryLowEntropy, &nearStationaryOverride );
@@ -6920,6 +6923,15 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                                  bestAnchorY, bestAnchorVar,
                                  anchorConfident ? 1 : 0, anchorDiffers ? 1 : 0, anchorSmaller ? 1 : 0,
                                  matcherWorse ? 1 : 0, useCurAsSrc ? 1 : 0 );
+
+                    // When the anchor independently confirms the matcher's
+                    // result with high confidence, mark the shift as verified
+                    // so momentum-collapse does not override it.  This prevents
+                    // a feedback loop where a previous harmonic error sets a
+                    // bad expected step, and the normalizer "corrects" the
+                    // current (correct) small step back to the wrong value.
+                    if( anchorConfident && !anchorDiffers )
+                        anchorVerifiedShift = true;
                 }
             }
         }
@@ -7073,7 +7085,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 expectedAxisTrustedForNormalization &&
                 abs( expectedAxisSigned ) >= axisFrame / 8 &&
                 abs( candidateAxisSigned ) <= max( 16, abs( expectedAxisSigned ) / 5 ) &&
-                consecutiveMomentumCollapseCount < 2 )
+                consecutiveMomentumCollapseCount < 2 &&
+                !anchorVerifiedShift )
             {
                 // Save the pre-normalization detected shift.  After
                 // composing this frame at the expected step, propagate
