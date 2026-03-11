@@ -5679,6 +5679,16 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     // Recording completed (closed via hotkey or item close). Proceed to save/trim workflow.
     OutputDebugStringW(L"[Recording] StartAsync completed, entering save workflow\n");
 
+    // Release the writer stream and session objects before trim/save. Keeping the temp file
+    // open here can cause trimming and later MoveAndReplaceAsync calls to fail on the same file.
+    if (stream)
+    {
+        stream.Close();
+        stream = nullptr;
+    }
+    g_RecordingSession = nullptr;
+    g_GifRecordingSession = nullptr;
+
     // Resume on the UI thread for the save dialog
     co_await uiThread;
     OutputDebugStringW(L"[Recording] Resumed on UI thread\n");

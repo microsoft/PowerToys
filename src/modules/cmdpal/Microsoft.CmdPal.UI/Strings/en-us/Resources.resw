@@ -950,9 +950,15 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Unpin</value>
   </data>
   <data name="Dock_AddBand_NoCommandsAvailable.Text" xml:space="preserve">
-    <value>No commands available to pin</value>
+    <value>All available bands are already pinned.</value>
   </data>
-  <data name="Dock_AddBand_StartTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+	<data name="Dock_Pin_Instruction.Text" xml:space="preserve">
+    <value>To pin commands, extensions or apps, use the Pin to Dock command in Command Palette.</value>
+  </data>
+	<data name="Dock_Bands_Header.Text" xml:space="preserve">
+    <value>Bands</value>
+  </data>	
+	<data name="Dock_AddBand_StartTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Add band to start</value>
   </data>
   <data name="Dock_AddBand_CenterTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
@@ -972,5 +978,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="CmdPalDock_LearnMore.Content" xml:space="preserve">
     <value>Learn more about Command Palette Dock</value>
+  </data>
+  <data name="SettingsPage_NewInfoBadge.Text" xml:space="preserve">
+    <value>NEW</value>
+	<comment>Must be all caps</comment>  
   </data>
 </root>
