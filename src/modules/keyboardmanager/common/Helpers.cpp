@@ -428,20 +428,20 @@ namespace Helpers
     {
         while (true)
         {
-            std::wstring text;
-            {
-                std::unique_lock<std::mutex> lock(s_queueMutex);
-                s_queueCV.wait(lock, [] { return !s_clipboardQueue.empty() || s_shutdown.load(); });
-                if (s_shutdown.load())
-                {
-                    break;
-                }
-                text = std::move(s_clipboardQueue.front());
-                s_clipboardQueue.pop();
-            }
-
             try
             {
+                std::wstring text;
+                {
+                    std::unique_lock<std::mutex> lock(s_queueMutex);
+                    s_queueCV.wait(lock, [] { return !s_clipboardQueue.empty() || s_shutdown.load(); });
+                    if (s_shutdown.load())
+                    {
+                        break;
+                    }
+                    text = std::move(s_clipboardQueue.front());
+                    s_clipboardQueue.pop();
+                }
+
                 // Snapshot current clipboard state
                 bool hadOriginalText = false;
                 std::wstring originalClipboardText;
@@ -490,15 +490,9 @@ namespace Helpers
                     }
                 }
             }
-            catch (const std::exception& ex)
-            {
-                OutputDebugStringA("KBM ClipboardWorker exception: ");
-                OutputDebugStringA(ex.what());
-                OutputDebugStringA("\n");
-            }
             catch (...)
             {
-                OutputDebugStringA("KBM ClipboardWorker unknown exception\n");
+                OutputDebugStringA("KBM ClipboardWorker exception caught, continuing\n");
             }
         }
     }
@@ -507,33 +501,41 @@ namespace Helpers
     // Saves the previous clipboard content and restores it asynchronously.
     bool SendTextViaClipboard(const std::wstring& text)
     {
-        // Lazily start the worker on first use.
-        std::call_once(s_workerInitFlag, [] {
-            s_workerThread = std::thread(ClipboardWorkerLoop);
-            std::atexit([] {
-                {
-                    std::lock_guard<std::mutex> lock(s_queueMutex);
-                    s_shutdown.store(true);
-                }
-                s_queueCV.notify_one();
-                if (s_workerThread.joinable())
-                {
-                    s_workerThread.join();
-                }
-            });
-        });
-
-        // Enqueue the text and return immediately so we never block the
-        // low-level keyboard hook (WH_KEYBOARD_LL).  
+        try
         {
-            std::lock_guard<std::mutex> lock(s_queueMutex);
-            if (!s_clipboardQueue.empty())
+            // Lazily start the worker on first use.
+            std::call_once(s_workerInitFlag, [] {
+                s_workerThread = std::thread(ClipboardWorkerLoop);
+                std::atexit([] {
+                    {
+                        std::lock_guard<std::mutex> lock(s_queueMutex);
+                        s_shutdown.store(true);
+                    }
+                    s_queueCV.notify_one();
+                    if (s_workerThread.joinable())
+                    {
+                        s_workerThread.join();
+                    }
+                });
+            });
+
+            // Enqueue the text and return immediately so we never block the
+            // low-level keyboard hook (WH_KEYBOARD_LL).
             {
-                return true;
+                std::lock_guard<std::mutex> lock(s_queueMutex);
+                if (!s_clipboardQueue.empty())
+                {
+                    return true;
+                }
+                s_clipboardQueue.push(text);
             }
-            s_clipboardQueue.push(text);
+            s_queueCV.notify_one();
         }
-        s_queueCV.notify_one();
+        catch (...)
+        {
+            OutputDebugStringA("KBM SendTextViaClipboard exception caught\n");
+            return false;
+        }
 
         return true;
     }
