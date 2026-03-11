@@ -18,6 +18,7 @@ using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -708,10 +709,10 @@ public sealed partial class MainListPage : DynamicListPage,
         RequestRefresh(fullRefresh: false);
     }
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    private void SettingsChangedHandler(SettingsService sender, SettingsChangedEventArgs args)
     {
-        _settings = sender;
-        HotReloadSettings(sender);
+        _settings = args.NewSettingsModel;
+        HotReloadSettings(args.NewSettingsModel);
     }
 
     private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;

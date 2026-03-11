@@ -5,6 +5,7 @@
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -43,45 +44,6 @@ public partial class DockBandSettingsViewModel : ObservableObject, IDisposable
     public string ProviderId => _adapter.CommandProviderId;
 
     public IconInfoViewModel Icon => _adapter.IconViewModel;
-
-    private ShowLabelsOption _showLabels;
-
-    public ShowLabelsOption ShowLabels
-    {
-        get => _showLabels;
-        set
-        {
-            if (value != _showLabels)
-            {
-                _showLabels = value;
-                _dockSettingsModel.ShowLabels = value switch
-                {
-                    ShowLabelsOption.Default => null,
-                    ShowLabelsOption.ShowLabels => true,
-                    ShowLabelsOption.HideLabels => false,
-                    _ => null,
-                };
-                Save();
-            }
-        }
-    }
-
-    private ShowLabelsOption FetchShowLabels()
-    {
-        if (_dockSettingsModel.ShowLabels == null)
-        {
-            return ShowLabelsOption.Default;
-        }
-
-        return _dockSettingsModel.ShowLabels.Value ? ShowLabelsOption.ShowLabels : ShowLabelsOption.HideLabels;
-    }
-
-    // used to map to ComboBox selection
-    public int ShowLabelsIndex
-    {
-        get => (int)ShowLabels;
-        set => ShowLabels = (ShowLabelsOption)value;
-    }
 
     private DockPinSide PinSide
     {
@@ -141,12 +103,11 @@ public partial class DockBandSettingsViewModel : ObservableObject, IDisposable
         _settingsService.SettingsChanged += SettingsService_SettingsChanged;
 
         _pinSide = FetchPinSide();
-        _showLabels = FetchShowLabels();
     }
 
-    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
     {
-        _settingsModel = sender;
+        _settingsModel = args.NewSettingsModel;
     }
 
     private DockPinSide FetchPinSide()

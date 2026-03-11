@@ -437,9 +437,9 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         IsColorizationDetailsExpanded = _settings.ColorizationMode != ColorizationMode.None && IsBackgroundSettingsEnabled;
     }
 
-    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
     {
-        _settings = sender;
+        _settings = args.NewSettingsModel;
         Reapply();
         IsColorizationDetailsExpanded = _settings.ColorizationMode != ColorizationMode.None && IsBackgroundSettingsEnabled;
     }

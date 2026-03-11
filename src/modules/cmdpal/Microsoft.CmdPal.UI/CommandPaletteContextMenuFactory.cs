@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -30,9 +31,9 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         _topLevelCommandManager = topLevelCommandManager;
     }
 
-    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
     {
-        _settingsModel = sender;
+        _settingsModel = args.NewSettingsModel;
     }
 
     /// <summary>

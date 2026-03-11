@@ -321,9 +321,9 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         };
     }
 
-    private void SettingsOnSettingsChanged(SettingsModel sender, object? args)
+    private void SettingsOnSettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
     {
-        _settings = sender;
+        _settings = args.NewSettingsModel;
         RequestReload();
     }
 

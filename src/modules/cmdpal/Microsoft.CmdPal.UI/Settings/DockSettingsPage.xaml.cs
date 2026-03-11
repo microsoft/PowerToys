@@ -117,12 +117,6 @@ public sealed partial class DockSettingsPage : Page
         set => ViewModel.Dock_Backdrop = SelectedIndexToBackdrop(value);
     }
 
-    public bool ShowLabels
-    {
-        get => ViewModel.Dock_ShowLabels;
-        set => ViewModel.Dock_ShowLabels = value;
-    }
-
     // Conversion methods for ComboBox bindings
     private static int DockSizeToSelectedIndex(DockSize size) => size switch
     {

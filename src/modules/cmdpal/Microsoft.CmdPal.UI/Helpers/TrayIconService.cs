@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.UI.Xaml;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -50,9 +51,9 @@ internal sealed partial class TrayIconService : IDisposable
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
     }
 
-    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
     {
-        _settingsModel = sender;
+        _settingsModel = args.NewSettingsModel;
     }
 
     public void SetupTrayIcon(bool? showSystemTrayIcon = null)

@@ -88,7 +88,7 @@ public sealed partial class SearchBar : UserControl,
     {
         _settingsService = App.Current.Services.GetRequiredService<SettingsService>();
         _settings = _settingsService.CurrentSettings;
-        _settingsService.SettingsChanged += (sender, _) => _settings = sender;
+        _settingsService.SettingsChanged += (_, args) => _settings = args.NewSettingsModel;
 
         this.InitializeComponent();
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);

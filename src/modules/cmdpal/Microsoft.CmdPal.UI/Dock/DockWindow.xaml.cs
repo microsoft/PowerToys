@@ -129,9 +129,9 @@ public sealed partial class DockWindow : WindowEx,
         UpdateSettingsOnUiThread();
     }
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    private void SettingsChangedHandler(SettingsService sender, SettingsChangedEventArgs args)
     {
-        _settings = sender.DockSettings;
+        _settings = args.NewSettingsModel.DockSettings;
         DispatcherQueue.TryEnqueue(UpdateSettingsOnUiThread);
     }
 

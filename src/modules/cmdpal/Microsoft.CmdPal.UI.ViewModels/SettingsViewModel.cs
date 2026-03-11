@@ -179,8 +179,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
         get => _settings.DockSettings.Side;
         set
         {
-            var dockSettings = _settings.DockSettings;
-            dockSettings.Side = value;
+            var dockSettings = _settings.DockSettings with { Side = value };
             Save(_settings with { DockSettings = dockSettings });
         }
     }
@@ -190,8 +189,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
         get => _settings.DockSettings.DockSize;
         set
         {
-            var dockSettings = _settings.DockSettings;
-            dockSettings.DockSize = value;
+            var dockSettings = _settings.DockSettings with { DockSize = value };
             Save(_settings with { DockSettings = dockSettings });
         }
     }
@@ -201,8 +199,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
         get => _settings.DockSettings.Backdrop;
         set
         {
-            var dockSettings = _settings.DockSettings;
-            dockSettings.Backdrop = value;
+            var dockSettings = _settings.DockSettings with { Backdrop = value };
             Save(_settings with { DockSettings = dockSettings });
         }
     }
@@ -212,8 +209,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
         get => _settings.DockSettings.ShowLabels;
         set
         {
-            var dockSettings = _settings.DockSettings;
-            dockSettings.ShowLabels = value;
+            var dockSettings = _settings.DockSettings with { ShowLabels = value };
             Save(_settings with { DockSettings = dockSettings });
         }
     }
@@ -295,9 +291,9 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
     {
-        _settings = sender;
+        _settings = args.NewSettingsModel;
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()
