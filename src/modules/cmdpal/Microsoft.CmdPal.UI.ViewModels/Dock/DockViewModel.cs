@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -61,10 +62,10 @@ public sealed partial class DockViewModel : IDisposable
         EmitDockConfiguration();
     }
 
-    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
     {
-        _settingsModel = sender;
-        _settings = sender.DockSettings;
+        _settingsModel = args.NewSettingsModel;
+        _settings = _settingsModel.DockSettings;
         RefreshMonitorConfig();
     }
 
@@ -260,7 +261,7 @@ public sealed partial class DockViewModel : IDisposable
         DockBandSettings bandSettings,
         CommandItemViewModel commandItem)
     {
-        DockBandViewModel band = new(commandItem, commandItem.PageContext, bandSettings, _settings, SaveSettings, _contextMenuFactory);
+        DockBandViewModel band = new(commandItem, commandItem.PageContext, bandSettings, _settings, _contextMenuFactory);
 
         // the band is NOT initialized here!
         return band;
@@ -449,19 +450,19 @@ public sealed partial class DockViewModel : IDisposable
         _snapshotStartBands = new List<DockBandSettings>(startBands.Count);
         foreach (var b in startBands)
         {
-            _snapshotStartBands.Add(b.Clone());
+            _snapshotStartBands.Add(b with { });
         }
 
         _snapshotCenterBands = new List<DockBandSettings>(centerBands.Count);
         foreach (var b in centerBands)
         {
-            _snapshotCenterBands.Add(b.Clone());
+            _snapshotCenterBands.Add(b with { });
         }
 
         _snapshotEndBands = new List<DockBandSettings>(endBands.Count);
         foreach (var b in endBands)
         {
-            _snapshotEndBands.Add(b.Clone());
+            _snapshotEndBands.Add(b with { });
         }
 
         // Snapshot band ViewModels so we can restore unpinned bands
@@ -520,19 +521,19 @@ public sealed partial class DockViewModel : IDisposable
 
         foreach (var bandSnapshot in _snapshotStartBands)
         {
-            var bandSettings = bandSnapshot.Clone();
+            var bandSettings = bandSnapshot with { };
             startBands.Add(bandSettings);
         }
 
         foreach (var bandSnapshot in _snapshotCenterBands)
         {
-            var bandSettings = bandSnapshot.Clone();
+            var bandSettings = bandSnapshot with { };
             centerBands.Add(bandSettings);
         }
 
         foreach (var bandSnapshot in _snapshotEndBands)
         {
-            var bandSettings = bandSnapshot.Clone();
+            var bandSettings = bandSnapshot with { };
             endBands.Add(bandSettings);
         }
 
@@ -688,7 +689,7 @@ public sealed partial class DockViewModel : IDisposable
         var (startBands, centerBands, endBands) = GetActiveBandLists();
 
         // Create settings for the new band
-        var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId, ShowLabels = null };
+        var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId };
 
         // Create the band view model
         var bandVm = CreateBandItem(bandSettings, topLevel.ItemViewModel);

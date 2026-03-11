@@ -9,6 +9,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -127,7 +128,7 @@ public sealed partial class TopLevelViewModel :
             {
                 if (Alias is CommandAlias a)
                 {
-                    a.Alias = value;
+                    a = a with { Alias = value };
                 }
                 else
                 {
@@ -152,7 +153,7 @@ public sealed partial class TopLevelViewModel :
         {
             if (Alias is CommandAlias a)
             {
-                a.IsDirect = value;
+                a = a with { IsDirect = value };
             }
 
             HandleChangeAlias();
@@ -202,7 +203,6 @@ public sealed partial class TopLevelViewModel :
                 {
                     ProviderId = this.CommandProviderId,
                     CommandId = this.Id,
-                    ShowLabels = true,
                 };
             }
 
@@ -242,9 +242,9 @@ public sealed partial class TopLevelViewModel :
         _settingsService.SettingsChanged += SettingsService_SettingsChanged;
     }
 
-    private void SettingsService_SettingsChanged(SettingsModel sender, object? args)
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
     {
-        _settings = sender;
+        _settings = args.NewSettingsModel;
     }
 
     internal void InitializeProperties()

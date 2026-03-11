@@ -2,11 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using ManagedCommon;
-using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
@@ -205,7 +204,7 @@ public sealed partial class DockWindowManager : IDisposable
         });
     }
 
-    private void OnSettingsChanged(SettingsModel sender, object? args)
+    private void OnSettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
     {
         _dispatcherQueue.TryEnqueue(() =>
         {

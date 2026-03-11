@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.Logging;
 using Windows.Foundation;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -22,7 +23,7 @@ public partial class SettingsService
     private const string DeprecatedHotkeyGoesHomeKey = "HotkeyGoesHome";
     private SettingsModel _settingsModel;
 
-    public event TypedEventHandler<SettingsModel, object?>? SettingsChanged;
+    public event TypedEventHandler<SettingsService, SettingsChangedEventArgs>? SettingsChanged;
 
     public SettingsModel CurrentSettings => _settingsModel;
 
@@ -81,7 +82,7 @@ public partial class SettingsService
         // reload the settings then
         if (hotReload)
         {
-            SettingsChanged?.Invoke(model, null);
+            SettingsChanged?.Invoke(this, new(_settingsModel));
         }
     }
 

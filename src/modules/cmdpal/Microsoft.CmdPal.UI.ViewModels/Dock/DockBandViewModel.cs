@@ -15,10 +15,9 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 {
     private readonly CommandItemViewModel _rootItem;
-    private readonly DockBandSettings _bandSettings;
-    private readonly DockSettings _dockSettings;
-    private readonly Action _saveSettings;
     private readonly IContextMenuFactory _contextMenuFactory;
+
+    private DockBandSettings _bandSettings;
 
     public ObservableCollection<DockItemViewModel> Items { get; } = new();
 
@@ -103,8 +102,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
     /// </summary>
     internal void SaveShowLabels()
     {
-        _bandSettings.ShowTitles = _showTitles;
-        _bandSettings.ShowSubtitles = _showSubtitles;
+        _bandSettings = _bandSettings with { ShowTitles = _showTitles, ShowSubtitles = _showSubtitles };
         _showTitlesSnapshot = null;
         _showSubtitlesSnapshot = null;
     }
@@ -132,14 +130,11 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         WeakReference<IPageContext> errorContext,
         DockBandSettings settings,
         DockSettings dockSettings,
-        Action saveSettings,
         IContextMenuFactory contextMenuFactory)
         : base(errorContext)
     {
         _rootItem = commandItemViewModel;
         _bandSettings = settings;
-        _dockSettings = dockSettings;
-        _saveSettings = saveSettings;
         _contextMenuFactory = contextMenuFactory;
 
         _showTitles = settings.ResolveShowTitles(dockSettings.ShowLabels);

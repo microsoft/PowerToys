@@ -178,9 +178,9 @@ public sealed partial class DockWindow : WindowEx,
         UpdateSettingsOnUiThread();
     }
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    private void SettingsChangedHandler(SettingsService sender, SettingsChangedEventArgs args)
     {
-        _settings = sender.DockSettings;
+        _settings = args.NewSettingsModel.DockSettings;
 
         // Refresh the per-monitor side override from persisted config so that
         // EffectiveSide returns the current value, not the stale construction-time snapshot.

@@ -6,40 +6,40 @@ using Windows.Graphics;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed class WindowPosition
+public sealed record WindowPosition
 {
     /// <summary>
-    /// Gets or sets left position in device pixels.
+    /// Gets left position in device pixels.
     /// </summary>
     public int X { get; init; }
 
     /// <summary>
-    /// Gets or sets top position in device pixels.
+    /// Gets top position in device pixels.
     /// </summary>
     public int Y { get; init; }
 
     /// <summary>
-    /// Gets or sets width in device pixels.
+    /// Gets width in device pixels.
     /// </summary>
     public int Width { get; init; }
 
     /// <summary>
-    /// Gets or sets height in device pixels.
+    /// Gets height in device pixels.
     /// </summary>
     public int Height { get; init; }
 
     /// <summary>
-    /// Gets or sets width of the screen in device pixels where the window is located.
+    /// Gets width of the screen in device pixels where the window is located.
     /// </summary>
     public int ScreenWidth { get; init; }
 
     /// <summary>
-    /// Gets or sets height of the screen in device pixels where the window is located.
+    /// Gets height of the screen in device pixels where the window is located.
     /// </summary>
     public int ScreenHeight { get; init; }
 
     /// <summary>
-    /// Gets or sets DPI (dots per inch) of the display where the window is located.
+    /// Gets DPI (dots per inch) of the display where the window is located.
     /// </summary>
     public int Dpi { get; init; }
 

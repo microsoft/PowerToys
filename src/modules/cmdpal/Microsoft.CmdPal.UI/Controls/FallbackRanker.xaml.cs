@@ -5,6 +5,7 @@
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -13,6 +14,7 @@ public sealed partial class FallbackRanker : UserControl, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
     private SettingsViewModel? viewModel;
+    private bool _disposed;
 
     public FallbackRanker()
     {
@@ -22,12 +24,26 @@ public sealed partial class FallbackRanker : UserControl, IDisposable
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         viewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
+        Unloaded += OnUnloaded;
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        Dispose();
     }
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        Unloaded -= OnUnloaded;
         viewModel?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private void ListView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
