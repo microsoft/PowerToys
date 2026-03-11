@@ -139,15 +139,18 @@
                 ShouldConstrainToRootBounds="False">
                 <StackPanel Width="320">
                     <TextBlock
+                        x:Uid="Dock_Bands_Header"
+                        Margin="8,8,8,12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock
                         x:Name="NoAvailableBandsText"
                         x:Uid="Dock_AddBand_NoCommandsAvailable"
-                        Padding="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextAlignment="Center"
+                        Margin="8,0,0,0"
                         Visibility="Collapsed" />
                     <ListView
                         x:Name="AddBandListView"
                         MaxHeight="300"
+                        Margin="-12,0,-12,0"
                         HorizontalAlignment="Stretch"
                         IsItemClickEnabled="True"
                         ItemClick="AddBandListView_ItemClick"
@@ -175,6 +178,30 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+                    <Rectangle
+                        Height="1"
+                        Margin="-16,24,-16,0"
+                        HorizontalAlignment="Stretch"
+                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    <Grid Margin="8,24,0,0" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            Margin="0,4,0,0"
+                            VerticalAlignment="Top"
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xE946;" />
+                        <TextBlock
+                            x:Uid="Dock_Pin_Instruction"
+                            Grid.Column="1"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            TextWrapping="Wrap" />
+                    </Grid>
                 </StackPanel>
             </Flyout>
         </ResourceDictionary>
