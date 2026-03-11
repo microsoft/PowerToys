@@ -225,6 +225,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _stlThumbnailColor = Settings.Properties.StlThumbnailColor.Value;
 
+            _isCopyAsUNCEnabled = GeneralSettingsConfig.Enabled.CopyAsUNC;
+
             _qoiThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredQoiThumbnailsEnabledValue();
             if (_qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -1099,6 +1101,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get
             {
                 return GeneralSettingsConfig.IsElevated;
+            }
+        }
+
+        private bool _isCopyAsUNCEnabled;
+
+        public bool IsCopyAsUNCEnabled
+        {
+            get => _isCopyAsUNCEnabled;
+            set
+            {
+                if (_isCopyAsUNCEnabled != value)
+                {
+                    _isCopyAsUNCEnabled = value;
+                    GeneralSettingsConfig.Enabled.CopyAsUNC = value;
+                    OnPropertyChanged(nameof(IsCopyAsUNCEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+                }
             }
         }
 
