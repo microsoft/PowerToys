@@ -22,8 +22,8 @@ using namespace Microsoft::WRL;
 HINSTANCE g_hInst = 0;
 
 BOOL APIENTRY DllMain(HMODULE hModule,
-                      DWORD   ul_reason_for_call,
-                      LPVOID  lpReserved)
+                      DWORD ul_reason_for_call,
+                      LPVOID lpReserved)
 {
     switch (ul_reason_for_call)
     {
@@ -36,8 +36,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     return TRUE;
 }
 
-class __declspec(uuid("89A22F51-9ED6-48FE-81FE-5DFD36F8CD32")) CopyAsUNCContextMenuCommand final
-    : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IExplorerCommand, IObjectWithSite>
+class __declspec(uuid("89A22F51-9ED6-48FE-81FE-5DFD36F8CD32")) CopyAsUNCContextMenuCommand final : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IExplorerCommand, IObjectWithSite>
 {
 public:
     virtual const wchar_t* Title() { return L"Copy as UNC path"; }
@@ -193,10 +192,9 @@ protected:
 };
 
 CoCreatableClass(CopyAsUNCContextMenuCommand)
-CoCreatableClassWrlCreatorMapInclude(CopyAsUNCContextMenuCommand)
+    CoCreatableClassWrlCreatorMapInclude(CopyAsUNCContextMenuCommand)
 
-
-STDAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _COM_Outptr_ IActivationFactory** factory)
+        STDAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _COM_Outptr_ IActivationFactory** factory)
 {
     return Module<ModuleType::InProc>::GetModule().GetActivationFactory(activatableClassId, factory);
 }

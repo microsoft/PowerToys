@@ -284,9 +284,7 @@
                         Name="FileExplorerPreviewCopyAsUNCEnable"
                         x:Uid="FileExplorerPreview_CopyAsUNC_Enable"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8C8;}">
-                        <ToggleSwitch
-                            x:Uid="ToggleSwitch"
-                            IsOn="{x:Bind ViewModel.IsCopyAsUNCEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsCopyAsUNCEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
