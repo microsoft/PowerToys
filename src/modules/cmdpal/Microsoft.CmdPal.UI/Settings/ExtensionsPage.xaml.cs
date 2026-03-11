@@ -14,7 +14,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class ExtensionsPage : Page
+public sealed partial class ExtensionsPage : Page, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
@@ -24,10 +24,10 @@ public sealed partial class ExtensionsPage : Page
     {
         this.InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settingsService = App.Current.Services.GetService<SettingsService>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
-        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        viewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
     }
 
     private void SettingsCard_Click(object sender, RoutedEventArgs e)
@@ -57,5 +57,11 @@ public sealed partial class ExtensionsPage : Page
         {
             Logger.LogError("Error when showing FallbackRankerDialog", ex);
         }
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        viewModel?.Dispose();
     }
 }

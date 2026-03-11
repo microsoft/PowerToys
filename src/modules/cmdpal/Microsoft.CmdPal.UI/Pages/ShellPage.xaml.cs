@@ -25,7 +25,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
-using Windows.UI.Core;
 using WinUIEx;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
@@ -111,7 +110,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
 
-        if (App.Current.Services.GetService<SettingsModel>()!.EnableDock)
+        var settingsService = App.Current.Services.GetService<SettingsService>()!;
+
+        if (settingsService.CurrentSettings.EnableDock)
         {
             _dockWindow = new DockWindow();
             _dockWindow.Show();
@@ -125,14 +126,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         get
         {
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            var settingsService = App.Current.Services.GetService<SettingsService>()!;
+            var settings = settingsService.CurrentSettings;
             return settings.DisableAnimations ? _noAnimation : _slideRightTransition;
         }
     }
 
     public void Receive(NavigateBackMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settingsService = App.Current.Services.GetService<SettingsService>()!;
+        var settings = settingsService.CurrentSettings;
 
         if (RootFrame.CanGoBack)
         {
@@ -362,7 +365,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void SummonOnUiThread(HotkeySummonMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settingsService = App.Current.Services.GetService<SettingsService>()!;
+        var settings = settingsService.CurrentSettings;
         var commandId = message.CommandId;
         var isRoot = string.IsNullOrEmpty(commandId);
         if (isRoot)

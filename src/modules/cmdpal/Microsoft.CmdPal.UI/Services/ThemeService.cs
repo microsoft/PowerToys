@@ -27,11 +27,12 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
     private static readonly TimeSpan ReloadDebounceInterval = TimeSpan.FromMilliseconds(500);
 
     private readonly UISettings _uiSettings;
-    private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
     private readonly ResourceSwapper _resourceSwapper;
     private readonly NormalThemeProvider _normalThemeProvider;
     private readonly ColorfulThemeProvider _colorfulThemeProvider;
 
+    private SettingsModel _settings;
     private DispatcherQueue? _dispatcherQueue;
     private DispatcherQueueTimer? _dispatcherQueueTimer;
     private bool _isInitialized;
@@ -241,13 +242,14 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         }
     }
 
-    public ThemeService(SettingsModel settings, ResourceSwapper resourceSwapper)
+    public ThemeService(SettingsService settingsService, ResourceSwapper resourceSwapper)
     {
-        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(settingsService);
         ArgumentNullException.ThrowIfNull(resourceSwapper);
 
-        _settings = settings;
-        _settings.SettingsChanged += SettingsOnSettingsChanged;
+        _settingsService = settingsService;
+        _settings = _settingsService.CurrentSettings;
+        _settingsService.SettingsChanged += SettingsOnSettingsChanged;
 
         _resourceSwapper = resourceSwapper;
 
@@ -319,8 +321,9 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         };
     }
 
-    private void SettingsOnSettingsChanged(SettingsModel sender, object? args)
+    private void SettingsOnSettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
     {
+        _settings = args.NewSettingsModel;
         RequestReload();
     }
 
@@ -339,7 +342,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         _disposed = true;
         _dispatcherQueueTimer?.Stop();
         _uiSettings.ColorValuesChanged -= UiSettings_ColorValuesChanged;
-        _settings.SettingsChanged -= SettingsOnSettingsChanged;
+        _settingsService.SettingsChanged -= SettingsOnSettingsChanged;
     }
 
     private sealed class InternalThemeState

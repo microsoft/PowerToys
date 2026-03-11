@@ -129,7 +129,7 @@ public partial class App : Application, IDisposable
 
         AddCoreServices(services, appInfoService);
 
-        AddUIServices(services, dispatcherQueue);
+        AddUIServices(services, dispatcherQueue, appInfoService);
 
         return services.BuildServiceProvider();
     }
@@ -181,13 +181,21 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, PerformanceMonitorCommandsProvider>();
     }
 
-    private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
+    private static void AddUIServices(
+        ServiceCollection services,
+        DispatcherQueue dispatcherQueue,
+        IApplicationInfoService appInfoService)
     {
         // Models
-        var sm = SettingsModel.LoadSettings();
-        services.AddSingleton(sm);
-        var state = AppStateModel.LoadState();
-        services.AddSingleton(state);
+        Extensions.Logging.ILogger logger = new CmdPalLogger();
+        PersistenceService persistenceService = new PersistenceService(appInfoService, logger);
+        services.AddSingleton<PersistenceService>(persistenceService);
+
+        var settingsService = new SettingsService(persistenceService, logger);
+        services.AddSingleton(settingsService);
+
+        var appStateService = new AppStateService(persistenceService);
+        services.AddSingleton(appStateService);
 
         // Services
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();

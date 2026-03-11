@@ -12,7 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class GeneralPage : Page
+public sealed partial class GeneralPage : Page, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
@@ -23,11 +23,11 @@ public sealed partial class GeneralPage : Page
     {
         this.InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settingsService = App.Current.Services.GetService<SettingsService>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         _appInfoService = App.Current.Services.GetRequiredService<IApplicationInfoService>();
-        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        viewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
     }
 
     public string ApplicationVersion
@@ -38,5 +38,11 @@ public sealed partial class GeneralPage : Page
             var version = _appInfoService.AppVersion;
             return string.Format(CultureInfo.CurrentCulture, versionNo, version);
         }
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        viewModel?.Dispose();
     }
 }

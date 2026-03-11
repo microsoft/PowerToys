@@ -5,7 +5,6 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -27,7 +26,6 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinRT.Interop;
 using WinUIEx;
-using WindowExtensions = Microsoft.CmdPal.UI.Helpers.WindowExtensions;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -47,6 +45,7 @@ public sealed partial class DockWindow : WindowEx,
 
     private readonly IThemeService _themeService;
     private readonly DockWindowViewModel _windowViewModel;
+    private readonly SettingsService _settingsService;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerWindowBehavior = new();
 
     private HWND _hwnd = HWND.Null;
@@ -68,8 +67,10 @@ public sealed partial class DockWindow : WindowEx,
     public DockWindow()
     {
         var serviceProvider = App.Current.Services;
-        var mainSettings = serviceProvider.GetService<SettingsModel>()!;
-        mainSettings.SettingsChanged += SettingsChangedHandler;
+        _settingsService = serviceProvider.GetService<SettingsService>()!;
+        _settingsService.SettingsChanged += SettingsChangedHandler;
+        var mainSettings = _settingsService.CurrentSettings;
+
         _settings = mainSettings.DockSettings;
         _lastSize = _settings.DockSize;
 
@@ -128,9 +129,9 @@ public sealed partial class DockWindow : WindowEx,
         UpdateSettingsOnUiThread();
     }
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    private void SettingsChangedHandler(SettingsService sender, SettingsChangedEventArgs args)
     {
-        _settings = sender.DockSettings;
+        _settings = args.NewSettingsModel.DockSettings;
         DispatcherQueue.TryEnqueue(UpdateSettingsOnUiThread);
     }
 
@@ -621,9 +622,7 @@ public sealed partial class DockWindow : WindowEx,
 
     private void DockWindow_Closed(object sender, WindowEventArgs args)
     {
-        var serviceProvider = App.Current.Services;
-        var settings = serviceProvider.GetService<SettingsModel>();
-        settings?.SettingsChanged -= SettingsChangedHandler;
+        _settingsService?.SettingsChanged -= SettingsChangedHandler;
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
         DisposeAcrylic();
 

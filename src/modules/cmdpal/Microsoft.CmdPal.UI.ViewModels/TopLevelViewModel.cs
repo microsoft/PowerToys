@@ -9,6 +9,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -19,13 +20,20 @@ using WyHash;
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem
+public sealed partial class TopLevelViewModel :
+    ObservableObject,
+    IListItem,
+    IExtendedAttributesProvider,
+    IPrecomputedListItem,
+    IDisposable
 {
-    private readonly SettingsModel _settings;
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
+    private readonly SettingsService _settingsService;
     private readonly CommandItemViewModel _commandItemViewModel;
     private readonly IContextMenuFactory _contextMenuFactory;
+
+    private SettingsModel _settings;
 
     public ICommandProviderContext ProviderContext { get; private set; }
 
@@ -120,7 +128,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             {
                 if (Alias is CommandAlias a)
                 {
-                    a.Alias = value;
+                    a = a with { Alias = value };
                 }
                 else
                 {
@@ -145,7 +153,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         {
             if (Alias is CommandAlias a)
             {
-                a.IsDirect = value;
+                a = a with { IsDirect = value };
             }
 
             HandleChangeAlias();
@@ -195,7 +203,6 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
                 {
                     ProviderId = this.CommandProviderId,
                     CommandId = this.Id,
-                    ShowLabels = true,
                 };
             }
 
@@ -208,19 +215,20 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         TopLevelType topLevelType,
         CommandPaletteHost extensionHost,
         ICommandProviderContext commandProviderContext,
-        SettingsModel settings,
+        SettingsService settingsService,
         ProviderSettings providerSettings,
         IServiceProvider serviceProvider,
         ICommandItem? commandItem,
         IContextMenuFactory? contextMenuFactory)
     {
         _serviceProvider = serviceProvider;
-        _settings = settings;
+        _settingsService = settingsService;
         _providerSettings = providerSettings;
         ProviderContext = commandProviderContext;
         _commandItemViewModel = item;
 
         _contextMenuFactory = contextMenuFactory ?? DefaultContextMenuFactory.Instance;
+        _settings = settingsService.CurrentSettings;
 
         IsFallback = topLevelType == TopLevelType.Fallback;
         IsDockBand = topLevelType == TopLevelType.DockBand;
@@ -231,6 +239,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
 
         item.PropertyChangedBackground += Item_PropertyChanged;
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+    }
+
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
+    {
+        _settings = args.NewSettingsModel;
     }
 
     internal void InitializeProperties()
@@ -313,7 +327,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.SaveSettings(_settings);
 
     private void HandleChangeAlias()
     {
@@ -506,6 +520,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         var item = new PinnedDockItem(item: this, id: Id);
 
         return item;
+    }
+
+    public void Dispose()
+    {
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 }
 

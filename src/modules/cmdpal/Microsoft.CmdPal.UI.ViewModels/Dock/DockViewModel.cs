@@ -7,17 +7,20 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 
-public sealed partial class DockViewModel
+public sealed partial class DockViewModel : IDisposable
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
-    private readonly SettingsModel _settingsModel;
+    private readonly SettingsService _settingsService;
     private readonly DockPageContext _pageContext; // only to be used for our own context menu - not for dock bands themselves
     private readonly IContextMenuFactory _contextMenuFactory;
+
+    private SettingsModel _settingsModel;
 
     private DockSettings _settings;
 
@@ -34,19 +37,30 @@ public sealed partial class DockViewModel
     public DockViewModel(
         TopLevelCommandManager tlcManager,
         IContextMenuFactory contextMenuFactory,
-        SettingsModel settings,
+        SettingsService settingsService,
         TaskScheduler scheduler)
     {
         _topLevelCommandManager = tlcManager;
         _contextMenuFactory = contextMenuFactory;
-        _settingsModel = settings;
-        _settings = settings.DockSettings;
+        _settingsService = settingsService;
+
+        _settingsModel = _settingsService.CurrentSettings;
+        _settings = _settingsModel.DockSettings;
+
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+
         Scheduler = scheduler;
         _pageContext = new(this);
 
         _topLevelCommandManager.DockBands.CollectionChanged += DockBands_CollectionChanged;
 
         EmitDockConfiguration();
+    }
+
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
+    {
+        _settingsModel = args.NewSettingsModel;
+        _settings = _settingsModel.DockSettings;
     }
 
     private void DockBands_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -140,7 +154,7 @@ public sealed partial class DockViewModel
         DockBandSettings bandSettings,
         CommandItemViewModel commandItem)
     {
-        DockBandViewModel band = new(commandItem, commandItem.PageContext, bandSettings, _settings, SaveSettings, _contextMenuFactory);
+        DockBandViewModel band = new(commandItem, commandItem.PageContext, bandSettings, _settings, _contextMenuFactory);
 
         // the band is NOT initialized here!
         return band;
@@ -148,7 +162,7 @@ public sealed partial class DockViewModel
 
     private void SaveSettings()
     {
-        SettingsModel.SaveSettings(_settingsModel);
+        _settingsService.SaveSettings(_settingsModel);
     }
 
     public DockBandViewModel? FindBandByTopLevel(TopLevelViewModel tlc)
@@ -301,7 +315,7 @@ public sealed partial class DockViewModel
         _snapshotCenterBands = null;
         _snapshotEndBands = null;
         _snapshotBandViewModels = null;
-        SettingsModel.SaveSettings(_settingsModel);
+        _settingsService.SaveSettings(_settingsModel);
         Logger.LogDebug("Saved band order to settings");
     }
 
@@ -317,9 +331,9 @@ public sealed partial class DockViewModel
     public void SnapshotBandOrder()
     {
         var dockSettings = _settingsModel.DockSettings;
-        _snapshotStartBands = dockSettings.StartBands.Select(b => b.Clone()).ToList();
-        _snapshotCenterBands = dockSettings.CenterBands.Select(b => b.Clone()).ToList();
-        _snapshotEndBands = dockSettings.EndBands.Select(b => b.Clone()).ToList();
+        _snapshotStartBands = dockSettings.StartBands.Select(b => b with { }).ToList();
+        _snapshotCenterBands = dockSettings.CenterBands.Select(b => b with { }).ToList();
+        _snapshotEndBands = dockSettings.EndBands.Select(b => b with { }).ToList();
 
         // Snapshot band ViewModels so we can restore unpinned bands
         // Use a dictionary but handle potential duplicates gracefully
@@ -367,19 +381,19 @@ public sealed partial class DockViewModel
 
         foreach (var bandSnapshot in _snapshotStartBands)
         {
-            var bandSettings = bandSnapshot.Clone();
+            var bandSettings = bandSnapshot with { };
             dockSettings.StartBands.Add(bandSettings);
         }
 
         foreach (var bandSnapshot in _snapshotCenterBands)
         {
-            var bandSettings = bandSnapshot.Clone();
+            var bandSettings = bandSnapshot with { };
             dockSettings.CenterBands.Add(bandSettings);
         }
 
         foreach (var bandSnapshot in _snapshotEndBands)
         {
-            var bandSettings = bandSnapshot.Clone();
+            var bandSettings = bandSnapshot with { };
             dockSettings.EndBands.Add(bandSettings);
         }
 
@@ -509,7 +523,7 @@ public sealed partial class DockViewModel
         }
 
         // Create settings for the new band
-        var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId, ShowLabels = null };
+        var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId };
         var dockSettings = _settingsModel.DockSettings;
 
         // Create the band view model
@@ -628,6 +642,11 @@ public sealed partial class DockViewModel
 
         WeakReferenceMessenger.Default.Send(new TelemetryDockConfigurationMessage(
             isDockEnabled, dockSide, startBands, centerBands, endBands));
+    }
+
+    public void Dispose()
+    {
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 
     /// <summary>

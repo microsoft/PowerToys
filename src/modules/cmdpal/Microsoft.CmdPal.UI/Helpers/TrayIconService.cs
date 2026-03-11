@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.UI.Xaml;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -20,14 +21,15 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_*")]
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_*")]
-internal sealed partial class TrayIconService
+internal sealed partial class TrayIconService : IDisposable
 {
     private const uint MY_NOTIFY_ID = 1000;
     private const uint WM_TRAY_ICON = PInvoke.WM_USER + 1;
 
-    private readonly SettingsModel _settingsModel;
+    private readonly SettingsService _settingsService;
     private readonly uint WM_TASKBAR_RESTART;
 
+    private SettingsModel _settingsModel;
     private Window? _window;
     private HWND _hwnd;
     private WNDPROC? _originalWndProc;
@@ -36,14 +38,22 @@ internal sealed partial class TrayIconService
     private DestroyIconSafeHandle? _largeIcon;
     private DestroyMenuSafeHandle? _popupMenu;
 
-    public TrayIconService(SettingsModel settingsModel)
+    public TrayIconService(SettingsService settingsService)
     {
-        _settingsModel = settingsModel;
+        _settingsService = settingsService;
+        _settingsModel = settingsService.CurrentSettings;
+
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
 
         // TaskbarCreated is the message that's broadcast when explorer.exe
         // restarts. We need to know when that happens to be able to bring our
         // notification area icon back
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
+    }
+
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
+    {
+        _settingsModel = args.NewSettingsModel;
     }
 
     public void SetupTrayIcon(bool? showSystemTrayIcon = null)
@@ -209,5 +219,10 @@ internal sealed partial class TrayIconService
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
+    }
+
+    public void Dispose()
+    {
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 }

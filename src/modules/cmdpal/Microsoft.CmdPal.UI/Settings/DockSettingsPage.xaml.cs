@@ -28,11 +28,11 @@ public sealed partial class DockSettingsPage : Page
     {
         this.InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settingsService = App.Current.Services.GetService<SettingsService>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
 
-        ViewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        ViewModel = new SettingsViewModel(settingsService, topLevelCommandManager, _mainTaskScheduler, themeService);
 
         // Initialize UI state
         InitializeSettings();
@@ -117,12 +117,6 @@ public sealed partial class DockSettingsPage : Page
         set => ViewModel.Dock_Backdrop = SelectedIndexToBackdrop(value);
     }
 
-    public bool ShowLabels
-    {
-        get => ViewModel.Dock_ShowLabels;
-        set => ViewModel.Dock_ShowLabels = value;
-    }
-
     // Conversion methods for ComboBox bindings
     private static int DockSizeToSelectedIndex(DockSize size) => size switch
     {
@@ -195,7 +189,7 @@ public sealed partial class DockSettingsPage : Page
 
         // var allBands = GetAllBands();
         var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-        var settingsModel = App.Current.Services.GetService<SettingsModel>()!;
+        var settingsService = App.Current.Services.GetService<SettingsService>()!;
         var dockViewModel = App.Current.Services.GetService<DockViewModel>()!;
         var allBands = tlcManager.GetDockBandsSnapshot();
         foreach (var band in allBands)
@@ -208,7 +202,7 @@ public sealed partial class DockSettingsPage : Page
                     dockSettingsModel: setting,
                     topLevelAdapter: band,
                     bandViewModel: bandVm,
-                    settingsModel: settingsModel
+                    settingsService: settingsService
                 ));
             }
         }

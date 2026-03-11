@@ -169,7 +169,7 @@ public sealed partial class MainWindow : WindowEx,
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
-        App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
+        App.Current.Services.GetService<SettingsService>()!.SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
         RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateBackdrop);
@@ -210,7 +210,7 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    private void SettingsChangedHandler(SettingsService sender, SettingsChangedEventArgs args)
     {
         DispatcherQueue.TryEnqueue(HotReloadSettings);
     }
@@ -258,7 +258,8 @@ public sealed partial class MainWindow : WindowEx,
 
     private void RestoreWindowPosition()
     {
-        var settings = App.Current.Services.GetService<SettingsModel>();
+        var settingsService = App.Current.Services.GetService<SettingsService>()!;
+        var settings = settingsService.CurrentSettings;
         if (settings?.LastWindowPosition is not { Width: > 0, Height: > 0 } savedPosition)
         {
             // don't try to restore if the saved position is invalid, just recenter
@@ -336,7 +337,8 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HotReloadSettings()
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settingsService = App.Current.Services.GetService<SettingsService>()!;
+        var settings = settingsService.CurrentSettings;
 
         SetupHotkey(settings);
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
@@ -678,7 +680,8 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(ShowWindowMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settingsService = App.Current.Services.GetService<SettingsService>()!;
+        var settings = settingsService.CurrentSettings;
 
         // Start session tracking
         _sessionStopwatch = Stopwatch.StartNew();
@@ -862,14 +865,15 @@ public sealed partial class MainWindow : WindowEx,
         var serviceProvider = App.Current.Services;
         UpdateWindowPositionInMemory();
 
-        var settings = serviceProvider.GetService<SettingsModel>();
-        if (settings is not null)
+        var settingsService = serviceProvider.GetService<SettingsService>();
+        if (settingsService is not null)
         {
+            var settings = settingsService.CurrentSettings;
+
             // a quick sanity check, so we don't overwrite correct values
             if (_currentWindowPosition.IsSizeValid)
             {
-                settings.LastWindowPosition = _currentWindowPosition;
-                SettingsModel.SaveSettings(settings);
+                settingsService.SaveSettings(settings with { LastWindowPosition = _currentWindowPosition });
             }
         }
 
@@ -1035,7 +1039,8 @@ public sealed partial class MainWindow : WindowEx,
                         }
                         else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
                         {
-                            var settings = App.Current.Services.GetService<SettingsModel>();
+                            var settingsService = App.Current.Services.GetService<SettingsService>()!;
+                            var settings = settingsService.CurrentSettings;
                             if (settings?.AllowExternalReload == true)
                             {
                                 Logger.LogInfo("External Reload triggered");

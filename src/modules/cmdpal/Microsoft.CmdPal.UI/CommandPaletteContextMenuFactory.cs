@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -13,15 +14,26 @@ using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
-internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFactory
+internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFactory, IDisposable
 {
-    private readonly SettingsModel _settingsModel;
+    private readonly SettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
 
-    public CommandPaletteContextMenuFactory(SettingsModel settingsModel, TopLevelCommandManager topLevelCommandManager)
+    private SettingsModel _settingsModel;
+
+    public CommandPaletteContextMenuFactory(SettingsService settingsService, TopLevelCommandManager topLevelCommandManager)
     {
-        _settingsModel = settingsModel;
+        _settingsService = settingsService;
+        _settingsModel = _settingsService.CurrentSettings;
+
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+
         _topLevelCommandManager = topLevelCommandManager;
+    }
+
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
+    {
+        _settingsModel = args.NewSettingsModel;
     }
 
     /// <summary>
@@ -194,6 +206,11 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     {
         return bandSettings.CommandId == commandId &&
                bandSettings.ProviderId == providerId;
+    }
+
+    public void Dispose()
+    {
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 
     internal enum PinLocation

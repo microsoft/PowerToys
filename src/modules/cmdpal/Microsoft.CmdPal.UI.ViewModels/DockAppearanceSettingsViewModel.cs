@@ -23,12 +23,14 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 /// </summary>
 public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, IDisposable
 {
-    private readonly SettingsModel _settings;
+    private readonly SettingsService _settingsService;
     private readonly DockSettings _dockSettings;
     private readonly UISettings _uiSettings;
     private readonly IThemeService _themeService;
     private readonly DispatcherQueueTimer _saveTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
     private readonly DispatcherQueue _uiDispatcher = DispatcherQueue.GetForCurrentThread();
+
+    private SettingsModel _settings;
 
     private ElementTheme? _elementThemeOverride;
     private Color _currentSystemAccentColor;
@@ -48,10 +50,10 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         {
             if (_dockSettings.Theme != value)
             {
-                _dockSettings.Theme = value;
+                var dockSettings = _settings.DockSettings with { Theme = value };
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ThemeIndex));
-                Save();
+                Save(_settings with { DockSettings = dockSettings });
             }
         }
     }
@@ -69,10 +71,10 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         {
             if (_dockSettings.Backdrop != value)
             {
-                _dockSettings.Backdrop = value;
+                var dockSettings = _settings.DockSettings with { Backdrop = value };
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(BackdropIndex));
-                Save();
+                Save(_settings with { DockSettings = dockSettings });
             }
         }
     }
@@ -84,7 +86,7 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         {
             if (_dockSettings.ColorizationMode != value)
             {
-                _dockSettings.ColorizationMode = value;
+                var dockSettings = _settings.DockSettings with { ColorizationMode = value };
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ColorizationModeIndex));
                 OnPropertyChanged(nameof(IsCustomTintVisible));
@@ -100,7 +102,7 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
 
                 IsColorizationDetailsExpanded = value != ColorizationMode.None;
 
-                Save();
+                Save(_settings with { DockSettings = dockSettings });
             }
         }
     }
@@ -118,7 +120,7 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         {
             if (_dockSettings.CustomThemeColor != value)
             {
-                _dockSettings.CustomThemeColor = value;
+                var dockSettings = _settings.DockSettings with { CustomThemeColor = value };
 
                 OnPropertyChanged();
 
@@ -127,7 +129,7 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
                     ColorIntensity = 100;
                 }
 
-                Save();
+                Save(_settings with { DockSettings = dockSettings });
             }
         }
     }
@@ -137,9 +139,9 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         get => _dockSettings.CustomThemeColorIntensity;
         set
         {
-            _dockSettings.CustomThemeColorIntensity = value;
+            var dockSettings = _settings.DockSettings with { CustomThemeColorIntensity = value };
             OnPropertyChanged();
-            Save();
+            Save(_settings with { DockSettings = dockSettings });
         }
     }
 
@@ -150,7 +152,7 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         {
             if (_dockSettings.BackgroundImagePath != value)
             {
-                _dockSettings.BackgroundImagePath = value;
+                var dockSettings = _settings.DockSettings with { BackgroundImagePath = value };
                 OnPropertyChanged();
 
                 if (BackgroundImageOpacity == 0)
@@ -158,7 +160,7 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
                     BackgroundImageOpacity = 100;
                 }
 
-                Save();
+                Save(_settings with { DockSettings = dockSettings });
             }
         }
     }
@@ -170,9 +172,9 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         {
             if (_dockSettings.BackgroundImageOpacity != value)
             {
-                _dockSettings.BackgroundImageOpacity = value;
+                var dockSettings = _settings.DockSettings with { BackgroundImageOpacity = value };
                 OnPropertyChanged();
-                Save();
+                Save(_settings with { DockSettings = dockSettings });
             }
         }
     }
@@ -184,9 +186,9 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         {
             if (_dockSettings.BackgroundImageBrightness != value)
             {
-                _dockSettings.BackgroundImageBrightness = value;
+                var dockSettings = _settings.DockSettings with { BackgroundImageBrightness = value };
                 OnPropertyChanged();
-                Save();
+                Save(_settings with { DockSettings = dockSettings });
             }
         }
     }
@@ -198,9 +200,9 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         {
             if (_dockSettings.BackgroundImageBlurAmount != value)
             {
-                _dockSettings.BackgroundImageBlurAmount = value;
+                var dockSettings = _settings.DockSettings with { BackgroundImageBlurAmount = value };
                 OnPropertyChanged();
-                Save();
+                Save(_settings with { DockSettings = dockSettings });
             }
         }
     }
@@ -212,10 +214,10 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         {
             if (_dockSettings.BackgroundImageFit != value)
             {
-                _dockSettings.BackgroundImageFit = value;
+                var dockSettings = _settings.DockSettings with { BackgroundImageFit = value };
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(BackgroundImageFitIndex));
-                Save();
+                Save(_settings with { DockSettings = dockSettings });
             }
         }
     }
@@ -268,12 +270,16 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
             ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
             : null;
 
-    public DockAppearanceSettingsViewModel(IThemeService themeService, SettingsModel settings)
+    public DockAppearanceSettingsViewModel(IThemeService themeService, SettingsService settingsService)
     {
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
-        _settings = settings;
-        _dockSettings = settings.DockSettings;
+        _settingsService = settingsService;
+        _settings = settingsService.CurrentSettings;
+
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+
+        _dockSettings = _settings.DockSettings;
 
         _uiSettings = new UISettings();
         _uiSettings.ColorValuesChanged += UiSettingsOnColorValuesChanged;
@@ -282,6 +288,11 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         Reapply();
 
         IsColorizationDetailsExpanded = _dockSettings.ColorizationMode != ColorizationMode.None;
+    }
+
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
+    {
+        _settings = args.NewSettingsModel;
     }
 
     private void UiSettingsOnColorValuesChanged(UISettings sender, object args) => _uiDispatcher.TryEnqueue(() => UpdateAccentColor(sender));
@@ -300,9 +311,9 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 
-    private void Save()
+    private void Save(SettingsModel settings)
     {
-        SettingsModel.SaveSettings(_settings);
+        _settingsService.SaveSettings(settings, true);
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 
@@ -335,6 +346,7 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
 
     public void Dispose()
     {
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
         _uiSettings.ColorValuesChanged -= UiSettingsOnColorValuesChanged;
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
     }

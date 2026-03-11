@@ -9,11 +9,13 @@ namespace Microsoft.CmdPal.UI;
 
 internal sealed class RunHistoryService : IRunHistoryService
 {
+    private readonly AppStateService _appStateService;
     private readonly AppStateModel _appStateModel;
 
-    public RunHistoryService(AppStateModel appStateModel)
+    public RunHistoryService(AppStateService appStateService)
     {
-        _appStateModel = appStateModel;
+        _appStateService = appStateService;
+        _appStateModel = _appStateService.CurrentSettings;
     }
 
     public IReadOnlyList<string> GetRunHistory()
@@ -45,6 +47,6 @@ internal sealed class RunHistoryService : IRunHistoryService
         // Add the item to the front of the history
         _appStateModel.RunHistory.Insert(0, item);
 
-        AppStateModel.SaveState(_appStateModel);
+        _appStateService.SaveSettings(_appStateModel);
     }
 }

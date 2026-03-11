@@ -12,21 +12,28 @@ public partial class HotkeyManager : ObservableObject
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly List<TopLevelHotkey> _commandHotkeys;
 
-    public HotkeyManager(TopLevelCommandManager tlcManager, SettingsModel settings)
+    public HotkeyManager(TopLevelCommandManager tlcManager, SettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
-        _commandHotkeys = settings.CommandHotkeys;
+        _commandHotkeys = settingsService.CurrentSettings.CommandHotkeys;
     }
 
     public void UpdateHotkey(string commandId, HotkeySettings? hotkey)
     {
         // If any of the commands were already bound to this hotkey, remove that
+        TopLevelHotkey? existingItem = null;
+
         foreach (var item in _commandHotkeys)
         {
             if (item.Hotkey == hotkey)
             {
-                item.Hotkey = null;
+                existingItem = item;
             }
+        }
+
+        if (existingItem is not null)
+        {
+            existingItem = existingItem with { Hotkey = null };
         }
 
         _commandHotkeys.RemoveAll(item => item.Hotkey is null);

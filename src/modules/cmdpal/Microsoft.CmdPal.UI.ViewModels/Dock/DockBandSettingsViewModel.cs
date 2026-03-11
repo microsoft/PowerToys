@@ -5,17 +5,19 @@
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 
-public partial class DockBandSettingsViewModel : ObservableObject
+public partial class DockBandSettingsViewModel : ObservableObject, IDisposable
 {
     private static readonly CompositeFormat PluralItemsFormatString = CompositeFormat.Parse(Properties.Resources.dock_item_count_plural);
-    private readonly SettingsModel _settingsModel;
+    private readonly SettingsService _settingsService;
     private readonly DockBandSettings _dockSettingsModel;
     private readonly TopLevelViewModel _adapter;
     private readonly DockBandViewModel? _bandViewModel;
+    private SettingsModel _settingsModel;
 
     public string Title => _adapter.Title;
 
@@ -42,45 +44,6 @@ public partial class DockBandSettingsViewModel : ObservableObject
     public string ProviderId => _adapter.CommandProviderId;
 
     public IconInfoViewModel Icon => _adapter.IconViewModel;
-
-    private ShowLabelsOption _showLabels;
-
-    public ShowLabelsOption ShowLabels
-    {
-        get => _showLabels;
-        set
-        {
-            if (value != _showLabels)
-            {
-                _showLabels = value;
-                _dockSettingsModel.ShowLabels = value switch
-                {
-                    ShowLabelsOption.Default => null,
-                    ShowLabelsOption.ShowLabels => true,
-                    ShowLabelsOption.HideLabels => false,
-                    _ => null,
-                };
-                Save();
-            }
-        }
-    }
-
-    private ShowLabelsOption FetchShowLabels()
-    {
-        if (_dockSettingsModel.ShowLabels == null)
-        {
-            return ShowLabelsOption.Default;
-        }
-
-        return _dockSettingsModel.ShowLabels.Value ? ShowLabelsOption.ShowLabels : ShowLabelsOption.HideLabels;
-    }
-
-    // used to map to ComboBox selection
-    public int ShowLabelsIndex
-    {
-        get => (int)ShowLabels;
-        set => ShowLabels = (ShowLabelsOption)value;
-    }
 
     private DockPinSide PinSide
     {
@@ -128,14 +91,23 @@ public partial class DockBandSettingsViewModel : ObservableObject
         DockBandSettings dockSettingsModel,
         TopLevelViewModel topLevelAdapter,
         DockBandViewModel? bandViewModel,
-        SettingsModel settingsModel)
+        SettingsService settingsService)
     {
         _dockSettingsModel = dockSettingsModel;
         _adapter = topLevelAdapter;
         _bandViewModel = bandViewModel;
-        _settingsModel = settingsModel;
+        _settingsService = settingsService;
+
+        _settingsModel = _settingsService.CurrentSettings;
+
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+
         _pinSide = FetchPinSide();
-        _showLabels = FetchShowLabels();
+    }
+
+    private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
+    {
+        _settingsModel = args.NewSettingsModel;
     }
 
     private DockPinSide FetchPinSide()
@@ -175,7 +147,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
 
     private void Save()
     {
-        SettingsModel.SaveSettings(_settingsModel);
+        _settingsService.SaveSettings(_settingsModel);
     }
 
     private void UpdatePinSide(DockPinSide value)
@@ -232,6 +204,12 @@ public partial class DockBandSettingsViewModel : ObservableObject
     {
         SetBandPosition(value, null);
         _pinSide = value;
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 }
 

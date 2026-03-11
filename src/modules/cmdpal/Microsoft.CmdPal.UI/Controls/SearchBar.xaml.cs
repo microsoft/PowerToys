@@ -31,6 +31,8 @@ public sealed partial class SearchBar : UserControl,
     /// Gets the <see cref="DispatcherQueueTimer"/> that we create to track keyboard input and throttle/debounce before we make queries.
     /// </summary>
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+    private readonly SettingsService _settingsService;
+    private SettingsModel _settings;
     private bool _isBackspaceHeld;
 
     // Inline text suggestions
@@ -48,8 +50,6 @@ public sealed partial class SearchBar : UserControl,
 
     // 0.6+ suggestions
     private string? _textToSuggest;
-
-    private SettingsModel Settings => App.Current.Services.GetRequiredService<SettingsModel>();
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -86,6 +86,10 @@ public sealed partial class SearchBar : UserControl,
 
     public SearchBar()
     {
+        _settingsService = App.Current.Services.GetRequiredService<SettingsService>();
+        _settings = _settingsService.CurrentSettings;
+        _settingsService.SettingsChanged += (_, args) => _settings = args.NewSettingsModel;
+
         this.InitializeComponent();
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
@@ -132,7 +136,7 @@ public sealed partial class SearchBar : UserControl,
         }
         else if (e.Key == VirtualKey.Escape)
         {
-            switch (Settings.EscapeKeyBehaviorSetting)
+            switch (_settings.EscapeKeyBehaviorSetting)
             {
                 case EscapeKeyBehavior.AlwaysGoBack:
                     WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
@@ -427,7 +431,7 @@ public sealed partial class SearchBar : UserControl,
 
     public void Receive(GoHomeMessage message)
     {
-        if (!Settings.KeepPreviousQuery)
+        if (!_settings.KeepPreviousQuery)
         {
             ClearSearch();
         }

@@ -14,44 +14,44 @@ namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 /// Settings for the Dock. These are settings for _the whole dock_. Band-specific
 /// settings are in <see cref="DockBandSettings"/>.
 /// </summary>
-public class DockSettings
+public record DockSettings
 {
-    public DockSide Side { get; set; } = DockSide.Top;
+    public DockSide Side { get; init; } = DockSide.Top;
 
-    public DockSize DockSize { get; set; } = DockSize.Small;
+    public DockSize DockSize { get; init; } = DockSize.Small;
 
-    public DockSize DockIconsSize { get; set; } = DockSize.Small;
+    public DockSize DockIconsSize { get; init; } = DockSize.Small;
 
     // <Theme settings>
-    public DockBackdrop Backdrop { get; set; } = DockBackdrop.Acrylic;
+    public DockBackdrop Backdrop { get; init; } = DockBackdrop.Acrylic;
 
-    public UserTheme Theme { get; set; } = UserTheme.Default;
+    public UserTheme Theme { get; init; } = UserTheme.Default;
 
-    public ColorizationMode ColorizationMode { get; set; }
+    public ColorizationMode ColorizationMode { get; init; }
 
-    public Color CustomThemeColor { get; set; } = Colors.Transparent;
+    public Color CustomThemeColor { get; init; } = Colors.Transparent;
 
-    public int CustomThemeColorIntensity { get; set; } = 100;
+    public int CustomThemeColorIntensity { get; init; } = 100;
 
-    public int BackgroundImageOpacity { get; set; } = 20;
+    public int BackgroundImageOpacity { get; init; } = 20;
 
-    public int BackgroundImageBlurAmount { get; set; }
+    public int BackgroundImageBlurAmount { get; init; }
 
-    public int BackgroundImageBrightness { get; set; }
+    public int BackgroundImageBrightness { get; init; }
 
-    public BackgroundImageFit BackgroundImageFit { get; set; }
+    public BackgroundImageFit BackgroundImageFit { get; init; }
 
-    public string? BackgroundImagePath { get; set; }
+    public string? BackgroundImagePath { get; init; }
 
     // </Theme settings>
     // public List<string> PinnedCommands { get; set; } = [];
-    public List<DockBandSettings> StartBands { get; set; } = [];
+    public List<DockBandSettings> StartBands { get; init; } = [];
 
-    public List<DockBandSettings> CenterBands { get; set; } = [];
+    public List<DockBandSettings> CenterBands { get; init; } = [];
 
-    public List<DockBandSettings> EndBands { get; set; } = [];
+    public List<DockBandSettings> EndBands { get; init; } = [];
 
-    public bool ShowLabels { get; set; } = true;
+    public bool ShowLabels { get; init; } = true;
 
     [JsonIgnore]
     public IEnumerable<(string ProviderId, string CommandId)> AllPinnedCommands =>
@@ -62,9 +62,6 @@ public class DockSettings
     public DockSettings()
     {
         // Initialize with default values
-        // PinnedCommands = [
-        //     "com.microsoft.cmdpal.winget"
-        // ];
         StartBands.Add(new DockBandSettings
         {
             ProviderId = "com.microsoft.cmdpal.builtin.core",
@@ -74,7 +71,8 @@ public class DockSettings
         {
             ProviderId = "WinGet",
             CommandId = "com.microsoft.cmdpal.winget",
-            ShowLabels = false,
+            ShowTitles = false,
+            ShowSubtitles = false,
         });
 
         EndBands.Add(new DockBandSettings
@@ -94,33 +92,23 @@ public class DockSettings
 /// Settings for a specific dock band. These are per-band settings stored
 /// within the overall <see cref="DockSettings"/>.
 /// </summary>
-public class DockBandSettings
+public record DockBandSettings
 {
-    public required string ProviderId { get; set; }
+    public required string ProviderId { get; init; }
 
-    public required string CommandId { get; set; }
+    public required string CommandId { get; init; }
 
     /// <summary>
-    /// Gets or sets whether titles are shown for items in this band.
+    /// Gets whether titles are shown for items in this band.
     /// If null, falls back to dock-wide ShowLabels setting.
     /// </summary>
-    public bool? ShowTitles { get; set; }
+    public bool? ShowTitles { get; init; } = true;
 
     /// <summary>
-    /// Gets or sets whether subtitles are shown for items in this band.
+    /// Gets whether subtitles are shown for items in this band.
     /// If null, falls back to dock-wide ShowLabels setting.
     /// </summary>
-    public bool? ShowSubtitles { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value for backward compatibility. Maps to ShowTitles.
-    /// </summary>
-    [System.Text.Json.Serialization.JsonIgnore]
-    public bool? ShowLabels
-    {
-        get => ShowTitles;
-        set => ShowTitles = value;
-    }
+    public bool? ShowSubtitles { get; init; } = true;
 
     /// <summary>
     /// Resolves the effective value of <see cref="ShowTitles"/> for this band.
@@ -135,17 +123,6 @@ public class DockBandSettings
     /// dock-wide setting (passed as <paramref name="defaultValue"/>).
     /// </summary>
     public bool ResolveShowSubtitles(bool defaultValue) => ShowSubtitles ?? defaultValue;
-
-    public DockBandSettings Clone()
-    {
-        return new()
-        {
-            ProviderId = this.ProviderId,
-            CommandId = this.CommandId,
-            ShowTitles = this.ShowTitles,
-            ShowSubtitles = this.ShowSubtitles,
-        };
-    }
 }
 
 public enum DockSide
