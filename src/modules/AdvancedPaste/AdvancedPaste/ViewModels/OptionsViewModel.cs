@@ -344,11 +344,21 @@ namespace AdvancedPaste.ViewModels
             });
         }
 
-        private PasteFormat CreateStandardPasteFormat(PasteFormats format) =>
-            PasteFormat.CreateStandardFormat(format, AvailableClipboardFormats, IsCustomAIServiceEnabled, ResourceLoaderInstance.ResourceLoader.GetString);
+        private PasteFormat CreateStandardPasteFormat(PasteFormats format)
+        {
+            var providerId = GetProviderIdForFormat(format);
+            return PasteFormat.CreateStandardFormat(format, AvailableClipboardFormats, IsCustomAIServiceEnabled, ResourceLoaderInstance.ResourceLoader.GetString, providerId);
+        }
 
-        private PasteFormat CreateCustomAIPasteFormat(string name, string prompt, bool isSavedQuery) =>
-            PasteFormat.CreateCustomAIFormat(CustomAIFormat, name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled);
+        private PasteFormat CreateCustomAIPasteFormat(string name, string prompt, bool isSavedQuery, string providerId = null) =>
+            PasteFormat.CreateCustomAIFormat(CustomAIFormat, name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled, providerId);
+
+        private string GetProviderIdForFormat(PasteFormats format) =>
+            format switch
+            {
+                PasteFormats.FixSpellingAndGrammar => _userSettings.FixSpellingAndGrammarProviderId,
+                _ => string.Empty,
+            };
 
         private void UpdateAIProviderActiveFlags()
         {
@@ -421,7 +431,7 @@ namespace AdvancedPaste.ViewModels
 
             UpdateFormats(
                 CustomActionPasteFormats,
-                IsCustomAIServiceEnabled ? _userSettings.CustomActions.Select(customAction => CreateCustomAIPasteFormat(customAction.Name, customAction.Prompt, isSavedQuery: true)) : []);
+                IsCustomAIServiceEnabled ? _userSettings.CustomActions.Select(customAction => CreateCustomAIPasteFormat(customAction.Name, customAction.Prompt, isSavedQuery: true, customAction.ProviderId)) : []);
         }
 
         public void Dispose()
@@ -769,30 +779,32 @@ namespace AdvancedPaste.ViewModels
                     return;
                 }
 
-                var diffs = ComputeWordDiffs(originalText, correctedText);
+                static string NormalizeForComparison(string s) =>
+                    s.Replace('\u2018', '\'') // left single quote
+                     .Replace('\u2019', '\'') // right single quote / apostrophe
+                     .Replace('\u201C', '"') // left double quote
+                     .Replace('\u201D', '"') // right double quote
+                     .Replace('\u2013', '-') // en dash
+                     .Replace('\u2014', '-'); // em dash
 
-                if (diffs.Count == 0)
+                if (string.Equals(NormalizeForComparison(originalText), NormalizeForComparison(correctedText), StringComparison.Ordinal))
                 {
                     CoachingExplanation = null;
                     return;
                 }
 
-                // Build a diff summary and ask AI only to explain *why* each pre-identified change matters
-                var diffLines = new System.Text.StringBuilder();
-                for (int i = 0; i < diffs.Count; i++)
-                {
-                    diffLines.AppendLine(
-                        CultureInfo.CurrentCulture,
-                        $"Change {i + 1}: \"{diffs[i].Original}\" → \"{diffs[i].Corrected}\"");
-                }
+                var coachingInstruction = string.IsNullOrWhiteSpace(_userSettings.FixSpellingAndGrammarCoachingPrompt)
+                    ? AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoaching
+                    : _userSettings.FixSpellingAndGrammarCoachingPrompt;
+                var coachingInputText = $"Original:\n\"{originalText}\"\n\nCorrected:\n\"{correctedText}\"";
 
-                var coachingPrompt = $"Here is the corrected sentence for context:\n\"{correctedText}\"\n\nHere are the exact changes that were made:\n{diffLines}\nFor each change, provide the change number and a brief one-sentence explanation of why the correction improves the text.";
-
-                var coachingSystemPrompt = "You are a writing coach. You will be given a corrected sentence and a list of exact text changes already identified by a diff algorithm. Your ONLY job is to explain WHY each change improves the text. Do not verify or re-check the changes - they are correct. Just explain the linguistic reason for each one in one sentence.";
+                var coachingSystemPrompt = string.IsNullOrWhiteSpace(_userSettings.FixSpellingAndGrammarCoachingSystemPrompt)
+                    ? AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoachingSystem
+                    : _userSettings.FixSpellingAndGrammarCoachingSystemPrompt;
 
                 var result = await _customActionTransformService.TransformAsync(
-                    coachingPrompt,
-                    diffLines.ToString(),
+                    coachingInstruction,
+                    coachingInputText,
                     null,
                     _pasteActionCancellationTokenSource?.Token ?? CancellationToken.None,
                     null,
@@ -805,102 +817,6 @@ namespace AdvancedPaste.ViewModels
                 Logger.LogError("Error generating coaching explanation", ex);
                 CoachingExplanation = null;
             }
-        }
-
-        private record struct TextDiff(string Original, string Corrected);
-
-        private static List<TextDiff> ComputeWordDiffs(string original, string corrected)
-        {
-            var diffs = new List<TextDiff>();
-            var originalWords = original.Split(' ', StringSplitOptions.None);
-            var correctedWords = corrected.Split(' ', StringSplitOptions.None);
-
-            // Normalize smart quotes/dashes for comparison so invisible typographic changes don't appear as diffs
-            static string NormalizeForComparison(string s) =>
-                s.Replace('\u2018', '\'') // left single quote
-                 .Replace('\u2019', '\'') // right single quote / apostrophe
-                 .Replace('\u201C', '"') // left double quote
-                 .Replace('\u201D', '"') // right double quote
-                 .Replace('\u2013', '-') // en dash
-                 .Replace('\u2014', '-'); // em dash
-
-            // Use longest common subsequence to align words
-            int n = originalWords.Length, m = correctedWords.Length;
-            var dp = new int[n + 1, m + 1];
-
-            for (int i = 1; i <= n; i++)
-            {
-                for (int j = 1; j <= m; j++)
-                {
-                    dp[i, j] = NormalizeForComparison(originalWords[i - 1]) == NormalizeForComparison(correctedWords[j - 1])
-                        ? dp[i - 1, j - 1] + 1
-                        : Math.Max(dp[i - 1, j], dp[i, j - 1]);
-                }
-            }
-
-            // Backtrack to find diff regions
-            var origChanges = new List<(int Start, int End)>();
-            var corrChanges = new List<(int Start, int End)>();
-            int oi = n, ci = m;
-            int origEnd = n, corrEnd = m;
-
-            while (oi > 0 || ci > 0)
-            {
-                if (oi > 0 && ci > 0 && NormalizeForComparison(originalWords[oi - 1]) == NormalizeForComparison(correctedWords[ci - 1]))
-                {
-                    if (origEnd != oi || corrEnd != ci)
-                    {
-                        origChanges.Add((oi, origEnd));
-                        corrChanges.Add((ci, corrEnd));
-                    }
-
-                    oi--;
-                    ci--;
-                    origEnd = oi;
-                    corrEnd = ci;
-                }
-                else if (ci > 0 && (oi == 0 || dp[oi, ci - 1] >= dp[oi - 1, ci]))
-                {
-                    ci--;
-                }
-                else
-                {
-                    oi--;
-                }
-            }
-
-            if (origEnd != 0 || corrEnd != 0)
-            {
-                origChanges.Add((0, origEnd));
-                corrChanges.Add((0, corrEnd));
-            }
-
-            origChanges.Reverse();
-            corrChanges.Reverse();
-
-            for (int i = 0; i < origChanges.Count; i++)
-            {
-                var origSlice = string.Join(' ', originalWords[origChanges[i].Start..origChanges[i].End]);
-                var corrSlice = string.Join(' ', correctedWords[corrChanges[i].Start..corrChanges[i].End]);
-
-                if (NormalizeForComparison(origSlice) != NormalizeForComparison(corrSlice))
-                {
-                    // Add surrounding context (1 word each side) for readability
-                    var ctxStart = Math.Max(0, origChanges[i].Start - 1);
-                    var ctxEnd = Math.Min(originalWords.Length, origChanges[i].End + 1);
-                    var corrCtxStart = Math.Max(0, corrChanges[i].Start - 1);
-                    var corrCtxEnd = Math.Min(correctedWords.Length, corrChanges[i].End + 1);
-
-                    var origContext = string.Join(' ', originalWords[ctxStart..ctxEnd]);
-                    var corrContext = string.Join(' ', correctedWords[corrCtxStart..corrCtxEnd]);
-
-                    diffs.Add(new TextDiff(
-                        Original: origSlice.Length > 0 ? $"{origContext}" : "(removed)",
-                        Corrected: corrSlice.Length > 0 ? $"{corrContext}" : "(removed)"));
-                }
-            }
-
-            return diffs;
         }
 
         internal async Task ExecutePasteFormatAsync(VirtualKey key)

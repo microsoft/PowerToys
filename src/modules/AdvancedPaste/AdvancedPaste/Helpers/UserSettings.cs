@@ -48,7 +48,13 @@ namespace AdvancedPaste.Settings
 
         public string FixSpellingAndGrammarPrompt { get; private set; } = string.Empty;
 
+        public string FixSpellingAndGrammarProviderId { get; private set; } = string.Empty;
+
         public bool FixSpellingAndGrammarCoachingEnabled { get; private set; }
+
+        public string FixSpellingAndGrammarCoachingPrompt { get; private set; } = string.Empty;
+
+        public string FixSpellingAndGrammarCoachingSystemPrompt { get; private set; } = string.Empty;
 
         public PasteAIConfiguration PasteAIConfiguration { get; private set; }
 
@@ -119,7 +125,10 @@ namespace AdvancedPaste.Settings
 
                                 var fixSpellingAction = properties.AdditionalActions.FixSpellingAndGrammar;
                                 FixSpellingAndGrammarPrompt = fixSpellingAction.Prompt ?? string.Empty;
+                                FixSpellingAndGrammarProviderId = fixSpellingAction.ProviderId ?? string.Empty;
                                 FixSpellingAndGrammarCoachingEnabled = fixSpellingAction.CoachingEnabled;
+                                FixSpellingAndGrammarCoachingPrompt = fixSpellingAction.CoachingPrompt ?? string.Empty;
+                                FixSpellingAndGrammarCoachingSystemPrompt = fixSpellingAction.CoachingSystemPrompt ?? string.Empty;
 
                                 var sourceAdditionalActions = properties.AdditionalActions;
                                 (PasteFormats Format, IAdvancedPasteAction[] Actions)[] additionalActionFormats =

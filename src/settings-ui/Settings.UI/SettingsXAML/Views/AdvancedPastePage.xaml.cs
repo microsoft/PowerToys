@@ -1163,5 +1163,41 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PasteAIProviderConfigurationDialog.Title = PasteAiDialogDefaultTitle;
             PasteAIApiKeyPasswordBox.Password = string.Empty;
         }
+
+        private string GetDefaultProviderLabel()
+        {
+            try
+            {
+                return Microsoft.PowerToys.Settings.UI.Helpers.ResourceLoaderInstance.ResourceLoader.GetString("AdvancedPaste_ActionProvider_Default");
+            }
+            catch
+            {
+                return "Default (use active provider)";
+            }
+        }
+
+        private void ResetPrompt_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is AdvancedPasteAdditionalAction action)
+            {
+                action.Prompt = string.Empty;
+            }
+        }
+
+        private void ResetCoachingPrompt_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is AdvancedPasteAdditionalAction action)
+            {
+                action.CoachingPrompt = string.Empty;
+            }
+        }
+
+        private void ResetCoachingSystemPrompt_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is AdvancedPasteAdditionalAction action)
+            {
+                action.CoachingSystemPrompt = string.Empty;
+            }
+        }
     }
 }

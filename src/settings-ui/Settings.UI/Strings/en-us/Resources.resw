@@ -1993,11 +1993,54 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FixSpellingAndGrammar_CustomPromptTextBox.PlaceholderText" xml:space="preserve">
     <value>Fix all spelling and grammar errors in the following text. Return only the corrected text without any additional explanation or commentary.</value>
   </data>
+  <data name="AdvancedPaste_ActionProvider.Header" xml:space="preserve">
+    <value>AI model</value>
+    <comment>Label for selecting which AI model provider to use for this action</comment>
+  </data>
+  <data name="AdvancedPaste_ActionProvider.Description" xml:space="preserve">
+    <value>Select the AI model to use for this action. Leave as default to use the globally active provider.</value>
+  </data>
+  <data name="AdvancedPaste_ActionProvider_Default" xml:space="preserve">
+    <value>Default (use active provider)</value>
+    <comment>Option in provider picker that means use the globally configured provider</comment>
+  </data>
+  <data name="AdvancedPaste_ResetPrompt.Content" xml:space="preserve">
+    <value>Reset to default</value>
+    <comment>Button to reset a customized prompt back to the default value</comment>
+  </data>
+  <data name="AdvancedPaste_CustomAction_Provider.Header" xml:space="preserve">
+    <value>AI model</value>
+    <comment>Label for selecting the AI model provider in the custom action dialog</comment>
+  </data>
   <data name="FixSpellingAndGrammar_CoachingEnabled.Header" xml:space="preserve">
     <value>Coaching mode</value>
   </data>
   <data name="FixSpellingAndGrammar_CoachingEnabled.Description" xml:space="preserve">
     <value>When enabled, shows a preview with an explanation of what was fixed and why, even when using a direct keyboard shortcut.</value>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingPrompt.Header" xml:space="preserve">
+    <value>Coaching prompt</value>
+    <comment>Header for the coaching prompt customization text box</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingPrompt.Description" xml:space="preserve">
+    <value>Override the AI prompt used when generating the coaching explanation. Leave empty to use the default prompt.</value>
+    <comment>Description for the coaching prompt customization</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingPromptTextBox.PlaceholderText" xml:space="preserve">
+    <value>Briefly explain what was changed and why in terms of language rules. Be concise.</value>
+    <comment>Default coaching prompt shown as placeholder</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingSystemPrompt.Header" xml:space="preserve">
+    <value>Coaching system prompt</value>
+    <comment>Header for the coaching system prompt customization text box</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingSystemPrompt.Description" xml:space="preserve">
+    <value>Override the system prompt that sets the AI's role for coaching explanations. Leave empty to use the default.</value>
+    <comment>Description for the coaching system prompt customization</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingSystemPromptTextBox.PlaceholderText" xml:space="preserve">
+    <value>You are a writing coach. You will be given an original sentence and a corrected version.</value>
+    <comment>Default coaching system prompt shown as placeholder</comment>
   </data>
   <data name="PasteAsFile.Header" xml:space="preserve">
     <value>Paste as file</value>
@@ -4397,11 +4440,11 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Enables display of clipboard contents preview in the Advanced Paste window</comment>
   </data>
   <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Header" xml:space="preserve">
-    <value>Auto-copy selection for custom action hotkeys</value>
+    <value>Use selected text for all hotkeys</value>
     <comment>Advanced Paste is a product name</comment>
   </data>
   <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Description" xml:space="preserve">
-    <value>Attempts to copy the current selection before running a custom action shortcut</value>
+    <value>Attempts to copy the current text selection before running any Advanced Paste shortcut. Falls back to clipboard contents if nothing is selected.</value>
     <comment>Advanced Paste is a product name</comment>
   </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">

@@ -924,6 +924,12 @@ public:
         m_triggerEventWaiter.start(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_EVENT, [this](DWORD) {
             // Same logic as hotkeyId == 1 (m_advanced_paste_ui_hotkey)
             Logger::trace(L"AdvancedPaste ShowUI event triggered");
+
+            if (m_auto_copy_selection_custom_action)
+            {
+                send_copy_selection(); // best-effort; ignore failure
+            }
+
             m_process_manager.start();
             m_process_manager.bring_to_front();
             m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
@@ -974,12 +980,11 @@ public:
                 }
             }
 
-            if (is_custom_action_hotkey && m_auto_copy_selection_custom_action)
+            // Try to capture selected text for all hotkey actions when the setting is enabled.
+            // If nothing is selected (clipboard unchanged), fall through to use existing clipboard content.
+            if (m_auto_copy_selection_custom_action)
             {
-                if (!send_copy_selection())
-                {
-                    return false;
-                }
+                send_copy_selection(); // best-effort; ignore failure
             }
 
             m_process_manager.start();

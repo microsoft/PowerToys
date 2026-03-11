@@ -14,6 +14,9 @@ public sealed partial class AdvancedPasteAdditionalAction : Observable, IAdvance
     private HotkeySettings _shortcut = new();
     private bool _isShown;
     private string _prompt = string.Empty;
+    private string _coachingPrompt = string.Empty;
+    private string _coachingSystemPrompt = string.Empty;
+    private string _providerId = string.Empty;
     private bool _coachingEnabled;
     private bool _hasConflict;
     private string _tooltip;
@@ -47,6 +50,27 @@ public sealed partial class AdvancedPasteAdditionalAction : Observable, IAdvance
     {
         get => _prompt;
         set => Set(ref _prompt, value ?? string.Empty);
+    }
+
+    [JsonPropertyName("coaching-prompt")]
+    public string CoachingPrompt
+    {
+        get => _coachingPrompt;
+        set => Set(ref _coachingPrompt, value ?? string.Empty);
+    }
+
+    [JsonPropertyName("coaching-system-prompt")]
+    public string CoachingSystemPrompt
+    {
+        get => _coachingSystemPrompt;
+        set => Set(ref _coachingSystemPrompt, value ?? string.Empty);
+    }
+
+    [JsonPropertyName("provider-id")]
+    public string ProviderId
+    {
+        get => _providerId;
+        set => Set(ref _providerId, value ?? string.Empty);
     }
 
     [JsonPropertyName("coaching-enabled")]

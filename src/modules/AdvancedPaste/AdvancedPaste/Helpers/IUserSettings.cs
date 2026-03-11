@@ -27,7 +27,13 @@ namespace AdvancedPaste.Settings
 
         public string FixSpellingAndGrammarPrompt { get; }
 
+        public string FixSpellingAndGrammarProviderId { get; }
+
         public bool FixSpellingAndGrammarCoachingEnabled { get; }
+
+        public string FixSpellingAndGrammarCoachingPrompt { get; }
+
+        public string FixSpellingAndGrammarCoachingSystemPrompt { get; }
 
         public PasteAIConfiguration PasteAIConfiguration { get; }
 

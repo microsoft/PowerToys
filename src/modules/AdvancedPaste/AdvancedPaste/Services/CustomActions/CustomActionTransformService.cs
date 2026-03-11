@@ -40,10 +40,10 @@ namespace AdvancedPaste.Services.CustomActions
             this.userSettings = userSettings;
         }
 
-        public async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress, string systemPromptOverride = null)
+        public async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress, string systemPromptOverride = null, string providerIdOverride = null)
         {
             var pasteConfig = userSettings?.PasteAIConfiguration;
-            var providerConfig = BuildProviderConfig(pasteConfig);
+            var providerConfig = BuildProviderConfig(pasteConfig, providerIdOverride);
 
             if (systemPromptOverride != null)
             {
@@ -153,10 +153,23 @@ namespace AdvancedPaste.Services.CustomActions
             return serviceType == AIServiceType.Unknown ? AIServiceType.OpenAI : serviceType;
         }
 
-        private PasteAIConfig BuildProviderConfig(PasteAIConfiguration config)
+        private PasteAIConfig BuildProviderConfig(PasteAIConfiguration config, string providerIdOverride = null)
         {
             config ??= new PasteAIConfiguration();
-            var provider = config.ActiveProvider ?? config.Providers?.FirstOrDefault() ?? new PasteAIProviderDefinition();
+            PasteAIProviderDefinition provider;
+
+            if (!string.IsNullOrWhiteSpace(providerIdOverride))
+            {
+                provider = config.Providers?.FirstOrDefault(p => string.Equals(p.Id, providerIdOverride, StringComparison.OrdinalIgnoreCase))
+                           ?? config.ActiveProvider
+                           ?? config.Providers?.FirstOrDefault()
+                           ?? new PasteAIProviderDefinition();
+            }
+            else
+            {
+                provider = config.ActiveProvider ?? config.Providers?.FirstOrDefault() ?? new PasteAIProviderDefinition();
+            }
+
             var serviceType = NormalizeServiceType(provider.ServiceTypeKind);
             var systemPrompt = string.IsNullOrWhiteSpace(provider.SystemPrompt) ? DefaultSystemPrompt : provider.SystemPrompt;
             var apiKey = AcquireApiKey(serviceType);
