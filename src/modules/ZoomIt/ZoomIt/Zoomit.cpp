@@ -6811,7 +6811,12 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
             RestoreForeground();
 
         if( FAILED( hr ) )
-            throw winrt::hresult_error( hr );
+        {
+            if( hr != HRESULT_FROM_WIN32( ERROR_CANCELLED ) )
+            {
+                throw winrt::hresult_error( hr );
+            }
+        }
     }
 
     // Ensure globals are reset after the save/cleanup path completes
