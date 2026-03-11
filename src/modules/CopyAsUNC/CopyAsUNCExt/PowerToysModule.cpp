@@ -37,9 +37,7 @@ public:
 
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
-        // TODO: Add GPO entry to gpo.h and replace with:
-        // return powertoys_gpo::getConfiguredCopyAsUNCEnabledValue();
-        return powertoys_gpo::gpo_rule_configured_not_configured;
+        return powertoys_gpo::getConfiguredCopyAsUNCEnabledValue();
     }
 
     virtual bool get_config(_Out_ PWSTR buffer, _Out_ int* buffer_size) override

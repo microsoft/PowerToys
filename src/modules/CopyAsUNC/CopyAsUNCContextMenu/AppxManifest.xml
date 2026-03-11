@@ -27,8 +27,6 @@
     <rescap:Capability Name="unvirtualizedResources"/>
   </Capabilities>
   <Applications>
-    <!-- TODO: CopyAsUNC has no UI executable. Verify with PowerToys team what to use here.
-         PowerRename uses its own UI exe; since we have none, PowerToys.exe may be appropriate. -->
     <Application Id="Microsoft.PowerToys.CopyAsUNCContextMenu" Executable="PowerToys.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
       <uap:VisualElements AppListEntry="none" DisplayName="PowerToys Copy as UNC Context Menu" Description="CopyAsUNCContextMenu" BackgroundColor="transparent" Square150x150Logo="Assets\CopyAsUNC\Square150x150Logo.png" Square44x44Logo="Assets\CopyAsUNC\Square44x44Logo.png">
         <uap:DefaultTile Wide310x150Logo="Assets\CopyAsUNC\Wide310x150Logo.png" Square310x310Logo="Assets\CopyAsUNC\LargeTile.png" Square71x71Logo="Assets\CopyAsUNC\SmallTile.png"></uap:DefaultTile>
