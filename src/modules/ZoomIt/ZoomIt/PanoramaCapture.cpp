@@ -137,7 +137,7 @@ std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t*
 // Temporary debugging limit: keep frame-limit captures short in Debug so the
 // limit-stop flow can be exercised quickly and repeatedly.
 #ifdef _DEBUG
-static constexpr size_t kMaxCaptureFrames = 120;
+static constexpr size_t kMaxCaptureFrames = 1024;
 #else
 static constexpr size_t kMaxCaptureFrames = 1024;
 #endif
@@ -2454,6 +2454,50 @@ static bool IsLowContrastSeedFrame( HBITMAP frame,
         darkBaseline && ( spread < 44.0 && stdDev < 22.0 && edgeDelta < 11.0 );
 
     return definitelyLowContrast || likelyDarkLowContrast;
+}
+
+// Lightweight per-frame brightness statistics for capture-time rejection.
+// Returns average luma and luma standard deviation using sparse sampling
+// (every 16th pixel in both axes).  Used to detect application-redraw
+// blanking frames (e.g. Outlook mid-redraw) where the entire frame is
+// a uniform flat color with near-zero variance.
+static void ComputeFrameBrightnessStats( HBITMAP hBitmap,
+                                         double& outAvgLuma,
+                                         double& outStdDev )
+{
+    outAvgLuma = 0.0;
+    outStdDev = 0.0;
+
+    std::vector<BYTE> pixels;
+    int width = 0;
+    int height = 0;
+    if( !ReadBitmapPixels32( hBitmap, pixels, width, height ) || width <= 0 || height <= 0 )
+        return;
+
+    const int step = 16;
+    unsigned __int64 sum = 0;
+    unsigned __int64 sumSq = 0;
+    unsigned __int64 count = 0;
+
+    for( int y = 0; y < height; y += step )
+    {
+        for( int x = 0; x < width; x += step )
+        {
+            const int idx = ( y * width + x ) * 4;
+            const int luma = ( pixels[idx + 2] * 77 + pixels[idx + 1] * 150 + pixels[idx + 0] * 29 ) >> 8;
+            sum += static_cast<unsigned __int64>( luma );
+            sumSq += static_cast<unsigned __int64>( luma * luma );
+            count++;
+        }
+    }
+
+    if( count == 0 )
+        return;
+
+    const double mean = static_cast<double>( sum ) / static_cast<double>( count );
+    const double meanSq = static_cast<double>( sumSq ) / static_cast<double>( count );
+    outAvgLuma = mean;
+    outStdDev = sqrt( max( 0.0, meanSq - mean * mean ) );
 }
 
 // Per-frame "very low entropy" detection
@@ -8347,7 +8391,16 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     size_t subPixelDropCount = 0;
     size_t tornFrameCount = 0;
     size_t captureIteration = 0;
+    size_t redrawDropCount = 0;
     bool frameLimitStop = false;
+
+    // Running brightness statistics for redraw-frame detection.
+    // Frames whose luma drops dramatically and whose variance collapses
+    // to near-zero are application-redraw blanking frames (e.g. Outlook
+    // paints a flat dark background while re-rendering).
+    double runningAvgLuma = 0.0;
+    double runningStdDev = 0.0;
+    ComputeFrameBrightnessStats( firstFrame, runningAvgLuma, runningStdDev );
 
     // Resolve DwmFlush once for the capture loop.  Used to synchronize
     // with the DWM composition cycle so BitBlt captures fully-composed
@@ -8426,6 +8479,44 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             continue;
         }
 
+        // Reject application-redraw blanking frames.  These are captured
+        // mid-repaint when the application clears its window to a flat
+        // background colour before re-rendering visible content.  They
+        // look like a massive brightness drop with near-zero variance.
+        {
+            double frameLuma = 0.0;
+            double frameStdDev = 0.0;
+            ComputeFrameBrightnessStats( frame, frameLuma, frameStdDev );
+
+            // A redraw frame is characterised by (a) very low luma
+            // variance (essentially a single flat colour) AND (b) a
+            // significant brightness drop compared to the running
+            // average of previously accepted frames.
+            const bool flatFrame = frameStdDev < 3.0;
+            const bool lumaDrop = runningAvgLuma > 10.0 && frameLuma < runningAvgLuma * 0.55;
+            if( flatFrame && lumaDrop )
+            {
+                redrawDropCount++;
+                StitchLog( L"[Panorama/Capture] Redraw-blank frame discarded: luma=%.1f stdDev=%.1f runningLuma=%.1f (grabbed=%zu count=%zu iteration=%zu)\n",
+                           frameLuma,
+                           frameStdDev,
+                           runningAvgLuma,
+                           debugGrabbedFrameCount,
+                           redrawDropCount,
+                           captureIteration );
+                DeleteObject( frame );
+                continue;
+            }
+
+            // Update running brightness with exponential moving average.
+            // Weight recent frames more heavily so a gradual content
+            // change (e.g. scrolling from a bright region to a darker
+            // one) doesn't trigger false rejections.
+            constexpr double kLumaAlpha = 0.15;
+            runningAvgLuma = runningAvgLuma * ( 1.0 - kLumaAlpha ) + frameLuma * kLumaAlpha;
+            runningStdDev  = runningStdDev  * ( 1.0 - kLumaAlpha ) + frameStdDev * kLumaAlpha;
+        }
+
         frames.push_back( frame );
         frame = nullptr;
         StitchLog( L"[Panorama/Capture] Captured moving frame #%zu (grabbed=%zu) at iteration=%zu\n",
@@ -8444,24 +8535,26 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         }
     }
 
-    StitchLog( L"[Panorama/Capture] Loop exited stopRequested=%d frameLimitStop=%d frames=%zu duplicates=%zu subpixel=%zu torn=%zu iterations=%zu\n",
+    StitchLog( L"[Panorama/Capture] Loop exited stopRequested=%d frameLimitStop=%d frames=%zu duplicates=%zu subpixel=%zu torn=%zu redraw=%zu iterations=%zu\n",
                g_PanoramaStopRequested ? 1 : 0,
                frameLimitStop ? 1 : 0,
                frames.size(),
                duplicateFrameCount,
                subPixelDropCount,
                tornFrameCount,
+               redrawDropCount,
                captureIteration );
 
     if( PanoramaDebugEnabled() && !debugDumpDirectory.empty() )
     {
         wchar_t statsText[256]{};
         swprintf_s( statsText,
-                    L"framesAccepted=%zu\nduplicates=%zu\nsubpixel=%zu\ntorn=%zu\niterations=%zu\nstopRequested=%d\nframeLimitStop=%d\n",
+                    L"framesAccepted=%zu\nduplicates=%zu\nsubpixel=%zu\ntorn=%zu\nredraw=%zu\niterations=%zu\nstopRequested=%d\nframeLimitStop=%d\n",
                     frames.size(),
                     duplicateFrameCount,
                     subPixelDropCount,
                     tornFrameCount,
+                    redrawDropCount,
                     captureIteration,
                     g_PanoramaStopRequested ? 1 : 0,
                     frameLimitStop ? 1 : 0 );
