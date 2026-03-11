@@ -46,7 +46,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ScrollViewer Grid.Row="1">
+        <ScrollViewer x:Name="RootScrollViewer" Grid.Row="1">
             <Grid Padding="16">
                 <StackPanel
                     MaxWidth="1000"
@@ -80,10 +80,14 @@
                         <controls:Case Value="True">
                             <StackPanel Orientation="Vertical">
                                 <TextBlock x:Uid="ExtensionCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-                                <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
+                                <ItemsRepeater
+                                    x:Name="TopLevelCommandsRepeater"
+                                    ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}"
+                                    Layout="{StaticResource VerticalStackLayout}">
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="viewModels:TopLevelViewModel">
                                             <controls:SettingsExpander
+                                                x:Name="TopLevelCommandExpander"
                                                 DataContext="{x:Bind}"
                                                 Description="{x:Bind Subtitle, Mode=OneWay}"
                                                 Header="{x:Bind Title, Mode=OneWay}">
@@ -103,10 +107,11 @@
                                                 <!--  Content goes here  -->
                                                 <controls:SettingsExpander.Items>
                                                     <controls:SettingsCard x:Uid="Settings_ExtensionPage_GlobalHotkey_SettingsCard">
-                                                        <cpcontrols:ShortcutControl HotkeySettings="{x:Bind Hotkey, Mode=TwoWay}" />
+                                                        <cpcontrols:ShortcutControl x:Name="GlobalHotkeyShortcutControl" HotkeySettings="{x:Bind Hotkey, Mode=TwoWay}" />
                                                     </controls:SettingsCard>
                                                     <controls:SettingsCard x:Uid="Settings_ExtensionPage_Alias_SettingsCard">
                                                         <TextBox
+                                                            x:Name="AliasTextBox"
                                                             x:Uid="Settings_ExtensionPage_Alias_PlaceholderText"
                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                             Text="{x:Bind AliasText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -187,6 +192,7 @@
                                 </ItemsRepeater>
 
                                 <TextBlock
+                                    x:Name="ExtensionSettingsHeaderTextBlock"
                                     x:Uid="ExtensionSettingsHeader"
                                     Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                                     Visibility="{x:Bind ViewModel.HasSettings}" />
@@ -211,7 +217,7 @@
                                                 IsIndeterminate="True" />
                                         </controls:Case>
                                         <controls:Case Value="False">
-                                            <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
+                                            <cmdpalUI:ContentPage x:Name="ExtensionSettingsContentPage" ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
                                         </controls:Case>
                                     </controls:SwitchPresenter>
                                 </Frame>

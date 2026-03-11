@@ -4,6 +4,7 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -123,9 +124,10 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         List<IContextItem?> contextItems)
     {
         var itemId = topLevelItem.Id;
-        var supportsPinning = providerContext.SupportsPinning;
-        List<IContextItem> moreCommands = [];
+        List<IContextItem> settingsCommands = [];
+        List<IContextItem> pinningCommands = [];
         var commandItem = topLevelItem.ItemViewModel;
+        var hasPrimaryCommand = !string.IsNullOrEmpty(commandItem.Command.Name);
 
         // Add pin/unpin commands for pinning items to the top-level or to
         // the dock.
@@ -133,6 +135,16 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
         {
             var providerSettings = _settingsModel.GetProviderSettings(provider);
+            var canOpenCommandSettings = !topLevelItem.IsFallback && !topLevelItem.IsDockBand;
+            var replacedProviderSettingsCommand = ReplaceProviderSettingsCommands(provider, _settingsModel, contextItems);
+
+            TryAddProviderSettingsCommand(provider, _settingsModel, contextItems, settingsCommands, replacedProviderSettingsCommand);
+
+            if (canOpenCommandSettings)
+            {
+                settingsCommands.Add(new CommandContextItem(new OpenCommandAliasSettingsCommand(provider, _settingsModel, itemId)));
+                settingsCommands.Add(new CommandContextItem(new OpenCommandGlobalHotkeySettingsCommand(provider, _settingsModel, itemId)));
+            }
 
             var isPinnedSubCommand = providerSettings.PinnedCommandIds.Contains(itemId);
             if (isPinnedSubCommand)
@@ -146,19 +158,138 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                        _topLevelCommandManager);
 
                 var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
-                moreCommands.Add(contextItem);
+                pinningCommands.Add(contextItem);
             }
 
-            TryAddPinToDockCommand(providerSettings, itemId, providerId, moreCommands, commandItem);
+            TryAddPinToDockCommand(providerSettings, itemId, providerId, pinningCommands, commandItem);
         }
 
-        if (moreCommands.Count > 0)
+        AppendContextItemGroup(contextItems, settingsCommands, hasPrimaryCommand);
+        AppendContextItemGroup(contextItems, pinningCommands, hasPrimaryCommand);
+    }
+
+    private static void TryAddProviderSettingsCommand(
+        CommandProviderWrapper provider,
+        SettingsModel settingsModel,
+        IEnumerable<IContextItem?> contextItems,
+        List<IContextItem> moreCommands,
+        bool providerSettingsCommandAlreadyHandled)
+    {
+        if (providerSettingsCommandAlreadyHandled)
         {
-            moreCommands.Insert(0, new Separator());
-
-            // var moreResults = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(moreCommands.ToArray(), commandItem);
-            contextItems.AddRange(moreCommands);
+            return;
         }
+
+        var settingsPage = provider.Settings?.SettingsPageCommand;
+        if (settingsPage is null || HasSettingsPageCommand(contextItems, settingsPage))
+        {
+            return;
+        }
+
+        moreCommands.Add(new CommandContextItem(new OpenExtensionSettingsPageCommand(provider, settingsModel)));
+    }
+
+    private static bool ReplaceProviderSettingsCommands(
+        CommandProviderWrapper provider,
+        SettingsModel settingsModel,
+        IList<IContextItem?> contextItems)
+    {
+        var settingsPage = provider.Settings?.SettingsPageCommand;
+        if (settingsPage is null)
+        {
+            return false;
+        }
+
+        var replacedAny = false;
+        for (var i = 0; i < contextItems.Count; i++)
+        {
+            if (contextItems[i] is not ICommandContextItem contextItem)
+            {
+                continue;
+            }
+
+            try
+            {
+                if (contextItem.Command is IContentPage page &&
+                    AreSameSettingsPage(page, settingsPage))
+                {
+                    contextItems[i] = CreateReplacementSettingsContextItem(provider, settingsModel, contextItem);
+                    replacedAny = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Extension object may be unavailable.
+                Logger.LogError($"Failed to check settings page for replacement", ex);
+            }
+        }
+
+        return replacedAny;
+    }
+
+    private static CommandContextItem CreateReplacementSettingsContextItem(
+        CommandProviderWrapper provider,
+        SettingsModel settingsModel,
+        ICommandContextItem source) => new(new OpenExtensionSettingsPageCommand(provider, settingsModel))
+    {
+        IsCritical = source.IsCritical,
+        RequestedShortcut = source.RequestedShortcut,
+        Title = source.Title,
+        Subtitle = source.Subtitle,
+        Icon = source.Icon,
+    };
+
+    private static bool HasSettingsPageCommand(IEnumerable<IContextItem?> contextItems, IContentPage settingsPage)
+    {
+        foreach (var item in contextItems)
+        {
+            if (item is ICommandContextItem contextItem &&
+                contextItem.Command is IContentPage page &&
+                AreSameSettingsPage(page, settingsPage))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool AreSameSettingsPage(IContentPage existingPage, IContentPage settingsPage)
+    {
+        if (ReferenceEquals(existingPage, settingsPage) || Equals(existingPage, settingsPage))
+        {
+            return true;
+        }
+
+        if (!string.IsNullOrEmpty(existingPage.Id) && existingPage.Id == settingsPage.Id)
+        {
+            return true;
+        }
+
+        if (existingPage.GetType() == settingsPage.GetType())
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void AppendContextItemGroup(List<IContextItem?> contextItems, List<IContextItem> group, bool hasPrimaryCommand)
+    {
+        if (group.Count == 0)
+        {
+            return;
+        }
+
+        var hasExistingMenuItems = hasPrimaryCommand || contextItems.Count > 0;
+        if (hasExistingMenuItems &&
+            (contextItems.Count == 0 ||
+             contextItems[^1] is not ISeparatorContextItem))
+        {
+            contextItems.Add(new Separator());
+        }
+
+        contextItems.AddRange(group);
     }
 
     private void TryAddPinToDockCommand(
@@ -319,6 +450,77 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         {
             PinToDockMessage message = new(_providerId, _commandId, false);
             WeakReferenceMessenger.Default.Send(message);
+        }
+    }
+
+    private abstract partial class OpenExtensionSettingsCommand : InvokableCommand
+    {
+        private readonly CommandProviderWrapper _provider;
+        private readonly SettingsModel _settingsModel;
+        private readonly string? _commandId;
+
+        protected abstract string NameResource { get; }
+
+        protected abstract ExtensionSettingsFocusTarget FocusTarget { get; }
+
+        public override string Name => RS_.GetString(NameResource);
+
+        protected OpenExtensionSettingsCommand(CommandProviderWrapper provider, SettingsModel settingsModel, string? commandId)
+        {
+            _provider = provider;
+            _settingsModel = settingsModel;
+            _commandId = commandId;
+        }
+
+        public override CommandResult Invoke()
+        {
+            var providerSettings = _settingsModel.GetProviderSettings(_provider);
+            var providerSettingsViewModel = new ProviderSettingsViewModel(_provider, providerSettings, _settingsModel);
+            var extensionSettingsRequest = new ExtensionSettingsNavigationRequest(providerSettingsViewModel, _commandId, FocusTarget);
+            WeakReferenceMessenger.Default.Send(new OpenSettingsMessage(ExtensionSettingsRequest: extensionSettingsRequest));
+            return CommandResult.KeepOpen();
+        }
+    }
+
+    private sealed partial class OpenExtensionSettingsPageCommand : OpenExtensionSettingsCommand
+    {
+        protected override string NameResource => "open_extension_settings_command_name";
+
+        protected override ExtensionSettingsFocusTarget FocusTarget => ExtensionSettingsFocusTarget.SettingsPage;
+
+        public override IconInfo Icon => Icons.SettingsIcon;
+
+        public OpenExtensionSettingsPageCommand(CommandProviderWrapper provider, SettingsModel settingsModel)
+            : base(provider, settingsModel, commandId: null)
+        {
+        }
+    }
+
+    private sealed partial class OpenCommandAliasSettingsCommand : OpenExtensionSettingsCommand
+    {
+        protected override string NameResource => "change_alias_command_name";
+
+        protected override ExtensionSettingsFocusTarget FocusTarget => ExtensionSettingsFocusTarget.Alias;
+
+        public override IconInfo Icon => Icons.AliasIcon;
+
+        public OpenCommandAliasSettingsCommand(CommandProviderWrapper provider, SettingsModel settingsModel, string commandId)
+            : base(provider, settingsModel, commandId)
+        {
+        }
+    }
+
+    private sealed partial class OpenCommandGlobalHotkeySettingsCommand : OpenExtensionSettingsCommand
+    {
+        protected override string NameResource => "change_global_hotkey_command_name";
+
+        protected override ExtensionSettingsFocusTarget FocusTarget => ExtensionSettingsFocusTarget.GlobalHotkey;
+
+        public override IconInfo Icon => Icons.GlobalHotkeyIcon;
+
+        public OpenCommandGlobalHotkeySettingsCommand(CommandProviderWrapper provider, SettingsModel settingsModel, string commandId)
+            : base(provider, settingsModel, commandId)
+        {
         }
     }
 }

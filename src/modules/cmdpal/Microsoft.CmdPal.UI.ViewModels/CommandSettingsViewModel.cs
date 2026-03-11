@@ -12,6 +12,43 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings, CommandProviderWrapper provider, TaskScheduler mainThread)
 {
     private readonly ExtensionObject<ICommandSettings> _model = new(_unsafeSettings);
+    private readonly Lock _settingsPageCommandLock = new();
+    private IContentPage? _settingsPageCommand;
+
+    public IContentPage? SettingsPageCommand
+    {
+        get
+        {
+            if (_settingsPageCommand is not null)
+            {
+                return _settingsPageCommand;
+            }
+
+            lock (_settingsPageCommandLock)
+            {
+                if (_settingsPageCommand is not null)
+                {
+                    return _settingsPageCommand;
+                }
+
+                try
+                {
+                    var settingsPageCommand = _model.Unsafe?.SettingsPage;
+                    if (settingsPageCommand is not null)
+                    {
+                        _settingsPageCommand = settingsPageCommand;
+                    }
+
+                    return settingsPageCommand;
+                }
+                catch (Exception ex)
+                {
+                    CoreLogger.LogError("Failed to load settings page command", ex);
+                    return null;
+                }
+            }
+        }
+    }
 
     public ContentPageViewModel? SettingsPage { get; private set; }
 
@@ -23,15 +60,9 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
 
     private void UnsafeInitializeProperties()
     {
-        var model = _model.Unsafe;
-        if (model is null)
+        if (SettingsPageCommand is not null)
         {
-            return;
-        }
-
-        if (model.SettingsPage is not null)
-        {
-            SettingsPage = new CommandPaletteContentPageViewModel(model.SettingsPage, mainThread, provider.ExtensionHost, provider.GetProviderContext());
+            SettingsPage = new CommandPaletteContentPageViewModel(SettingsPageCommand, mainThread, provider.ExtensionHost, provider.GetProviderContext());
             SettingsPage.InitializeProperties();
         }
     }
