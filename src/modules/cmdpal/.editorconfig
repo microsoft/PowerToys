@@ -6,12 +6,13 @@
 # Global settings
 ##################################################
 
-[*.{cs,vb}]
+[*.{cs,vb,idl}]
 tab_width = 4
 indent_size = 4
 end_of_line = crlf
 indent_style = space
 insert_final_newline = true
+trim_trailing_whitespace = true
 file_header_template = Copyright (c) Microsoft Corporation\nThe Microsoft Corporation licenses this file to you under the MIT license.\nSee the LICENSE file in the project root for more information.
 
 ##################################################
