@@ -335,6 +335,10 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             mapping->targetText = AllocateAndCopyString(L"");
             mapping->programPath = AllocateAndCopyString(L"");
             mapping->programArgs = AllocateAndCopyString(L"");
+            mapping->startInDirectory = AllocateAndCopyString(L"");
+            mapping->elevation = 0;
+            mapping->ifRunningAction = 0;
+            mapping->visibility = 0;
             mapping->uriToOpen = AllocateAndCopyString(L"");
         }
         else if (targetShortcutUnion.index() == 1)
@@ -351,6 +355,10 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(targetShortcut.runProgramFilePath);
                 mapping->programArgs = AllocateAndCopyString(targetShortcut.runProgramArgs);
+                mapping->startInDirectory = AllocateAndCopyString(targetShortcut.runProgramStartInDir);
+                mapping->elevation = static_cast<int>(targetShortcut.elevationLevel);
+                mapping->ifRunningAction = static_cast<int>(targetShortcut.alreadyRunningAction);
+                mapping->visibility = static_cast<int>(targetShortcut.startWindowType);
                 mapping->uriToOpen = AllocateAndCopyString(L"");
                 break;
 
@@ -359,6 +367,10 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(L"");
                 mapping->programArgs = AllocateAndCopyString(L"");
+                mapping->startInDirectory = AllocateAndCopyString(L"");
+                mapping->elevation = 0;
+                mapping->ifRunningAction = 0;
+                mapping->visibility = 0;
                 mapping->uriToOpen = AllocateAndCopyString(targetShortcut.uriToOpen);
                 break;
 
@@ -367,6 +379,10 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(L"");
                 mapping->programArgs = AllocateAndCopyString(L"");
+                mapping->startInDirectory = AllocateAndCopyString(L"");
+                mapping->elevation = 0;
+                mapping->ifRunningAction = 0;
+                mapping->visibility = 0;
                 mapping->uriToOpen = AllocateAndCopyString(L"");
                 break;
             }
@@ -375,10 +391,14 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         {
             std::wstring text = std::get<std::wstring>(targetShortcutUnion);
             mapping->targetKeys = AllocateAndCopyString(L"");
-            mapping->operationType = 0;
+            mapping->operationType = 3;
             mapping->targetText = AllocateAndCopyString(text);
             mapping->programPath = AllocateAndCopyString(L"");
             mapping->programArgs = AllocateAndCopyString(L"");
+            mapping->startInDirectory = AllocateAndCopyString(L"");
+            mapping->elevation = 0;
+            mapping->ifRunningAction = 0;
+            mapping->visibility = 0;
             mapping->uriToOpen = AllocateAndCopyString(L"");
         }
 
@@ -438,6 +458,10 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             mapping->targetText = AllocateAndCopyString(L"");
             mapping->programPath = AllocateAndCopyString(L"");
             mapping->programArgs = AllocateAndCopyString(L"");
+            mapping->startInDirectory = AllocateAndCopyString(L"");
+            mapping->elevation = 0;
+            mapping->ifRunningAction = 0;
+            mapping->visibility = 0;
             mapping->uriToOpen = AllocateAndCopyString(L"");
         }
         else if (targetShortcutUnion.index() == 1)
@@ -453,6 +477,10 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(targetShortcut.runProgramFilePath);
                 mapping->programArgs = AllocateAndCopyString(targetShortcut.runProgramArgs);
+                mapping->startInDirectory = AllocateAndCopyString(targetShortcut.runProgramStartInDir);
+                mapping->elevation = static_cast<int>(targetShortcut.elevationLevel);
+                mapping->ifRunningAction = static_cast<int>(targetShortcut.alreadyRunningAction);
+                mapping->visibility = static_cast<int>(targetShortcut.startWindowType);
                 mapping->uriToOpen = AllocateAndCopyString(L"");
             }
             else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
@@ -461,6 +489,10 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(L"");
                 mapping->programArgs = AllocateAndCopyString(L"");
+                mapping->startInDirectory = AllocateAndCopyString(L"");
+                mapping->elevation = 0;
+                mapping->ifRunningAction = 0;
+                mapping->visibility = 0;
                 mapping->uriToOpen = AllocateAndCopyString(targetShortcut.uriToOpen);
             }
             else
@@ -469,6 +501,10 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                 mapping->targetText = AllocateAndCopyString(L"");
                 mapping->programPath = AllocateAndCopyString(L"");
                 mapping->programArgs = AllocateAndCopyString(L"");
+                mapping->startInDirectory = AllocateAndCopyString(L"");
+                mapping->elevation = 0;
+                mapping->ifRunningAction = 0;
+                mapping->visibility = 0;
                 mapping->uriToOpen = AllocateAndCopyString(L"");
             }
         }
@@ -476,10 +512,14 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         {
             std::wstring text = std::get<std::wstring>(targetShortcutUnion);
             mapping->targetKeys = AllocateAndCopyString(L"");
-            mapping->operationType = 0;
+            mapping->operationType = 3;
             mapping->targetText = AllocateAndCopyString(text);
             mapping->programPath = AllocateAndCopyString(L"");
             mapping->programArgs = AllocateAndCopyString(L"");
+            mapping->startInDirectory = AllocateAndCopyString(L"");
+            mapping->elevation = 0;
+            mapping->ifRunningAction = 0;
+            mapping->visibility = 0;
             mapping->uriToOpen = AllocateAndCopyString(L"");
         }
 

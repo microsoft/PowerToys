@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading;
+using ManagedCommon;
 using PowerToys.Interop;
 
 namespace PowerToysExtension.Helpers;
@@ -12,6 +13,7 @@ internal static class KeyboardManagerStateService
 {
     private static readonly object Sync = new();
     private static readonly Timer PollingTimer;
+    private static readonly RunnerActionClient ActionClient = new();
     private static bool _lastKnownListeningState = IsListening();
 
     internal static event Action? StatusChanged;
@@ -47,10 +49,9 @@ internal static class KeyboardManagerStateService
     {
         try
         {
-            using var evt = EventWaitHandle.OpenExisting(Constants.ToggleKeyboardManagerActiveEvent());
-            var signaled = evt.Set();
+            var result = ActionClient.InvokeAction(RunnerActionIds.KeyboardManagerToggleActive);
             PollStatus();
-            return signaled;
+            return result.Success;
         }
         catch
         {

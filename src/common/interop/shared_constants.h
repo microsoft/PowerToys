@@ -174,6 +174,7 @@ namespace CommonSharedConstants
     const wchar_t OPEN_NEW_KEYBOARD_MANAGER_EVENT[] = L"Local\\PowerToysOpenNewKeyboardManagerEvent-9c1d2e3f-4b5a-6c7d-8e9f-0a1b2c3d4e5f";
     const wchar_t TOGGLE_KEYBOARD_MANAGER_ACTIVE_EVENT[] = L"Local\\PowerToysToggleKeyboardManagerActiveEvent-7f3a1d5c-2e94-4ff4-8b6a-90fd2bc4d2a7";
     const wchar_t KEYBOARD_MANAGER_ENGINE_INSTANCE_MUTEX[] = L"Local\\PowerToys_KBMEngine_InstanceMutex";
+    const wchar_t POWERTOYS_ACTIONS_PIPE[] = L"\\\\.\\pipe\\PowerToysActionsPipe-e98c2e3d-52ab-4f9b-a65b-5b9bb6f0e312";
 
     // used from quick access window
     const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";

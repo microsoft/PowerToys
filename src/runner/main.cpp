@@ -29,6 +29,7 @@
 
 #include "UpdateUtils.h"
 #include "ActionRunnerUtils.h"
+#include "action_pipe_server.h"
 
 #include <winrt/Windows.System.h>
 
@@ -315,6 +316,10 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 #endif
             }
         }
+
+        RunnerActionPipeServer action_pipe_server;
+        action_pipe_server.Start();
+
         // Start initial powertoys
         start_enabled_powertoys();
         std::wstring product_version = get_product_version();
@@ -343,6 +348,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 
         settings_telemetry::init();
         result = run_message_loop();
+        action_pipe_server.Stop();
     }
     catch (std::runtime_error& err)
     {

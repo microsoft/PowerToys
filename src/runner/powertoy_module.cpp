@@ -39,6 +39,50 @@ json::JsonObject PowertoyModule::json_config() const
     return json::JsonObject::Parse(result);
 }
 
+json::JsonArray PowertoyModule::json_actions() const
+{
+    int size = 0;
+    pt_module->get_actions(nullptr, &size);
+    if (size <= 0)
+    {
+        return json::JsonArray{};
+    }
+
+    std::wstring result;
+    result.resize(static_cast<size_t>(size) - 1);
+    if (!pt_module->get_actions(result.data(), &size))
+    {
+        return json::JsonArray{};
+    }
+
+    json::JsonArray actions;
+    if (!json::JsonArray::TryParse(result, actions))
+    {
+        return json::JsonArray{};
+    }
+
+    return actions;
+}
+
+std::wstring PowertoyModule::invoke_action(const std::wstring& action_id, const std::wstring& serialized_args) const
+{
+    int size = 0;
+    pt_module->invoke_action(action_id.c_str(), serialized_args.c_str(), nullptr, &size);
+    if (size <= 0)
+    {
+        return {};
+    }
+
+    std::wstring result;
+    result.resize(static_cast<size_t>(size) - 1);
+    if (!pt_module->invoke_action(action_id.c_str(), serialized_args.c_str(), result.data(), &size))
+    {
+        return {};
+    }
+
+    return result;
+}
+
 PowertoyModule::PowertoyModule(PowertoyModuleIface* pt_module, HMODULE handle) :
     handle(handle), pt_module(pt_module), hkmng(HotkeyConflictDetector::HotkeyConflictManager::GetInstance())
 {

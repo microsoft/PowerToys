@@ -5,10 +5,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Pages;
 using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
@@ -16,6 +19,9 @@ namespace PowerToysExtension.Modules;
 
 internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvider
 {
+    private const string KeyboardManagerMappingActionPrefix = "powertoys.keyboardManager.mapping.";
+    private static readonly RunnerActionClient ActionClient = new();
+
     public override IEnumerable<ListItem> BuildCommands()
     {
         var module = SettingsWindow.KBM;
@@ -33,9 +39,16 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
                     : GetResourceString("KeyboardManager_ToggleListening_Off_Subtitle", "Keyboard Manager is paused. Invoke to start listening."),
                 Icon = PowerToysResourcesHelper.KeyboardManagerListeningIcon(isListening),
             };
+
+            yield return new ListItem(new CommandItem(new KeyboardManagerMappingsPage() { Id = "com.microsoft.powertoys.keyboardManager.mappings" }))
+            {
+                Title = "List Keyboard Manager mappings",
+                Subtitle = "Inspect current remaps and shortcuts from Keyboard Manager.",
+                Icon = icon,
+            };
         }
 
-        if (IsUseNewEditorEnabled())
+        if (ModuleEnablementService.IsModuleEnabled(module) && IsUseNewEditorEnabled())
         {
             yield return new ListItem(new OpenNewKeyboardManagerEditorCommand())
             {
@@ -43,6 +56,19 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
                 Subtitle = Resources.KeyboardManager_OpenNewEditor_Subtitle,
                 Icon = icon,
             };
+        }
+
+        if (ModuleEnablementService.IsModuleEnabled(module))
+        {
+            foreach (var action in ListExecutableMappingActions())
+            {
+                yield return new ListItem(new InvokeKeyboardManagerCustomActionCommand(action.ActionId, action.DisplayName) { Id = $"com.microsoft.powertoys.keyboardManager.action.{action.ActionId}" })
+                {
+                    Title = action.DisplayName,
+                    Subtitle = string.IsNullOrWhiteSpace(action.Description) ? "Invoke a Keyboard Manager custom action." : action.Description,
+                    Icon = icon,
+                };
+            }
         }
 
         yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.keyboardManager.openSettings" })
@@ -56,6 +82,21 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
     private static string GetResourceString(string resourceName, string fallback)
     {
         return Resources.ResourceManager.GetString(resourceName, Resources.Culture) ?? fallback;
+    }
+
+    private static IEnumerable<RunnerActionDescriptor> ListExecutableMappingActions()
+    {
+        try
+        {
+            return ActionClient.ListActions()
+                .Where(action => action.Available && action.ActionId.StartsWith(KeyboardManagerMappingActionPrefix, StringComparison.Ordinal))
+                .OrderBy(action => action.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+                .ToArray();
+        }
+        catch
+        {
+            return Array.Empty<RunnerActionDescriptor>();
+        }
     }
 
     private static bool IsUseNewEditorEnabled()

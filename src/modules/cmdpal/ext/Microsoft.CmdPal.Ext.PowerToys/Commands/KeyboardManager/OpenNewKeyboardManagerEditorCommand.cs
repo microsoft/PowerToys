@@ -3,9 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Threading;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using PowerToys.Interop;
 
 namespace PowerToysExtension.Commands;
 
@@ -14,6 +13,8 @@ namespace PowerToysExtension.Commands;
 /// </summary>
 internal sealed partial class OpenNewKeyboardManagerEditorCommand : InvokableCommand
 {
+    private static readonly RunnerActionClient ActionClient = new();
+
     public OpenNewKeyboardManagerEditorCommand()
     {
         Name = "Open New Keyboard Manager Editor";
@@ -23,9 +24,10 @@ internal sealed partial class OpenNewKeyboardManagerEditorCommand : InvokableCom
     {
         try
         {
-            using var evt = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.OpenNewKeyboardManagerEvent());
-            evt.Set();
-            return CommandResult.Dismiss();
+            var result = ActionClient.InvokeAction(RunnerActionIds.KeyboardManagerOpenEditor);
+            return result.Success
+                ? CommandResult.Dismiss()
+                : CommandResult.ShowToast(string.IsNullOrWhiteSpace(result.Message) ? "Failed to open New Keyboard Manager Editor." : result.Message);
         }
         catch (Exception ex)
         {

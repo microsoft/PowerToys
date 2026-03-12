@@ -41,6 +41,10 @@ public:
 
     json::JsonObject json_config() const;
 
+    json::JsonArray json_actions() const;
+
+    std::wstring invoke_action(const std::wstring& action_id, const std::wstring& serialized_args) const;
+
     void update_hotkeys();
 
     void UpdateHotkeyEx();

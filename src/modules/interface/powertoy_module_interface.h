@@ -1,6 +1,7 @@
 #pragma once
 
 #include <compare>
+#include <cwchar>
 #include <common/utils/gpo.h>
 
 /*
@@ -99,6 +100,49 @@ public:
     virtual void set_config(const wchar_t* config) = 0;
     /* Call custom action from settings screen. */
     virtual void call_custom_action(const wchar_t* /*action*/){};
+
+    /* Returns the actions exposed by the module as a JSON array. */
+    virtual bool get_actions(wchar_t* buffer, int* buffer_size)
+    {
+        constexpr const wchar_t empty_actions[] = L"[]";
+        if (!buffer_size)
+        {
+            return false;
+        }
+
+        const int required_size = static_cast<int>(sizeof(empty_actions) / sizeof(empty_actions[0]));
+        if (!buffer || *buffer_size < required_size)
+        {
+            *buffer_size = required_size;
+            return false;
+        }
+
+        wcscpy_s(buffer, *buffer_size, empty_actions);
+        return true;
+    }
+
+    /* Invokes an action exposed by the module and returns a JSON object result. */
+    virtual bool invoke_action(const wchar_t* /*action_id*/, const wchar_t* /*serialized_args*/, wchar_t* buffer, int* buffer_size)
+    {
+        constexpr const wchar_t unsupported_result[] =
+            L"{\"success\":false,\"error_code\":\"not_supported\",\"message\":\"This module does not expose actions.\"}";
+
+        if (!buffer_size)
+        {
+            return false;
+        }
+
+        const int required_size = static_cast<int>(sizeof(unsupported_result) / sizeof(unsupported_result[0]));
+        if (!buffer || *buffer_size < required_size)
+        {
+            *buffer_size = required_size;
+            return false;
+        }
+
+        wcscpy_s(buffer, *buffer_size, unsupported_result);
+        return true;
+    }
+
     /* Enables the PowerToy. */
     virtual void enable() = 0;
     /* Disables the PowerToy, should free as much memory as possible. */

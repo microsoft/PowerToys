@@ -32,6 +32,10 @@ struct ShortcutMapping
     wchar_t* targetText;
     wchar_t* programPath;
     wchar_t* programArgs;
+    wchar_t* startInDirectory;
+    int elevation;
+    int ifRunningAction;
+    int visibility;
     wchar_t* uriToOpen;
 };
 

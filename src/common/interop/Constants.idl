@@ -77,6 +77,7 @@ namespace PowerToys
             static String OpenNewKeyboardManagerEvent();
             static String ToggleKeyboardManagerActiveEvent();
             static String KeyboardManagerEngineInstanceMutex();
+            static String PowerToysActionsPipe();
         }
     }
 }

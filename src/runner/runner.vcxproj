@@ -60,6 +60,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\common\interop\two_way_pipe_message_ipc.cpp" />
+    <ClCompile Include="action_pipe_server.cpp" />
+    <ClCompile Include="action_registry.cpp" />
     <ClCompile Include="auto_start_helper.cpp" />
     <ClCompile Include="bug_report.cpp" />
     <ClCompile Include="centralized_hotkeys.cpp" />
@@ -81,6 +83,8 @@
     <ClCompile Include="UpdateUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="action_pipe_server.h" />
+    <ClInclude Include="action_registry.h" />
     <ClInclude Include="ActionRunnerUtils.h" />
     <ClInclude Include="ai_detection.h" />
     <ClInclude Include="auto_start_helper.h" />

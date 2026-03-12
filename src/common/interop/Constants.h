@@ -80,6 +80,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring OpenNewKeyboardManagerEvent();
         static hstring ToggleKeyboardManagerActiveEvent();
         static hstring KeyboardManagerEngineInstanceMutex();
+        static hstring PowerToysActionsPipe();
     };
 }
 

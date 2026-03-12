@@ -308,5 +308,9 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::KEYBOARD_MANAGER_ENGINE_INSTANCE_MUTEX;
     }
+    hstring Constants::PowerToysActionsPipe()
+    {
+        return CommonSharedConstants::POWERTOYS_ACTIONS_PIPE;
+    }
 }
 

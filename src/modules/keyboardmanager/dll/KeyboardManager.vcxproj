@@ -35,7 +35,7 @@
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>Shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shcore.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

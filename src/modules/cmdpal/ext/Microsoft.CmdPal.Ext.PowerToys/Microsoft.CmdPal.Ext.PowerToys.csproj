@@ -63,6 +63,7 @@
 		<ProjectReference Include="..\..\..\Awake\Awake.ModuleServices\Awake.ModuleServices.csproj" />
 		<ProjectReference Include="..\..\..\colorPicker\ColorPicker.ModuleServices\ColorPicker.ModuleServices.csproj" />
 		<ProjectReference Include="..\..\..\fancyzones\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj" />
+		<ProjectReference Include="..\..\..\keyboardmanager\KeyboardManager.ModuleServices\KeyboardManager.ModuleServices.csproj" />
 		<ProjectReference Include="..\..\..\Workspaces\Workspaces.ModuleServices\Workspaces.ModuleServices.csproj" />
 	</ItemGroup>
 
