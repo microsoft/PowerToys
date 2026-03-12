@@ -116,7 +116,7 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 - Lightning-fast mode and precomputed fuzzy matching deliver dramatically faster search and launch times. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 - New Performance Monitor extension ports DevHome perf widgets into CmdPal, single-row list items, transparent window, and searchable filter dropdown
 
-### Keyboaes Manager
+### Keyboard Manager
 
 - Upgraded Keyboard Manager Editor to WinUI 3 for a modern and consolidated experience
 - Added support for toggling shortcuts from the Editor UI
