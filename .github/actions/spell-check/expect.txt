@@ -320,6 +320,7 @@ DESIGNINFO
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
+desync
 devblogs
 devdocs
 devenv
@@ -859,6 +860,7 @@ Metacharacter
 metadatamatters
 Metadatas
 Metacharacter
+metacharacter
 metafile
 metapackage
 mfc
@@ -1572,6 +1574,7 @@ templatenamespace
 testprocess
 TEXCOORD
 TEXTINCLUDE
+TFM
 tfopen
 tgz
 themeresources
@@ -1594,6 +1597,7 @@ TPMLEFTALIGN
 TPMRETURNCMD
 TNP
 Toggleable
+toggleable
 Toolhelp
 toolwindow
 TOPDOWNDIB
