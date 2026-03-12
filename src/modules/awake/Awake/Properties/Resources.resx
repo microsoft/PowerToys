@@ -129,18 +129,18 @@
     <comment>{0} shouldn't be removed. It will be replaced by a number greater than 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
   </data>
   <data name="AWAKE_KEEP_INDEFINITELY" xml:space="preserve">
-    <value>Keep awake indefinitely</value>
+    <value>Keep awake indefinitely (until turned off)</value>
     <comment>Keep the system awake forever</comment>
   </data>
   <data name="AWAKE_KEEP_ON_INTERVAL" xml:space="preserve">
-    <value>Keep awake on interval</value>
+    <value>Keep awake for a set duration</value>
     <comment>Keep the system awake for a given time</comment>
   </data>
   <data name="AWAKE_KEEP_SCREEN_ON" xml:space="preserve">
     <value>Keep screen on</value>
   </data>
   <data name="AWAKE_KEEP_UNTIL_EXPIRATION" xml:space="preserve">
-    <value>Keep awake until expiration date and time</value>
+    <value>Keep awake until a specified date and time</value>
     <comment>Keep the system awake until expiration date and time</comment>
   </data>
   <data name="AWAKE_MINUTE" xml:space="preserve">
@@ -168,13 +168,13 @@
     <value>Bind the execution of Awake to another process. When the process ends, the system will resume managing the current sleep and display state.</value>
   </data>
   <data name="AWAKE_CMD_HELP_TIME_OPTION" xml:space="preserve">
-    <value>Determines the interval (in seconds) during which the computer is kept awake.</value>
+    <value>Specifies the duration (in seconds) for which the computer is kept awake.</value>
   </data>
   <data name="AWAKE_EXIT_BINDING_HOOK_MESSAGE" xml:space="preserve">
     <value>Terminating from process binding hook.</value>
   </data>
   <data name="AWAKE_EXIT_MESSAGE" xml:space="preserve">
-    <value>Exiting from the internal termination handler.</value>
+    <value>Exiting via the internal termination handler.</value>
   </data>
   <data name="AWAKE_EXIT_SIGNAL_MESSAGE" xml:space="preserve">
     <value>Received a signal to end the process. Making sure we quit...</value>
@@ -186,10 +186,10 @@
     <value>Indefinite</value>
   </data>
   <data name="AWAKE_TRAY_TEXT_OFF" xml:space="preserve">
-    <value>Passive</value>
+    <value>Off</value>
   </data>
   <data name="AWAKE_TRAY_TEXT_TIMED" xml:space="preserve">
-    <value>Timed</value>
+    <value>Timed session</value>
   </data>
   <data name="AWAKE_CMD_PARENT_PID_OPTION" xml:space="preserve">
     <value>Uses the parent process as the bound target - once the process terminates, Awake stops.</value>
@@ -218,7 +218,7 @@
     <comment>Label for expiration mode showing end date/time.</comment>
   </data>
   <data name="AWAKE_TRAY_REMAINING" xml:space="preserve">
-    <value>remaining</value>
+    <value>Remaining</value>
     <comment>Suffix for timed mode showing time remaining, e.g. "1:30:00 remaining".</comment>
   </data>
 </root>
