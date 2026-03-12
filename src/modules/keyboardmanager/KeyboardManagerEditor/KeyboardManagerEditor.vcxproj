@@ -168,7 +168,7 @@
   </ImportGroup>
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h KeyboardManagerEditor.base.rc KeyboardManagerEditor.rc" />
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted &apos;$(SolutionDir)tools\build\convert-resx-to-rc.ps1&apos; &apos;$(MSBuildThisFileDirectory)&apos; resource.base.h resource.h KeyboardManagerEditor.base.rc KeyboardManagerEditor.rc" />
   </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
