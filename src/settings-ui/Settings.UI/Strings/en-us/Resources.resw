@@ -2009,10 +2009,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Default (use active provider)</value>
     <comment>Option in provider picker that means use the globally configured provider</comment>
   </data>
-  <data name="AdvancedPaste_ResetPrompt.Content" xml:space="preserve">
-    <value>Reset to default</value>
-    <comment>Button to reset a customized prompt back to the default value</comment>
-  </data>
   <data name="AdvancedPaste_CustomAction_Provider.Header" xml:space="preserve">
     <value>AI model</value>
     <comment>Label for selecting the AI model provider in the custom action dialog</comment>

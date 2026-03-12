@@ -250,33 +250,18 @@
                                     HorizontalContentAlignment="Stretch"
                                     ContentAlignment="Vertical"
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}">
-                                    <StackPanel Orientation="Vertical" Spacing="8">
-                                        <TextBox
-                                            PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammar}"
-                                            AcceptsReturn="True"
-                                            Text="{Binding Prompt, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                            TextWrapping="Wrap" />
-                                        <Button
-                                            x:Uid="AdvancedPaste_ResetPrompt"
-                                            Click="ResetPrompt_Click"
-                                            Tag="FixSpellingAndGrammar" />
-                                    </StackPanel>
+                                    <TextBox
+                                        PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammar}"
+                                        Text="{Binding Prompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     x:Uid="FixSpellingAndGrammar_SystemPrompt"
                                     HorizontalContentAlignment="Stretch"
                                     ContentAlignment="Vertical"
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}">
-                                    <StackPanel Orientation="Vertical" Spacing="8">
-                                        <TextBox
-                                            PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammarSystem}"
-                                            AcceptsReturn="True"
-                                            Text="{Binding SystemPrompt, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                            TextWrapping="Wrap" />
-                                        <Button
-                                            x:Uid="AdvancedPaste_ResetPrompt"
-                                            Click="ResetSystemPrompt_Click" />
-                                    </StackPanel>
+                                    <TextBox
+                                        PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammarSystem}"
+                                        Text="{Binding SystemPrompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </tkcontrols:SettingsCard>
 
                                 <!--  Coaching mode  -->
@@ -300,16 +285,9 @@
                                     ContentAlignment="Vertical"
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}"
                                     Visibility="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}">
-                                    <StackPanel Orientation="Vertical" Spacing="8">
-                                        <TextBox
-                                            PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoaching}"
-                                            AcceptsReturn="True"
-                                            Text="{Binding CoachingPrompt, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                            TextWrapping="Wrap" />
-                                        <Button
-                                            x:Uid="AdvancedPaste_ResetPrompt"
-                                            Click="ResetCoachingPrompt_Click" />
-                                    </StackPanel>
+                                    <TextBox
+                                        PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoaching}"
+                                        Text="{Binding CoachingPrompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     x:Uid="FixSpellingAndGrammar_CoachingSystemPrompt"
@@ -317,16 +295,9 @@
                                     ContentAlignment="Vertical"
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}"
                                     Visibility="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}">
-                                    <StackPanel Orientation="Vertical" Spacing="8">
-                                        <TextBox
-                                            PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoachingSystem}"
-                                            AcceptsReturn="True"
-                                            Text="{Binding CoachingSystemPrompt, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                            TextWrapping="Wrap" />
-                                        <Button
-                                            x:Uid="AdvancedPaste_ResetPrompt"
-                                            Click="ResetCoachingSystemPrompt_Click" />
-                                    </StackPanel>
+                                    <TextBox
+                                        PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoachingSystem}"
+                                        Text="{Binding CoachingSystemPrompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Visibility="Collapsed" />
                             </tkcontrols:SettingsExpander.Items>
