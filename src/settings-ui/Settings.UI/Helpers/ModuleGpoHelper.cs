@@ -30,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.Hosts: return GPOWrapper.GetConfiguredHostsFileEditorEnabledValue();
                 case ModuleType.ImageResizer: return GPOWrapper.GetConfiguredImageResizerEnabledValue();
                 case ModuleType.KeyboardManager: return GPOWrapper.GetConfiguredKeyboardManagerEnabledValue();
+                case ModuleType.LightSwitch: return GPOWrapper.GetConfiguredLightSwitchEnabledValue();
                 case ModuleType.MouseHighlighter: return GPOWrapper.GetConfiguredMouseHighlighterEnabledValue();
                 case ModuleType.MouseJump: return GPOWrapper.GetConfiguredMouseJumpEnabledValue();
                 case ModuleType.MousePointerCrosshairs: return GPOWrapper.GetConfiguredMousePointerCrosshairsEnabledValue();

@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.System {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -187,7 +187,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open system command.
+        ///   Looks up a localized string similar to Execute system commands.
         /// </summary>
         public static string Microsoft_plugin_ext_fallback_display_title {
             get {
@@ -313,7 +313,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hibernate.
+        ///   Looks up a localized string similar to Hibernate computer.
         /// </summary>
         public static string Microsoft_plugin_sys_hibernate {
             get {
@@ -327,15 +327,6 @@ namespace Microsoft.CmdPal.Ext.System {
         public static string Microsoft_plugin_sys_hibernate_confirmation {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_hibernate_confirmation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hibernate computer.
-        /// </summary>
-        public static string Microsoft_plugin_sys_hibernate_description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_hibernate_description", resourceCulture);
             }
         }
         
@@ -421,7 +412,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lock.
+        ///   Looks up a localized string similar to Lock computer.
         /// </summary>
         public static string Microsoft_plugin_sys_lock {
             get {
@@ -435,15 +426,6 @@ namespace Microsoft.CmdPal.Ext.System {
         public static string Microsoft_plugin_sys_lock_confirmation {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_lock_confirmation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Lock computer.
-        /// </summary>
-        public static string Microsoft_plugin_sys_lock_description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_lock_description", resourceCulture);
             }
         }
         
@@ -520,15 +502,6 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open the Recycle Bin.
-        /// </summary>
-        public static string Microsoft_plugin_sys_RecycleBin_description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Recycle Bin emptied successfully..
         /// </summary>
         public static string Microsoft_plugin_sys_RecycleBin_EmptySuccessMessage {
@@ -594,15 +567,6 @@ namespace Microsoft.CmdPal.Ext.System {
         /// <summary>
         ///   Looks up a localized string similar to Empty Recycle Bin.
         /// </summary>
-        public static string Microsoft_plugin_sys_RecycleBinEmpty_description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBinEmpty_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Empty Recycle Bin.
-        /// </summary>
         public static string Microsoft_plugin_sys_RecycleBinEmptyResult {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBinEmptyResult", resourceCulture);
@@ -619,7 +583,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restart.
+        ///   Looks up a localized string similar to Restart computer.
         /// </summary>
         public static string Microsoft_plugin_sys_restart_computer {
             get {
@@ -633,15 +597,6 @@ namespace Microsoft.CmdPal.Ext.System {
         public static string Microsoft_plugin_sys_restart_computer_confirmation {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_restart_computer_confirmation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Restart computer.
-        /// </summary>
-        public static string Microsoft_plugin_sys_restart_computer_description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_restart_computer_description", resourceCulture);
             }
         }
         
@@ -691,7 +646,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shutdown.
+        ///   Looks up a localized string similar to Shutdown computer.
         /// </summary>
         public static string Microsoft_plugin_sys_shutdown_computer {
             get {
@@ -709,16 +664,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shutdown computer.
-        /// </summary>
-        public static string Microsoft_plugin_sys_shutdown_computer_description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_shutdown_computer_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Sign out.
+        ///   Looks up a localized string similar to Sign out of computer.
         /// </summary>
         public static string Microsoft_plugin_sys_sign_out {
             get {
@@ -736,16 +682,7 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sign out of computer.
-        /// </summary>
-        public static string Microsoft_plugin_sys_sign_out_description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_sign_out_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Sleep.
+        ///   Looks up a localized string similar to Put computer to sleep.
         /// </summary>
         public static string Microsoft_plugin_sys_sleep {
             get {
@@ -759,15 +696,6 @@ namespace Microsoft.CmdPal.Ext.System {
         public static string Microsoft_plugin_sys_sleep_confirmation {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_sleep_confirmation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Put computer to sleep.
-        /// </summary>
-        public static string Microsoft_plugin_sys_sleep_description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_sleep_description", resourceCulture);
             }
         }
         

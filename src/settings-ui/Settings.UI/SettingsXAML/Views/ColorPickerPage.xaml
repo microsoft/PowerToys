@@ -32,7 +32,7 @@
                         Name="ActivationShortcut"
                         x:Uid="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard

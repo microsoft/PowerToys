@@ -50,6 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Settings = moduleSettingsRepository.SettingsConfig;
 
             _hotkey = Settings.Properties.Hotkey.Value;
+            _showInSystemMenu = Settings.Properties.ShowInSystemMenu.Value;
             _frameEnabled = Settings.Properties.FrameEnabled.Value;
             _frameThickness = Settings.Properties.FrameThickness.Value;
             _frameColor = Settings.Properties.FrameColor.Value;
@@ -134,9 +135,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Settings.Properties.Hotkey.Value = _hotkey;
                     NotifyPropertyChanged();
 
-                    // Also notify that transparency keys have changed
-                    OnPropertyChanged(nameof(IncreaseOpacityKeysList));
-                    OnPropertyChanged(nameof(DecreaseOpacityKeysList));
+                    // Also notify that transparency shortcut strings have changed
+                    OnPropertyChanged(nameof(IncreaseOpacityShortcut));
+                    OnPropertyChanged(nameof(DecreaseOpacityShortcut));
 
                     // Using InvariantCulture as this is an IPC message
                     SendConfigMSG(
@@ -159,6 +160,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _frameEnabled = value;
                     Settings.Properties.FrameEnabled.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool ShowInSystemMenu
+        {
+            get => _showInSystemMenu;
+
+            set
+            {
+                if (value != _showInSystemMenu)
+                {
+                    _showInSystemMenu = value;
+                    Settings.Properties.ShowInSystemMenu.Value = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -295,59 +311,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Gets the keys list for increasing window opacity (modifier keys + "+").
+        /// Gets the formatted shortcut string for increasing window opacity (modifier keys + "+").
         /// </summary>
-        public List<object> IncreaseOpacityKeysList
+        public string IncreaseOpacityShortcut
         {
             get
             {
-                var keys = GetModifierKeysList();
-                keys.Add("+");
-                return keys;
+                var modifiers = new HotkeySettings(_hotkey.Win, _hotkey.Ctrl, _hotkey.Alt, _hotkey.Shift, 0).ToString();
+                var shortcut = string.IsNullOrEmpty(modifiers) ? "+" : modifiers + " + +";
+                return string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("AlwaysOnTop_IncreaseOpacity"), shortcut);
             }
         }
 
         /// <summary>
-        /// Gets the keys list for decreasing window opacity (modifier keys + "-").
+        /// Gets the formatted shortcut string for decreasing window opacity (modifier keys + "-").
         /// </summary>
-        public List<object> DecreaseOpacityKeysList
+        public string DecreaseOpacityShortcut
         {
             get
             {
-                var keys = GetModifierKeysList();
-                keys.Add("-");
-                return keys;
+                var modifiers = new HotkeySettings(_hotkey.Win, _hotkey.Ctrl, _hotkey.Alt, _hotkey.Shift, 0).ToString();
+                var shortcut = string.IsNullOrEmpty(modifiers) ? "-" : modifiers + " + -";
+                return string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("AlwaysOnTop_DecreaseOpacity"), shortcut);
             }
-        }
-
-        /// <summary>
-        /// Gets only the modifier keys from the current hotkey setting.
-        /// </summary>
-        private List<object> GetModifierKeysList()
-        {
-            var modifierKeys = new List<object>();
-
-            if (_hotkey.Win)
-            {
-                modifierKeys.Add(92); // The Windows key
-            }
-
-            if (_hotkey.Ctrl)
-            {
-                modifierKeys.Add("Ctrl");
-            }
-
-            if (_hotkey.Alt)
-            {
-                modifierKeys.Add("Alt");
-            }
-
-            if (_hotkey.Shift)
-            {
-                modifierKeys.Add(16); // The Shift key
-            }
-
-            return modifierKeys;
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
@@ -366,6 +352,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private HotkeySettings _hotkey;
+        private bool _showInSystemMenu;
         private bool _frameEnabled;
         private int _frameThickness;
         private string _frameColor;

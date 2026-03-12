@@ -7,8 +7,11 @@
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
 
-    <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <OutputType>Library</OutputType>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\UnitTest-FancyZonesEditor\</OutputPath>
   </PropertyGroup>
 
