@@ -5825,19 +5825,6 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
             verticalWins = true;
         }
     }
-    else if( landscapePortal && bestHorizScore != ULLONG_MAX )
-    {
-        const unsigned __int64 vertAdvantage =
-            ( bestVertScore != ULLONG_MAX && bestVertScore < bestHorizScore )
-                ? ( bestHorizScore - bestVertScore )
-                : 0;
-        const unsigned __int64 requiredAdvantage =
-            ( std::max )( static_cast<unsigned __int64>( 16 ), bestHorizScore / 3 );
-        if( vertAdvantage < requiredAdvantage )
-        {
-            verticalWins = false;
-        }
-    }
 
     if( verticalWins )
     {
@@ -5913,6 +5900,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
     std::vector<std::vector<BYTE>> framePixels;
     framePixels.resize( frames.size() );
+    std::vector<std::vector<BYTE>> frameLuma( frames.size() );
+    std::vector<double> frameConstantFraction( frames.size() );
 
     for( size_t i = 0; i < frames.size(); i++ )
     {
@@ -5934,6 +5923,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                          frameHeight );
             return nullptr;
         }
+    }
+
     parallel_for( 0, static_cast<int>( frames.size() ), [&]( int i )
     {
         BuildFullLumaFrame( framePixels[i], frameWidth, frameHeight, frameLuma[i] );
