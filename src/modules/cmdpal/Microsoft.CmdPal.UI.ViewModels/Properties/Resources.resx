@@ -280,6 +280,10 @@
     <value>Edit Dock</value>
     <comment>Command name for editing the dock</comment>
   </data>
+  <data name="taskbar_edit_name" xml:space="preserve">
+    <value>Edit Taskbar</value>
+    <comment>Command name for editing the taskbar</comment>
+  </data>
   <data name="dock_settings_name" xml:space="preserve">
     <value>Settings</value>
     <comment>Command name for opening dock settings</comment>

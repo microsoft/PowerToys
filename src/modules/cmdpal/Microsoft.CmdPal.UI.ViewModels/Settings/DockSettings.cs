@@ -51,13 +51,16 @@ public class DockSettings
 
     public List<DockBandSettings> EndBands { get; set; } = [];
 
+    public List<DockBandSettings> TaskbarBands { get; set; } = [];
+
     public bool ShowLabels { get; set; } = true;
 
     [JsonIgnore]
     public IEnumerable<(string ProviderId, string CommandId)> AllPinnedCommands =>
         StartBands.Select(b => (b.ProviderId, b.CommandId))
         .Concat(CenterBands.Select(b => (b.ProviderId, b.CommandId)))
-        .Concat(EndBands.Select(b => (b.ProviderId, b.CommandId)));
+        .Concat(EndBands.Select(b => (b.ProviderId, b.CommandId)))
+        .Concat(TaskbarBands.Select(b => (b.ProviderId, b.CommandId)));
 
     public DockSettings()
     {
@@ -83,6 +86,12 @@ public class DockSettings
             CommandId = "com.microsoft.cmdpal.performanceWidget",
         });
         EndBands.Add(new DockBandSettings
+        {
+            ProviderId = "com.microsoft.cmdpal.builtin.datetime",
+            CommandId = "com.microsoft.cmdpal.timedate.dockBand",
+        });
+
+        TaskbarBands.Add(new DockBandSettings
         {
             ProviderId = "com.microsoft.cmdpal.builtin.datetime",
             CommandId = "com.microsoft.cmdpal.timedate.dockBand",

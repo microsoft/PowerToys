@@ -14,6 +14,7 @@ using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.Settings;
+using Microsoft.CmdPal.UI.Taskbar;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
@@ -25,7 +26,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
-using Windows.UI.Core;
 using WinUIEx;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
@@ -50,6 +50,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
     IRecipient<ShowHideDockMessage>,
+    IRecipient<ShowHideTaskbarMessage>,
     INotifyPropertyChanged,
     IDisposable
 {
@@ -68,6 +69,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private SettingsWindow? _settingsWindow;
     private DockWindow? _dockWindow;
+    private TaskbarWindow? _taskbarWindow;
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
@@ -101,6 +103,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
+        WeakReferenceMessenger.Default.Register<ShowHideTaskbarMessage>(this);
 
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
@@ -115,6 +118,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             _dockWindow = new DockWindow();
             _dockWindow.Show();
+        }
+
+        if (App.Current.Services.GetService<SettingsModel>()!.EnableTaskbar)
+        {
+            _taskbarWindow = new TaskbarWindow();
+            _taskbarWindow.Show();
         }
     }
 
@@ -505,6 +514,27 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         });
     }
 
+    public void Receive(ShowHideTaskbarMessage message)
+    {
+        _ = DispatcherQueue.TryEnqueue(() =>
+        {
+            if (message.ShowTaskbar)
+            {
+                if (_taskbarWindow is null)
+                {
+                    _taskbarWindow = new TaskbarWindow();
+                }
+
+                _taskbarWindow.Show();
+            }
+            else if (_taskbarWindow is not null)
+            {
+                _taskbarWindow.Close();
+                _taskbarWindow = null;
+            }
+        });
+    }
+
     private void ToggleFilterFocus()
     {
         if (!FiltersDropDown.IsFilterVisible)
@@ -794,5 +824,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _focusAfterLoadedCts = null;
 
         _dockWindow?.Dispose();
+        _taskbarWindow?.Dispose();
     }
 }

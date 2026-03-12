@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<winuiex:WindowEx
+    x:Class="Microsoft.CmdPal.UI.Taskbar.TaskbarWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.CmdPal.UI.Taskbar"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winuiex="using:WinUIEx"
+    Title="CmdPal Taskbar"
+    IsAlwaysOnTop="True"
+    mc:Ignorable="d">
+
+    <Window.SystemBackdrop>
+        <winuiex:TransparentTintBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid
+        x:Name="Root"
+        Height="44"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Top"
+        Background="Transparent">
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="WindowsLogo" Width="60" />
+            <ColumnDefinition x:Name="TaskbarButtons" Width="0" />
+            <ColumnDefinition x:Name="Mid" Width="*" />
+            <ColumnDefinition x:Name="ContentColumn" Width="Auto" />
+            <ColumnDefinition x:Name="TrayIcons" Width="400" />
+        </Grid.ColumnDefinitions>
+
+        <ContentControl
+            x:Name="MainContent"
+            Grid.Column="3"
+            HorizontalAlignment="Right"
+            SizeChanged="MainContent_SizeChanged" />
+    </Grid>
+</winuiex:WindowEx>

@@ -70,6 +70,8 @@ public partial class SettingsModel : ObservableObject
 
     public bool EnableDock { get; set; }
 
+    public bool EnableTaskbar { get; set; }
+
     public DockSettings DockSettings { get; set; } = new();
 
     // Theme settings

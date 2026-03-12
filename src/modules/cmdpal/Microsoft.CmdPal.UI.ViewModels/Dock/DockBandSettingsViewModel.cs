@@ -159,6 +159,12 @@ public partial class DockBandSettingsViewModel : ObservableObject
             return DockPinSide.End;
         }
 
+        var inTaskbar = dockSettings.TaskbarBands.Any(b => b.CommandId == _dockSettingsModel.CommandId);
+        if (inTaskbar)
+        {
+            return DockPinSide.Taskbar;
+        }
+
         return DockPinSide.None;
     }
 
@@ -194,6 +200,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
         dockSettings.StartBands.RemoveAll(b => b.CommandId == _dockSettingsModel.CommandId);
         dockSettings.CenterBands.RemoveAll(b => b.CommandId == _dockSettingsModel.CommandId);
         dockSettings.EndBands.RemoveAll(b => b.CommandId == _dockSettingsModel.CommandId);
+        dockSettings.TaskbarBands.RemoveAll(b => b.CommandId == _dockSettingsModel.CommandId);
 
         // Add to the selected side
         switch (side)
@@ -219,6 +226,13 @@ public partial class DockBandSettingsViewModel : ObservableObject
                     break;
                 }
 
+            case DockPinSide.Taskbar:
+                {
+                    var insertIndex = index ?? dockSettings.TaskbarBands.Count;
+                    dockSettings.TaskbarBands.Insert(insertIndex, _dockSettingsModel);
+                    break;
+                }
+
             case DockPinSide.None:
             default:
                 // Do nothing
@@ -241,6 +255,7 @@ public enum DockPinSide
     Start,
     Center,
     End,
+    Taskbar,
 }
 
 public enum ShowLabelsOption

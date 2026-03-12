@@ -493,6 +493,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Edit Taskbar.
+        /// </summary>
+        public static string taskbar_edit_name {
+            get {
+                return ResourceManager.GetString("taskbar_edit_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} items.
         /// </summary>
         public static string dock_item_count_plural {
