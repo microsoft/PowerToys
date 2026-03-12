@@ -3,6 +3,7 @@ LIBRARY "PowerToysSetupCustomActionsVNext"
 EXPORTS
 	LaunchPowerToysCA
 	CheckGPOCA
+	CheckInstallGuardsCA
 	CleanVideoConferenceRegistryCA
 	ApplyModulesRegistryChangeSetsCA
 	DetectPrevInstallPathCA
