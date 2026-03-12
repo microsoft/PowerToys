@@ -34,6 +34,7 @@ namespace Peek.UI
         public MainWindowViewModel ViewModel { get; }
 
         private readonly ThemeListener? themeListener;
+        private readonly IUserSettings userSettings;
 
         /// <summary>
         /// Whether the delete confirmation dialog is currently open. Used to ensure only one
@@ -66,6 +67,19 @@ namespace Peek.UI
             AppWindow.SetIcon("Assets/Peek/Icon.ico");
 
             AppWindow.Closing += AppWindow_Closing;
+
+            userSettings = Application.Current.GetService<IUserSettings>();
+            userSettings.Changed += UpdateWindowBySettings;
+            UpdateWindowBySettings(null, EventArgs.Empty);
+        }
+
+        private void UpdateWindowBySettings(object? sender, EventArgs e)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                IsAlwaysOnTop = userSettings.AlwaysOnTop;
+                IsShownInSwitchers = userSettings.ShowTaskbarIcon;
+            });
         }
 
         private async void Content_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -88,7 +102,7 @@ namespace Peek.UI
             {
                 _isDeleteInProgress = true;
 
-                if (Application.Current.GetService<IUserSettings>().ConfirmFileDelete)
+                if (userSettings.ConfirmFileDelete)
                 {
                     if (await ShowDeleteConfirmationDialogAsync() == ContentDialogResult.Primary)
                     {
@@ -310,6 +324,7 @@ namespace Peek.UI
         public void Dispose()
         {
             themeListener?.Dispose();
+            userSettings.Changed -= UpdateWindowBySettings;
         }
 
         /// <summary>
