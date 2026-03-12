@@ -1174,6 +1174,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PasteAIApiKeyPasswordBox.Password = string.Empty;
         }
 
+        private void ClearProviderSelection_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is ComboBox comboBox)
+            {
+                comboBox.SelectedIndex = -1;
+            }
+        }
+
         private string GetDefaultProviderLabel()
         {
             try

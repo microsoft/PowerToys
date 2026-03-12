@@ -2013,6 +2013,14 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>AI model</value>
     <comment>Label for selecting the AI model provider in the custom action dialog</comment>
   </data>
+  <data name="AdvancedPaste_ClearProviderSelection.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Reset to default provider</value>
+    <comment>Tooltip for button that clears the provider selection back to default</comment>
+  </data>
+  <data name="AdvancedPaste_ClearProviderSelection.AutomationProperties.Name" xml:space="preserve">
+    <value>Reset to default provider</value>
+    <comment>Accessible name for button that clears the provider selection back to default</comment>
+  </data>
   <data name="FixSpellingAndGrammar_CoachingSection.Header" xml:space="preserve">
     <value>Coaching mode</value>
     <comment>Header for the coaching mode collapsible settings section</comment>

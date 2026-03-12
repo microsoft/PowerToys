@@ -252,14 +252,24 @@
                                 <tkcontrols:SettingsCard
                                     x:Uid="AdvancedPaste_ActionProvider"
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}">
-                                    <ComboBox
-                                        x:Name="FixSpellingProviderComboBox"
-                                        MinWidth="200"
-                                        ItemsSource="{x:Bind ViewModel.PasteAIConfiguration.Providers, Mode=OneWay}"
-                                        DisplayMemberPath="DisplayName"
-                                        SelectedValuePath="Id"
-                                        SelectedValue="{Binding ProviderId, Mode=TwoWay}"
-                                        PlaceholderText="{x:Bind GetDefaultProviderLabel()}" />
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <ComboBox
+                                            x:Name="FixSpellingProviderComboBox"
+                                            MinWidth="200"
+                                            DisplayMemberPath="DisplayName"
+                                            ItemsSource="{x:Bind ViewModel.PasteAIConfiguration.Providers, Mode=OneWay}"
+                                            PlaceholderText="{x:Bind GetDefaultProviderLabel()}"
+                                            SelectedValue="{Binding ProviderId, Mode=TwoWay}"
+                                            SelectedValuePath="Id" />
+                                        <Button
+                                            x:Uid="AdvancedPaste_ClearProviderSelection"
+                                            VerticalAlignment="Center"
+                                            Click="ClearProviderSelection_Click"
+                                            Content="{ui:FontIcon Glyph=&#xE894;,
+                                                                  FontSize=12}"
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            Tag="{x:Bind FixSpellingProviderComboBox}" />
+                                    </StackPanel>
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     x:Uid="FixSpellingAndGrammar_CustomPrompt"
@@ -299,14 +309,24 @@
                                     x:Uid="FixSpellingAndGrammar_CoachingProvider"
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}"
                                     Visibility="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}">
-                                    <ComboBox
-                                        x:Name="CoachingProviderComboBox"
-                                        MinWidth="200"
-                                        DisplayMemberPath="DisplayName"
-                                        ItemsSource="{x:Bind ViewModel.PasteAIConfiguration.Providers, Mode=OneWay}"
-                                        PlaceholderText="{x:Bind GetDefaultProviderLabel()}"
-                                        SelectedValue="{Binding CoachingProviderId, Mode=TwoWay}"
-                                        SelectedValuePath="Id" />
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <ComboBox
+                                            x:Name="CoachingProviderComboBox"
+                                            MinWidth="200"
+                                            DisplayMemberPath="DisplayName"
+                                            ItemsSource="{x:Bind ViewModel.PasteAIConfiguration.Providers, Mode=OneWay}"
+                                            PlaceholderText="{x:Bind GetDefaultProviderLabel()}"
+                                            SelectedValue="{Binding CoachingProviderId, Mode=TwoWay}"
+                                            SelectedValuePath="Id" />
+                                        <Button
+                                            x:Uid="AdvancedPaste_ClearProviderSelection"
+                                            VerticalAlignment="Center"
+                                            Click="ClearProviderSelection_Click"
+                                            Content="{ui:FontIcon Glyph=&#xE894;,
+                                                                  FontSize=12}"
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            Tag="{x:Bind CoachingProviderComboBox}" />
+                                    </StackPanel>
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     x:Uid="FixSpellingAndGrammar_CoachingPrompt"
@@ -535,16 +555,28 @@
                     AcceptsReturn="true"
                     Text="{Binding Prompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     TextWrapping="Wrap" />
-                <ComboBox
-                    x:Name="CustomActionProviderComboBox"
-                    x:Uid="AdvancedPaste_CustomAction_Provider"
-                    Width="340"
+                <StackPanel
                     HorizontalAlignment="Left"
-                    ItemsSource="{x:Bind ViewModel.PasteAIConfiguration.Providers, Mode=OneWay}"
-                    DisplayMemberPath="DisplayName"
-                    SelectedValuePath="Id"
-                    SelectedValue="{Binding ProviderId, Mode=TwoWay}"
-                    PlaceholderText="{x:Bind GetDefaultProviderLabel()}" />
+                    Orientation="Horizontal"
+                    Spacing="4">
+                    <ComboBox
+                        x:Name="CustomActionProviderComboBox"
+                        x:Uid="AdvancedPaste_CustomAction_Provider"
+                        Width="306"
+                        DisplayMemberPath="DisplayName"
+                        ItemsSource="{x:Bind ViewModel.PasteAIConfiguration.Providers, Mode=OneWay}"
+                        PlaceholderText="{x:Bind GetDefaultProviderLabel()}"
+                        SelectedValue="{Binding ProviderId, Mode=TwoWay}"
+                        SelectedValuePath="Id" />
+                    <Button
+                        x:Uid="AdvancedPaste_ClearProviderSelection"
+                        VerticalAlignment="Bottom"
+                        Click="ClearProviderSelection_Click"
+                        Content="{ui:FontIcon Glyph=&#xE894;,
+                                              FontSize=12}"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Tag="{x:Bind CustomActionProviderComboBox}" />
+                </StackPanel>
             </StackPanel>
         </ContentDialog>
 
