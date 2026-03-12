@@ -5560,16 +5560,10 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
         return true;
     }
 
-    // Both searches succeeded.  For normal (non-VLE) content the direct ZNCC
-    // result is reliable — the transposed search just happened to find a
-    // candidate too.  Only run the expensive axis scan for very-low-entropy
-    // content where ZNCC peaks are unreliable noise.
-    if( !precomputedVeryLowEntropy )
-    {
-        bestDx = directDx;
-        bestDy = directDy;
-        return true;
-    }
+    // Both searches succeeded.  Startup axis choice is critical because a
+    // wrong first lock permanently routes subsequent matching down the wrong
+    // axis.  Pay the extra cost here and run the dedicated axis scan even on
+    // non-VLE content rather than trusting the first direct ZNCC winner.
 
     // Axis detection: scan pure-vertical and pure-horizontal shifts in a
     // range to find which direction has a true alignment minimum.  This is
@@ -5780,12 +5774,36 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
 
     bool verticalWins = bestVertScore <= bestHorizScore;
 
+    // Startup default is vertical.  If the horizontal axis only wins by a
+    // small margin, treat the result as ambiguous and keep the default axis.
+    if( bestVertScore != ULLONG_MAX && bestHorizScore != ULLONG_MAX )
+    {
+        const unsigned __int64 horizontalAdvantage =
+            ( bestHorizScore < bestVertScore )
+                ? ( bestVertScore - bestHorizScore )
+                : 0;
+        const unsigned __int64 ambiguityMargin =
+            ( std::max )( static_cast<unsigned __int64>( 8 ), bestVertScore / 8 );
+        if( horizontalAdvantage <= ambiguityMargin )
+        {
+            if( !verticalWins )
+            {
+                StitchLog( L"[Panorama/Stitch] AxisScan ambiguous startup forcing vertical: vertBest=%I64u horizBest=%I64u dy=%d dx=%d margin=%I64u\n",
+                           bestVertScore,
+                           bestHorizScore,
+                           bestVertDy,
+                           bestHorizDx,
+                           ambiguityMargin );
+            }
+            verticalWins = true;
+        }
+    }
+
     // Geometry bias for first-pair VLE axis detection: narrow/tall capture
     // portals are overwhelmingly used for vertical scroll captures.  On such
     // strips, horizontal SAD can look deceptively better due to repeated
     // line/text structure, causing permanent axis mis-lock.
     const bool portraitPortal = frameHeight >= frameWidth * 2;
-    const bool landscapePortal = frameWidth >= frameHeight * 2;
     if( portraitPortal && bestVertScore != ULLONG_MAX )
     {
         const unsigned __int64 horizAdvantage =
@@ -5916,19 +5934,6 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                          frameHeight );
             return nullptr;
         }
-
-        reportProgress( static_cast<int>( ( i + 1 ) * 5 / frames.size() ) );
-        if( cancelled )
-        {
-            StitchLog( L"[Panorama/Stitch] Cancelled during pixel read\n" );
-            return nullptr;
-        }
-    }
-
-    // Pre-compute full-resolution luma and per-frame constant-content
-    // fraction in parallel.  Each frame's work is independent.
-    std::vector<std::vector<BYTE>> frameLuma( frames.size() );
-    std::vector<double> frameConstantFraction( frames.size() );
     parallel_for( 0, static_cast<int>( frames.size() ), [&]( int i )
     {
         BuildFullLumaFrame( framePixels[i], frameWidth, frameHeight, frameLuma[i] );
@@ -13152,6 +13157,425 @@ bool RunPanoramaStitchSelfTest()
                                      resultPass ? L"PASS" : L"FAIL" );
                             if( stressStopAfterFocus )
                                 stressEarlyExit = true;
+                        }
+                    }
+                }
+
+                // Manual-drop cadence stress: mirrors the real high-constant-
+                // fraction capture cadence that produced a single large jump
+                // (~421 px) among otherwise stable 62/63/125 px steps, which
+                // dropped a visible band from the composed panorama.
+                if( !stressEarlyExit )
+                {
+                    const wchar_t* manualDropName = L"stress-vertical-hcf-manualdrop-cadence";
+                    if( stressScenarioMatches( manualDropName ) )
+                    {
+                        if( stressFocusEnabled )
+                            stressFocusMatched = true;
+
+                        constexpr int w = 1650;
+                        constexpr int h = 852;
+                        const int scriptedSteps[] = {
+                            62, 125, 63, 62, 63, 125, 62,
+                            63, 62, 63, 125, 62, 63, 62
+                        };
+                        int totalStep = 0;
+                        for( int step : scriptedSteps )
+                            totalStep += step;
+                        const int srcH = h + totalStep + 512;
+                        std::vector<BYTE> source( static_cast<size_t>( w ) * srcH * 4, 0 );
+
+                        auto paintSource = [&]( int phase )
+                        {
+                            for( int y = 0; y < srcH; ++y )
+                            {
+                                for( int x = 0; x < w; ++x )
+                                {
+                                    const BYTE base = static_cast<BYTE>( 241 + ( ( x * 3 + y * 5 + phase ) & 0x03 ) );
+                                    const size_t idx = ( static_cast<size_t>( y ) * w + x ) * 4;
+                                    source[idx + 0] = base;
+                                    source[idx + 1] = base;
+                                    source[idx + 2] = base;
+                                    source[idx + 3] = 255;
+                                }
+                            }
+
+                            for( int band = 0; ; ++band )
+                            {
+                                const int y0 = 180 + phase + band * 63;
+                                if( y0 >= srcH )
+                                    break;
+                                for( int yy = y0; yy < min( srcH, y0 + 2 ); ++yy )
+                                {
+                                    for( int xx = 52; xx < w - 52; ++xx )
+                                    {
+                                        const size_t idx = ( static_cast<size_t>( yy ) * w + xx ) * 4;
+                                        source[idx + 0] = 34;
+                                        source[idx + 1] = 38;
+                                        source[idx + 2] = 42;
+                                    }
+                                }
+                            }
+
+                            for( int band = 0; ; ++band )
+                            {
+                                const int y0 = 206 + phase * 2 + band * 125;
+                                if( y0 >= srcH )
+                                    break;
+                                for( int yy = y0; yy < min( srcH, y0 + 1 ); ++yy )
+                                {
+                                    for( int xx = 74; xx < w - 74; ++xx )
+                                    {
+                                        const size_t idx = ( static_cast<size_t>( yy ) * w + xx ) * 4;
+                                        source[idx + 0] = static_cast<BYTE>( min( 255, max( source[idx + 0], static_cast<BYTE>( 56 ) ) ) );
+                                        source[idx + 1] = static_cast<BYTE>( min( 255, max( source[idx + 1], static_cast<BYTE>( 60 ) ) ) );
+                                        source[idx + 2] = static_cast<BYTE>( min( 255, max( source[idx + 2], static_cast<BYTE>( 64 ) ) ) );
+                                    }
+                                }
+                            }
+
+                            for( int ay = 39 + phase; ay < srcH - 6; ay += 173 )
+                            {
+                                const int x0 = 24 + ( ( ay * 37 + phase * 19 ) % ( w - 72 ) );
+                                for( int dy = 0; dy < 3; ++dy )
+                                {
+                                    for( int dx = 0; dx < 3; ++dx )
+                                    {
+                                        const size_t idx = ( static_cast<size_t>( ay + dy ) * w + x0 + dx ) * 4;
+                                        source[idx + 0] = 150;
+                                        source[idx + 1] = 156;
+                                        source[idx + 2] = 162;
+                                    }
+                                }
+                            }
+                        };
+
+                        auto buildFrameFromSource = [&]( int top, std::vector<BYTE>& outFrame )
+                        {
+                            outFrame.resize( static_cast<size_t>( w ) * h * 4 );
+                            for( int row = 0; row < h; ++row )
+                            {
+                                const BYTE* src = source.data() +
+                                                  ( static_cast<size_t>( top + row ) * w * 4 );
+                                BYTE* dst = outFrame.data() + static_cast<size_t>( row ) * w * 4;
+                                memcpy( dst, src, static_cast<size_t>( w ) * 4 );
+                            }
+                        };
+
+                        TestLog( L"[Panorama/Test] Running %s\n", manualDropName );
+                        stressTestsRun++;
+
+                        int evaluatedPairs = 0;
+                        int nearActualPairs = 0;
+                        int overshootPairs = 0;
+                        int sampleExpected = 0;
+                        int sampleActual = 0;
+                        int sampleBestDy = 0;
+
+                        for( int trial = 0; trial < 14; ++trial )
+                        {
+                            paintSource( trial );
+
+                            std::vector<int> origins;
+                            origins.push_back( 96 );
+                            for( int step : scriptedSteps )
+                            {
+                                const int nextTop = origins.back() + step;
+                                if( nextTop + h > srcH )
+                                    break;
+                                origins.push_back( nextTop );
+                            }
+
+                            int expectedDy = 0;
+                            for( size_t fi = 0; fi + 1 < origins.size(); ++fi )
+                            {
+                                std::vector<BYTE> prevFrame;
+                                std::vector<BYTE> currFrame;
+                                buildFrameFromSource( origins[fi], prevFrame );
+                                buildFrameFromSource( origins[fi + 1], currFrame );
+
+                                int bestDx = 0;
+                                int bestDy = 0;
+                                const bool found = FindBestFrameShift( prevFrame,
+                                                                       currFrame,
+                                                                       w,
+                                                                       h,
+                                                                       0,
+                                                                       expectedDy,
+                                                                       bestDx,
+                                                                       bestDy,
+                                                                       false );
+                                if( !found )
+                                    continue;
+
+                                const int actualStep = scriptedSteps[fi];
+                                const int absBest = abs( bestDy );
+                                const int expectedAbs = abs( expectedDy );
+                                evaluatedPairs++;
+                                if( abs( absBest - actualStep ) <= 10 )
+                                    nearActualPairs++;
+
+                                const bool overshoot =
+                                    expectedAbs >= 48 &&
+                                    absBest > max( expectedAbs * 4, 320 ) &&
+                                    absBest > actualStep + 120;
+                                if( overshoot )
+                                {
+                                    overshootPairs++;
+                                    if( sampleBestDy == 0 )
+                                    {
+                                        sampleExpected = expectedDy;
+                                        sampleActual = actualStep;
+                                        sampleBestDy = bestDy;
+                                    }
+                                }
+
+                                expectedDy = bestDy;
+                            }
+                        }
+
+                        const bool enoughCoverage = evaluatedPairs >= 60;
+                        const bool resultPass = enoughCoverage && overshootPairs == 0 && nearActualPairs >= ( evaluatedPairs * 3 ) / 4;
+                        wchar_t msg[512]{};
+                        if( resultPass )
+                        {
+                            stressTestsPassed++;
+                            TestLog( L"  [%d] %s PASSED\n", stressTestsRun, manualDropName );
+                            swprintf_s( msg,
+                                        L"PASS: %s (pairs=%d nearActual=%d overshoots=%d)\n",
+                                        manualDropName,
+                                        evaluatedPairs,
+                                        nearActualPairs,
+                                        overshootPairs );
+                        }
+                        else
+                        {
+                            TestLog( L"***** FAIL: %s (pairs=%d nearActual=%d overshoots=%d sampleBestDy=%d expected=%d actual=%d) *****\n",
+                                     manualDropName,
+                                     evaluatedPairs,
+                                     nearActualPairs,
+                                     overshootPairs,
+                                     sampleBestDy,
+                                     sampleExpected,
+                                     sampleActual );
+                            swprintf_s( msg,
+                                        L"FAIL: %s (pairs=%d nearActual=%d overshoots=%d sampleBestDy=%d expected=%d actual=%d)\n",
+                                        manualDropName,
+                                        evaluatedPairs,
+                                        nearActualPairs,
+                                        overshootPairs,
+                                        sampleBestDy,
+                                        sampleExpected,
+                                        sampleActual );
+                            stressFailLog += msg;
+                        }
+                        stressLog += msg;
+
+                        if( stressFocusEnabled )
+                        {
+                            TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                     manualDropName,
+                                     resultPass ? L"PASS" : L"FAIL" );
+                            if( stressStopAfterFocus )
+                                stressEarlyExit = true;
+                        }
+                    }
+                }
+
+                // Startup-axis confidence stress: reproduces the latest manual
+                // capture shape where the first pair could align on both axes,
+                // and startup had to choose the correct vertical axis despite a
+                // wide, low-detail portal with strong horizontal band structure.
+                if( !stressEarlyExit )
+                {
+                    const wchar_t* startupAxisName = L"stress-vertical-latestcapture-axisstart";
+                    if( stressScenarioMatches( startupAxisName ) )
+                    {
+                        if( stressFocusEnabled )
+                            stressFocusMatched = true;
+
+                        const int saW = 1432;
+                        const int saCanvasH = 17000;
+                        const int saWinH = 712;
+                        std::vector<BYTE> saPx( static_cast<size_t>( saW ) * saCanvasH * 4, 0 );
+                        for( size_t pi = 0; pi < static_cast<size_t>( saW ) * saCanvasH; ++pi )
+                        {
+                            saPx[pi * 4 + 0] = 245;
+                            saPx[pi * 4 + 1] = 245;
+                            saPx[pi * 4 + 2] = 245;
+                            saPx[pi * 4 + 3] = 255;
+                        }
+
+                        for( int band = 0; ; ++band )
+                        {
+                            const int y0 = 180 + band * 29;
+                            if( y0 >= saCanvasH )
+                                break;
+
+                            const int segPhase = ( band * 37 ) % 140;
+                            for( int yy = y0; yy < min( saCanvasH, y0 + 2 ); ++yy )
+                            {
+                                for( int xx = 46; xx < saW - 46; ++xx )
+                                {
+                                    const size_t idx = ( static_cast<size_t>( yy ) * saW + xx ) * 4;
+                                    saPx[idx + 0] = 42;
+                                    saPx[idx + 1] = 46;
+                                    saPx[idx + 2] = 50;
+                                }
+
+                                for( int seg = 0; seg < 8; ++seg )
+                                {
+                                    const int segStart = 64 + seg * 156 + ( ( seg * 19 + segPhase ) % 41 );
+                                    const int segEnd = min( saW - 56, segStart + 42 + ( ( band + seg ) % 28 ) );
+                                    for( int xx = segStart; xx < segEnd; ++xx )
+                                    {
+                                        const size_t idx = ( static_cast<size_t>( yy ) * saW + xx ) * 4;
+                                        saPx[idx + 0] = 28;
+                                        saPx[idx + 1] = 31;
+                                        saPx[idx + 2] = 34;
+                                    }
+                                }
+                            }
+                        }
+
+                        for( int ay = 93; ay < saCanvasH - 8; ay += 173 )
+                        {
+                            const int x0 = 28 + ( ( ay * 43 ) % ( saW - 92 ) );
+                            for( int dy = 0; dy < 4; ++dy )
+                            {
+                                for( int dx = 0; dx < 4; ++dx )
+                                {
+                                    const size_t idx = ( static_cast<size_t>( ay + dy ) * saW + x0 + dx ) * 4;
+                                    saPx[idx + 0] = 156;
+                                    saPx[idx + 1] = 162;
+                                    saPx[idx + 2] = 168;
+                                }
+                            }
+
+                            for( int yy = ay + 7; yy < min( ay + 10, saCanvasH ); ++yy )
+                            {
+                                const int lineStart = min( saW - 60, x0 + 19 );
+                                const int lineEnd = min( saW - 24, lineStart + 12 + ( ( ay / 173 ) % 17 ) );
+                                for( int xx = lineStart; xx < lineEnd; ++xx )
+                                {
+                                    const size_t idx = ( static_cast<size_t>( yy ) * saW + xx ) * 4;
+                                    saPx[idx + 0] = 132;
+                                    saPx[idx + 1] = 138;
+                                    saPx[idx + 2] = 144;
+                                }
+                            }
+                        }
+
+                        std::vector<int> saOrigins;
+                        saOrigins.push_back( 0 );
+                        int sy = 0;
+                        const int saSteps[] = {
+                            16, 18, 21, 24, 29, 35, 41, 47, 54, 62, 71, 83,
+                            96, 109, 123, 138, 82, 57, 34, 22, 18, 27, 43, 68,
+                            104, 127, 86, 51, 29, 17, 19, 31, 52, 79, 118, 143
+                        };
+
+                        for( int step : saSteps )
+                        {
+                            const int nextY = sy + step;
+                            if( nextY + saWinH > saCanvasH )
+                                break;
+                            sy = nextY;
+                            saOrigins.push_back( sy );
+                        }
+
+                        if( saOrigins.size() >= 20 )
+                        {
+                            auto buildStartupFrame = [&]( int top, std::vector<BYTE>& outFrame )
+                            {
+                                outFrame.resize( static_cast<size_t>( saW ) * saWinH * 4 );
+                                for( int row = 0; row < saWinH; ++row )
+                                {
+                                    const BYTE* src = saPx.data() +
+                                                      ( static_cast<size_t>( top + row ) * saW * 4 );
+                                    BYTE* dst = outFrame.data() + static_cast<size_t>( row ) * saW * 4;
+                                    memcpy( dst, src, static_cast<size_t>( saW ) * 4 );
+                                }
+                            };
+
+                            std::vector<BYTE> startupPrev;
+                            std::vector<BYTE> startupCurr;
+                            buildStartupFrame( saOrigins[0], startupPrev );
+                            buildStartupFrame( saOrigins[1], startupCurr );
+
+                            int startupDx = 0;
+                            int startupDy = 0;
+                            const bool startupFound = FindBestFrameShift( startupPrev,
+                                                                          startupCurr,
+                                                                          saW,
+                                                                          saWinH,
+                                                                          0,
+                                                                          0,
+                                                                          startupDx,
+                                                                          startupDy,
+                                                                          false );
+                            const bool startupVertical = startupFound && startupDx == 0 && startupDy < 0 && abs( startupDy + saSteps[0] ) <= 10;
+                            TestLog( L"[Panorama/Test] Running %s startupFound=%d startup=(%d,%d) expectedDy=%d n=%zu\n",
+                                     startupAxisName,
+                                     startupFound ? 1 : 0,
+                                     startupDx,
+                                     startupDy,
+                                     -saSteps[0],
+                                     saOrigins.size() );
+
+                            stressTestsRun++;
+                            const int rawResult = stitchAndCompare( startupAxisName,
+                                                                    saPx,
+                                                                    saW,
+                                                                    saCanvasH,
+                                                                    saOrigins,
+                                                                    saWinH );
+                            const size_t composedCount = countComposedVertical( saPx, saW, saCanvasH, saOrigins, saWinH );
+                            const bool resultPass = startupVertical && rawResult == 1 && composedCount == saOrigins.size();
+                            wchar_t msg[512]{};
+                            if( resultPass )
+                            {
+                                stressTestsPassed++;
+                                TestLog( L"  [%d] %s PASSED\n", stressTestsRun, startupAxisName );
+                                swprintf_s( msg,
+                                            L"PASS: %s (startup=%d,%d composed=%zu/%zu)\n",
+                                            startupAxisName,
+                                            startupDx,
+                                            startupDy,
+                                            composedCount,
+                                            saOrigins.size() );
+                            }
+                            else
+                            {
+                                TestLog( L"***** FAIL: %s startupFound=%d startup=(%d,%d) composed=%zu/%zu raw=%d *****\n",
+                                         startupAxisName,
+                                         startupFound ? 1 : 0,
+                                         startupDx,
+                                         startupDy,
+                                         composedCount,
+                                         saOrigins.size(),
+                                         rawResult );
+                                swprintf_s( msg,
+                                            L"FAIL: %s (startupFound=%d startup=%d,%d composed=%zu/%zu raw=%d)\n",
+                                            startupAxisName,
+                                            startupFound ? 1 : 0,
+                                            startupDx,
+                                            startupDy,
+                                            composedCount,
+                                            saOrigins.size(),
+                                            rawResult );
+                                stressFailLog += msg;
+                            }
+                            stressLog += msg;
+
+                            if( stressFocusEnabled )
+                            {
+                                TestLog( L"[Panorama/Test] Stress focus result: %s => %s\n",
+                                         startupAxisName,
+                                         resultPass ? L"PASS" : L"FAIL" );
+                                if( stressStopAfterFocus )
+                                    stressEarlyExit = true;
+                            }
                         }
                     }
                 }
