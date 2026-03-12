@@ -1157,6 +1157,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel?.RemovePasteAIProvider(provider);
         }
 
+        private void SetAsDefaultProviderButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuFlyoutItem menuItem || menuItem.Tag is not PasteAIProviderDefinition provider)
+            {
+                return;
+            }
+
+            ViewModel?.SetAsDefaultProvider(provider);
+        }
+
         private void PasteAIProviderConfigurationDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
         {
             ViewModel?.CancelPasteAIProviderDraft();

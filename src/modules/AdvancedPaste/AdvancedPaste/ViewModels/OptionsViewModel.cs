@@ -803,13 +803,20 @@ namespace AdvancedPaste.ViewModels
                     ? AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoachingSystem
                     : _userSettings.FixSpellingAndGrammarCoachingSystemPrompt;
 
+                var coachingProviderId = _userSettings.FixSpellingAndGrammarCoachingProviderId;
+                if (string.IsNullOrWhiteSpace(coachingProviderId))
+                {
+                    coachingProviderId = _userSettings.FixSpellingAndGrammarProviderId;
+                }
+
                 var result = await _customActionTransformService.TransformAsync(
                     coachingInstruction,
                     coachingInputText,
                     null,
                     _pasteActionCancellationTokenSource?.Token ?? CancellationToken.None,
                     null,
-                    coachingSystemPrompt);
+                    coachingSystemPrompt,
+                    string.IsNullOrWhiteSpace(coachingProviderId) ? null : coachingProviderId);
 
                 CoachingExplanation = result?.Content;
             }

@@ -172,7 +172,7 @@ namespace AdvancedPaste.Services.CustomActions
 
             var serviceType = NormalizeServiceType(provider.ServiceTypeKind);
             var systemPrompt = string.IsNullOrWhiteSpace(provider.SystemPrompt) ? DefaultSystemPrompt : provider.SystemPrompt;
-            var apiKey = AcquireApiKey(serviceType);
+            var apiKey = AcquireApiKey(serviceType, provider.Id);
             var modelName = provider.ModelName;
 
             var providerConfig = new PasteAIConfig
@@ -191,15 +191,14 @@ namespace AdvancedPaste.Services.CustomActions
             return providerConfig;
         }
 
-        private string AcquireApiKey(AIServiceType serviceType)
+        private string AcquireApiKey(AIServiceType serviceType, string providerId)
         {
             if (!RequiresApiKey(serviceType))
             {
                 return string.Empty;
             }
 
-            credentialsProvider.Refresh();
-            return credentialsProvider.GetKey() ?? string.Empty;
+            return credentialsProvider.GetKey(serviceType, providerId ?? string.Empty);
         }
 
         private static bool RequiresApiKey(AIServiceType serviceType)

@@ -39,6 +39,8 @@ namespace AdvancedPaste.Settings
 
         public string FixSpellingAndGrammarCoachingSystemPrompt { get; }
 
+        public string FixSpellingAndGrammarCoachingProviderId { get; }
+
         public PasteAIConfiguration PasteAIConfiguration { get; }
 
         public event EventHandler Changed;

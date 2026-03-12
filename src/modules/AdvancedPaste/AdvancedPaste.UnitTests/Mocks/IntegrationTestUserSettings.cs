@@ -69,6 +69,8 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public string FixSpellingAndGrammarCoachingSystemPrompt => string.Empty;
 
+    public string FixSpellingAndGrammarCoachingProviderId => string.Empty;
+
     public PasteAIConfiguration PasteAIConfiguration => _configuration;
 
     public event EventHandler Changed;

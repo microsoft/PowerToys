@@ -60,6 +60,8 @@ namespace AdvancedPaste.Settings
 
         public string FixSpellingAndGrammarCoachingSystemPrompt { get; private set; } = string.Empty;
 
+        public string FixSpellingAndGrammarCoachingProviderId { get; private set; } = string.Empty;
+
         public PasteAIConfiguration PasteAIConfiguration { get; private set; }
 
         public UserSettings(IFileSystem fileSystem)
@@ -135,6 +137,7 @@ namespace AdvancedPaste.Settings
                                 FixSpellingAndGrammarCoachingShortcutSet = fixSpellingAction.CoachingShortcut?.Code > 0;
                                 FixSpellingAndGrammarCoachingPrompt = fixSpellingAction.CoachingPrompt ?? string.Empty;
                                 FixSpellingAndGrammarCoachingSystemPrompt = fixSpellingAction.CoachingSystemPrompt ?? string.Empty;
+                                FixSpellingAndGrammarCoachingProviderId = fixSpellingAction.CoachingProviderId ?? string.Empty;
 
                                 var sourceAdditionalActions = properties.AdditionalActions;
                                 (PasteFormats Format, IAdvancedPasteAction[] Actions)[] additionalActionFormats =

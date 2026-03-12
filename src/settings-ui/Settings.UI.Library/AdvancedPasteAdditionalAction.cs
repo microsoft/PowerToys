@@ -19,6 +19,7 @@ public sealed partial class AdvancedPasteAdditionalAction : Observable, IAdvance
     private string _coachingPrompt = string.Empty;
     private string _coachingSystemPrompt = string.Empty;
     private string _providerId = string.Empty;
+    private string _coachingProviderId = string.Empty;
     private bool _coachingEnabled;
     private bool _hasConflict;
     private string _tooltip;
@@ -94,6 +95,13 @@ public sealed partial class AdvancedPasteAdditionalAction : Observable, IAdvance
     {
         get => _providerId;
         set => Set(ref _providerId, value ?? string.Empty);
+    }
+
+    [JsonPropertyName("coaching-provider-id")]
+    public string CoachingProviderId
+    {
+        get => _coachingProviderId;
+        set => Set(ref _coachingProviderId, value ?? string.Empty);
     }
 
     [JsonPropertyName("coaching-enabled")]

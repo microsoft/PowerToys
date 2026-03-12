@@ -2033,6 +2033,14 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Coaching prompt</value>
     <comment>Header for the coaching prompt customization text box</comment>
   </data>
+  <data name="FixSpellingAndGrammar_CoachingProvider.Header" xml:space="preserve">
+    <value>Coaching AI model</value>
+    <comment>Label for selecting which AI model provider to use for coaching explanations</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingProvider.Description" xml:space="preserve">
+    <value>Select the AI model to use for coaching explanations. Leave as default to use the same model as Fix Spelling.</value>
+    <comment>Description for the coaching provider selector</comment>
+  </data>
   <data name="FixSpellingAndGrammar_CoachingPrompt.Description" xml:space="preserve">
     <value>Override the AI prompt used when generating the coaching explanation. Leave empty to use the default prompt.</value>
     <comment>Description for the coaching prompt customization</comment>
@@ -5817,6 +5825,14 @@ The break timer font matches the text font.</value>
   </data>
   <data name="AdvancedPaste_Edit.Text" xml:space="preserve">
     <value>Edit</value>
+  </data>
+  <data name="AdvancedPaste_SetAsDefault.Text" xml:space="preserve">
+    <value>Set as default</value>
+    <comment>Menu item to mark a provider as the default/active one</comment>
+  </data>
+  <data name="AdvancedPaste_DefaultBadge.Text" xml:space="preserve">
+    <value>Default</value>
+    <comment>Badge label shown on the provider that is currently the default/active one</comment>
   </data>
   <data name="AdvancedPaste_Remove.Text" xml:space="preserve">
     <value>Remove</value>
