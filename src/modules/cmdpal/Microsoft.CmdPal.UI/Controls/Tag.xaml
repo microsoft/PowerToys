@@ -74,8 +74,14 @@
                                 Grid.Column="0"
                                 Width="12"
                                 Height="12"
-                                Margin="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IconMarginConverter}}"
-                                SourceKey="{TemplateBinding Icon}" />
+                                SourceKey="{TemplateBinding Icon}">
+                                <local:IconBox.Margin>
+                                    <Binding
+                                        Converter="{StaticResource IconMarginConverter}"
+                                        Path="Text"
+                                        RelativeSource="{RelativeSource TemplatedParent}" />
+                                </local:IconBox.Margin>
+                            </local:IconBox>
                             <TextBlock
                                 Grid.Column="1"
                                 Margin="0,-1,0,0"

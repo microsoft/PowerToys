@@ -2,8 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -34,7 +33,7 @@ public partial class ContentPlainTextViewModel : ContentViewModel
 
         Text = model.Text;
         WordWrapEnabled = model.WrapWords;
-        UseMonospace = model.FontFamily == FontFamily.Monospace;
+        UseMonospace = model.FontFamily == CommandPalette.Extensions.FontFamily.Monospace;
         UpdateProperty(nameof(Text), nameof(WordWrapEnabled), nameof(UseMonospace));
         model.PropChanged += Model_PropChanged;
     }
@@ -64,7 +63,7 @@ public partial class ContentPlainTextViewModel : ContentViewModel
         {
             case nameof(IPlainTextContent.FontFamily):
                 // RPC:
-                var incomingUseMonospace = model.FontFamily == FontFamily.Monospace;
+                var incomingUseMonospace = model.FontFamily == CommandPalette.Extensions.FontFamily.Monospace;
 
                 // local:
                 if (incomingUseMonospace != UseMonospace)

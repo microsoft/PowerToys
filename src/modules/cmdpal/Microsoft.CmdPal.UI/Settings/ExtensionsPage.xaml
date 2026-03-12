@@ -93,7 +93,7 @@
                                 x:Uid="Settings_ExtensionsPage_Banner_Hyperlink"
                                 Padding="0"
                                 Content="Learn how to create your own extensions"
-                                NavigateUri="https://learn.microsoft.com/windows/powertoys/command-palette/overview" />
+                                NavigateUri="https://aka.ms/building-cmdpal-extensions" />
                         </StackPanel>
                         <StackPanel
                             x:Name="ButtonPanel"

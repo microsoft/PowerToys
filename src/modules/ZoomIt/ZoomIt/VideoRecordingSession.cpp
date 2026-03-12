@@ -861,6 +861,7 @@ VideoRecordingSession::VideoRecordingSession(
     uint32_t frameRate,
     bool captureAudio,
     bool captureSystemAudio,
+    bool micMonoMix,
     winrt::Streams::IRandomAccessStream const& stream)
 {
     m_device = device;
@@ -939,10 +940,12 @@ VideoRecordingSession::VideoRecordingSession(
     video.PixelAspectRatio().Denominator(1);
     m_encodingProfile.Video(video);
 
-    // Always set up audio profile for loopback capture (stereo AAC)
-    auto audio = m_encodingProfile.Audio();
-    audio = winrt::AudioEncodingProperties::CreateAac(48000, 2, 192000);
-    m_encodingProfile.Audio(audio);
+    if (captureAudio || captureSystemAudio)
+    {
+        auto audio = m_encodingProfile.Audio();
+        audio = winrt::AudioEncodingProperties::CreateAac(48000, 2, 192000);
+        m_encodingProfile.Audio(audio);
+    }
 
     // Describe our input: uncompressed BGRA8 buffers
     auto properties = winrt::VideoEncodingProperties::CreateUncompressed(
@@ -963,8 +966,14 @@ VideoRecordingSession::VideoRecordingSession(
     winrt::check_hresult(m_previewSwapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
     winrt::check_hresult(m_d3dDevice->CreateRenderTargetView(backBuffer.get(), nullptr, m_renderTargetView.put()));
 
-    // Always create audio generator for loopback capture; captureAudio controls microphone
-    m_audioGenerator = std::make_unique<AudioSampleGenerator>(captureAudio, captureSystemAudio);
+    if (captureAudio || captureSystemAudio)
+    {
+        m_audioGenerator = std::make_unique<AudioSampleGenerator>(captureAudio, captureSystemAudio, micMonoMix);
+    }
+    else
+    {
+        m_audioGenerator = nullptr;
+    }
 }
 
 
@@ -1112,9 +1121,10 @@ std::shared_ptr<VideoRecordingSession> VideoRecordingSession::Create(
     uint32_t frameRate,
     bool captureAudio,
     bool captureSystemAudio,
+    bool micMonoMix,
     winrt::Streams::IRandomAccessStream const& stream)
 {
-    return std::shared_ptr<VideoRecordingSession>(new VideoRecordingSession(device, item, crop, frameRate, captureAudio, captureSystemAudio, stream));
+    return std::shared_ptr<VideoRecordingSession>(new VideoRecordingSession(device, item, crop, frameRate, captureAudio, captureSystemAudio, micMonoMix, stream));
 }
 
 //----------------------------------------------------------------------------
@@ -1205,14 +1215,8 @@ void VideoRecordingSession::OnMediaStreamSourceSampleRequested(
     {
         try
         {
-            if (auto sample = m_audioGenerator->TryGetNextSample())
-            {
-                request.Sample(sample.value());
-            }
-            else
-            {
-                request.Sample(nullptr);
-            }
+            auto sample = m_audioGenerator ? m_audioGenerator->TryGetNextSample() : std::optional<winrt::MediaStreamSample>{};
+            request.Sample(sample.has_value() ? sample.value() : nullptr);
         }
         catch (winrt::hresult_error const& error)
         {

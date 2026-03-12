@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.Controls;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.Helpers;
@@ -24,6 +24,7 @@ public static partial class IconProvider
       | 256×256   | 256.0 KB |    64 |  16.0 MB |            1 MB |      64.0 MB |          2.3 MB |       144 MB |
     */
 
+    private static IIconSourceProvider _provider16 = null!;
     private static IIconSourceProvider _provider20 = null!;
     private static IIconSourceProvider _provider32 = null!;
     private static IIconSourceProvider _provider64 = null!;
@@ -32,6 +33,7 @@ public static partial class IconProvider
 
     public static void Initialize(IServiceProvider serviceProvider)
     {
+        _provider16 = serviceProvider.GetRequiredKeyedService<IIconSourceProvider>(WellKnownIconSize.Size16);
         _provider20 = serviceProvider.GetRequiredKeyedService<IIconSourceProvider>(WellKnownIconSize.Size20);
         _provider32 = serviceProvider.GetRequiredKeyedService<IIconSourceProvider>(WellKnownIconSize.Size32);
         _provider64 = serviceProvider.GetRequiredKeyedService<IIconSourceProvider>(WellKnownIconSize.Size64);
@@ -66,6 +68,9 @@ public static partial class IconProvider
     }
 
 #pragma warning disable IDE0060 // Remove unused parameter
+    public static void SourceRequested16(IconBox sender, SourceRequestedEventArgs args)
+        => SourceRequestedCore(_provider16, args);
+
     public static void SourceRequested20(IconBox sender, SourceRequestedEventArgs args)
         => SourceRequestedCore(_provider20, args);
 

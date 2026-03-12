@@ -40,7 +40,7 @@
                         Name="ActivationShortcut"
                         x:Uid="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard
@@ -204,13 +204,13 @@
                                 Name="FancyZonesHotkeyNextTabControl"
                                 x:Uid="FancyZones_HotkeyNextTabControl"
                                 IsEnabled="{x:Bind ViewModel.WindowSwitchingCategoryEnabled, Mode=OneWay}">
-                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.NextTabHotkey, Mode=TwoWay}" />
+                                <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.NextTabHotkey, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Name="FancyZonesHotkeyPrevTabControl"
                                 x:Uid="FancyZones_HotkeyPrevTabControl"
                                 IsEnabled="{x:Bind ViewModel.WindowSwitchingCategoryEnabled, Mode=OneWay}">
-                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PrevTabHotkey, Mode=TwoWay}" />
+                                <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.PrevTabHotkey, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>

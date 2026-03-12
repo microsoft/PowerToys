@@ -1,4 +1,4 @@
-<local:NavigablePage
+﻿<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ZoomItPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -49,7 +49,7 @@
                         x:Uid="ZoomIt_Zoom_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE71E;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.ZoomToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.ZoomToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItToggleAnimateZoom" ContentAlignment="Left">
                                 <CheckBox x:Uid="ZoomIt_Toggle_AnimateZoom" IsChecked="{x:Bind ViewModel.AnimateZoom, Mode=TwoWay}" />
@@ -81,7 +81,7 @@
                         x:Uid="ZoomIt_LiveZoom_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE773;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.LiveZoomToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.LiveZoomToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
@@ -97,7 +97,7 @@
                         x:Uid="ZoomIt_Draw_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEE56;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.DrawToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.DrawToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
@@ -138,7 +138,7 @@
                         x:Uid="ZoomIt_DemoType_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 Name="ZoomItDemoTypeFile"
@@ -172,7 +172,7 @@
                         x:Uid="ZoomIt_Break_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.BreakTimerKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.BreakTimerKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItBreakTimeout" x:Uid="ZoomIt_Break_Timeout">
                                 <NumberBox
@@ -257,7 +257,7 @@
                         x:Uid="ZoomIt_Record_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7C8;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.RecordToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.RecordToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItRecordScaling" x:Uid="ZoomIt_Record_Scaling">
                                 <Slider
@@ -280,6 +280,12 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItRecordCaptureAudio" ContentAlignment="Left">
                                 <CheckBox x:Uid="ZoomIt_Record_CaptureAudio" IsChecked="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="ZoomItRecordMicMonoMix" ContentAlignment="Left">
+                                <CheckBox
+                                    x:Uid="ZoomIt_Record_MicMonoMix"
+                                    IsChecked="{x:Bind ViewModel.RecordMicMonoMix, Mode=TwoWay}"
+                                    Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Name="ZoomItRecordMicrophone"
@@ -310,7 +316,7 @@
                         x:Uid="ZoomIt_Snip_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItSnipShortcutSave">
                                 <tkcontrols:SettingsCard.Description>
