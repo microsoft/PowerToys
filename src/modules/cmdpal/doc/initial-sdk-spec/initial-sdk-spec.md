@@ -1,4 +1,4 @@
----
+*---*
 author: Mike Griese
 created on: 2024-07-19
 last updated: 2026-02-05
@@ -78,6 +78,9 @@ functionality.
   - [Addenda I: API additions (ICommandProvider2)](#addenda-i-api-additions-icommandprovider2)
   - [Addenda IV: Dock bands](#addenda-iv-dock-bands)
     - [Pinning nested commands to the dock (and top level)](#pinning-nested-commands-to-the-dock-and-top-level)
+  - [Addenda V: Extra content types](#addenda-v-extra-content-types)
+    - [Image content](#image-content)
+    - [Plain text content](#plain-text-content)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -2158,6 +2161,44 @@ because that method is was designed for two main purposes:
 In neither of those scenarios was the full "display" of the item needed. In
 pinning scenarios, however, we need everything that the user would see in the UI
 for that item, which is all in the `ICommandItem`.
+
+## Addenda V: Extra content types
+
+Extra content types for [Content Pages](#content-pages) views so we can provide extra functionality to the user.
+
+### Image content
+
+Image content is dedicated to displaying a single image. The host will attempt to display the entire 
+image in the UI or a scaled down preview, while respecting the max width and height. If possible, the host will
+provide UI controls to display the image 1:1, save it or copy it to the clipboard.
+
+```csharp
+interface IImageContent requires IContent {
+    IIconInfo Image { get; };
+    Int32 MaxWidth { get; };
+    Int32 MaxHeight { get; };
+}
+```
+
+### Plain text content
+
+Developers can declare that the content is unformatted plain text and provide 
+hints about how to render it, such as what font to use and whether to 
+wrap words or not. Users can control the view settings.
+
+```csharp
+enum FontFamily
+{
+    UserInterface,
+    Monospace,
+};
+
+interface IPlainTextContent requires IContent {
+    String Text { get; };
+    FontFamily FontFamily { get; };
+    Boolean WrapWords { get; };
+}
+```
 
 ## Class diagram
 

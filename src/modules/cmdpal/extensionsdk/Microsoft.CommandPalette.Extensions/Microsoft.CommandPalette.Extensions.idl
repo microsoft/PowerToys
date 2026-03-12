@@ -348,26 +348,6 @@ namespace Microsoft.CommandPalette.Extensions
         IContent RootContent { get; };
         IContent[] GetChildren();
     }
-
-    enum FontFamily
-    {
-        UserInterface,
-        Monospace,
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IPlainTextContent requires IContent {
-        String Text { get; };
-        FontFamily FontFamily { get; };
-        Boolean WrapWords { get; };
-    }
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IImageContent requires IContent {
-        IIconInfo Image { get; };
-        Int32 MaxWidth { get; };
-        Int32 MaxHeight { get; };
-    }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IContentPage requires IPage, INotifyItemsChanged {
@@ -437,5 +417,25 @@ namespace Microsoft.CommandPalette.Extensions
     {
         ICommandItem GetCommandItem(String id);
     };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IImageContent requires IContent {
+        IIconInfo Image { get; };
+        Int32 MaxWidth { get; };
+        Int32 MaxHeight { get; };
+    }
+    
+    enum FontFamily
+    {
+        UserInterface,
+        Monospace,
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IPlainTextContent requires IContent {
+        String Text { get; };
+        FontFamily FontFamily { get; };
+        Boolean WrapWords { get; };
+    }
 
 }
