@@ -179,7 +179,7 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 - Added Dock API for extension integration in [#45432](https://github.com/microsoft/PowerToys/pull/45432)
 - Fixed Dock visual bugs and polish in [#45871](https://github.com/microsoft/PowerToys/pull/45871). Thanks [@jiripolasek](https://github.com/jiripolasek)!
 - Visual tweaks and nits for Dock in [#45873](https://github.com/microsoft/PowerToys/pull/45873) and [#45954](https://github.com/microsoft/PowerToys/pull/45954). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed Dock dealing with multiple appbars on the same side in [#45831](https://github.com/microsoft/PowerToys/pull/45831)
+- Fixed Dock dealing with multiple app bars on the same side in [#45831](https://github.com/microsoft/PowerToys/pull/45831)
 - Adjusted Dock padding for Fitts's law compliance in [#45834](https://github.com/microsoft/PowerToys/pull/45834)
 - Fixed tab focus order for Dock items in [#45837](https://github.com/microsoft/PowerToys/pull/45837)
 - Replaced IsShownInSwitchers with HiddenOwnerWindowBehavior in DockWindow in [#45839](https://github.com/microsoft/PowerToys/pull/45839). Thanks [@jiripolasek](https://github.com/jiripolasek)!
