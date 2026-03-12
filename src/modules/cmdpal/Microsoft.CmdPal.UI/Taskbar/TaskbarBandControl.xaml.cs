@@ -22,10 +22,12 @@ namespace Microsoft.CmdPal.UI.Taskbar;
 
 public sealed partial class TaskbarBandControl : UserControl,
     IRecipient<CloseContextMenuMessage>,
-    IRecipient<EnterTaskbarEditModeMessage>
+    IRecipient<EnterEditModeMessage>,
+    IRecipient<ExitEditModeMessage>
 {
     private DockViewModel _viewModel;
     private bool _isEditMode;
+    private bool _showFlyout;
     private DockBandViewModel? _editModeContextBand;
     private DockBandViewModel? _draggedBand;
 
@@ -39,7 +41,8 @@ public sealed partial class TaskbarBandControl : UserControl,
         BandsListView.ItemsSource = _viewModel.TaskbarItems;
 
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<EnterTaskbarEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<EnterEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExitEditModeMessage>(this);
 
         UpdateEditMode(false);
     }
@@ -105,11 +108,12 @@ public sealed partial class TaskbarBandControl : UserControl,
         }
     }
 
-    internal void EnterEditMode()
+    internal void EnterEditMode(bool showFlyout = true)
     {
+        _showFlyout = showFlyout;
         _viewModel.SnapshotBandOrder();
         _isEditMode = true;
-        UpdateEditMode(true);
+        UpdateEditMode(true, showFlyout);
     }
 
     internal void ExitEditMode()
@@ -126,14 +130,14 @@ public sealed partial class TaskbarBandControl : UserControl,
         _viewModel.RestoreBandOrder();
     }
 
-    private void UpdateEditMode(bool isEditMode)
+    private void UpdateEditMode(bool isEditMode, bool showFlyout = true)
     {
         BandsListView.CanDragItems = isEditMode;
         BandsListView.CanReorderItems = isEditMode;
         BandsListView.AllowDrop = isEditMode;
 
         AddBandButton.Visibility = isEditMode ? Visibility.Visible : Visibility.Collapsed;
-        EditButtonsTeachingTip.IsOpen = isEditMode;
+        EditButtonsTeachingTip.IsOpen = isEditMode && showFlyout;
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -257,11 +261,26 @@ public sealed partial class TaskbarBandControl : UserControl,
         }
     }
 
-    public void Receive(EnterTaskbarEditModeMessage message)
+    public void Receive(EnterEditModeMessage message)
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            EnterEditMode();
+            EnterEditMode(showFlyout: message.Origin == EditModeOrigin.Taskbar);
+        });
+    }
+
+    public void Receive(ExitEditModeMessage message)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (message.Save)
+            {
+                ExitEditMode();
+            }
+            else
+            {
+                DiscardEditMode();
+            }
         });
     }
 
@@ -292,12 +311,14 @@ public sealed partial class TaskbarBandControl : UserControl,
 
     private void DoneEditingButton_Click(object sender, RoutedEventArgs e)
     {
-        ExitEditMode();
+        // Tell both dock and taskbar to exit edit mode
+        WeakReferenceMessenger.Default.Send(new ExitEditModeMessage(Save: true));
     }
 
     private void DiscardEditingButton_Click(object sender, RoutedEventArgs e)
     {
-        DiscardEditMode();
+        // Tell both dock and taskbar to discard edit mode
+        WeakReferenceMessenger.Default.Send(new ExitEditModeMessage(Save: false));
     }
 
     private void AddBandButton_Click(object sender, RoutedEventArgs e)

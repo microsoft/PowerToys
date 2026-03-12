@@ -4,4 +4,10 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record EnterDockEditModeMessage();
+public record EnterEditModeMessage(EditModeOrigin Origin);
+
+public enum EditModeOrigin
+{
+    Dock,
+    Taskbar,
+}

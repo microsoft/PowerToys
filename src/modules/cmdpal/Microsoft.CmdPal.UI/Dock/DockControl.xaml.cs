@@ -22,7 +22,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>
+public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterEditModeMessage>, IRecipient<ExitEditModeMessage>
 {
     private DockViewModel _viewModel;
 
@@ -59,7 +59,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     {
         if (d is DockControl control && e.NewValue is bool isEditMode)
         {
-            control.UpdateEditMode(isEditMode);
+            control.UpdateEditMode(isEditMode, control._showFlyout);
         }
     }
 
@@ -68,7 +68,8 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         _viewModel = viewModel;
         InitializeComponent();
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<EnterEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExitEditModeMessage>(this);
 
         ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
 
@@ -86,16 +87,31 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         ContentGrid.IsCenterVisible = IsEditMode || ViewModel.CenterItems.Count > 0;
     }
 
-    public void Receive(EnterDockEditModeMessage message)
+    public void Receive(EnterEditModeMessage message)
     {
         // Message may arrive from a background thread, dispatch to UI thread
         DispatcherQueue.TryEnqueue(() =>
         {
-            EnterEditMode();
+            EnterEditMode(showFlyout: message.Origin == EditModeOrigin.Dock);
         });
     }
 
-    private void UpdateEditMode(bool isEditMode)
+    public void Receive(ExitEditModeMessage message)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (message.Save)
+            {
+                ExitEditMode();
+            }
+            else
+            {
+                DiscardEditMode();
+            }
+        });
+    }
+
+    private void UpdateEditMode(bool isEditMode, bool showFlyout = true)
     {
         // Update center visibility based on edit mode and center items
         UpdateCenterVisibility();
@@ -113,7 +129,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         EndListView.CanReorderItems = isEditMode;
         EndListView.AllowDrop = isEditMode;
 
-        if (isEditMode)
+        if (isEditMode && showFlyout)
         {
             EditButtonsTeachingTip.PreferredPlacement = DockSide switch
             {
@@ -125,11 +141,16 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             };
         }
 
-        EditButtonsTeachingTip.IsOpen = isEditMode;
+        EditButtonsTeachingTip.IsOpen = isEditMode && showFlyout;
     }
 
-    internal void EnterEditMode()
+    // Whether this control is showing the save/discard flyout
+    private bool _showFlyout;
+
+    internal void EnterEditMode(bool showFlyout = true)
     {
+        _showFlyout = showFlyout;
+
         // Snapshot current state so we can restore on discard
         ViewModel.SnapshotBandOrder();
         IsEditMode = true;
@@ -153,12 +174,14 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void DoneEditingButton_Click(object sender, RoutedEventArgs e)
     {
-        ExitEditMode();
+        // Tell both dock and taskbar to exit edit mode
+        WeakReferenceMessenger.Default.Send(new ExitEditModeMessage(Save: true));
     }
 
     private void DiscardEditingButton_Click(object sender, RoutedEventArgs e)
     {
-        DiscardEditMode();
+        // Tell both dock and taskbar to discard edit mode
+        WeakReferenceMessenger.Default.Send(new ExitEditModeMessage(Save: false));
     }
 
     internal void UpdateSettings(DockSettings settings)

@@ -48,6 +48,11 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.EnableDock, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <!--  Enable Taskbar  -->
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_EnableTaskbar_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE737;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.EnableTaskbar, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  Appearance Section  -->
                     <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 

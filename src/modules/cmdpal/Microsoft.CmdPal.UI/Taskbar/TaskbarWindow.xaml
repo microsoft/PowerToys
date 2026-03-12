@@ -20,7 +20,7 @@
         Height="44"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Top"
-        Background="Transparent">
+        Background="Red">
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="WindowsLogo" Width="60" />

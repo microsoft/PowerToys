@@ -665,7 +665,7 @@ public sealed partial class DockViewModel
             var editDockCommand = new AnonymousCommand(
                 action: () =>
                 {
-                    WeakReferenceMessenger.Default.Send(new EnterDockEditModeMessage());
+                    WeakReferenceMessenger.Default.Send(new EnterEditModeMessage(EditModeOrigin.Dock));
                 })
             {
                 Name = Properties.Resources.dock_edit_dock_name,
@@ -697,7 +697,7 @@ public sealed partial class DockViewModel
             var editTaskbarCommand = new AnonymousCommand(
                 action: () =>
                 {
-                    WeakReferenceMessenger.Default.Send(new EnterTaskbarEditModeMessage());
+                    WeakReferenceMessenger.Default.Send(new EnterEditModeMessage(EditModeOrigin.Taskbar));
                 })
             {
                 Name = Properties.Resources.taskbar_edit_name,
