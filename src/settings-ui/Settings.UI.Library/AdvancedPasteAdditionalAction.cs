@@ -12,8 +12,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library;
 public sealed partial class AdvancedPasteAdditionalAction : Observable, IAdvancedPasteAction
 {
     private HotkeySettings _shortcut = new();
+    private HotkeySettings _coachingShortcut = new();
     private bool _isShown;
     private string _prompt = string.Empty;
+    private string _systemPrompt = string.Empty;
     private string _coachingPrompt = string.Empty;
     private string _coachingSystemPrompt = string.Empty;
     private string _providerId = string.Empty;
@@ -38,6 +40,20 @@ public sealed partial class AdvancedPasteAdditionalAction : Observable, IAdvance
         }
     }
 
+    [JsonPropertyName("coaching-shortcut")]
+    public HotkeySettings CoachingShortcut
+    {
+        get => _coachingShortcut;
+        set
+        {
+            if (_coachingShortcut != value)
+            {
+                _coachingShortcut = value ?? new();
+                OnPropertyChanged();
+            }
+        }
+    }
+
     [JsonPropertyName("isShown")]
     public bool IsShown
     {
@@ -50,6 +66,13 @@ public sealed partial class AdvancedPasteAdditionalAction : Observable, IAdvance
     {
         get => _prompt;
         set => Set(ref _prompt, value ?? string.Empty);
+    }
+
+    [JsonPropertyName("system-prompt")]
+    public string SystemPrompt
+    {
+        get => _systemPrompt;
+        set => Set(ref _systemPrompt, value ?? string.Empty);
     }
 
     [JsonPropertyName("coaching-prompt")]

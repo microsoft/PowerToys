@@ -48,9 +48,13 @@ namespace AdvancedPaste.Settings
 
         public string FixSpellingAndGrammarPrompt { get; private set; } = string.Empty;
 
+        public string FixSpellingAndGrammarSystemPrompt { get; private set; } = string.Empty;
+
         public string FixSpellingAndGrammarProviderId { get; private set; } = string.Empty;
 
         public bool FixSpellingAndGrammarCoachingEnabled { get; private set; }
+
+        public bool FixSpellingAndGrammarCoachingShortcutSet { get; private set; }
 
         public string FixSpellingAndGrammarCoachingPrompt { get; private set; } = string.Empty;
 
@@ -125,8 +129,10 @@ namespace AdvancedPaste.Settings
 
                                 var fixSpellingAction = properties.AdditionalActions.FixSpellingAndGrammar;
                                 FixSpellingAndGrammarPrompt = fixSpellingAction.Prompt ?? string.Empty;
+                                FixSpellingAndGrammarSystemPrompt = fixSpellingAction.SystemPrompt ?? string.Empty;
                                 FixSpellingAndGrammarProviderId = fixSpellingAction.ProviderId ?? string.Empty;
                                 FixSpellingAndGrammarCoachingEnabled = fixSpellingAction.CoachingEnabled;
+                                FixSpellingAndGrammarCoachingShortcutSet = fixSpellingAction.CoachingShortcut?.Code > 0;
                                 FixSpellingAndGrammarCoachingPrompt = fixSpellingAction.CoachingPrompt ?? string.Empty;
                                 FixSpellingAndGrammarCoachingSystemPrompt = fixSpellingAction.CoachingSystemPrompt ?? string.Empty;
 

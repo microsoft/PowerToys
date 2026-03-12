@@ -12,6 +12,8 @@ public static class AdvancedPasteDefaultPrompts
 {
     public const string FixSpellingAndGrammar = "Fix all spelling and grammar errors in the following text. Return only the corrected text without any additional explanation or commentary.";
 
+    public const string FixSpellingAndGrammarSystem = "You are a professional proofreader. You fix spelling and grammar errors in text. You return only the corrected text with no commentary.";
+
     public const string FixSpellingAndGrammarCoaching = "Briefly explain what was changed and why in terms of language rules. Be concise as reviewer.";
 
     public const string FixSpellingAndGrammarCoachingSystem = "You are a writing coach and language teacher. You will be given an original sentence and a corrected version.";

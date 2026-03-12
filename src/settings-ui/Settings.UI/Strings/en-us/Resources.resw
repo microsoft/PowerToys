@@ -1990,8 +1990,13 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FixSpellingAndGrammar_CustomPrompt.Description" xml:space="preserve">
     <value>Override the default AI prompt used for fixing spelling and grammar. Leave empty to use the default prompt.</value>
   </data>
-  <data name="FixSpellingAndGrammar_CustomPromptTextBox.PlaceholderText" xml:space="preserve">
-    <value>Fix all spelling and grammar errors in the following text. Return only the corrected text without any additional explanation or commentary.</value>
+  <data name="FixSpellingAndGrammar_SystemPrompt.Header" xml:space="preserve">
+    <value>System prompt</value>
+    <comment>Header for the system prompt customization for fix spelling action</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_SystemPrompt.Description" xml:space="preserve">
+    <value>Override the system prompt that sets the AI's role for fixing spelling and grammar. Leave empty to use the default.</value>
+    <comment>Description for the system prompt customization</comment>
   </data>
   <data name="AdvancedPaste_ActionProvider.Header" xml:space="preserve">
     <value>AI model</value>
@@ -2012,11 +2017,21 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>AI model</value>
     <comment>Label for selecting the AI model provider in the custom action dialog</comment>
   </data>
-  <data name="FixSpellingAndGrammar_CoachingEnabled.Header" xml:space="preserve">
+  <data name="FixSpellingAndGrammar_CoachingSection.Header" xml:space="preserve">
     <value>Coaching mode</value>
+    <comment>Header for the coaching mode collapsible settings section</comment>
   </data>
-  <data name="FixSpellingAndGrammar_CoachingEnabled.Description" xml:space="preserve">
-    <value>When enabled, shows a preview with an explanation of what was fixed and why, even when using a direct keyboard shortcut.</value>
+  <data name="FixSpellingAndGrammar_CoachingSection.Description" xml:space="preserve">
+    <value>When enabled, shows a preview with an explanation of what was fixed and why.</value>
+    <comment>Description for the coaching mode settings section</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingShortcut.Header" xml:space="preserve">
+    <value>Coaching shortcut</value>
+    <comment>Header for the coaching mode keyboard shortcut</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingShortcut.Description" xml:space="preserve">
+    <value>Optional shortcut that triggers fix spelling with coaching enabled. If not set, uses the main action shortcut.</value>
+    <comment>Description for the coaching shortcut setting</comment>
   </data>
   <data name="FixSpellingAndGrammar_CoachingPrompt.Header" xml:space="preserve">
     <value>Coaching prompt</value>
@@ -2026,10 +2041,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Override the AI prompt used when generating the coaching explanation. Leave empty to use the default prompt.</value>
     <comment>Description for the coaching prompt customization</comment>
   </data>
-  <data name="FixSpellingAndGrammar_CoachingPromptTextBox.PlaceholderText" xml:space="preserve">
-    <value>Briefly explain what was changed and why in terms of language rules. Be concise.</value>
-    <comment>Default coaching prompt shown as placeholder</comment>
-  </data>
   <data name="FixSpellingAndGrammar_CoachingSystemPrompt.Header" xml:space="preserve">
     <value>Coaching system prompt</value>
     <comment>Header for the coaching system prompt customization text box</comment>
@@ -2037,10 +2048,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="FixSpellingAndGrammar_CoachingSystemPrompt.Description" xml:space="preserve">
     <value>Override the system prompt that sets the AI's role for coaching explanations. Leave empty to use the default.</value>
     <comment>Description for the coaching system prompt customization</comment>
-  </data>
-  <data name="FixSpellingAndGrammar_CoachingSystemPromptTextBox.PlaceholderText" xml:space="preserve">
-    <value>You are a writing coach. You will be given an original sentence and a corrected version.</value>
-    <comment>Default coaching system prompt shown as placeholder</comment>
   </data>
   <data name="PasteAsFile.Header" xml:space="preserve">
     <value>Paste as file</value>

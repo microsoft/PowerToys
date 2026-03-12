@@ -252,7 +252,7 @@
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}">
                                     <StackPanel Orientation="Vertical" Spacing="8">
                                         <TextBox
-                                            x:Uid="FixSpellingAndGrammar_CustomPromptTextBox"
+                                            PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammar}"
                                             AcceptsReturn="True"
                                             Text="{Binding Prompt, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                             TextWrapping="Wrap" />
@@ -263,52 +263,75 @@
                                     </StackPanel>
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
-                                    x:Uid="FixSpellingAndGrammar_CoachingEnabled"
+                                    x:Uid="FixSpellingAndGrammar_SystemPrompt"
+                                    HorizontalContentAlignment="Stretch"
+                                    ContentAlignment="Vertical"
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}">
-                                    <ToggleSwitch
-                                        IsOn="{Binding CoachingEnabled, Mode=TwoWay}"
-                                        OffContent=""
-                                        OnContent="" />
+                                    <StackPanel Orientation="Vertical" Spacing="8">
+                                        <TextBox
+                                            PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammarSystem}"
+                                            AcceptsReturn="True"
+                                            Text="{Binding SystemPrompt, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                            TextWrapping="Wrap" />
+                                        <Button
+                                            x:Uid="AdvancedPaste_ResetPrompt"
+                                            Click="ResetSystemPrompt_Click" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+
+                                <!--  Coaching mode  -->
+                                <tkcontrols:SettingsCard
+                                    x:Uid="FixSpellingAndGrammar_CoachingSection"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            AllowDisable="True"
+                                            HotkeySettings="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingShortcut, Mode=TwoWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=TwoWay}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </StackPanel>
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     x:Uid="FixSpellingAndGrammar_CoachingPrompt"
                                     HorizontalContentAlignment="Stretch"
                                     ContentAlignment="Vertical"
-                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}"
                                     Visibility="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}">
                                     <StackPanel Orientation="Vertical" Spacing="8">
                                         <TextBox
-                                            x:Uid="FixSpellingAndGrammar_CoachingPromptTextBox"
+                                            PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoaching}"
                                             AcceptsReturn="True"
                                             Text="{Binding CoachingPrompt, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                             TextWrapping="Wrap" />
                                         <Button
                                             x:Uid="AdvancedPaste_ResetPrompt"
-                                            Click="ResetCoachingPrompt_Click"
-                                            Tag="FixSpellingAndGrammarCoaching" />
+                                            Click="ResetCoachingPrompt_Click" />
                                     </StackPanel>
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     x:Uid="FixSpellingAndGrammar_CoachingSystemPrompt"
                                     HorizontalContentAlignment="Stretch"
                                     ContentAlignment="Vertical"
-                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}"
                                     Visibility="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}">
                                     <StackPanel Orientation="Vertical" Spacing="8">
                                         <TextBox
-                                            x:Uid="FixSpellingAndGrammar_CoachingSystemPromptTextBox"
+                                            PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoachingSystem}"
                                             AcceptsReturn="True"
                                             Text="{Binding CoachingSystemPrompt, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                             TextWrapping="Wrap" />
                                         <Button
                                             x:Uid="AdvancedPaste_ResetPrompt"
-                                            Click="ResetCoachingSystemPrompt_Click"
-                                            Tag="FixSpellingAndGrammarCoachingSystem" />
+                                            Click="ResetCoachingSystemPrompt_Click" />
                                     </StackPanel>
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Visibility="Collapsed" />
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
+
                         <tkcontrols:SettingsExpander
                             Name="PasteAsFile"
                             x:Uid="PasteAsFile"

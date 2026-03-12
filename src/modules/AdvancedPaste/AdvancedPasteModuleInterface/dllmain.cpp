@@ -66,6 +66,8 @@ namespace
     const wchar_t JSON_KEY_PROVIDERS[] = L"providers";
     const wchar_t JSON_KEY_SERVICE_TYPE[] = L"service-type";
     const wchar_t JSON_KEY_ENABLE_ADVANCED_AI[] = L"enable-advanced-ai";
+    const wchar_t JSON_KEY_COACHING_SHORTCUT[] = L"coaching-shortcut";
+    const wchar_t JSON_KEY_COACHING_ENABLED[] = L"coaching-enabled";
     const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
@@ -255,6 +257,21 @@ private:
             };
 
             m_additional_actions.push_back(additionalAction);
+
+            // Register coaching shortcut as a separate hotkey with a "-coaching" suffix ID
+            if (action.HasKey(JSON_KEY_COACHING_SHORTCUT) && action.GetNamedBoolean(JSON_KEY_COACHING_ENABLED, false))
+            {
+                auto coachingHotkey = parse_single_hotkey(action.GetNamedObject(JSON_KEY_COACHING_SHORTCUT), actionIsShown);
+                if (coachingHotkey.key != 0)
+                {
+                    const AdditionalAction coachingAction
+                    {
+                        std::wstring(actionName.c_str()) + L"-coaching",
+                        coachingHotkey
+                    };
+                    m_additional_actions.push_back(coachingAction);
+                }
+            }
         }
         else
         {

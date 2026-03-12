@@ -1184,6 +1184,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private void ResetSystemPrompt_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement element && element.DataContext is AdvancedPasteAdditionalAction action)
+            {
+                action.SystemPrompt = string.Empty;
+            }
+        }
+
         private void ResetCoachingPrompt_Click(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement element && element.DataContext is AdvancedPasteAdditionalAction action)

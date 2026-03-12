@@ -57,9 +57,13 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public string FixSpellingAndGrammarPrompt => string.Empty;
 
+    public string FixSpellingAndGrammarSystemPrompt => string.Empty;
+
     public string FixSpellingAndGrammarProviderId => string.Empty;
 
     public bool FixSpellingAndGrammarCoachingEnabled => false;
+
+    public bool FixSpellingAndGrammarCoachingShortcutSet => false;
 
     public string FixSpellingAndGrammarCoachingPrompt => string.Empty;
 

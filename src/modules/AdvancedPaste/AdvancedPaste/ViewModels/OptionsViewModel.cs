@@ -685,13 +685,13 @@ namespace AdvancedPaste.ViewModels
             GetMainWindow()?.Close();
         }
 
-        internal async Task ExecutePasteFormatAsync(PasteFormats format, PasteActionSource source)
+        internal async Task ExecutePasteFormatAsync(PasteFormats format, PasteActionSource source, bool forceCoaching = false)
         {
             await ReadClipboardAsync();
-            await ExecutePasteFormatAsync(CreateStandardPasteFormat(format), source);
+            await ExecutePasteFormatAsync(CreateStandardPasteFormat(format), source, forceCoaching);
         }
 
-        internal async Task ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source)
+        internal async Task ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source, bool forceCoaching = false)
         {
             if (IsBusy)
             {
@@ -724,7 +724,8 @@ namespace AdvancedPaste.ViewModels
                 await delayTask;
 
                 var outputText = await dataPackage.GetView().GetTextOrEmptyAsync();
-                bool isCoachingAction = pasteFormat.Format == PasteFormats.FixSpellingAndGrammar && _userSettings.FixSpellingAndGrammarCoachingEnabled;
+                bool isCoachingAction = pasteFormat.Format == PasteFormats.FixSpellingAndGrammar &&
+                    (forceCoaching || (_userSettings.FixSpellingAndGrammarCoachingEnabled && !_userSettings.FixSpellingAndGrammarCoachingShortcutSet));
                 bool shouldPreview = pasteFormat.Metadata.CanPreview && _userSettings.ShowCustomPreview && !string.IsNullOrEmpty(outputText) && source != PasteActionSource.GlobalKeyboardShortcut;
 
                 // Coaching mode forces preview even for global keyboard shortcuts
