@@ -243,6 +243,7 @@
                             x:Uid="FixSpellingAndGrammar"
                             DataContext="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar, Mode=OneWay}"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE8E2;}"
+                            IsEnabled="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
                             IsExpanded="{Binding IsShown, Mode=OneWay}">
                             <tkcontrols:SettingsExpander.Content>
                                 <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />

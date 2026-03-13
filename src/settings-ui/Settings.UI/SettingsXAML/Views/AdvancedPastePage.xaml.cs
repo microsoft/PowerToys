@@ -103,6 +103,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             else
             {
                 ViewModel.DisableAI();
+                FixSpellingAndGrammar.IsExpanded = false;
+                AdvancedPasteUIActions.IsExpanded = false;
             }
         }
 
