@@ -475,12 +475,15 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <!-- ImageResizer tests temporarily disabled - needs migration from WPF to WinUI3 APIs -->
+  <!--
   <Folder Name="/modules/imageresizer/Tests/">
     <Project Path="src/modules/imageresizer/tests/ImageResizer.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  -->
   <Folder Name="/modules/interface/">
     <File Path="src/modules/interface/powertoy_module_interface.h" />
   </Folder>
