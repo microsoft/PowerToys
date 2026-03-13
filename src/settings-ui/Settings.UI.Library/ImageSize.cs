@@ -65,11 +65,22 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
         get => !(Unit == ResizeUnit.Percent && Fit != ResizeFit.Stretch);
     }
 
+    /// <summary>
+    /// Gets or sets the name of the image size.
+    /// Invalid values (null, empty, or whitespace) are silently ignored to maintain the existing name.
+    /// </summary>
     [JsonPropertyName("name")]
     public string Name
     {
         get => _name;
-        set => SetProperty(ref _name, value);
+        set
+        {
+            // Prevent setting empty or null names
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                SetProperty(ref _name, value);
+            }
+        }
     }
 
     [JsonPropertyName("fit")]
