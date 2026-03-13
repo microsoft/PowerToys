@@ -43,19 +43,21 @@ param (
     [string]$Version,
     [switch]$Force,
     [switch]$EnableCmdPalAOT,
+    [switch]$EnableSettingsAOT,
     [switch]$Clean,
     [switch]$SkipBuild,
     [switch]$Help
 )
 
 if ($Help) {
-    Write-Host "Usage: .\build-installer.ps1 [-Platform <x64|arm64>] [-Configuration <Release|Debug>] [-PerUser <true|false>] [-Version <0.0.1>] [-Force] [-EnableCmdPalAOT] [-Clean] [-SkipBuild]"
+    Write-Host "Usage: .\build-installer.ps1 [-Platform <x64|arm64>] [-Configuration <Release|Debug>] [-PerUser <true|false>] [-Version <0.0.1>] [-Force] [-EnableCmdPalAOT] [-EnableSettingsAOT] [-Clean] [-SkipBuild]"
     Write-Host "  -Platform       Target platform (default: auto-detect or x64)"
     Write-Host "  -Configuration  Build configuration (default: Release)"
     Write-Host "  -PerUser        Build per-user installer (default: true)"
     Write-Host "  -Version        Sets the PowerToys version (default: from src\Version.props)"
     Write-Host "  -Force          Continue even if the git working tree is not clean (skips the interactive prompt)."
     Write-Host "  -EnableCmdPalAOT Enable AOT compilation for CmdPal (slower build)"
+    Write-Host "  -EnableSettingsAOT Publish Settings with Native AOT and normalize the output back into WinUI3Apps before packaging"
     Write-Host "  -Clean          Clean output directories before building"
     Write-Host "  -SkipBuild      Skip building the main solution and tools (assumes they are already built)"
     Write-Host "  -Help           Show this help message"
@@ -101,6 +103,223 @@ if (-not $repoRoot -or -not (Test-Path (Join-Path $repoRoot "PowerToys.slnx"))) 
 }
 
 Write-Host "PowerToys repository root detected: $repoRoot"
+
+function Get-HostArchitecture {
+    try {
+        $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
+        switch ($arch) {
+            'x64' { return 'x64' }
+            'arm64' { return 'arm64' }
+            'x86' { return 'x86' }
+        }
+    } catch {
+    }
+
+    return 'x64'
+}
+
+function Get-VsDevCmdPath {
+    if ($env:VSINSTALLDIR) {
+        $fromEnv = Join-Path $env:VSINSTALLDIR 'Common7\Tools\VsDevCmd.bat'
+        if (Test-Path $fromEnv) {
+            return $fromEnv
+        }
+    }
+
+    $vswhereCandidates = @(
+        "$env:ProgramFiles (x86)\Microsoft Visual Studio\Installer\vswhere.exe",
+        "$env:ProgramFiles\Microsoft Visual Studio\Installer\vswhere.exe"
+    )
+
+    $vswhere = $vswhereCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if (-not $vswhere) {
+        return $null
+    }
+
+    try {
+        $installPath = & $vswhere -latest -products * -property installationPath 2>$null | Select-Object -First 1
+        if ($installPath) {
+            $resolved = Join-Path $installPath 'Common7\Tools\VsDevCmd.bat'
+            if (Test-Path $resolved) {
+                return $resolved
+            }
+        }
+    } catch {
+    }
+
+    return $null
+}
+
+function Import-VsDevCmdEnvironmentForTargetPlatform {
+    param (
+        [string]$TargetPlatform
+    )
+
+    $targetArch = $TargetPlatform.ToLowerInvariant()
+    $hostArch = Get-HostArchitecture
+
+    if (($env:VSCMD_ARG_TGT_ARCH -eq $targetArch) -and ($env:VSCMD_ARG_HOST_ARCH -eq $hostArch)) {
+        Write-Host ("[VS] Developer environment already matches host={0} target={1}" -f $hostArch, $targetArch)
+        return
+    }
+
+    $vsDevCmd = Get-VsDevCmdPath
+    if (-not $vsDevCmd) {
+        throw "Could not locate VsDevCmd.bat to configure the developer environment for Native AOT publish."
+    }
+
+    Write-Host ("[VS] Importing developer environment for host={0} target={1}" -f $hostArch, $targetArch)
+    $cmdOut = cmd.exe /c "`"$vsDevCmd`" -no_logo -arch=$targetArch -host_arch=$hostArch && set"
+    foreach ($line in $cmdOut) {
+        $parts = $line -split('=', 2)
+        if ($parts.Length -eq 2) {
+            [Environment]::SetEnvironmentVariable($parts[0], $parts[1], 'Process')
+        }
+    }
+}
+
+function Publish-SettingsAotToWinUI3Apps {
+    param (
+        [string]$RepoRoot,
+        [string]$BuildPlatform,
+        [string]$BuildConfiguration
+    )
+
+    if ($BuildPlatform.ToLowerInvariant() -ne 'x64') {
+        throw "Settings Native AOT packaging is currently supported only for x64/win-x64."
+    }
+
+    Import-VsDevCmdEnvironmentForTargetPlatform -TargetPlatform $BuildPlatform
+
+    $publishProject = 'src\settings-ui\Settings.UI\PowerToys.Settings.csproj'
+    $publishDir = Join-Path $RepoRoot "$BuildPlatform\$BuildConfiguration\AotPublish\Settings"
+    $normalizedOutputDir = Join-Path $RepoRoot "$BuildPlatform\$BuildConfiguration\WinUI3Apps"
+    $settingsArtifactsToRemove = @(
+        'PowerToys.Settings.deps.json',
+        'PowerToys.Settings.dll',
+        'PowerToys.Settings.exe',
+        'PowerToys.Settings.pdb',
+        'PowerToys.Settings.pri',
+        'PowerToys.Settings.runtimeconfig.json',
+        'PowerToys.Settings.UI.Controls.dll',
+        'PowerToys.Settings.UI.Controls.pdb',
+        'PowerToys.Settings.UI.Controls.pri',
+        'PowerToys.Settings.UI.Lib.dll',
+        'PowerToys.Settings.UI.Lib.pdb',
+        'PowerToys.Settings.UI.Lib.pri'
+    )
+
+    if (Test-Path $publishDir) {
+        Remove-Item $publishDir -Recurse -Force -ErrorAction Ignore
+    }
+
+    New-Item -ItemType Directory -Path $publishDir -Force | Out-Null
+
+    if (Test-Path $normalizedOutputDir) {
+        foreach ($artifact in $settingsArtifactsToRemove) {
+            $artifactPath = Join-Path $normalizedOutputDir $artifact
+            if (Test-Path $artifactPath) {
+                Remove-Item $artifactPath -Force -ErrorAction Ignore
+            }
+        }
+    }
+
+    Write-Host ("[AOT] Publishing Settings to staging directory: {0}" -f $publishDir)
+    RunMSBuild $publishProject "/t:Publish /p:EnableSettingsAOT=true /p:RuntimeIdentifier=win-$BuildPlatform /p:PublishDir=$publishDir /p:NormalizeSettingsAotOutput=true /p:SettingsAotNormalizedOutputDir=$normalizedOutputDir" $BuildPlatform $BuildConfiguration
+}
+
+function Invoke-SettingsDscSchemaGeneration {
+    param (
+        [string]$RepoRoot,
+        [string]$BuildPlatform,
+        [string]$BuildConfiguration
+    )
+
+    Write-Host ("[DSC] Manually generating DSC v2 manifests for {0}..." -f $BuildPlatform)
+
+    $versionPropsPath = Join-Path $RepoRoot "src\Version.props"
+    [xml]$versionProps = Get-Content $versionPropsPath
+    $ptVersion = $versionProps.Project.PropertyGroup.Version
+    $ptVersionFull = "$ptVersion.0"
+
+    $generatorProj = Join-Path $RepoRoot "src\dsc\PowerToys.Settings.DSC.Schema.Generator\PowerToys.Settings.DSC.Schema.Generator.csproj"
+    RunMSBuild $generatorProj "/t:Build /p:SkipSettingsDscSchemaPostBuild=true" $BuildPlatform $BuildConfiguration
+
+    $generatorExe = Join-Path $RepoRoot "src\dsc\PowerToys.Settings.DSC.Schema.Generator\bin\$BuildPlatform\$BuildConfiguration\PowerToys.Settings.DSC.Schema.Generator.exe"
+    if (-not (Test-Path $generatorExe)) {
+        Write-Warning "Could not find generator at expected path: $generatorExe"
+        Write-Warning "Searching in build output..."
+        $found = Get-ChildItem -Path (Join-Path $RepoRoot "$BuildPlatform\$BuildConfiguration") -Filter "PowerToys.Settings.DSC.Schema.Generator.exe" -Recurse | Select-Object -First 1
+        if ($found) {
+            $generatorExe = $found.FullName
+        }
+    }
+
+    $settingsLibDll = Get-ChildItem -Path (Join-Path $RepoRoot "src\settings-ui\Settings.UI.Library\bin\$BuildPlatform\$BuildConfiguration") -Filter "PowerToys.Settings.UI.Lib.dll" -Recurse -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1 -ExpandProperty FullName
+
+    if (-not $settingsLibDll) {
+        $fallbackSettingsLibDll = Join-Path $RepoRoot "$BuildPlatform\$BuildConfiguration\WinUI3Apps\PowerToys.Settings.UI.Lib.dll"
+        if (Test-Path $fallbackSettingsLibDll) {
+            $settingsLibDll = $fallbackSettingsLibDll
+        }
+    }
+
+    if (-not $settingsLibDll) {
+        throw "Could not locate PowerToys.Settings.UI.Lib.dll for DSC schema generation."
+    }
+
+    $dscGenDir = Join-Path $RepoRoot "src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$ptVersionFull"
+    if (-not (Test-Path $dscGenDir)) {
+        New-Item -ItemType Directory -Path $dscGenDir -Force | Out-Null
+    }
+
+    $outPsm1 = Join-Path $dscGenDir "Microsoft.PowerToys.Configure.psm1"
+    $outPsd1 = Join-Path $dscGenDir "Microsoft.PowerToys.Configure.psd1"
+
+    if (-not (Test-Path $generatorExe)) {
+        throw "Could not find generator executable at $generatorExe"
+    }
+
+    Write-Host "[DSC] Executing: $generatorExe"
+
+    $generatorDir = Split-Path -Parent $generatorExe
+    $winUI3AppsDir = Join-Path $RepoRoot "$BuildPlatform\$BuildConfiguration\WinUI3Apps"
+
+    if (Test-Path $winUI3AppsDir) {
+        Write-Host "[DSC] Copying dependencies from $winUI3AppsDir to $generatorDir"
+        Get-ChildItem -Path $winUI3AppsDir -Filter "*.dll" | ForEach-Object {
+            $destPath = Join-Path $generatorDir $_.Name
+            if (-not (Test-Path $destPath)) {
+                Copy-Item -Path $_.FullName -Destination $destPath -Force
+            }
+        }
+
+        $priFile = Join-Path $winUI3AppsDir "resources.pri"
+        if (Test-Path $priFile) {
+            Copy-Item -Path $priFile -Destination $generatorDir -Force
+        }
+    }
+
+    $generatorSettingsLibDll = Join-Path $generatorDir "PowerToys.Settings.UI.Lib.dll"
+    Copy-Item -Path $settingsLibDll -Destination $generatorSettingsLibDll -Force
+
+    Push-Location $generatorDir
+    try {
+        Write-Host "[DSC] Using local DLL: $generatorSettingsLibDll"
+        & $generatorExe $generatorSettingsLibDll $outPsm1 $outPsd1
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "DSC v2 generation failed with exit code $LASTEXITCODE"
+            exit 1
+        }
+    } finally {
+        Pop-Location
+    }
+
+    Write-Host "[DSC] DSC v2 manifests generated successfully."
+}
 
 # Safety check: avoid mixing build outputs with existing local changes unless the user confirms.
 if (-not $Force) {
@@ -255,9 +474,17 @@ try {
         $commonArgs += " /p:EnableCmdPalAOT=true"
     }
 
+    if ($EnableSettingsAOT) {
+        $commonArgs += " /p:SkipSettingsRegularBuildForAotPackaging=true /p:SkipSettingsDscSchemaPostBuild=true"
+    }
+
     # No local projects found (or continuing) - build full solution and tools
     if (-not $SkipBuild) {
         RestoreThenBuild 'PowerToys.slnx' $commonArgs $Platform $Configuration
+    }
+
+    if ($EnableSettingsAOT) {
+        Publish-SettingsAotToWinUI3Apps -RepoRoot $repoRoot -BuildPlatform $Platform -BuildConfiguration $Configuration
     }
 
     $msixSearchRoot = Join-Path $repoRoot "$Platform\$Configuration"
@@ -273,95 +500,10 @@ try {
     }
 
     # Generate DSC v2 manifests (PowerToys.Settings.DSC.Schema.Generator)
-    # The csproj PostBuild event is skipped on ARM64, so we run it manually here if needed.
-    if ($Platform -eq 'arm64') {
-        Write-Host "[DSC] Manually generating DSC v2 manifests for ARM64..."
-
-        # 1. Get Version
-        $versionPropsPath = Join-Path $repoRoot "src\Version.props"
-        [xml]$versionProps = Get-Content $versionPropsPath
-        $ptVersion = $versionProps.Project.PropertyGroup.Version
-        # Directory.Build.props appends .0 to the version for .csproj files
-        $ptVersionFull = "$ptVersion.0"
-        
-        # 2. Build the Generator
-        $generatorProj = Join-Path $repoRoot "src\dsc\PowerToys.Settings.DSC.Schema.Generator\PowerToys.Settings.DSC.Schema.Generator.csproj"
-        RunMSBuild $generatorProj "/t:Build" $Platform $Configuration
-
-        # 3. Define paths
-        # The generator output path is in the project's bin folder
-        $generatorExe = Join-Path $repoRoot "src\dsc\PowerToys.Settings.DSC.Schema.Generator\bin\$Platform\$Configuration\PowerToys.Settings.DSC.Schema.Generator.exe"
-        
-        if (-not (Test-Path $generatorExe)) {
-            Write-Warning "Could not find generator at expected path: $generatorExe"
-            Write-Warning "Searching in build output..."
-            $found = Get-ChildItem -Path (Join-Path $repoRoot "$Platform\$Configuration") -Filter "PowerToys.Settings.DSC.Schema.Generator.exe" -Recurse | Select-Object -First 1
-            if ($found) {
-                $generatorExe = $found.FullName
-            }
-        }
-
-        $settingsLibDll = Join-Path $repoRoot "$Platform\$Configuration\WinUI3Apps\PowerToys.Settings.UI.Lib.dll"
-        
-        $dscGenDir = Join-Path $repoRoot "src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$ptVersionFull"
-        if (-not (Test-Path $dscGenDir)) {
-            New-Item -ItemType Directory -Path $dscGenDir -Force | Out-Null
-        }
-        
-        $outPsm1 = Join-Path $dscGenDir "Microsoft.PowerToys.Configure.psm1"
-        $outPsd1 = Join-Path $dscGenDir "Microsoft.PowerToys.Configure.psd1"
-
-        # 4. Run Generator
-        if (Test-Path $generatorExe) {
-            Write-Host "[DSC] Executing: $generatorExe"
-            
-            $generatorDir = Split-Path -Parent $generatorExe
-            $winUI3AppsDir = Join-Path $repoRoot "$Platform\$Configuration\WinUI3Apps"
-            
-            # Copy dependencies from WinUI3Apps to Generator directory to satisfy WinRT/WinUI3 dependencies
-            # This avoids "Class not registered" errors without polluting the WinUI3Apps directory which is used for packaging.
-            if (Test-Path $winUI3AppsDir) {
-                Write-Host "[DSC] Copying dependencies from $winUI3AppsDir to $generatorDir"
-                Get-ChildItem -Path $winUI3AppsDir -Filter "*.dll" | ForEach-Object {
-                    $destPath = Join-Path $generatorDir $_.Name
-                    if (-not (Test-Path $destPath)) {
-                        Copy-Item -Path $_.FullName -Destination $destPath -Force
-                    }
-                }
-                # Also copy resources.pri if it exists, as it might be needed for resource lookup
-                $priFile = Join-Path $winUI3AppsDir "resources.pri"
-                if (Test-Path $priFile) {
-                    Copy-Item -Path $priFile -Destination $generatorDir -Force
-                }
-            }
-
-            Push-Location $generatorDir
-            try {
-                # Now we can use the local DLLs
-                $localSettingsLibDll = Join-Path $generatorDir "PowerToys.Settings.UI.Lib.dll"
-                
-                if (Test-Path $localSettingsLibDll) {
-                    Write-Host "[DSC] Using local DLL: $localSettingsLibDll"
-                    & $generatorExe $localSettingsLibDll $outPsm1 $outPsd1
-                } else {
-                    # Fallback (shouldn't happen if copy succeeded or build was correct)
-                    Write-Warning "[DSC] Local DLL not found, falling back to: $settingsLibDll"
-                    & $generatorExe $settingsLibDll $outPsm1 $outPsd1
-                }
-
-                if ($LASTEXITCODE -ne 0) {
-                    Write-Error "DSC v2 generation failed with exit code $LASTEXITCODE"
-                    exit 1
-                }
-            } finally {
-                Pop-Location
-            }
-            
-            Write-Host "[DSC] DSC v2 manifests generated successfully."
-        } else {
-            Write-Error "Could not find generator executable at $generatorExe"
-            exit 1
-        }
+    # In ARM64 builds the PostBuild hook is skipped already, and in Settings AOT builds
+    # we skip the hook on purpose because Settings regular Build is disabled.
+    if ($Platform -eq 'arm64' -or $EnableSettingsAOT) {
+        Invoke-SettingsDscSchemaGeneration -RepoRoot $repoRoot -BuildPlatform $Platform -BuildConfiguration $Configuration
     }
 
     # Generate DSC manifest files

@@ -22,7 +22,7 @@
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
 	</PropertyGroup>
 
-	<!-- For debugging purposes, uncomment this block to enable AOT builds -->
+	<!-- Settings Native AOT is enabled on this branch; packaging chooses whether to publish and normalize it. -->
 	<PropertyGroup>
 		<EnableSettingsAOT>true</EnableSettingsAOT>
 	</PropertyGroup>
@@ -32,6 +32,8 @@
 		<PublishSingleFile>false</PublishSingleFile>
 		<DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
 		<PublishAot>true</PublishAot>
+		<NormalizeSettingsAotOutput Condition="'$(NormalizeSettingsAotOutput)' == ''">false</NormalizeSettingsAotOutput>
+		<SettingsAotNormalizedOutputDir Condition="'$(SettingsAotNormalizedOutputDir)' == ''">$(OutputPath)</SettingsAotNormalizedOutputDir>
 		<!-- Use environmental tools to bypass VS version detection issue with VS 2026 -->
 		<IlcUseEnvironmentalTools>true</IlcUseEnvironmentalTools>
 		<!-- Trim is mandatory for AOT, but disable reflection removal to preserve WPF compatibility -->
@@ -238,6 +240,20 @@
 	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true'">
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
 		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=$(CoreTargetFramework);XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
+	</Target>
+
+	<Target Name="NormalizeSettingsAotPublishOutput" AfterTargets="_CopyAotSymbols" Condition="'$(PublishAot)' == 'true' and '$(NormalizeSettingsAotOutput)' == 'true'">
+		<PropertyGroup>
+			<_SettingsAotPublishDir>$([MSBuild]::EnsureTrailingSlash('$(PublishDir)'))</_SettingsAotPublishDir>
+			<_SettingsAotNormalizedOutputDir>$([MSBuild]::EnsureTrailingSlash('$(SettingsAotNormalizedOutputDir)'))</_SettingsAotNormalizedOutputDir>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<_SettingsAotPublishFiles Include="$(_SettingsAotPublishDir)**\*" />
+		</ItemGroup>
+
+		<Message Importance="high" Text="[Settings] Normalizing Native AOT publish output from '$(_SettingsAotPublishDir)' to '$(_SettingsAotNormalizedOutputDir)'" />
+		<Copy SourceFiles="@(_SettingsAotPublishFiles)" DestinationFiles="@(_SettingsAotPublishFiles->'$(_SettingsAotNormalizedOutputDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
 	</Target>
 
 	<!-- Build information for AOT -->

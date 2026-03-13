@@ -173,6 +173,7 @@ publish/
 # Note: Comment the next line if you want to checkin your web deploy settings,
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
+!src/settings-ui/Settings.UI/Properties/PublishProfiles/win-x64.pubxml
 *.publishproj
 
 # Microsoft Azure Web App publish settings. Comment the next line if you want to
@@ -350,6 +351,12 @@ src/common/Telemetry/*.etl
 
 # Generated installer file for Monaco source files.
 /installer/PowerToysSetupVNext/MonacoSRC.wxs
+
+# CmdPal local build/versioning generated files
+/src/modules/cmdpal/Directory.Build.props
+/src/modules/cmdpal/Directory.Build.targets
+/src/modules/cmdpal/**/BuildInfo.xml
+/src/modules/cmdpal/**/GeneratedPackage*.appxmanifest
 
 # MSBuildCache
 /MSBuildCacheLogs/

@@ -1,14 +1,15 @@
 # Settings UI Native AOT
 
-This document describes the current Native AOT status of the PowerToys Settings UI and the workflow to build and run the AOT-published app locally.
+This document describes the current Native AOT status of the PowerToys Settings UI, the local publish workflow, and the formal packaging flow used to feed the installer without changing the installed layout.
 
 ## Current Status
 
-As of March 12, 2026, the `shawn/SettingsAOTEnable` branch is at the following stage:
+As of March 13, 2026, the branch is at the following stage:
 
 - Regular Settings builds succeed in Visual Studio.
 - Native AOT publish for `src/settings-ui/Settings.UI/PowerToys.Settings.csproj` succeeds.
 - The published `PowerToys.Settings.exe` can be launched as a standalone app with dummy pipe arguments and does not exit immediately.
+- The installer pipeline can now stage Settings AOT publish output and normalize it back into `x64\Release\WinUI3Apps` before WiX harvest.
 - The branch still has unresolved AOT follow-up work such as trimming/AOT warning cleanup and broader functional validation with the Runner.
 
 ## Build Requirements
@@ -69,6 +70,43 @@ From the publish directory, run:
 
 These dummy arguments are sufficient to smoke test standalone startup of the published app.
 
+## Formal Packaging Flow
+
+For installer packaging, do not point WiX at `win-x64\publish` directly.
+
+Instead, use the installer build pipeline with the Settings AOT switch:
+
+```pwsh
+.\tools\build\build-installer.ps1 -Platform x64 -Configuration Release -EnableSettingsAOT
+```
+
+That flow now does the following:
+
+1. Builds the main solution, but skips the regular `PowerToys.Settings.csproj` build so that the non-AOT Settings app is not emitted into `WinUI3Apps`.
+2. Publishes `PowerToys.Settings.csproj` with Native AOT into the staging directory:
+
+```text
+x64\Release\AotPublish\Settings
+```
+
+3. Cleans stale non-AOT Settings artifacts from `WinUI3Apps`.
+4. Copies the AOT publish output back into the existing installer-facing layout:
+
+```text
+x64\Release\WinUI3Apps
+```
+
+This keeps the runner launch path and installer harvest path unchanged:
+
+- installed executable: `[INSTALLFOLDER]\WinUI3Apps\PowerToys.Settings.exe`
+- installed settings assets: `[INSTALLFOLDER]\WinUI3Apps\Assets\Settings\...`
+- installed WinAppSDK/runtime files: still under `[INSTALLFOLDER]\WinUI3Apps\...`
+
+The WiX responsibilities remain unchanged:
+
+- `WinUI3Applications.wxs` packages the flattened `WinUI3Apps` executable/runtime tree.
+- `Settings.wxs` packages `Assets\Settings` and the Settings helper scripts.
+
 ## How Settings Was Made AOT-Compatible
 
 The current branch uses a combination of project-level and code-level changes:
@@ -83,9 +121,9 @@ The current branch uses a combination of project-level and code-level changes:
 ## Known Notes
 
 - Native AOT publish currently emits `WMC1510` XAML compiler warnings for bindings that may still need stronger trimming annotations or `x:Bind` migration.
-- Publish may emit `NETSDK1198` because no `win-x64.pubxml` profile exists. This warning does not block the publish.
 - Some intermediate `CsWinRTInvokeGuidPatcher` steps may report exit code `-1` in project logs, but they did not block the successful publish observed on this branch.
 - The successful publish depends on using the correct developer prompt architecture.
+- The installer pipeline currently enables Settings AOT packaging only for `x64 / win-x64`.
 
 ## Validation Performed On This Branch
 
