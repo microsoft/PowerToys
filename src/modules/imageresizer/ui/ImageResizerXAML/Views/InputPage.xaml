@@ -175,7 +175,9 @@
 
                 <FontIcon
                     VerticalAlignment="Center"
-                    FontSize="20"
+                    AutomationProperties.AccessibilityView="Raw"
+                    AutomationProperties.Name="Width"
+                    FontSize="16"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE799;" />
                 <NumberBox
@@ -191,10 +193,16 @@
                 <FontIcon
                     Grid.Column="3"
                     VerticalAlignment="Center"
-                    FontSize="20"
+                    AutomationProperties.AccessibilityView="Raw"
+                    AutomationProperties.Name="Height"
+                    FontSize="16"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Glyph="&#xE7A0;"
-                    Visibility="{Binding Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    Glyph="&#xE799;"
+                    Visibility="{Binding Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <FontIcon.RenderTransform>
+                        <RotateTransform Angle="90" />
+                    </FontIcon.RenderTransform>
+                </FontIcon>
                 <NumberBox
                     x:Name="HeightNumberBox"
                     Grid.Column="4"
@@ -205,11 +213,11 @@
                     SpinButtonPlacementMode="Inline"
                     Visibility="{Binding Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                     Value="{Binding Settings.SelectedSize.Height, Mode=TwoWay}" />
-
                 <FontIcon
                     Grid.Row="2"
                     VerticalAlignment="Center"
-                    FontSize="20"
+                    AutomationProperties.AccessibilityView="Raw"
+                    FontSize="16"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE7A8;" />
                 <ComboBox
@@ -230,7 +238,8 @@
                     Grid.Row="2"
                     Grid.Column="3"
                     VerticalAlignment="Center"
-                    FontSize="20"
+                    AutomationProperties.AccessibilityView="Raw"
+                    FontSize="16"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xECC6;" />
                 <ComboBox
@@ -289,7 +298,7 @@
             </InfoBar>
 
             <!--  Buttons  -->
-            <Grid Grid.Row="4" Margin="16,8,16,16">
+            <Grid Grid.Row="4" Margin="10,8,16,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
                     <ColumnDefinition Width="Auto" />
@@ -299,10 +308,9 @@
                 <Button
                     x:Uid="Open_settings_button"
                     Padding="8"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    Command="{Binding OpenSettingsCommand}">
-                    <FontIcon FontSize="20" Glyph="&#xE713;" />
+                    Command="{Binding OpenSettingsCommand}"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon FontSize="16" Glyph="&#xE713;" />
                     <ToolTipService.ToolTip>
                         <TextBlock x:Uid="Open_settings" />
                     </ToolTipService.ToolTip>
@@ -314,7 +322,7 @@
                     Command="{Binding ResizeCommand}"
                     Style="{StaticResource AccentButtonStyle}">
                     <StackPanel Orientation="Horizontal">
-                        <FontIcon FontSize="16" Glyph="&#xE740;" />
+                        <FontIcon FontSize="14" Glyph="&#xE740;" />
                         <TextBlock x:Uid="Input_Resize" Margin="8,0,0,0" />
                     </StackPanel>
                 </Button>

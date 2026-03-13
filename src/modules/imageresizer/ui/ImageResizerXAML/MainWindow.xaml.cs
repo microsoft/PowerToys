@@ -8,21 +8,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using ImageResizer.Helpers;
-using ImageResizer.Utilities;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
+using ManagedCommon;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
+using WinUIEx;
 
 namespace ImageResizer
 {
-    public sealed partial class MainWindow : Window, IMainView
+    public sealed partial class MainWindow : WindowEx, IMainView
     {
         public MainViewModel ViewModel { get; }
 
@@ -35,47 +33,13 @@ namespace ImageResizer
 
             InitializeComponent();
 
-            var loader = ResourceLoaderInstance.ResourceLoader;
-            Title = loader.GetString("ImageResizer");
-
-            // Disable maximize/minimize/resize
-            if (AppWindow.Presenter is OverlappedPresenter presenter)
-            {
-                presenter.IsMaximizable = false;
-                presenter.IsMinimizable = false;
-                presenter.IsResizable = false;
-            }
-
-            // Set initial window size (scale logical pixels for DPI)
-            var hwnd = WindowNative.GetWindowHandle(this);
-            var dpi = NativeMethods.GetDpiForWindow(hwnd);
-            var scale = dpi / 96.0;
-            AppWindow.Resize(new SizeInt32(
-                (int)(400 * scale),
-                (int)(506 * scale)));
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(titleBar);
+            AppWindow.SetIcon("Assets/ImageResizer/ImageResizer.ico");
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 
             // Center the window on screen
-            CenterOnScreen();
-
-            // Set window icon
-            try
-            {
-                var iconPath = System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "ImageResizer", "ImageResizer.ico");
-                if (System.IO.File.Exists(iconPath))
-                {
-                    AppWindow.SetIcon(iconPath);
-                }
-            }
-            catch
-            {
-                // Icon loading failed, continue without icon
-            }
-
-            // Add Mica backdrop on Windows 11
-            if (Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported())
-            {
-                this.SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
-            }
+            this.CenterOnScreen();
 
             // Listen to ViewModel property changes
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
@@ -84,19 +48,6 @@ namespace ImageResizer
         public async Task LoadViewModelAsync()
         {
             await ViewModel.LoadAsync(this);
-        }
-
-        private void CenterOnScreen()
-        {
-            var area = DisplayArea.GetFromWindowId(
-                AppWindow.Id, DisplayAreaFallback.Nearest)?.WorkArea;
-            if (area != null)
-            {
-                var size = AppWindow.Size;
-                AppWindow.Move(new PointInt32(
-                    (area.Value.Width - size.Width) / 2,
-                    (area.Value.Height - size.Height) / 2));
-            }
         }
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -166,7 +117,7 @@ namespace ImageResizer
 
             // Size immediately so the window is correct before Activate
             SizeToContent();
-            CenterOnScreen();
+            this.CenterOnScreen();
         }
 
         /// <summary>
@@ -189,8 +140,7 @@ namespace ImageResizer
                 return;
             }
 
-            var hwnd = WindowNative.GetWindowHandle(this);
-            var scale = NativeMethods.GetDpiForWindow(hwnd) / 96.0;
+            var scale = this.GetDpiForWindow() / 96.0;
             var clientWidth = AppWindow.ClientSize.Width;
             var clientHeight = (int)Math.Ceiling(desiredHeight * scale);
 
@@ -202,7 +152,7 @@ namespace ImageResizer
             var picker = new FileOpenPicker();
 
             // Initialize the picker with the window handle
-            var hwnd = WindowNative.GetWindowHandle(this);
+            var hwnd = this.GetWindowHandle();
             InitializeWithWindow.Initialize(picker, hwnd);
 
             picker.ViewMode = PickerViewMode.Thumbnail;
