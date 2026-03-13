@@ -1,0 +1,117 @@
+name: XAML Styler
+
+on:
+  issue_comment:
+    types:
+      - "created"
+
+permissions:
+  contents: read
+
+jobs:
+  xaml-styler:
+    name: Apply XAML Styling
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    if: >-
+      github.event.issue.pull_request &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+      trim(github.event.comment.body) == '/xamlstyler'
+    concurrency:
+      group: xaml-styler-${{ github.event.issue.number }}
+      cancel-in-progress: true
+    steps:
+      - name: Add eyes reaction
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes'
+            });
+
+      - name: Get PR details
+        id: pr
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.setOutput('head_ref', pr.data.head.ref);
+            core.setOutput('head_repo', pr.data.head.repo.full_name);
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.pr.outputs.head_repo }}
+          ref: ${{ steps.pr.outputs.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dotnet tools
+        run: dotnet tool restore
+
+      - name: Run XAML Styler
+        run: |
+          & '.pipelines/applyXamlStyling.ps1' -Main
+        shell: pwsh
+
+      - name: Commit and push changes
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if (git diff --cached --quiet) {
+            echo "has_changes=false" >> $env:GITHUB_OUTPUT
+          } else {
+            git commit -m "Apply XAML styling"
+            git push
+            echo "has_changes=true" >> $env:GITHUB_OUTPUT
+          }
+        shell: pwsh
+
+      - name: Add success reaction
+        if: always() && steps.commit.outcome == 'success'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const hasChanges = '${{ steps.commit.outputs.has_changes }}' === 'true';
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: hasChanges ? 'rocket' : '+1'
+            });
+            if (!hasChanges) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: '✅ No XAML styling changes needed — all files are already formatted correctly.'
+              });
+            }
+
+      - name: Add failure reaction
+        if: failure()
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'confused'
+            });
