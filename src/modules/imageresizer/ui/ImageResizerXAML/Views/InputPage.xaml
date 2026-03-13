@@ -198,6 +198,7 @@
                     FontSize="16"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE799;"
+                    RenderTransformOrigin="0.5,0.5"
                     Visibility="{Binding Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <FontIcon.RenderTransform>
                         <RotateTransform Angle="90" />
