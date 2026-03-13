@@ -1,36 +1,24 @@
----
-description: 'PowerToys AI contributor guidance'
----
+# Copilot Coding Agent Instructions
 
-# PowerToys – Copilot Instructions
+## Mandatory Workflow (MUST follow in order)
 
-Concise guidance for AI contributions. For complete details, see [AGENTS.md](../AGENTS.md).
+### Phase 1: Reproduce (MUST complete before Phase 2)
+- Read the issue description and understand the problem.
+- Write a failing test or run the existing test suite to confirm the bug.
+- **Do NOT proceed to Phase 2 until you have a confirmed failure.**
 
-## Key Rules
+### Phase 2: Implement (MUST complete before Phase 3)
+- Make the minimal code change to fix the bug.
+- Do NOT refactor unrelated code or add features.
 
-- Atomic PRs: one logical change, no drive-by refactors
-- Add tests when changing behavior
-- Keep hot paths quiet (no logging in hooks/tight loops)
+### Phase 3: Verify (MUST complete before committing)
+- Re-run the specific test from Phase 1 and confirm it passes.
+- Run the full test suite to check for regressions.
+- **Do NOT commit until all tests pass.**
 
-## Style Enforcement
-
-- C#: `src/.editorconfig`, StyleCop.Analyzers
-- C++: `src/.clang-format`
-- XAML: XamlStyler
-
-## When to Ask for Clarification
-
-- Ambiguous spec after scanning docs
-- Cross-module impact unclear
-- Security, elevation, or installer changes
-
-## Component-Specific Instructions
-
-These are auto-applied based on file location:
-- [Runner & Settings UI](.github/instructions/runner-settings-ui.instructions.md)
-- [Common Libraries](.github/instructions/common-libraries.instructions.md)
-
-## Detailed Documentation
-
-- [Architecture](../doc/devdocs/core/architecture.md)
-- [Coding Style](../doc/devdocs/development/style.md)
+## Rules
+- DO NOT reference, close, or link any external issues. No Closes, Fixes, or Resolves directives.
+- DO NOT use GitHub MCP tools to look up issues on other repositories.
+- DO NOT modify or weaken a test to make it pass.
+- DO NOT commit __pycache__/ directories. Add to .gitignore if missing.
+- Keep changes minimal and focused.

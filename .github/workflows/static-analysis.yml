@@ -1,0 +1,22 @@
+name: Static Analysis (Stage 4b)
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or SHA to analyze'
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  security-events: write
+
+jobs:
+  generic:
+    name: generic
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - run: echo 'No language-specific static analysis configured'

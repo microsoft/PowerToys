@@ -1,0 +1,8 @@
+name: CI
+on: [push]
+jobs:
+  test:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo 'No language-specific CI configured'
