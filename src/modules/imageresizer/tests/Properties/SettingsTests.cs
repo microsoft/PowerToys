@@ -4,6 +4,7 @@
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 #pragma warning restore IDE0073
 
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
@@ -13,6 +14,7 @@ using System.Text.Json;
 
 using ImageResizer.Models;
 using ImageResizer.Test;
+using ManagedCommon;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Properties
@@ -380,6 +382,272 @@ namespace ImageResizer.Properties
             Assert.AreEqual(2, resultWrapper2.Properties.Sizes.Count);
             Assert.IsFalse(resultWrapper2.Properties.KeepDateModified);
             Assert.AreEqual("Small-NotDefault", resultWrapper2.Properties.Sizes[0].Name);
+        }
+
+        [TestMethod]
+        public void ReloadPreservesSelectionByIdWhenPresetEdited()
+        {
+            var settings = new Settings();
+            settings.Sizes.Clear();
+            settings.Sizes.Add(new ResizeSize(0, "Small", ResizeFit.Fit, 640, 480, ResizeUnit.Pixel));
+            settings.Sizes.Add(new ResizeSize(1, "Medium", ResizeFit.Fit, 1280, 720, ResizeUnit.Pixel));
+            settings.SelectedSizeIndex = 1; // Select "Medium"
+            settings.Save();
+
+            var json = System.IO.File.ReadAllText(Settings.SettingsPath);
+            json = json.Replace("\"Medium\"", "\"Medium-Edited\"");
+            System.IO.File.WriteAllText(Settings.SettingsPath, json);
+
+            settings.Reload();
+
+            Assert.AreEqual(1, settings.SelectedSizeIndex, "Selection should be preserved after name edit.");
+            Assert.AreEqual("Medium-Edited", settings.SelectedSize.Name, "Selected size name should reflect edited name.");
+        }
+
+        [TestMethod]
+        public void ReloadFallsBackWhenSelectedPresetIsDeleted()
+        {
+            var settings = new Settings();
+            settings.Sizes.Clear();
+            settings.Sizes.Add(new ResizeSize(0, "Small", ResizeFit.Fit, 640, 480, ResizeUnit.Pixel));
+            settings.Sizes.Add(new ResizeSize(1, "Medium", ResizeFit.Fit, 1280, 720, ResizeUnit.Pixel));
+            settings.SelectedSizeIndex = 1; // Select "Medium"
+            settings.Save();
+
+            // Remove the "Medium" preset from the saved JSON.
+            var json = System.IO.File.ReadAllText(Settings.SettingsPath);
+            var wrapper = JsonSerializer.Deserialize<SettingsWrapper>(json);
+            wrapper.Properties.Sizes.RemoveAt(1);
+            wrapper.Properties.SelectedSizeIndex = 0; // Simulate fall back to the first preset.
+            json = JsonSerializer.Serialize(wrapper, _serializerOptions);
+            System.IO.File.WriteAllText(Settings.SettingsPath, json);
+
+            settings.Reload();
+
+            Assert.AreEqual(0, settings.SelectedSizeIndex, "Selection should fall back to first preset after deletion.");
+        }
+
+        [TestMethod]
+        public void ReloadPreservesCustomSizeSelection()
+        {
+            var settings = new Settings();
+            settings.SelectedSizeIndex = settings.Sizes.Count;  // Select Custom Size
+            settings.Save();
+
+            // Modify a different setting in the saved file.
+            var json = System.IO.File.ReadAllText(Settings.SettingsPath);
+            var wrapper = JsonSerializer.Deserialize<SettingsWrapper>(json);
+            wrapper.Properties.ShrinkOnly = false;
+            json = JsonSerializer.Serialize(wrapper, _serializerOptions);
+            System.IO.File.WriteAllText(Settings.SettingsPath, json);
+
+            settings.Reload();
+
+            Assert.AreEqual(settings.Sizes.Count, settings.SelectedSizeIndex, "Custom size selection should be preserved after reload.");
+            Assert.IsInstanceOfType<CustomSize>(settings.SelectedSize, "Selected size should be of type CustomSize.");
+        }
+
+        [TestMethod]
+        public void ReloadHandlesInvalidSelectedSizeIndex()
+        {
+            var settings = new Settings();
+            settings.Save();
+
+            var json = System.IO.File.ReadAllText(Settings.SettingsPath);
+            var wrapper = JsonSerializer.Deserialize<SettingsWrapper>(json);
+            wrapper.Properties.SelectedSizeIndex = 999; // Invalid index
+            json = JsonSerializer.Serialize(wrapper, _serializerOptions);
+            System.IO.File.WriteAllText(Settings.SettingsPath, json);
+
+            settings.Reload();
+
+            Assert.AreEqual(settings.Sizes.Count, settings.SelectedSizeIndex, "Invalid SelectedSizeIndex should fall back to Custom Size.");
+        }
+
+        [TestMethod]
+        public void ReloadHandlesNegativeSelectedSizeIndex()
+        {
+            var settings = new Settings();
+            settings.Save();
+
+            var json = System.IO.File.ReadAllText(Settings.SettingsPath);
+            var wrapper = JsonSerializer.Deserialize<SettingsWrapper>(json);
+            wrapper.Properties.SelectedSizeIndex = -5; // Invalid negative index
+            json = JsonSerializer.Serialize(wrapper, _serializerOptions);
+            System.IO.File.WriteAllText(Settings.SettingsPath, json);
+
+            settings.Reload();
+
+            Assert.AreEqual(settings.Sizes.Count, settings.SelectedSizeIndex, "Negative SelectedSizeIndex should fall back to Custom Size.");
+        }
+
+        [TestMethod]
+        public void IdRecoveryHelperRecoversDuplicateIds()
+        {
+            var sizes = new List<ResizeSize>
+            {
+                new(0, "Size1", ResizeFit.Fit, 800, 600, ResizeUnit.Pixel),
+                new(0, "Size2", ResizeFit.Fit, 1024, 768, ResizeUnit.Pixel), // Duplicate ID
+                new(2, "Size3", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
+            };
+
+            IdRecoveryHelper.RecoverInvalidIds(sizes);
+
+            Assert.AreEqual(0, sizes[0].Id, "First item should keep its original ID.");
+            Assert.AreEqual(1, sizes[1].Id, "Second item should have been assigned a new unique ID.");
+            Assert.AreEqual(2, sizes[2].Id, "Third item should keep its original ID.");
+        }
+
+        [TestMethod]
+        public void IdRecoveryHelperPreservesOrder()
+        {
+            var sizes = new List<ResizeSize>
+            {
+                new(5, "Size1", ResizeFit.Fit, 800, 600, ResizeUnit.Pixel),
+                new(2, "Size2", ResizeFit.Fit, 1024, 768, ResizeUnit.Pixel),
+                new(4, "Size3", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
+            };
+
+            IdRecoveryHelper.RecoverInvalidIds(sizes);
+
+            Assert.AreEqual("Size1", sizes[0].Name, "Items should retain the same order.");
+            Assert.AreEqual("Size2", sizes[1].Name, "Items should retain the same order.");
+            Assert.AreEqual("Size3", sizes[2].Name, "Items should retain the same order.");
+        }
+
+        [TestMethod]
+        public void IdRecoveryHelperHandlesMultipleDuplicates()
+        {
+            var sizes = new List<ResizeSize>
+            {
+                new(1, "Size1", ResizeFit.Fit, 800, 600, ResizeUnit.Pixel),
+                new(1, "Size2", ResizeFit.Fit, 1024, 768, ResizeUnit.Pixel), // Duplicate ID
+                new(1, "Size3", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel), // Duplicate ID
+            };
+
+            IdRecoveryHelper.RecoverInvalidIds(sizes);
+
+            Assert.AreEqual(1, sizes[0].Id, "First item should keep its original ID.");
+            Assert.AreEqual(0, sizes[1].Id, "Second item should have been assigned a new unique ID.");
+            Assert.AreEqual(2, sizes[2].Id, "Third item should have been assigned a new unique ID.");
+        }
+
+        [TestMethod]
+        public void IdRecoveryHelperFillsGaps()
+        {
+            var sizes = new List<ResizeSize>
+            {
+                new(0, "Size1", ResizeFit.Fit, 800, 600, ResizeUnit.Pixel),
+                new(4, "Size2", ResizeFit.Fit, 1024, 768, ResizeUnit.Pixel),
+                new(4, "Size3", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel), // Duplicate ID
+            };
+
+            IdRecoveryHelper.RecoverInvalidIds(sizes);
+
+            Assert.AreEqual(0, sizes[0].Id, "First item should keep its original ID.");
+            Assert.AreEqual(4, sizes[1].Id, "Second item should keep its original ID.");
+            Assert.AreEqual(1, sizes[2].Id, "Third item should have been assigned the first available ID.");
+        }
+
+        [TestMethod]
+        public void SelectedSizeIndexSetterDoesNotNotifyWhenValueUnchanged()
+        {
+            var settings = new Settings();
+            settings.SelectedSizeIndex = 0;
+
+            bool isNotified = false;
+            settings.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == nameof(settings.SelectedSizeIndex))
+                {
+                    isNotified = true;
+                }
+            };
+
+            settings.SelectedSizeIndex = 0; // Setting to the same value
+
+            Assert.IsFalse(isNotified, "PropertyChanged should not be raised when setting the same value.");
+        }
+
+        [TestMethod]
+        public void SelectedSizeIndexSetterNotifiesWhenValueChanged()
+        {
+            var settings = new Settings();
+            settings.SelectedSizeIndex = 0;
+
+            bool isNotified = false;
+            settings.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == nameof(settings.SelectedSizeIndex))
+                {
+                    isNotified = true;
+                }
+            };
+
+            settings.SelectedSizeIndex = 1; // Setting to a different value
+
+            Assert.IsTrue(isNotified, "PropertyChanged should be raised when setting a different value.");
+        }
+
+        [TestMethod]
+        public void SelectedSizeReturnsCorrectItemAfterReload()
+        {
+            var settings = new Settings();
+            settings.Sizes.Clear();
+            settings.Sizes.Add(new ResizeSize(0, "Small", ResizeFit.Fit, 640, 480, ResizeUnit.Pixel));
+            settings.Sizes.Add(new ResizeSize(1, "Medium", ResizeFit.Fit, 1280, 720, ResizeUnit.Pixel));
+            settings.SelectedSizeIndex = 1;
+            settings.Save();
+
+            settings.Reload();
+
+            Assert.AreEqual("Medium", settings.SelectedSize.Name, "SelectedSize should return the correct item after reload.");
+            Assert.AreEqual(1, (settings.SelectedSize as IHasId)?.Id, "SelectedSize should have the correct ID after reload.");
+        }
+
+        [TestMethod]
+        public void ReloadUpdatesCustomSizeInstance()
+        {
+            var settings = new Settings();
+            var originalCustomSize = settings.CustomSize;
+            settings.CustomSize.Width = 500;
+            settings.Save();
+
+            // Modify the saved file to change CustomSize width.
+            var json = System.IO.File.ReadAllText(Settings.SettingsPath);
+            var wrapper = JsonSerializer.Deserialize<SettingsWrapper>(json);
+            wrapper.Properties.CustomSize.Width = 999;
+            json = JsonSerializer.Serialize(wrapper, _serializerOptions);
+            System.IO.File.WriteAllText(Settings.SettingsPath, json);
+
+            settings.Reload();
+
+            Assert.AreNotSame(originalCustomSize, settings.CustomSize, "CustomSize instance should be updated after reload.");
+            Assert.AreEqual(999, settings.CustomSize.Width, "CustomSize width should reflect the reloaded value.");
+        }
+
+        [TestMethod]
+        public void ReloadRecoversDuplicateIdsBeforeMatching()
+        {
+            var settings = new Settings();
+            settings.Sizes.Clear();
+            settings.Sizes.Add(new ResizeSize(0, "Size1", ResizeFit.Fit, 800, 600, ResizeUnit.Pixel));
+            settings.SelectedSizeIndex = 0;
+            settings.Save();
+
+            // Manually create the file with duplicate IDs.
+            var json = System.IO.File.ReadAllText(Settings.SettingsPath);
+            var wrapper = JsonSerializer.Deserialize<SettingsWrapper>(json);
+            wrapper.Properties.Sizes.Add(new ResizeSize(0, "Size2", ResizeFit.Fit, 1024, 768, ResizeUnit.Pixel)); // Duplicate ID
+            json = JsonSerializer.Serialize(wrapper, _serializerOptions);
+            System.IO.File.WriteAllText(Settings.SettingsPath, json);
+
+            settings.Reload();
+
+            Assert.AreEqual(2, settings.Sizes.Count, "There should be two sizes after reload.");
+            Assert.AreEqual(0, settings.Sizes[0].Id, "First size should keep its original ID.");
+            Assert.AreEqual(1, settings.Sizes[1].Id, "Second size should have been assigned a new unique ID.");
+            Assert.AreEqual(0, settings.SelectedSizeIndex, "SelectedSizeIndex should still refer to the first size.");
         }
 
         [ClassCleanup]
