@@ -147,7 +147,7 @@ namespace CentralizedKeyboardHook
             .win = (GetAsyncKeyState(VK_LWIN) & 0x8000) || (GetAsyncKeyState(VK_RWIN) & 0x8000),
             .ctrl = static_cast<bool>(GetAsyncKeyState(VK_CONTROL) & 0x8000),
             .shift = static_cast<bool>(GetAsyncKeyState(VK_SHIFT) & 0x8000),
-            .alt = static_cast<bool>(GetAsyncKeyState(VK_MENU) & 0x8000),
+            .alt = (GetAsyncKeyState(VK_MENU) & 0x8000) || (GetAsyncKeyState(VK_LMENU) & 0x8000) || (GetAsyncKeyState(VK_RMENU) & 0x8000),
             .key = static_cast<unsigned char>(keyPressInfo.vkCode)
         };
 
