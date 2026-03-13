@@ -17,13 +17,15 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 {
     private readonly ExtensionObject<IContentPage> _model;
+    private readonly Lock _commandsLock = new();
+    private volatile CommandSnapshot _snapshot = CommandSnapshot.Empty;
 
     [ObservableProperty]
     public partial ObservableCollection<ContentViewModel> Content { get; set; } = [];
 
-    public List<IContextItemViewModel> Commands { get; private set; } = [];
+    private List<IContextItemViewModel> Commands { get; } = [];
 
-    public bool HasCommands => ActualCommands.Count > 0;
+    public bool HasCommands => _snapshot.PrimaryCommand is not null;
 
     public DetailsViewModel? Details { get; private set; }
 
@@ -31,19 +33,17 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     public bool HasDetails => Details is not null;
 
     /////// ICommandBarContext ///////
-    public IEnumerable<IContextItemViewModel> MoreCommands => Commands.Skip(1);
+    public IReadOnlyList<IContextItemViewModel> MoreCommands => _snapshot.MoreCommands;
 
-    private List<CommandContextItemViewModel> ActualCommands => Commands.OfType<CommandContextItemViewModel>().ToList();
+    public bool HasMoreCommands => _snapshot.SecondaryCommand is not null;
 
-    public bool HasMoreCommands => ActualCommands.Count > 1;
+    public string SecondaryCommandName => _snapshot.SecondaryCommand?.Name ?? string.Empty;
 
-    public string SecondaryCommandName => SecondaryCommand?.Name ?? string.Empty;
+    public CommandItemViewModel? PrimaryCommand => _snapshot.PrimaryCommand;
 
-    public CommandItemViewModel? PrimaryCommand => HasCommands ? ActualCommands[0] : null;
+    public CommandItemViewModel? SecondaryCommand => _snapshot.SecondaryCommand;
 
-    public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? ActualCommands[1] : null;
-
-    public List<IContextItemViewModel> AllCommands => Commands;
+    public IReadOnlyList<IContextItemViewModel> AllCommands => _snapshot.AllCommands;
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -109,28 +109,14 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             return; // throw?
         }
 
-        Commands = model.Commands
-                .ToList()
-                .Select<IContextItem, IContextItemViewModel>(item =>
-                {
-                    if (item is ICommandContextItem contextItem)
-                    {
-                        return new CommandContextItemViewModel(contextItem, PageContext);
-                    }
-                    else
-                    {
-                        return new SeparatorViewModel();
-                    }
-                })
-                .ToList();
+        var commands = BuildCommandViewModels(model.Commands);
+        InitializeCommandViewModels(commands, static contextItem => contextItem.InitializeProperties());
 
-        Commands
-            .OfType<CommandContextItemViewModel>()
-            .ToList()
-            .ForEach(contextItem =>
-            {
-                contextItem.InitializeProperties();
-            });
+        lock (_commandsLock)
+        {
+            ListHelpers.InPlaceUpdateList(Commands, commands);
+            RefreshCommandSnapshotsUnsafe();
+        }
 
         var extensionDetails = model.Details;
         if (extensionDetails is not null)
@@ -168,37 +154,29 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 var more = model.Commands;
                 if (more is not null)
                 {
-                    var newContextMenu = more
-                            .ToList()
-                            .Select(item =>
-                            {
-                                if (item is ICommandContextItem contextItem)
-                                {
-                                    return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
-                                }
-                                else
-                                {
-                                    return new SeparatorViewModel();
-                                }
-                            })
-                            .ToList();
+                    var newContextMenu = BuildCommandViewModels(more);
+                    InitializeCommandViewModels(newContextMenu, static contextItem => contextItem.SlowInitializeProperties());
 
-                    lock (Commands)
+                    List<IContextItemViewModel> removedItems;
+                    lock (_commandsLock)
                     {
-                        ListHelpers.InPlaceUpdateList(Commands, newContextMenu);
+                        ListHelpers.InPlaceUpdateList(Commands, newContextMenu, out removedItems);
+                        RefreshCommandSnapshotsUnsafe();
                     }
 
-                    Commands
-                        .OfType<CommandContextItemViewModel>()
-                        .ToList()
-                        .ForEach(contextItem =>
-                        {
-                            contextItem.SlowInitializeProperties();
-                        });
+                    CleanupCommandViewModels(removedItems);
                 }
                 else
                 {
-                    Commands.Clear();
+                    List<IContextItemViewModel> removedItems;
+                    lock (_commandsLock)
+                    {
+                        removedItems = [.. Commands];
+                        Commands.Clear();
+                        RefreshCommandSnapshotsUnsafe();
+                    }
+
+                    CleanupCommandViewModels(removedItems);
                 }
 
                 UpdateProperty(nameof(PrimaryCommand));
@@ -206,6 +184,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 UpdateProperty(nameof(SecondaryCommandName));
                 UpdateProperty(nameof(HasCommands));
                 UpdateProperty(nameof(HasMoreCommands));
+                UpdateProperty(nameof(MoreCommands));
                 UpdateProperty(nameof(AllCommands));
                 DoOnUiThread(
                 () =>
@@ -243,6 +222,72 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             });
     }
 
+    private List<IContextItemViewModel> BuildCommandViewModels(IContextItem[]? items)
+    {
+        if (items is null)
+        {
+            return [];
+        }
+
+        return items
+            .Select<IContextItem, IContextItemViewModel>(item =>
+            {
+                if (item is ICommandContextItem contextItem)
+                {
+                    return new CommandContextItemViewModel(contextItem, PageContext);
+                }
+
+                return new SeparatorViewModel();
+            })
+            .ToList();
+    }
+
+    private static void InitializeCommandViewModels(IEnumerable<IContextItemViewModel> commands, Action<CommandContextItemViewModel> initialize)
+    {
+        foreach (var contextItem in commands.OfType<CommandContextItemViewModel>())
+        {
+            initialize(contextItem);
+        }
+    }
+
+    private static void CleanupCommandViewModels(IEnumerable<IContextItemViewModel> commands)
+    {
+        foreach (var contextItem in commands.OfType<CommandContextItemViewModel>())
+        {
+            contextItem.SafeCleanup();
+        }
+    }
+
+    private void RefreshCommandSnapshotsUnsafe()
+    {
+        var allCommands = (IContextItemViewModel[])[.. Commands];
+        var moreCommands = allCommands.Length > 1
+            ? allCommands[1..]
+            : [];
+
+        CommandContextItemViewModel? primary = null;
+        CommandContextItemViewModel? secondary = null;
+        foreach (var item in allCommands)
+        {
+            if (item is not CommandContextItemViewModel command)
+            {
+                continue;
+            }
+
+            if (primary is null)
+            {
+                primary = command;
+            }
+            else if (secondary is null)
+            {
+                secondary = command;
+                break;
+            }
+        }
+
+        _snapshot = new(allCommands, moreCommands, primary, secondary);
+    }
+
     // InvokeItemCommand is what this will be in Xaml due to source generator
     // this comes in on Enter keypresses in the SearchBox
     [RelayCommand]
@@ -270,12 +315,15 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
         Details?.SafeCleanup();
 
-        Commands
-            .OfType<CommandContextItemViewModel>()
-            .ToList()
-            .ForEach(item => item.SafeCleanup());
+        List<IContextItemViewModel> removedItems;
+        lock (_commandsLock)
+        {
+            removedItems = [.. Commands];
+            Commands.Clear();
+            RefreshCommandSnapshotsUnsafe();
+        }
 
-        Commands.Clear();
+        CleanupCommandViewModels(removedItems);
 
         foreach (var item in Content)
         {
@@ -289,5 +337,26 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         {
             model.ItemsChanged -= Model_ItemsChanged;
         }
+    }
+
+    /// <summary>
+    /// Immutable bundle of derived command state, published atomically via a
+    /// single volatile write so readers never see a torn snapshot.
+    /// </summary>
+    private sealed class CommandSnapshot(
+        IContextItemViewModel[] allCommands,
+        IContextItemViewModel[] moreCommands,
+        CommandContextItemViewModel? primaryCommand,
+        CommandContextItemViewModel? secondaryCommand)
+    {
+        public static CommandSnapshot Empty { get; } = new([], [], null, null);
+
+        public IContextItemViewModel[] AllCommands { get; } = allCommands;
+
+        public IContextItemViewModel[] MoreCommands { get; } = moreCommands;
+
+        public CommandContextItemViewModel? PrimaryCommand { get; } = primaryCommand;
+
+        public CommandContextItemViewModel? SecondaryCommand { get; } = secondaryCommand;
     }
 }

@@ -4,6 +4,8 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -31,6 +33,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public AppearanceSettingsViewModel Appearance { get; }
+
+    public DockAppearanceSettingsViewModel DockAppearance { get; }
 
     public HotkeySettings? Hotkey
     {
@@ -183,6 +187,58 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public DockSide Dock_Side
+    {
+        get => _settings.DockSettings.Side;
+        set
+        {
+            _settings.DockSettings.Side = value;
+            Save();
+        }
+    }
+
+    public DockSize Dock_DockSize
+    {
+        get => _settings.DockSettings.DockSize;
+        set
+        {
+            _settings.DockSettings.DockSize = value;
+            Save();
+        }
+    }
+
+    public DockBackdrop Dock_Backdrop
+    {
+        get => _settings.DockSettings.Backdrop;
+        set
+        {
+            _settings.DockSettings.Backdrop = value;
+            Save();
+        }
+    }
+
+    public bool Dock_ShowLabels
+    {
+        get => _settings.DockSettings.ShowLabels;
+        set
+        {
+            _settings.DockSettings.ShowLabels = value;
+            Save();
+        }
+    }
+
+    public bool EnableDock
+    {
+        get => _settings.EnableDock;
+        set
+        {
+            _settings.EnableDock = value;
+            Save();
+            WeakReferenceMessenger.Default.Send(new ShowHideDockMessage(value));
+            WeakReferenceMessenger.Default.Send(new ReloadCommandsMessage()); // TODO! we need to update the MoreCommands of all top level items, but we don't _really_ want to reload
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = new();
 
     public ObservableCollection<FallbackSettingsViewModel> FallbackRankings { get; set; } = new();
@@ -195,6 +251,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         _topLevelCommandManager = topLevelCommandManager;
 
         Appearance = new AppearanceSettingsViewModel(themeService, _settings);
+        DockAppearance = new DockAppearanceSettingsViewModel(themeService, _settings);
 
         var activeProviders = GetCommandProviders();
         var allProviderSettings = _settings.ProviderSettings;

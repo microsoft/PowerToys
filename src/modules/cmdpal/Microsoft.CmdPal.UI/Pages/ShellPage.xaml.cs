@@ -8,6 +8,7 @@ using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -25,6 +26,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using Windows.UI.Core;
+using WinUIEx;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -47,6 +49,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
+    IRecipient<ShowHideDockMessage>,
     INotifyPropertyChanged,
     IDisposable
 {
@@ -64,6 +67,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
     private SettingsWindow? _settingsWindow;
+    private DockWindow? _dockWindow;
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
@@ -96,6 +100,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
 
+        WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
+
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
@@ -104,6 +110,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
+
+        if (App.Current.Services.GetService<SettingsModel>()!.EnableDock)
+        {
+            _dockWindow = new DockWindow();
+            _dockWindow.Show();
+        }
     }
 
     /// <summary>
@@ -145,7 +157,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     public void Receive(NavigateToPageMessage message)
     {
         // TODO GH #526 This needs more better locking too
-        _ = _queue.TryEnqueue(() =>
+        _ = _queue.TryEnqueue(DispatcherQueuePriority.High, () =>
         {
             // Also hide our details pane about here, if we had one
             HideDetails();
@@ -250,10 +262,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    private void InitializeConfirmationDialog(ConfirmResultViewModel vm)
-    {
-        vm.SafeInitializePropertiesSynchronous();
-    }
+    private void InitializeConfirmationDialog(ConfirmResultViewModel vm) => vm.SafeInitializePropertiesSynchronous();
 
     public void Receive(OpenSettingsMessage message)
     {
@@ -313,6 +322,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             try
             {
+                DetailsContent.ChangeView(null, 0, null, true);
                 ViewModel.Details = details;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
                 ViewModel.IsDetailsVisible = true;
@@ -346,10 +356,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ClearSearchMessage message) => SearchBox.ClearSearch();
 
-    public void Receive(HotkeySummonMessage message)
-    {
-        _ = DispatcherQueue.TryEnqueue(() => SummonOnUiThread(message));
-    }
+    public void Receive(HotkeySummonMessage message) => _ = DispatcherQueue.TryEnqueue(() => SummonOnUiThread(message));
 
     public void Receive(SettingsWindowClosedMessage message) => _settingsWindow = null;
 
@@ -418,10 +425,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
     }
 
-    public void Receive(GoBackMessage message)
-    {
-        _ = DispatcherQueue.TryEnqueue(() => GoBack(message.WithAnimation, message.FocusSearch));
-    }
+    public void Receive(GoBackMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoBack(message.WithAnimation, message.FocusSearch));
 
     private void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
@@ -462,10 +466,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    public void Receive(GoHomeMessage message)
-    {
-        _ = DispatcherQueue.TryEnqueue(() => GoHome(withAnimation: message.WithAnimation, focusSearch: message.FocusSearch));
-    }
+    public void Receive(GoHomeMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoHome(withAnimation: message.WithAnimation, focusSearch: message.FocusSearch));
 
     private void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
@@ -480,6 +481,44 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
             SearchBox.SelectSearch();
+        }
+    }
+
+    public void Receive(ShowHideDockMessage message)
+    {
+        _ = DispatcherQueue.TryEnqueue(() =>
+        {
+            if (message.ShowDock)
+            {
+                if (_dockWindow is null)
+                {
+                    _dockWindow = new DockWindow();
+                }
+
+                _dockWindow.Show();
+            }
+            else if (_dockWindow is not null)
+            {
+                _dockWindow.Close();
+                _dockWindow = null;
+            }
+        });
+    }
+
+    private void ToggleFilterFocus()
+    {
+        if (!FiltersDropDown.IsFilterVisible)
+        {
+            return;
+        }
+
+        if (FiltersDropDown.IsActive)
+        {
+            FiltersDropDown.CloseDropDownAndFocusSearch();
+        }
+        else
+        {
+            FiltersDropDown.OpenDropDown();
         }
     }
 
@@ -548,12 +587,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (shouldSearchBoxBeVisible || page is not ContentPage)
         {
+            ViewModel.IsSearchBoxVisible = shouldSearchBoxBeVisible;
+
             if (HostWindow?.IsVisibleToUser != true)
             {
                 return;
             }
 
-            ViewModel.IsSearchBoxVisible = shouldSearchBoxBeVisible;
             SearchBox.Focus(FocusState.Programmatic);
             SearchBox.SelectSearch();
         }
@@ -667,26 +707,24 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private static void ShellPage_OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
-                         InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
+        var modifiers = KeyModifiers.GetCurrent();
 
-        var onlyAlt = altPressed && !ctrlPressed && !shiftPressed && !winPressed;
-        var onlyCtrl = !altPressed && ctrlPressed && !shiftPressed && !winPressed;
         switch (e.Key)
         {
-            case VirtualKey.Left when onlyAlt: // Alt+Left arrow
+            case VirtualKey.Left when modifiers.OnlyAlt: // Alt+Left arrow
                 WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
                 e.Handled = true;
                 break;
-            case VirtualKey.Home when onlyAlt: // Alt+Home
+            case VirtualKey.Home when modifiers.OnlyAlt: // Alt+Home
                 WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(WithAnimation: false));
                 e.Handled = true;
                 break;
-            case (VirtualKey)188 when onlyCtrl: // Ctrl+,
+            case (VirtualKey)188 when modifiers.OnlyCtrl: // Ctrl+,
                 WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+                e.Handled = true;
+                break;
+            case VirtualKey.F when modifiers.OnlyAlt: // Alt+F: toggle filter focus
+                ((ShellPage)sender).ToggleFilterFocus();
                 e.Handled = true;
                 break;
             default:
@@ -694,7 +732,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     // The CommandBar is responsible for handling all the item keybindings,
                     // since the bound context item may need to then show another
                     // context menu
-                    TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+                    TryCommandKeybindingMessage msg = new(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
                     WeakReferenceMessenger.Default.Send(msg);
                     e.Handled = msg.Handled;
                     break;
@@ -704,8 +742,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private static void ShellPage_OnKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        if (ctrlPressed && e.Key == VirtualKey.Enter)
+        var mods = KeyModifiers.GetCurrent();
+        if (mods.Ctrl && e.Key == VirtualKey.Enter)
         {
             // ctrl+enter
             WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
@@ -716,7 +754,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
             e.Handled = true;
         }
-        else if (ctrlPressed && e.Key == VirtualKey.K)
+        else if (mods.Ctrl && e.Key == VirtualKey.K)
         {
             // ctrl+k
             WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
@@ -754,5 +792,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _focusAfterLoadedCts?.Cancel();
         _focusAfterLoadedCts?.Dispose();
         _focusAfterLoadedCts = null;
+
+        _dockWindow?.Dispose();
     }
 }

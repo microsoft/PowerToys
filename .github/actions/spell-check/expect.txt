@@ -16,6 +16,7 @@ adaptivecards
 ADDSTRING
 ADDUNDORECORD
 ADifferent
+ADMINS
 adml
 admx
 advfirewall
@@ -67,6 +68,7 @@ ARPINSTALLLOCATION
 ARPPRODUCTICON
 ARRAYSIZE
 ARROWKEYS
+arrowshape
 asf
 AShortcut
 ASingle
@@ -128,6 +130,7 @@ bthprops
 bti
 BTNFACE
 bugreport
+bugreportfile
 BUILDARCH
 BUILDNUMBER
 buildtransitive
@@ -167,7 +170,11 @@ cim
 CImage
 cla
 CLASSDC
+classguid
+classmethod
 CLASSNOTAVAILABLE
+claude
+CLEARTYPE
 clickable
 clickonce
 clientside
@@ -199,11 +206,13 @@ colorformat
 colorhistory
 colorhistorylimit
 COLORKEY
+colorref
 comctl
 comdlg
 comexp
 cominterop
 commandpalette
+commoncontrols
 compmgmt
 COMPOSITIONFULL
 CONFIGW
@@ -215,6 +224,8 @@ CONTEXTHELP
 CONTEXTMENUHANDLER
 contractversion
 CONTROLPARENT
+Convs
+cooldown
 copiedcolorrepresentation
 COPYPEN
 COREWINDOW
@@ -225,6 +236,8 @@ cpcontrols
 cph
 cplusplus
 CPower
+cpptools
+cppvsdbg
 cppwinrt
 createdump
 CREATEPROCESS
@@ -247,6 +260,8 @@ CTLCOLORSTATIC
 CURRENTDIR
 CURSORINFO
 cursorpos
+CURSORSHOWING
+cursorwrap
 customaction
 CUSTOMACTIONTEST
 CVal
@@ -263,12 +278,14 @@ dacl
 datareader
 datatracker
 Dayof
+dbcc
 DBID
 DBLCLKS
 DBLEPSILON
 DBPROP
 DBPROPIDSET
 DBPROPSET
+DBT
 DCBA
 DCOM
 DComposition
@@ -284,6 +301,8 @@ DEFAULTFLAGS
 DEFAULTICON
 defaultlib
 DEFAULTONLY
+DEFAULTSIZE
+defaulttonearest
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
@@ -303,11 +322,21 @@ DESKTOPABSOLUTEPARSING
 desktopshorcutinstalled
 devblogs
 devdocs
+devenv
+DEVICEINTERFACE
+devicetype
+DEVINTERFACE
 devmgmt
 DEVMODE
 DEVMODEW
+DEVNODES
 devpal
+DEVTYP
+dfx
 DIALOGEX
+diffs
+digicert
+DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
 diskmgmt
@@ -421,6 +450,12 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fdw
+fdx
+FErase
+fesf
+FFFF
+Figma
 FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
@@ -437,6 +472,7 @@ FILESYSPATH
 Filetime
 FILEVERSION
 FILTERMODE
+FInc
 findfast
 FIXEDFILEINFO
 FIXEDSYS
@@ -522,11 +558,13 @@ HCRYPTPROV
 hcursor
 hcwhite
 hdc
+HDEVNOTIFY
 hdr
 hdrop
 hdwwiz
 Helpline
 helptext
+hgdiobj
 HGFE
 hglobal
 hhk
@@ -537,6 +575,8 @@ HIBYTE
 hicon
 HIDEWINDOW
 Hif
+highlightbackground
+highlightthickness
 HIMAGELIST
 himl
 hinst
@@ -627,6 +667,7 @@ inetcpl
 Infobar
 INFOEXAMPLE
 Infotip
+initialfile
 INITDIALOG
 INITGUID
 INITTOLOGFONTSTRUCT
@@ -668,11 +709,13 @@ jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
 jobject
+JOBOBJECT
 jpe
 jpnime
 Jsons
 jsonval
 jxr
+kbmcontrols
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -701,6 +744,7 @@ Ldone
 Ldr
 LEFTSCROLLBAR
 LEFTTEXT
+leftclick
 LError
 LEVELID
 LExit
@@ -732,6 +776,8 @@ lowlevel
 LOWORD
 lparam
 LPBITMAPINFOHEADER
+LPCFHOOKPROC
+lpch
 LPCITEMIDLIST
 LPCLSID
 lpcmi
@@ -749,6 +795,7 @@ LPMONITORINFO
 LPOSVERSIONINFOEXW
 LPQUERY
 lprc
+LPrivate
 LPSAFEARRAY
 lpstr
 lpsz
@@ -790,10 +837,13 @@ MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
 MARKDOWNPREVIEWHANDLERCPP
+MAXDWORD
 MAXSHORTCUTSIZE
 maxversiontested
 MBM
 MBR
+Mbuttondown
+mcp
 MDICHILD
 MDL
 mdtext
@@ -805,10 +855,14 @@ MENUITEMINFO
 MENUITEMINFOW
 MERGECOPY
 MERGEPAINT
+Metacharacter
+metadatamatters
 Metadatas
+Metacharacter
 metafile
 metapackage
 mfc
+mfalse
 Mgmt
 Microwaved
 midl
@@ -831,6 +885,7 @@ mmsys
 mobileredirect
 mockapi
 MODALFRAME
+modelcontextprotocol
 MODESPRUNED
 MONITORENUMPROC
 MONITORINFO
@@ -865,8 +920,11 @@ MSLLHOOKSTRUCT
 Mso
 msrc
 msstore
+mstsc
 msvcp
+MT
 MTND
+mtrue
 MULTIPLEUSE
 multizone
 muxc
@@ -874,6 +932,8 @@ mvvm
 MVVMTK
 MWBEx
 MYICON
+myorg
+myrepo
 NAMECHANGE
 namespaceanddescendants
 nao
@@ -976,6 +1036,7 @@ NTAPI
 ntdll
 NTSTATUS
 NTSYSAPI
+nullability
 NULLCURSOR
 nullonfailure
 numberbox
@@ -997,6 +1058,7 @@ openas
 opencode
 OPENFILENAME
 opensource
+openurl
 openxmlformats
 OPTIMIZEFORINVOKE
 ORPHANEDDIALOGTITLE
@@ -1017,6 +1079,8 @@ OWNDC
 OWNERDRAWFIXED
 Packagemanager
 PACL
+padx
+pady
 PAINTSTRUCT
 PALETTEWINDOW
 PARENTNOTIFY
@@ -1189,6 +1253,7 @@ RAWPATH
 rbhid
 rclsid
 RCZOOMIT
+rdp
 RDW
 READMODE
 READOBJECTS
@@ -1216,6 +1281,7 @@ remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
+remotedesktop
 remoteip
 Removelnk
 renamable
@@ -1246,6 +1312,7 @@ RIGHTSCROLLBAR
 riid
 RKey
 RNumber
+rollups
 rop
 ROUNDSMALL
 rpcrt
@@ -1448,6 +1515,7 @@ STYLECHANGING
 subkeys
 sublang
 SUBMODULEUPDATE
+sug
 Superbar
 sut
 svchost
@@ -1456,6 +1524,9 @@ SVGIO
 svgz
 SVSI
 SWFO
+swp
+SWPNOSIZE
+SWPNOZORDER
 SWRESTORE
 symbolrequestprod
 SYMCACHE
@@ -1472,6 +1543,8 @@ SYSKEY
 syskeydown
 SYSKEYUP
 SYSLIB
+sysmenu
+systemai
 SYSTEMAPPS
 SYSTEMMODAL
 SYSTEMTIME
@@ -1521,6 +1594,7 @@ tlc
 TPMLEFTALIGN
 TPMRETURNCMD
 TNP
+Toggleable
 Toolhelp
 toolwindow
 TOPDOWNDIB
@@ -1558,6 +1632,9 @@ UHash
 UIA
 UIEx
 ULONGLONG
+Ultrawide
+UMax
+UMin
 ums
 uncompilable
 UNCPRIORITY
@@ -2033,6 +2110,7 @@ metadatamatters
 middleclickaction
 MIIM
 mikeclayton
+mikehall
 minimizebox
 modelcontextprotocol
 mousehighlighter
@@ -2153,6 +2231,7 @@ taskbar
 TESTONLY
 TEXTBOXNEWLINE
 textextractor
+textvariable
 tgamma
 THEMECHANGED
 thickframe
@@ -2192,6 +2271,7 @@ wft
 wikimedia
 wikipedia
 windowedge
+WINDOWSAPPRUNTIME
 windowsml
 winexe
 winforms

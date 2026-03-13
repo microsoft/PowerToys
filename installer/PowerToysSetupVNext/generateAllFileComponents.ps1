@@ -190,6 +190,10 @@ Generate-FileComponents -fileListName "HostsAssetsFiles" -wxsFilePath $PSScriptR
 Generate-FileList -fileDepsJson "" -fileListName ImageResizerAssetsFiles -wxsFilePath $PSScriptRoot\ImageResizer.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ImageResizer"
 Generate-FileComponents -fileListName "ImageResizerAssetsFiles" -wxsFilePath $PSScriptRoot\ImageResizer.wxs
 
+#KeyboardManager
+Generate-FileList -fileDepsJson "" -fileListName KeyboardManagerAssetsFiles -wxsFilePath $PSScriptRoot\KeyboardManager.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\KeyboardManager"
+Generate-FileComponents -fileListName "KeyboardManagerAssetsFiles" -wxsFilePath $PSScriptRoot\KeyboardManager.wxs
+
 # Light Switch Service
 Generate-FileList -fileDepsJson "" -fileListName LightSwitchFiles -wxsFilePath $PSScriptRoot\LightSwitch.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\LightSwitchService"
 Generate-FileComponents -fileListName "LightSwitchFiles" -wxsFilePath $PSScriptRoot\LightSwitch.wxs

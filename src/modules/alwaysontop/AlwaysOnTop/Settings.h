@@ -1,6 +1,9 @@
 #pragma once
 
+#include <atomic>
+#include <memory>
 #include <unordered_set>
+#include <vector>
 
 #include <common/SettingsAPI/FileWatcher.h>
 #include <common/SettingsAPI/settings_objects.h>
@@ -18,6 +21,7 @@ struct Settings
     static constexpr int minTransparencyPercentage = 20; // minimum transparency (can't go below 20%)
     static constexpr int maxTransparencyPercentage = 100; // maximum (fully opaque)
     static constexpr int transparencyStep = 10; // step size for +/- adjustment
+    bool showInSystemMenu = false;
     bool enableFrame = true;
     bool enableSound = true;
     bool roundCornersEnabled = true;
@@ -33,9 +37,9 @@ class AlwaysOnTopSettings
 {
 public:
     static AlwaysOnTopSettings& instance();
-    static inline const Settings& settings()
+    static inline std::shared_ptr<const Settings> settings()
     {
-        return instance().m_settings;
+        return instance().m_settings.load(std::memory_order_acquire);
     }
 
     void InitFileWatcher();
@@ -51,7 +55,7 @@ private:
     ~AlwaysOnTopSettings() = default;
 
     winrt::Windows::UI::ViewManagement::UISettings m_uiSettings;
-    Settings m_settings;
+    std::atomic<std::shared_ptr<const Settings>> m_settings;
     std::unique_ptr<FileWatcher> m_settingsFileWatcher;
     std::unordered_set<SettingsObserver*> m_observers;
 

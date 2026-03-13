@@ -9,6 +9,7 @@
     xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     x:Name="LayoutRoot"
+    MinWidth="{StaticResource SettingActionControlMinWidth}"
     d:DesignHeight="300"
     d:DesignWidth="400"
     mc:Ignorable="d">

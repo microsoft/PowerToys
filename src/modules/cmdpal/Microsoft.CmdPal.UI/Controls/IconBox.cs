@@ -135,6 +135,8 @@ public partial class IconBox : ContentControl
             _lastScale = XamlRoot.RasterizationScale;
             XamlRoot.Changed += OnXamlRootChanged;
         }
+
+        Refresh();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -149,10 +151,13 @@ public partial class IconBox : ContentControl
     {
         var newScale = sender.RasterizationScale;
         var changedLastTheme = _lastTheme != ActualTheme;
+        var changedScale = Math.Abs(newScale - _lastScale) > 0.01;
+
+        _lastScale = newScale;
         _lastTheme = ActualTheme;
-        if ((changedLastTheme || Math.Abs(newScale - _lastScale) > 0.01) && SourceKey is not null)
+
+        if ((changedLastTheme || changedScale) && SourceKey is not null)
         {
-            _lastScale = newScale;
             UpdateSourceKey(this, SourceKey);
         }
     }
@@ -257,7 +262,11 @@ public partial class IconBox : ContentControl
                 return;
             }
 
-            var eventArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, iconBox._lastScale);
+            var scale = iconBox._lastScale > 0
+                ? iconBox._lastScale
+                : (iconBox.XamlRoot?.RasterizationScale > 0 ? iconBox.XamlRoot.RasterizationScale : 1.0);
+
+            var eventArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, scale);
             await iconBoxSourceRequestedHandler.InvokeAsync(iconBox, eventArgs);
 
             // After the await:

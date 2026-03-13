@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -70,6 +70,15 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         StateJson = model.StateJson;
         DataJson = model.DataJson;
 
+        RenderCard();
+
+        UpdateProperty(nameof(Card));
+
+        model.PropChanged += Model_PropChanged;
+    }
+
+    private void RenderCard()
+    {
         if (TryBuildCard(TemplateJson, DataJson, out var builtCard, out var renderingError))
         {
             Card = builtCard;
@@ -93,8 +102,41 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
             UpdateProperty(nameof(Card));
             return;
         }
+    }
 
-        UpdateProperty(nameof(Card));
+    private void Model_PropChanged(object sender, IPropChangedEventArgs args)
+    {
+        try
+        {
+            FetchProperty(args.PropertyName);
+        }
+        catch (Exception ex)
+        {
+            ShowException(ex);
+        }
+    }
+
+    protected virtual void FetchProperty(string propertyName)
+    {
+        var model = this._formModel.Unsafe;
+        if (model is null)
+        {
+            return; // throw?
+        }
+
+        switch (propertyName)
+        {
+            case nameof(DataJson):
+                DataJson = model.DataJson;
+                RenderCard();
+                break;
+            case nameof(TemplateJson):
+                TemplateJson = model.TemplateJson;
+                RenderCard();
+                break;
+        }
+
+        UpdateProperty(propertyName);
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveOpenUrlAction))]
