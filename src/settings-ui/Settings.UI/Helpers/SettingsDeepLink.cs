@@ -10,7 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using ManagedCommon;
 
-namespace Common.UI
+namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
     public static class SettingsDeepLink
     {

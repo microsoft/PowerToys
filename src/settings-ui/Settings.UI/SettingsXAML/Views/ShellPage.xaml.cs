@@ -315,6 +315,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private void NavigationView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        {
+            var pageType = args.InvokedItemContainer?.GetValue(NavHelper.NavigateToProperty) as Type;
+
+            if (pageType != null)
+            {
+                NavigationService.Navigate(pageType);
+            }
+        }
+
         private void ReceiveMessage(JsonObject json)
         {
             if (json != null)
