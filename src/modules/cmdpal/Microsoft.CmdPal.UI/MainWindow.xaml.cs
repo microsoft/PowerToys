@@ -759,7 +759,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         _sessionPagesVisited++;
 
-        // If we are displyed via the dock, we need to resize
+        // If we are displayed via the dock, we need to resize
         // ourself to ensure any resizing done doesn't affect
         // other dock windows.
         if (_isLoadedFromDock)
