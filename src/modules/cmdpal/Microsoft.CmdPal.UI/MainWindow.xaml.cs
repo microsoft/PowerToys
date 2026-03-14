@@ -94,6 +94,7 @@ public sealed partial class MainWindow : WindowEx,
     private WindowPosition _currentWindowPosition = new();
 
     private bool _preventHideWhenDeactivated;
+    private bool _isLoadedFromDock;
 
     private DevRibbon? _devRibbon;
 
@@ -245,10 +246,26 @@ public sealed partial class MainWindow : WindowEx,
 
     private void PositionCentered(DisplayArea displayArea)
     {
+        // Use the saved window size when available so that a dock-resized HWND
+        // (hidden but not destroyed) doesn't dictate the size on normal reopen.
+        SizeInt32 windowSize;
+        int windowDpi;
+
+        if (_currentWindowPosition.IsSizeValid)
+        {
+            windowSize = new SizeInt32(_currentWindowPosition.Width, _currentWindowPosition.Height);
+            windowDpi = _currentWindowPosition.Dpi;
+        }
+        else
+        {
+            windowSize = AppWindow.Size;
+            windowDpi = (int)this.GetDpiForWindow();
+        }
+
         var rect = WindowPositionHelper.CenterOnDisplay(
-            displayArea,
-            AppWindow.Size,
-            (int)this.GetDpiForWindow());
+           displayArea,
+           windowSize,
+           windowDpi);
 
         if (rect is not null)
         {
@@ -678,6 +695,8 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(ShowWindowMessage message)
     {
+        _isLoadedFromDock = false;
+
         var settings = App.Current.Services.GetService<SettingsModel>()!;
 
         // Start session tracking
@@ -690,11 +709,14 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void Receive(ShowPaletteAtMessage message)
     {
+        _isLoadedFromDock = true;
         ShowHwnd(HWND.Null, message.PosPixels, message.Anchor);
     }
 
     public void Receive(HideWindowMessage message)
     {
+        _isLoadedFromDock = false;
+
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
@@ -718,6 +740,14 @@ public sealed partial class MainWindow : WindowEx,
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
+            // This is a bit of a hack, but the purpose is to resize
+            // the window according to the current settings
+            // (in case they changed while the window was opened from the dock)
+            // Without this the window will reposition itself correctly but we'll
+            // get a flash as it resizes it's content to the previous size.
+            var display = GetScreen(_hwnd, MonitorBehavior.ToLast);
+            PositionCentered(display);
+
             EndSession("Dismiss");
             HideWindow();
         });
@@ -728,6 +758,18 @@ public sealed partial class MainWindow : WindowEx,
     public void Receive(NavigateToPageMessage message)
     {
         _sessionPagesVisited++;
+
+        // If we are displyed via the dock, we need to resize
+        // ourself to ensure any resizing done doesn't affect
+        // other dock windows.
+        if (_isLoadedFromDock)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                var display = GetScreen(_hwnd, MonitorBehavior.ToLast);
+                PositionCentered(display);
+            });
+        }
     }
 
     public void Receive(NavigationDepthMessage message)
@@ -860,13 +902,19 @@ public sealed partial class MainWindow : WindowEx,
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
         var serviceProvider = App.Current.Services;
-        UpdateWindowPositionInMemory();
+
+        if (!_isLoadedFromDock)
+        {
+            UpdateWindowPositionInMemory();
+        }
 
         var settings = serviceProvider.GetService<SettingsModel>();
         if (settings is not null)
         {
             // a quick sanity check, so we don't overwrite correct values
-            if (_currentWindowPosition.IsSizeValid)
+            // and don't save size changes from dock
+            if (_currentWindowPosition.IsSizeValid &&
+                !_isLoadedFromDock)
             {
                 settings.LastWindowPosition = _currentWindowPosition;
                 SettingsModel.SaveSettings(settings);
@@ -960,7 +1008,11 @@ public sealed partial class MainWindow : WindowEx,
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
             // Save the current window position before hiding the window
-            UpdateWindowPositionInMemory();
+            // but not when opened from dock — preserve the pre-dock size.
+            if (!_isLoadedFromDock)
+            {
+                UpdateWindowPositionInMemory();
+            }
 
             // If there's a debugger attached...
             if (System.Diagnostics.Debugger.IsAttached)
