@@ -406,7 +406,10 @@ static bool LoadGifFrames(const std::wstring& gifPath, VideoRecordingSession::Tr
 
     const auto& lastFrame = pData->gifFrames.back();
     pData->videoDuration = winrt::TimeSpan{ lastFrame.start.count() + lastFrame.duration.count() };
-    pData->trimEnd = pData->videoDuration;
+    if( pData->trimEnd.count() <= 0 )
+    {
+        pData->trimEnd = pData->videoDuration;
+    }
     pData->gifFramesLoaded = true;
     pData->gifLastFrameIndex = 0;
 
