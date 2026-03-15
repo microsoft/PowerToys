@@ -263,7 +263,12 @@ UINT __stdcall SecureInstallFolderAclCA(MSIHANDLE hInstall)
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
     std::wstring installationFolder;
+    std::filesystem::path installFolderPath;
     std::filesystem::path templateFolderPath;
+    std::filesystem::path templateFilePath;
+    std::wstring normalizedInstallFolder;
+    std::optional<std::wstring> programFilesPath;
+    bool isUnderProgramFiles = false;
 
     PSECURITY_DESCRIPTOR programFilesSecurityDescriptor = nullptr;
     PACL programFilesDacl = nullptr;
@@ -278,17 +283,17 @@ UINT __stdcall SecureInstallFolderAclCA(MSIHANDLE hInstall)
     hr = getInstallFolder(hInstall, installationFolder);
     ExitOnFailure(hr, "Failed to get install folder.");
 
-    const auto installFolderPath = std::filesystem::path(installationFolder);
-    const auto normalizedInstallFolder = NormalizePathForComparison(installFolderPath);
+    installFolderPath = std::filesystem::path(installationFolder);
+    normalizedInstallFolder = NormalizePathForComparison(installFolderPath);
 
-    const auto programFilesPath = GetKnownFolderPath(FOLDERID_ProgramFiles);
+    programFilesPath = GetKnownFolderPath(FOLDERID_ProgramFiles);
     if (!programFilesPath)
     {
         hr = E_FAIL;
         ExitOnFailure(hr, "Failed to resolve Program Files folder.");
     }
 
-    auto isUnderProgramFiles = IsSameOrUnderPath(normalizedInstallFolder, NormalizePathForComparison(*programFilesPath));
+    isUnderProgramFiles = IsSameOrUnderPath(normalizedInstallFolder, NormalizePathForComparison(*programFilesPath));
     if (const auto programFilesX86Path = GetKnownFolderPath(FOLDERID_ProgramFilesX86))
     {
         isUnderProgramFiles = isUnderProgramFiles || IsSameOrUnderPath(normalizedInstallFolder, NormalizePathForComparison(*programFilesX86Path));
@@ -329,7 +334,7 @@ UINT __stdcall SecureInstallFolderAclCA(MSIHANDLE hInstall)
         }
     }
 
-    const auto templateFilePath = templateFolderPath / L"template.bin";
+    templateFilePath = templateFolderPath / L"template.bin";
     hr = CreateAclTemplateFile(templateFilePath);
     ExitOnFailure(hr, "Failed to create ACL template file.");
 
