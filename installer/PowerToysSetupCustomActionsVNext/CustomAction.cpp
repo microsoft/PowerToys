@@ -106,6 +106,266 @@ LExit:
     return hr;
 }
 
+static std::optional<std::wstring> GetKnownFolderPath(REFKNOWNFOLDERID folderId)
+{
+    PWSTR pathBlockPtr = nullptr;
+    if (FAILED(SHGetKnownFolderPath(folderId, KF_FLAG_DEFAULT, nullptr, &pathBlockPtr)))
+    {
+        return std::nullopt;
+    }
+
+    std::wstring path{ pathBlockPtr };
+    CoTaskMemFree(pathBlockPtr);
+    return path;
+}
+
+static std::wstring NormalizePathForComparison(const std::filesystem::path& path)
+{
+    std::error_code errorCode;
+    auto normalizedPath = std::filesystem::weakly_canonical(path, errorCode);
+    if (errorCode)
+    {
+        normalizedPath = path.lexically_normal();
+    }
+
+    auto value = normalizedPath.native();
+    while (!value.empty() && (value.back() == L'\\' || value.back() == L'/'))
+    {
+        value.pop_back();
+    }
+
+    return value;
+}
+
+static bool IsSameOrUnderPath(const std::wstring& candidatePath, const std::wstring& rootPath)
+{
+    if (candidatePath.size() < rootPath.size())
+    {
+        return false;
+    }
+
+    if (_wcsnicmp(candidatePath.c_str(), rootPath.c_str(), rootPath.size()) != 0)
+    {
+        return false;
+    }
+
+    return candidatePath.size() == rootPath.size() || candidatePath[rootPath.size()] == L'\\' || candidatePath[rootPath.size()] == L'/';
+}
+
+static HRESULT GetPathDacl(const std::wstring& path, PACL* dacl, PSECURITY_DESCRIPTOR* securityDescriptor)
+{
+    const auto result = GetNamedSecurityInfoW(
+        path.c_str(),
+        SE_FILE_OBJECT,
+        DACL_SECURITY_INFORMATION,
+        nullptr,
+        nullptr,
+        dacl,
+        nullptr,
+        securityDescriptor);
+
+    return result == ERROR_SUCCESS ? S_OK : HRESULT_FROM_WIN32(result);
+}
+
+static HRESULT SetProtectedPathDacl(const std::wstring& path, PACL dacl)
+{
+    const auto result = SetNamedSecurityInfoW(
+        const_cast<LPWSTR>(path.c_str()),
+        SE_FILE_OBJECT,
+        DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+        nullptr,
+        nullptr,
+        dacl,
+        nullptr);
+
+    return result == ERROR_SUCCESS ? S_OK : HRESULT_FROM_WIN32(result);
+}
+
+static HRESULT CreateAclTemplateFile(const std::filesystem::path& path)
+{
+    HANDLE fileHandle = CreateFileW(
+        path.c_str(),
+        GENERIC_WRITE,
+        0,
+        nullptr,
+        CREATE_ALWAYS,
+        FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_TEMPORARY,
+        nullptr);
+
+    if (fileHandle == INVALID_HANDLE_VALUE)
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    CloseHandle(fileHandle);
+    return S_OK;
+}
+
+static HRESULT ReAclExistingInstallTree(
+    const std::filesystem::path& installFolder,
+    const std::filesystem::path& templateFolder,
+    PACL directoryDacl,
+    PACL fileDacl)
+{
+    const auto normalizedTemplateFolder = NormalizePathForComparison(templateFolder);
+
+    std::error_code errorCode;
+    std::filesystem::recursive_directory_iterator end{};
+    for (std::filesystem::recursive_directory_iterator iterator(installFolder, std::filesystem::directory_options::skip_permission_denied, errorCode);
+         iterator != end;
+         iterator.increment(errorCode))
+    {
+        if (errorCode)
+        {
+            return HRESULT_FROM_WIN32(errorCode.value());
+        }
+
+        const auto normalizedEntryPath = NormalizePathForComparison(iterator->path());
+        if (IsSameOrUnderPath(normalizedEntryPath, normalizedTemplateFolder))
+        {
+            iterator.disable_recursion_pending();
+            continue;
+        }
+
+        const auto status = iterator->symlink_status(errorCode);
+        if (errorCode)
+        {
+            return HRESULT_FROM_WIN32(errorCode.value());
+        }
+
+        if (std::filesystem::is_symlink(status))
+        {
+            iterator.disable_recursion_pending();
+            continue;
+        }
+
+        HRESULT hr = S_OK;
+        if (std::filesystem::is_directory(status))
+        {
+            hr = SetProtectedPathDacl(iterator->path().native(), directoryDacl);
+        }
+        else if (std::filesystem::is_regular_file(status))
+        {
+            hr = SetProtectedPathDacl(iterator->path().native(), fileDacl);
+        }
+
+        if (FAILED(hr))
+        {
+            return hr;
+        }
+    }
+
+    return S_OK;
+}
+
+UINT __stdcall SecureInstallFolderAclCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+    std::filesystem::path templateFolderPath;
+
+    PSECURITY_DESCRIPTOR programFilesSecurityDescriptor = nullptr;
+    PACL programFilesDacl = nullptr;
+    PSECURITY_DESCRIPTOR templateDirectorySecurityDescriptor = nullptr;
+    PACL templateDirectoryDacl = nullptr;
+    PSECURITY_DESCRIPTOR templateFileSecurityDescriptor = nullptr;
+    PACL templateFileDacl = nullptr;
+
+    hr = WcaInitialize(hInstall, "SecureInstallFolderAclCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get install folder.");
+
+    const auto installFolderPath = std::filesystem::path(installationFolder);
+    const auto normalizedInstallFolder = NormalizePathForComparison(installFolderPath);
+
+    const auto programFilesPath = GetKnownFolderPath(FOLDERID_ProgramFiles);
+    if (!programFilesPath)
+    {
+        hr = E_FAIL;
+        ExitOnFailure(hr, "Failed to resolve Program Files folder.");
+    }
+
+    auto isUnderProgramFiles = IsSameOrUnderPath(normalizedInstallFolder, NormalizePathForComparison(*programFilesPath));
+    if (const auto programFilesX86Path = GetKnownFolderPath(FOLDERID_ProgramFilesX86))
+    {
+        isUnderProgramFiles = isUnderProgramFiles || IsSameOrUnderPath(normalizedInstallFolder, NormalizePathForComparison(*programFilesX86Path));
+    }
+
+    if (isUnderProgramFiles)
+    {
+        WcaLog(LOGMSG_STANDARD, "SecureInstallFolderAclCA: Install folder already resides under Program Files. No ACL changes required.");
+        goto LExit;
+    }
+
+    {
+        std::error_code errorCode;
+        std::filesystem::create_directories(installFolderPath, errorCode);
+        if (errorCode)
+        {
+            hr = HRESULT_FROM_WIN32(errorCode.value());
+            ExitOnFailure(hr, "Failed to create install folder before ACL hardening.");
+        }
+    }
+
+    hr = GetPathDacl(*programFilesPath, &programFilesDacl, &programFilesSecurityDescriptor);
+    ExitOnFailure(hr, "Failed to read Program Files DACL.");
+
+    hr = SetProtectedPathDacl(installFolderPath.native(), programFilesDacl);
+    ExitOnFailure(hr, "Failed to apply Program Files DACL to install folder.");
+
+    templateFolderPath = installFolderPath / L".powertoys_acl_template";
+    {
+        std::error_code errorCode;
+        std::filesystem::remove_all(templateFolderPath, errorCode);
+        errorCode.clear();
+        std::filesystem::create_directory(templateFolderPath, errorCode);
+        if (errorCode)
+        {
+            hr = HRESULT_FROM_WIN32(errorCode.value());
+            ExitOnFailure(hr, "Failed to create ACL template folder.");
+        }
+    }
+
+    const auto templateFilePath = templateFolderPath / L"template.bin";
+    hr = CreateAclTemplateFile(templateFilePath);
+    ExitOnFailure(hr, "Failed to create ACL template file.");
+
+    hr = GetPathDacl(templateFolderPath.native(), &templateDirectoryDacl, &templateDirectorySecurityDescriptor);
+    ExitOnFailure(hr, "Failed to read ACL template directory DACL.");
+
+    hr = GetPathDacl(templateFilePath.native(), &templateFileDacl, &templateFileSecurityDescriptor);
+    ExitOnFailure(hr, "Failed to read ACL template file DACL.");
+
+    hr = ReAclExistingInstallTree(installFolderPath, templateFolderPath, templateDirectoryDacl, templateFileDacl);
+    ExitOnFailure(hr, "Failed to harden install folder contents.");
+
+LExit:
+    if (!templateFolderPath.empty())
+    {
+        std::error_code errorCode;
+        std::filesystem::remove_all(templateFolderPath, errorCode);
+    }
+
+    if (programFilesSecurityDescriptor)
+    {
+        LocalFree(programFilesSecurityDescriptor);
+    }
+    if (templateDirectorySecurityDescriptor)
+    {
+        LocalFree(templateDirectorySecurityDescriptor);
+    }
+    if (templateFileSecurityDescriptor)
+    {
+        LocalFree(templateFileSecurityDescriptor);
+    }
+
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
 BOOL IsLocalSystem()
 {
     HANDLE hToken;
