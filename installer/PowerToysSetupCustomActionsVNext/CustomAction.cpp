@@ -152,6 +152,63 @@ static bool IsSameOrUnderPath(const std::wstring& candidatePath, const std::wstr
     return candidatePath.size() == rootPath.size() || candidatePath[rootPath.size()] == L'\\' || candidatePath[rootPath.size()] == L'/';
 }
 
+static bool IsInstallFolderPathSafe(
+    const std::filesystem::path& installFolderPath,
+    const std::filesystem::path& programFilesPath,
+    const std::optional<std::filesystem::path>& programFilesX86Path)
+{
+    if (installFolderPath.empty())
+    {
+        return false;
+    }
+
+    const auto normalizedInstallFolderPath = NormalizePathForComparison(installFolderPath);
+    const auto normalizedRootPath = NormalizePathForComparison(installFolderPath.root_path());
+    if (normalizedInstallFolderPath.empty() || normalizedInstallFolderPath == normalizedRootPath)
+    {
+        return false;
+    }
+
+    if (normalizedInstallFolderPath == NormalizePathForComparison(programFilesPath))
+    {
+        return false;
+    }
+
+    if (programFilesX86Path && normalizedInstallFolderPath == NormalizePathForComparison(*programFilesX86Path))
+    {
+        return false;
+    }
+
+    WCHAR windowsDirBuffer[MAX_PATH]{};
+    const auto windowsDirLen = GetWindowsDirectoryW(windowsDirBuffer, ARRAYSIZE(windowsDirBuffer));
+    if (windowsDirLen != 0 && windowsDirLen < ARRAYSIZE(windowsDirBuffer))
+    {
+        if (normalizedInstallFolderPath == NormalizePathForComparison(std::filesystem::path(windowsDirBuffer)))
+        {
+            return false;
+        }
+    }
+
+    const auto normalizedParentPath = NormalizePathForComparison(installFolderPath.parent_path());
+    if (normalizedParentPath.empty())
+    {
+        return false;
+    }
+
+    return true;
+}
+
+static void ShowInvalidInstallFolderMessage(MSIHANDLE hInstall, const std::wstring& installationFolder)
+{
+    PMSIHANDLE hRecord = MsiCreateRecord(0);
+    std::wstring message =
+        L"The selected installation folder is not supported for machine-wide installation: " +
+        installationFolder +
+        L". Choose a dedicated folder that is not a drive root or a Windows/Program Files folder. For example: C:\\PowerToys or C:\\Program Files\\PowerToys.";
+    MsiRecordSetStringW(hRecord, 0, message.c_str());
+    MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_ERROR + MB_OK), hRecord);
+}
+
 static HRESULT GetPathDacl(const std::wstring& path, PACL* dacl, PSECURITY_DESCRIPTOR* securityDescriptor)
 {
     const auto result = GetNamedSecurityInfoW(
@@ -266,6 +323,8 @@ UINT __stdcall SecureInstallFolderAclCA(MSIHANDLE hInstall)
     std::filesystem::path installFolderPath;
     std::filesystem::path templateFolderPath;
     std::filesystem::path templateFilePath;
+    std::filesystem::path programFilesPathValue;
+    std::optional<std::filesystem::path> programFilesX86PathValue;
     std::wstring normalizedInstallFolder;
     std::optional<std::wstring> programFilesPath;
     bool isUnderProgramFiles = false;
@@ -291,6 +350,19 @@ UINT __stdcall SecureInstallFolderAclCA(MSIHANDLE hInstall)
     {
         hr = E_FAIL;
         ExitOnFailure(hr, "Failed to resolve Program Files folder.");
+    }
+
+    programFilesPathValue = std::filesystem::path(*programFilesPath);
+    if (const auto programFilesX86Path = GetKnownFolderPath(FOLDERID_ProgramFilesX86))
+    {
+        programFilesX86PathValue = std::filesystem::path(*programFilesX86Path);
+    }
+
+    if (!IsInstallFolderPathSafe(installFolderPath, programFilesPathValue, programFilesX86PathValue))
+    {
+        ShowInvalidInstallFolderMessage(hInstall, installationFolder);
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Unsupported machine-wide install folder.");
     }
 
     isUnderProgramFiles = IsSameOrUnderPath(normalizedInstallFolder, NormalizePathForComparison(*programFilesPath));
