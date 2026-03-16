@@ -3313,9 +3313,6 @@ void RegisterAllHotkeys(HWND hWnd)
         registerHotkey( RECORD_CROP_HOTKEY, ( g_RecordToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
         registerHotkey( RECORD_WINDOW_HOTKEY, ( g_RecordToggleMod ^ MOD_ALT ) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
     }
-    // Register CTRL+8 for GIF recording and CTRL+ALT+8 for GIF window recording
-    registerHotkey( RECORD_GIF_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 568 && 0xFF );
-    registerHotkey( RECORD_GIF_WINDOW_HOTKEY, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 568 && 0xFF );
 
     // Note: COPY_IMAGE_HOTKEY, COPY_CROP_HOTKEY (Ctrl+C, Ctrl+Shift+C) and
     // SAVE_IMAGE_HOTKEY, SAVE_CROP_HOTKEY (Ctrl+S, Ctrl+Shift+S) are registered
@@ -9831,13 +9828,6 @@ LRESULT APIENTRY MainWndProc(
                 MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.", APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
             }
-        }
-        // Register CTRL+8 for GIF recording and CTRL+ALT+8 for GIF window recording
-        if (!RegisterHotKey(hWnd, RECORD_GIF_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, '8') ||
-            !RegisterHotKey(hWnd, RECORD_GIF_WINDOW_HOTKEY, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, '8'))
-        {
-            MessageBox(hWnd, L"The specified GIF recording hotkey is already in use.\nSelect a different GIF recording hotkey.", APPNAME, MB_ICONERROR);
-            showOptions = TRUE;
         }
         if (showOptions)
         {

@@ -250,6 +250,9 @@
                                 Visibility="{x:Bind ViewModel.BreakShowBackgroundFile, Mode=OneWay}">
                                 <CheckBox x:Uid="ZoomIt_Break_BackgroundStretch" IsChecked="{x:Bind ViewModel.BreakBackgroundStretch, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="ZoomItBreakLockWorkstation" ContentAlignment="Left">
+                                <CheckBox x:Uid="ZoomIt_Break_LockWorkstation" IsChecked="{x:Bind ViewModel.BreakLockWorkstation, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
                                     <tkcontrols:MarkdownTextBlock x:Uid="ZoomIt_BreakFAQ" Config="{StaticResource ZoomItMarkdownConfig}" />
@@ -335,6 +338,15 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}"
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipOcrToggleKey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="ZoomIt_PanoramaGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander
+                        Name="ZoomItPanoramaShortcut"
+                        x:Uid="ZoomIt_Panorama_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C5;}"
+                        IsExpanded="True">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipPanoramaToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
