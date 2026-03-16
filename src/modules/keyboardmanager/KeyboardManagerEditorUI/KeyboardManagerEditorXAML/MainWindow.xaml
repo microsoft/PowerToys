@@ -13,6 +13,8 @@
     Height="900"
     MinWidth="860"
     MinHeight="320"
+    Activated="MainWindow_Activated"
+    Closed="MainWindow_Closed"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
