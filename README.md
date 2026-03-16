@@ -53,10 +53,10 @@ Go to the <a href="https://aka.ms/installPowerToys">PowerToys GitHub releases</a
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.98%22
 [github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.97%22
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.0/PowerToysUserSetup-0.97.2-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.0/PowerToysUserSetup-0.97.2-arm64.exe 
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.0/PowerToysSetup-0.97.2-x64.exe 
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.0/PowerToysSetup-0.97.2-arm64.exe
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.0/PowerToysUserSetup-0.98.0-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.0/PowerToysUserSetup-0.98.0-arm64.exe 
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.0/PowerToysSetup-0.98.0-x64.exe 
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.0/PowerToysSetup-0.98.0-arm64.exe
  
 |  Description   | Filename |
 |----------------|----------|
