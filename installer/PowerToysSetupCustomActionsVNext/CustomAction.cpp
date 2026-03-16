@@ -169,11 +169,20 @@ static HRESULT GetPathDacl(const std::wstring& path, PACL* dacl, PSECURITY_DESCR
 
 static HRESULT SetProtectedPathDacl(const std::wstring& path, PACL dacl)
 {
+    BYTE adminSidBuffer[SECURITY_MAX_SID_SIZE];
+    PSID adminSid = static_cast<PSID>(adminSidBuffer);
+    DWORD adminSidSize = sizeof(adminSidBuffer);
+
+    if (!CreateWellKnownSid(WinBuiltinAdministratorsSid, nullptr, adminSid, &adminSidSize))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
     const auto result = SetNamedSecurityInfoW(
         const_cast<LPWSTR>(path.c_str()),
         SE_FILE_OBJECT,
-        DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
-        nullptr,
+        OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+        adminSid,
         nullptr,
         dacl,
         nullptr);
