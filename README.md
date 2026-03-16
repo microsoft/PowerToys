@@ -113,7 +113,7 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 ### Command Palette
 
 - Added Dock — a persistent launcher bar at the edge of your screen for instant access to pinned commands and apps.
-- Lightning-fast mode and precomputed fuzzy matching deliver dramatically faster search and launch times. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Dramatically faster search and launch times thanks to improved fuzzy matching and related performance optimizations. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 - New Performance Monitor extension ports DevHome perf widgets into CmdPal, single-row list items, transparent window, and searchable filter dropdown
 
 ### Keyboard Manager
