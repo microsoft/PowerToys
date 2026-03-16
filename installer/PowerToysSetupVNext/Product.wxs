@@ -112,10 +112,6 @@
       <Custom Action="SetUninstallCommandNotFoundParam" Before="UninstallCommandNotFound" />
       <Custom Action="SetUpgradeCommandNotFoundParam" Before="UpgradeCommandNotFound" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
-      <?if $(var.PerUser) = "false" ?>
-      <Custom Action="SetSecureInstallFolderAclParam" Before="SecureInstallFolderAcl" />
-      <Custom Action="SetFinalizeInstallFolderAclParam" Before="FinalizeInstallFolderAcl" />
-      <?endif?>
       <Custom Action="SetInstallPackageIdentityMSIXParam" Before="InstallPackageIdentityMSIX" />
 
       <?if $(var.PerUser) = "true" ?>
@@ -124,9 +120,6 @@
 
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="CheckGPO" After="InstallInitialize" Condition="NOT Installed" />
-      <?if $(var.PerUser) = "false" ?>
-      <Custom Action="SecureInstallFolderAcl" After="CreateFolders" Condition="NOT REMOVE" />
-      <?endif?>
       <Custom Action="SetBundleInstallLocationData" Before="SetBundleInstallLocation" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
       <Custom Action="SetBundleInstallLocation" After="InstallFiles" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
@@ -163,9 +156,6 @@
       <Custom Action="UninstallDSCModule" After="InstallFinalize" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <?endif?>
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
-      <?if $(var.PerUser) = "false" ?>
-      <Custom Action="FinalizeInstallFolderAcl" Before="LaunchPowerToys" Condition="NOT REMOVE" />
-      <?endif?>
       <Custom Action="LaunchPowerToys" Before="InstallFinalize" Condition="NOT Installed" />
 
       <!-- Clean Video Conference Mute registry keys that might be around from previous installations. We've deprecated this utility since then. -->
@@ -190,11 +180,6 @@
     <CustomAction Id="SetApplyModulesRegistryChangeSetsParam" Property="ApplyModulesRegistryChangeSets" Value="[INSTALLFOLDER]" />
 
     <CustomAction Id="SetUnApplyModulesRegistryChangeSetsParam" Property="UnApplyModulesRegistryChangeSets" Value="[INSTALLFOLDER]" />
-
-    <?if $(var.PerUser) = "false" ?>
-    <CustomAction Id="SetSecureInstallFolderAclParam" Property="SecureInstallFolderAcl" Value="[INSTALLFOLDER]" />
-    <CustomAction Id="SetFinalizeInstallFolderAclParam" Property="FinalizeInstallFolderAcl" Value="[INSTALLFOLDER]" />
-    <?endif?>
 
     <CustomAction Id="SetInstallDSCModuleParam" Property="InstallDSCModule" Value="[INSTALLFOLDER]" />
 
@@ -259,11 +244,6 @@
     <CustomAction Id="CleanVideoConferenceRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanVideoConferenceRegistryCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="ApplyModulesRegistryChangeSets" Return="check" Impersonate="yes" Execute="deferred" DllEntry="ApplyModulesRegistryChangeSetsCA" BinaryRef="PTCustomActions" />
-
-    <?if $(var.PerUser) = "false" ?>
-    <CustomAction Id="SecureInstallFolderAcl" Return="check" Impersonate="no" Execute="deferred" DllEntry="SecureInstallFolderAclCA" BinaryRef="PTCustomActions" />
-    <CustomAction Id="FinalizeInstallFolderAcl" Return="check" Impersonate="no" Execute="deferred" DllEntry="FinalizeInstallFolderAclCA" BinaryRef="PTCustomActions" />
-    <?endif?>
 
     <CustomAction Id="UnApplyModulesRegistryChangeSets" Return="check" Impersonate="yes" Execute="deferred" DllEntry="UnApplyModulesRegistryChangeSetsCA" BinaryRef="PTCustomActions" />
 

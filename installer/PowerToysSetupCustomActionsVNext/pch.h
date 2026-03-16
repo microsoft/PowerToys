@@ -4,7 +4,6 @@
 #define DPSAPI_VERSION 1
 // Windows Header Files:
 #include <windows.h>
-#include <Aclapi.h>
 #include <newdev.h>
 #include <strsafe.h>
 #include <msiquery.h>
@@ -16,7 +15,6 @@
 
 #define SECURITY_WIN32
 #include <Security.h>
-#include <sddl.h>
 #include <Lmcons.h>
 
 #include <comdef.h>
