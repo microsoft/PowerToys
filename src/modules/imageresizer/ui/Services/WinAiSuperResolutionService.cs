@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.Windows.AI;
 using Microsoft.Windows.AI.Imaging;
 using Windows.Graphics.Imaging;
@@ -42,8 +42,9 @@ namespace ImageResizer.Services
 
                 return new WinAiSuperResolutionService(imageScaler);
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError($"Failed to create AI super resolution service: {ex.Message}");
                 return null;
             }
         }
@@ -54,34 +55,23 @@ namespace ImageResizer.Services
             {
                 return ImageScaler.GetReadyState();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // If we can't get the state, treat it as disabled by user
-                // The caller should check if it's Ready or NotReady
+                Logger.LogWarning($"Failed to get AI model ready state: {ex.Message}");
                 return AIFeatureReadyState.DisabledByUser;
             }
         }
 
-        public static async Task<AIFeatureReadyResult> EnsureModelReadyAsync(IProgress<double> progress = null)
+        public static async Task<AIFeatureReadyResult> EnsureModelReadyAsync()
         {
             try
             {
-                var operation = ImageScaler.EnsureReadyAsync();
-
-                // Register progress handler if provided
-                if (progress != null)
-                {
-                    operation.Progress = (asyncInfo, progressValue) =>
-                    {
-                        // progressValue is a double representing completion percentage (0.0 to 1.0 or 0 to 100)
-                        progress.Report(progressValue);
-                    };
-                }
-
-                return await operation;
+                return await ImageScaler.EnsureReadyAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError($"Failed to ensure AI model ready: {ex.Message}");
                 return null;
             }
         }
@@ -116,9 +106,10 @@ namespace ImageResizer.Services
 
                 return scaledBitmap ?? source;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Any error, return original image gracefully
+                Logger.LogError($"AI super resolution failed for {filePath}: {ex.Message}");
                 return source;
             }
         }

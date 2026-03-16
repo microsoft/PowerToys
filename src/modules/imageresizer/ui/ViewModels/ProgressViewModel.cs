@@ -78,33 +78,30 @@ namespace ImageResizer.ViewModels
         }
 
         [RelayCommand]
-        public void Start()
+        public async Task StartAsync()
         {
-            _ = Task.Run(() => StartExecutingWorkAsync());
-        }
-
-        private async Task StartExecutingWorkAsync()
-        {
-            _stopwatch.Restart();
-            var errors = await _batch.ProcessAsync(
-                (completed, total) =>
-                {
-                    var progress = completed / total;
-                    var timeRemaining = _stopwatch.Elapsed.Multiply((total - completed) / completed);
-
-                    // Dispatch UI updates to the UI thread
-                    _dispatcherQueue.TryEnqueue(() =>
-                    {
-                        Progress = progress;
-                        _mainViewModel.Progress = progress;
-                        TimeRemaining = timeRemaining;
-                    });
-                },
-                _cancellationTokenSource.Token);
-
-            // Dispatch final UI updates to the UI thread
-            _dispatcherQueue.TryEnqueue(() =>
+            try
             {
+                _stopwatch.Restart();
+                var errors = await _batch.ProcessAsync(
+                    (completed, total) =>
+                    {
+                        var progress = completed / total;
+                        var timeRemaining = _stopwatch.Elapsed.Multiply((total - completed) / completed);
+
+                        // Progress callback runs on thread-pool threads (from Parallel.ForEachAsync),
+                        // so we must dispatch UI property updates to the UI thread.
+                        _dispatcherQueue.TryEnqueue(() =>
+                        {
+                            Progress = progress;
+                            _mainViewModel.Progress = progress;
+                            TimeRemaining = timeRemaining;
+                        });
+                    },
+                    _cancellationTokenSource.Token);
+
+                // After await we are back on the UI thread (SynchronizationContext),
+                // so we can update UI directly without DispatcherQueue.
                 if (errors.Any())
                 {
                     _mainViewModel.Progress = 0;
@@ -114,7 +111,11 @@ namespace ImageResizer.ViewModels
                 {
                     _mainView.Close();
                 }
-            });
+            }
+            catch (OperationCanceledException)
+            {
+                // User cancelled via Stop — window is already closing.
+            }
         }
 
         [RelayCommand]

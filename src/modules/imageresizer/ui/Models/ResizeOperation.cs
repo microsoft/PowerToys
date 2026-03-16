@@ -147,10 +147,7 @@ namespace ImageResizer.Models
                         else
                         {
                             // Strip metadata path: fresh encoder = no old metadata
-                            var propertySet = GetEncoderPropertySet(encoderGuid);
-                            var encoder = propertySet != null
-                                ? await BitmapEncoder.CreateAsync(encoderGuid, winrtOutputStream, propertySet)
-                                : await BitmapEncoder.CreateAsync(encoderGuid, winrtOutputStream);
+                            var encoder = await CreateFreshEncoderAsync(encoderGuid, winrtOutputStream);
 
                             var transform = new BitmapTransform();
                             if (!noTransformNeeded)
@@ -249,10 +246,7 @@ namespace ImageResizer.Models
                     else
                     {
                         // Strip metadata path
-                        var propertySet = GetEncoderPropertySet(encoderGuid);
-                        var encoder = propertySet != null
-                            ? await BitmapEncoder.CreateAsync(encoderGuid, winrtOutputStream, propertySet)
-                            : await BitmapEncoder.CreateAsync(encoderGuid, winrtOutputStream);
+                        var encoder = await CreateFreshEncoderAsync(encoderGuid, winrtOutputStream);
 
                         encoder.SetSoftwareBitmap(aiResult);
                         await encoder.FlushAsync();
@@ -352,13 +346,24 @@ namespace ImageResizer.Models
             return (scaledWidth, scaledHeight, null, false);
         }
 
+        private async Task<BitmapEncoder> CreateFreshEncoderAsync(Guid encoderGuid, IRandomAccessStream outputStream)
+        {
+            var propertySet = GetEncoderPropertySet(encoderGuid);
+            return propertySet != null
+                ? await BitmapEncoder.CreateAsync(encoderGuid, outputStream, propertySet)
+                : await BitmapEncoder.CreateAsync(encoderGuid, outputStream);
+        }
+
+        private float GetJpegQualityFraction()
+            => (float)MathHelpers.Clamp(_settings.JpegQualityLevel, 1, 100) / 100f;
+
         private async Task ConfigureEncoderPropertiesAsync(BitmapEncoder encoder, Guid encoderGuid)
         {
             if (encoderGuid == BitmapEncoder.JpegEncoderId)
             {
                 await encoder.BitmapProperties.SetPropertiesAsync(new BitmapPropertySet
                 {
-                    { "ImageQuality", new BitmapTypedValue((float)MathHelpers.Clamp(_settings.JpegQualityLevel, 1, 100) / 100f, PropertyType.Single) },
+                    { "ImageQuality", new BitmapTypedValue(GetJpegQualityFraction(), PropertyType.Single) },
                 });
             }
         }
@@ -369,7 +374,7 @@ namespace ImageResizer.Models
             {
                 return new BitmapPropertySet
                 {
-                    { "ImageQuality", new BitmapTypedValue((float)MathHelpers.Clamp(_settings.JpegQualityLevel, 1, 100) / 100f, PropertyType.Single) },
+                    { "ImageQuality", new BitmapTypedValue(GetJpegQualityFraction(), PropertyType.Single) },
                 };
             }
 

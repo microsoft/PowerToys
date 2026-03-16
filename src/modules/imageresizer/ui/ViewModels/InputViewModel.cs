@@ -13,6 +13,7 @@ using Windows.Graphics.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Common.UI;
+using ManagedCommon;
 using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ImageResizer.Properties;
@@ -59,9 +60,6 @@ namespace ImageResizer.ViewModels
 
         [ObservableProperty]
         private string _modelStatusMessage;
-
-        [ObservableProperty]
-        private double _modelDownloadProgress;
 
         public InputViewModel(
             Settings settings,
@@ -178,19 +176,12 @@ namespace ImageResizer.ViewModels
             {
                 IsDownloadingModel = true;
                 ModelStatusMessage = ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelDownloading");
-                ModelDownloadProgress = 0;
                 NotifyAiStateChanged();
 
-                var progress = new Progress<double>(value =>
-                {
-                    ModelDownloadProgress = value > 1 ? value : value * 100;
-                });
-
-                var result = await WinAiSuperResolutionService.EnsureModelReadyAsync(progress);
+                var result = await WinAiSuperResolutionService.EnsureModelReadyAsync();
 
                 if (result?.Status == Microsoft.Windows.AI.AIFeatureReadyResultState.Success)
                 {
-                    ModelDownloadProgress = 100;
                     App.AiAvailabilityState = AiAvailabilityState.Ready;
                     UpdateStatusMessage();
 
@@ -209,18 +200,14 @@ namespace ImageResizer.ViewModels
                     ModelStatusMessage = ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelDownloadFailed");
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError($"AI model download failed: {ex.Message}");
                 ModelStatusMessage = ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelDownloadFailed");
             }
             finally
             {
                 IsDownloadingModel = false;
-                if (App.AiAvailabilityState != AiAvailabilityState.Ready)
-                {
-                    ModelDownloadProgress = 0;
-                }
-
                 NotifyAiStateChanged();
             }
         }
@@ -304,8 +291,9 @@ namespace ImageResizer.ViewModels
                 _originalWidth = (int)decoder.PixelWidth;
                 _originalHeight = (int)decoder.PixelHeight;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogWarning($"Failed to read image dimensions for {file}: {ex.Message}");
                 _originalWidth = null;
                 _originalHeight = null;
             }

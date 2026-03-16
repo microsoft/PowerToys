@@ -16,7 +16,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using System.Threading;
 using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ManagedCommon;
@@ -62,8 +61,8 @@ namespace ImageResizer.Properties
             }
         }
 
-        // Used to synchronize access to the settings.json file
-        private static Mutex _jsonMutex = new Mutex();
+        // Used to synchronize access to the settings.json file (in-process only)
+        private static readonly object _jsonSyncLock = new();
         private static string _settingsPath = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Image Resizer", "settings.json");
         private string _fileNameFormat;
         private bool _shrinkOnly;
@@ -505,14 +504,23 @@ namespace ImageResizer.Properties
 
         public void Save()
         {
-            _jsonMutex.WaitOne();
+            lock (_jsonSyncLock)
+            {
+                SaveCore();
+            }
+        }
+
+        /// <summary>
+        /// Writes current settings to disk. Must be called under <see cref="_jsonSyncLock"/>.
+        /// </summary>
+        private void SaveCore()
+        {
             string jsonData = JsonSerializer.Serialize(new SettingsWrapper() { Properties = this }, _jsonSerializerOptions);
 
             IFileInfo file = _fileSystem.FileInfo.New(SettingsPath);
             file.Directory.Create();
 
             _fileSystem.File.WriteAllText(SettingsPath, jsonData);
-            _jsonMutex.ReleaseMutex();
         }
 
         public void Reload()
@@ -525,44 +533,43 @@ namespace ImageResizer.Properties
                 _fileSystem.Directory.Move(oldSettingsDir, settingsDir);
             }
 
-            _jsonMutex.WaitOne();
-            if (!_fileSystem.File.Exists(SettingsPath))
+            // Read and deserialize under lock; ReloadCore runs outside the lock
+            // because jsonSettings is an in-memory snapshot with no file I/O.
+            Settings jsonSettings;
+            lock (_jsonSyncLock)
             {
-                _jsonMutex.ReleaseMutex();
-                Save();
-                return;
+                if (!_fileSystem.File.Exists(SettingsPath))
+                {
+                    SaveCore();
+                    return;
+                }
+
+                string jsonData = _fileSystem.File.ReadAllText(SettingsPath);
+                jsonSettings = new Settings();
+                try
+                {
+                    jsonSettings = JsonSerializer.Deserialize<SettingsWrapper>(jsonData, _jsonSerializerOptions)?.Properties;
+                }
+                catch (JsonException ex)
+                {
+                    Logger.LogError($"Failed to parse settings JSON, using defaults: {ex.Message}");
+                }
             }
 
-            string jsonData = _fileSystem.File.ReadAllText(SettingsPath);
-            var jsonSettings = new Settings();
-            try
-            {
-                jsonSettings = JsonSerializer.Deserialize<SettingsWrapper>(jsonData, _jsonSerializerOptions)?.Properties;
-            }
-            catch (JsonException)
-            {
-            }
-
-            // Use cached UI DispatcherQueue for cross-thread safety
-            // If we're on the UI thread, execute directly; otherwise dispatch to UI thread
+            // Apply deserialized snapshot to live properties on the UI thread
             var currentDispatcher = DispatcherQueue.GetForCurrentThread();
             if (currentDispatcher != null)
             {
-                // Already on UI thread, execute directly
                 ReloadCore(jsonSettings);
             }
             else if (_uiDispatcherQueue != null)
             {
-                // On background thread, dispatch to UI thread
                 _uiDispatcherQueue.TryEnqueue(() => ReloadCore(jsonSettings));
             }
             else
             {
-                // Fallback: no dispatcher available (should not happen in normal operation)
                 ReloadCore(jsonSettings);
             }
-
-            _jsonMutex.ReleaseMutex();
         }
 
         private void ReloadCore(Settings jsonSettings)

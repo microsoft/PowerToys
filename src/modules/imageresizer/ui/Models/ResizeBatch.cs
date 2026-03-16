@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Pipes;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +38,12 @@ namespace ImageResizer.Models
             _aiSuperResolutionService = null;
         }
 
+        private static readonly HashSet<string> ValidImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".bmp", ".dib", ".gif", ".jfif", ".jpe", ".jpeg", ".jpg",
+            ".jxr", ".png", ".rle", ".tif", ".tiff", ".wdp",
+        };
+
         /// <summary>
         /// Validates if a file path is a supported image format.
         /// </summary>
@@ -56,14 +61,8 @@ namespace ImageResizer.Models
                 return false;
             }
 
-            var ext = Path.GetExtension(path)?.ToLowerInvariant();
-            var validExtensions = new[]
-            {
-                ".bmp", ".dib", ".gif", ".jfif", ".jpe", ".jpeg", ".jpg",
-                ".jxr", ".png", ".rle", ".tif", ".tiff", ".wdp",
-            };
-
-            return validExtensions.Contains(ext);
+            var ext = Path.GetExtension(path);
+            return ValidImageExtensions.Contains(ext);
         }
 
         /// <summary>
@@ -119,7 +118,7 @@ namespace ImageResizer.Models
                     {
                         string file;
 
-                        // Display the read text to the console
+                        // Read file paths from the named pipe
                         while ((file = sr.ReadLine()) != null)
                         {
                             if (IsValidImagePath(file))

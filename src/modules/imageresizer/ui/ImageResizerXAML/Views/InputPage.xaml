@@ -116,7 +116,7 @@
                     </Button>
 
                     <StackPanel Margin="0,8,0,0" Visibility="{Binding IsModelDownloading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <!--  TODO: Add ProgressRing here  -->
+                        <ProgressBar IsIndeterminate="True" />
                         <TextBlock
                             Margin="0,8,0,0"
                             HorizontalAlignment="Center"
