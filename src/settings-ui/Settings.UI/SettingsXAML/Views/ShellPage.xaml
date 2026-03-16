@@ -444,7 +444,7 @@
                         Visibility="{x:Bind ViewModel.ShowCloseMenu, Mode=OneWay}" />
                 </StackPanel>
             </NavigationView.PaneFooter>
-            <!-- Direct event handler instead of InvokeCommandAction for AOT compatibility -->
+            <!--  Direct event handler instead of InvokeCommandAction for AOT compatibility  -->
             <Frame x:Name="shellFrame" />
         </NavigationView>
         <ContentDialog
