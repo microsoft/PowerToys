@@ -229,6 +229,7 @@ static HRESULT SetProtectedPathDacl(const std::wstring& path, PACL dacl)
     BYTE adminSidBuffer[SECURITY_MAX_SID_SIZE];
     PSID adminSid = static_cast<PSID>(adminSidBuffer);
     DWORD adminSidSize = sizeof(adminSidBuffer);
+    auto mutablePath = path;
 
     if (!CreateWellKnownSid(WinBuiltinAdministratorsSid, nullptr, adminSid, &adminSidSize))
     {
@@ -236,7 +237,7 @@ static HRESULT SetProtectedPathDacl(const std::wstring& path, PACL dacl)
     }
 
     const auto result = SetNamedSecurityInfoW(
-        const_cast<LPWSTR>(path.c_str()),
+        mutablePath.data(),
         SE_FILE_OBJECT,
         OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
         adminSid,
