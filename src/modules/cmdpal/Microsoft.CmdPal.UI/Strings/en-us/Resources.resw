@@ -399,7 +399,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Dock (Preview)</value>
   </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Open Command Palette settings</value>
+    <value>Open Command Palette settings, shortcut Control plus spacebar</value>
   </data>
   <data name="ActivationSettingsHeader.Text" xml:space="preserve">
     <value>Activation</value>
