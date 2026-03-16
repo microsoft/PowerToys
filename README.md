@@ -311,7 +311,7 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 
 ### Documentation
 - Added documentation for writing a new PowerToy module in [#44242](https://github.com/microsoft/PowerToys/pull/44242)
-- Added telemetry developer documentation in [#44912](https://github.com/microsoft/PowerToys/pull/44912)
+- Added telemetry developer documentation in [#44912](https://github.com/microsoft/PowerToys/pull/44912). Thanks [@chatasweetie](https://github.com/chatasweetie)!
 - Improved developer docs in [#45534](https://github.com/microsoft/PowerToys/pull/45534). Thanks [@noraa-junker](https://github.com/noraa-junker) and [@snickler](https://github.com/snickler)!
 - Updated DATA_AND_PRIVACY to reflect current status in [#44844](https://github.com/microsoft/PowerToys/pull/44844)
 - Added spellcheck words and sorted expect.txt in [#45251](https://github.com/microsoft/PowerToys/pull/45251). Thanks [@jiripolasek](https://github.com/jiripolasek)!
