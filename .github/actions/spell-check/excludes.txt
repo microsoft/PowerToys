@@ -96,6 +96,7 @@
 ^\.github/workflows/spelling\d*\.yml$
 ^\.gitmodules$
 ^\Q.pipelines/ESRPSigning_core.json\E$
+^\Qdoc/devdocs/development/settings-ui-aot.md\E$
 ^\Qdoc/devdocs/localization.md\E$
 ^\Qsrc/modules/MouseUtils/MouseJump.Common/NativeMethods/User32/UI/WindowsAndMessaging/User32.SYSTEM_METRICS_INDEX.cs\E$
 ^doc/devdocs/akaLinks\.md$
@@ -145,3 +146,4 @@ ignore$
 src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage.cs
 ^src/modules/powerrename/unittests/testdata/avif_test\.avif$
 ^src/modules/powerrename/unittests/testdata/heif_test\.heic$
+^\Qtools/build/build-installer.ps1\E$

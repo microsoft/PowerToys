@@ -2019,6 +2019,7 @@ Lbuttondown
 LCh
 lcid
 lcl
+llc
 LEFTALIGN
 leftclick
 Lenovo
