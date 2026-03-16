@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using KeyboardManagerEditorUI.Helpers;
+using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -37,10 +38,12 @@ namespace KeyboardManagerEditorUI
 
         private void SetTitleBar()
         {
+            SetTitleBar(titleBar);
             ExtendsContentIntoTitleBar = true;
-            this.SetIcon(@"Assets\KeyboardManagerEditor\Keyboard.ico");
-            this.SetTitleBar(titleBar);
-            Title = "Keyboard Manager";
+            AppWindow.SetIcon("Assets/KeyboardManagerEditor/KeyboardManager.ico");
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
+            var loader = ResourceLoaderInstance.ResourceLoader;
+            Title = loader.GetString("WindowTitle");
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)

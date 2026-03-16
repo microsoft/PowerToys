@@ -25,9 +25,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TitleBar x:Name="titleBar" Title="Keyboard Manager">
+        <TitleBar x:Name="titleBar" x:Uid="KeyboardManagerTitle">
             <TitleBar.IconSource>
-                <ImageIconSource ImageSource="/Assets/KeyboardManagerEditor/FluentIconsKeyboardManager.png" />
+                <ImageIconSource ImageSource="/Assets/KeyboardManagerEditor/KeyboardManager.ico" />
             </TitleBar.IconSource>
         </TitleBar>
 
