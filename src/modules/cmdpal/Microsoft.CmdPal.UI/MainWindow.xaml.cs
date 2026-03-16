@@ -143,7 +143,7 @@ public sealed partial class MainWindow : WindowEx,
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
-        RestoreWindowPosition();
+        RestoreWindowPositionFromSavedSettings();
         UpdateWindowPositionInMemory();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
@@ -273,10 +273,9 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private void RestoreWindowPosition()
+    private void RestoreWindowPosition(WindowPosition? savedPosition)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>();
-        if (settings?.LastWindowPosition is not { Width: > 0, Height: > 0 } savedPosition)
+        if (savedPosition?.IsSizeValid != true)
         {
             // don't try to restore if the saved position is invalid, just recenter
             PositionCentered();
@@ -289,6 +288,17 @@ public sealed partial class MainWindow : WindowEx,
             savedPosition.Dpi);
 
         MoveAndResizeDpiAware(newRect);
+    }
+
+    private void RestoreWindowPositionFromSavedSettings()
+    {
+        var settings = App.Current.Services.GetService<SettingsModel>();
+        RestoreWindowPosition(settings?.LastWindowPosition);
+    }
+
+    private void RestoreWindowPositionFromMemory()
+    {
+        RestoreWindowPosition(_currentWindowPosition);
     }
 
     /// <summary>
@@ -714,7 +724,7 @@ public sealed partial class MainWindow : WindowEx,
         // Reset the size in case users have resized a dock window.
         // Ideally in the future, we'll have defined sizes that opening
         // a dock window will adhere to, but alas, that's the future.
-        RestoreWindowPosition();
+        RestoreWindowPositionFromMemory();
 
         ShowHwnd(HWND.Null, message.PosPixels, message.Anchor);
     }
@@ -724,7 +734,6 @@ public sealed partial class MainWindow : WindowEx,
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
-            _isLoadedFromDock = false;
             EndSession("Hide");
             HideWindow();
         });
@@ -888,15 +897,17 @@ public sealed partial class MainWindow : WindowEx,
     {
         var serviceProvider = App.Current.Services;
 
-        UpdateWindowPositionInMemory();
+        if (!_isLoadedFromDock)
+        {
+            UpdateWindowPositionInMemory();
+        }
 
         var settings = serviceProvider.GetService<SettingsModel>();
         if (settings is not null)
         {
-            // a quick sanity check, so we don't overwrite correct values
-            // and don't save size changes from dock
-            if (_currentWindowPosition.IsSizeValid &&
-                !_isLoadedFromDock)
+            // If we were last shown from the dock, _currentWindowPosition still holds
+            // the last non-dock placement because dock sessions intentionally skip updates.
+            if (_currentWindowPosition.IsSizeValid)
             {
                 settings.LastWindowPosition = _currentWindowPosition;
                 SettingsModel.SaveSettings(settings);
