@@ -113,7 +113,7 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 ### Command Palette
 
 - Added Dock — a persistent launcher bar at the edge of your screen for instant access to pinned commands and apps.
-- Dramatically faster search and launch times thanks to improved fuzzy matching and related performance optimizations. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Faster search and responsiveness thanks to improved fuzzy matching and related performance optimizations. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 - New Performance Monitor extension ports DevHome perf widgets into CmdPal, single-row list items, transparent window, and searchable filter dropdown
 
 ### Keyboard Manager
@@ -162,156 +162,97 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 
 - Added a "Toggle always on top" entry to the window system menu (title bar right-click) for easy access without hotkeys in [#45773](https://github.com/microsoft/PowerToys/pull/45773)
 - Added transparency adjustment support for pinned windows using modifier keys + plus/minus shortcuts in [#44815](https://github.com/microsoft/PowerToys/pull/44815). Thanks [@Copilot](https://github.com/Copilot)!
-- Fixed settings changes not taking effect immediately due to a concurrency bug in [#45994](https://github.com/microsoft/PowerToys/pull/45994)
+- Fixed an issue where Always on Top settings changes were not applied immediately in [#45994](https://github.com/microsoft/PowerToys/pull/45994)
 - Fixed duplicate command entries in the window system menu in [#45845](https://github.com/microsoft/PowerToys/pull/45845)
 
 ## Awake
 
-- Improved developer experience and code quality for the Awake utility in [#44795](https://github.com/microsoft/PowerToys/pull/44795). Thanks [@dend](https://github.com/dend)!
+- Improved code quality and developer documentation for Awake in [#44795](https://github.com/microsoft/PowerToys/pull/44795). Thanks [@dend](https://github.com/dend)!
 
 ## Color Picker
 
-- Added optional integer-rounding formatter for CIELab color components with updated help in Settings UI in [#42986](https://github.com/microsoft/PowerToys/pull/42986). Thanks [@ruthiesun](https://github.com/ruthiesun)!
+- Added an optional integer-rounding formatter for CIELab color components, with updated help in Settings in [#42986](https://github.com/microsoft/PowerToys/pull/42986). Thanks [@ruthiesun](https://github.com/ruthiesun)!
 
 ## Command Palette
 
 ### Dock (New Feature)
-- Added Dock feature to Command Palette, providing a persistent application launcher bar in [#45824](https://github.com/microsoft/PowerToys/pull/45824)
-- Added Dock API for extension integration in [#45432](https://github.com/microsoft/PowerToys/pull/45432)
-- Fixed Dock visual bugs and polish in [#45871](https://github.com/microsoft/PowerToys/pull/45871).
-- Visual tweaks and nits for Dock in [#45873](https://github.com/microsoft/PowerToys/pull/45873) and [#45954](https://github.com/microsoft/PowerToys/pull/45954). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed Dock dealing with multiple app bars on the same side in [#45831](https://github.com/microsoft/PowerToys/pull/45831)
-- Adjusted Dock padding for Fitts's law compliance in [#45834](https://github.com/microsoft/PowerToys/pull/45834)
-- Fixed tab focus order for Dock items in [#45837](https://github.com/microsoft/PowerToys/pull/45837)
-- Replaced IsShownInSwitchers with HiddenOwnerWindowBehavior in DockWindow in [#45839](https://github.com/microsoft/PowerToys/pull/45839). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added locking to TopLevelCommandManager.DockBands for thread safety in [#45898](https://github.com/microsoft/PowerToys/pull/45898). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Handled empty icons in Dock items in [#45968](https://github.com/microsoft/PowerToys/pull/45968). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added Dock, a persistent command and application launcher in [#45824](https://github.com/microsoft/PowerToys/pull/45824)
+- Added Dock APIs, allowing extensions to integrate with the launcher in [#45432](https://github.com/microsoft/PowerToys/pull/45432)
+- Fixed several visual and behavior issues in the pre-release Dock including handling multiple app bars, keyboard focus order, and missing icons in [#45871](https://github.com/microsoft/PowerToys/pull/45871), [#45873](https://github.com/microsoft/PowerToys/pull/45873), [#45954](https://github.com/microsoft/PowerToys/pull/45954), [#45837](https://github.com/microsoft/PowerToys/pull/45837), [#45839](https://github.com/microsoft/PowerToys/pull/45839), [#45898](https://github.com/microsoft/PowerToys/pull/45898) and [#45968](https://github.com/microsoft/PowerToys/pull/45968). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added instructions for pinning items to Dock in [#46052](https://github.com/microsoft/PowerToys/pull/46052).
 - Added pin instructions for Dock in [#46052](https://github.com/microsoft/PowerToys/pull/46052)
 
 ### Performance & Reliability
-- Enabled lightning-fast mode for faster Command Palette launch in [#45764](https://github.com/microsoft/PowerToys/pull/45764). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added precomputed fuzzy string matching for significantly faster search in [#44090](https://github.com/microsoft/PowerToys/pull/44090). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Improved fuzzy matcher Unicode and emoji robustness in [#45275](https://github.com/microsoft/PowerToys/pull/45275). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Upgraded FuzzyStringMatcher in the Extensions SDK in [#44809](https://github.com/microsoft/PowerToys/pull/44809). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Replaced custom fuzzy matching in Window Walker with the shared matcher in [#44807](https://github.com/microsoft/PowerToys/pull/44807). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added adaptive parallel fallback processing and consistent updates in [#42273](https://github.com/microsoft/PowerToys/pull/42273). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Improved loading of application icons (UWP and jumbo icons) in [#44938](https://github.com/microsoft/PowerToys/pull/44938) and [#44973](https://github.com/microsoft/PowerToys/pull/44973). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added icon caching for faster repeated icon loading in [#44538](https://github.com/microsoft/PowerToys/pull/44538). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Icon loading improvements and fixes in [#45460](https://github.com/microsoft/PowerToys/pull/45460). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Batched ViewModel property change notifications for better responsiveness in [#44545](https://github.com/microsoft/PowerToys/pull/44545). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Debounced SelectedItem updates in CommandBarViewModel in [#45782](https://github.com/microsoft/PowerToys/pull/45782). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Resilient loading of extensions to prevent one bad extension from blocking others in [#45720](https://github.com/microsoft/PowerToys/pull/45720). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Removed deadlock potential from AppListItem in [#45076](https://github.com/microsoft/PowerToys/pull/45076). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed indexer with improved search cancellation and thread-safety in [#44729](https://github.com/microsoft/PowerToys/pull/44729). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Ensured IconBox uses an initialized scale in [#45980](https://github.com/microsoft/PowerToys/pull/45980). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Dramatically improved Command Palette search and launch performance in [#45764](https://github.com/microsoft/PowerToys/pull/45764) and [#44090](https://github.com/microsoft/PowerToys/pull/44090). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Improved fuzzy matching accuracy and robustness, including better Unicode and emoji handling in [#45275](https://github.com/microsoft/PowerToys/pull/45275), [#44809](https://github.com/microsoft/PowerToys/pull/44809) and [#44807](https://github.com/microsoft/PowerToys/pull/44807). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Improved icon loading performance, and fixed icon loading issues in [#44938](https://github.com/microsoft/PowerToys/pull/44938), [#44973](https://github.com/microsoft/PowerToys/pull/44973), [#44538](https://github.com/microsoft/PowerToys/pull/44538), [#45460](https://github.com/microsoft/PowerToys/pull/45460) and [#45980](https://github.com/microsoft/PowerToys/pull/45980). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Improved UI responsiveness during search and result updates in [#44545](https://github.com/microsoft/PowerToys/pull/44545) and [#45782](https://github.com/microsoft/PowerToys/pull/45782). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Improved extension loading reliability so one faulty extension no longer blocks others in [#45720](https://github.com/microsoft/PowerToys/pull/45720). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Fixed several threading and stability issues in [#42273](https://github.com/microsoft/PowerToys/pull/42273), [#45076](https://github.com/microsoft/PowerToys/pull/45076) and [#44729](https://github.com/microsoft/PowerToys/pull/44729). Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ### UI & UX
-- Switched to single-row list items for a cleaner compact view in [#45763](https://github.com/microsoft/PowerToys/pull/45763). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added transparent window support in [#45159](https://github.com/microsoft/PowerToys/pull/45159). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Replaced FiltersDropDown ComboBox with a searchable dropdown in [#45747](https://github.com/microsoft/PowerToys/pull/45747). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added list item context menu for quick actions on results in [#45086](https://github.com/microsoft/PowerToys/pull/45086). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added context commands for pinning nested commands in [#45673](https://github.com/microsoft/PowerToys/pull/45673)
-- Load pinned command items from anywhere in the command tree in [#45566](https://github.com/microsoft/PowerToys/pull/45566)
-- Added "Keep previous query" setting to preserve search text across invocations in [#45742](https://github.com/microsoft/PowerToys/pull/45742). Thanks [@Copilot](https://github.com/Copilot)!
-- Added ability to refresh list page while preserving selection in [#45882](https://github.com/microsoft/PowerToys/pull/45882). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Renamed "Results" section on Home page to "Commands" in [#45870](https://github.com/microsoft/PowerToys/pull/45870). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Replaced MainListPage icon with unplated CmdPal icon in [#45958](https://github.com/microsoft/PowerToys/pull/45958). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added new colorful icons for Bookmarks and Performance Monitor in [#45979](https://github.com/microsoft/PowerToys/pull/45979). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added button to toggle visibility of the dev ribbon in [#45379](https://github.com/microsoft/PowerToys/pull/45379). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Reset scroll position in DetailsView upon new selection in [#46038](https://github.com/microsoft/PowerToys/pull/46038)
-- Fixed selection desync when clearing search query in [#45949](https://github.com/microsoft/PowerToys/pull/45949). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed details pane not hiding when item initialization fails in [#44757](https://github.com/microsoft/PowerToys/pull/44757)
-- Fixed window centering when moving to a display with different DPI in [#45057](https://github.com/microsoft/PowerToys/pull/45057). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Prevented main window from stealing focus in [#45309](https://github.com/microsoft/PowerToys/pull/45309). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed window restore when the window is not WS_EX_TOOLWINDOW in [#45877](https://github.com/microsoft/PowerToys/pull/45877). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Improved main window positioning behavior in [#45585](https://github.com/microsoft/PowerToys/pull/45585). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed null check before caching view model for item in [#45815](https://github.com/microsoft/PowerToys/pull/45815). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Switched to single-row result items for a cleaner, more compact layout in [#45763](https://github.com/microsoft/PowerToys/pull/45763). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added support for translucent Command Palette windows in [#45159](https://github.com/microsoft/PowerToys/pull/45159). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Replaced the filter dropdown with a searchable version in [#45747](https://github.com/microsoft/PowerToys/pull/45747). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added a context menu for quick actions on search results in [#45086](https://github.com/microsoft/PowerToys/pull/45086). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Added a "Keep previous query" setting to preserve search text between invocations in [#45742](https://github.com/microsoft/PowerToys/pull/45742).
+- Added the ability to retain the selected item when refreshing results in [#45882](https://github.com/microsoft/PowerToys/pull/45882). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Fixed several UI bugs affecting selection, focus, and scrolling in [#46038](https://github.com/microsoft/PowerToys/pull/46038), [#45949](https://github.com/microsoft/PowerToys/pull/45949) (Thanks [@jiripolasek](https://github.com/jiripolasek)!), [#44757](https://github.com/microsoft/PowerToys/pull/44757), [#45309](https://github.com/microsoft/PowerToys/pull/45309) (Thanks [@jiripolasek](https://github.com/jiripolasek)!) and [#45815](https://github.com/microsoft/PowerToys/pull/45815) (Thanks [@jiripolasek](https://github.com/jiripolasek)!).
+- Added the ability to pin and manage commands from anywhere in the command tree [#45673](https://github.com/microsoft/PowerToys/pull/45673) and [#45566](https://github.com/microsoft/PowerToys/pull/45566).
+- Improved window positioning and multi-display behavior in [#45057](https://github.com/microsoft/PowerToys/pull/45057), [#45877](https://github.com/microsoft/PowerToys/pull/45877) and [#45585](https://github.com/microsoft/PowerToys/pull/45585). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Improved icons, Home page headings, and added developer UI toggle in [#45870](https://github.com/microsoft/PowerToys/pull/45870), [#45958](https://github.com/microsoft/PowerToys/pull/45958), [#45979](https://github.com/microsoft/PowerToys/pull/45979), and [#45379](https://github.com/microsoft/PowerToys/pull/45379). Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ### Extensions & SDK
-- Ported DevHome performance widgets to CmdPal as a new Performance Monitor extension in [#45217](https://github.com/microsoft/PowerToys/pull/45217)
-- Added settings to hide non-apps from search results in [#45741](https://github.com/microsoft/PowerToys/pull/45741). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed Calculator extension for reliable results in [#44594](https://github.com/microsoft/PowerToys/pull/44594). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed All Apps search result limit default in [#45804](https://github.com/microsoft/PowerToys/pull/45804). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed apps extension ignoring fallback results limit setting in [#45716](https://github.com/microsoft/PowerToys/pull/45716). Thanks [@Copilot](https://github.com/Copilot)!
-- Fixed RDP extension rejecting host:port connections in [#45740](https://github.com/microsoft/PowerToys/pull/45740). Thanks [@Copilot](https://github.com/Copilot)!
-- Made RDP fallback non-global by default in [#46053](https://github.com/microsoft/PowerToys/pull/46053). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed starting new web URI for default browser that doesn't support exe arguments in [#45614](https://github.com/microsoft/PowerToys/pull/45614). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added Mouse Without Borders easy mouse support to the CmdPal PowerToys extension in [#45350](https://github.com/microsoft/PowerToys/pull/45350)
-- Fixed Window Walker race condition in UWP app enumeration in [#45601](https://github.com/microsoft/PowerToys/pull/45601). Thanks [@daverayment](https://github.com/daverayment)!
-- Cached and displayed information for disabled command providers in [#44278](https://github.com/microsoft/PowerToys/pull/44278). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added error when New extension path does not exist in [#46037](https://github.com/microsoft/PowerToys/pull/46037)
-- Updated extension template project to 0.9 in [#46010](https://github.com/microsoft/PowerToys/pull/46010)
-- Localized clipboard history metadata strings in [#45506](https://github.com/microsoft/PowerToys/pull/45506). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Localized "More" button on command bar and hotkeys in [#45505](https://github.com/microsoft/PowerToys/pull/45505). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added AutomationProperties.Name to Extensions page "More" button in [#45516](https://github.com/microsoft/PowerToys/pull/45516)
-- Localized additional UI strings in Registry and Services commands in [#45508](https://github.com/microsoft/PowerToys/pull/45508). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Localized missing resources related to ShortcutControl in [#45589](https://github.com/microsoft/PowerToys/pull/45589). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed alias UI clearing when toggling Direct/Indirect combobox in [#45381](https://github.com/microsoft/PowerToys/pull/45381). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed context menu command items in [#45499](https://github.com/microsoft/PowerToys/pull/45499)
+- Added a new Performance Monitor extension that brings DevHome performance widgets into Command Palette in [#45217](https://github.com/microsoft/PowerToys/pull/45217).
+- Added an option to hide non-application results from search in [#45741](https://github.com/microsoft/PowerToys/pull/45741). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Improved the reliability of several extensions including Calculator, All Apps, and RDP in [#44594](https://github.com/microsoft/PowerToys/pull/44594), [#45804](https://github.com/microsoft/PowerToys/pull/45804), [#45716](https://github.com/microsoft/PowerToys/pull/45716), and [#45740](https://github.com/microsoft/PowerToys/pull/45740). Thanks [@jiripolasek](https://github.com/jiripolasek) and [@michaeljolley](https://github.com/michaeljolley)!
+- Added Mouse Without Borders easy mouse support to the PowerToys extension in [#45350](https://github.com/microsoft/PowerToys/pull/45350).
+- Fixed Window Walker issues when enumerating UWP apps in [#45601](https://github.com/microsoft/PowerToys/pull/45601). Thanks [@daverayment](https://github.com/daverayment)!
+- Improved localization and accessibility across extensions in [#45505](https://github.com/microsoft/PowerToys/pull/45505), [#45506](https://github.com/microsoft/PowerToys/pull/45506), [#45508](https://github.com/microsoft/PowerToys/pull/45508), and [#45589](https://github.com/microsoft/PowerToys/pull/45589). Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ### Infrastructure & Code Quality
-- Introduced global error handling foundation with error report builder and PII sanitizer in [#44140](https://github.com/microsoft/PowerToys/pull/44140). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added ApplicationInfoService and fixed version reporting in error report builder in [#45374](https://github.com/microsoft/PowerToys/pull/45374). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Calmed down sanitizer output and adjusted unit tests in [#45613](https://github.com/microsoft/PowerToys/pull/45613). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Used a factory for building context menu VMs in [#45572](https://github.com/microsoft/PowerToys/pull/45572)
-- Removed dead code from Window Walker and cleanup in [#45570](https://github.com/microsoft/PowerToys/pull/45570). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Removed Core projects in [#45693](https://github.com/microsoft/PowerToys/pull/45693).
-- Added IDs to all PowerToys commands in [#45840](https://github.com/microsoft/PowerToys/pull/45840)
-- Prevented unsynchronized access to "More commands" in [#46020](https://github.com/microsoft/PowerToys/pull/46020). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Fixed search box visibility before bailing out in [#46021](https://github.com/microsoft/PowerToys/pull/46021). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Prevented item template selectors from modifying containers in [#45498](https://github.com/microsoft/PowerToys/pull/45498). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Safely iterated package metadata tags to prevent exceptions in [#45502](https://github.com/microsoft/PowerToys/pull/45502). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Moved TextToSuggest property update back to UI thread in [#45878](https://github.com/microsoft/PowerToys/pull/45878). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Suppressed CsWinRT1028 warnings on source-generated interop types in [#45827](https://github.com/microsoft/PowerToys/pull/45827) and [#45324](https://github.com/microsoft/PowerToys/pull/45324). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Expanded Binding markup extensions to nested elements to avoid WMC1510 in [#45830](https://github.com/microsoft/PowerToys/pull/45830). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Removed OneWay binding mode from bands ItemsRepeater in [#45833](https://github.com/microsoft/PowerToys/pull/45833). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Removed invalid return statement from SDK spec example in [#44781](https://github.com/microsoft/PowerToys/pull/44781). Thanks [@RubenFricke](https://github.com/RubenFricke)!
-- Minor string tweaks in [#46040](https://github.com/microsoft/PowerToys/pull/46040). Thanks [@Copilot](https://github.com/Copilot)!
-- Run shutdown and restart commands in a hidden window in [#45062](https://github.com/microsoft/PowerToys/pull/45062). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Configured .editorconfig to format MSBuild files in [#45739](https://github.com/microsoft/PowerToys/pull/45739). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added PerformanceMonitor to solution filter in [#45738](https://github.com/microsoft/PowerToys/pull/45738). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added solution filter for PowerToys extension projects in [#45096](https://github.com/microsoft/PowerToys/pull/45096). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Added trailing backslash to OutDir in Terminal UI project file in [#45250](https://github.com/microsoft/PowerToys/pull/45250). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Upgraded MarkdownTextBlock to newer version in [#44793](https://github.com/microsoft/PowerToys/pull/44793)
-- Used latest MSIX for extension installation in [#44886](https://github.com/microsoft/PowerToys/pull/44886)
-- Updated README to note PowerToys extension requires Windows 11 in [#44863](https://github.com/microsoft/PowerToys/pull/44863)
-- Added extension development documentation links in [#45632](https://github.com/microsoft/PowerToys/pull/45632)
-- Added PowerToys extension development dev guide in [#45967](https://github.com/microsoft/PowerToys/pull/45967)
-- Refactored PerformanceMonitor GPU stats to use batch counter reads in [#45835](https://github.com/microsoft/PowerToys/pull/45835). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Introduced a global error-handling foundation for Command Palette, including an error report builder and PII sanitizer, with improvements to version reporting and sanitizer behavior in [#44140](https://github.com/microsoft/PowerToys/pull/44140), [#45374](https://github.com/microsoft/PowerToys/pull/45374), and [#45613](https://github.com/microsoft/PowerToys/pull/45613). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Improved stability and thread safety across several components, fixing potential race conditions and UI threading issues in [#46020](https://github.com/microsoft/PowerToys/pull/46020), [#46021](https://github.com/microsoft/PowerToys/pull/46021), [#45498](https://github.com/microsoft/PowerToys/pull/45498), [#45502](https://github.com/microsoft/PowerToys/pull/45502), and [#45878](https://github.com/microsoft/PowerToys/pull/45878). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Refactored internal architecture and removed obsolete code to simplify the Command Palette codebase, including factory usage improvements, Window Walker cleanup, and Core project removal in [#45572](https://github.com/microsoft/PowerToys/pull/45572), [#45570](https://github.com/microsoft/PowerToys/pull/45570), and [#45693](https://github.com/microsoft/PowerToys/pull/45693). Thanks [@jiripolasek](https://github.com/jiripolasek) and [@michaeljolley](https://github.com/michaeljolley)!
+- Added unique IDs to all PowerToys commands to allow them to be pinned to Home in [#45840](https://github.com/microsoft/PowerToys/pull/45840).
+- Improved build reliability and tooling by addressing CsWinRT warnings, WinUI binding issues, and markup extension limitations in [#45827](https://github.com/microsoft/PowerToys/pull/45827), [#45324](https://github.com/microsoft/PowerToys/pull/45324), [#45830](https://github.com/microsoft/PowerToys/pull/45830), and [#45833](https://github.com/microsoft/PowerToys/pull/45833). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Improved development workflow and repository configuration, including formatting rules, solution filters, and build configuration fixes in [#45739](https://github.com/microsoft/PowerToys/pull/45739), [#45738](https://github.com/microsoft/PowerToys/pull/45738), [#45096](https://github.com/microsoft/PowerToys/pull/45096), and [#45250](https://github.com/microsoft/PowerToys/pull/45250). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Improved extension infrastructure and documentation, including updated installation tooling and new development guides in [#44886](https://github.com/microsoft/PowerToys/pull/44886), [#44863](https://github.com/microsoft/PowerToys/pull/44863), [#45632](https://github.com/microsoft/PowerToys/pull/45632), and [#45967](https://github.com/microsoft/PowerToys/pull/45967).
+- Improved system command handling by running shutdown and restart actions in a hidden window in [#45062](https://github.com/microsoft/PowerToys/pull/45062). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Optimized Performance Monitor GPU statistics collection using batched counter reads in [#45835](https://github.com/microsoft/PowerToys/pull/45835). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Updated dependencies and project improvements including MarkdownTextBlock upgrades, SDK spec corrections, and string updates in [#44793](https://github.com/microsoft/PowerToys/pull/44793), [#44781](https://github.com/microsoft/PowerToys/pull/44781) (Thanks [@RubenFricke](https://github.com/RubenFricke)!), and [#46040](https://github.com/microsoft/PowerToys/pull/46040). 
 
 ## Cursor Wrap
 
-- Completely rewritten cursor wrapping engine with enhanced multi-monitor support, display change notifications, GPO policy support, and configurable wrap mode (horizontal, vertical, or both) in [#44936](https://github.com/microsoft/PowerToys/pull/44936). Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+- Added an enhanced cursor wrapping engine which includes enhanced multi-monitor support, display change handling, configurable wrap modes (horizontal, vertical, or both), and enterprise policy support in [#44936](https://github.com/microsoft/PowerToys/pull/44936). Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
 - Added option to disable CursorWrap when only a single monitor is connected in [#45303](https://github.com/microsoft/PowerToys/pull/45303). Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
-- Updated edge wrap model, added cursor logging, and settings support to module loader in [#45915](https://github.com/microsoft/PowerToys/pull/45915). Thanks [@Copilot](https://github.com/Copilot) and [@mikehall-ms](https://github.com/mikehall-ms)!
-- Reversed the "Holding Ctrl/Shift" activation behavior so wrapping occurs only while the modifier key is held, matching user expectations in [#46009](https://github.com/microsoft/PowerToys/pull/46009)
+- Improved wrapping behavior and diagnostics with updated edge-wrapping model, cursor logging, and module loader settings support in [#45915](https://github.com/microsoft/PowerToys/pull/45915). Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+- Updated modifier-key activation so wrapping only occurs while Ctrl/Shift is held, matching similar behavior in Mouse Without Borders in [#46009](https://github.com/microsoft/PowerToys/pull/46009).
 
 ## File Explorer
 
-- Restricted URI scheme navigation in MarkdownPreviewHandler to http/https only to prevent unsafe navigation in [#45801](https://github.com/microsoft/PowerToys/pull/45801)
+- Updated the Markdown previewer to prevent unsafe navigation in [#45801](https://github.com/microsoft/PowerToys/pull/45801)
 
 ## Image Resizer
 
-- Temporarily disabled AI Super Resolution feature in [#44768](https://github.com/microsoft/PowerToys/pull/44768)
-- Refactored codebase to disable AI feature and cache functionality in [#44759](https://github.com/microsoft/PowerToys/pull/44759)
+- Temporarily disabled AI Super Resolution feature and refactored caching in [#44768](https://github.com/microsoft/PowerToys/pull/44768) and [#44759](https://github.com/microsoft/PowerToys/pull/44759).
 
 ## Keyboard Manager
 
-- Added a toggle hotkey (Win+Shift+K) to enable/disable Keyboard Manager on the fly in [#42472](https://github.com/microsoft/PowerToys/pull/42472). Thanks [@Copilot](https://github.com/Copilot) and [@weikequ](https://github.com/weikequ)!
-- Updated Keyboard Manager to a modern WinUI3 interface with toggle support in [#45649](https://github.com/microsoft/PowerToys/pull/45649). Thanks [@chenmy77](https://github.com/chenmy77) and [@Jay-o-Way](https://github.com/Jay-o-Way)!
-- Added Keyboard Manager to the shortcut list on the Dashboard page in [#45938](https://github.com/microsoft/PowerToys/pull/45938)
-- Updated replace text functionality in [#46046](https://github.com/microsoft/PowerToys/pull/46046)
+- Added a hotkey (Win + Shift + K) to enable or disable Keyboard Manager on the fly in [#42472](https://github.com/microsoft/PowerToys/pull/42472). Thanks [@weikequ](https://github.com/weikequ)!
+- Updated Keyboard Manager to a modern WinUI3 interface with the ability to enable or disable individual mappings in [#45649](https://github.com/microsoft/PowerToys/pull/45649). Thanks [@chenmy77](https://github.com/chenmy77) and [@Jay-o-Way](https://github.com/Jay-o-Way)!
+- Fixed new Keyboard Manager entry not being shown in the Settings shortcut list in [#45938](https://github.com/microsoft/PowerToys/pull/45938).
+- Improved performance when performing multiple text replacements quickly in [#46046](https://github.com/microsoft/PowerToys/pull/46046).
 
 ## Light Switch
 
-- Fixed Light Switch being toggleable from the Dashboard and Quick Access even when GPO policies were active in [#45756](https://github.com/microsoft/PowerToys/pull/45756)
-- Added 10-second timeout and pre-check for location detection to prevent hanging in [#45887](https://github.com/microsoft/PowerToys/pull/45887). Thanks [@Copilot](https://github.com/Copilot)!
-- Changed rules around max/min values for the sunrise/sunset offset field in [#45125](https://github.com/microsoft/PowerToys/pull/45125)
-- Fixed Light Switch startup logic in [#45304](https://github.com/microsoft/PowerToys/pull/45304)
+- Fixed an issue where Light Switch could be manually enabled or disabled even when Group Policy restrictions were active in [#45756](https://github.com/microsoft/PowerToys/pull/45756).
+- Improved the reliability of location detection by adding a timeout and validation checks in [#45887](https://github.com/microsoft/PowerToys/pull/45887).
+- Updated sunrise/sunset offset validation rules to make the feature more robust in [#45125](https://github.com/microsoft/PowerToys/pull/45125)
+- Fixed incorrect theme being loaded at startup in [#45304](https://github.com/microsoft/PowerToys/pull/45304).
 
 ## Mouse Utilities
 
-- Removed new-info badge for Cursor Wrap now that it's no longer a new feature in [#45803](https://github.com/microsoft/PowerToys/pull/45803)
 
 ## New+
 
@@ -321,7 +262,7 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 
 ## Peek
 
-- Fixed Space key triggering Peek during file rename or search operations in File Explorer in [#44995](https://github.com/microsoft/PowerToys/pull/44995)
+- Fixed file rename or search operations in Explorer incorrectly triggering Peek in [#44995](https://github.com/microsoft/PowerToys/pull/44995)
 
 ## PowerRename
 
@@ -329,62 +270,44 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 
 ## PowerToys Run
 
-- Replaced Window Walker's brute-force fuzzy matching with an optimal dynamic programming solution for faster search in [#44551](https://github.com/microsoft/PowerToys/pull/44551). Thanks [@daverayment](https://github.com/daverayment)!
+- Improved Window Walker search performance and significantly reduced memory usage when matching repeated/similar strings in [#44551](https://github.com/microsoft/PowerToys/pull/44551). Thanks [@daverayment](https://github.com/daverayment)!
 
 ## Settings
 
-- Implemented singleton pattern for the Shortcut Conflict window to prevent duplicate windows in [#42440](https://github.com/microsoft/PowerToys/pull/42440). Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fixed tray icon to adapt to Windows system theme instead of app theme for better contrast in [#44931](https://github.com/microsoft/PowerToys/pull/44931)
-- Fixed right-click menu display issue in [#44982](https://github.com/microsoft/PowerToys/pull/44982)
-- Fixed OOBE Launch buttons remaining clickable when modules are disabled in [#44736](https://github.com/microsoft/PowerToys/pull/44736)
-- Fixed contrast issue in settings UI in [#45367](https://github.com/microsoft/PowerToys/pull/45367)
-- Fixed crash caused by missing default language option in resources in [#45766](https://github.com/microsoft/PowerToys/pull/45766)
-- Fixed settings process not shutting down properly when closing secondary windows in [#45787](https://github.com/microsoft/PowerToys/pull/45787)
-- Fixed SCOOBE showing unknown symbol instead of bullet in [#45696](https://github.com/microsoft/PowerToys/pull/45696)
-- Removed unused experimentation plumbing and refactored OOBE/SCOOBE into standalone windows in [#44721](https://github.com/microsoft/PowerToys/pull/44721)
-- Added Open Settings button in SCOOBE for quick access in [#45775](https://github.com/microsoft/PowerToys/pull/45775)
-- UX fixes for Settings UI in [#45513](https://github.com/microsoft/PowerToys/pull/45513). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Moved GPO info bar for Clipboard History to correct location in [#45030](https://github.com/microsoft/PowerToys/pull/45030). Thanks [@htcfreek](https://github.com/htcfreek)!
-- Fixed Bug Report button wrongly disabled when Telemetry GPO is off in [#45033](https://github.com/microsoft/PowerToys/pull/45033). Thanks [@htcfreek](https://github.com/htcfreek)!
-- Changed binding modes to OneTime for static Dashboard controls to reduce overhead in [#45765](https://github.com/microsoft/PowerToys/pull/45765)
-- Removed new info badge from system tray in [#45992](https://github.com/microsoft/PowerToys/pull/45992)
-- Added solution filter for Settings UI projects in [#46036](https://github.com/microsoft/PowerToys/pull/46036). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Set MinWidth on Shortcut user control in [#46035](https://github.com/microsoft/PowerToys/pull/46035)
-- Added telemetry for tray icon usage in [#44985](https://github.com/microsoft/PowerToys/pull/44985)
-- Added NEW tag to Keyboard Manager and Dock in [#46048](https://github.com/microsoft/PowerToys/pull/46048)
+- Prevented duplicate Shortcut Conflict windows by introducing a singleton pattern in [#42440](https://github.com/microsoft/PowerToys/pull/42440). Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Fixed multiple UI and usability issues across Settings, including tray icon theme handling, context menus, contrast issues, and incorrect button states in [#44931](https://github.com/microsoft/PowerToys/pull/44931), [#44982](https://github.com/microsoft/PowerToys/pull/44982), [#44736](https://github.com/microsoft/PowerToys/pull/44736), and [#45367](https://github.com/microsoft/PowerToys/pull/45367).
+- Fixed reliability issues including crashes, incorrect symbols, and Settings process shutdown behavior in [#45766](https://github.com/microsoft/PowerToys/pull/45766), [#45787](https://github.com/microsoft/PowerToys/pull/45787), and [#45696](https://github.com/microsoft/PowerToys/pull/45696).
+- Refactored OOBE/SCOOBE flows into standalone windows and removed unused experimentation plumbing in [#44721](https://github.com/microsoft/PowerToys/pull/44721).
+- Added an Open Settings button to SCOOBE for easier access in [#45775](https://github.com/microsoft/PowerToys/pull/45775).
+- Improved Settings UX and policy messaging in [#45513](https://github.com/microsoft/PowerToys/pull/45513), [#45030](https://github.com/microsoft/PowerToys/pull/45030) and [#45033](https://github.com/microsoft/PowerToys/pull/45033). Thanks [@htcfreek](https://github.com/htcfreek)!
+- Reduced overhead by using OneTime bindings for static Dashboard controls in [#45765](https://github.com/microsoft/PowerToys/pull/45765).
+- Updated badges and telemetry handling in the system tray and Dashboard in [#45992](https://github.com/microsoft/PowerToys/pull/45992), [#44985](https://github.com/microsoft/PowerToys/pull/44985), and [#46048](https://github.com/microsoft/PowerToys/pull/46048).
+- Added solution filter support for Settings UI projects and improved layout constraints in [#46036](https://github.com/microsoft/PowerToys/pull/46036) and [#46035](https://github.com/microsoft/PowerToys/pull/46035). Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ## Workspaces
 
-- Fixed an overlay rendering issue for workspace snapshot drawing in [#45183](https://github.com/microsoft/PowerToys/pull/45183)
+- Fixed overlay positioning on multi-monitor setups with mixed DPI settings [#45183](https://github.com/microsoft/PowerToys/pull/45183)
 
 ## ZoomIt
 
 - Added a video trim dialog for editing recordings directly in ZoomIt in [#45334](https://github.com/microsoft/PowerToys/pull/45334). Thanks [@foxmsft](https://github.com/foxmsft) and [@MarioHewardt](https://github.com/MarioHewardt)!
-- Made audio track configurable to depend on system audio or audio input in [#45700](https://github.com/microsoft/PowerToys/pull/45700). Thanks [@foxmsft](https://github.com/foxmsft)!
-- Fixed a bug where after trimming, the video couldn't be saved and new recordings couldn't be started in [#46034](https://github.com/microsoft/PowerToys/pull/46034)
-- Fixed ampersand typing bug and debug assertion failure in [#43679](https://github.com/microsoft/PowerToys/pull/43679). Thanks [@daverayment](https://github.com/daverayment)!
+- Added configurable audio inputs for recordings, fixing silent recording issue in [#45700](https://github.com/microsoft/PowerToys/pull/45700). Thanks [@foxmsft](https://github.com/foxmsft)!
+- Fixed issues affecting recording saving, subsequent recording startup, and virtual microphone cleanup in [#46034](https://github.com/microsoft/PowerToys/pull/46034) and [#45386](https://github.com/microsoft/PowerToys/pull/45386). Thanks [@foxmsft](https://github.com/foxmsft)!
+- Fixed an ampersand typing bug and debug assertion failure in [#43679](https://github.com/microsoft/PowerToys/pull/43679). Thanks [@daverayment](https://github.com/daverayment)!
 - Added datetime suffix to screenshot filenames for easier organization in [#43172](https://github.com/microsoft/PowerToys/pull/43172). Thanks [@daverayment](https://github.com/daverayment)!
-- Added full hotkey list display in ZoomIt settings in [#43073](https://github.com/microsoft/PowerToys/pull/43073)
-- Fixed virtual microphone not closing on recording stop in [#45386](https://github.com/microsoft/PowerToys/pull/45386). Thanks [@foxmsft](https://github.com/foxmsft)!
+- Added the full ZoomIt hotkey list to ZoomIt's settings page in [#43073](https://github.com/microsoft/PowerToys/pull/43073).
 
 ---
 
 ## Development
 
 ### Build & CI
-- Added Visual Studio 2026 support with centralized PlatformToolset v145 in [#44304](https://github.com/microsoft/PowerToys/pull/44304). Thanks [@snickler](https://github.com/snickler)!
-- Added CoreTargetFramework Property to avoid hard-coding .NET TFM in [#41366](https://github.com/microsoft/PowerToys/pull/41366). Thanks [@snickler](https://github.com/snickler)!
-- Upgraded WASDK to 1.8.5 and removed TitleBar workarounds in [#45532](https://github.com/microsoft/PowerToys/pull/45532)
-- Upgraded Microsoft.Windows.CppWinRT to 2.0.250303.1 in [#45420](https://github.com/microsoft/PowerToys/pull/45420). Thanks [@snickler](https://github.com/snickler)!
-- Added WinRT coroutine support and refactored async methods in [#45522](https://github.com/microsoft/PowerToys/pull/45522). Thanks [@Copilot](https://github.com/Copilot)!
-- Standardized project path references to use $(RepoRoot) for consistency in [#44639](https://github.com/microsoft/PowerToys/pull/44639)
-- Fixed release pipeline sign failure due to file not found in [#45971](https://github.com/microsoft/PowerToys/pull/45971)
-- Fixed release pipeline and local build failures in [#45211](https://github.com/microsoft/PowerToys/pull/45211). Thanks [@Copilot](https://github.com/Copilot)!
-- Fixed pipeline build issue with WASDK 2.0 experimental in [#45390](https://github.com/microsoft/PowerToys/pull/45390)
-- Signed new DLL to fix CI in [#45582](https://github.com/microsoft/PowerToys/pull/45582)
-- Fixed MouseUtils folder structure within slnx view in [#45990](https://github.com/microsoft/PowerToys/pull/45990)
-- Updated BuildWithLatestWinAppSdkDaily pipeline in [#45555](https://github.com/microsoft/PowerToys/pull/45555)
-- Removed tests folder before code signing to reduce signing workload in [#44800](https://github.com/microsoft/PowerToys/pull/44800)
+- Added support for Visual Studio 2026 and centralized the PlatformToolset configuration in [#44304](https://github.com/microsoft/PowerToys/pull/44304). Thanks [@snickler](https://github.com/snickler)!
+- Improved build configuration and project consistency, including centralized .NET target framework handling in [#41366](https://github.com/microsoft/PowerToys/pull/41366). Thanks [@snickler](https://github.com/snickler)!
+- Upgraded dependencies including Windows App SDK and the C++ runtime in [#45532](https://github.com/microsoft/PowerToys/pull/45532) and [#45420](https://github.com/microsoft/PowerToys/pull/45420). Thanks [@snickler](https://github.com/snickler)!
+- Improved async infrastructure with WinRT coroutine support in [#45522](https://github.com/microsoft/PowerToys/pull/45522).
+- Fixed several CI and release pipeline issues affecting signing, build failures, and Windows App SDK compatibility in [#45971](https://github.com/microsoft/PowerToys/pull/45971), [#45211](https://github.com/microsoft/PowerToys/pull/45211), [#45390](https://github.com/microsoft/PowerToys/pull/45390), [#44639](https://github.com/microsoft/PowerToys/pull/44639), [#45582](https://github.com/microsoft/PowerToys/pull/45582), and [#44800](https://github.com/microsoft/PowerToys/pull/44800).
+- Improved development environment tooling and solution organization in [#45990](https://github.com/microsoft/PowerToys/pull/45990) and [#45555](https://github.com/microsoft/PowerToys/pull/45555).
 
 ### Documentation
 - Added documentation for writing a new PowerToy module in [#44242](https://github.com/microsoft/PowerToys/pull/44242)
@@ -401,8 +324,7 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 - Fixed UI tests for Light Switch, Hosts, Workspaces, and Mouse in [#44754](https://github.com/microsoft/PowerToys/pull/44754)
 
 ### Localization
-- Moved localization build to windows-latest from deprecated 2019 agent in [#45889](https://github.com/microsoft/PowerToys/pull/45889)
-- Bundled PowerToys extension localization files into installer in [#45194](https://github.com/microsoft/PowerToys/pull/45194)
+- Updated localization build dependencies and bundled extension localization files into installer in [#45889](https://github.com/microsoft/PowerToys/pull/45889) and [#45194](https://github.com/microsoft/PowerToys/pull/45194).
 
 ### UI Framework
 - Created Common.UI.Controls library to consolidate shared WinUI controls in [#45542](https://github.com/microsoft/PowerToys/pull/45542). Thanks [@jiripolasek](https://github.com/jiripolasek)!
@@ -414,11 +336,8 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 - Fixed Image Resizer not working after upgrade on Windows 10 in [#45184](https://github.com/microsoft/PowerToys/pull/45184)
 
 ### Copilot & Tooling
-- Enhanced release notes generation and GitHub issue tools in [#44762](https://github.com/microsoft/PowerToys/pull/44762)
-- Added fix active PR comments prompt with scoped changes in [#44996](https://github.com/microsoft/PowerToys/pull/44996)
-- Added Claude Code support via symlinks in [#45204](https://github.com/microsoft/PowerToys/pull/45204)
-- Added WinMD cache generator script for API search skill in [#45606](https://github.com/microsoft/PowerToys/pull/45606). Thanks [@Copilot](https://github.com/Copilot)!
-- Updated setup-dev-environment.ps1 to capture prereleases from vswhere in [#45813](https://github.com/microsoft/PowerToys/pull/45813). Thanks [@SeanKilleen](https://github.com/SeanKilleen)!
+- Improved internal tooling for release note generation, PR comment workflows, and developer utilities in [#44762](https://github.com/microsoft/PowerToys/pull/44762), [#44996](https://github.com/microsoft/PowerToys/pull/44996), [#45204](https://github.com/microsoft/PowerToys/pull/45204), and [#45606](https://github.com/microsoft/PowerToys/pull/45606).
+- Improved development environment setup tooling in [#45813](https://github.com/microsoft/PowerToys/pull/45813). Thanks [@SeanKilleen](https://github.com/SeanKilleen)!
 
 ### GitHub Workflow
 - Updated Assets conflict script to improve error message clarity in [#45551](https://github.com/microsoft/PowerToys/pull/45551)
@@ -431,7 +350,7 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 
 
 ## 🛣️ Roadmap 
-We are planning some nice new features and improvements for the next releases – PowerDisplay, Command Palette improvements and a brand-new Shortcut Guide experience! Stay tuned for [v0.98][github-next-release-work]!
+We are planning some nice new features and improvements for the next releases – a brand new PowerToy called PowerDisplay, even more Command Palette improvements, and a brand-new Shortcut Guide experience! Stay tuned for [v0.99][github-next-release-work]!
 
 ## ❤️ PowerToys Community 
 The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn't be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work. Your contributions and feedback improve PowerToys month after month!
