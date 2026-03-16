@@ -30,6 +30,7 @@ EXPORTS
 	UpgradeCommandNotFoundModuleCA
 	UnsetAdvancedPasteAPIKeyCA
 	SecureInstallFolderAclCA
+	FinalizeInstallFolderAclCA
 	CleanImageResizerRuntimeRegistryCA
 	CleanFileLocksmithRuntimeRegistryCA
 	CleanPowerRenameRuntimeRegistryCA

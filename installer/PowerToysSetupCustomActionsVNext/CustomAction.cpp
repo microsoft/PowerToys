@@ -334,6 +334,93 @@ static HRESULT SetProtectedPathDacl(const std::wstring& path, PACL dacl)
     return result == ERROR_SUCCESS ? S_OK : HRESULT_FROM_WIN32(result);
 }
 
+static HRESULT CreateExplicitOnlyDacl(PACL sourceDacl, PACL* explicitOnlyDacl)
+{
+    if (!sourceDacl || !explicitOnlyDacl)
+    {
+        return E_INVALIDARG;
+    }
+
+    *explicitOnlyDacl = nullptr;
+
+    ACL_REVISION_INFORMATION revisionInformation{};
+    if (!GetAclInformation(sourceDacl, &revisionInformation, sizeof(revisionInformation), AclRevisionInformation))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    ACL_SIZE_INFORMATION sizeInformation{};
+    if (!GetAclInformation(sourceDacl, &sizeInformation, sizeof(sizeInformation), AclSizeInformation))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    DWORD aclSize = sizeof(ACL);
+    DWORD explicitAceCount = 0;
+    for (DWORD aceIndex = 0; aceIndex < sizeInformation.AceCount; ++aceIndex)
+    {
+        LPVOID ace = nullptr;
+        if (!GetAce(sourceDacl, aceIndex, &ace))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        const auto aceHeader = static_cast<PACE_HEADER>(ace);
+        if ((aceHeader->AceFlags & INHERITED_ACE) != 0)
+        {
+            continue;
+        }
+
+        aclSize += aceHeader->AceSize;
+        ++explicitAceCount;
+    }
+
+    if (explicitAceCount == 0)
+    {
+        return HRESULT_FROM_WIN32(ERROR_INVALID_ACL);
+    }
+
+    auto newAcl = static_cast<PACL>(LocalAlloc(LPTR, aclSize));
+    if (!newAcl)
+    {
+        return E_OUTOFMEMORY;
+    }
+
+    if (!InitializeAcl(newAcl, aclSize, revisionInformation.AclRevision))
+    {
+        const auto error = GetLastError();
+        LocalFree(newAcl);
+        return HRESULT_FROM_WIN32(error);
+    }
+
+    for (DWORD aceIndex = 0; aceIndex < sizeInformation.AceCount; ++aceIndex)
+    {
+        LPVOID ace = nullptr;
+        if (!GetAce(sourceDacl, aceIndex, &ace))
+        {
+            const auto error = GetLastError();
+            LocalFree(newAcl);
+            return HRESULT_FROM_WIN32(error);
+        }
+
+        const auto aceHeader = static_cast<PACE_HEADER>(ace);
+        if ((aceHeader->AceFlags & INHERITED_ACE) != 0)
+        {
+            continue;
+        }
+
+        if (!AddAce(newAcl, revisionInformation.AclRevision, MAXDWORD, ace, aceHeader->AceSize))
+        {
+            const auto error = GetLastError();
+            LocalFree(newAcl);
+            return HRESULT_FROM_WIN32(error);
+        }
+    }
+
+    *explicitOnlyDacl = newAcl;
+    return S_OK;
+}
+
 static HRESULT CreateAclTemplateFile(const std::filesystem::path& path)
 {
     HANDLE fileHandle = CreateFileW(
@@ -352,6 +439,84 @@ static HRESULT CreateAclTemplateFile(const std::filesystem::path& path)
 
     CloseHandle(fileHandle);
     return S_OK;
+}
+
+static HRESULT ReAclExistingInstallTree(
+    const std::filesystem::path& installFolder,
+    const std::filesystem::path& templateFolder,
+    PACL directoryDacl,
+    PACL fileDacl);
+
+static HRESULT ApplyRootDaclAndReAclTree(
+    const std::filesystem::path& installFolderPath,
+    PACL rootDacl,
+    const wchar_t* rootStageLogMessage,
+    const wchar_t* subtreeStageLogMessage)
+{
+    HRESULT hr = S_OK;
+    std::filesystem::path templateFolderPath;
+    std::filesystem::path templateFilePath;
+    PSECURITY_DESCRIPTOR templateDirectorySecurityDescriptor = nullptr;
+    PACL templateDirectoryDacl = nullptr;
+    PSECURITY_DESCRIPTOR templateFileSecurityDescriptor = nullptr;
+    PACL templateFileDacl = nullptr;
+
+    hr = SetProtectedPathDacl(installFolderPath.native(), rootDacl);
+    ExitOnFailure(hr, "Failed to apply protected DACL to install folder.");
+    LogPathAclState(rootStageLogMessage, installFolderPath.native());
+
+    {
+        const auto protectedState = IsPathDaclProtected(installFolderPath.native());
+        if (protectedState.has_value() && !*protectedState)
+        {
+            WcaLog(LOGMSG_STANDARD, "%ls path=%ls daclProtected=false", rootStageLogMessage, installFolderPath.native().c_str());
+        }
+    }
+
+    templateFolderPath = installFolderPath / L".powertoys_acl_template";
+    {
+        std::error_code errorCode;
+        std::filesystem::remove_all(templateFolderPath, errorCode);
+        errorCode.clear();
+        std::filesystem::create_directory(templateFolderPath, errorCode);
+        if (errorCode)
+        {
+            hr = HRESULT_FROM_WIN32(errorCode.value());
+            ExitOnFailure(hr, "Failed to create ACL template folder.");
+        }
+    }
+
+    templateFilePath = templateFolderPath / L"template.bin";
+    hr = CreateAclTemplateFile(templateFilePath);
+    ExitOnFailure(hr, "Failed to create ACL template file.");
+
+    hr = GetPathDacl(templateFolderPath.native(), &templateDirectoryDacl, &templateDirectorySecurityDescriptor);
+    ExitOnFailure(hr, "Failed to read ACL template directory DACL.");
+
+    hr = GetPathDacl(templateFilePath.native(), &templateFileDacl, &templateFileSecurityDescriptor);
+    ExitOnFailure(hr, "Failed to read ACL template file DACL.");
+
+    hr = ReAclExistingInstallTree(installFolderPath, templateFolderPath, templateDirectoryDacl, templateFileDacl);
+    ExitOnFailure(hr, "Failed to harden install folder contents.");
+    LogPathAclState(subtreeStageLogMessage, installFolderPath.native());
+
+LExit:
+    if (!templateFolderPath.empty())
+    {
+        std::error_code errorCode;
+        std::filesystem::remove_all(templateFolderPath, errorCode);
+    }
+
+    if (templateDirectorySecurityDescriptor)
+    {
+        LocalFree(templateDirectorySecurityDescriptor);
+    }
+    if (templateFileSecurityDescriptor)
+    {
+        LocalFree(templateFileSecurityDescriptor);
+    }
+
+    return hr;
 }
 
 static HRESULT ReAclExistingInstallTree(
@@ -417,8 +582,6 @@ UINT __stdcall SecureInstallFolderAclCA(MSIHANDLE hInstall)
     UINT er = ERROR_SUCCESS;
     std::wstring installationFolder;
     std::filesystem::path installFolderPath;
-    std::filesystem::path templateFolderPath;
-    std::filesystem::path templateFilePath;
     std::filesystem::path programFilesPathValue;
     std::optional<std::filesystem::path> programFilesX86PathValue;
     std::wstring normalizedInstallFolder;
@@ -427,11 +590,6 @@ UINT __stdcall SecureInstallFolderAclCA(MSIHANDLE hInstall)
 
     PSECURITY_DESCRIPTOR programFilesSecurityDescriptor = nullptr;
     PACL programFilesDacl = nullptr;
-    PSECURITY_DESCRIPTOR templateDirectorySecurityDescriptor = nullptr;
-    PACL templateDirectoryDacl = nullptr;
-    PSECURITY_DESCRIPTOR templateFileSecurityDescriptor = nullptr;
-    PACL templateFileDacl = nullptr;
-
     hr = WcaInitialize(hInstall, "SecureInstallFolderAclCA");
     ExitOnFailure(hr, "Failed to initialize");
 
@@ -489,62 +647,104 @@ UINT __stdcall SecureInstallFolderAclCA(MSIHANDLE hInstall)
     hr = GetPathDacl(*programFilesPath, &programFilesDacl, &programFilesSecurityDescriptor);
     ExitOnFailure(hr, "Failed to read Program Files DACL.");
 
-    hr = SetProtectedPathDacl(installFolderPath.native(), programFilesDacl);
-    ExitOnFailure(hr, "Failed to apply Program Files DACL to install folder.");
-    LogPathAclState(L"SecureInstallFolderAclCA install root after root hardening", installFolderPath.native());
-    {
-        const auto protectedState = IsPathDaclProtected(installFolderPath.native());
-        if (protectedState.has_value() && !*protectedState)
-        {
-            WcaLog(LOGMSG_STANDARD, "SecureInstallFolderAclCA: install root is still not protected immediately after root hardening.");
-        }
-    }
-
-    templateFolderPath = installFolderPath / L".powertoys_acl_template";
-    {
-        std::error_code errorCode;
-        std::filesystem::remove_all(templateFolderPath, errorCode);
-        errorCode.clear();
-        std::filesystem::create_directory(templateFolderPath, errorCode);
-        if (errorCode)
-        {
-            hr = HRESULT_FROM_WIN32(errorCode.value());
-            ExitOnFailure(hr, "Failed to create ACL template folder.");
-        }
-    }
-
-    templateFilePath = templateFolderPath / L"template.bin";
-    hr = CreateAclTemplateFile(templateFilePath);
-    ExitOnFailure(hr, "Failed to create ACL template file.");
-
-    hr = GetPathDacl(templateFolderPath.native(), &templateDirectoryDacl, &templateDirectorySecurityDescriptor);
-    ExitOnFailure(hr, "Failed to read ACL template directory DACL.");
-
-    hr = GetPathDacl(templateFilePath.native(), &templateFileDacl, &templateFileSecurityDescriptor);
-    ExitOnFailure(hr, "Failed to read ACL template file DACL.");
-
-    hr = ReAclExistingInstallTree(installFolderPath, templateFolderPath, templateDirectoryDacl, templateFileDacl);
+    hr = ApplyRootDaclAndReAclTree(
+        installFolderPath,
+        programFilesDacl,
+        L"SecureInstallFolderAclCA install root after root hardening",
+        L"SecureInstallFolderAclCA install root after subtree hardening");
     ExitOnFailure(hr, "Failed to harden install folder contents.");
-    LogPathAclState(L"SecureInstallFolderAclCA install root after subtree hardening", installFolderPath.native());
 
 LExit:
-    if (!templateFolderPath.empty())
-    {
-        std::error_code errorCode;
-        std::filesystem::remove_all(templateFolderPath, errorCode);
-    }
-
     if (programFilesSecurityDescriptor)
     {
         LocalFree(programFilesSecurityDescriptor);
     }
-    if (templateDirectorySecurityDescriptor)
+
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall FinalizeInstallFolderAclCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+    std::filesystem::path installFolderPath;
+    std::filesystem::path programFilesPathValue;
+    std::optional<std::filesystem::path> programFilesX86PathValue;
+    std::wstring normalizedInstallFolder;
+    std::optional<std::wstring> programFilesPath;
+    bool isUnderProgramFiles = false;
+
+    PSECURITY_DESCRIPTOR installFolderSecurityDescriptor = nullptr;
+    PACL installFolderDacl = nullptr;
+    PACL explicitOnlyDacl = nullptr;
+
+    hr = WcaInitialize(hInstall, "FinalizeInstallFolderAclCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get install folder.");
+
+    installFolderPath = std::filesystem::path(installationFolder);
+    normalizedInstallFolder = NormalizePathForComparison(installFolderPath);
+
+    programFilesPath = GetKnownFolderPath(FOLDERID_ProgramFiles);
+    if (!programFilesPath)
     {
-        LocalFree(templateDirectorySecurityDescriptor);
+        hr = E_FAIL;
+        ExitOnFailure(hr, "Failed to resolve Program Files folder.");
     }
-    if (templateFileSecurityDescriptor)
+
+    programFilesPathValue = std::filesystem::path(*programFilesPath);
+    if (const auto programFilesX86Path = GetKnownFolderPath(FOLDERID_ProgramFilesX86))
     {
-        LocalFree(templateFileSecurityDescriptor);
+        programFilesX86PathValue = std::filesystem::path(*programFilesX86Path);
+    }
+
+    if (!IsInstallFolderPathSafe(installFolderPath, programFilesPathValue, programFilesX86PathValue))
+    {
+        ShowInvalidInstallFolderMessage(hInstall, installationFolder);
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Unsupported machine-wide install folder.");
+    }
+
+    isUnderProgramFiles = IsSameOrUnderPath(normalizedInstallFolder, NormalizePathForComparison(*programFilesPath));
+    if (const auto programFilesX86Path = GetKnownFolderPath(FOLDERID_ProgramFilesX86))
+    {
+        isUnderProgramFiles = isUnderProgramFiles || IsSameOrUnderPath(normalizedInstallFolder, NormalizePathForComparison(*programFilesX86Path));
+    }
+
+    if (isUnderProgramFiles)
+    {
+        WcaLog(LOGMSG_STANDARD, "FinalizeInstallFolderAclCA: Install folder already resides under Program Files. No ACL changes required.");
+        goto LExit;
+    }
+
+    WcaLog(LOGMSG_STANDARD, "FinalizeInstallFolderAclCA: finalizing installFolder=%ls", installFolderPath.native().c_str());
+    LogPathAclState(L"FinalizeInstallFolderAclCA install root before final hardening", installFolderPath.native());
+
+    hr = GetPathDacl(installFolderPath.native(), &installFolderDacl, &installFolderSecurityDescriptor);
+    ExitOnFailure(hr, "Failed to read install folder DACL before final hardening.");
+
+    hr = CreateExplicitOnlyDacl(installFolderDacl, &explicitOnlyDacl);
+    ExitOnFailure(hr, "Failed to filter inherited ACEs from the install folder DACL.");
+
+    hr = ApplyRootDaclAndReAclTree(
+        installFolderPath,
+        explicitOnlyDacl,
+        L"FinalizeInstallFolderAclCA install root after final root hardening",
+        L"FinalizeInstallFolderAclCA install root after final subtree hardening");
+    ExitOnFailure(hr, "Failed to finalize install folder ACLs.");
+
+LExit:
+    if (installFolderSecurityDescriptor)
+    {
+        LocalFree(installFolderSecurityDescriptor);
+    }
+    if (explicitOnlyDacl)
+    {
+        LocalFree(explicitOnlyDacl);
     }
 
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;

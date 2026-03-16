@@ -114,6 +114,7 @@
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <?if $(var.PerUser) = "false" ?>
       <Custom Action="SetSecureInstallFolderAclParam" Before="SecureInstallFolderAcl" />
+      <Custom Action="SetFinalizeInstallFolderAclParam" Before="FinalizeInstallFolderAcl" />
       <?endif?>
       <Custom Action="SetInstallPackageIdentityMSIXParam" Before="InstallPackageIdentityMSIX" />
 
@@ -162,6 +163,9 @@
       <Custom Action="UninstallDSCModule" After="InstallFinalize" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <?endif?>
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
+      <?if $(var.PerUser) = "false" ?>
+      <Custom Action="FinalizeInstallFolderAcl" Before="LaunchPowerToys" Condition="NOT REMOVE" />
+      <?endif?>
       <Custom Action="LaunchPowerToys" Before="InstallFinalize" Condition="NOT Installed" />
 
       <!-- Clean Video Conference Mute registry keys that might be around from previous installations. We've deprecated this utility since then. -->
@@ -189,6 +193,7 @@
 
     <?if $(var.PerUser) = "false" ?>
     <CustomAction Id="SetSecureInstallFolderAclParam" Property="SecureInstallFolderAcl" Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetFinalizeInstallFolderAclParam" Property="FinalizeInstallFolderAcl" Value="[INSTALLFOLDER]" />
     <?endif?>
 
     <CustomAction Id="SetInstallDSCModuleParam" Property="InstallDSCModule" Value="[INSTALLFOLDER]" />
@@ -257,6 +262,7 @@
 
     <?if $(var.PerUser) = "false" ?>
     <CustomAction Id="SecureInstallFolderAcl" Return="check" Impersonate="no" Execute="deferred" DllEntry="SecureInstallFolderAclCA" BinaryRef="PTCustomActions" />
+    <CustomAction Id="FinalizeInstallFolderAcl" Return="check" Impersonate="no" Execute="deferred" DllEntry="FinalizeInstallFolderAclCA" BinaryRef="PTCustomActions" />
     <?endif?>
 
     <CustomAction Id="UnApplyModulesRegistryChangeSets" Return="check" Impersonate="yes" Execute="deferred" DllEntry="UnApplyModulesRegistryChangeSetsCA" BinaryRef="PTCustomActions" />
