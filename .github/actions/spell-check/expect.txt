@@ -496,6 +496,7 @@ GPOCA
 gpp
 gpu
 gradians
+GRGX
 GSM
 gtm
 guiddata
@@ -996,6 +997,8 @@ OEMCONVERT
 officehubintl
 OFN
 ofs
+OICI
+OICIIO
 oldcolor
 olditem
 oldpath
@@ -1028,6 +1031,7 @@ Packagemanager
 PACL
 padx
 pady
+PAI
 PAINTSTRUCT
 PALETTEWINDOW
 PARENTNOTIFY
