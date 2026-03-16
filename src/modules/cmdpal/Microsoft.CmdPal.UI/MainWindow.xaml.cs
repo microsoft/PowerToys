@@ -710,16 +710,21 @@ public sealed partial class MainWindow : WindowEx,
     internal void Receive(ShowPaletteAtMessage message)
     {
         _isLoadedFromDock = true;
+
+        // Reset the size in case users have resized a dock window.
+        // Ideally in the future, we'll have defined sizes that opening
+        // a dock window will adhere to, but alas, that's the future.
+        RestoreWindowPosition();
+
         ShowHwnd(HWND.Null, message.PosPixels, message.Anchor);
     }
 
     public void Receive(HideWindowMessage message)
     {
-        _isLoadedFromDock = false;
-
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
+            _isLoadedFromDock = false;
             EndSession("Hide");
             HideWindow();
         });
@@ -740,14 +745,6 @@ public sealed partial class MainWindow : WindowEx,
         // This might come in off the UI thread. Make sure to hop back.
         DispatcherQueue.TryEnqueue(() =>
         {
-            // This is a bit of a hack, but the purpose is to resize
-            // the window according to the current settings
-            // (in case they changed while the window was opened from the dock)
-            // Without this the window will reposition itself correctly but we'll
-            // get a flash as it resizes it's content to the previous size.
-            var display = GetScreen(_hwnd, MonitorBehavior.ToLast);
-            PositionCentered(display);
-
             EndSession("Dismiss");
             HideWindow();
         });
@@ -758,18 +755,6 @@ public sealed partial class MainWindow : WindowEx,
     public void Receive(NavigateToPageMessage message)
     {
         _sessionPagesVisited++;
-
-        // If we are displayed via the dock, we need to resize
-        // ourself to ensure any resizing done doesn't affect
-        // other dock windows.
-        if (_isLoadedFromDock)
-        {
-            DispatcherQueue.TryEnqueue(() =>
-            {
-                var display = GetScreen(_hwnd, MonitorBehavior.ToLast);
-                PositionCentered(display);
-            });
-        }
     }
 
     public void Receive(NavigationDepthMessage message)
@@ -903,10 +888,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         var serviceProvider = App.Current.Services;
 
-        if (!_isLoadedFromDock)
-        {
-            UpdateWindowPositionInMemory();
-        }
+        UpdateWindowPositionInMemory();
 
         var settings = serviceProvider.GetService<SettingsModel>();
         if (settings is not null)
