@@ -72,6 +72,9 @@
     <Content Update="Assets\KeyboardManagerEditor\Square150x150Logo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="Assets\KeyboardManagerEditor\Square44x44Logo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\Colors.xaml">
