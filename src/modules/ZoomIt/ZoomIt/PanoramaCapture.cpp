@@ -1813,7 +1813,7 @@ struct StitchPerfCounters
     __int64 tMaskedFallback;    // Full-res masked coarse fallback
 
     StitchPerfCounters() { Reset(); QueryPerformanceFrequency( &freqQpc ); }
-    void Reset() { memset( &totalCalls, 0, (char*)(&tMaskedFallback + 1) - (char*)&totalCalls ); }
+    void Reset() { memset( &totalCalls, 0, reinterpret_cast<char*>(&tMaskedFallback + 1) - reinterpret_cast<char*>(&totalCalls) ); }
 
     double UsFromTicks( __int64 ticks ) const
     {
@@ -2129,7 +2129,7 @@ static void DumpPanoramaText( const std::wstring& debugDumpDirectory,
 #ifdef _DEBUG
 static HBITMAP LoadBitmapFromFile( const std::filesystem::path& filePath )
 {
-    return reinterpret_cast<HBITMAP>( LoadImageW( nullptr,
+    return static_cast<HBITMAP>( LoadImageW( nullptr,
                                                   filePath.c_str(),
                                                   IMAGE_BITMAP,
                                                   0,
@@ -4649,13 +4649,12 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         std::vector<BYTE> dilatedCurr( dsMaskCurr.size(), 0 );
         for( int y = 1; y < dsH - 1; ++y )
         {
-            const int rowOff = y * dsW;
             int x = 1;
 #if defined(_M_ARM64)
             const uint8x16_t vOne = vdupq_n_u8( 1 );
             for( ; x + 16 < dsW - 1; x += 16 )
             {
-                const int idx = rowOff + x;
+                const int idx = y * dsW + x;
                 // Previous mask: OR of center, left, right, up, down.
                 uint8x16_t pOr = vld1q_u8( dsMaskPrev.data() + idx );
                 pOr = vorrq_u8( pOr, vld1q_u8( dsMaskPrev.data() + idx - 1 ) );
@@ -4942,7 +4941,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     }
     PERF_STOP( tCoarseSearch );
 
-    // Full-resolution masked coarse fallback 
+    // Full-resolution masked coarse fallback
     PERF_START( tMaskedFallback );
     // When all coarse candidates have score 0 (or the coarse search
     // produced zero candidates because VLE masking left < 20 samples
@@ -5499,7 +5498,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     }
     PERF_STOP( tProbeInject );
 
-    // Phase 2: Rank candidates by full-resolution comparison 
+    // Phase 2: Rank candidates by full-resolution comparison
     PERF_START( tFineSearch );
     // For each coarse candidate, compute a fine score at full resolution.
     // This resolves ambiguity from harmonic matches on repetitive content
@@ -5991,19 +5990,19 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
         else if( rankScore == bestFineRankScore )
         {
-            const int absStep = abs( dy );
+            const int absStepLo = abs( dy );
             const int absDx = abs( dx );
-            const int expectedDelta = ( expectedAbsStep > 0 ) ? abs( absStep - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
+            const int expectedDelta = ( expectedAbsStep > 0 ) ? abs( absStepLo - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
 
             if( ( expectedAbsStep > 0 && expectedDelta < bestExpectedDelta ) ||
-                ( expectedAbsStep == 0 && absStep < bestAbsStep ) ||
+                ( expectedAbsStep == 0 && absStepLo < bestAbsStep ) ||
                 ( expectedDelta == bestExpectedDelta &&
-                  ( absStep < bestAbsStep || ( absStep == bestAbsStep && absDx < bestAbsDx ) ) ) )
+                  ( absStep < bestAbsStep || ( absStepLo == bestAbsStep && absDx < bestAbsDx ) ) ) )
             {
                 bestDx = dx;
                 bestDy = dy;
                 bestCoarseDy = candidates[ci].dyDs;
-                bestAbsStep = absStep;
+                bestAbsStep = absStepLo;
                 bestAbsDx = absDx;
                 bestExpectedDelta = expectedDelta;
             }
@@ -6011,9 +6010,9 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         else if( expectedAbsStep > 0 && bestFineRankScore != ( std::numeric_limits<unsigned __int64>::max )() )
         {
             unsigned __int64 scoreSlack = (std::max)( static_cast<unsigned __int64>( 2 ), bestFineRankScore / 80 );
-            const int absStep = abs( dy );
+            const int absStepLo = abs( dy );
             const int absDx = abs( dx );
-            const int expectedDelta = abs( absStep - expectedAbsStep );
+            const int expectedDelta = abs( absStepLo - expectedAbsStep );
             const bool preferExpectedStep = ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
                 expectedAbsStep >= 8;
 
@@ -6036,7 +6035,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 bestDx = dx;
                 bestDy = dy;
                 bestCoarseDy = candidates[ci].dyDs;
-                bestAbsStep = absStep;
+                bestAbsStep = absStepLo;
                 bestAbsDx = absDx;
                 bestExpectedDelta = expectedDelta;
             }
@@ -8052,8 +8051,6 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
             if( bestAnchorY >= 0 )
             {
-                const int sigLen = static_cast<int>( anchorSigR.size() );
-
                 // Step 3: Search the target frame for this unique signature.
                 // When useCurAsSrc, the search finds the offset in refPx, and
                 // we negate it to get the true scroll direction.
