@@ -16,6 +16,7 @@
 
 #define SECURITY_WIN32
 #include <Security.h>
+#include <sddl.h>
 #include <Lmcons.h>
 
 #include <comdef.h>

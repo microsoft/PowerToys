@@ -209,6 +209,87 @@ static void ShowInvalidInstallFolderMessage(MSIHANDLE hInstall, const std::wstri
     MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_ERROR + MB_OK), hRecord);
 }
 
+static std::optional<bool> IsPathDaclProtected(const std::wstring& path)
+{
+    PSECURITY_DESCRIPTOR securityDescriptor = nullptr;
+    PACL dacl = nullptr;
+    const auto result = GetNamedSecurityInfoW(
+        path.c_str(),
+        SE_FILE_OBJECT,
+        DACL_SECURITY_INFORMATION,
+        nullptr,
+        nullptr,
+        &dacl,
+        nullptr,
+        &securityDescriptor);
+
+    if (result != ERROR_SUCCESS)
+    {
+        return std::nullopt;
+    }
+
+    SECURITY_DESCRIPTOR_CONTROL control = 0;
+    DWORD revision = 0;
+    const auto isProtected = GetSecurityDescriptorControl(securityDescriptor, &control, &revision) != FALSE &&
+                             (control & SE_DACL_PROTECTED) != 0;
+    LocalFree(securityDescriptor);
+    return isProtected;
+}
+
+static std::wstring GetPathSddl(const std::wstring& path)
+{
+    PSECURITY_DESCRIPTOR securityDescriptor = nullptr;
+    PACL dacl = nullptr;
+    PSID ownerSid = nullptr;
+    PSID groupSid = nullptr;
+    LPWSTR sddl = nullptr;
+
+    const auto result = GetNamedSecurityInfoW(
+        path.c_str(),
+        SE_FILE_OBJECT,
+        OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+        &ownerSid,
+        &groupSid,
+        &dacl,
+        nullptr,
+        &securityDescriptor);
+
+    if (result != ERROR_SUCCESS)
+    {
+        return L"<GetNamedSecurityInfoW failed>";
+    }
+
+    std::wstring value = L"<ConvertSecurityDescriptorToStringSecurityDescriptorW failed>";
+    if (ConvertSecurityDescriptorToStringSecurityDescriptorW(
+            securityDescriptor,
+            SDDL_REVISION_1,
+            OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+            &sddl,
+            nullptr))
+    {
+        value = sddl;
+        LocalFree(sddl);
+    }
+
+    LocalFree(securityDescriptor);
+    return value;
+}
+
+static void LogPathAclState(const wchar_t* stage, const std::wstring& path)
+{
+    const auto protectedState = IsPathDaclProtected(path);
+    const auto sddl = GetPathSddl(path);
+    const auto protectedText = protectedState.has_value() ? (*protectedState ? L"true" : L"false") : L"<unknown>";
+
+    WcaLog(
+        LOGMSG_STANDARD,
+        "%ls path=%ls daclProtected=%ls sddl=%ls",
+        stage,
+        path.c_str(),
+        protectedText,
+        sddl.c_str());
+}
+
 static HRESULT GetPathDacl(const std::wstring& path, PACL* dacl, PSECURITY_DESCRIPTOR* securityDescriptor)
 {
     const auto result = GetNamedSecurityInfoW(
@@ -244,6 +325,11 @@ static HRESULT SetProtectedPathDacl(const std::wstring& path, PACL dacl)
         nullptr,
         dacl,
         nullptr);
+
+    if (result != ERROR_SUCCESS)
+    {
+        WcaLog(LOGMSG_STANDARD, "SetProtectedPathDacl failed path=%ls error=%lu", path.c_str(), result);
+    }
 
     return result == ERROR_SUCCESS ? S_OK : HRESULT_FROM_WIN32(result);
 }
@@ -387,6 +473,9 @@ UINT __stdcall SecureInstallFolderAclCA(MSIHANDLE hInstall)
         goto LExit;
     }
 
+    WcaLog(LOGMSG_STANDARD, "SecureInstallFolderAclCA: hardening installFolder=%ls", installFolderPath.native().c_str());
+    LogPathAclState(L"SecureInstallFolderAclCA install root before hardening", installFolderPath.native());
+
     {
         std::error_code errorCode;
         std::filesystem::create_directories(installFolderPath, errorCode);
@@ -402,6 +491,14 @@ UINT __stdcall SecureInstallFolderAclCA(MSIHANDLE hInstall)
 
     hr = SetProtectedPathDacl(installFolderPath.native(), programFilesDacl);
     ExitOnFailure(hr, "Failed to apply Program Files DACL to install folder.");
+    LogPathAclState(L"SecureInstallFolderAclCA install root after root hardening", installFolderPath.native());
+    {
+        const auto protectedState = IsPathDaclProtected(installFolderPath.native());
+        if (protectedState.has_value() && !*protectedState)
+        {
+            WcaLog(LOGMSG_STANDARD, "SecureInstallFolderAclCA: install root is still not protected immediately after root hardening.");
+        }
+    }
 
     templateFolderPath = installFolderPath / L".powertoys_acl_template";
     {
@@ -428,6 +525,7 @@ UINT __stdcall SecureInstallFolderAclCA(MSIHANDLE hInstall)
 
     hr = ReAclExistingInstallTree(installFolderPath, templateFolderPath, templateDirectoryDacl, templateFileDacl);
     ExitOnFailure(hr, "Failed to harden install folder contents.");
+    LogPathAclState(L"SecureInstallFolderAclCA install root after subtree hardening", installFolderPath.native());
 
 LExit:
     if (!templateFolderPath.empty())
