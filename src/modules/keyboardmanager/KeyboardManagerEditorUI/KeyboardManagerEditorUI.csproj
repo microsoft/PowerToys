@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
@@ -12,7 +12,7 @@
     <Nullable>enable</Nullable>
     <WindowsPackageType>None</WindowsPackageType>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <ApplicationIcon>Assets\KeyboardManagerEditor\icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\KeyboardManagerEditor\Keyboard.ico</ApplicationIcon>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <AssemblyName>PowerToys.KeyboardManagerEditorUI</AssemblyName>
@@ -27,6 +27,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\KeyboardManagerEditor\Keyboard.ico" />
+    <None Remove="Styles\Colors.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Remove="KeyboardManagerEditorXAML\App.xaml" />
   </ItemGroup>
 	
@@ -37,7 +42,7 @@
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
-	
+
   <!--
     Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
     Tools extension to be activated for this project even if the Windows App SDK Nuget
@@ -64,15 +69,10 @@
 	<ProjectReference Include="..\KeyboardManagerEditorLibraryWrapper\KeyboardManagerEditorLibraryWrapper.vcxproj" />
   </ItemGroup>
   <ItemGroup>
-	<None Update="Assets\KeyboardManagerEditor\icon.ico">
-		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	</None>
-  </ItemGroup>
-	<ItemGroup>
-    <Content Update="Assets\KeyboardManagerEditor\Square150x150Logo.png">
+    <Content Include="Assets\KeyboardManagerEditor\Keyboard.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Update="Assets\KeyboardManagerEditor\Square44x44Logo.png">
+    <Content Update="Assets\KeyboardManagerEditor\Square150x150Logo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

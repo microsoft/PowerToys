@@ -13,8 +13,6 @@
     Height="900"
     MinWidth="860"
     MinHeight="320"
-    Activated="MainWindow_Activated"
-    Closed="MainWindow_Closed"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
@@ -27,9 +25,9 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TitleBar x:Name="titleBar" x:Uid="KeyboardManagerTitle">
+        <TitleBar x:Name="titleBar" Title="Keyboard Manager">
             <TitleBar.IconSource>
-                <ImageIconSource ImageSource="/Assets/KeyboardManagerEditor/icon.ico" />
+                <ImageIconSource ImageSource="/Assets/KeyboardManagerEditor/FluentIconsKeyboardManager.png" />
             </TitleBar.IconSource>
         </TitleBar>
 
