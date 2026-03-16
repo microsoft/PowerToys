@@ -6255,6 +6255,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
         else if( rankScore == bestFineRankScore )
         {
+            const int absStepLo = abs( dy );
             const int absDx = abs( dx );
             const int expectedDelta = ( expectedAbsStep > 0 ) ? abs( absStepLo - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
 
@@ -6274,6 +6275,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         else if( expectedAbsStep > 0 && bestFineRankScore != ( std::numeric_limits<unsigned __int64>::max )() )
         {
             unsigned __int64 scoreSlack = (std::max)( static_cast<unsigned __int64>( 2 ), bestFineRankScore / 80 );
+            const int absStepLo = abs( dy );
             const int absDx = abs( dx );
             const int expectedDelta = abs( absStepLo - expectedAbsStep );
             const bool preferExpectedStep = ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
