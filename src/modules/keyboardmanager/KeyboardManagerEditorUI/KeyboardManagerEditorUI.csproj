@@ -39,7 +39,9 @@
   </ItemGroup>
 
   <ItemGroup>
-	<Content Include="Assets\KeyboardManagerEditor\KeyboardManager.ico" />
+	<Content Include="Assets\KeyboardManagerEditor\KeyboardManager.ico">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
   </ItemGroup>
 	
   <!--
