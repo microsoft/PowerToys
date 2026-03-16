@@ -177,7 +177,7 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 ### Dock (New Feature)
 - Added Dock feature to Command Palette, providing a persistent application launcher bar in [#45824](https://github.com/microsoft/PowerToys/pull/45824)
 - Added Dock API for extension integration in [#45432](https://github.com/microsoft/PowerToys/pull/45432)
-- Fixed Dock visual bugs and polish in [#45871](https://github.com/microsoft/PowerToys/pull/45871). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Fixed Dock visual bugs and polish in [#45871](https://github.com/microsoft/PowerToys/pull/45871).
 - Visual tweaks and nits for Dock in [#45873](https://github.com/microsoft/PowerToys/pull/45873) and [#45954](https://github.com/microsoft/PowerToys/pull/45954). Thanks [@jiripolasek](https://github.com/jiripolasek)!
 - Fixed Dock dealing with multiple app bars on the same side in [#45831](https://github.com/microsoft/PowerToys/pull/45831)
 - Adjusted Dock padding for Fitts's law compliance in [#45834](https://github.com/microsoft/PowerToys/pull/45834)
