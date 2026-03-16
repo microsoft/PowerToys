@@ -254,7 +254,7 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 - Calmed down sanitizer output and adjusted unit tests in [#45613](https://github.com/microsoft/PowerToys/pull/45613). Thanks [@jiripolasek](https://github.com/jiripolasek)!
 - Used a factory for building context menu VMs in [#45572](https://github.com/microsoft/PowerToys/pull/45572)
 - Removed dead code from Window Walker and cleanup in [#45570](https://github.com/microsoft/PowerToys/pull/45570). Thanks [@jiripolasek](https://github.com/jiripolasek)!
-- Removed Core projects in [#45693](https://github.com/microsoft/PowerToys/pull/45693). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+- Removed Core projects in [#45693](https://github.com/microsoft/PowerToys/pull/45693).
 - Added IDs to all PowerToys commands in [#45840](https://github.com/microsoft/PowerToys/pull/45840)
 - Prevented unsynchronized access to "More commands" in [#46020](https://github.com/microsoft/PowerToys/pull/46020). Thanks [@jiripolasek](https://github.com/jiripolasek)!
 - Fixed search box visibility before bailing out in [#46021](https://github.com/microsoft/PowerToys/pull/46021). Thanks [@jiripolasek](https://github.com/jiripolasek)!
