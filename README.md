@@ -118,7 +118,7 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 
 ### Keyboard Manager
 
-- Upgraded Keyboard Manager Editor to WinUI 3 for a modern and consolidated experience
+- Redesigned the Keyboard Manager Editor using WinUI 3 for an updated interface and usability improvements.
 - Added support for toggling shortcuts from the Editor UI
 
 ### Always on Top
