@@ -680,7 +680,6 @@ jpnime
 Jsons
 jsonval
 jxr
-kbmcontrols
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -818,7 +817,6 @@ Metadatas
 metafile
 metapackage
 mfc
-mfalse
 Mgmt
 Microwaved
 midl
@@ -877,7 +875,6 @@ msrc
 msstore
 msvcp
 MTND
-mtrue
 MULTIPLEUSE
 multizone
 muxc
@@ -1292,7 +1289,7 @@ SCREENFONTS
 screensaver
 screenshots
 scrollviewer
-SDDL
+sddl
 SDKDDK
 sdns
 searchterm
