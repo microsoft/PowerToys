@@ -123,7 +123,8 @@ This version includes major updates to Command Palette and the Keyboard Manager 
 
 ### Always on Top
 
-- Added "Toggle always on top" to the window system menu and transparency adjustment for pinned windows
+- Added the ability to enable and disable Always on Top directly from each window's right-click title bar menu.
+- Added support for adjusting the transparency of pinned windows.
 
 ### ZoomIt
 
