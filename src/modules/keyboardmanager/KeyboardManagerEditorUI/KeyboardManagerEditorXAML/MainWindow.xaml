@@ -29,7 +29,7 @@
         </Grid.RowDefinitions>
         <TitleBar x:Name="titleBar" x:Uid="KeyboardManagerTitle">
             <TitleBar.IconSource>
-                <ImageIconSource ImageSource="/Assets/KeyboardManagerEditor/KeyboardManager.ico" />
+                <ImageIconSource ImageSource="/Assets/KeyboardManagerEditor/icon.ico" />
             </TitleBar.IconSource>
         </TitleBar>
 

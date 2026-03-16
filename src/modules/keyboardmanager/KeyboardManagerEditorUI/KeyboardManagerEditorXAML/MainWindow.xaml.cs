@@ -23,13 +23,13 @@ namespace KeyboardManagerEditorUI
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
             ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(titleBar);
-            this.SetIcon("Assets\\KeyboardManagerEditor\\KeyboardManager.ico");
+            this.SetIcon("Assets\\KeyboardManagerEditor\\icon.ico");
             Title = ResourceLoaderInstance.ResourceLoader.GetString("WindowTitle");
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
-            this.SetIcon("Assets\\KeyboardManagerEditor\\KeyboardManager.ico");
+            this.SetIcon("Assets\\KeyboardManagerEditor\\icon.ico");
             if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
                 // Release the keyboard hook when the window is deactivated

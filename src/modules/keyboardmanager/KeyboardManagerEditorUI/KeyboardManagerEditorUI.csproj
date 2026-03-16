@@ -12,7 +12,7 @@
     <Nullable>enable</Nullable>
     <WindowsPackageType>None</WindowsPackageType>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <ApplicationIcon>Assets\KeyboardManagerEditor\KeyboardManager.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\KeyboardManagerEditor\icon.ico</ApplicationIcon>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <AssemblyName>PowerToys.KeyboardManagerEditorUI</AssemblyName>
@@ -36,12 +36,6 @@
 	
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
-  </ItemGroup>
-
-  <ItemGroup>
-	<Content Include="Assets\KeyboardManagerEditor\KeyboardManager.ico">
-	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	</Content>
   </ItemGroup>
 	
   <!--
@@ -70,6 +64,11 @@
 	<ProjectReference Include="..\KeyboardManagerEditorLibraryWrapper\KeyboardManagerEditorLibraryWrapper.vcxproj" />
   </ItemGroup>
   <ItemGroup>
+	<None Update="Assets\KeyboardManagerEditor\icon.ico">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</None>
+  </ItemGroup>
+	<ItemGroup>
     <Content Update="Assets\KeyboardManagerEditor\Square150x150Logo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
