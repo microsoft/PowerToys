@@ -113,10 +113,14 @@
                             x:Name="CachedModelsComboBox"
                             Grid.Column="0"
                             HorizontalAlignment="Stretch"
-                            DisplayMemberPath="Name"
                             ItemsSource="{x:Bind CachedModels, Mode=OneWay}"
                             SelectedItem="{x:Bind SelectedModel, Mode=TwoWay}"
                             SelectionChanged="CachedModelsComboBox_SelectionChanged">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:ModelDetails">
+                                    <TextBlock Text="{x:Bind Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
                             <ComboBox.Header>
                                 <TextBlock>
                                     <Run x:Uid="AdvancedPaste_FL_LocalModel" /><LineBreak /><Run

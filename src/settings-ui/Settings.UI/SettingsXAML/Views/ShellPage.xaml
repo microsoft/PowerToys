@@ -114,7 +114,6 @@
                     QuerySubmitted="SearchBox_QuerySubmitted"
                     SuggestionChosen="SearchBox_SuggestionChosen"
                     TextChanged="SearchBox_TextChanged"
-                    TextMemberPath="Header"
                     UpdateTextOnSelect="False">
                     <AutoSuggestBox.KeyboardAccelerators>
                         <KeyboardAccelerator

@@ -186,6 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ModuleSettings.Properties.ScheduleMode.Value = value;
                     OnPropertyChanged(nameof(ScheduleMode));
+                    OnPropertyChanged(nameof(ScheduleModeIndex));
                 }
 
                 if (ModuleSettings.Properties.ScheduleMode.Value == "FixedHours" && oldMode != "FixedHours")
@@ -212,6 +213,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public ObservableCollection<string> AvailableScheduleModes { get; }
+
+        public int ScheduleModeIndex
+        {
+            get => AvailableScheduleModes.IndexOf(ScheduleMode);
+            set
+            {
+                if (value >= 0 && value < AvailableScheduleModes.Count)
+                {
+                    ScheduleMode = AvailableScheduleModes[value];
+                }
+            }
+        }
 
         public bool ChangeSystem
         {

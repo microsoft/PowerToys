@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -900,7 +901,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.MicrophoneDeviceId.Value = value ?? string.Empty; // If we're trying to save a null, just default to empty string, which means default microphone.
                     OnPropertyChanged(nameof(RecordMicrophoneDeviceId));
+                    OnPropertyChanged(nameof(SelectedMicrophone));
                     NotifySettingsChanged();
+                }
+            }
+        }
+
+        public MicrophoneItem SelectedMicrophone
+        {
+            get => MicrophoneList.FirstOrDefault(item => item.Item1 == RecordMicrophoneDeviceId) ?? MicrophoneList.FirstOrDefault();
+            set
+            {
+                if (value is not null)
+                {
+                    RecordMicrophoneDeviceId = value.Item1;
                 }
             }
         }

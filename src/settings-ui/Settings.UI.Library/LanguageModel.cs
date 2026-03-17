@@ -9,7 +9,8 @@ using System.Text.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class LanguageModel
+    [WinRT.GeneratedBindableCustomProperty]
+    public partial class LanguageModel
     {
         public const string SettingsFilePath = "\\Microsoft\\PowerToys\\";
         public const string SettingsFile = "language.json";

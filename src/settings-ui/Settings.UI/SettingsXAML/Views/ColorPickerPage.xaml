@@ -93,16 +93,23 @@
                         <ComboBox
                             x:Name="ColorPicker_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            DisplayMemberPath="Value"
-                            ItemsSource="{Binding ColorFormatsPreview, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            ItemsSource="{x:Bind ViewModel.ColorFormats, Mode=OneWay}"
                             Loaded="ColorPicker_ComboBox_Loaded"
-                            SelectedIndex="{Binding ColorFormatsPreviewIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                            SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"
-                            SelectedValuePath="Key" />
+                            SelectedIndex="{x:Bind ViewModel.ColorFormatsPreviewIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:ColorFormatModel">
+                                    <TextBlock>
+                                        <Run Text="{x:Bind Name}" />
+                                        <Run Text=" - " />
+                                        <Run Text="{x:Bind Example}" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard Name="ColorPickerShowColorName" x:Uid="ColorPicker_ShowColorName">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding ShowColorName, Mode=TwoWay}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowColorName, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <!--
                 Disabling this until we have a safer way to reset cursor as
@@ -131,9 +138,9 @@
                     <ItemsControl
                         x:Name="ColorFormats"
                         HorizontalAlignment="Stretch"
-                        AutomationProperties.Name="{Binding ElementName=ColorFormatsSetting, Path=Header}"
+                        AutomationProperties.Name="{x:Bind ColorFormatsSetting.Header, Mode=OneWay}"
                         IsTabStop="False"
-                        ItemsSource="{Binding ColorFormats, Mode=TwoWay}">
+                        ItemsSource="{x:Bind ViewModel.ColorFormats, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:ColorFormatModel">
                                 <tkcontrols:SettingsCard
@@ -196,6 +203,7 @@
                     x:Name="ColorFormatDialog"
                     x:Uid="ColorFormatDialog"
                     Closed="ColorFormatDialog_Closed"
+                    x:DataType="models:ColorFormatModel"
                     IsPrimaryButtonEnabled="{Binding IsValid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     PrimaryButtonClick="ColorFormatDialog_PrimaryButtonClick"
                     PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">

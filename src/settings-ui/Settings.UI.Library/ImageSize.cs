@@ -13,6 +13,7 @@ using Settings.UI.Library.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Library;
 
+[WinRT.GeneratedBindableCustomProperty]
 public partial class ImageSize : INotifyPropertyChanged, IHasId
 {
     public event PropertyChangedEventHandler PropertyChanged;

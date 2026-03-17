@@ -20,5 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string Item1 { get; }
 
         public string Item2 { get; }
+
+        public override string ToString() => Item2;
     }
 }

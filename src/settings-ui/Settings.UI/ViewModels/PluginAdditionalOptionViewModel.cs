@@ -5,19 +5,24 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
+    [WinRT.GeneratedBindableCustomProperty]
     public partial class PluginAdditionalOptionViewModel : INotifyPropertyChanged
     {
-        private PluginAdditionalOption _additionalOption;
+        private readonly List<PluginAdditionalOptionComboBoxItem> _comboBoxOptionItems;
+        private readonly PluginAdditionalOption _additionalOption;
 
         internal PluginAdditionalOptionViewModel(PluginAdditionalOption additionalOption)
         {
             _additionalOption = additionalOption;
+            _comboBoxOptionItems = _additionalOption.ComboBoxItems?.Select(item => new PluginAdditionalOptionComboBoxItem(item.Key, item.Value)).ToList()
+                ?? new List<PluginAdditionalOptionComboBoxItem>();
         }
 
         // Labels of single and first setting of combined types
@@ -53,7 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ShowComboBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Combobox &&
             _additionalOption.ComboBoxItems != null && _additionalOption.ComboBoxItems.Count > 0;
 
-        public List<KeyValuePair<string, string>> ComboBoxItems => _additionalOption.ComboBoxItems;
+        public List<PluginAdditionalOptionComboBoxItem> ComboBoxOptionItems => _comboBoxOptionItems;
 
         public string ComboBoxValue
         {
@@ -63,6 +68,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (int.Parse(value, CultureInfo.InvariantCulture) != _additionalOption.ComboBoxValue)
                 {
                     _additionalOption.ComboBoxValue = int.Parse(value, CultureInfo.InvariantCulture);
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public PluginAdditionalOptionComboBoxItem SelectedComboBoxItem
+        {
+            get => ComboBoxOptionItems.FirstOrDefault(item => item.Value == ComboBoxValue);
+            set
+            {
+                if (value is not null)
+                {
+                    ComboBoxValue = value.Value;
                     NotifyPropertyChanged();
                 }
             }
@@ -140,6 +158,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (propertyName == nameof(ComboBoxValue))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedComboBoxItem)));
+            }
         }
     }
 }

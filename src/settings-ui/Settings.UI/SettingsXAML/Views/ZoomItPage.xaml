@@ -9,6 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <local:NavigablePage.Resources>
@@ -293,10 +294,8 @@
                                 Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}">
                                 <ComboBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    DisplayMemberPath="Item2"
                                     ItemsSource="{x:Bind ViewModel.MicrophoneList}"
-                                    SelectedValue="{x:Bind ViewModel.RecordMicrophoneDeviceId, Mode=TwoWay}"
-                                    SelectedValuePath="Item1" />
+                                    SelectedItem="{x:Bind ViewModel.SelectedMicrophone, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
