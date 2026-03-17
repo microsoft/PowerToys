@@ -30,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private CancellationTokenSource _foundryModelLoadCts;
         private bool _suppressFoundrySelectionChanged;
         private bool _isFoundryLocalAvailable;
+        private bool _isPhiSilicaAvailable;
         private bool _disposed;
         private const string PasteAiDialogDefaultTitle = "Paste with AI provider configuration";
 
@@ -65,6 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ViewModel.OnPageLoaded();
                 UpdatePasteAIUIVisibility();
                 await UpdateFoundryLocalUIAsync();
+                await UpdatePhiSilicaUIAsync();
             };
 
             Unloaded += (_, _) =>
@@ -83,6 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.RefreshEnabledState();
             UpdatePasteAIUIVisibility();
             _ = UpdateFoundryLocalUIAsync();
+            _ = UpdatePhiSilicaUIAsync();
         }
 
         private void EnableAdvancedPasteAI() => ViewModel.EnableAI();
@@ -321,7 +324,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             bool requiresApiVersion = serviceKind == AIServiceType.AzureOpenAI;
             bool requiresModelPath = serviceKind == AIServiceType.Onnx;
             bool isFoundryLocal = serviceKind == AIServiceType.FoundryLocal;
+            bool isPhiSilica = serviceKind == AIServiceType.PhiSilica;
             bool requiresApiKey = RequiresApiKeyForService(selectedType);
+            bool requiresModelName = !isFoundryLocal && !isPhiSilica;
             bool showModerationToggle = serviceKind == AIServiceType.OpenAI;
             bool showAdvancedAI = serviceKind == AIServiceType.OpenAI || serviceKind == AIServiceType.AzureOpenAI;
 
@@ -346,7 +351,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PasteAIModerationToggle.Visibility = showModerationToggle ? Visibility.Visible : Visibility.Collapsed;
             PasteAIEnableAdvancedAICheckBox.Visibility = showAdvancedAI ? Visibility.Visible : Visibility.Collapsed;
             PasteAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIModelNameTextBox.Visibility = isFoundryLocal ? Visibility.Collapsed : Visibility.Visible;
+            PasteAIModelNameTextBox.Visibility = requiresModelName ? Visibility.Visible : Visibility.Collapsed;
 
             if (requiresApiKey)
             {
@@ -374,6 +379,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 {
                     // For Foundry Local, UpdateFoundrySaveButtonState will handle button state
                     // based on model selection status
+                }
+                else if (isPhiSilica)
+                {
+                    // For Phi Silica, UpdatePhiSilicaUIAsync will handle button state
+                    // based on device availability
                 }
                 else
                 {
@@ -421,6 +431,136 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             FoundryLocalPicker?.RequestLoad();
 
             return Task.CompletedTask;
+        }
+
+        private async Task UpdatePhiSilicaUIAsync()
+        {
+            string selectedType = ViewModel?.PasteAIProviderDraft?.ServiceType ?? string.Empty;
+            bool isPhiSilica = string.Equals(selectedType, "PhiSilica", StringComparison.OrdinalIgnoreCase);
+
+            if (PhiSilicaPanel is not null)
+            {
+                PhiSilicaPanel.Visibility = isPhiSilica ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (!isPhiSilica)
+            {
+                _isPhiSilicaAvailable = false;
+                return;
+            }
+
+            if (PasteAIProviderConfigurationDialog is not null)
+            {
+                PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
+            }
+
+            ShowPhiSilicaLoadingState();
+
+            try
+            {
+                var readyState = await Task.Run(() => Microsoft.Windows.AI.Text.LanguageModel.GetReadyState());
+
+                if (readyState == Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem)
+                {
+                    _isPhiSilicaAvailable = false;
+                    ShowPhiSilicaNotAvailableState(
+                        "Phi Silica is not available on this device.",
+                        "A Copilot+ PC with an NPU is required to use Phi Silica. For on-device AI on any Windows PC, consider using Foundry Local.");
+                }
+                else if (readyState == Microsoft.Windows.AI.AIFeatureReadyState.NotReady)
+                {
+                    _isPhiSilicaAvailable = false;
+                    ShowPhiSilicaNotAvailableState(
+                        "Phi Silica model is not ready.",
+                        "The model needs to be downloaded. Check Windows Update for the AI model download progress.");
+                }
+                else
+                {
+                    _isPhiSilicaAvailable = true;
+                    ShowPhiSilicaAvailableState("Phi Silica is available and ready on this device.");
+                }
+            }
+            catch (Exception)
+            {
+                _isPhiSilicaAvailable = false;
+                ShowPhiSilicaNotAvailableState(
+                    "Phi Silica is not available on this device.",
+                    "Unable to check Phi Silica availability. A Copilot+ PC with an NPU is required.");
+            }
+
+            if (PasteAIProviderConfigurationDialog is not null)
+            {
+                PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = _isPhiSilicaAvailable;
+            }
+        }
+
+        private void ShowPhiSilicaLoadingState()
+        {
+            if (PhiSilicaLoadingPanel is not null)
+            {
+                PhiSilicaLoadingPanel.Visibility = Visibility.Visible;
+            }
+
+            if (PhiSilicaAvailablePanel is not null)
+            {
+                PhiSilicaAvailablePanel.Visibility = Visibility.Collapsed;
+            }
+
+            if (PhiSilicaNotAvailablePanel is not null)
+            {
+                PhiSilicaNotAvailablePanel.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void ShowPhiSilicaAvailableState(string message)
+        {
+            if (PhiSilicaLoadingPanel is not null)
+            {
+                PhiSilicaLoadingPanel.Visibility = Visibility.Collapsed;
+            }
+
+            if (PhiSilicaAvailablePanel is not null)
+            {
+                PhiSilicaAvailablePanel.Visibility = Visibility.Visible;
+            }
+
+            if (PhiSilicaAvailableText is not null)
+            {
+                PhiSilicaAvailableText.Text = message;
+            }
+
+            if (PhiSilicaNotAvailablePanel is not null)
+            {
+                PhiSilicaNotAvailablePanel.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void ShowPhiSilicaNotAvailableState(string title, string description)
+        {
+            if (PhiSilicaLoadingPanel is not null)
+            {
+                PhiSilicaLoadingPanel.Visibility = Visibility.Collapsed;
+            }
+
+            if (PhiSilicaAvailablePanel is not null)
+            {
+                PhiSilicaAvailablePanel.Visibility = Visibility.Collapsed;
+            }
+
+            if (PhiSilicaNotAvailablePanel is not null)
+            {
+                PhiSilicaNotAvailablePanel.Visibility = Visibility.Visible;
+            }
+
+            if (PhiSilicaNotAvailableTitle is not null)
+            {
+                PhiSilicaNotAvailableTitle.Text = title;
+            }
+
+            if (PhiSilicaNotAvailableDescription is not null)
+            {
+                PhiSilicaNotAvailableDescription.Text = description;
+            }
         }
 
         private async Task LoadFoundryLocalModelsAsync()
@@ -837,6 +977,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 AIServiceType.Onnx => false,
                 AIServiceType.Ollama => false,
                 AIServiceType.FoundryLocal => false,
+                AIServiceType.PhiSilica => false,
                 AIServiceType.ML => false,
                 _ => true,
             };
@@ -1114,6 +1255,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             await UpdateFoundryLocalUIAsync();
+            await UpdatePhiSilicaUIAsync();
             UpdatePasteAIUIVisibility();
             RefreshDialogBindings();
 
@@ -1143,6 +1285,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             UpdatePasteAIUIVisibility();
             await UpdateFoundryLocalUIAsync();
+            await UpdatePhiSilicaUIAsync();
             RefreshDialogBindings();
             PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(provider.Id, provider.ServiceType);
             await PasteAIProviderConfigurationDialog.ShowAsync();

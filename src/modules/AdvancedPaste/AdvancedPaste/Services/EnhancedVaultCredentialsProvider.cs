@@ -168,6 +168,7 @@ public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
             case AIServiceType.ML:
             case AIServiceType.Onnx:
             case AIServiceType.Ollama:
+            case AIServiceType.PhiSilica:
                 return null;
             default:
                 return null;

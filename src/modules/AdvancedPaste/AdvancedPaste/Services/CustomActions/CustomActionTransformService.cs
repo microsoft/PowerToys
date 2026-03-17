@@ -207,6 +207,8 @@ namespace AdvancedPaste.Services.CustomActions
             {
                 AIServiceType.Onnx => false,
                 AIServiceType.Ollama => false,
+                AIServiceType.FoundryLocal => false,
+                AIServiceType.PhiSilica => false,
                 _ => true,
             };
         }

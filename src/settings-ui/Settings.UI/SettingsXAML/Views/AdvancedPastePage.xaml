@@ -239,7 +239,7 @@
                             <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsExpander
-                            Name="FixSpellingAndGrammar"
+                            x:Name="FixSpellingAndGrammar"
                             x:Uid="FixSpellingAndGrammar"
                             DataContext="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar, Mode=OneWay}"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE8E2;}"
@@ -437,7 +437,7 @@
                     <!--  Custom actions  -->
                     <controls:SettingsGroup x:Uid="AdvancedPaste_Additional_Actions_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander
-                            Name="AdvancedPasteUIActions"
+                            x:Name="AdvancedPasteUIActions"
                             x:Uid="AdvancedPasteUI_Actions"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE792;}"
                             IsEnabled="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
@@ -693,6 +693,26 @@
                             Margin="0,8,0,0"
                             Visibility="Collapsed">
                             <controls:FoundryLocalModelPicker x:Name="FoundryLocalPicker" />
+                        </Grid>
+
+                        <Grid
+                            x:Name="PhiSilicaPanel"
+                            Margin="0,8,0,0"
+                            Visibility="Collapsed">
+                            <StackPanel x:Name="PhiSilicaLoadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                                <ProgressRing Width="36" Height="36" HorizontalAlignment="Center" />
+                                <TextBlock HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Checking Phi Silica availability..." TextAlignment="Center" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel x:Name="PhiSilicaAvailablePanel" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8" Visibility="Collapsed">
+                                <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="24" Foreground="{ThemeResource SystemFillColorSuccessBrush}" Glyph="&#xE73E;" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="PhiSilicaAvailableText" HorizontalAlignment="Center" FontWeight="SemiBold" TextAlignment="Center" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel x:Name="PhiSilicaNotAvailablePanel" Margin="48,0,48,48" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8" Visibility="Collapsed">
+                                <Image Width="36" Source="ms-appx:///Assets/Settings/Icons/Models/WindowsML.svg" />
+                                <TextBlock x:Name="PhiSilicaNotAvailableTitle" HorizontalAlignment="Center" FontWeight="SemiBold" TextAlignment="Center" TextWrapping="Wrap" />
+                                <TextBlock x:Name="PhiSilicaNotAvailableDescription" HorizontalAlignment="Center" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" />
+                                <HyperlinkButton Content="Learn more about Copilot+ PCs" HorizontalAlignment="Center" NavigateUri="https://learn.microsoft.com/windows/ai/npu-devices/" />
+                            </StackPanel>
                         </Grid>
 
                         <StackPanel
