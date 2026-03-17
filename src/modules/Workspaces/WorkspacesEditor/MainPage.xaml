@@ -145,7 +145,7 @@
                     <DataTemplate DataType="models:Project">
                         <Button
                             x:Name="EditButton"
-                            Margin="0,12,0,0"
+                            Margin="0,4,0,0"
                             Padding="1"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
@@ -210,7 +210,8 @@
                                             Padding="8,8,8,7"
                                             HorizontalAlignment="Right"
                                             Background="Transparent"
-                                            Click="MoreButton_Click">
+                                            Click="MoreButton_Click"
+                                            Style="{DynamicResource SubtleButtonStyle}">
                                             <TextBlock
                                                 FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -238,7 +239,8 @@
                                                         Padding="24,4,24,4"
                                                         AutomationProperties.Name="{x:Static props:Resources.Edit}"
                                                         Background="Transparent"
-                                                        Click="EditButtonClicked">
+                                                        Click="EditButtonClicked"
+                                                        Style="{DynamicResource SubtleButtonStyle}">
                                                         <StackPanel Orientation="Horizontal">
                                                             <TextBlock
                                                                 AutomationProperties.Name="{x:Static props:Resources.Edit}"
@@ -256,7 +258,8 @@
                                                         Padding="24,4,24,4"
                                                         AutomationProperties.Name="{x:Static props:Resources.Delete}"
                                                         Background="Transparent"
-                                                        Click="DeleteButtonClicked">
+                                                        Click="DeleteButtonClicked"
+                                                        Style="{DynamicResource SubtleButtonStyle}">
                                                         <StackPanel Orientation="Horizontal">
                                                             <TextBlock
                                                                 AutomationProperties.Name="{x:Static props:Resources.Delete}"

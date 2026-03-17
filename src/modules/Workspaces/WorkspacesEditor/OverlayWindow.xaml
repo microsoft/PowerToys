@@ -12,5 +12,5 @@
     <Border
         Background="Transparent"
         BorderBrush="Red"
-        BorderThickness="3" />
+        BorderThickness="4" />
 </Window>

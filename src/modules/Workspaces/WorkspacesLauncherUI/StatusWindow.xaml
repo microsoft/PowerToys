@@ -52,8 +52,6 @@
                                 <TextBlock
                                     Grid.Column="1"
                                     VerticalAlignment="Center"
-                                    FontSize="14"
-                                    FontWeight="Normal"
                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                     Text="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                 <ProgressBar

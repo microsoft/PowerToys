@@ -7,9 +7,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:props="clr-namespace:WorkspacesEditor.Properties"
     Title="{x:Static props:Resources.SnapshotWindowTitle}"
-    Width="350"
+    Width="420"
     BorderBrush="Red"
-    BorderThickness="5"
+    BorderThickness="4"
     Closing="Window_Closing"
     ResizeMode="NoResize"
     SizeToContent="Height"
@@ -26,29 +26,31 @@
         </Grid.ColumnDefinitions>
         <TextBlock
             Grid.ColumnSpan="2"
-            Margin="5,5,5,15"
+            Margin="8,8,8,16"
             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
             Text="{x:Static props:Resources.SnapshotDescription}"
+            TextAlignment="Center"
             TextWrapping="Wrap" />
-        <Button
-            x:Name="CancelButton"
-            Grid.Row="1"
-            Height="36"
-            Margin="5,5,5,5"
-            HorizontalAlignment="Stretch"
-            AutomationProperties.Name="{x:Static props:Resources.Cancel}"
-            Click="CancelButtonClicked"
-            Content="{x:Static props:Resources.Cancel}" />
         <Button
             x:Name="SnapshotButton"
             Grid.Row="1"
-            Grid.Column="1"
             Height="36"
-            Margin="5,5,5,5"
+            Margin="8,8,4,8"
             HorizontalAlignment="Stretch"
             AutomationProperties.Name="{x:Static props:Resources.Take_Snapshot}"
             Click="SnapshotButtonClicked"
             Content="{x:Static props:Resources.Take_Snapshot}"
             Style="{DynamicResource AccentButtonStyle}" />
+        <Button
+            x:Name="CancelButton"
+            Grid.Row="1"
+            Grid.Column="1"
+            Height="36"
+            Margin="4,8,8,8"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{x:Static props:Resources.Cancel}"
+            Click="CancelButtonClicked"
+            Content="{x:Static props:Resources.Cancel}" />
+
     </Grid>
 </Window>
