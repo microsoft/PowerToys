@@ -102,7 +102,7 @@ winget install --scope machine Microsoft.PowerToys -s winget
 There are <a href="https://learn.microsoft.com/windows/powertoys/install#community-driven-install-tools">community driven install methods</a> such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
 </details>
 
-## ✨ What's new in the latest version?
+## ✨ What's new?
 
 [![What's new image](doc/images/readme/Release-Banner.png)](https://github.com/microsoft/PowerToys/releases)
 
