@@ -106,7 +106,7 @@ There are <a href="https://learn.microsoft.com/windows/powertoys/install#communi
 
 [![What's new image](doc/images/readme/Release-Banner.png)](https://github.com/microsoft/PowerToys/releases)
 
-To see what's new, check out the [release notes]().
+To see what's new, check out the [release notes](https://github.com/microsoft/PowerToys/releases/tag/v0.98.0).
 
 ## 🛣️ Roadmap 
 We are planning some nice new features and improvements for the next releases – PowerDisplay, Command Palette improvements and a brand-new Shortcut Guide experience! Stay tuned for [v0.99][github-next-release-work]!
