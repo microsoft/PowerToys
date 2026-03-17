@@ -76,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AddFlyoutMenuItem(ModuleType.Hosts);
             AddFlyoutMenuItem(ModuleType.KeyboardManager);
             AddFlyoutMenuItem(ModuleType.LightSwitch);
+            AddFlyoutMenuItem(ModuleType.MouseWithoutBorders);
 
             // AddFlyoutMenuItem(ModuleType.PowerDisplay); // TEMPORARILY_DISABLED: PowerDisplay
             AddFlyoutMenuItem(ModuleType.PowerLauncher);
@@ -169,6 +170,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 ModuleType.Workspaces => SettingsRepository<WorkspacesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.Hotkey.Value.ToString(),
                 ModuleType.MeasureTool => SettingsRepository<MeasureToolSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 ModuleType.ShortcutGuide => GetShortcutGuideToolTip(),
+                ModuleType.MouseWithoutBorders => SettingsRepository<MouseWithoutBordersSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ReconnectShortcut.ToString(),
                 _ => string.Empty,
             };
         }
