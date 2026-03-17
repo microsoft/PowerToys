@@ -2838,9 +2838,15 @@ struct FixedOverlayMask
     int tileRows = 0;
     std::vector<BYTE> maskedTiles;
 
+    // Pixel-level erase region for small floating overlays (e.g. spinner
+    // icon) that are too small/dynamic for tile-based suppression.  Before
+    // composing each frame, pixels within this rect that differ from the
+    // local background are replaced with the background color.
+    RECT eraseRect = {};  // In frame coordinates.  Empty if right<=left.
+
     bool Empty() const
     {
-        return maskedTiles.empty();
+        return maskedTiles.empty() && eraseRect.right <= eraseRect.left;
     }
 
     bool IsMaskedPixel( int x, int y ) const
@@ -2868,6 +2874,40 @@ struct FixedOverlayMask
         }
         return false;
     }
+
+    // Returns true if ALL tile columns in this pixel row are masked.
+    bool IsFullWidthMaskedRow( int y ) const
+    {
+        if( maskedTiles.empty() || tileHeight <= 0 || tileCols <= 0 || tileRows <= 0 )
+            return false;
+
+        const int tileY = min( tileRows - 1, max( 0, y / tileHeight ) );
+        const size_t rowBase = static_cast<size_t>( tileY ) * static_cast<size_t>( tileCols );
+        for( int tx = 0; tx < tileCols; ++tx )
+        {
+            if( maskedTiles[rowBase + static_cast<size_t>( tx )] == 0 )
+                return false;
+        }
+        return true;
+    }
+
+    // Returns the pixel-Y of the first masked row, or -1 if none.
+    int FirstMaskedY() const
+    {
+        if( maskedTiles.empty() || tileHeight <= 0 || tileCols <= 0 || tileRows <= 0 )
+            return -1;
+
+        for( int ty = 0; ty < tileRows; ++ty )
+        {
+            const size_t rowBase = static_cast<size_t>( ty ) * static_cast<size_t>( tileCols );
+            for( int tx = 0; tx < tileCols; ++tx )
+            {
+                if( maskedTiles[rowBase + static_cast<size_t>( tx )] != 0 )
+                    return ty * tileHeight;
+            }
+        }
+        return -1;
+    }
 };
 
 struct FixedOverlayDiagnostics
@@ -2886,6 +2926,7 @@ struct FixedOverlayDiagnostics
     unsigned __int64 fallbackPixels = 0;
     int correctedDarkBands = 0;
     int correctedDarkBandRows = 0;
+    int blendedToBaseline = 0;
 };
 
 static unsigned __int64 RepairSuppressedOverlayHoles( std::vector<BYTE>& pixels,
@@ -3453,7 +3494,7 @@ static int DetectFixedBottomStrip( const std::vector<std::vector<BYTE>>& framePi
         minMatchingRows = min( minMatchingRows, matchingRows );
     }
 
-    if( minMatchingRows < 32 )
+    if( minMatchingRows < 3 )
         return 0;
 
     // Verify the strip has visual content (not just uniform background).
@@ -3743,13 +3784,7 @@ static FixedOverlayMask BuildFixedOverlayMask( const std::vector<size_t>& compos
         diagnostics->connectedTileCount = connectedTileCount;
     }
 
-    if( connectedTileCount == 0 )
-    {
-        mask.maskedTiles.clear();
-        return mask;
-    }
-
-    if( connectedTileCount <= 2 )
+    if( connectedTileCount > 0 && connectedTileCount <= 2 )
     {
         minTileX = max( 0, minTileX - 1 );
         maxTileX = min( mask.tileCols - 1, maxTileX + 1 );
@@ -3757,6 +3792,14 @@ static FixedOverlayMask BuildFixedOverlayMask( const std::vector<size_t>& compos
         maxTileY = min( mask.tileRows - 1, maxTileY + 2 );
     }
 
+    if( connectedTileCount == 0 )
+    {
+        // No tile-level detections.  Skip bounds expansion and dense/sparse
+        // masking — the bottom strip detection below may still find overlays.
+        goto skipTileMasking;
+    }
+
+    { // Scope for tile masking.
     bool expandedBounds = true;
     while( expandedBounds )
     {
@@ -3892,8 +3935,17 @@ static FixedOverlayMask BuildFixedOverlayMask( const std::vector<size_t>& compos
         }
     }
 
+    } // End scope for tile masking.
+skipTileMasking:
+
     // Supplement with bottom-strip detection for overlays at the frame edge
     // that tile-based comparison misses (shifted position falls outside frame).
+    int maskedTileCount = 0;
+    for( size_t ti = 0; ti < tileCount; ++ti )
+    {
+        if( mask.maskedTiles[ti] != 0 )
+            ++maskedTileCount;
+    }
     const int fixedBottomRows = DetectFixedBottomStrip( framePixels,
                                                         composedFrameIndices,
                                                         composedFrameSteps,
@@ -3915,13 +3967,140 @@ static FixedOverlayMask BuildFixedOverlayMask( const std::vector<size_t>& compos
             }
         }
 
+        // Build a pixel-level erase rect for floating overlays (e.g.
+        // spinner icon) above the strip.  Try tile-detected tiles first;
+        // if none, fall back to pixel-level scanning for fixed bright
+        // clusters using pairs of nearby frames.
+        // Only count strong (connected) tile detections well above the
+        // strip as evidence of a separate floating overlay.  Tiles adjacent
+        // to the strip are part of the strip itself (the strip detector may
+        // underestimate its height, leaving edge tiles as "connected").
+        const int firstMaskedTileY = mask.FirstMaskedY() >= 0
+            ? mask.FirstMaskedY() / mask.tileHeight : stripStartTileY;
+        const int floatingCutoffTileY = min( stripStartTileY, firstMaskedTileY ) - 2;
+        int aboveSumX = 0, aboveSumY = 0, aboveCount = 0;
+        for( int tileY = 0; tileY < max( 0, floatingCutoffTileY ); ++tileY )
+        {
+            const size_t rowBase = static_cast<size_t>( tileY ) * static_cast<size_t>( mask.tileCols );
+            for( int tileX = 0; tileX < mask.tileCols; ++tileX )
+            {
+                if( connectedTiles[rowBase + static_cast<size_t>( tileX )] != 0 )
+                {
+                    aboveSumX += tileX * mask.tileWidth + mask.tileWidth / 2;
+                    aboveSumY += tileY * mask.tileHeight + mask.tileHeight / 2;
+                    ++aboveCount;
+                }
+            }
+        }
+
+        // Pixel-level fallback: scan for fixed overlay pixels above the
+        // strip by comparing far-apart frames.  Page content scrolls away
+        // between distant frames, so only fixed overlay pixels match.
+        if( aboveCount == 0 && composedFrameIndices.size() >= 4 )
+        {
+            const int firstMaskedY = mask.FirstMaskedY();
+            const int scanBot = ( firstMaskedY >= 0 )
+                ? firstMaskedY
+                : max( 0, frameHeight - fixedBottomRows );
+            const int scanTop = max( 0, scanBot - frameHeight / 4 );
+            const int bgThresh = 12;
+            const int matchThresh = 14;
+            const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) * 4;
+
+            // Pick 4-5 frames spread across the composed set for maximum
+            // scroll separation.  Only truly fixed pixels will match all.
+            std::vector<const std::vector<BYTE>*> spread;
+            const size_t n = composedFrameIndices.size();
+            for( size_t si : { size_t(0), n / 4, n / 2, n * 3 / 4, n - 1 } )
+            {
+                if( si < n )
+                {
+                    const auto& fp = framePixels[composedFrameIndices[si]];
+                    if( !fp.empty() && fp.size() == pixelCount )
+                        spread.push_back( &fp );
+                }
+            }
+
+            if( spread.size() >= 3 )
+            {
+                const auto& ref = *spread[0];
+
+                // Sample background from frame edges.
+                int bgR = 0, bgG = 0, bgB = 0, bgN = 0;
+                for( int y = scanTop; y < scanBot; y += 8 )
+                {
+                    for( int sx : { 0, frameWidth - 1 } )
+                    {
+                        const size_t idx = ( static_cast<size_t>( y ) * frameWidth + sx ) * 4;
+                        bgB += ref[idx + 0]; bgG += ref[idx + 1]; bgR += ref[idx + 2]; ++bgN;
+                    }
+                }
+                if( bgN > 0 ) { bgR /= bgN; bgG /= bgN; bgB /= bgN; }
+
+                long long sumX = 0, sumY = 0;
+                int fixedCount = 0;
+                for( int y = scanTop; y < scanBot; y += 2 )
+                {
+                    for( int x = 0; x < frameWidth; x += 2 )
+                    {
+                        const size_t idx = ( static_cast<size_t>( y ) * frameWidth + x ) * 4;
+
+                        // Must differ from background.
+                        const int drBg = max( abs( static_cast<int>( ref[idx + 2] ) - bgR ),
+                                              max( abs( static_cast<int>( ref[idx + 1] ) - bgG ),
+                                                   abs( static_cast<int>( ref[idx + 0] ) - bgB ) ) );
+                        if( drBg <= bgThresh )
+                            continue;
+
+                        // Must match ALL far-apart frames.
+                        bool allMatch = true;
+                        for( size_t fi = 1; fi < spread.size() && allMatch; ++fi )
+                        {
+                            const auto& fp = *spread[fi];
+                            const int d = max( abs( static_cast<int>( ref[idx+0] ) - static_cast<int>( fp[idx+0] ) ),
+                                               max( abs( static_cast<int>( ref[idx+1] ) - static_cast<int>( fp[idx+1] ) ),
+                                                    abs( static_cast<int>( ref[idx+2] ) - static_cast<int>( fp[idx+2] ) ) ) );
+                            if( d > matchThresh )
+                                allMatch = false;
+                        }
+                        if( allMatch )
+                        {
+                            sumX += x;
+                            sumY += y;
+                            ++fixedCount;
+                        }
+                    }
+                }
+
+                if( fixedCount >= 4 )
+                {
+                    aboveSumX = static_cast<int>( sumX / fixedCount );
+                    aboveSumY = static_cast<int>( sumY / fixedCount );
+                    aboveCount = 1;
+                }
+            }
+        }
+
+        if( aboveCount > 0 )
+        {
+            const int cx = ( aboveCount == 1 ) ? aboveSumX : aboveSumX / aboveCount;
+            const int cy = ( aboveCount == 1 ) ? aboveSumY : aboveSumY / aboveCount;
+            mask.eraseRect.left   = max( 0L, static_cast<long>( cx ) - 40 );
+            mask.eraseRect.top    = max( 0L, static_cast<long>( cy ) - 20 );
+            mask.eraseRect.right  = min( static_cast<long>( frameWidth ), static_cast<long>( cx ) + 40 );
+            mask.eraseRect.bottom = min( static_cast<long>( frameHeight ), static_cast<long>( cy ) + 20 );
+        }
+
         minTileX = 0;
         minTileY = min( minTileY, stripStartTileY );
         maxTileX = mask.tileCols - 1;
         maxTileY = mask.tileRows - 1;
     }
 
-    if( maskedTileCount == 0 )
+    // (No secondary fallback — the far-apart-frame scan above handles
+    // both animated and static overlay detection.)
+
+    if( maskedTileCount == 0 && mask.eraseRect.right <= mask.eraseRect.left )
     {
         mask.maskedTiles.clear();
         return mask;
@@ -3930,10 +4109,13 @@ static FixedOverlayMask BuildFixedOverlayMask( const std::vector<size_t>& compos
     if( diagnostics != nullptr )
     {
         diagnostics->maskedTileCount = maskedTileCount;
-        diagnostics->tileBoundsLeft = minTileX * mask.tileWidth;
-        diagnostics->tileBoundsTop = minTileY * mask.tileHeight;
-        diagnostics->tileBoundsRight = min( frameWidth, ( maxTileX + 1 ) * mask.tileWidth );
-        diagnostics->tileBoundsBottom = min( frameHeight, ( maxTileY + 1 ) * mask.tileHeight );
+        if( maskedTileCount > 0 )
+        {
+            diagnostics->tileBoundsLeft = minTileX * mask.tileWidth;
+            diagnostics->tileBoundsTop = minTileY * mask.tileHeight;
+            diagnostics->tileBoundsRight = min( frameWidth, ( maxTileX + 1 ) * mask.tileWidth );
+            diagnostics->tileBoundsBottom = min( frameHeight, ( maxTileY + 1 ) * mask.tileHeight );
+        }
     }
 
     return mask;
@@ -5990,7 +6172,6 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         }
         else if( rankScore == bestFineRankScore )
         {
-            const int absStepLo = abs( dy );
             const int absDx = abs( dx );
             const int expectedDelta = ( expectedAbsStep > 0 ) ? abs( absStepLo - expectedAbsStep ) : ( std::numeric_limits<int>::max )();
 
@@ -6010,7 +6191,6 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         else if( expectedAbsStep > 0 && bestFineRankScore != ( std::numeric_limits<unsigned __int64>::max )() )
         {
             unsigned __int64 scoreSlack = (std::max)( static_cast<unsigned __int64>( 2 ), bestFineRankScore / 80 );
-            const int absStepLo = abs( dy );
             const int absDx = abs( dx );
             const int expectedDelta = abs( absStepLo - expectedAbsStep );
             const bool preferExpectedStep = ( highConstantFractionPair || expectedAbsStep >= frameHeight / 4 ) &&
@@ -9121,6 +9301,129 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                        mostlyVerticalMove ? L"vertical" : ( mostlyHorizontalMove ? L"horizontal" : L"neutral" ),
                        overlayMask ? 1 : 0 );
 
+            // Replace floating-overlay pixels with actual page content from
+            // another frame where the same content is visible outside the
+            // overlay region.  The overlay (spinner icon) sits at a fixed
+            // screen position, but the page scrolls — so any page content
+            // hidden by the overlay in this frame is visible at a shifted
+            // position in a nearby frame.
+            std::vector<BYTE> erasedPixels;
+            const std::vector<BYTE>* composeSrc = &sourcePixels;
+            if( overlayMask != nullptr &&
+                overlayMask->eraseRect.right > overlayMask->eraseRect.left &&
+                overlayMask->eraseRect.bottom > overlayMask->eraseRect.top )
+            {
+                const RECT& er = overlayMask->eraseRect;
+                erasedPixels = sourcePixels;
+                bool anyReplaced = false;
+
+                for( int ey = er.top; ey < er.bottom && ey < frameHeight; ++ey )
+                {
+                    // For this row, find a donor frame where the same page
+                    // content falls outside the erase rect.  Search nearby
+                    // frames first (closest scroll offset).
+                    bool rowReplaced = false;
+                    for( int dist = 1; dist <= static_cast<int>( composedFrameIndices.size() ) && !rowReplaced; ++dist )
+                    {
+                        for( int sign = -1; sign <= 1 && !rowReplaced; sign += 2 )
+                        {
+                            const int j = static_cast<int>( i ) + dist * sign;
+                            if( j < 0 || j >= static_cast<int>( composedFrameIndices.size() ) )
+                                continue;
+
+                            // Compute where this row's page content appears in frame j.
+                            const int donorY = ey + ( composedFrameOrigins[i].y - composedFrameOrigins[j].y );
+                            if( donorY < 0 || donorY >= frameHeight )
+                                continue;
+
+                            // The donor row must be outside the erase rect in frame j,
+                            // and outside any tile-masked overlay area (e.g. bottom strip).
+                            if( donorY >= er.top && donorY < er.bottom )
+                                continue;
+                            if( overlayMask->IsFullWidthMaskedRow( donorY ) )
+                                continue;
+
+                            const auto& donorPixels = framePixels[composedFrameIndices[j]];
+                            if( donorPixels.empty() || donorPixels.size() != sourcePixels.size() )
+                                continue;
+
+                            // Sample context luma just outside the erase rect
+                            // to validate donor content plausibility.
+                            const int exLeft = max( 0, static_cast<int>( er.left ) );
+                            const int exRight = min( frameWidth, static_cast<int>( er.right ) );
+                            int ctxLuma = 0, ctxN = 0;
+                            for( int cx2 = max( 0, exLeft - 8 ); cx2 < exLeft; ++cx2 )
+                            {
+                                const size_t ci2 = ( static_cast<size_t>( ey ) * frameWidth + cx2 ) * 4;
+                                ctxLuma += sourcePixels[ci2 + 0] + sourcePixels[ci2 + 1] + sourcePixels[ci2 + 2];
+                                ctxN += 3;
+                            }
+                            for( int cx2 = exRight; cx2 < min( frameWidth, exRight + 8 ); ++cx2 )
+                            {
+                                const size_t ci2 = ( static_cast<size_t>( ey ) * frameWidth + cx2 ) * 4;
+                                ctxLuma += sourcePixels[ci2 + 0] + sourcePixels[ci2 + 1] + sourcePixels[ci2 + 2];
+                                ctxN += 3;
+                            }
+                            const int avgCtx = ( ctxN > 0 ) ? ctxLuma / ctxN : 128;
+
+                            // Copy donor pixels, but validate against context.
+                            const int donorDx = composedFrameOrigins[i].x - composedFrameOrigins[j].x;
+                            bool donorAccepted = true;
+                            for( int ex = exLeft; ex < exRight; ++ex )
+                            {
+                                const int donorX = ex + donorDx;
+                                if( donorX < 0 || donorX >= frameWidth )
+                                    continue;
+
+                                const size_t dstIdx = ( static_cast<size_t>( ey ) * frameWidth + ex ) * 4;
+                                const size_t srcIdx = ( static_cast<size_t>( donorY ) * frameWidth + donorX ) * 4;
+                                const int donorLuma = ( donorPixels[srcIdx + 0] + donorPixels[srcIdx + 1] + donorPixels[srcIdx + 2] ) / 3;
+
+                                // If donor pixel diverges wildly from surrounding
+                                // context, skip this entire donor row.
+                                if( abs( donorLuma - avgCtx ) > 60 )
+                                {
+                                    donorAccepted = false;
+                                    break;
+                                }
+
+                                erasedPixels[dstIdx + 0] = donorPixels[srcIdx + 0];
+                                erasedPixels[dstIdx + 1] = donorPixels[srcIdx + 1];
+                                erasedPixels[dstIdx + 2] = donorPixels[srcIdx + 2];
+                            }
+
+                            if( !donorAccepted )
+                            {
+                                // Revert: copy original pixels back.
+                                for( int ex = exLeft; ex < exRight; ++ex )
+                                {
+                                    const size_t dstIdx = ( static_cast<size_t>( ey ) * frameWidth + ex ) * 4;
+                                    erasedPixels[dstIdx + 0] = sourcePixels[dstIdx + 0];
+                                    erasedPixels[dstIdx + 1] = sourcePixels[dstIdx + 1];
+                                    erasedPixels[dstIdx + 2] = sourcePixels[dstIdx + 2];
+                                }
+                                continue;  // Try next donor.
+                            }
+
+                            rowReplaced = true;
+                            anyReplaced = true;
+                        }
+                    }
+                }
+
+                if( anyReplaced )
+                {
+                    composeSrc = &erasedPixels;
+                }
+
+                if( i == 0 )
+                {
+                    StitchLog( L"[Panorama/Stitch] EraseRect: (%d,%d)-(%d,%d) replaced=%d\n",
+                        er.left, er.top, er.right, er.bottom, anyReplaced ? 1 : 0 );
+                }
+            }
+            const std::vector<BYTE>& activePixels = *composeSrc;
+
             parallel_for( 0, frameHeight, [&]( int y )
             {
                 const int canvasY = destinationY + y;
@@ -9137,7 +9440,6 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 int rowBlendWeightMinThisFrame = 255;
                 int rowBlendWeightMaxThisFrame = 0;
                 unsigned __int64 rowSuppressedPixels = 0;
-                const bool overlayMaskedRow = overlayMask != nullptr && overlayMask->IsMaskedRow( y );
 
                 for( int x = 0; x < frameWidth; ++x )
                 {
@@ -9240,9 +9542,9 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
                     if( outWritten[dstMaskIndex] == 0 )
                     {
-                        outPixels[dstIndex + 0] = sourcePixels[srcIndex + 0];
-                        outPixels[dstIndex + 1] = sourcePixels[srcIndex + 1];
-                        outPixels[dstIndex + 2] = sourcePixels[srcIndex + 2];
+                        outPixels[dstIndex + 0] = activePixels[srcIndex + 0];
+                        outPixels[dstIndex + 1] = activePixels[srcIndex + 1];
+                        outPixels[dstIndex + 2] = activePixels[srcIndex + 2];
                         outPixels[dstIndex + 3] = 0xFF;
                         outWritten[dstMaskIndex] = 1;
                         outOwner[dstMaskIndex] = static_cast<int>( frameIndex );
@@ -9257,9 +9559,9 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
                     if( weightNew == 255 )
                     {
-                        outPixels[dstIndex + 0] = sourcePixels[srcIndex + 0];
-                        outPixels[dstIndex + 1] = sourcePixels[srcIndex + 1];
-                        outPixels[dstIndex + 2] = sourcePixels[srcIndex + 2];
+                        outPixels[dstIndex + 0] = activePixels[srcIndex + 0];
+                        outPixels[dstIndex + 1] = activePixels[srcIndex + 1];
+                        outPixels[dstIndex + 2] = activePixels[srcIndex + 2];
                         outPixels[dstIndex + 3] = 0xFF;
                         outOwner[dstMaskIndex] = static_cast<int>( frameIndex );
                         outBlended[dstMaskIndex] = 0;
@@ -9268,11 +9570,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
                     const int oldWeight = 255 - static_cast<int>( weightNew );
                     outPixels[dstIndex + 0] = static_cast<BYTE>( ( static_cast<int>( outPixels[dstIndex + 0] ) * oldWeight +
-                                                                    static_cast<int>( sourcePixels[srcIndex + 0] ) * static_cast<int>( weightNew ) ) / 255 );
+                                                                    static_cast<int>( activePixels[srcIndex + 0] ) * static_cast<int>( weightNew ) ) / 255 );
                     outPixels[dstIndex + 1] = static_cast<BYTE>( ( static_cast<int>( outPixels[dstIndex + 1] ) * oldWeight +
-                                                                    static_cast<int>( sourcePixels[srcIndex + 1] ) * static_cast<int>( weightNew ) ) / 255 );
+                                                                    static_cast<int>( activePixels[srcIndex + 1] ) * static_cast<int>( weightNew ) ) / 255 );
                     outPixels[dstIndex + 2] = static_cast<BYTE>( ( static_cast<int>( outPixels[dstIndex + 2] ) * oldWeight +
-                                                                    static_cast<int>( sourcePixels[srcIndex + 2] ) * static_cast<int>( weightNew ) ) / 255 );
+                                                                    static_cast<int>( activePixels[srcIndex + 2] ) * static_cast<int>( weightNew ) ) / 255 );
                     outPixels[dstIndex + 3] = 0xFF;
                     outBlended[dstMaskIndex] = 1;
                     ++rowBlendPixelsThisFrame;
