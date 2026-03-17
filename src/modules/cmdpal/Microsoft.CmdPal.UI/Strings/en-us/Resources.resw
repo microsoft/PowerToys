@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -428,7 +428,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Description" xml:space="preserve">
     <value>Disable animations when switching between pages</value>
   </data>
-    <data name="Settings_GeneralPage_EnableDock_SettingsCard.Header" xml:space="preserve">
+  <data name="Settings_GeneralPage_EnableDock_SettingsCard.Header" xml:space="preserve">
     <value>Enable Dock</value>
   </data>
   <data name="Settings_GeneralPage_EnableDock_SettingsCard.Description" xml:space="preserve">
@@ -757,23 +757,17 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_VersionNo" xml:space="preserve">
     <value>Version {0}</value>
   </data>
-  <data name="Settings_NavigationViewItem_DockAppearance.Content" xml:space="preserve">
-    <value>Dock Appearance</value>
-  </data>
-  <data name="Settings_PageTitles_DockAppearancePage" xml:space="preserve">
-    <value>Dock Appearance</value>
-  </data>
   <data name="DockAppearance_AppTheme_SettingsCard.Header" xml:space="preserve">
-    <value>Dock theme mode</value>
+    <value>Theme mode</value>
   </data>
   <data name="DockAppearance_AppTheme_SettingsCard.Description" xml:space="preserve">
-    <value>Select which theme to display for the dock</value>
+    <value>Select which theme to display</value>
   </data>
   <data name="DockAppearance_Backdrop_SettingsCard.Header" xml:space="preserve">
     <value>Material</value>
   </data>
   <data name="DockAppearance_Backdrop_SettingsCard.Description" xml:space="preserve">
-    <value>Select the visual material used for the dock</value>
+    <value>Select the visual material</value>
   </data>
   <data name="DockAppearance_Backdrop_Mica.Content" xml:space="preserve">
     <value>Mica</value>
@@ -889,10 +883,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Assign shortcut</value>
   </data>
   <data name="DockAppearance_DockPosition_SettingsCard.Header" xml:space="preserve">
-    <value>Dock position</value>
+    <value>Position</value>
   </data>
   <data name="DockAppearance_DockPosition_SettingsExpander.Description" xml:space="preserve">
-    <value>Choose where the dock appears on your screen</value>
+    <value>Choose where the Dock appears on your screen</value>
   </data>
   <data name="DockAppearance_DockPosition_Left.Content" xml:space="preserve">
     <value>Left</value>
@@ -906,12 +900,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="DockAppearance_DockPosition_Bottom.Content" xml:space="preserve">
     <value>Bottom</value>
   </data>
-  <data name="DockAppearance_ShowLabels_CheckBox.Header" xml:space="preserve">
-    <value>Show labels</value>
-  </data>
-  <data name="DockAppearance_ShowLabels_CheckBox.Description" xml:space="preserve">
-    <value>Show labels for dock items by default</value>
-  </data>
   <data name="top_level_pin_command_name" xml:space="preserve">
     <value>Pin to home</value>
     <comment>Command name for pinning an item to the top level list of commands</comment>
@@ -921,11 +909,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Command name for unpinning an item from the top level list of commands</comment>
   </data>
   <data name="dock_pin_command_name" xml:space="preserve">
-    <value>Pin to dock</value>
+    <value>Pin to Dock</value>
     <comment>Command name for pinning an item to the dock</comment>
   </data>
   <data name="dock_unpin_command_name" xml:space="preserve">
-    <value>Unpin from dock</value>
+    <value>Unpin from Dock</value>
     <comment>Command name for unpinning an item from the dock</comment>
   </data>
   <data name="FiltersDropDown.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -948,6 +936,52 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="FiltersDropDown_NoResults.Text" xml:space="preserve">
     <value>No results</value>
+  </data>
+  <data name="Dock_EditMode_Labels.Text" xml:space="preserve">
+    <value>Labels</value>
+  </data>
+  <data name="Dock_EditMode_ShowTitles.Text" xml:space="preserve">
+    <value>Show titles</value>
+  </data>
+  <data name="Dock_EditMode_ShowSubtitles.Text" xml:space="preserve">
+    <value>Show subtitles</value>
+  </data>
+  <data name="Dock_EditMode_Unpin.Text" xml:space="preserve">
+    <value>Unpin</value>
+  </data>
+  <data name="Dock_AddBand_NoCommandsAvailable.Text" xml:space="preserve">
+    <value>All available bands are already pinned.</value>
+  </data>
+    <data name="Dock_Pin_Instruction.Text" xml:space="preserve">
+    <value>To pin commands, extensions or apps, use the Pin to Dock command in Command Palette.</value>
+  </data>
+    <data name="Dock_Bands_Header.Text" xml:space="preserve">
+    <value>Bands</value>
+  </data>
+    <data name="Dock_AddBand_StartTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Add band to start</value>
+  </data>
+  <data name="Dock_AddBand_CenterTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Add band to center</value>
+  </data>
+  <data name="Dock_AddBand_EndTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Add band to end</value>
+  </data>
+  <data name="Dock_EditMode_Save.Content" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Dock_EditMode_Discard.Content" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="CmdPal_LearnMore.Content" xml:space="preserve">
+    <value>Learn more about Command Palette</value>
+  </data>
+  <data name="CmdPalDock_LearnMore.Content" xml:space="preserve">
+    <value>Learn more about Command Palette Dock</value>
+  </data>
+  <data name="SettingsPage_NewInfoBadge.Text" xml:space="preserve">
+    <value>NEW</value>
+    <comment>Must be all caps</comment>
   </data>
   <data name="ImageContentViewer_ZoomAndScroll.Text" xml:space="preserve">
     <value>Zoom &amp; Scroll</value>

@@ -21,7 +21,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <ScrollViewer Grid.Row="1">
-            <Grid Padding="16">
+            <Grid Padding="16,0,16,16">
                 <StackPanel
                     MaxWidth="1000"
                     HorizontalAlignment="Stretch"
@@ -37,6 +37,12 @@
                   <RepositionThemeTransition IsStaggeringEnabled="False" />
               </StackPanel.ChildrenTransitions>-->
 
+                    <HyperlinkButton
+                        x:Uid="CmdPalDock_LearnMore"
+                        Margin="0,0,0,36"
+                        Padding="0"
+                        FontWeight="SemiBold"
+                        NavigateUri="https://aka.ms/cmdpal-dock" />
                     <!--  Enable Dock  -->
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_EnableDock_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF596;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.EnableDock, Mode=TwoWay}" />
@@ -207,7 +213,7 @@
                     </controls:SettingsExpander>
 
                     <!--  Bands Section  -->
-                    <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <!--  <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <ItemsRepeater ItemsSource="{x:Bind AllDockBandItems}">
                         <ItemsRepeater.Layout>
@@ -235,7 +241,7 @@
                                 </controls:SettingsCard>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
+                    </ItemsRepeater>-->
                 </StackPanel>
             </Grid>
         </ScrollViewer>

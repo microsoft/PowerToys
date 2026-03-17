@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Dock.DockControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -108,24 +108,24 @@
 
             <!--  Edit mode context menu for dock bands  -->
             <MenuFlyout x:Name="EditModeContextMenu" ShouldConstrainToRootBounds="False">
-                <MenuFlyoutSubItem x:Name="LabelsSubMenu" Text="Labels">
+                <MenuFlyoutSubItem x:Name="LabelsSubMenu" x:Uid="Dock_EditMode_Labels">
                     <MenuFlyoutSubItem.Icon>
                         <FontIcon Glyph="&#xE8EC;" />
                     </MenuFlyoutSubItem.Icon>
                     <ToggleMenuFlyoutItem
                         x:Name="ShowTitlesMenuItem"
-                        Click="ShowTitlesMenuItem_Click"
-                        Text="Show titles" />
+                        x:Uid="Dock_EditMode_ShowTitles"
+                        Click="ShowTitlesMenuItem_Click" />
                     <ToggleMenuFlyoutItem
                         x:Name="ShowSubtitlesMenuItem"
-                        Click="ShowSubtitlesMenuItem_Click"
-                        Text="Show subtitles" />
+                        x:Uid="Dock_EditMode_ShowSubtitles"
+                        Click="ShowSubtitlesMenuItem_Click" />
                 </MenuFlyoutSubItem>
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem
                     x:Name="UnpinBandMenuItem"
-                    Click="UnpinBandMenuItem_Click"
-                    Text="Unpin">
+                    x:Uid="Dock_EditMode_Unpin"
+                    Click="UnpinBandMenuItem_Click">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE77A;" />
                     </MenuFlyoutItem.Icon>
@@ -139,15 +139,18 @@
                 ShouldConstrainToRootBounds="False">
                 <StackPanel Width="320">
                     <TextBlock
+                        x:Uid="Dock_Bands_Header"
+                        Margin="8,8,8,12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock
                         x:Name="NoAvailableBandsText"
-                        Padding="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="No commands available to pin"
-                        TextAlignment="Center"
+                        x:Uid="Dock_AddBand_NoCommandsAvailable"
+                        Margin="8,0,0,0"
                         Visibility="Collapsed" />
                     <ListView
                         x:Name="AddBandListView"
                         MaxHeight="300"
+                        Margin="-12,0,-12,0"
                         HorizontalAlignment="Stretch"
                         IsItemClickEnabled="True"
                         ItemClick="AddBandListView_ItemClick"
@@ -175,6 +178,30 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+                    <Rectangle
+                        Height="1"
+                        Margin="-16,24,-16,0"
+                        HorizontalAlignment="Stretch"
+                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    <Grid Margin="8,24,0,0" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            Margin="0,4,0,0"
+                            VerticalAlignment="Top"
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xE946;" />
+                        <TextBlock
+                            x:Uid="Dock_Pin_Instruction"
+                            Grid.Column="1"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            TextWrapping="Wrap" />
+                    </Grid>
                 </StackPanel>
             </Flyout>
         </ResourceDictionary>
@@ -188,16 +215,18 @@
         <local:DockContentControl
             x:Name="ContentGrid"
             Margin="4"
-            Padding="0,0,0,0"
             Background="Transparent"
             IsEditMode="{x:Bind IsEditMode, Mode=OneWay}"
             RightTapped="RootGrid_RightTapped">
             <local:DockContentControl.StartSource>
                 <ListView
                     x:Name="StartListView"
+                    MinWidth="48"
                     HorizontalAlignment="Stretch"
+                    DragEnter="BandListView_DragEnter"
                     DragItemsCompleted="BandListView_DragItemsCompleted"
                     DragItemsStarting="BandListView_DragItemsStarting"
+                    DragLeave="BandListView_DragLeave"
                     DragOver="BandListView_DragOver"
                     Drop="StartListView_Drop"
                     ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
@@ -210,10 +239,11 @@
             <local:DockContentControl.StartActionButton>
                 <Button
                     x:Name="StartAddButton"
+                    x:Uid="Dock_AddBand_StartTooltip"
+                    MinHeight="30"
                     Click="AddBandButton_Click"
                     Style="{StaticResource SubtleButtonStyle}"
-                    Tag="Start"
-                    ToolTipService.ToolTip="Add band to Start">
+                    Tag="Start">
                     <FontIcon FontSize="12" Glyph="&#xE710;" />
                 </Button>
             </local:DockContentControl.StartActionButton>
@@ -221,9 +251,12 @@
             <local:DockContentControl.CenterSource>
                 <ListView
                     x:Name="CenterListView"
+                    MinWidth="48"
                     HorizontalAlignment="Stretch"
+                    DragEnter="BandListView_DragEnter"
                     DragItemsCompleted="BandListView_DragItemsCompleted"
                     DragItemsStarting="BandListView_DragItemsStarting"
+                    DragLeave="BandListView_DragLeave"
                     DragOver="BandListView_DragOver"
                     Drop="CenterListView_Drop"
                     ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
@@ -236,10 +269,11 @@
             <local:DockContentControl.CenterActionButton>
                 <Button
                     x:Name="CenterAddButton"
+                    x:Uid="Dock_AddBand_CenterTooltip"
+                    MinHeight="30"
                     Click="AddBandButton_Click"
                     Style="{StaticResource SubtleButtonStyle}"
-                    Tag="Center"
-                    ToolTipService.ToolTip="Add band to Center">
+                    Tag="Center">
                     <FontIcon FontSize="12" Glyph="&#xE710;" />
                 </Button>
             </local:DockContentControl.CenterActionButton>
@@ -247,8 +281,11 @@
             <local:DockContentControl.EndSource>
                 <ListView
                     x:Name="EndListView"
+                    MinWidth="48"
+                    DragEnter="BandListView_DragEnter"
                     DragItemsCompleted="BandListView_DragItemsCompleted"
                     DragItemsStarting="BandListView_DragItemsStarting"
+                    DragLeave="BandListView_DragLeave"
                     DragOver="BandListView_DragOver"
                     Drop="EndListView_Drop"
                     ItemContainerStyle="{StaticResource DockBandListViewItemStyle}"
@@ -265,10 +302,11 @@
             <local:DockContentControl.EndActionButton>
                 <Button
                     x:Name="EndAddButton"
+                    x:Uid="Dock_AddBand_EndTooltip"
+                    MinHeight="30"
                     Click="AddBandButton_Click"
                     Style="{StaticResource SubtleButtonStyle}"
-                    Tag="End"
-                    ToolTipService.ToolTip="Add band to End">
+                    Tag="End">
                     <FontIcon FontSize="12" Glyph="&#xE710;" />
                 </Button>
             </local:DockContentControl.EndActionButton>
@@ -281,7 +319,6 @@
             ShouldConstrainToRootBounds="False"
             Style="{StaticResource TeachingTipWithoutCloseButtonStyle}"
             Target="{x:Bind ContentGrid}">
-
             <TeachingTip.Content>
                 <StackPanel
                     x:Name="EditButtonsPanel"
@@ -289,14 +326,14 @@
                     Orientation="Vertical"
                     Spacing="4">
                     <Button
+                        x:Uid="Dock_EditMode_Save"
                         HorizontalAlignment="Stretch"
                         Click="DoneEditingButton_Click"
-                        Content="Save"
                         Style="{StaticResource AccentButtonStyle}" />
                     <Button
+                        x:Uid="Dock_EditMode_Discard"
                         HorizontalAlignment="Stretch"
-                        Click="DiscardEditingButton_Click"
-                        Content="Discard" />
+                        Click="DiscardEditingButton_Click" />
                 </StackPanel>
             </TeachingTip.Content>
         </TeachingTip>
@@ -328,6 +365,9 @@
                         <Setter Target="ContentGrid.Margin" Value="0,0,4,4" />
                         <Setter Target="ContentGrid.Padding" Value="0,0,4,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,0,1,0" />
+                        <Setter Target="StartListView.MinHeight" Value="48" />
+                        <Setter Target="CenterListView.MinHeight" Value="48" />
+                        <Setter Target="EndListView.MinHeight" Value="48" />
                         <Setter Target="StartListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
                         <Setter Target="CenterListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
                         <Setter Target="EndListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
@@ -342,6 +382,9 @@
                         <Setter Target="ContentGrid.Margin" Value="4,0,0,4" />
                         <Setter Target="ContentGrid.Padding" Value="4,0,0,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
+                        <Setter Target="StartListView.MinHeight" Value="48" />
+                        <Setter Target="CenterListView.MinHeight" Value="48" />
+                        <Setter Target="EndListView.MinHeight" Value="48" />
                         <Setter Target="StartListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
                         <Setter Target="CenterListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
                         <Setter Target="EndListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />

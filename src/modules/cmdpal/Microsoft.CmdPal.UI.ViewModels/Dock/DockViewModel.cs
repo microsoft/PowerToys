@@ -29,7 +29,7 @@ public sealed partial class DockViewModel
 
     public ObservableCollection<DockBandViewModel> EndItems { get; } = new();
 
-    public ObservableCollection<TopLevelViewModel> AllItems => _topLevelCommandManager.DockBands;
+    public IReadOnlyList<TopLevelViewModel> AllItems => _topLevelCommandManager.GetDockBandsSnapshot();
 
     public DockViewModel(
         TopLevelCommandManager tlcManager,

@@ -73,6 +73,7 @@ private:
 
     HANDLE m_hTerminateEngineEvent = nullptr;
     HANDLE m_open_new_editor_event_handle{ nullptr };
+    HANDLE m_toggle_active_event_handle{ nullptr };
     std::thread m_toggle_thread;
     std::atomic<bool> m_toggle_thread_running{ false };
 
@@ -84,6 +85,19 @@ private:
             CloseHandle(m_hProcess);
             m_hProcess = nullptr;
             m_active = false;
+        }
+    }
+
+    void toggle_engine()
+    {
+        refresh_process_state();
+        if (m_active)
+        {
+            stop_engine();
+        }
+        else
+        {
+            start_engine();
         }
     }
 
@@ -273,6 +287,7 @@ public:
         }
 
         m_open_new_editor_event_handle = CreateDefaultEvent(CommonSharedConstants::OPEN_NEW_KEYBOARD_MANAGER_EVENT);
+        m_toggle_active_event_handle = CreateDefaultEvent(CommonSharedConstants::TOGGLE_KEYBOARD_MANAGER_ACTIVE_EVENT);
 
         init_settings();
     };
@@ -290,6 +305,11 @@ public:
         {
             CloseHandle(m_open_new_editor_event_handle);
             m_open_new_editor_event_handle = nullptr;
+        }
+        if (m_toggle_active_event_handle)
+        {
+            CloseHandle(m_toggle_active_event_handle);
+            m_toggle_active_event_handle = nullptr;
         }
         if (m_hEditorProcess)
         {
@@ -422,25 +442,45 @@ public:
 
     void StartOpenEditorListener()
     {
-        if (m_toggle_thread_running || !m_open_new_editor_event_handle)
+        if (m_toggle_thread_running || (!m_open_new_editor_event_handle && !m_toggle_active_event_handle))
         {
             return;
         }
 
         m_toggle_thread_running = true;
         m_toggle_thread = std::thread([this]() {
+            HANDLE handles[2]{};
+            DWORD handle_count = 0;
+            DWORD open_editor_index = MAXDWORD;
+            DWORD toggle_active_index = MAXDWORD;
+
+            if (m_open_new_editor_event_handle)
+            {
+                open_editor_index = handle_count;
+                handles[handle_count++] = m_open_new_editor_event_handle;
+            }
+
+            if (m_toggle_active_event_handle)
+            {
+                toggle_active_index = handle_count;
+                handles[handle_count++] = m_toggle_active_event_handle;
+            }
+
             while (m_toggle_thread_running)
             {
-                const DWORD wait_result = WaitForSingleObject(m_open_new_editor_event_handle, 500);
+                const DWORD wait_result = WaitForMultipleObjects(handle_count, handles, FALSE, 500);
                 if (!m_toggle_thread_running)
                 {
                     break;
                 }
 
-                if (wait_result == WAIT_OBJECT_0)
+                if (open_editor_index != MAXDWORD && wait_result == (WAIT_OBJECT_0 + open_editor_index))
                 {
                     launch_editor();
-                    ResetEvent(m_open_new_editor_event_handle);
+                }
+                else if (toggle_active_index != MAXDWORD && wait_result == (WAIT_OBJECT_0 + toggle_active_index))
+                {
+                    toggle_engine();
                 }
             }
         });
@@ -457,6 +497,10 @@ public:
         if (m_open_new_editor_event_handle)
         {
             SetEvent(m_open_new_editor_event_handle);
+        }
+        if (m_toggle_active_event_handle)
+        {
+            SetEvent(m_toggle_active_event_handle);
         }
         if (m_toggle_thread.joinable())
         {
@@ -551,15 +595,7 @@ public:
         if (hotkeyId == 0)
         {
             // Toggle engine on/off
-            refresh_process_state();
-            if (m_active)
-            {
-                stop_engine();
-            }
-            else
-            {
-                start_engine();
-            }
+            toggle_engine();
         }
         else if (hotkeyId == 1)
         {
@@ -575,3 +611,4 @@ extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
     return new KeyboardManager();
 }
+
