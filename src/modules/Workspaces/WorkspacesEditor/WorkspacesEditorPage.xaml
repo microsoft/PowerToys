@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="WorkspacesEditor.ProjectEditor"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,24 +9,23 @@
     xmlns:models="clr-namespace:WorkspacesEditor.Models"
     xmlns:props="clr-namespace:WorkspacesEditor.Properties"
     Title="Workspaces Editor"
-    Background="{DynamicResource PrimaryBackgroundBrush}"
     mc:Ignorable="d">
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
         <Style x:Key="TextBlockEnabledStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
         <Style x:Key="ButtonEnabledStyle" TargetType="Button">
-            <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -39,14 +38,14 @@
                     DockPanel.Dock="Left"
                     FontSize="14"
                     FontWeight="Normal"
-                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="{Binding MonitorName}" />
             </Border>
         </DataTemplate>
         <DataTemplate x:Key="appTemplate">
             <Border
                 Margin="1"
-                Background="{DynamicResource SecondaryBackgroundBrush}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 MouseEnter="AppBorder_MouseEnter"
                 MouseLeave="AppBorder_MouseLeave">
                 <Expander
@@ -89,18 +88,18 @@
                                 VerticalAlignment="Center"
                                 FontSize="14"
                                 FontWeight="Normal"
-                                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                 Text="{Binding RepeatIndexString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                             <StackPanel Grid.Column="3" VerticalAlignment="Center">
                                 <TextBlock
                                     FontSize="14"
                                     FontWeight="Normal"
-                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                     Text="{Binding AppName}" />
                                 <TextBlock
                                     FontSize="12"
                                     FontWeight="Normal"
-                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                     Text="{Binding AppMainParams, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                     Visibility="{Binding IsAppMainParamVisible, Converter={StaticResource BoolToVis}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
@@ -110,9 +109,6 @@
                                     Margin="10,5"
                                     Padding="24,6"
                                     AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                                    Background="{DynamicResource TertiaryBackgroundBrush}"
-                                    BorderBrush="{DynamicResource SecondaryBorderBrush}"
-                                    BorderThickness="2"
                                     Click="DeleteButtonClicked"
                                     Content="{Binding DeleteButtonContent, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                     IsEnabled="True" />
@@ -122,7 +118,7 @@
                     <Grid
                         Margin="-20,0,0,0"
                         HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}"
-                        Background="{DynamicResource QuaternaryBackgroundBrush}"
+                        Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                         FlowDirection="LeftToRight">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
@@ -134,18 +130,16 @@
                                 VerticalAlignment="Center"
                                 FontSize="14"
                                 FontWeight="Normal"
-                                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                 Text="{x:Static props:Resources.CliArguments}" />
                             <TextBox
                                 x:Name="CommandLineTextBox"
                                 Margin="15,0,50,0"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
-                                Background="{DynamicResource TertiaryBackgroundBrush}"
-                                BorderThickness="0"
                                 FontSize="14"
                                 FontWeight="Normal"
-                                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                 Text="{Binding CommandLineArguments, Mode=TwoWay}"
                                 TextChanged="CommandLineTextBox_TextChanged" />
                         </DockPanel>
@@ -173,9 +167,6 @@
                             <ComboBox
                                 Margin="15,0,0,0"
                                 VerticalAlignment="Center"
-                                Background="{DynamicResource SecondaryBackgroundBrush}"
-                                BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                                BorderThickness="2"
                                 FontSize="14"
                                 FontWeight="Normal"
                                 SelectedIndex="{Binding PositionComboboxIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
@@ -196,8 +187,6 @@
                                 Margin="15,0,0,0"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
-                                Background="{DynamicResource TertiaryBackgroundBrush}"
-                                BorderThickness="0"
                                 FontSize="14"
                                 FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
@@ -216,8 +205,6 @@
                                 Margin="15,0,0,0"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
-                                Background="{DynamicResource TertiaryBackgroundBrush}"
-                                BorderThickness="0"
                                 FontSize="14"
                                 FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
@@ -236,8 +223,6 @@
                                 Margin="15,0,0,0"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
-                                Background="{DynamicResource TertiaryBackgroundBrush}"
-                                BorderThickness="0"
                                 FontSize="14"
                                 FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
@@ -256,8 +241,6 @@
                                 Margin="15,0,0,0"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
-                                Background="{DynamicResource TertiaryBackgroundBrush}"
-                                BorderThickness="0"
                                 FontSize="14"
                                 FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
@@ -291,7 +274,7 @@
                     VerticalAlignment="Center"
                     FontSize="24"
                     FontWeight="Normal"
-                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="{x:Static props:Resources.Workspaces}" />
             </Button>
             <TextBlock
@@ -299,20 +282,20 @@
                 VerticalAlignment="Center"
                 FontFamily="{DynamicResource SymbolThemeFontFamily}"
                 FontSize="16"
-                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                 Text="&#xE76C;" />
             <TextBlock
                 Margin="10,0,0,0"
                 VerticalAlignment="Center"
                 FontSize="24"
                 FontWeight="SemiBold"
-                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                 Text="{Binding EditorWindowTitle}" />
         </StackPanel>
         <Border
             Grid.Row="1"
             HorizontalAlignment="Stretch"
-            Background="{DynamicResource MonitorViewBackgroundBrush}"
+            Background="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"
             CornerRadius="5">
             <DockPanel>
                 <Image
@@ -329,9 +312,6 @@
                     Padding="24,0,24,0"
                     HorizontalAlignment="Right"
                     AutomationProperties.Name="{x:Static props:Resources.Revert}"
-                    Background="{DynamicResource SecondaryBackgroundBrush}"
-                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                    BorderThickness="2"
                     Click="RevertButtonClicked"
                     Content="{x:Static props:Resources.Revert}"
                     DockPanel.Dock="Right"
@@ -343,9 +323,6 @@
                     Padding="24,0,24,0"
                     HorizontalAlignment="Right"
                     AutomationProperties.Name="{x:Static props:Resources.LaunchEdit}"
-                    Background="{DynamicResource SecondaryBackgroundBrush}"
-                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                    BorderThickness="2"
                     Click="LaunchEditButtonClicked"
                     Content="{x:Static props:Resources.LaunchEdit}"
                     DockPanel.Dock="Right" />
@@ -357,16 +334,13 @@
                     Margin="0,10,0,0"
                     FontSize="14"
                     FontWeight="Normal"
-                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="{x:Static props:Resources.WorkspaceName}" />
                 <TextBox
                     x:Name="EditNameTextBox"
                     Width="300"
                     Margin="0,6,0,6"
                     HorizontalAlignment="Left"
-                    Background="{DynamicResource SecondaryBackgroundBrush}"
-                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                    BorderThickness="2"
                     GotFocus="EditNameTextBox_GotFocus"
                     KeyDown="EditNameTextBoxKeyDown"
                     Text="{Binding Name, Mode=TwoWay}"
@@ -420,9 +394,6 @@
                 Margin="20,0,0,0"
                 Padding="24,0,24,0"
                 AutomationProperties.Name="{x:Static props:Resources.Cancel}"
-                Background="{DynamicResource SecondaryBackgroundBrush}"
-                BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                BorderThickness="2"
                 Click="CancelButtonClicked"
                 Content="{x:Static props:Resources.Cancel}" />
             <Button
@@ -434,7 +405,7 @@
                 Click="SaveButtonClicked"
                 Content="{x:Static props:Resources.Save_Workspace}"
                 IsEnabled="{Binding CanBeSaved, UpdateSourceTrigger=PropertyChanged}"
-                Style="{StaticResource AccentButtonStyle}" />
+                Style="{DynamicResource AccentButtonStyle}" />
         </StackPanel>
     </Grid>
 </Page>

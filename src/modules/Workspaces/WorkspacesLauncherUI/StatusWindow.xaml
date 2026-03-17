@@ -1,4 +1,4 @@
-﻿<Window
+<Window
     x:Class="WorkspacesLauncherUI.StatusWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,14 +7,9 @@
     xmlns:local="clr-namespace:WorkspacesLauncherUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:props="clr-namespace:WorkspacesLauncherUI.Properties"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="{x:Static props:Resources.LauncherWindowTitle}"
     Width="350"
     Height="340"
-    ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
-    ui:TitleBar.InactiveBackground="{DynamicResource TertiaryBackgroundBrush}"
-    ui:WindowHelper.UseModernWindowStyle="True"
-    Background="{DynamicResource PrimaryBackgroundBrush}"
     BorderBrush="Red"
     BorderThickness="5"
     Closing="Window_Closing"
@@ -59,17 +54,16 @@
                                     VerticalAlignment="Center"
                                     FontSize="14"
                                     FontWeight="Normal"
-                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                     Text="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
-                                <ui:ProgressRing
-                                    x:Name="ProgressRing"
+                                <ProgressBar
                                     Grid.Column="2"
                                     Width="20"
                                     Height="20"
                                     Margin="10"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    IsActive="True"
+                                    IsIndeterminate="True"
                                     Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BoolToVis}, UpdateSourceTrigger=PropertyChanged}" />
                                 <TextBlock
                                     Grid.Column="2"
@@ -96,7 +90,6 @@
             Margin="5,5,5,5"
             HorizontalAlignment="Stretch"
             AutomationProperties.Name="{x:Static props:Resources.CancelLaunch}"
-            Background="{DynamicResource SecondaryBackgroundBrush}"
             Click="CancelButtonClicked"
             Content="{x:Static props:Resources.CancelLaunch}" />
         <Button
@@ -109,6 +102,6 @@
             AutomationProperties.Name="{x:Static props:Resources.Dismiss}"
             Click="DismissButtonClicked"
             Content="{x:Static props:Resources.Dismiss}"
-            Style="{StaticResource AccentButtonStyle}" />
+            Style="{DynamicResource AccentButtonStyle}" />
     </Grid>
 </Window>
