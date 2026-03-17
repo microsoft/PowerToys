@@ -210,7 +210,28 @@ void dispatch_received_json(const std::wstring& json_to_parse)
 
         if (name == L"general")
         {
-            apply_general_settings(value.GetObjectW());
+            const auto general_settings = value.GetObjectW();
+            if (general_settings.HasKey(L"action_name"))
+            {
+                // General custom actions can be sent inline as {"general": {...}}.
+                // Handle them as actions so query-style messages do not reapply module state.
+                json::JsonObject action_payload;
+                action_payload.SetNamedValue(L"general", value);
+
+                auto result = dispatch_json_action_to_module(action_payload);
+                if (result.has_value())
+                {
+                    std::unique_lock lock{ ipc_mutex };
+                    if (current_settings_ipc)
+                    {
+                        current_settings_ipc->send(result.value());
+                    }
+                }
+            }
+            else
+            {
+                apply_general_settings(general_settings);
+            }
             // const std::wstring settings_string{ get_all_settings().Stringify().c_str() };
             // {
             //     std::unique_lock lock{ ipc_mutex };
