@@ -37,8 +37,7 @@
 
         <Button
             x:Name="NewProjectButton"
-            Grid.Row="0"
-            Margin="0,16,24,24"
+            Margin="0,16,24,36"
             Padding="12,8,12,8"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"

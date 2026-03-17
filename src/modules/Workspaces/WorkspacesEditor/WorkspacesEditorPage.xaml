@@ -86,8 +86,7 @@
                             <controls:ResetIsEnabled Grid.Column="4">
                                 <Button
                                     Width="Auto"
-                                    Margin="10,5"
-                                    Padding="24,6"
+                                    Margin="12,4"
                                     AutomationProperties.Name="{x:Static props:Resources.Delete}"
                                     Click="DeleteButtonClicked"
                                     Content="{Binding DeleteButtonContent, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
@@ -96,7 +95,7 @@
                         </Grid>
                     </Expander.Header>
                     <Grid
-                        Margin="48,8,48,8"
+                        Margin="52,8,48,8"
                         HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}"
                         FlowDirection="LeftToRight">
                         <Grid.RowDefinitions>
@@ -251,9 +250,21 @@
                     x:Name="SaveButton"
                     AutomationProperties.Name="{x:Static props:Resources.Save_Workspace}"
                     Click="SaveButtonClicked"
-                    Content="{x:Static props:Resources.Save_Workspace}"
                     IsEnabled="{Binding CanBeSaved, UpdateSourceTrigger=PropertyChanged}"
-                    Style="{DynamicResource AccentButtonStyle}" />
+                    Style="{DynamicResource AccentButtonStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock
+                            Margin="0,4,0,0"
+                            AutomationProperties.Name="{x:Static props:Resources.CreateWorkspace}"
+                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                            Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                            Text="&#xE74E;" />
+                        <TextBlock
+                            Margin="8,0,0,0"
+                            Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                            Text="{x:Static props:Resources.Save_Workspace}" />
+                    </StackPanel>
+                </Button>
                 <Button
                     x:Name="CancelButton"
                     Margin="8,0,0,0"
