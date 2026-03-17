@@ -8,7 +8,7 @@
     <AssemblyName>PowerToys.MouseJump.Common.UnitTests</AssemblyName>
     <AssemblyTitle>PowerToys.MouseJump.Common.UnitTests</AssemblyTitle>
     <AssemblyDescription>PowerToys MouseJump.Common.UnitTests</AssemblyDescription>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\MouseJump.Common.UnitTests\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

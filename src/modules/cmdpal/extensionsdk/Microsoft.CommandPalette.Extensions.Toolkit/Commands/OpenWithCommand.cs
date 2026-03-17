@@ -8,7 +8,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.CommandPalette.Extensions.Toolkit.Properties;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace Microsoft.CmdPal.Core.Common.Commands;
+namespace Microsoft.CmdPal.Common.Commands;
 
 public partial class OpenWithCommand : InvokableCommand
 {

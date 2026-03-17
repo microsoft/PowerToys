@@ -4,7 +4,7 @@
   <Import Project="..\Common.ExtDependencies.props" />
 
   <PropertyGroup>
-	<Nullable>enable</Nullable>
+    <Nullable>enable</Nullable>
     <RootNamespace>Microsoft.CmdPal.Ext.WindowWalker</RootNamespace>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -15,7 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-  	<ProjectReference Include="..\..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
+    <ProjectReference Include="..\..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
     <!-- WASDK, WebView2, CmdPal Toolkit references now included via Common.ExtDependencies.props -->
   </ItemGroup>
   <ItemGroup>

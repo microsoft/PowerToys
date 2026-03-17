@@ -18,6 +18,7 @@
             "StylesReportTool\\PowerToys.StylesReportTool.exe",
 
             "CalculatorEngineCommon.dll",
+            "PowerToys.Common.UI.Controls.dll",
             "PowerToys.ManagedTelemetry.dll",
             "PowerToys.ManagedCommon.dll",
             "PowerToys.ManagedCsWin32.dll",
@@ -105,7 +106,12 @@
             "PowerToys.SvgThumbnailProvider.dll",
             "PowerToys.SvgThumbnailProvider.exe",
             "PowerToys.SvgThumbnailProviderCpp.dll",
+            "PowerToys.KeyboardManager.dll",
 
+            "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
+            "KeyboardManagerEditorUI\\PowerToys.KeyboardManagerEditorUI.exe",
+            "KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe",
+            "PowerToys.KeyboardManagerEditorLibraryWrapper.dll",
             "WinUI3Apps\\PowerToys.HostsModuleInterface.dll",
             "WinUI3Apps\\PowerToys.HostsUILib.dll",
             "WinUI3Apps\\PowerToys.Hosts.dll",
@@ -210,9 +216,6 @@
             "PowerToys.PowerAccentModuleInterface.dll",
             "PowerToys.PowerAccentKeyboardService.dll",
 
-            "PowerToys.PowerDisplayModuleInterface.dll",
-            "WinUI3Apps\\PowerToys.PowerDisplay.dll",
-            "WinUI3Apps\\PowerToys.PowerDisplay.exe",
             "PowerDisplay.Lib.dll",
 
             "WinUI3Apps\\PowerToys.PowerRenameExt.dll",

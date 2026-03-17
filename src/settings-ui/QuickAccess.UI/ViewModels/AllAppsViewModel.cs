@@ -77,6 +77,12 @@ public sealed class AllAppsViewModel : Observable
                 continue;
             }
 
+            // TEMPORARILY_DISABLED: PowerDisplay
+            if (moduleType == ModuleType.PowerDisplay)
+            {
+                continue;
+            }
+
             _allFlyoutMenuItems.Add(new FlyoutMenuItem
             {
                 Tag = moduleType,
