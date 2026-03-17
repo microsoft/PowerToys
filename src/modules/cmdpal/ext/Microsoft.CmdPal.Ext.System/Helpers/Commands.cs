@@ -49,7 +49,6 @@ internal static class Commands
                 })
             {
                 Title = Resources.Microsoft_plugin_sys_shutdown_computer,
-                Subtitle = Resources.Microsoft_plugin_sys_shutdown_computer_description,
                 Icon = Icons.ShutdownIcon,
             },
             new ListItem(
@@ -59,7 +58,6 @@ internal static class Commands
                 })
             {
                 Title = Resources.Microsoft_plugin_sys_restart_computer,
-                Subtitle = Resources.Microsoft_plugin_sys_restart_computer_description,
                 Icon = Icons.RestartIcon,
             },
             new ListItem(
@@ -69,7 +67,6 @@ internal static class Commands
                 })
             {
                 Title = Resources.Microsoft_plugin_sys_sign_out,
-                Subtitle = Resources.Microsoft_plugin_sys_sign_out_description,
                 Icon = Icons.LogoffIcon,
             },
             new ListItem(
@@ -79,7 +76,6 @@ internal static class Commands
                 })
             {
                 Title = Resources.Microsoft_plugin_sys_lock,
-                Subtitle = Resources.Microsoft_plugin_sys_lock_description,
                 Icon = Icons.LockIcon,
             },
             new ListItem(
@@ -89,7 +85,6 @@ internal static class Commands
                 })
             {
                 Title = Resources.Microsoft_plugin_sys_sleep,
-                Subtitle = Resources.Microsoft_plugin_sys_sleep_description,
                 Icon = Icons.SleepIcon,
             },
             new ListItem(
@@ -99,7 +94,6 @@ internal static class Commands
                 })
             {
                 Title = Resources.Microsoft_plugin_sys_hibernate,
-                Subtitle = Resources.Microsoft_plugin_sys_hibernate_description,
                 Icon = Icons.SleepIcon, // Icon change needed
             },
         });
@@ -115,7 +109,6 @@ internal static class Commands
                 })
                 {
                     Title = Resources.Microsoft_plugin_sys_RecycleBinOpen,
-                    Subtitle = Resources.Microsoft_plugin_sys_RecycleBin_description,
                     Icon = Icons.RecycleBinIcon,
                 },
                 new ListItem(new EmptyRecycleBinConfirmation(emptyRBSuccessMessage)
@@ -124,7 +117,6 @@ internal static class Commands
                 })
                 {
                     Title = Resources.Microsoft_plugin_sys_RecycleBinEmptyResult,
-                    Subtitle = Resources.Microsoft_plugin_sys_RecycleBinEmpty_description,
                     Icon = Icons.RecycleBinIcon,
                 },
             });
@@ -138,7 +130,6 @@ internal static class Commands
                 })
                 {
                     Title = Resources.Microsoft_plugin_sys_RecycleBin,
-                    Subtitle = Resources.Microsoft_plugin_sys_RecycleBin_description,
                     Icon = Icons.RecycleBinIcon,
                 });
         }

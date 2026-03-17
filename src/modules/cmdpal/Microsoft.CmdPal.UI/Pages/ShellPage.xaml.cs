@@ -325,6 +325,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             try
             {
+                DetailsContent.ChangeView(null, 0, null, true);
                 ViewModel.Details = details;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
                 ViewModel.IsDetailsVisible = true;
@@ -590,12 +591,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (shouldSearchBoxBeVisible || page is not ContentPage)
         {
+            ViewModel.IsSearchBoxVisible = shouldSearchBoxBeVisible;
+
             if (HostWindow?.IsVisibleToUser != true)
             {
                 return;
             }
 
-            ViewModel.IsSearchBoxVisible = shouldSearchBoxBeVisible;
             SearchBox.Focus(FocusState.Programmatic);
             SearchBox.SelectSearch();
         }

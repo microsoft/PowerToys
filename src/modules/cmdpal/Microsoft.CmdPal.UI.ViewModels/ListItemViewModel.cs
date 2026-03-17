@@ -159,7 +159,6 @@ public partial class ListItemViewModel : CommandItemViewModel
                 UpdateShowDetailsCommand();
                 break;
             case nameof(model.MoreCommands):
-                UpdateProperty(nameof(MoreCommands));
                 AddShowDetailsCommands();
                 break;
             case nameof(model.Title):
@@ -195,19 +194,27 @@ public partial class ListItemViewModel : CommandItemViewModel
             pageContext is ListViewModel listViewModel &&
             !listViewModel.ShowDetails)
         {
-            // Check if "Show Details" action already exists to prevent duplicates
-            if (!MoreCommands.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
-                                        contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId))
+            var addedCommand = false;
+            lock (MoreCommandsLock)
             {
-                // Create the view model for the show details command
-                var showDetailsCommand = new ShowDetailsCommand(Details);
-                var showDetailsContextItem = new CommandContextItem(showDetailsCommand);
-                var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
-                showDetailsContextItemViewModel.SlowInitializeProperties();
-                MoreCommands.Add(showDetailsContextItemViewModel);
+                // Check if "Show Details" action already exists to prevent duplicates
+                if (!UnsafeMoreCommands.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
+                                                  contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId))
+                {
+                    var showDetailsCommand = new ShowDetailsCommand(Details);
+                    var showDetailsContextItem = new CommandContextItem(showDetailsCommand);
+                    var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
+                    showDetailsContextItemViewModel.SlowInitializeProperties();
+                    UnsafeMoreCommands.Add(showDetailsContextItemViewModel);
+                    RefreshMoreCommandStateUnsafe();
+                    addedCommand = true;
+                }
             }
 
-            UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
+            if (addedCommand)
+            {
+                UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
+            }
         }
     }
 
@@ -222,22 +229,27 @@ public partial class ListItemViewModel : CommandItemViewModel
             pageContext is ListViewModel listViewModel &&
             !listViewModel.ShowDetails)
         {
-            var existingCommand = MoreCommands.FirstOrDefault(cmd =>
-                                        cmd is CommandContextItemViewModel contextItemViewModel &&
-                                        contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId);
-
-            // If the command already exists, remove it to update with the new details
-            if (existingCommand is not null)
+            CommandContextItemViewModel? oldCommand = null;
+            lock (MoreCommandsLock)
             {
-                MoreCommands.Remove(existingCommand);
+                oldCommand = UnsafeMoreCommands
+                    .OfType<CommandContextItemViewModel>()
+                    .FirstOrDefault(contextItemViewModel => contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId);
+
+                if (oldCommand is not null)
+                {
+                    UnsafeMoreCommands.Remove(oldCommand);
+                }
+
+                var showDetailsCommand = new ShowDetailsCommand(Details);
+                var showDetailsContextItem = new CommandContextItem(showDetailsCommand);
+                var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
+                showDetailsContextItemViewModel.SlowInitializeProperties();
+                UnsafeMoreCommands.Add(showDetailsContextItemViewModel);
+                RefreshMoreCommandStateUnsafe();
             }
 
-            // Create the view model for the show details command
-            var showDetailsCommand = new ShowDetailsCommand(Details);
-            var showDetailsContextItem = new CommandContextItem(showDetailsCommand);
-            var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
-            showDetailsContextItemViewModel.SlowInitializeProperties();
-            MoreCommands.Add(showDetailsContextItemViewModel);
+            oldCommand?.SafeCleanup();
 
             UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
         }
