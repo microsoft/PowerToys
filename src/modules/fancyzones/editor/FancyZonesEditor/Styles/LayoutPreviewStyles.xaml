@@ -1,8 +1,7 @@
-﻿<ResourceDictionary
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="clr-namespace:FancyZonesEditor.Styles"
-    xmlns:ui="http://schemas.modernwpf.com/2019">
+    xmlns:local="clr-namespace:FancyZonesEditor.Styles">
 
     <DropShadowEffect
         x:Key="ZoneDropShadow"
@@ -19,7 +18,7 @@
 
     <Style x:Key="GridLayoutActualScalePreviewStyle" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource LayoutPreviewActualScaleZoneBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4" />
     </Style>
@@ -33,7 +32,7 @@
 
     <Style x:Key="CanvasLayoutActualScalePreviewStyle" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource LayoutPreviewActualScaleZoneBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4" />
     </Style>

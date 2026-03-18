@@ -1,7 +1,6 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ui="http://schemas.modernwpf.com/2019">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Style x:Key="LayoutTypeRadioButtonStyle" TargetType="RadioButton">
         <Setter Property="OverridesDefaultStyle" Value="True" />
@@ -17,8 +16,6 @@
         <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="FocusVisualStyle" Value="{DynamicResource {x:Static SystemParameters.FocusVisualStyleKey}}" />
-        <Setter Property="ui:FocusVisualHelper.UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
-        <Setter Property="ui:FocusVisualHelper.FocusVisualMargin" Value="0" />
         <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
@@ -35,13 +32,13 @@
                                 x:Name="CheckGlyph"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
-                                BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"
                                 BorderThickness="2"
                                 CornerRadius="4"
                                 Opacity="0"
                                 UseLayoutRounding="False" />
 
-                            <ui:ContentPresenterEx
+                            <ContentPresenter
                                 x:Name="ContentPresenter"
                                 Grid.Column="1"
                                 Margin="{TemplateBinding Padding}"
@@ -50,8 +47,7 @@
                                 Focusable="False"
                                 RecognizesAccessKey="True"
                                 SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                TextElement.Foreground="{TemplateBinding Foreground}"
-                                TextWrapping="Wrap" />
+                                TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Grid>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CheckStates">
@@ -71,17 +67,17 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ContentPresenter" Property="Foreground" Value="{DynamicResource RadioButtonForegroundPointerOver}" />
+                            <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="{DynamicResource RadioButtonForegroundPointerOver}" />
                             <Setter TargetName="CheckGlyph" Property="Opacity" Value="0.6" />
 
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="ContentPresenter" Property="Foreground" Value="{DynamicResource RadioButtonForegroundPressed}" />
+                            <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="{DynamicResource RadioButtonForegroundPressed}" />
                             <Setter TargetName="RootGrid" Property="Background" Value="{DynamicResource RadioButtonBackgroundPressed}" />
                             <Setter TargetName="RootGrid" Property="BorderBrush" Value="{DynamicResource RadioButtonBorderBrushPressed}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="ContentPresenter" Property="Foreground" Value="{DynamicResource RadioButtonForegroundDisabled}" />
+                            <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="{DynamicResource RadioButtonForegroundDisabled}" />
                             <Setter TargetName="RootGrid" Property="Background" Value="{DynamicResource RadioButtonBackgroundDisabled}" />
                             <Setter TargetName="RootGrid" Property="BorderBrush" Value="{DynamicResource RadioButtonBorderBrushDisabled}" />
                         </Trigger>
@@ -91,9 +87,52 @@
         </Setter>
     </Style>
 
+    <Style x:Key="AccentButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        x:Name="Background"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4"
+                        SnapsToDevicePixels="True">
+                        <ContentPresenter
+                            x:Name="ContentPresenter"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Focusable="False"
+                            RecognizesAccessKey="True"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Background" Property="Opacity" Value="0.9" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Background" Property="Opacity" Value="0.8" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Background" Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style
         x:Key="IconOnlyButtonStyle"
-        BasedOn="{StaticResource DefaultButtonStyle}"
+        BasedOn="{StaticResource {x:Type Button}}"
         TargetType="Button">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}" />
@@ -103,14 +142,14 @@
                     <Border
                         x:Name="Background"
                         Background="Transparent"
-                        CornerRadius="{TemplateBinding ui:ControlHelper.CornerRadius}"
+                        CornerRadius="4"
                         SnapsToDevicePixels="True">
                         <Border
                             x:Name="Border"
                             Padding="{TemplateBinding Padding}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{TemplateBinding ui:ControlHelper.CornerRadius}">
+                            CornerRadius="4">
                             <ContentPresenter
                                 x:Name="ContentPresenter"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"

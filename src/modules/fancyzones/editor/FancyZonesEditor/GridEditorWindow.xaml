@@ -6,11 +6,8 @@
     xmlns:local="clr-namespace:FancyZonesEditor"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:props="clr-namespace:FancyZonesEditor.Properties"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
     Title=""
     MinWidth="360"
-    ui:TitleBar.IsIconVisible="False"
-    ui:WindowHelper.UseModernWindowStyle="True"
     AutomationProperties.Name="{x:Static props:Resources.Grid_Layout_Editor}"
     Background="{DynamicResource PrimaryBackgroundBrush}"
     BorderThickness="0"
@@ -73,7 +70,6 @@
                     HorizontalAlignment="Stretch"
                     Click="OnCancel"
                     Content="{x:Static props:Resources.Cancel}"
-                    Style="{StaticResource DefaultButtonStyle}"
                     TabIndex="1" />
                 <Button
                     HorizontalAlignment="Stretch"

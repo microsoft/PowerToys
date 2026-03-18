@@ -1,15 +1,6 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:system="clr-namespace:System;assembly=System.Runtime">
-
-    <!--  Metadata  -->
-    <system:String x:Key="Theme.Name">Dark.Accent1</system:String>
-    <system:String x:Key="Theme.Origin">PowerToysRun</system:String>
-    <system:String x:Key="Theme.DisplayName">Accent1 (Dark)</system:String>
-    <system:String x:Key="Theme.BaseColorScheme">Dark</system:String>
-    <system:String x:Key="Theme.ColorScheme">Accent1</system:String>
-    <Color x:Key="Theme.PrimaryAccentColor">Black</Color>
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="#FF242424" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#FF1c1c1c" />

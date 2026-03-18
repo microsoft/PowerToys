@@ -19,7 +19,6 @@ using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
-using ModernWpf.Controls;
 
 namespace FancyZonesEditor
 {
@@ -34,7 +33,7 @@ namespace FancyZonesEditor
 
         private readonly MainWindowSettingsModel _settings = ((App)Application.Current).MainWindowSettings;
 
-        private ContentDialog _openedDialog;
+        private FrameworkElement _openedOverlay;
         private TextBlock _createLayoutAnnounce;
 
         private bool haveTriedToGetFocusAlready;
@@ -126,7 +125,7 @@ namespace FancyZonesEditor
         // Prevent closing the dialog with enter
         private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter && _openedDialog != null && _openedDialog.IsVisible)
+            if (e.Key == Key.Enter && _openedOverlay != null && _openedOverlay.Visibility == Visibility.Visible)
             {
                 if (e.OriginalSource is RadioButton source && source.IsChecked != true)
                 {
@@ -143,9 +142,9 @@ namespace FancyZonesEditor
 
         private void CloseDialog(object sender)
         {
-            if (_openedDialog != null)
+            if (_openedOverlay != null)
             {
-                _openedDialog.Hide();
+                HideOverlay();
             }
             else
             {
@@ -201,11 +200,11 @@ namespace FancyZonesEditor
             App.Overlay.CurrentDataContext = newSelection;
         }
 
-        private async void NewLayoutButton_Click(object sender, RoutedEventArgs e)
+        private void NewLayoutButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.LogTrace();
 
-            if (_openedDialog != null)
+            if (_openedOverlay != null)
             {
                 // another dialog already opened
                 return;
@@ -233,7 +232,7 @@ namespace FancyZonesEditor
             GridLayoutRadioButton.IsChecked = true;
             CanvasLayoutRadioButton.IsChecked = false;
             GridLayoutRadioButton.Focus();
-            await NewLayoutDialog.ShowAsync();
+            ShowOverlay(NewLayoutDialogOverlay);
         }
 
         private void DuplicateLayout_Click(object sender, RoutedEventArgs e)
@@ -241,7 +240,7 @@ namespace FancyZonesEditor
             Logger.LogTrace();
 
             var dataContext = ((FrameworkElement)sender).DataContext;
-            EditLayoutDialog.Hide();
+            HideOverlay();
 
             if (dataContext is not LayoutModel model)
             {
@@ -326,16 +325,16 @@ namespace FancyZonesEditor
         private void DeleteLayout_Click(object sender, RoutedEventArgs e)
         {
             Logger.LogTrace();
-            EditLayoutDialog.Hide();
+            HideOverlay();
             DeleteLayout((FrameworkElement)sender);
         }
 
-        private async void EditLayout_Click(object sender, RoutedEventArgs e)
+        private void EditLayout_Click(object sender, RoutedEventArgs e)
         {
             Logger.LogTrace();
 
             // Avoid trying to open the same dialog twice.
-            if (_openedDialog != null)
+            if (_openedOverlay != null)
             {
                 return;
             }
@@ -347,7 +346,7 @@ namespace FancyZonesEditor
 
             Keyboard.ClearFocus();
             EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, EditTemplate, ((LayoutModel)dataContext).Name);
-            await EditLayoutDialog.ShowAsync();
+            ShowOverlay(EditLayoutDialogOverlay);
         }
 
         private void EditZones_Click(object sender, RoutedEventArgs e)
@@ -355,7 +354,7 @@ namespace FancyZonesEditor
             Logger.LogTrace();
             var dataContext = ((FrameworkElement)sender).DataContext;
             Select((LayoutModel)dataContext);
-            EditLayoutDialog.Hide();
+            HideOverlay();
             Hide();
             App.Overlay.OpenEditor(_settings.SelectedModel);
         }
@@ -375,9 +374,11 @@ namespace FancyZonesEditor
             e.Handled = true;
         }
 
-        private void NewLayoutDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
+        private void NewLayoutDialog_PrimaryButtonClick(object sender, RoutedEventArgs args)
         {
             Logger.LogTrace();
+
+            HideOverlay();
 
             LayoutModel selectedLayoutModel;
 
@@ -426,17 +427,19 @@ namespace FancyZonesEditor
         }
 
         // EditLayout: Cancel changes
-        private void EditLayoutDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void EditLayoutDialog_SecondaryButtonClick(object sender, RoutedEventArgs e)
         {
+            HideOverlay();
             App.Overlay.EndEditing(_settings.SelectedModel);
             Select(_settings.AppliedModel);
         }
 
         // EditLayout: Save changes
-        private void EditLayoutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void EditLayoutDialog_PrimaryButtonClick(object sender, RoutedEventArgs e)
         {
             Logger.LogTrace();
 
+            HideOverlay();
             App.Overlay.EndEditing(null);
             LayoutModel model = _settings.SelectedModel;
 
@@ -456,22 +459,18 @@ namespace FancyZonesEditor
             Select(_settings.AppliedModel);
         }
 
-        private async void DeleteLayout(FrameworkElement element)
+        private void DeleteLayout(FrameworkElement element)
         {
             Logger.LogTrace();
 
-            var dialog = new ContentDialog()
-            {
-                Title = Properties.Resources.Are_You_Sure,
-                Content = Properties.Resources.Are_You_Sure_Description,
-                PrimaryButtonText = Properties.Resources.Delete,
-                SecondaryButtonText = Properties.Resources.Cancel,
-            };
+            Announce(FancyZonesEditor.Properties.Resources.Delete_Layout_Dialog_Announce, Properties.Resources.Are_You_Sure_Description);
+            var result = MessageBox.Show(
+                Properties.Resources.Are_You_Sure_Description,
+                Properties.Resources.Are_You_Sure,
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Warning);
 
-            Announce(FancyZonesEditor.Properties.Resources.Delete_Layout_Dialog_Announce, dialog.Content.ToString());
-            var result = await dialog.ShowAsync();
-
-            if (result == ContentDialogResult.Primary)
+            if (result == MessageBoxResult.OK)
             {
                 LayoutModel model = element.DataContext as LayoutModel;
                 MainWindowSettingsModel.DefaultLayouts.Reset(model.Uuid);
@@ -499,15 +498,33 @@ namespace FancyZonesEditor
             }
         }
 
-        private void Dialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+        private void ShowOverlay(FrameworkElement overlay)
         {
-            Announce(sender.Name, FancyZonesEditor.Properties.Resources.Edit_Layout_Open_Announce);
-            _openedDialog = sender;
+            overlay.Visibility = Visibility.Visible;
+            _openedOverlay = overlay;
+            Announce(overlay.Name, FancyZonesEditor.Properties.Resources.Edit_Layout_Open_Announce);
         }
 
-        private void Dialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
+        private void HideOverlay()
         {
-            _openedDialog = null;
+            if (_openedOverlay != null)
+            {
+                _openedOverlay.Visibility = Visibility.Collapsed;
+                _openedOverlay = null;
+            }
+        }
+
+        private void DialogBackdrop_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Clicking the backdrop cancels / closes the overlay
+            if (_openedOverlay == EditLayoutDialogOverlay)
+            {
+                EditLayoutDialog_SecondaryButtonClick(sender, e);
+            }
+            else
+            {
+                HideOverlay();
+            }
         }
 
         private void EditDialogNumberBox_KeyDown(object sender, KeyEventArgs e)
@@ -519,15 +536,21 @@ namespace FancyZonesEditor
             }
         }
 
-        private void Layout_ItemClick(object sender, ItemClickEventArgs e)
+        private void Layout_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Select(e.ClickedItem as LayoutModel);
-            Apply();
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] is LayoutModel model)
+            {
+                Select(model);
+                Apply();
+            }
         }
 
-        private void Monitor_ItemClick(object sender, ItemClickEventArgs e)
+        private void Monitor_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            monitorViewModel.SelectCommand.Execute(e.ClickedItem as MonitorInfoModel);
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] is MonitorInfoModel model)
+            {
+                monitorViewModel.SelectCommand.Execute(model);
+            }
         }
 
         private void ComboBox_KeyDown(object sender, KeyEventArgs e)
@@ -551,14 +574,9 @@ namespace FancyZonesEditor
             }
         }
 
-        private void NumberBox_Loaded(object sender, RoutedEventArgs e)
+        private void NewLayoutDialog_SecondaryButtonClick(object sender, RoutedEventArgs e)
         {
-            // The TextBox inside a NumberBox doesn't inherit the Automation Properties name, so we have to set it.
-            var numberBox = sender as NumberBox;
-            const string numberBoxTextBoxName = "InputBox"; // Text box template part name given by ModernWPF.
-            numberBox.ApplyTemplate(); // Apply template to be able to change child's property.
-            var numberBoxTextBox = numberBox.Template.FindName(numberBoxTextBoxName, numberBox) as TextBox;
-            numberBoxTextBox.SetValue(AutomationProperties.NameProperty, numberBox.GetValue(AutomationProperties.NameProperty));
+            HideOverlay();
         }
 
         private void SettingsBtn_Click(object sender, RoutedEventArgs e)

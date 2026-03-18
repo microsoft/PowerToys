@@ -1,4 +1,4 @@
-﻿<Thumb
+<Thumb
     x:Class="FancyZonesEditor.GridResizer"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -17,7 +17,7 @@
                 x:Name="Body"
                 Width="48"
                 Height="48"
-                Background="{DynamicResource SystemControlBackgroundAccentBrush}"
+                Background="{DynamicResource AccentFillColorDefaultBrush}"
                 CornerRadius="48">
                 <Border.Effect>
                     <DropShadowEffect

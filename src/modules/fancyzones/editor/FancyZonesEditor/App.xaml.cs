@@ -14,6 +14,7 @@ using FancyZoneEditor.Telemetry;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.Win32;
 
 namespace FancyZonesEditor
 {
@@ -35,7 +36,7 @@ namespace FancyZonesEditor
 
         public static int PowerToysPID { get; set; }
 
-        private ThemeManager _themeManager;
+        private ResourceDictionary _currentThemeDictionary;
 
         public static bool DebugMode
         {
@@ -96,7 +97,9 @@ namespace FancyZonesEditor
 
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-            _themeManager = new ThemeManager(this);
+            _currentThemeDictionary = null;
+            ApplyTheme();
+            SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
 
             RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
             {
@@ -221,13 +224,78 @@ namespace FancyZonesEditor
                 FancyZonesEditor.Properties.Resources.Fancy_Zones_Editor_App_Title);
         }
 
+        private void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+        {
+            if (e.Category == UserPreferenceCategory.General || e.Category == UserPreferenceCategory.Color)
+            {
+                Current.Dispatcher.Invoke(ApplyTheme);
+            }
+        }
+
+        private void ApplyTheme()
+        {
+            string themeSource;
+
+            if (SystemParameters.HighContrast)
+            {
+                // Determine which high contrast theme based on the window background
+                var bgColor = SystemColors.WindowColor;
+                if (bgColor.R < 128 && bgColor.G < 128 && bgColor.B < 128)
+                {
+                    // Dark high-contrast backgrounds
+                    themeSource = "pack://application:,,,/Themes/HighContrast1.xaml";
+                }
+                else
+                {
+                    // Light high-contrast backgrounds
+                    themeSource = "pack://application:,,,/Themes/HighContrastWhite.xaml";
+                }
+            }
+            else
+            {
+                bool isLight = IsLightTheme();
+                themeSource = isLight
+                    ? "pack://application:,,,/Themes/Light.xaml"
+                    : "pack://application:,,,/Themes/Dark.xaml";
+            }
+
+            var newDict = new ResourceDictionary { Source = new Uri(themeSource) };
+
+            if (_currentThemeDictionary != null)
+            {
+                Resources.MergedDictionaries.Remove(_currentThemeDictionary);
+            }
+
+            Resources.MergedDictionaries.Add(newDict);
+            _currentThemeDictionary = newDict;
+        }
+
+        private static bool IsLightTheme()
+        {
+            try
+            {
+                using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+                var value = key?.GetValue("AppsUseLightTheme");
+                if (value is int intValue)
+                {
+                    return intValue != 0;
+                }
+            }
+            catch
+            {
+                // Default to dark if unable to read
+            }
+
+            return false;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_isDisposed)
             {
                 if (disposing)
                 {
-                    _themeManager?.Dispose();
+                    SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
                 }
 
                 _isDisposed = true;

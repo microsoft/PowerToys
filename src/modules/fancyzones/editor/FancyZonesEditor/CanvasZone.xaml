@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="FancyZonesEditor.CanvasZone"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -21,7 +21,7 @@
                         <Border
                             x:Name="ThumbBorder"
                             Background="{TemplateBinding Background}"
-                            BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
+                            BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="0"
                             Opacity="0">
@@ -78,7 +78,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsDefaulted" Value="true">
-                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="true">
                                 <Setter TargetName="contentPresenter" Property="Opacity" Value="0.6" />
@@ -106,7 +106,7 @@
                 <Style.Triggers>
                     <Trigger Property="Border.IsKeyboardFocused" Value="true">
                         <Setter Property="Border.BorderThickness" Value="4" />
-                        <Setter Property="Border.BorderBrush" Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                        <Setter Property="Border.BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}" />
                     </Trigger>
                 </Style.Triggers>
             </Style>
