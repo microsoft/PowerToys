@@ -118,10 +118,6 @@ FindWindowEx
 SetParent
 CreateRectRgn
 SetWindowRgn
-IUIAutomation
-IUIAutomationElement
-IUIAutomationElementArray
-IUIAutomationCondition
 UIA_PROPERTY_ID
 TreeScope
 WM_DESTROY

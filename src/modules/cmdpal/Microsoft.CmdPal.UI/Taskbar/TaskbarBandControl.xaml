@@ -100,6 +100,24 @@
                         Click="ShowSubtitlesMenuItem_Click" />
                 </MenuFlyoutSubItem>
                 <MenuFlyoutSeparator />
+                <MenuFlyoutSubItem x:Name="MoveToDockSubMenu" x:Uid="Dock_EditMode_MoveToDock">
+                    <MenuFlyoutSubItem.Icon>
+                        <FontIcon Glyph="&#xE8AB;" />
+                    </MenuFlyoutSubItem.Icon>
+                    <MenuFlyoutItem
+                        x:Name="MoveToDockStartMenuItem"
+                        x:Uid="Dock_EditMode_MoveToDock_Start"
+                        Click="MoveToDockStartMenuItem_Click" />
+                    <MenuFlyoutItem
+                        x:Name="MoveToDockCenterMenuItem"
+                        x:Uid="Dock_EditMode_MoveToDock_Center"
+                        Click="MoveToDockCenterMenuItem_Click" />
+                    <MenuFlyoutItem
+                        x:Name="MoveToDockEndMenuItem"
+                        x:Uid="Dock_EditMode_MoveToDock_End"
+                        Click="MoveToDockEndMenuItem_Click" />
+                </MenuFlyoutSubItem>
+                <MenuFlyoutSeparator />
                 <MenuFlyoutItem
                     x:Name="UnpinBandMenuItem"
                     x:Uid="Dock_EditMode_Unpin"
@@ -195,6 +213,7 @@
             DragItemsStarting="BandsListView_DragItemsStarting"
             DragLeave="BandsListView_DragLeave"
             DragOver="BandsListView_DragOver"
+            Drop="BandsListView_Drop"
             IsItemClickEnabled="False"
             ItemContainerStyle="{StaticResource TaskbarBandListViewItemStyle}"
             ItemTemplate="{StaticResource TaskbarBandTemplate}"

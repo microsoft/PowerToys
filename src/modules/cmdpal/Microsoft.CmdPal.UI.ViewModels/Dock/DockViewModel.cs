@@ -31,6 +31,12 @@ public sealed partial class DockViewModel
 
     public ObservableCollection<DockBandViewModel> TaskbarItems { get; } = new();
 
+    /// <summary>
+    /// Shared drag state so that DockControl and TaskbarBandControl (in separate windows)
+    /// can coordinate cross-window band drags through the shared ViewModel.
+    /// </summary>
+    public DockBandViewModel? DraggedBand { get; set; }
+
     public IReadOnlyList<TopLevelViewModel> AllItems => _topLevelCommandManager.GetDockBandsSnapshot();
 
     public DockViewModel(

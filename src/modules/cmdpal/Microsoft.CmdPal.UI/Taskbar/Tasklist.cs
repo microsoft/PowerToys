@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using ManagedCsWin32;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Accessibility;
@@ -16,6 +18,7 @@ public sealed partial class Tasklist : IDisposable
 {
     private IUIAutomation? _automation;
     private IUIAutomationElement? _element;
+    private IUIAutomationElement? _shellTrayElement;
     private IUIAutomationCondition? _trueCondition;
     private bool _disposed;
 
@@ -27,26 +30,8 @@ public sealed partial class Tasklist : IDisposable
         ThrowIfDisposed();
 
         // Get HWND of the tasklist by walking the window hierarchy
-        var tasklistHwnd = PInvoke.FindWindow("Shell_TrayWnd", null);
-        if (tasklistHwnd.IsNull)
-        {
-            return;
-        }
-
-        tasklistHwnd = PInvoke.FindWindowEx(tasklistHwnd, HWND.Null, "ReBarWindow32", null);
-        if (tasklistHwnd.IsNull)
-        {
-            return;
-        }
-
-        tasklistHwnd = PInvoke.FindWindowEx(tasklistHwnd, HWND.Null, "MSTaskSwWClass", null);
-        if (tasklistHwnd.IsNull)
-        {
-            return;
-        }
-
-        tasklistHwnd = PInvoke.FindWindowEx(tasklistHwnd, HWND.Null, "MSTaskListWClass", null);
-        if (tasklistHwnd.IsNull)
+        var shellTrayHwnd = PInvoke.FindWindow("Shell_TrayWnd", null);
+        if (shellTrayHwnd.IsNull)
         {
             return;
         }
@@ -54,12 +39,35 @@ public sealed partial class Tasklist : IDisposable
         // Initialize UI Automation if not already done
         if (_automation == null)
         {
-            _automation = (IUIAutomation)new CUIAutomation();
-            _trueCondition = _automation.CreateTrueCondition();
+            _automation = ComHelper.CreateComInstance<IUIAutomation>(
+                ref Unsafe.AsRef(in UIAutomationClsids.CUIAutomation),
+                CLSCTX.InProcServer);
+            _ = _automation.CreateTrueCondition(out _trueCondition);
         }
 
-        // Get the automation element for the taskbar
-        _element = _automation.ElementFromHandle(tasklistHwnd);
+        // Always get the Shell_TrayWnd element as a fallback
+        _ = _automation.ElementFromHandle((nint)shellTrayHwnd, out _shellTrayElement);
+
+        // Try to navigate to MSTaskListWClass (Windows 10 / older Win11 path)
+        var tasklistHwnd = PInvoke.FindWindowEx(shellTrayHwnd, HWND.Null, "ReBarWindow32", null);
+        if (!tasklistHwnd.IsNull)
+        {
+            tasklistHwnd = PInvoke.FindWindowEx(tasklistHwnd, HWND.Null, "MSTaskSwWClass", null);
+        }
+
+        if (!tasklistHwnd.IsNull)
+        {
+            tasklistHwnd = PInvoke.FindWindowEx(tasklistHwnd, HWND.Null, "MSTaskListWClass", null);
+        }
+
+        if (!tasklistHwnd.IsNull)
+        {
+            _ = _automation.ElementFromHandle((nint)tasklistHwnd, out _element);
+        }
+        else
+        {
+            _element = null;
+        }
     }
 
     /// <summary>
@@ -71,40 +79,36 @@ public sealed partial class Tasklist : IDisposable
     {
         ThrowIfDisposed();
 
-        if (_automation == null || _element == null || _trueCondition == null)
+        if (_automation == null || _trueCondition == null)
         {
             return false;
         }
 
         try
         {
-            var elements = _element.FindAll(TreeScope.TreeScope_Children, _trueCondition);
-            if (elements == null)
+            List<TasklistButton>? foundButtons = null;
+
+            // First try: MSTaskListWClass children (Windows 10 / older Win11)
+            if (_element != null)
+            {
+                foundButtons = FindButtonsFromElement(_element, (int)TreeScope.TreeScope_Children);
+
+                // If no direct children, try descendants (buttons may be nested)
+                if (foundButtons.Count == 0)
+                {
+                    foundButtons = FindButtonsFromElement(_element, (int)TreeScope.TreeScope_Descendants);
+                }
+            }
+
+            //// Fallback: Shell_TrayWnd descendants (Windows 11 XAML-based taskbar)
+            // if ((foundButtons == null || foundButtons.Count == 0) && _shellTrayElement != null)
+            // {
+            //    foundButtons = FindButtonsFromElement(_shellTrayElement, (int)TreeScope.TreeScope_Descendants);
+            // }
+            if (foundButtons == null || foundButtons.Count == 0)
             {
                 return false;
             }
-
-            var count = elements.Length;
-            List<TasklistButton> foundButtons = new(count);
-
-            for (var i = 0; i < count; i++)
-            {
-                var child = elements.GetElement(i);
-                if (child == null)
-                {
-                    continue;
-                }
-
-                var button = CreateTasklistButton(child);
-                if (button != null)
-                {
-                    foundButtons.Add(button);
-                }
-
-                Marshal.ReleaseComObject(child);
-            }
-
-            Marshal.ReleaseComObject(elements);
 
             // Assign key numbers and filter buttons
             AssignKeyNumbers(foundButtons, buttons);
@@ -114,6 +118,43 @@ public sealed partial class Tasklist : IDisposable
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Finds taskbar buttons from the given UIA element using the specified tree scope.
+    /// </summary>
+    private List<TasklistButton> FindButtonsFromElement(IUIAutomationElement element, int treeScope)
+    {
+        var hr = element.FindAll(treeScope, _trueCondition!, out var elements);
+        if (hr != 0 || elements == null)
+        {
+            return new List<TasklistButton>();
+        }
+
+        hr = elements.get_Length(out var count);
+        if (hr != 0)
+        {
+            return new List<TasklistButton>();
+        }
+
+        List<TasklistButton> foundButtons = new(count);
+
+        for (var i = 0; i < count; i++)
+        {
+            hr = elements.GetElement(i, out var child);
+            if (hr != 0 || child == null)
+            {
+                continue;
+            }
+
+            var button = CreateTasklistButton(child);
+            if (button != null)
+            {
+                foundButtons.Add(button);
+            }
+        }
+
+        return foundButtons;
     }
 
     /// <summary>
@@ -136,9 +177,24 @@ public sealed partial class Tasklist : IDisposable
     {
         try
         {
+            //// Filter by control type: only accept Button elements (50000 = UIA_ButtonControlTypeId)
+            // var hr = element.get_CurrentControlType(out var controlType);
+            // if (hr != 0 || controlType != 50000)
+            // {
+            //    return null;
+            // }
+
             // Get bounding rectangle
-            var boundingRect = element.GetCurrentPropertyValue(UIA_PROPERTY_ID.UIA_BoundingRectanglePropertyId);
-            var rectArray = boundingRect as double[];
+            hr = element.GetCurrentPropertyValue(
+                (int)UIA_PROPERTY_ID.UIA_BoundingRectanglePropertyId,
+                out var boundingRect);
+            if (hr != 0)
+            {
+                return null;
+            }
+
+            var rectArray = NativeVariantHelper.ExtractDoubleArray(ref boundingRect);
+            NativeVariantHelper.Clear(ref boundingRect);
             if (rectArray is null)
             {
                 return null;
@@ -150,11 +206,15 @@ public sealed partial class Tasklist : IDisposable
             }
 
             // Get automation ID (name)
-            var automationId = element.CurrentAutomationId.ToString() ?? string.Empty;
+            hr = element.get_CurrentAutomationId(out var automationId);
+            if (hr != 0)
+            {
+                return null;
+            }
 
             return new TasklistButton
             {
-                Name = automationId,
+                Name = automationId ?? string.Empty,
                 X = (int)rectArray[0],
                 Y = (int)rectArray[1],
                 Width = (int)rectArray[2],
@@ -226,23 +286,12 @@ public sealed partial class Tasklist : IDisposable
     {
         if (!_disposed)
         {
-            if (_trueCondition != null)
-            {
-                Marshal.ReleaseComObject(_trueCondition);
-                _trueCondition = null;
-            }
-
-            if (_element != null)
-            {
-                Marshal.ReleaseComObject(_element);
-                _element = null;
-            }
-
-            if (_automation != null)
-            {
-                Marshal.ReleaseComObject(_automation);
-                _automation = null;
-            }
+            // ComWrappers-based objects are released by the GC finalizer.
+            // Marshal.ReleaseComObject is not compatible with StrategyBasedComWrappers.
+            _trueCondition = null;
+            _element = null;
+            _shellTrayElement = null;
+            _automation = null;
 
             _disposed = true;
         }
