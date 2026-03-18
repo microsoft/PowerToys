@@ -2,10 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Pages;
 using PowerToysExtension.Properties;
 
 namespace PowerToysExtension;
@@ -64,11 +69,70 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
             }
         }
 
-        return null;
+        return TryGetFancyZonesCommandItem(id);
     }
 
     private void RaiseModuleItemsChanged()
     {
         RaiseItemsChanged();
+    }
+
+    private static ICommandItem? TryGetFancyZonesCommandItem(string id)
+    {
+        if (!FancyZonesCommandIds.TryParseApplyLayoutCommandId(id, out var layoutId, out var monitorToken))
+        {
+            return null;
+        }
+
+        var layout = FancyZonesDataService.GetLayouts()
+            .FirstOrDefault(candidate => string.Equals(candidate.Id, layoutId, StringComparison.Ordinal));
+        if (layout is null)
+        {
+            return null;
+        }
+
+        var fallbackIcon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png");
+        if (string.IsNullOrWhiteSpace(monitorToken))
+        {
+            FancyZonesDataService.TryGetMonitors(out var monitors, out _);
+            return new FancyZonesLayoutListItem(new ApplyFancyZonesLayoutCommand(layout, monitor: null), layout, fallbackIcon)
+            {
+                MoreCommands = BuildFancyZonesLayoutContext(layout, monitors),
+            };
+        }
+
+        if (!FancyZonesDataService.TryGetMonitors(out var availableMonitors, out _))
+        {
+            return null;
+        }
+
+        var monitor = availableMonitors
+            .FirstOrDefault(candidate => string.Equals(FancyZonesCommandIds.GetMonitorToken(candidate), monitorToken, StringComparison.Ordinal));
+
+        if (monitor.Equals(default(FancyZonesMonitorDescriptor)))
+        {
+            return null;
+        }
+
+        return new FancyZonesLayoutListItem(new ApplyFancyZonesLayoutCommand(layout, monitor), layout, fallbackIcon)
+        {
+            Subtitle = string.Format(CultureInfo.CurrentCulture, "Apply to {0}", monitor.Title),
+        };
+    }
+
+    private static IContextItem[] BuildFancyZonesLayoutContext(FancyZonesLayoutDescriptor layout, IReadOnlyList<FancyZonesMonitorDescriptor> monitors)
+    {
+        var commands = new List<IContextItem>(monitors.Count);
+
+        foreach (var monitor in monitors)
+        {
+            commands.Add(new CommandContextItem(new ApplyFancyZonesLayoutCommand(layout, monitor))
+            {
+                Title = string.Format(CultureInfo.CurrentCulture, "Apply to {0}", monitor.Title),
+                Subtitle = monitor.Subtitle,
+            });
+        }
+
+        return commands.ToArray();
     }
 }
