@@ -105,9 +105,7 @@
                                                     <controls:SettingsCard x:Uid="Settings_ExtensionPage_GlobalHotkey_SettingsCard">
                                                         <cpcontrols:ShortcutControl HotkeySettings="{x:Bind Hotkey, Mode=TwoWay}" />
                                                     </controls:SettingsCard>
-                                                    <controls:SettingsCard
-                                                        x:Name="AliasSettingsCard"
-                                                        x:Uid="Settings_ExtensionPage_Alias_SettingsCard">
+                                                    <controls:SettingsCard x:Name="AliasSettingsCard" x:Uid="Settings_ExtensionPage_Alias_SettingsCard">
                                                         <TextBox
                                                             x:Uid="Settings_ExtensionPage_Alias_PlaceholderText"
                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
