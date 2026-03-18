@@ -170,10 +170,20 @@ namespace CommonSharedConstants
     const wchar_t LIGHT_SWITCH_LIGHT_THEME_EVENT[] = L"Local\\PowerToysLightSwitch-LightThemeEvent-50077121-2ffc-4841-9c86-ab1bd3f9baca";
     const wchar_t LIGHT_SWITCH_DARK_THEME_EVENT[] = L"Local\\PowerToysLightSwitch-DarkThemeEvent-b3a835c0-eaa2-49b0-b8eb-f793e3df3368";
 
+    // Path to events used by Keyboard Manager
+    const wchar_t OPEN_NEW_KEYBOARD_MANAGER_EVENT[] = L"Local\\PowerToysOpenNewKeyboardManagerEvent-9c1d2e3f-4b5a-6c7d-8e9f-0a1b2c3d4e5f";
+    const wchar_t TOGGLE_KEYBOARD_MANAGER_ACTIVE_EVENT[] = L"Local\\PowerToysToggleKeyboardManagerActiveEvent-7f3a1d5c-2e94-4ff4-8b6a-90fd2bc4d2a7";
+    const wchar_t KEYBOARD_MANAGER_ENGINE_INSTANCE_MUTEX[] = L"Local\\PowerToys_KBMEngine_InstanceMutex";
+
     // used from quick access window
     const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";
     const wchar_t CMDPAL_EXIT_EVENT[] = L"Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd";
 
+    // Path to the events used by MouseWithoutBorders
+    const wchar_t MWB_TOGGLE_EASY_MOUSE_EVENT[] = L"Local\\PowerToysMWB-ToggleEasyMouseEvent-a9c8d7b6-e5f4-3c2a-1b0d-9e8f7a6b5c4d";
+    const wchar_t MWB_RECONNECT_EVENT[] = L"Local\\PowerToysMWB-ReconnectEvent-b8d7c6a5-f4e3-2b1c-0a9d-8e7f6a5b4c3d";
+
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
 }
+

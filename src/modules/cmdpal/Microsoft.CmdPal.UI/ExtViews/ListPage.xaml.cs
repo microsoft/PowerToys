@@ -43,6 +43,13 @@ public sealed partial class ListPage : Page,
     private ListItemViewModel? _stickySelectedItem;
     private ListItemViewModel? _lastPushedToVm;
 
+    // A single search-text change can produce multiple ItemsUpdated calls
+    // dispatched as separate UI-thread callbacks. A later "soft" update
+    // (ForceFirstItem = false) must not overwrite a prior force-first
+    // intent. This flag latches true whenever any update requests
+    // force-first and is only cleared once selection stabilizes.
+    private bool _forceFirstPending;
+
     internal ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
@@ -223,6 +230,10 @@ public sealed partial class ListPage : Page,
         }
 
         _stickySelectedItem = li;
+
+        // User explicitly changed selection — any pending force-first intent
+        // is superseded by the user's navigation.
+        _forceFirstPending = false;
 
         // Do not Task.Run (it reorders selection updates).
         vm?.UpdateSelectedItemCommand.Execute(li);
@@ -606,10 +617,12 @@ public sealed partial class ListPage : Page,
 
             if (e.NewValue is ListViewModel page)
             {
+                @this._forceFirstPending = false;
                 page.ItemsUpdated += @this.Page_ItemsUpdated;
             }
             else if (e.NewValue is null)
             {
+                @this._forceFirstPending = false;
                 Logger.LogDebug("cleared view model");
             }
         }
@@ -620,25 +633,32 @@ public sealed partial class ListPage : Page,
     private void Page_ItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args)
     {
         var version = Interlocked.Increment(ref _itemsUpdatedVersion);
-        var forceFirstItem = args.ForceFirstItem;
+
+        // Latch: once any update requests force-first, keep it until consumed.
+        _forceFirstPending |= args.ForceFirstItem;
+        var forceFirstItem = _forceFirstPending;
 
         // Try to handle selection immediately — items should already be available
         // since FilteredItems is a direct ObservableCollection bound as ItemsSource.
-        if (!TrySetSelectionAfterUpdate(sender, version, forceFirstItem))
+        // TrySetSelectionAfterUpdate clears _forceFirstPending internally once
+        // selection stabilizes (no repair needed), so we don't clear it here.
+        if (TrySetSelectionAfterUpdate(sender, version, forceFirstItem))
         {
-            // Fallback: binding hasn't propagated yet, defer to next tick.
-            _ = DispatcherQueue.TryEnqueue(
-                Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
-                () =>
-                {
-                    if (version != Volatile.Read(ref _itemsUpdatedVersion))
-                    {
-                        return;
-                    }
-
-                    TrySetSelectionAfterUpdate(sender, version, forceFirstItem);
-                });
+            return;
         }
+
+        // Fallback: binding hasn't propagated yet, defer to next tick.
+        _ = DispatcherQueue.TryEnqueue(
+            Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+            () =>
+            {
+                if (version != Volatile.Read(ref _itemsUpdatedVersion))
+                {
+                    return;
+                }
+
+                TrySetSelectionAfterUpdate(sender, version, forceFirstItem);
+            });
     }
 
     /// <summary>
@@ -722,13 +742,18 @@ public sealed partial class ListPage : Page,
             using (SuppressSelectionChangedScope())
             {
                 ListItemViewModel? stickyRestored = null;
+                ListItemViewModel? firstSelected = null;
 
                 if (!forceFirstItem &&
                     _stickySelectedItem is not null &&
                     items.Contains(_stickySelectedItem) &&
                     !IsSeparator(_stickySelectedItem))
                 {
-                    // Preserve sticky selection for nested dynamic updates.
+                    // Restore sticky selection only when force-first is not
+                    // active. The latched _forceFirstPending flag guarantees
+                    // that a prior force-first intent survives superseding
+                    // soft updates, so we never accidentally restore a stale
+                    // sticky item when the list was meant to reset.
                     ItemView.SelectedItem = _stickySelectedItem;
                     stickyRestored = _stickySelectedItem;
                 }
@@ -736,6 +761,7 @@ public sealed partial class ListPage : Page,
                 {
                     // Select the first interactive item.
                     ItemView.SelectedItem = items[firstUsefulIndex];
+                    firstSelected = ItemView.SelectedItem as ListItemViewModel;
                 }
 
                 // Prevent any pending "scroll on selection" logic from fighting this.
@@ -748,9 +774,16 @@ public sealed partial class ListPage : Page,
                         return;
                     }
 
+                    ItemView.UpdateLayout();
+
                     if (stickyRestored is not null)
                     {
                         ScrollToItem(stickyRestored);
+                    }
+                    else if (firstSelected is not null)
+                    {
+                        ScrollToItem(firstSelected);
+                        ResetScrollToTop();
                     }
                     else
                     {
@@ -761,7 +794,11 @@ public sealed partial class ListPage : Page,
         }
         else
         {
-            // Selection is valid and unchanged, just make sure the item is visible
+            // Selection is valid and unchanged: the force-first intent (if any)
+            // has been fully delivered and selection has stabilized. Safe to clear.
+            _forceFirstPending = false;
+
+            // Just make sure the item is visible
             if (_stickySelectedItem is ListItemViewModel li)
             {
                 _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>

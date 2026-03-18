@@ -408,6 +408,24 @@
   <data name="KeyboardManager_Settings_Subtitle" xml:space="preserve">
     <value>Open Keyboard Manager settings</value>
   </data>
+  <data name="KeyboardManager_OpenNewEditor_Title" xml:space="preserve">
+    <value>Keyboard Manager: Open Editor</value>
+  </data>
+  <data name="KeyboardManager_OpenNewEditor_Subtitle" xml:space="preserve">
+    <value>Open the Keyboard Manager remap editor</value>
+  </data>
+  <data name="KeyboardManager_ToggleListening_Title" xml:space="preserve">
+    <value>Keyboard Manager: Toggle active state</value>
+  </data>
+  <data name="KeyboardManager_ToggleListening_On_Subtitle" xml:space="preserve">
+    <value>Keyboard Manager is active. Invoke to stop listening.</value>
+  </data>
+  <data name="KeyboardManager_ToggleListening_Off_Subtitle" xml:space="preserve">
+    <value>Keyboard Manager is paused. Invoke to start listening.</value>
+  </data>
+  <data name="KeyboardManager_ToggleListening_Error" xml:space="preserve">
+    <value>Keyboard Manager is unavailable. Try enabling it in PowerToys settings.</value>
+  </data>
   <!-- Light Switch Module -->
   <data name="LightSwitch_Toggle_Title" xml:space="preserve">
     <value>Light Switch: Toggle theme</value>
@@ -455,6 +473,18 @@
   <!-- Mouse Without Borders Module -->
   <data name="MouseWithoutBorders_Settings_Subtitle" xml:space="preserve">
     <value>Open Mouse Without Borders settings</value>
+  </data>
+  <data name="MouseWithoutBorders_ToggleEasyMouse_Title" xml:space="preserve">
+    <value>Toggle Easy Mouse</value>
+  </data>
+  <data name="MouseWithoutBorders_ToggleEasyMouse_Subtitle" xml:space="preserve">
+    <value>Mouse Without Borders: Toggle Easy Mouse feature on/off</value>
+  </data>
+  <data name="MouseWithoutBorders_Reconnect_Title" xml:space="preserve">
+    <value>Reconnect</value>
+  </data>
+  <data name="MouseWithoutBorders_Reconnect_Subtitle" xml:space="preserve">
+    <value>Mouse Without Borders: Reconnect to all machines</value>
   </data>
   <!-- New+ Module -->
   <data name="NewPlus_Settings_Subtitle" xml:space="preserve">
@@ -634,3 +664,4 @@
     <value>N/A</value>
   </data>
 </root>
+

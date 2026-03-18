@@ -178,7 +178,7 @@ public sealed partial class DockSettingsPage : Page
 
         var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
 
-        foreach (var item in tlcManager.DockBands)
+        foreach (var item in tlcManager.GetDockBandsSnapshot())
         {
             if (item.IsDockBand)
             {
@@ -197,7 +197,7 @@ public sealed partial class DockSettingsPage : Page
         var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var settingsModel = App.Current.Services.GetService<SettingsModel>()!;
         var dockViewModel = App.Current.Services.GetService<DockViewModel>()!;
-        var allBands = tlcManager.DockBands;
+        var allBands = tlcManager.GetDockBandsSnapshot();
         foreach (var band in allBands)
         {
             var setting = band.DockBandSettings;

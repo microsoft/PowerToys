@@ -151,7 +151,7 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clipboard History.
+        ///   Looks up a localized string similar to Clipboard history.
         /// </summary>
         public static string list_item_title {
             get {
@@ -439,7 +439,7 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clipboard History.
+        ///   Looks up a localized string similar to Clipboard history.
         /// </summary>
         public static string provider_display_name {
             get {

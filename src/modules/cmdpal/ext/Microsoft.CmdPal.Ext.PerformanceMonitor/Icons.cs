@@ -6,8 +6,10 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
-internal sealed class Icons
+internal static class Icons
 {
+    internal static IconInfo PerformanceMonitorIcon => IconHelpers.FromRelativePath("Assets\\PerformanceMonitorExtension.svg");
+
     internal static IconInfo CpuIcon => new("\uE9D9"); // CPU icon
 
     internal static IconInfo MemoryIcon => new("\uE964"); // Memory icon
@@ -26,6 +28,3 @@ internal sealed class Icons
 
     internal static IconInfo NavigateForwardIcon => new("\uE72A"); // Next icon
 }
-
-
-#pragma warning restore SA1402 // File may only contain a single type
