@@ -116,7 +116,7 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
 
         return new FancyZonesLayoutListItem(new ApplyFancyZonesLayoutCommand(layout, monitor), layout, fallbackIcon)
         {
-            Subtitle = string.Format(CultureInfo.CurrentCulture, "Apply to {0}", monitor.Title),
+            Subtitle = string.Format(CultureInfo.CurrentCulture, Resources.FancyZones_ApplyTo_Format, monitor.Title),
         };
     }
 
@@ -128,7 +128,7 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
         {
             commands.Add(new CommandContextItem(new ApplyFancyZonesLayoutCommand(layout, monitor))
             {
-                Title = string.Format(CultureInfo.CurrentCulture, "Apply to {0}", monitor.Title),
+                Title = string.Format(CultureInfo.CurrentCulture, Resources.FancyZones_ApplyTo_Format, monitor.Title),
                 Subtitle = monitor.Subtitle,
             });
         }
