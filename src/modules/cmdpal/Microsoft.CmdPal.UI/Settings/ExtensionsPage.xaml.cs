@@ -98,22 +98,98 @@ public sealed partial class ExtensionsPage : Page
             return;
         }
 
-        // Get the last focused index, defaulting to 0
+        // Get the last focused idex, defaulting to 0
         var index = _lastFocusedIndex;
         if (index < 0 || index >= filteredProviders.Count)
         {
             index = 0;
         }
 
-        // Try to get the card at the saved index
-        var targetCard = ProvidersRepeater.TryGetElement(index) as SettingsCard;
+        // Check if WinUI is trying to focus something other than our target
+        var shouldIntervene = false;
 
-        if (targetCard != null)
+        // If direction is Previous (Shift+Tab), we need to intervene
+        if (args.Direction == FocusNavigationDirection.Previous || args.Direction == FocusNavigationDirection.Up)
         {
-            // Use TrySetNewFocusedElement instead of canceling and deferring
-            args.TrySetNewFocusedElement(targetCard);
-            args.Handled = true;
+            shouldIntervene = true;
         }
+
+        // Also intervene if the NewFocusedElement is not at our target index
+        else if (args.NewFocusedElement is DependencyObject newFocus)
+        {
+            // Check if the new focus element is inside our target card
+            var targetCard = ProvidersRepeater.TryGetElement(index) as SettingsCard;
+            if (targetCard != null && !IsElementInsideCard(newFocus, targetCard))
+            {
+                shouldIntervene = true;
+            }
+        }
+
+        if (shouldIntervene)
+        {
+            // Ensure the target element is realized before trying to focus it
+            ProvidersRepeater.GetOrCreateElement(index);
+
+            // Get the target card
+            var targetCard = ProvidersRepeater.TryGetElement(index) as SettingsCard;
+
+            if (targetCard != null)
+            {
+                // For shift-tab or wrong target, cancel and manually set focus
+                args.TryCancel();
+                args.Handled = true;
+
+                // Set focus asynchronously to the target card and scroll it into view
+                _ = targetCard.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                {
+                    targetCard.Focus(FocusState.Keyboard);
+                    BringCardIntoView(targetCard);
+                });
+            }
+        }
+        else
+        {
+            // For normal Tab forward, just redirect
+            ProvidersRepeater.GetOrCreateElement(index);
+            var targetCard = ProvidersRepeater.TryGetElement(index) as SettingsCard;
+
+            if (targetCard != null)
+            {
+                args.TrySetNewFocusedElement(targetCard);
+                args.Handled = true;
+
+                // Set focus asynchronously to the target card and scroll it into view
+                _ = targetCard.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    BringCardIntoView(targetCard);
+                });
+            }
+        }
+    }
+
+    private void BringCardIntoView(SettingsCard card)
+    {
+        card.StartBringIntoView(new BringIntoViewOptions
+        {
+            AnimationDesired = true,
+            VerticalAlignmentRatio = 0.5, // Center vertically
+        });
+    }
+
+    private bool IsElementInsideCard(DependencyObject element, SettingsCard card)
+    {
+        var parent = element;
+        while (parent != null)
+        {
+            if (ReferenceEquals(parent, card))
+            {
+                return true;
+            }
+
+            parent = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(parent);
+        }
+
+        return false;
     }
 
     private bool IsElementInsideRepeater(object element)
