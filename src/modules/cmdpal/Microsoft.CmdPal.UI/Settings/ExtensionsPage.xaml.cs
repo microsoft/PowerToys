@@ -98,7 +98,7 @@ public sealed partial class ExtensionsPage : Page
             return;
         }
 
-        // Get the last focused idex, defaulting to 0
+        // Get the last focused index, defaulting to 0
         var index = _lastFocusedIndex;
         if (index < 0 || index >= filteredProviders.Count)
         {
