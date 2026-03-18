@@ -39,7 +39,16 @@ internal static class FancyZonesCommandIds
                 return false;
             }
 
-            layoutId = Uri.UnescapeDataString(layoutPayload);
+            try
+            {
+                layoutId = Uri.UnescapeDataString(layoutPayload);
+            }
+            catch (ArgumentException)
+            {
+                layoutId = string.Empty;
+                return false;
+            }
+
             return !string.IsNullOrWhiteSpace(layoutId);
         }
 
@@ -56,8 +65,18 @@ internal static class FancyZonesCommandIds
             return false;
         }
 
-        layoutId = Uri.UnescapeDataString(layoutPart);
-        monitorToken = Uri.UnescapeDataString(monitorPart);
+        try
+        {
+            layoutId = Uri.UnescapeDataString(layoutPart);
+            monitorToken = Uri.UnescapeDataString(monitorPart);
+        }
+        catch (ArgumentException)
+        {
+            layoutId = string.Empty;
+            monitorToken = null;
+            return false;
+        }
+
         return !string.IsNullOrWhiteSpace(layoutId) && !string.IsNullOrWhiteSpace(monitorToken);
     }
 
