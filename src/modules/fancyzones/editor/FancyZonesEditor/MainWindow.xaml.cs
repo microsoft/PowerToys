@@ -37,6 +37,8 @@ namespace FancyZonesEditor
         private TextBlock _createLayoutAnnounce;
 
         private bool haveTriedToGetFocusAlready;
+        private bool _isSelecting;
+        private bool _isMonitorSelecting;
 
         private static readonly CompositeFormat EditTemplate = System.Text.CompositeFormat.Parse(Properties.Resources.Edit_Template);
         private static readonly CompositeFormat PixelValue = System.Text.CompositeFormat.Parse(Properties.Resources.Pixel_Value);
@@ -538,18 +540,44 @@ namespace FancyZonesEditor
 
         private void Layout_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (_isSelecting)
+            {
+                return;
+            }
+
             if (e.AddedItems.Count > 0 && e.AddedItems[0] is LayoutModel model)
             {
-                Select(model);
-                Apply();
+                _isSelecting = true;
+                try
+                {
+                    Select(model);
+                    Apply();
+                }
+                finally
+                {
+                    _isSelecting = false;
+                }
             }
         }
 
         private void Monitor_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (_isMonitorSelecting)
+            {
+                return;
+            }
+
             if (e.AddedItems.Count > 0 && e.AddedItems[0] is MonitorInfoModel model)
             {
-                monitorViewModel.SelectCommand.Execute(model);
+                _isMonitorSelecting = true;
+                try
+                {
+                    monitorViewModel.SelectCommand.Execute(model);
+                }
+                finally
+                {
+                    _isMonitorSelecting = false;
+                }
             }
         }
 

@@ -376,7 +376,7 @@
         </Grid>
 
         <!-- Edit Layout Dialog Overlay -->
-        <Grid x:Name="EditLayoutDialogOverlay" Visibility="Collapsed" Panel.ZIndex="100">
+        <Grid x:Name="EditLayoutDialogOverlay" Grid.RowSpan="2" Visibility="Collapsed" Panel.ZIndex="100">
             <Border Background="#80000000" MouseLeftButtonDown="DialogBackdrop_MouseLeftButtonDown" />
             <Border
                 MaxWidth="420"
@@ -800,7 +800,7 @@
         </Grid>
 
         <!-- New Layout Dialog Overlay -->
-        <Grid x:Name="NewLayoutDialogOverlay" Visibility="Collapsed" Panel.ZIndex="100">
+        <Grid x:Name="NewLayoutDialogOverlay" Grid.RowSpan="2" Visibility="Collapsed" Panel.ZIndex="100">
             <Border Background="#80000000" MouseLeftButtonDown="DialogBackdrop_MouseLeftButtonDown" />
             <Border
                 MaxWidth="520"
