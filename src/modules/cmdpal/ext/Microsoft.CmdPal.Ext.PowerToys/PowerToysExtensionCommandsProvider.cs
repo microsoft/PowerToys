@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -97,7 +96,7 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
             FancyZonesDataService.TryGetMonitors(out var monitors, out _);
             return new FancyZonesLayoutListItem(new ApplyFancyZonesLayoutCommand(layout, monitor: null), layout, fallbackIcon)
             {
-                MoreCommands = BuildFancyZonesLayoutContext(layout, monitors),
+                MoreCommands = FancyZonesContextHelper.BuildLayoutContext(layout, monitors),
             };
         }
 
@@ -116,23 +115,7 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
 
         return new FancyZonesLayoutListItem(new ApplyFancyZonesLayoutCommand(layout, monitor), layout, fallbackIcon)
         {
-            Subtitle = string.Format(CultureInfo.CurrentCulture, "Apply to {0}", monitor.Title),
+            Subtitle = FancyZonesContextHelper.FormatApplyToMonitorTitle(monitor),
         };
-    }
-
-    private static IContextItem[] BuildFancyZonesLayoutContext(FancyZonesLayoutDescriptor layout, IReadOnlyList<FancyZonesMonitorDescriptor> monitors)
-    {
-        var commands = new List<IContextItem>(monitors.Count);
-
-        foreach (var monitor in monitors)
-        {
-            commands.Add(new CommandContextItem(new ApplyFancyZonesLayoutCommand(layout, monitor))
-            {
-                Title = string.Format(CultureInfo.CurrentCulture, "Apply to {0}", monitor.Title),
-                Subtitle = monitor.Subtitle,
-            });
-        }
-
-        return commands.ToArray();
     }
 }
