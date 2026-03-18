@@ -232,7 +232,9 @@ namespace HostsUILib.Helpers
             }
             catch (Exception ex)
             {
-                LoggerInstance.Logger.LogError("Failed to open notepad", ex);
+                LoggerInstance.Logger.LogError(
+                    $"Failed to open notepad. Executable path: '{notepadPath}', hosts file path: '{HostsFilePath}'.",
+                    ex);
             }
         }
 
