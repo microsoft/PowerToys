@@ -9309,7 +9309,13 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
             // position in a nearby frame.
             std::vector<BYTE> erasedPixels;
             const std::vector<BYTE>* composeSrc = &sourcePixels;
-            if( overlayMask != nullptr &&
+            // Skip erase-rect replacement for the last few composed frames:
+            // at the tail of a panorama there are typically no later donor
+            // frames to supply clean content, so leave the floating overlay
+            // in place rather than smearing mismatched donor content.
+            const bool lastFrame = ( i + 1 >= static_cast<int>( composedFrameIndices.size() ) );
+            if( !lastFrame &&
+                overlayMask != nullptr &&
                 overlayMask->eraseRect.right > overlayMask->eraseRect.left &&
                 overlayMask->eraseRect.bottom > overlayMask->eraseRect.top )
             {
@@ -9347,8 +9353,9 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                             if( donorPixels.empty() || donorPixels.size() != sourcePixels.size() )
                                 continue;
 
-                            // Sample context luma just outside the erase rect
-                            // to validate donor content plausibility.
+                            // Validate donor row against surrounding context
+                            // before copying — reject donors whose content
+                            // diverges from the local background.
                             const int exLeft = max( 0, static_cast<int>( er.left ) );
                             const int exRight = min( frameWidth, static_cast<int>( er.right ) );
                             int ctxLuma = 0, ctxN = 0;
@@ -9366,9 +9373,8 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                             }
                             const int avgCtx = ( ctxN > 0 ) ? ctxLuma / ctxN : 128;
 
-                            // Copy donor pixels, but validate against context.
                             const int donorDx = composedFrameOrigins[i].x - composedFrameOrigins[j].x;
-                            bool donorAccepted = true;
+                            bool donorOk = true;
                             for( int ex = exLeft; ex < exRight; ++ex )
                             {
                                 const int donorX = ex + donorDx;
@@ -9378,23 +9384,18 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                                 const size_t dstIdx = ( static_cast<size_t>( ey ) * frameWidth + ex ) * 4;
                                 const size_t srcIdx = ( static_cast<size_t>( donorY ) * frameWidth + donorX ) * 4;
                                 const int donorLuma = ( donorPixels[srcIdx + 0] + donorPixels[srcIdx + 1] + donorPixels[srcIdx + 2] ) / 3;
-
-                                // If donor pixel diverges wildly from surrounding
-                                // context, skip this entire donor row.
-                                if( abs( donorLuma - avgCtx ) > 60 )
+                                if( abs( donorLuma - avgCtx ) > 40 )
                                 {
-                                    donorAccepted = false;
+                                    donorOk = false;
                                     break;
                                 }
-
                                 erasedPixels[dstIdx + 0] = donorPixels[srcIdx + 0];
                                 erasedPixels[dstIdx + 1] = donorPixels[srcIdx + 1];
                                 erasedPixels[dstIdx + 2] = donorPixels[srcIdx + 2];
                             }
-
-                            if( !donorAccepted )
+                            if( !donorOk )
                             {
-                                // Revert: copy original pixels back.
+                                // Revert row to original pixels.
                                 for( int ex = exLeft; ex < exRight; ++ex )
                                 {
                                     const size_t dstIdx = ( static_cast<size_t>( ey ) * frameWidth + ex ) * 4;
@@ -9404,7 +9405,6 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                                 }
                                 continue;  // Try next donor.
                             }
-
                             rowReplaced = true;
                             anyReplaced = true;
                         }
@@ -9451,7 +9451,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
                     const size_t dstMaskIndex = dstMaskRowBase + static_cast<size_t>( canvasX );
 
-                    if( overlayMask != nullptr && overlayMask->IsMaskedPixel( x, y ) )
+                    if( !lastFrame && overlayMask != nullptr && overlayMask->IsMaskedPixel( x, y ) )
                     {
                         if( outSuppressedMask != nullptr )
                         {
