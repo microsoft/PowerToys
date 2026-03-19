@@ -280,6 +280,8 @@ void WindowBorder::SettingsUpdate(SettingId id)
         return;
     }
 
+    Logger::debug(L"Refreshing Always On Top border after setting update: {}", SettingIdToString(id));
+
     switch (id)
     {
     case SettingId::FrameThickness:
