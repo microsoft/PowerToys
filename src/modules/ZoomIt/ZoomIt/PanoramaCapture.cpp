@@ -3979,6 +3979,7 @@ skipTileMasking:
             ? mask.FirstMaskedY() / mask.tileHeight : stripStartTileY;
         const int floatingCutoffTileY = min( stripStartTileY, firstMaskedTileY ) - 2;
         int aboveSumX = 0, aboveSumY = 0, aboveCount = 0;
+        int fixMinX = frameWidth, fixMaxX = 0, fixMinY = frameHeight, fixMaxY = 0;
         for( int tileY = 0; tileY < max( 0, floatingCutoffTileY ); ++tileY )
         {
             const size_t rowBase = static_cast<size_t>( tileY ) * static_cast<size_t>( mask.tileCols );
@@ -3986,8 +3987,14 @@ skipTileMasking:
             {
                 if( connectedTiles[rowBase + static_cast<size_t>( tileX )] != 0 )
                 {
-                    aboveSumX += tileX * mask.tileWidth + mask.tileWidth / 2;
-                    aboveSumY += tileY * mask.tileHeight + mask.tileHeight / 2;
+                    const int tpx = tileX * mask.tileWidth;
+                    const int tpy = tileY * mask.tileHeight;
+                    aboveSumX += tpx + mask.tileWidth / 2;
+                    aboveSumY += tpy + mask.tileHeight / 2;
+                    fixMinX = min( fixMinX, tpx );
+                    fixMaxX = max( fixMaxX, tpx + mask.tileWidth - 1 );
+                    fixMinY = min( fixMinY, tpy );
+                    fixMaxY = max( fixMaxY, tpy + mask.tileHeight - 1 );
                     ++aboveCount;
                 }
             }
@@ -3998,9 +4005,21 @@ skipTileMasking:
         // between distant frames, so only fixed overlay pixels match.
         if( aboveCount == 0 && composedFrameIndices.size() >= 4 )
         {
-            const int firstMaskedY = mask.FirstMaskedY();
-            const int scanBot = ( firstMaskedY >= 0 )
-                ? firstMaskedY
+            // Scan up to the first fully-masked row, not just the first
+            // partially-masked row.  Small overlays (chevron) often sit in
+            // the transition zone where some tiles are masked (strip) and
+            // others still show page content.
+            int firstFullMaskedY = frameHeight;
+            for( int ty = 0; ty < mask.tileRows; ++ty )
+            {
+                if( mask.IsFullWidthMaskedRow( ty * mask.tileHeight ) )
+                {
+                    firstFullMaskedY = ty * mask.tileHeight;
+                    break;
+                }
+            }
+            const int scanBot = ( firstFullMaskedY < frameHeight )
+                ? firstFullMaskedY
                 : max( 0, frameHeight - fixedBottomRows );
             const int scanTop = max( 0, scanBot - frameHeight / 4 );
             const int bgThresh = 12;
@@ -4037,7 +4056,6 @@ skipTileMasking:
                 }
                 if( bgN > 0 ) { bgR /= bgN; bgG /= bgN; bgB /= bgN; }
 
-                long long sumX = 0, sumY = 0;
                 int fixedCount = 0;
                 for( int y = scanTop; y < scanBot; y += 2 )
                 {
@@ -4065,8 +4083,10 @@ skipTileMasking:
                         }
                         if( allMatch )
                         {
-                            sumX += x;
-                            sumY += y;
+                            fixMinX = min( fixMinX, x );
+                            fixMaxX = max( fixMaxX, x );
+                            fixMinY = min( fixMinY, y );
+                            fixMaxY = max( fixMaxY, y );
                             ++fixedCount;
                         }
                     }
@@ -4074,8 +4094,8 @@ skipTileMasking:
 
                 if( fixedCount >= 4 )
                 {
-                    aboveSumX = static_cast<int>( sumX / fixedCount );
-                    aboveSumY = static_cast<int>( sumY / fixedCount );
+                    aboveSumX = ( fixMinX + fixMaxX ) / 2;
+                    aboveSumY = ( fixMinY + fixMaxY ) / 2;
                     aboveCount = 1;
                 }
             }
@@ -4083,12 +4103,15 @@ skipTileMasking:
 
         if( aboveCount > 0 )
         {
-            const int cx = ( aboveCount == 1 ) ? aboveSumX : aboveSumX / aboveCount;
-            const int cy = ( aboveCount == 1 ) ? aboveSumY : aboveSumY / aboveCount;
-            mask.eraseRect.left   = max( 0L, static_cast<long>( cx ) - 40 );
-            mask.eraseRect.top    = max( 0L, static_cast<long>( cy ) - 20 );
-            mask.eraseRect.right  = min( static_cast<long>( frameWidth ), static_cast<long>( cx ) + 40 );
-            mask.eraseRect.bottom = min( static_cast<long>( frameHeight ), static_cast<long>( cy ) + 20 );
+            // Use tight bounds of detected pixels + small margin rather
+            // than a large fixed-size rect.  This avoids replacing valid
+            // page content (text) outside the actual overlay, which would
+            // cause fuzzy/doubled text from slightly-shifted donors.
+            const int margin = 6;
+            mask.eraseRect.left   = max( 0L, static_cast<long>( fixMinX ) - margin );
+            mask.eraseRect.top    = max( 0L, static_cast<long>( fixMinY ) - margin );
+            mask.eraseRect.right  = min( static_cast<long>( frameWidth ), static_cast<long>( fixMaxX ) + margin + 2 );
+            mask.eraseRect.bottom = min( static_cast<long>( frameHeight ), static_cast<long>( fixMaxY ) + margin + 2 );
         }
 
         minTileX = 0;
@@ -4099,6 +4122,62 @@ skipTileMasking:
 
     // (No secondary fallback — the far-apart-frame scan above handles
     // both animated and static overlay detection.)
+
+    // Fill unmasked holes within the masked bounds.  Small overlay elements
+    // (e.g. a chevron indicator above the bottom strip) may fall in tiles
+    // that tile voting didn't flag, leaving gaps in the mask.  Any unmasked
+    // tile bordered on 3+ sides by masked tiles is almost certainly part of
+    // the overlay and should be masked too.
+    if( maskedTileCount > 0 )
+    {
+        bool filled = true;
+        while( filled )
+        {
+            filled = false;
+            for( int tileY = minTileY; tileY <= maxTileY; ++tileY )
+            {
+                for( int tileX = minTileX; tileX <= maxTileX; ++tileX )
+                {
+                    const size_t ti = static_cast<size_t>( tileY ) * static_cast<size_t>( mask.tileCols ) + static_cast<size_t>( tileX );
+                    if( mask.maskedTiles[ti] != 0 )
+                        continue;
+
+                    int maskedNeighbors = 0;
+                    if( tileY > 0 )
+                    {
+                        const size_t above = static_cast<size_t>( tileY - 1 ) * static_cast<size_t>( mask.tileCols ) + static_cast<size_t>( tileX );
+                        if( mask.maskedTiles[above] != 0 ) ++maskedNeighbors;
+                    }
+                    else ++maskedNeighbors;  // frame edge counts as masked
+                    if( tileY + 1 < mask.tileRows )
+                    {
+                        const size_t below = static_cast<size_t>( tileY + 1 ) * static_cast<size_t>( mask.tileCols ) + static_cast<size_t>( tileX );
+                        if( mask.maskedTiles[below] != 0 ) ++maskedNeighbors;
+                    }
+                    else ++maskedNeighbors;
+                    if( tileX > 0 )
+                    {
+                        const size_t left = static_cast<size_t>( tileY ) * static_cast<size_t>( mask.tileCols ) + static_cast<size_t>( tileX - 1 );
+                        if( mask.maskedTiles[left] != 0 ) ++maskedNeighbors;
+                    }
+                    else ++maskedNeighbors;
+                    if( tileX + 1 < mask.tileCols )
+                    {
+                        const size_t right = static_cast<size_t>( tileY ) * static_cast<size_t>( mask.tileCols ) + static_cast<size_t>( tileX + 1 );
+                        if( mask.maskedTiles[right] != 0 ) ++maskedNeighbors;
+                    }
+                    else ++maskedNeighbors;
+
+                    if( maskedNeighbors >= 3 )
+                    {
+                        mask.maskedTiles[ti] = 1;
+                        ++maskedTileCount;
+                        filled = true;
+                    }
+                }
+            }
+        }
+    }
 
     if( maskedTileCount == 0 && mask.eraseRect.right <= mask.eraseRect.left )
     {
