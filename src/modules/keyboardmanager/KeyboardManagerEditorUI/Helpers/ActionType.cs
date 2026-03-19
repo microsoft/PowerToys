@@ -11,5 +11,6 @@ namespace KeyboardManagerEditorUI.Helpers
         Shortcut,
         MouseClick,
         Url,
+        Expand,
     }
 }

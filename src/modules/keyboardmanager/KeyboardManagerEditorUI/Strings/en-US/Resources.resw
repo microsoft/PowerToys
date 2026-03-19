@@ -292,4 +292,40 @@
   <data name="MouseClickPlaceholder.Text" xml:space="preserve">
     <value>Mouse click action - coming soon</value>
   </data>
+  <data name="TriggerType_Expand.AutomationProperties.Name" xml:space="preserve">
+    <value>Text expand</value>
+  </data>
+  <data name="TriggerType_Expand_Text.Text" xml:space="preserve">
+    <value>Text expand</value>
+  </data>
+  <data name="ExpandAbbreviationBox.Header" xml:space="preserve">
+    <value>Abbreviation</value>
+  </data>
+  <data name="ExpandAbbreviationBox.PlaceholderText" xml:space="preserve">
+    <value>e.g. brb</value>
+  </data>
+  <data name="ExpandTriggerKeyLabel.Text" xml:space="preserve">
+    <value>Trigger key</value>
+  </data>
+  <data name="ActionType_ReplaceWith.AutomationProperties.Name" xml:space="preserve">
+    <value>Replace with</value>
+  </data>
+  <data name="ActionType_ReplaceWith_Text.Text" xml:space="preserve">
+    <value>Replace with</value>
+  </data>
+  <data name="ExpandedTextBox.Header" xml:space="preserve">
+    <value>Expanded text</value>
+  </data>
+  <data name="ExpandedTextBox.PlaceholderText" xml:space="preserve">
+    <value>e.g. be right back</value>
+  </data>
+  <data name="ExpandMappingsHeader.Text" xml:space="preserve">
+    <value>Text expansions</value>
+  </data>
+  <data name="ExpandsToText.Text" xml:space="preserve">
+    <value>expands to</value>
+  </data>
+  <data name="ExpandTriggerKeyText.Text" xml:space="preserve">
+    <value>via</value>
+  </data>
 </root>

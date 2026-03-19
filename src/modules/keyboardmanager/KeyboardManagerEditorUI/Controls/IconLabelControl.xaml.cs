@@ -81,6 +81,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.Shortcut => "\uEDA7",
                 ActionType.MouseClick => "\uE962",
                 ActionType.Url => "\uE774",
+                ActionType.Expand => "\uE8C8",
                 _ => "\uE8A5",
             };
         }

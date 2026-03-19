@@ -27,6 +27,9 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.EmptyUrl, ("Missing URL", "Please enter the URL to open when the shortcut is pressed.") },
             { ValidationErrorType.EmptyProgramPath, ("Missing Program Path", "Please enter the program path to launch when the shortcut is pressed.") },
             { ValidationErrorType.OneKeyMapping, ("Invalid Remapping", "A single key cannot be remapped to a Program or URL shortcut. Please choose a combination of keys.") },
+            { ValidationErrorType.EmptyExpandAbbreviation, ("Missing Abbreviation", "Please enter the abbreviation text that will trigger the expansion.") },
+            { ValidationErrorType.EmptyExpandedText, ("Missing Expanded Text", "Please enter the text that the abbreviation will expand to.") },
+            { ValidationErrorType.DuplicateExpandAbbreviation, ("Duplicate Abbreviation", "This abbreviation is already used by another text expansion.") },
         };
 
         public static ValidationErrorType ValidateKeyMapping(
@@ -212,6 +215,34 @@ namespace KeyboardManagerEditorUI.Helpers
             }
 
             return true;
+        }
+
+        public static ValidationErrorType ValidateExpandMapping(
+            string abbreviation,
+            string expandedText,
+            List<ExpandMapping> existingMappings,
+            bool isEditMode = false)
+        {
+            if (string.IsNullOrWhiteSpace(abbreviation))
+            {
+                return ValidationErrorType.EmptyExpandAbbreviation;
+            }
+
+            if (string.IsNullOrWhiteSpace(expandedText))
+            {
+                return ValidationErrorType.EmptyExpandedText;
+            }
+
+            int upperLimit = isEditMode ? 1 : 0;
+            int duplicateCount = existingMappings.Count(m =>
+                string.Equals(m.Abbreviation, abbreviation, StringComparison.OrdinalIgnoreCase));
+
+            if (duplicateCount > upperLimit)
+            {
+                return ValidationErrorType.DuplicateExpandAbbreviation;
+            }
+
+            return ValidationErrorType.NoError;
         }
 
         private static ValidationErrorType ValidateProgramOrUrlMapping(

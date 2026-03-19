@@ -46,6 +46,12 @@
                         <TextBlock x:Uid="TriggerType_KeyOrShortcut_Text" />
                     </StackPanel>
                 </ComboBoxItem>
+                <ComboBoxItem x:Uid="TriggerType_Expand" Tag="Expand">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE8C8;" />
+                        <TextBlock x:Uid="TriggerType_Expand_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
                 <!--
                 <ComboBoxItem x:Uid="TriggerType_Mouse" Tag="Mouse">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -109,6 +115,44 @@
                             x:Uid="AllowChordsCheckBox"
                             Click="AllowChordsCheckBox_Click"
                             IsChecked="True" />
+                    </StackPanel>
+                </tkcontrols:Case>
+                <!--  Expand Trigger  -->
+                <tkcontrols:Case Value="Expand">
+                    <StackPanel Orientation="Vertical" Spacing="8">
+                        <TextBox
+                            x:Name="ExpandAbbreviationBox"
+                            x:Uid="ExpandAbbreviationBox"
+                            Background="{ThemeResource TextControlBackgroundFocused}"
+                            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                            GotFocus="ExpandAbbreviationBox_GotFocus"
+                            TextChanged="ExpandAbbreviationBox_TextChanged" />
+                        <TextBlock
+                            x:Uid="ExpandTriggerKeyLabel"
+                            Margin="0,8,0,0"
+                            FontWeight="SemiBold" />
+                        <ToggleButton
+                            x:Name="ExpandTriggerKeyToggleBtn"
+                            MinHeight="48"
+                            Padding="8,12,8,12"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Checked="ExpandTriggerKeyToggleBtn_Checked"
+                            Style="{StaticResource CustomShortcutToggleButtonStyle}"
+                            Unchecked="ExpandTriggerKeyToggleBtn_Unchecked">
+                            <ToggleButton.Content>
+                                <commoncontrols:KeyVisual
+                                    x:Name="ExpandTriggerKeyVisual"
+                                    Padding="8"
+                                    Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    Content="Space"
+                                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                                    FontSize="16"
+                                    Style="{StaticResource DefaultKeyVisualStyle}" />
+                            </ToggleButton.Content>
+                        </ToggleButton>
                     </StackPanel>
                 </tkcontrols:Case>
                 <!--  Mouse Button Trigger  -->
@@ -364,6 +408,20 @@
                             <ComboBoxItem x:Uid="Visibility_Maximized" />
                         </ComboBox>
                     </StackPanel>
+                </tkcontrols:Case>
+                <!--  Replace With Action (for Expand trigger)  -->
+                <tkcontrols:Case Value="ReplaceWith">
+                    <TextBox
+                        x:Name="ExpandedTextBox"
+                        x:Uid="ExpandedTextBox"
+                        MinHeight="120"
+                        MaxHeight="240"
+                        AcceptsReturn="True"
+                        Background="{ThemeResource TextControlBackgroundFocused}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        GotFocus="ExpandedTextBox_GotFocus"
+                        TextChanged="ExpandedTextBox_TextChanged"
+                        TextWrapping="Wrap" />
                 </tkcontrols:Case>
                 <!--  Mouse Click Action (Placeholder)  -->
                 <tkcontrols:Case Value="MouseClick">

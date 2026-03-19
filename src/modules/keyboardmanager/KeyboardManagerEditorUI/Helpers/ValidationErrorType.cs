@@ -24,5 +24,8 @@ namespace KeyboardManagerEditorUI.Helpers
         EmptyUrl,
         EmptyProgramPath,
         OneKeyMapping,
+        EmptyExpandAbbreviation,
+        EmptyExpandedText,
+        DuplicateExpandAbbreviation,
     }
 }
