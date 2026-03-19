@@ -724,13 +724,9 @@ namespace
             SetDlgItemText(hDlg, IDC_TRIM_DURATION_LABEL, durationText.c_str());
         }
 
-        // Enable OK when trimming is active (even if unchanged since dialog opened),
-        // or when the user changed the selection (including reverting to full length).
-        const bool trimChanged = (pData->trimStart.count() != pData->originalTrimStart.count()) ||
-                                 (pData->trimEnd.count() != pData->originalTrimEnd.count());
-        const bool trimIsActive = (pData->trimStart.count() > 0) ||
-                                  (pData->videoDuration.count() > 0 && pData->trimEnd.count() < pData->videoDuration.count());
-        EnableWindow(GetDlgItem(hDlg, IDOK), trimChanged || trimIsActive);
+        // Always enable OK so users can close the dialog after previewing
+        // without being forced to use Cancel.
+        EnableWindow(GetDlgItem(hDlg, IDOK), TRUE);
     }
 
         RECT GetTimelineTrackRect(const RECT& clientRect, UINT dpi)
@@ -1348,7 +1344,10 @@ public:
                 auto trimResult = VideoRecordingSession::ShowTrimDialog(hParent, m_videoPath, *m_pTrimStart, *m_pTrimEnd);
                 if (trimResult == IDOK)
                 {
-                    *m_pShouldTrim = true;
+                    // Trim values are only written back when the user actually
+                    // changed the selection, so a non-zero trimEnd means a
+                    // real trim is requested.
+                    *m_pShouldTrim = (m_pTrimEnd->count() > 0);
                 }
                 else if( trimResult == IDCANCEL )
                 {
@@ -1792,8 +1791,17 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
 
     if (result == IDOK)
     {
-        trimStart = data.trimStart;
-        trimEnd = data.trimEnd;
+        // Only write back trim values when the user actually changed the
+        // selection.  This lets the caller distinguish "confirmed without
+        // trimming" (preview-only) from a real trim operation.
+        const bool selectionChanged =
+            (data.trimStart.count() != data.originalTrimStart.count()) ||
+            (data.trimEnd.count() != data.originalTrimEnd.count());
+        if (selectionChanged)
+        {
+            trimStart = data.trimStart;
+            trimEnd = data.trimEnd;
+        }
     }
 
     return result;
