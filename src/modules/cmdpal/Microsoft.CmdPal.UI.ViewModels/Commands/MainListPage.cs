@@ -334,14 +334,12 @@ public sealed partial class MainListPage : DynamicListPage,
         // Handle changes to the filter text here
         if (!string.IsNullOrEmpty(SearchText))
         {
-            var aliases = _aliasManager;
-
             if (token.IsCancellationRequested)
             {
                 return;
             }
 
-            if (aliases.CheckAlias(newSearch))
+            if (_tlcManager.CheckAlias(newSearch))
             {
                 if (_filteredItemsIncludesApps != _includeApps)
                 {

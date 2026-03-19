@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 using Microsoft.UI;
 using Windows.UI;
@@ -45,11 +46,11 @@ public record DockSettings
 
     // </Theme settings>
     // public List<string> PinnedCommands { get; set; } = [];
-    public List<DockBandSettings> StartBands { get; init; } = [];
+    public ImmutableList<DockBandSettings> StartBands { get; init; } = ImmutableList<DockBandSettings>.Empty;
 
-    public List<DockBandSettings> CenterBands { get; init; } = [];
+    public ImmutableList<DockBandSettings> CenterBands { get; init; } = ImmutableList<DockBandSettings>.Empty;
 
-    public List<DockBandSettings> EndBands { get; init; } = [];
+    public ImmutableList<DockBandSettings> EndBands { get; init; } = ImmutableList<DockBandSettings>.Empty;
 
     public bool ShowLabels { get; init; } = true;
 

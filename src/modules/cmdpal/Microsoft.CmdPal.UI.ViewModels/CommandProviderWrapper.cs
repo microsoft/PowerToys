@@ -26,6 +26,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     private readonly ICommandProviderCache? _commandProviderCache;
 
+    private readonly SettingsService _settingsService;
+
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
     public TopLevelViewModel[] FallbackItems { get; private set; } = [];
@@ -54,12 +56,13 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     public TopLevelItemPageContext TopLevelPageContext { get; }
 
-    public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
+    public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread, SettingsService settingsService)
     {
         // This ctor is only used for in-proc builtin commands. So the Unsafe!
         // calls are pretty dang safe actually.
         _commandProvider = new(provider);
         _taskScheduler = mainThread;
+        _settingsService = settingsService;
         TopLevelPageContext = new(this, _taskScheduler);
 
         // Hook the extension back into us
@@ -81,10 +84,11 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         Logger.LogDebug($"Initialized command provider {ProviderId}");
     }
 
-    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread, ICommandProviderCache commandProviderCache)
+    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread, ICommandProviderCache commandProviderCache, SettingsService settingsService)
     {
         _taskScheduler = mainThread;
         _commandProviderCache = commandProviderCache;
+        _settingsService = settingsService;
         TopLevelPageContext = new(this, _taskScheduler);
 
         Extension = extension;
@@ -125,11 +129,6 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         isValid = true;
     }
 
-    private ProviderSettings GetProviderSettings(SettingsModel settings)
-    {
-        return settings.GetProviderSettings(this);
-    }
-
     public async Task LoadTopLevelCommands(IServiceProvider serviceProvider)
     {
         if (!isValid)
@@ -139,10 +138,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             return;
         }
 
-        var settingsService = serviceProvider.GetService<SettingsService>()!;
-        var settings = settingsService.CurrentSettings;
-
-        var providerSettings = GetProviderSettings(settings);
+        var providerSettings = _settingsService.GetProviderSettings(this);
         IsActive = providerSettings.IsEnabled;
         if (!IsActive)
         {
@@ -416,47 +412,40 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         if (!providerSettings.PinnedCommandIds.Contains(commandId))
         {
             providerSettings.PinnedCommandIds.Add(commandId);
+            settingsService.SaveProviderSettings(providerSettings);
 
             // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
             this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
-            settingsService.SaveSettings(settings);
         }
     }
 
     public void UnpinCommand(string commandId, IServiceProvider serviceProvider)
     {
-        var settingsService = serviceProvider.GetService<SettingsService>()!;
-        var settings = settingsService.CurrentSettings;
-
-        var providerSettings = GetProviderSettings(settings);
-        this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
-        settingsService.SaveSettings(settings);
+        var providerSettings = _settingsService.GetProviderSettings(this);
 
         if (providerSettings.PinnedCommandIds.Remove(commandId))
         {
             // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
             this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
 
-            settingsService.SaveSettings(settings, false);
+            _settingsService.SaveProviderSettings(providerSettings);
         }
     }
 
     public void PinDockBand(string commandId, IServiceProvider serviceProvider)
     {
-        var settingsService = serviceProvider.GetService<SettingsService>()!;
-        var settings = settingsService.CurrentSettings;
-
         var bandSettings = new DockBandSettings
         {
             CommandId = commandId,
             ProviderId = this.ProviderId,
         };
-        settings.DockSettings.StartBands.Add(bandSettings);
+        var startBands = _settingsService.CurrentSettings.DockSettings.StartBands.Add(bandSettings);
+        var dockSettings = _settingsService.CurrentSettings.DockSettings with { StartBands = startBands };
+
+        _settingsService.SaveSettings(_settingsService.CurrentSettings with { DockSettings = dockSettings }, false);
 
         // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
         this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
-
-        settingsService.SaveSettings(settings, false);
     }
 
     public void UnpinDockBand(string commandId, IServiceProvider serviceProvider)

@@ -2,82 +2,82 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class AliasManager : ObservableObject
 {
-    private readonly TopLevelCommandManager _topLevelCommandManager;
-
-    // REMEMBER, CommandAlias.SearchPrefix is what we use as keys
-    private readonly Dictionary<string, CommandAlias> _aliases;
+    private readonly SettingsService _settingsService;
 
     public AliasManager(TopLevelCommandManager tlcManager, SettingsService settingsService)
     {
-        _topLevelCommandManager = tlcManager;
-        var settings = settingsService.CurrentSettings;
-        _aliases = settings.Aliases;
+        _settingsService = settingsService;
+        var settings = _settingsService.CurrentSettings;
 
-        if (_aliases.Count == 0)
+        if (settings.Aliases.Count == 0)
         {
             PopulateDefaultAliases();
         }
     }
 
-    private void AddAlias(CommandAlias a) => _aliases.Add(a.SearchPrefix, a);
-
-    public bool CheckAlias(string searchText)
+    public CommandAlias? CheckAlias(string searchText)
     {
-        if (_aliases.TryGetValue(searchText, out var alias))
+        if (_settingsService.CurrentSettings.Aliases.TryGetValue(searchText, out var alias))
         {
-            try
-            {
-                var topLevelCommand = _topLevelCommandManager.LookupCommand(alias.CommandId);
-                if (topLevelCommand is not null)
-                {
-                    WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
-
-                    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(topLevelCommand.GetPerformCommandMessage());
-                    return true;
-                }
-            }
-            catch
-            {
-            }
+            return alias;
         }
 
-        return false;
+        return null;
     }
 
     private void PopulateDefaultAliases()
     {
-        this.AddAlias(new CommandAlias(":", "com.microsoft.cmdpal.registry", true));
-        this.AddAlias(new CommandAlias("$", "com.microsoft.cmdpal.windowsSettings", true));
-        this.AddAlias(new CommandAlias("=", "com.microsoft.cmdpal.calculator", true));
-        this.AddAlias(new CommandAlias(">", "com.microsoft.cmdpal.shell", true));
-        this.AddAlias(new CommandAlias("<", "com.microsoft.cmdpal.windowwalker", true));
-        this.AddAlias(new CommandAlias("??", "com.microsoft.cmdpal.websearch", true));
-        this.AddAlias(new CommandAlias("file", "com.microsoft.indexer.fileSearch", false));
-        this.AddAlias(new CommandAlias(")", "com.microsoft.cmdpal.timedate", true));
+        Dictionary<string, CommandAlias> aliases = new()
+            {
+                {
+                    ":", new CommandAlias(":", "com.microsoft.cmdpal.registry", true)
+                },
+                {
+                    "$", new CommandAlias("$", "com.microsoft.cmdpal.windowsSettings", true)
+                },
+                {
+                    "=", new CommandAlias("=", "com.microsoft.cmdpal.calculator", true)
+                },
+                {
+                    ">", new CommandAlias(">", "com.microsoft.cmdpal.shell", true)
+                },
+                {
+                    "<", new CommandAlias("<", "com.microsoft.cmdpal.windowwalker", true)
+                },
+                {
+                    "??", new CommandAlias("??", "com.microsoft.cmdpal.websearch", true)
+                },
+                {
+                    "file", new CommandAlias("file", "com.microsoft.indexer.fileSearch", false)
+                },
+                {
+                    ")", new CommandAlias(")", "com.microsoft.cmdpal.timedate", true)
+                },
+            };
+
+        _settingsService.SaveSettings(_settingsService.CurrentSettings with { Aliases = aliases.ToImmutableDictionary() });
     }
 
     public string? KeysFromId(string commandId)
     {
-        return _aliases
-            .Where(kv => kv.Value.CommandId == commandId)
-            .Select(kv => kv.Value.Alias)
-            .FirstOrDefault();
+        return _settingsService.CurrentSettings.Aliases
+            .FirstOrDefault(kv => kv.Value.CommandId == commandId)
+            .Value
+            .Alias;
     }
 
     public CommandAlias? AliasFromId(string commandId)
     {
-        return _aliases
-            .Where(kv => kv.Value.CommandId == commandId)
-            .Select(kv => kv.Value)
-            .FirstOrDefault();
+        return _settingsService.CurrentSettings.Aliases
+            .FirstOrDefault(kv => kv.Value.CommandId == commandId)
+            .Value;
     }
 
     public void UpdateAlias(string commandId, CommandAlias? newAlias)
@@ -90,7 +90,7 @@ public partial class AliasManager : ObservableObject
 
         // If we already have _this exact alias_, do nothing
         if (newAlias is not null &&
-            _aliases.TryGetValue(newAlias.SearchPrefix, out var existingAlias))
+            _settingsService.CurrentSettings.Aliases.TryGetValue(newAlias.SearchPrefix, out var existingAlias))
         {
             if (existingAlias.CommandId == commandId)
             {
@@ -99,7 +99,7 @@ public partial class AliasManager : ObservableObject
         }
 
         List<CommandAlias> toRemove = [];
-        foreach (var kv in _aliases)
+        foreach (var kv in _settingsService.CurrentSettings.Aliases)
         {
             // Look for the old aliases for the command, and remove it
             if (kv.Value.CommandId == commandId)
@@ -111,25 +111,22 @@ public partial class AliasManager : ObservableObject
             if (newAlias is not null && kv.Value.Alias == newAlias.Alias && kv.Value.CommandId != commandId)
             {
                 toRemove.Add(kv.Value);
-
-                // Remove alias from other TopLevelViewModels it may be assigned to
-                var topLevelCommand = _topLevelCommandManager.LookupCommand(kv.Value.CommandId);
-                if (topLevelCommand is not null)
-                {
-                    topLevelCommand.AliasText = string.Empty;
-                }
             }
         }
+
+        var aliases = _settingsService.CurrentSettings.Aliases.ToDictionary();
 
         foreach (var alias in toRemove)
         {
             // REMEMBER, SearchPrefix is what we use as keys
-            _aliases.Remove(alias.SearchPrefix);
+            aliases.Remove(alias.SearchPrefix);
         }
 
         if (newAlias is not null)
         {
-            AddAlias(newAlias);
+            aliases.Add(newAlias.SearchPrefix, newAlias);
         }
+
+        _settingsService.SaveSettings(_settingsService.CurrentSettings with { Aliases = aliases.ToImmutableDictionary() });
     }
 }

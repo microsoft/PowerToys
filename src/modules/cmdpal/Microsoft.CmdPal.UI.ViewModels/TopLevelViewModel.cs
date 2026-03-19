@@ -245,6 +245,7 @@ public sealed partial class TopLevelViewModel :
     private void SettingsService_SettingsChanged(SettingsService sender, SettingsChangedEventArgs args)
     {
         _settings = args.NewSettingsModel;
+        FetchAliasFromAliasManager();
     }
 
     internal void InitializeProperties()
@@ -342,6 +343,7 @@ public sealed partial class TopLevelViewModel :
                 : new CommandAlias(Alias.Alias, Alias.CommandId, Alias.IsDirect);
 
         _serviceProvider.GetService<AliasManager>()!.UpdateAlias(Id, commandAlias);
+
         UpdateTags();
     }
 
@@ -361,7 +363,7 @@ public sealed partial class TopLevelViewModel :
 
     private void UpdateHotkey()
     {
-        var hotkey = _settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
+        var hotkey = _settings.CommandHotkeys.FirstOrDefault(hk => hk.CommandId == Id);
         if (hotkey is not null)
         {
             _hotkey = hotkey.Hotkey;

@@ -2,20 +2,28 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class HotkeyManager : ObservableObject
+public partial class HotkeyManager : ObservableObject, IDisposable
 {
-    private readonly TopLevelCommandManager _topLevelCommandManager;
-    private readonly List<TopLevelHotkey> _commandHotkeys;
+    private readonly SettingsService _settingsService;
+    private ImmutableList<TopLevelHotkey> _commandHotkeys;
 
-    public HotkeyManager(TopLevelCommandManager tlcManager, SettingsService settingsService)
+    public HotkeyManager(SettingsService settingsService)
     {
-        _topLevelCommandManager = tlcManager;
+        _settingsService = settingsService;
         _commandHotkeys = settingsService.CurrentSettings.CommandHotkeys;
+
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+    }
+
+    private void SettingsService_SettingsChanged(SettingsService sender, Services.SettingsChangedEventArgs args)
+    {
+        _commandHotkeys = args.NewSettingsModel.CommandHotkeys;
     }
 
     public void UpdateHotkey(string commandId, HotkeySettings? hotkey)
@@ -36,17 +44,30 @@ public partial class HotkeyManager : ObservableObject
             existingItem = existingItem with { Hotkey = null };
         }
 
-        _commandHotkeys.RemoveAll(item => item.Hotkey is null);
+        var newCommandHotkeys = _commandHotkeys.ToList();
+        newCommandHotkeys.RemoveAll(item => item.Hotkey is null);
 
-        foreach (var item in _commandHotkeys)
+        foreach (var item in newCommandHotkeys)
         {
             if (item.CommandId == commandId)
             {
-                _commandHotkeys.Remove(item);
+                newCommandHotkeys.Remove(item);
                 break;
             }
         }
 
-        _commandHotkeys.Add(new(hotkey, commandId));
+        newCommandHotkeys.Add(new(hotkey, commandId));
+
+        _settingsService.SaveSettings(
+            _settingsService.CurrentSettings with
+            {
+                CommandHotkeys = newCommandHotkeys.ToImmutableList<TopLevelHotkey>(),
+            });
+    }
+
+    public void Dispose()
+    {
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
+        GC.SuppressFinalize(this);
     }
 }

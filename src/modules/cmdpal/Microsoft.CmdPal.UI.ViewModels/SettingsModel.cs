@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.UI;
 using Windows.UI;
@@ -34,13 +35,13 @@ public sealed record SettingsModel
 
     public bool AllowExternalReload { get; init; }
 
-    public Dictionary<string, ProviderSettings> ProviderSettings { get; init; } = [];
+    public ImmutableDictionary<string, ProviderSettings> ProviderSettings { get; init; } = ImmutableDictionary<string, ProviderSettings>.Empty;
 
     public string[] FallbackRanks { get; init; } = [];
 
-    public Dictionary<string, CommandAlias> Aliases { get; init; } = [];
+    public ImmutableDictionary<string, CommandAlias> Aliases { get; init; } = ImmutableDictionary<string, CommandAlias>.Empty;
 
-    public List<TopLevelHotkey> CommandHotkeys { get; init; } = [];
+    public ImmutableList<TopLevelHotkey> CommandHotkeys { get; init; } = ImmutableList<TopLevelHotkey>.Empty;
 
     public MonitorBehavior SummonOn { get; init; } = MonitorBehavior.ToMouse;
 
@@ -85,23 +86,6 @@ public sealed record SettingsModel
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
-
-    public ProviderSettings GetProviderSettings(CommandProviderWrapper provider)
-    {
-        ProviderSettings? settings;
-        if (!ProviderSettings.TryGetValue(provider.ProviderId, out settings))
-        {
-            settings = new ProviderSettings(provider);
-            settings.Connect(provider);
-            ProviderSettings[provider.ProviderId] = settings;
-        }
-        else
-        {
-            settings.Connect(provider);
-        }
-
-        return settings;
-    }
 
     public string[] GetGlobalFallbacks()
     {

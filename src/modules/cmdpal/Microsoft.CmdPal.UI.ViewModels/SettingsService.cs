@@ -62,6 +62,32 @@ public partial class SettingsService
         return settings;
     }
 
+    public ProviderSettings GetProviderSettings(CommandProviderWrapper provider)
+    {
+        ProviderSettings? settings;
+        if (!CurrentSettings.ProviderSettings.TryGetValue(provider.ProviderId, out settings))
+        {
+            settings = new ProviderSettings(provider);
+            var providerSettings = CurrentSettings.ProviderSettings.Add(provider.ProviderId, settings);
+            SaveSettings(CurrentSettings with { ProviderSettings = providerSettings });
+        }
+        else
+        {
+            settings.Connect(provider);
+        }
+
+        return settings;
+    }
+
+    public void SaveProviderSettings(ProviderSettings settings)
+    {
+        var updatedProviderSettings = CurrentSettings.ProviderSettings
+                                            .Remove(settings.ProviderId)
+                                            .Add(settings.ProviderId, settings);
+
+        SaveSettings(CurrentSettings with { ProviderSettings = updatedProviderSettings });
+    }
+
     public void SaveSettings(SettingsModel model, bool hotReload = false)
     {
         _persistenceService.SaveObject(

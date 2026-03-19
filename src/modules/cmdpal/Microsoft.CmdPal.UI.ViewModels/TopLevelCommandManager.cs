@@ -92,9 +92,10 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         // Load built-In commands first. These are all in-proc, and
         // owned by our ServiceProvider.
         var builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
+        var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
         foreach (var provider in builtInCommands)
         {
-            CommandProviderWrapper wrapper = new(provider, _taskScheduler);
+            CommandProviderWrapper wrapper = new(provider, _taskScheduler, settingsService);
             lock (_commandProvidersLock)
             {
                 _builtInCommands.Add(wrapper);
@@ -450,6 +451,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private async Task<ExtensionStartResult> TryStartExtensionAsync(IExtensionWrapper extension)
     {
         Logger.LogDebug($"Starting {extension.PackageFullName}");
+        var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
         var sw = Stopwatch.StartNew();
         var ct = _currentExtensionLoadCancellationToken;
         var startTask = extension.StartExtensionAsync();
@@ -457,7 +459,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         {
             await startTask.WaitAsync(ExtensionStartTimeout, ct).ConfigureAwait(false);
             Logger.LogInfo($"Started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
-            return ExtensionStartResult.Started(extension, new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache));
+            return ExtensionStartResult.Started(extension, new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache, settingsService));
         }
         catch (TimeoutException)
         {
@@ -486,7 +488,9 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         {
             await startTask.WaitAsync(BackgroundStartTimeout, ct).ConfigureAwait(false);
 
-            var wrapper = new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
+            var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
+
+            var wrapper = new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache, settingsService);
             Logger.LogInfo($"Late-started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms, loading commands and bands");
 
             await RegisterAndLoadCommandsAsync([wrapper], ct).ConfigureAwait(false);
@@ -732,6 +736,32 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             return _builtInCommands.Any(wrapper => wrapper.Id == id && wrapper.IsActive)
                    || _extensionCommandProviders.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
         }
+    }
+
+    public bool CheckAlias(string searchText)
+    {
+        var aliasManager = _serviceProvider.GetRequiredService<AliasManager>();
+        var alias = aliasManager.CheckAlias(searchText);
+
+        if (alias is not null)
+        {
+            try
+            {
+                var topLevelCommand = LookupCommand(alias.CommandId);
+                if (topLevelCommand is not null)
+                {
+                    WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
+
+                    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(topLevelCommand.GetPerformCommandMessage());
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        return false;
     }
 
     internal void PinDockBand(TopLevelViewModel bandVm)

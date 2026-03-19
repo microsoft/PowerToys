@@ -247,7 +247,6 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
         DockAppearance = new DockAppearanceSettingsViewModel(themeService, _settingsService);
 
         var activeProviders = GetCommandProviders();
-        var allProviderSettings = _settings.ProviderSettings;
 
         var fallbacks = new List<FallbackSettingsViewModel>();
         var currentRankings = _settings.FallbackRanks;
@@ -255,7 +254,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged, IDisposable
 
         foreach (var item in activeProviders)
         {
-            var providerSettings = _settings.GetProviderSettings(item);
+            var providerSettings = _settingsService.GetProviderSettings(item);
 
             var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _settingsService);
             CommandProviders.Add(settingsModel);
