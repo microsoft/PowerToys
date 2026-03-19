@@ -4107,9 +4107,13 @@ skipTileMasking:
             // than a large fixed-size rect.  This avoids replacing valid
             // page content (text) outside the actual overlay, which would
             // cause fuzzy/doubled text from slightly-shifted donors.
+            // Top margin is larger because overlay indicators (chevrons)
+            // taper upward — the faintest pixels at the tip fall below the
+            // bgThresh detection threshold but are still visible.
             const int margin = 6;
+            const int topMargin = 14;
             mask.eraseRect.left   = max( 0L, static_cast<long>( fixMinX ) - margin );
-            mask.eraseRect.top    = max( 0L, static_cast<long>( fixMinY ) - margin );
+            mask.eraseRect.top    = max( 0L, static_cast<long>( fixMinY ) - topMargin );
             mask.eraseRect.right  = min( static_cast<long>( frameWidth ), static_cast<long>( fixMaxX ) + margin + 2 );
             mask.eraseRect.bottom = min( static_cast<long>( frameHeight ), static_cast<long>( fixMaxY ) + margin + 2 );
         }
@@ -9463,7 +9467,7 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                                 const size_t dstIdx = ( static_cast<size_t>( ey ) * frameWidth + ex ) * 4;
                                 const size_t srcIdx = ( static_cast<size_t>( donorY ) * frameWidth + donorX ) * 4;
                                 const int donorLuma = ( donorPixels[srcIdx + 0] + donorPixels[srcIdx + 1] + donorPixels[srcIdx + 2] ) / 3;
-                                if( abs( donorLuma - avgCtx ) > 40 )
+                                if( abs( donorLuma - avgCtx ) > 80 )
                                 {
                                     donorOk = false;
                                     break;
