@@ -1,0 +1,77 @@
+name: Squad Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run tests
+        run: node --test test/*.test.js
+
+      - name: Validate version consistency
+        run: |
+          VERSION=$(node -e "console.log(require('./package.json').version)")
+          if ! grep -q "## \[$VERSION\]" CHANGELOG.md 2>/dev/null; then
+            echo "::error::Version $VERSION not found in CHANGELOG.md — update CHANGELOG.md before release"
+            exit 1
+          fi
+          echo "✅ Version $VERSION validated in CHANGELOG.md"
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          VERSION=$(node -e "console.log(require('./package.json').version)")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "📦 Version: $VERSION (tag: v$VERSION)"
+
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          if git rev-parse "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "⏭️ Tag ${{ steps.version.outputs.tag }} already exists — skipping release."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "🆕 Tag ${{ steps.version.outputs.tag }} does not exist — creating release."
+          fi
+
+      - name: Create git tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "${{ steps.version.outputs.tag }}" \
+            --generate-notes \
+            --latest
+
+      - name: Verify release
+        if: steps.check_tag.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "${{ steps.version.outputs.tag }}"
+          echo "✅ Release ${{ steps.version.outputs.tag }} created and verified."

@@ -1,0 +1,36 @@
+{
+  "agents": {
+    "duke": {
+      "persistent_name": "Duke",
+      "universe": "GI Joe",
+      "role": "Lead / Architect",
+      "created_at": "2026-03-19T20:08:56Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "scarlett": {
+      "persistent_name": "Scarlett",
+      "universe": "GI Joe",
+      "role": "UI Dev",
+      "created_at": "2026-03-19T20:08:56Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "snake-eyes": {
+      "persistent_name": "Snake Eyes",
+      "universe": "GI Joe",
+      "role": "Extensions Dev",
+      "created_at": "2026-03-19T20:08:56Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "hawk": {
+      "persistent_name": "Hawk",
+      "universe": "GI Joe",
+      "role": "Tester / QA",
+      "created_at": "2026-03-19T20:08:56Z",
+      "legacy_named": false,
+      "status": "active"
+    }
+  }
+}

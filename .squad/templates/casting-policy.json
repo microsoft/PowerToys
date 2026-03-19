@@ -1,0 +1,35 @@
+{
+  "casting_policy_version": "1.1",
+  "allowlist_universes": [
+    "The Usual Suspects",
+    "Reservoir Dogs",
+    "Alien",
+    "Ocean's Eleven",
+    "Arrested Development",
+    "Star Wars",
+    "The Matrix",
+    "Firefly",
+    "The Goonies",
+    "The Simpsons",
+    "Breaking Bad",
+    "Lost",
+    "Marvel Cinematic Universe",
+    "DC Universe"
+  ],
+  "universe_capacity": {
+    "The Usual Suspects": 6,
+    "Reservoir Dogs": 8,
+    "Alien": 8,
+    "Ocean's Eleven": 14,
+    "Arrested Development": 15,
+    "Star Wars": 12,
+    "The Matrix": 10,
+    "Firefly": 10,
+    "The Goonies": 8,
+    "The Simpsons": 20,
+    "Breaking Bad": 12,
+    "Lost": 18,
+    "Marvel Cinematic Universe": 25,
+    "DC Universe": 18
+  }
+}

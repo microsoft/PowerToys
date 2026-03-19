@@ -1,0 +1,22 @@
+{
+  "universe_usage_history": [
+    {
+      "universe": "GI Joe",
+      "used_at": "2026-03-19T20:08:56Z",
+      "repo": "powertoys"
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "assignment-001": {
+      "assignment_id": "assignment-001",
+      "universe": "GI Joe",
+      "created_at": "2026-03-19T20:08:56Z",
+      "agents": {
+        "duke": "Lead / Architect",
+        "scarlett": "UI Dev",
+        "snake-eyes": "Extensions Dev",
+        "hawk": "Tester / QA"
+      }
+    }
+  }
+}
