@@ -6,7 +6,7 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<ApplicationManifest>Settings.UI.dev.manifest</ApplicationManifest>
 		<UseWinUI>true</UseWinUI>
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>
@@ -19,6 +19,11 @@
 		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
 	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(CIBuild)'=='true'">
+		<ApplicationManifest>Settings.UI.prod.manifest</ApplicationManifest>
+	</PropertyGroup>
+	
 	<ItemGroup>
 		<None Remove="Assets\Settings\Icons\Models\Azure.svg" />
 		<None Remove="Assets\Settings\Icons\Models\FoundryLocal.svg" />
