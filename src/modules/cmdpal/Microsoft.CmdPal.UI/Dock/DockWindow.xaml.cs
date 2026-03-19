@@ -59,6 +59,7 @@ public sealed partial class DockWindow : WindowEx,
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
     private DockSize _lastSize;
+    private bool _isDisposed;
 
     // Store the original WndProc
     private WNDPROC? _originalWndProc;
@@ -615,20 +616,40 @@ public sealed partial class DockWindow : WindowEx,
 
     public void Dispose()
     {
-        DisposeAcrylic();
-        _windowViewModel.Dispose();
+        Cleanup();
+        GC.SuppressFinalize(this);
     }
 
     private void DockWindow_Closed(object sender, WindowEventArgs args)
     {
+        Dispose();
+    }
+
+    private void Cleanup()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+
         var serviceProvider = App.Current.Services;
         var settings = serviceProvider.GetService<SettingsModel>();
         settings?.SettingsChanged -= SettingsChangedHandler;
+
+        Activated -= DockWindow_Activated;
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+
         DisposeAcrylic();
+        _windowViewModel.Dispose();
 
         // Remove our app bar registration
-        DestroyAppBar(_hwnd);
+        if (_appBarData.hWnd != IntPtr.Zero)
+        {
+            DestroyAppBar(_hwnd);
+        }
 
         // Unhook the window procedure
         ShowDesktop.RemoveHook();

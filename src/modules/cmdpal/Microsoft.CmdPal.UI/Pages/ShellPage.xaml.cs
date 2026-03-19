@@ -71,6 +71,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
+    private bool _isDisposed;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
@@ -268,6 +269,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         _ = DispatcherQueue.TryEnqueue(() =>
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             OpenSettings(message.SettingsPageTag);
         });
     }
@@ -488,6 +494,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         _ = DispatcherQueue.TryEnqueue(() =>
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             if (message.ShowDock)
             {
                 if (_dockWindow is null)
@@ -789,10 +800,33 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Dispose()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+
         _focusAfterLoadedCts?.Cancel();
         _focusAfterLoadedCts?.Dispose();
         _focusAfterLoadedCts = null;
 
-        _dockWindow?.Dispose();
+        var dockWindow = _dockWindow;
+        _dockWindow = null;
+
+        if (dockWindow is not null)
+        {
+            if (DispatcherQueue.HasThreadAccess)
+            {
+                dockWindow.Close();
+            }
+            else
+            {
+                DispatcherQueue.TryEnqueue(dockWindow.Close);
+            }
+        }
+
+        GC.SuppressFinalize(this);
     }
 }
