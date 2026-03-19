@@ -3,9 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public record NavigateToExtensionSettingsMessage(ProviderSettingsViewModel ProviderSettingsVM)
+public record NavigateToExtensionSettingsMessage(ExtensionSettingsNavigationRequest ExtensionSettingsRequest)
 {
+    public NavigateToExtensionSettingsMessage(ProviderSettingsViewModel providerSettingsVM)
+        : this(new ExtensionSettingsNavigationRequest(providerSettingsVM))
+    {
+    }
 }
