@@ -3456,23 +3456,30 @@ static int DetectFixedBottomStrip( const std::vector<std::vector<BYTE>>& framePi
             }
         }
     }
+    StitchLog( L"[Panorama/Stitch] BottomStripDetect: pairs=%zu minSep=%d stride=%zu\n",
+               pairs.size(), minSeparation, stride );
     if( pairs.size() < 3 )
         return 0;
 
     // For each pair, find the longest matching suffix from the bottom.
     const int maxScanRows = min( frameHeight / 3, 256 );
     int minMatchingRows = frameHeight;
-    for( const auto& p : pairs )
+    for( size_t pi = 0; pi < pairs.size(); ++pi )
     {
+        const auto& p = pairs[pi];
         const auto& pixA = framePixels[p.a];
         const auto& pixB = framePixels[p.b];
         if( pixA.empty() || pixB.empty() )
         {
+            StitchLog( L"[Panorama/Stitch] BottomStripDetect: pair %zu (%zu,%zu) EMPTY pixelsA=%zu pixelsB=%zu\n",
+                       pi, p.a, p.b, pixA.size(), pixB.size() );
             minMatchingRows = 0;
             break;
         }
 
         int matchingRows = 0;
+        int firstMismatchY = -1;
+        int firstMismatchAvgDiff = 0;
         for( int y = frameHeight - 1; y >= frameHeight - maxScanRows; --y )
         {
             const size_t rowBase = static_cast<size_t>( y ) * static_cast<size_t>( frameWidth ) * 4;
@@ -3488,12 +3495,19 @@ static int DetectFixedBottomStrip( const std::vector<std::vector<BYTE>>& framePi
             }
             const int avgDiff = rowDiffSum / max( 1, sampleCount * 3 );
             if( avgDiff > 6 )
+            {
+                firstMismatchY = y;
+                firstMismatchAvgDiff = avgDiff;
                 break;
+            }
             ++matchingRows;
         }
+        StitchLog( L"[Panorama/Stitch] BottomStripDetect: pair %zu (%zu,%zu) matchingRows=%d mismatchY=%d mismatchDiff=%d\n",
+                   pi, p.a, p.b, matchingRows, firstMismatchY, firstMismatchAvgDiff );
         minMatchingRows = min( minMatchingRows, matchingRows );
     }
 
+    StitchLog( L"[Panorama/Stitch] BottomStripDetect: minMatchingRows=%d\n", minMatchingRows );
     if( minMatchingRows < 3 )
         return 0;
 
@@ -3527,7 +3541,15 @@ static int DetectFixedBottomStrip( const std::vector<std::vector<BYTE>>& framePi
             ++energySamples;
         }
     }
-    if( energySamples <= 0 || energy / energySamples < 3 )
+    const int avgEnergy = ( energySamples > 0 ) ? energy / energySamples : 0;
+    // Large contiguous matching strips (≥ 40 rows) across many frame pairs
+    // are extremely unlikely to be plain background — even dark-themed
+    // toolbars contain subtle gradients, icons, and text.  Relax the energy
+    // threshold to avoid rejecting genuine low-contrast UI bars.
+    const int energyThreshold = ( minMatchingRows >= 40 ) ? 1 : 3;
+    StitchLog( L"[Panorama/Stitch] BottomStripDetect: stripStartY=%d energy=%d samples=%d avgEnergy=%d (threshold=%d)\n",
+               stripStartY, energy, energySamples, avgEnergy, energyThreshold );
+    if( energySamples <= 0 || avgEnergy < energyThreshold )
         return 0;
 
     return minMatchingRows;
@@ -4123,9 +4145,6 @@ skipTileMasking:
         maxTileX = mask.tileCols - 1;
         maxTileY = mask.tileRows - 1;
     }
-
-    // (No secondary fallback — the far-apart-frame scan above handles
-    // both animated and static overlay detection.)
 
     // Fill unmasked holes within the masked bounds.  Small overlay elements
     // (e.g. a chevron indicator above the bottom strip) may fall in tiles
@@ -9440,26 +9459,17 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
                             // Validate donor row against surrounding context
                             // before copying — reject donors whose content
-                            // diverges from the local background.
+                            // diverges from the local source pixels.  Use a
+                            // per-pixel comparison against the source row
+                            // rather than edge context, since the erase rect
+                            // can span the full frame width when sidebars and
+                            // the overlay are both detected.
                             const int exLeft = max( 0, static_cast<int>( er.left ) );
                             const int exRight = min( frameWidth, static_cast<int>( er.right ) );
-                            int ctxLuma = 0, ctxN = 0;
-                            for( int cx2 = max( 0, exLeft - 8 ); cx2 < exLeft; ++cx2 )
-                            {
-                                const size_t ci2 = ( static_cast<size_t>( ey ) * frameWidth + cx2 ) * 4;
-                                ctxLuma += sourcePixels[ci2 + 0] + sourcePixels[ci2 + 1] + sourcePixels[ci2 + 2];
-                                ctxN += 3;
-                            }
-                            for( int cx2 = exRight; cx2 < min( frameWidth, exRight + 8 ); ++cx2 )
-                            {
-                                const size_t ci2 = ( static_cast<size_t>( ey ) * frameWidth + cx2 ) * 4;
-                                ctxLuma += sourcePixels[ci2 + 0] + sourcePixels[ci2 + 1] + sourcePixels[ci2 + 2];
-                                ctxN += 3;
-                            }
-                            const int avgCtx = ( ctxN > 0 ) ? ctxLuma / ctxN : 128;
 
                             const int donorDx = composedFrameOrigins[i].x - composedFrameOrigins[j].x;
                             bool donorOk = true;
+                            int donorDiffSum = 0, donorDiffN = 0;
                             for( int ex = exLeft; ex < exRight; ++ex )
                             {
                                 const int donorX = ex + donorDx;
@@ -9468,15 +9478,22 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
                                 const size_t dstIdx = ( static_cast<size_t>( ey ) * frameWidth + ex ) * 4;
                                 const size_t srcIdx = ( static_cast<size_t>( donorY ) * frameWidth + donorX ) * 4;
-                                const int donorLuma = ( donorPixels[srcIdx + 0] + donorPixels[srcIdx + 1] + donorPixels[srcIdx + 2] ) / 3;
-                                if( abs( donorLuma - avgCtx ) > 80 )
-                                {
-                                    donorOk = false;
-                                    break;
-                                }
                                 erasedPixels[dstIdx + 0] = donorPixels[srcIdx + 0];
                                 erasedPixels[dstIdx + 1] = donorPixels[srcIdx + 1];
                                 erasedPixels[dstIdx + 2] = donorPixels[srcIdx + 2];
+                                donorDiffSum += abs( static_cast<int>( donorPixels[srcIdx + 0] ) - static_cast<int>( sourcePixels[dstIdx + 0] ) )
+                                             + abs( static_cast<int>( donorPixels[srcIdx + 1] ) - static_cast<int>( sourcePixels[dstIdx + 1] ) )
+                                             + abs( static_cast<int>( donorPixels[srcIdx + 2] ) - static_cast<int>( sourcePixels[dstIdx + 2] ) );
+                                donorDiffN += 3;
+                            }
+                            // If the donor row is globally very different from
+                            // the source row, it's likely a misaligned match.
+                            // A well-aligned donor should only differ where
+                            // the overlay pixels are, yielding a moderate avg.
+                            const int donorAvgDiff = ( donorDiffN > 0 ) ? donorDiffSum / donorDiffN : 0;
+                            if( donorAvgDiff > 40 )
+                            {
+                                donorOk = false;
                             }
                             if( !donorOk )
                             {
