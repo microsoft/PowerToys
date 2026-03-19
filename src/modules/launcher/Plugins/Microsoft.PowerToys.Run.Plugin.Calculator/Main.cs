@@ -101,8 +101,20 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 return new List<Result>();
             }
 
+            // Fix: The numpad decimal key always sends '.' regardless of system locale.
+            // When the input culture uses ',' as decimal separator (e.g. es-AR, de-DE, it-IT),
+            // replace '.' with ',' so the expression is parsed correctly.
+            // This matches the behavior of Excel and Windows Calculator.
+            var rawSearch = query.Search;
+            if (!_inputUseEnglishFormat
+                && inputCulture.NumberFormat.NumberDecimalSeparator == ","
+                && rawSearch.Contains('.'))
+            {
+                rawSearch = rawSearch.Replace('.', ',');
+            }
+
             NumberTranslator translator = NumberTranslator.Create(inputCulture, new CultureInfo("en-US"));
-            var input = translator.Translate(query.Search.Normalize(NormalizationForm.FormKC));
+            var input = translator.Translate(rawSearch.Normalize(NormalizationForm.FormKC));
 
             if (replaceInput)
             {
