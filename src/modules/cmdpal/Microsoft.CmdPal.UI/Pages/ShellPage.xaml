@@ -119,6 +119,7 @@
                 <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <ItemsControl
+                        IsTabStop="False"
                         ItemTemplate="{StaticResource CommandTemplate}"
                         ItemsSource="{x:Bind Commands, Mode=OneWay}"
                         Visibility="{x:Bind HasCommands, Mode=OneWay}" />
@@ -142,6 +143,7 @@
                 <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <ItemsControl
+                        IsTabStop="False"
                         ItemTemplate="{StaticResource TagTemplate}"
                         ItemsSource="{x:Bind Tags, Mode=OneWay}"
                         Visibility="{x:Bind HasTags, Mode=OneWay}">
