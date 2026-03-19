@@ -31,11 +31,6 @@
     <TestingPlatformDisableCustomTestTarget Condition="'$(Platform)' == 'ARM64'">true</TestingPlatformDisableCustomTestTarget>
   </PropertyGroup>
 
-  <!-- WinAppSDK 2.0-experimental requires these settings -->
-  <PropertyGroup>
-    <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
-  </PropertyGroup>
-
   <!--
     UI tests are run in dedicated UI test jobs/pipelines.
     In CI, the main build uses `/t:Build;Test` across the full solution, so
