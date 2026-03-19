@@ -70,7 +70,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.SemanticKernel" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="System.ClientModel" />
     <PackageReference Include="Microsoft.Windows.Compatibility" />
@@ -92,7 +91,7 @@
     <!-- TODO: fix issues and reenable -->
     <!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->
     <!-- We might want to add that to the project and fix the issues as well -->
-    <NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
+    <NoWarn>$(NoWarn);VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
   </PropertyGroup>
 
   <!-- 
