@@ -284,13 +284,15 @@ BEGIN
     LTEXT           "Microphone:",IDC_MICROPHONE_LABEL,32,178,47,8
 END
 
-SNIP DIALOGEX 0, 0, 260, 68
+SNIP DIALOGEX 0, 0, 260, 82
 STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_SNIP_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,55,32,80,12
-    LTEXT           "Snip Toggle:",IDC_STATIC,7,33,45,8
-    LTEXT           "Copy a region of the screen to the clipboard or enter the hotkey with the Shift key in the opposite mode to save it to a file. ",IDC_STATIC,7,7,230,19
+    LTEXT           "Copy a region of the screen to the clipboard, or save it to a file using the save shortcut.",IDC_STATIC,7,7,230,11
+    LTEXT           "Snip Toggle:",IDC_STATIC,7,25,45,8
+    CONTROL         "",IDC_SNIP_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,72,24,80,12
+    LTEXT           "Snip Save Toggle:",IDC_STATIC,7,41,62,8
+    CONTROL         "",IDC_SNIP_SAVE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,72,40,80,12
 END
 
 DEMOTYPE DIALOGEX 0, 0, 260, 249

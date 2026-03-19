@@ -112,6 +112,7 @@
 #define IDC_CAPTURE_SYSTEM_AUDIO        1108
 #define IDC_MICROPHONE_LABEL            1109
 #define IDC_MIC_MONO_MIX                1110
+#define IDC_SNIP_SAVE_HOTKEY            1111
 #define IDC_SAVE                        40002
 #define IDC_COPY                        40004
 #define IDC_RECORD                      40006
@@ -126,7 +127,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        120
 #define _APS_NEXT_COMMAND_VALUE         40013
-#define _APS_NEXT_CONTROL_VALUE         1099
+#define _APS_NEXT_CONTROL_VALUE         1112
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
