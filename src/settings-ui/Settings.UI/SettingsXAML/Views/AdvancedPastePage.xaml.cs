@@ -458,7 +458,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             try
             {
-                var readyState = await Task.Run(() => Microsoft.Windows.AI.Text.LanguageModel.GetReadyState());
+                var readyState = await Task.Run(() =>
+                {
+                    PhiSilicaLafHelper.TryUnlock();
+                    return Microsoft.Windows.AI.Text.LanguageModel.GetReadyState();
+                });
 
                 if (readyState == Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem)
                 {

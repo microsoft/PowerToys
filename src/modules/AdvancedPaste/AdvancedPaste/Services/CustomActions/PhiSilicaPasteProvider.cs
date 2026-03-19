@@ -39,6 +39,7 @@ public sealed class PhiSilicaPasteProvider : IPasteAIProvider
 
         try
         {
+            PhiSilicaLafHelper.TryUnlock();
             var readyState = PhiSilicaLanguageModel.GetReadyState();
             return Task.FromResult(readyState != AIFeatureReadyState.NotSupportedOnCurrentSystem);
         }
@@ -132,6 +133,7 @@ public sealed class PhiSilicaPasteProvider : IPasteAIProvider
                 return _cachedModel;
             }
 
+            PhiSilicaLafHelper.TryUnlock();
             var readyState = PhiSilicaLanguageModel.GetReadyState();
 
             if (readyState == AIFeatureReadyState.NotSupportedOnCurrentSystem)
