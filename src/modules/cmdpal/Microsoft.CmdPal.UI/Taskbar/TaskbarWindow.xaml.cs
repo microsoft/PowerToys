@@ -61,7 +61,8 @@ public sealed partial class TaskbarWindow : WindowEx,
         _updateTaskbarButtonsTimer.Interval = TimeSpan.FromMilliseconds(500);
         _updateTaskbarButtonsTimer.Start();
 
-        // MainContent.SizeChanged += MainContent_SizeChanged;
+        MainContent.SizeChanged += MainContent_SizeChanged;
+
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
         _tasklist = new Tasklist();

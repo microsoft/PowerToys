@@ -226,33 +226,6 @@ public sealed partial class TaskbarBandControl : UserControl,
         }
     }
 
-    private void MoveToDockStartMenuItem_Click(object sender, RoutedEventArgs e)
-    {
-        if (_editModeContextBand != null)
-        {
-            _viewModel.MoveBandWithoutSaving(_editModeContextBand, DockPinSide.Start, _viewModel.StartItems.Count);
-            _editModeContextBand = null;
-        }
-    }
-
-    private void MoveToDockCenterMenuItem_Click(object sender, RoutedEventArgs e)
-    {
-        if (_editModeContextBand != null)
-        {
-            _viewModel.MoveBandWithoutSaving(_editModeContextBand, DockPinSide.Center, _viewModel.CenterItems.Count);
-            _editModeContextBand = null;
-        }
-    }
-
-    private void MoveToDockEndMenuItem_Click(object sender, RoutedEventArgs e)
-    {
-        if (_editModeContextBand != null)
-        {
-            _viewModel.MoveBandWithoutSaving(_editModeContextBand, DockPinSide.End, _viewModel.EndItems.Count);
-            _editModeContextBand = null;
-        }
-    }
-
     private void InvokeItem(DockItemViewModel item, Point pos)
     {
         var command = item.Command;
@@ -375,14 +348,13 @@ public sealed partial class TaskbarBandControl : UserControl,
         if (e.Items.Count > 0 && e.Items[0] is DockBandViewModel band)
         {
             _draggedBand = band;
-            _viewModel.DraggedBand = band;
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
     }
 
     private void BandsListView_DragOver(object sender, DragEventArgs e)
     {
-        if (_draggedBand != null || _viewModel.DraggedBand != null)
+        if (_draggedBand != null)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
         }
@@ -392,7 +364,6 @@ public sealed partial class TaskbarBandControl : UserControl,
     {
         if (args.DropResult == DataPackageOperation.Move && _draggedBand != null)
         {
-            // If the band was moved cross-window (e.g. to dock), IndexOf returns -1 — skip sync.
             var newIndex = _viewModel.TaskbarItems.IndexOf(_draggedBand);
             if (newIndex >= 0)
             {
@@ -401,50 +372,6 @@ public sealed partial class TaskbarBandControl : UserControl,
         }
 
         _draggedBand = null;
-        _viewModel.DraggedBand = null;
-    }
-
-    private void BandsListView_Drop(object sender, DragEventArgs e)
-    {
-        // Use local drag ref first, then fall back to shared ViewModel state
-        // (the latter is set when the drag originated from the dock window)
-        var band = _draggedBand ?? _viewModel.DraggedBand;
-        if (band == null)
-        {
-            return;
-        }
-
-        // Only handle cross-control drops (band coming from the dock)
-        if (!_viewModel.TaskbarItems.Contains(band))
-        {
-            var dropIndex = GetDropIndex(BandsListView, e, _viewModel.TaskbarItems.Count);
-            _viewModel.MoveBandWithoutSaving(band, DockPinSide.Taskbar, dropIndex);
-            e.Handled = true;
-        }
-
-        ResetListViewState(sender);
-    }
-
-    private int GetDropIndex(ListView listView, DragEventArgs e, int itemCount)
-    {
-        var position = e.GetPosition(listView);
-
-        for (var i = 0; i < itemCount; i++)
-        {
-            if (listView.ContainerFromIndex(i) is ListViewItem container)
-            {
-                var itemBounds = container.TransformToVisual(listView).TransformBounds(
-                    new Rect(0, 0, container.ActualWidth, container.ActualHeight));
-
-                // Taskbar is always horizontal
-                if (position.X < itemBounds.X + (itemBounds.Width / 2))
-                {
-                    return i;
-                }
-            }
-        }
-
-        return itemCount;
     }
 
     private void BandsListView_DragEnter(object sender, DragEventArgs e)
@@ -458,11 +385,6 @@ public sealed partial class TaskbarBandControl : UserControl,
     }
 
     private void BandsListView_DragLeave(object sender, DragEventArgs e)
-    {
-        ResetListViewState(sender);
-    }
-
-    private void ResetListViewState(object sender)
     {
         if (sender is ListView view)
         {

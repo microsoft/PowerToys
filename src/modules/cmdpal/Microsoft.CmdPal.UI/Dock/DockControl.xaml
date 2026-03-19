@@ -123,15 +123,6 @@
                 </MenuFlyoutSubItem>
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem
-                    x:Name="MoveToTaskbarMenuItem"
-                    x:Uid="Dock_EditMode_MoveToTaskbar"
-                    Click="MoveToTaskbarMenuItem_Click">
-                    <MenuFlyoutItem.Icon>
-                        <FontIcon Glyph="&#xE8AB;" />
-                    </MenuFlyoutItem.Icon>
-                </MenuFlyoutItem>
-                <MenuFlyoutSeparator />
-                <MenuFlyoutItem
                     x:Name="UnpinBandMenuItem"
                     x:Uid="Dock_EditMode_Unpin"
                     Click="UnpinBandMenuItem_Click">
