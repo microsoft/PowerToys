@@ -111,6 +111,4 @@
 #include "til_string.h"
 
 // #include <cppwinrt_utils.h>
-#include <UIAutomation.h>
-
 #include <wil/cppwinrt_helpers.h> // must go after the CoreDispatcher type is defined

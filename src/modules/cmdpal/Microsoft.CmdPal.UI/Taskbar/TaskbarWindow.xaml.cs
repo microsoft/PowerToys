@@ -27,6 +27,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 {
     private readonly uint wMTASKBARRESTART;
     private readonly HWND _hwnd;
+    private readonly Tasklist _tasklist;
     private readonly TaskbarBandControl _bandsControl;
 
     private readonly WNDPROC? _originalWndProc;
@@ -62,6 +63,8 @@ public sealed partial class TaskbarWindow : WindowEx,
 
         // MainContent.SizeChanged += MainContent_SizeChanged;
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
+
+        _tasklist = new Tasklist();
 
         // LOAD BEARING: The delegate must be stored in a member field.
         // A local variable would be collected, leaving a dangling function pointer.
@@ -171,9 +174,10 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private bool UpdateTaskbarButtons()
     {
+        _tasklist.Update();
         var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
 
-        var buttons = Microsoft.Terminal.UI.Tasklist.GetButtons();
+        var buttons = _tasklist.GetButtons();
         var maxRightInPixels = 0;
         foreach (var button in buttons)
         {
@@ -263,6 +267,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         {
             _updateLayoutDebouncer?.Stop();
             _updateTaskbarButtonsTimer?.Stop();
+            _tasklist.Dispose();
             WeakReferenceMessenger.Default.UnregisterAll(this);
             _disposed = true;
         }

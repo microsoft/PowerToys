@@ -146,7 +146,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);user32.lib;shell32.lib;oleaut32.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);user32.lib;shell32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -159,9 +159,6 @@
     </ClInclude>
     <ClInclude Include="RunHistory.h">
       <DependentUpon>RunHistory.idl</DependentUpon>
-    </ClInclude>
-    <ClInclude Include="Tasklist.h">
-      <DependentUpon>Tasklist.idl</DependentUpon>
     </ClInclude>
     <ClInclude Include="ResourceString.h">
       <DependentUpon>ResourceString.idl</DependentUpon>
@@ -184,9 +181,6 @@
     <ClCompile Include="RunHistory.cpp">
       <DependentUpon>RunHistory.idl</DependentUpon>
     </ClCompile>
-    <ClCompile Include="Tasklist.cpp">
-      <DependentUpon>Tasklist.idl</DependentUpon>
-    </ClCompile>
     <ClCompile Include="ResourceString.cpp">
       <DependentUpon>ResourceString.idl</DependentUpon>
     </ClCompile>
@@ -199,7 +193,6 @@
     <Midl Include="Converters.idl" />
     <Midl Include="IconPathConverter.idl" />
     <Midl Include="RunHistory.idl" />
-    <Midl Include="Tasklist.idl" />
     <Midl Include="IDirectKeyListener.idl" />
     <Midl Include="ResourceString.idl" />
     <Midl Include="FontIconGlyphClassifier.idl" />
