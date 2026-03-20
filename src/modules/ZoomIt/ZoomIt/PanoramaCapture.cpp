@@ -4098,9 +4098,17 @@ skipTileMasking:
                 const int x = hx * 2;
                 const int y = hy * 2;
 
-                // Skip pixels already covered by the tile mask (e.g. bottom
-                // strip).  Those are handled by tile suppression.
+                // Skip pixels in or near the bottom fixed region.  The tile
+                // mask and bottom strip cover the toolbar itself, but
+                // toolbar UI elements (icons, borders, edit box) extend
+                // above the mask and produce massive residual noise.
+                // Exclude the bottom portion of the frame generously.
                 if( maskedTileCount > 0 && mask.IsMaskedPixel( x, y ) )
+                    continue;
+                const int firstMaskedRow = mask.FirstMaskedY();
+                if( firstMaskedRow >= 0 && y >= firstMaskedRow - 80 )
+                    continue;
+                if( fixedBottomRows > 0 && y >= frameHeight - fixedBottomRows - 80 )
                     continue;
 
                 fixMinX = min( fixMinX, x );
