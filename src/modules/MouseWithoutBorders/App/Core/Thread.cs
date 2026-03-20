@@ -68,7 +68,7 @@ internal sealed class Thread
 
     internal static string DumpThreadsStack()
     {
-        string stack = "\r\nMANAGED THREADS: " + threads.Count.ToString(CultureInfo.InvariantCulture) + "\r\n";
+        string stack = "MANAGED THREADS: " + threads.Count.ToString(CultureInfo.InvariantCulture);
         stack += Logger.GetStackTrace(new StackTrace());
         return stack;
     }
