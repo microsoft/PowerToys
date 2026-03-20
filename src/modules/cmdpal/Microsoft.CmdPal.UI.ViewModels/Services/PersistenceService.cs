@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
@@ -22,7 +21,7 @@ public sealed class PersistenceService : IPersistenceService
     {
         if (!File.Exists(filePath))
         {
-            Debug.WriteLine("The provided settings file does not exist");
+            Logger.LogDebug("Settings file not found at {FilePath}", filePath);
             return new T();
         }
 
@@ -30,12 +29,21 @@ public sealed class PersistenceService : IPersistenceService
         {
             var jsonContent = File.ReadAllText(filePath);
             var loaded = JsonSerializer.Deserialize(jsonContent, typeInfo);
-            Debug.WriteLine(loaded is not null ? "Loaded settings file" : "Failed to parse");
+
+            if (loaded is null)
+            {
+                Logger.LogDebug("Failed to parse settings file at {FilePath}", filePath);
+            }
+            else
+            {
+                Logger.LogDebug("Successfully loaded settings file from {FilePath}", filePath);
+            }
+
             return loaded ?? new T();
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex.ToString());
+            Logger.LogError($"Failed to load settings from {filePath}:", ex);
         }
 
         return new T();
@@ -70,6 +78,12 @@ public sealed class PersistenceService : IPersistenceService
 
             // Let callers remove deprecated keys or apply fixups
             postProcessMerge?.Invoke(savedSettings);
+
+            var directory = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
 
             var serialized = savedSettings.ToJsonString(typeInfo.Options);
             File.WriteAllText(filePath, serialized);
