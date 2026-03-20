@@ -916,8 +916,6 @@ namespace KeyboardManagerEditorUI.Controls
                 ExpandAbbreviationBox.Text = string.Empty;
             }
 
-            // TextContentBox is shared with expand mode; cleared below with other action fields
-
             if (ExpandTriggerKeyVisual != null)
             {
                 ExpandTriggerKeyVisual.Content = "Space";
