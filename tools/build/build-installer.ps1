@@ -178,7 +178,7 @@ function Import-VsDevCmdEnvironmentForTargetPlatform {
     }
 }
 
-function Publish-SettingsAotToWinUI3Apps {
+function Publish-SettingsAotToStagingDirectory {
     param (
         [string]$RepoRoot,
         [string]$BuildPlatform,
@@ -193,21 +193,6 @@ function Publish-SettingsAotToWinUI3Apps {
 
     $publishProject = 'src\settings-ui\Settings.UI\PowerToys.Settings.csproj'
     $publishDir = Join-Path $RepoRoot "$BuildPlatform\$BuildConfiguration\AotPublish\Settings"
-    $normalizedOutputDir = Join-Path $RepoRoot "$BuildPlatform\$BuildConfiguration\WinUI3Apps"
-    $settingsArtifactsToRemove = @(
-        'PowerToys.Settings.deps.json',
-        'PowerToys.Settings.dll',
-        'PowerToys.Settings.exe',
-        'PowerToys.Settings.pdb',
-        'PowerToys.Settings.pri',
-        'PowerToys.Settings.runtimeconfig.json',
-        'PowerToys.Settings.UI.Controls.dll',
-        'PowerToys.Settings.UI.Controls.pdb',
-        'PowerToys.Settings.UI.Controls.pri',
-        'PowerToys.Settings.UI.Lib.dll',
-        'PowerToys.Settings.UI.Lib.pdb',
-        'PowerToys.Settings.UI.Lib.pri'
-    )
 
     if (Test-Path $publishDir) {
         Remove-Item $publishDir -Recurse -Force -ErrorAction Ignore
@@ -215,17 +200,95 @@ function Publish-SettingsAotToWinUI3Apps {
 
     New-Item -ItemType Directory -Path $publishDir -Force | Out-Null
 
-    if (Test-Path $normalizedOutputDir) {
-        foreach ($artifact in $settingsArtifactsToRemove) {
-            $artifactPath = Join-Path $normalizedOutputDir $artifact
-            if (Test-Path $artifactPath) {
-                Remove-Item $artifactPath -Force -ErrorAction Ignore
+    Write-Host ("[AOT] Publishing Settings to staging directory: {0}" -f $publishDir)
+    RunMSBuild $publishProject "/t:Publish /p:EnableSettingsAOT=true /p:RuntimeIdentifier=win-$BuildPlatform /p:PublishDir=$publishDir /p:NormalizeSettingsAotOutput=false" $BuildPlatform $BuildConfiguration
+
+    return $publishDir
+}
+
+function Test-IsSettingsOwnedWinUI3AppsRelativePath {
+    param (
+        [string]$RelativePath
+    )
+
+    $normalizedRelativePath = $RelativePath -replace '/', '\'
+
+    if ($normalizedRelativePath.StartsWith('Assets\Settings\', [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $true
+    }
+
+    if ($normalizedRelativePath.StartsWith('native\PowerToys.Settings.', [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $true
+    }
+
+    $fileName = Split-Path $normalizedRelativePath -Leaf
+
+    return $fileName.StartsWith('PowerToys.Settings', [System.StringComparison]::OrdinalIgnoreCase)
+}
+
+function New-SettingsAotInstallerLayout {
+    param (
+        [string]$RepoRoot,
+        [string]$BuildPlatform,
+        [string]$BuildConfiguration
+    )
+
+    $sourceRoot = Join-Path $RepoRoot "$BuildPlatform\$BuildConfiguration"
+    $sourceWinUI3AppsRoot = Join-Path $sourceRoot 'WinUI3Apps'
+    $publishDir = Join-Path $RepoRoot "$BuildPlatform\$BuildConfiguration\AotPublish\Settings"
+    $layoutRoot = Join-Path $RepoRoot "obj\InstallerLayout\$BuildPlatform\$BuildConfiguration"
+    $layoutWinUI3AppsRoot = Join-Path $layoutRoot 'WinUI3Apps'
+
+    if (-not (Test-Path $publishDir)) {
+        throw "Settings AOT publish output not found at '$publishDir'."
+    }
+
+    if (-not (Test-Path $sourceWinUI3AppsRoot)) {
+        throw "Expected WinUI3Apps build output not found at '$sourceWinUI3AppsRoot'."
+    }
+
+    if (Test-Path $layoutRoot) {
+        Remove-Item $layoutRoot -Recurse -Force -ErrorAction Ignore
+    }
+
+    New-Item -ItemType Directory -Path $layoutRoot -Force | Out-Null
+
+    Write-Host ("[AOT] Creating clean installer layout at: {0}" -f $layoutRoot)
+
+    Get-ChildItem -Path $sourceRoot -Force | Where-Object { $_.Name -notin @('AotPublish', 'WinUI3Apps') } | ForEach-Object {
+        Copy-Item -Path $_.FullName -Destination (Join-Path $layoutRoot $_.Name) -Recurse -Force
+    }
+
+    New-Item -ItemType Directory -Path $layoutWinUI3AppsRoot -Force | Out-Null
+
+    Get-ChildItem -Path $sourceWinUI3AppsRoot -Recurse -File | ForEach-Object {
+        $relativePath = $_.FullName.Substring($sourceWinUI3AppsRoot.Length).TrimStart('\')
+
+        if (-not (Test-IsSettingsOwnedWinUI3AppsRelativePath -RelativePath $relativePath)) {
+            $destinationPath = Join-Path $layoutWinUI3AppsRoot $relativePath
+            $destinationParent = Split-Path $destinationPath -Parent
+
+            if (-not (Test-Path $destinationParent)) {
+                New-Item -ItemType Directory -Path $destinationParent -Force | Out-Null
             }
+
+            Copy-Item -Path $_.FullName -Destination $destinationPath -Force
         }
     }
 
-    Write-Host ("[AOT] Publishing Settings to staging directory: {0}" -f $publishDir)
-    RunMSBuild $publishProject "/t:Publish /p:EnableSettingsAOT=true /p:RuntimeIdentifier=win-$BuildPlatform /p:PublishDir=$publishDir /p:NormalizeSettingsAotOutput=true /p:SettingsAotNormalizedOutputDir=$normalizedOutputDir" $BuildPlatform $BuildConfiguration
+    Get-ChildItem -Path $publishDir -Recurse -File | ForEach-Object {
+        $relativePath = $_.FullName.Substring($publishDir.Length).TrimStart('\')
+        $destinationPath = Join-Path $layoutWinUI3AppsRoot $relativePath
+        $destinationParent = Split-Path $destinationPath -Parent
+
+        if (-not (Test-Path $destinationParent)) {
+            New-Item -ItemType Directory -Path $destinationParent -Force | Out-Null
+        }
+
+        Copy-Item -Path $_.FullName -Destination $destinationPath -Force
+    }
+
+    return $layoutRoot
 }
 
 function Invoke-SettingsDscSchemaGeneration {
@@ -483,8 +546,11 @@ try {
         RestoreThenBuild 'PowerToys.slnx' $commonArgs $Platform $Configuration
     }
 
+    $installerBinDir = $null
+
     if ($EnableSettingsAOT) {
-        Publish-SettingsAotToWinUI3Apps -RepoRoot $repoRoot -BuildPlatform $Platform -BuildConfiguration $Configuration
+        Publish-SettingsAotToStagingDirectory -RepoRoot $repoRoot -BuildPlatform $Platform -BuildConfiguration $Configuration | Out-Null
+        $installerBinDir = New-SettingsAotInstallerLayout -RepoRoot $repoRoot -BuildPlatform $Platform -BuildConfiguration $Configuration
     }
 
     $msixSearchRoot = Join-Path $repoRoot "$Platform\$Configuration"
@@ -533,7 +599,12 @@ try {
 
     RunMSBuild 'installer\PowerToysSetup.slnx' "$commonArgs /t:restore /p:RestorePackagesConfig=true" $Platform $Configuration
 
-    RunMSBuild 'installer\PowerToysSetup.slnx' "$commonArgs /m /t:PowerToysInstallerVNext /p:PerUser=$PerUser" $Platform $Configuration
+    $installerBuildArgs = "$commonArgs /m /t:PowerToysInstallerVNext /p:PerUser=$PerUser"
+    if ($installerBinDir) {
+        $installerBuildArgs += " /p:InstallerBinDir=$installerBinDir"
+    }
+
+    RunMSBuild 'installer\PowerToysSetup.slnx' $installerBuildArgs $Platform $Configuration
 
     # Fix: WiX v5 locally puts the MSI in an 'en-us' subfolder, but the Bootstrapper expects it in the root of UserSetup/MachineSetup.
     # We move it up one level to match expectations.
@@ -546,7 +617,12 @@ try {
         Get-ChildItem -Path $msiEnUsDir -Filter *.msi | Move-Item -Destination $msiParentDir -Force
     }
 
-    RunMSBuild 'installer\PowerToysSetup.slnx' "$commonArgs /m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser" $Platform $Configuration
+    $bootstrapperBuildArgs = "$commonArgs /m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser"
+    if ($installerBinDir) {
+        $bootstrapperBuildArgs += " /p:InstallerBinDir=$installerBinDir"
+    }
+
+    RunMSBuild 'installer\PowerToysSetup.slnx' $bootstrapperBuildArgs $Platform $Configuration
 
 } finally {
     # No git cleanup; leave workspace state as-is.
