@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -9,6 +9,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -21,7 +22,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem
 {
-    private readonly SettingsModel _settings;
+    private readonly ISettingsService _settingsService;
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
@@ -185,9 +186,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
                 return null;
             }
 
-            var bandSettings = _settings.DockSettings.StartBands
-                .Concat(_settings.DockSettings.CenterBands)
-                .Concat(_settings.DockSettings.EndBands)
+            var bandSettings = _settingsService.Settings.DockSettings.StartBands
+                .Concat(_settingsService.Settings.DockSettings.CenterBands)
+                .Concat(_settingsService.Settings.DockSettings.EndBands)
                 .FirstOrDefault(band => band.CommandId == this.Id);
             if (bandSettings is null)
             {
@@ -208,14 +209,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         TopLevelType topLevelType,
         CommandPaletteHost extensionHost,
         ICommandProviderContext commandProviderContext,
-        SettingsModel settings,
         ProviderSettings providerSettings,
         IServiceProvider serviceProvider,
         ICommandItem? commandItem,
         IContextMenuFactory? contextMenuFactory)
     {
         _serviceProvider = serviceProvider;
-        _settings = settings;
+        _settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         _providerSettings = providerSettings;
         ProviderContext = commandProviderContext;
         _commandItemViewModel = item;
@@ -313,7 +313,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.Save();
 
     private void HandleChangeAlias()
     {
@@ -347,7 +347,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     private void UpdateHotkey()
     {
-        var hotkey = _settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
+        var hotkey = _settingsService.Settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
         if (hotkey is not null)
         {
             _hotkey = hotkey.Hotkey;
