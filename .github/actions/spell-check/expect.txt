@@ -1201,6 +1201,7 @@ PRODUCTVERSION
 Progman
 programdata
 projectname
+projitems
 PROPERTYKEY
 PROPVARIANT
 PRTL
