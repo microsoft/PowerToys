@@ -9392,6 +9392,14 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 erasedPixels = sourcePixels;
                 bool anyReplaced = false;
 
+                // For small/compact erase rects detected by the residual
+                // overlay scan, skip donor diff validation — the residual
+                // detection already confirmed these are overlay pixels, so
+                // any scroll-aligned donor is better than the overlay.
+                const int eraseW = er.right - er.left;
+                const int eraseH = er.bottom - er.top;
+                const bool compactEraseRect = ( eraseW <= frameWidth / 4 && eraseH <= frameHeight / 4 );
+
                 for( int ey = er.top; ey < er.bottom && ey < frameHeight; ++ey )
                 {
                     // For this row, find a donor frame where the same page
@@ -9434,7 +9442,6 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
                             const int donorDx = composedFrameOrigins[i].x - composedFrameOrigins[j].x;
                             bool donorOk = true;
-                            int donorDiffSum = 0, donorDiffN = 0;
                             for( int ex = exLeft; ex < exRight; ++ex )
                             {
                                 const int donorX = ex + donorDx;
@@ -9446,19 +9453,33 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                                 erasedPixels[dstIdx + 0] = donorPixels[srcIdx + 0];
                                 erasedPixels[dstIdx + 1] = donorPixels[srcIdx + 1];
                                 erasedPixels[dstIdx + 2] = donorPixels[srcIdx + 2];
-                                donorDiffSum += abs( static_cast<int>( donorPixels[srcIdx + 0] ) - static_cast<int>( sourcePixels[dstIdx + 0] ) )
-                                             + abs( static_cast<int>( donorPixels[srcIdx + 1] ) - static_cast<int>( sourcePixels[dstIdx + 1] ) )
-                                             + abs( static_cast<int>( donorPixels[srcIdx + 2] ) - static_cast<int>( sourcePixels[dstIdx + 2] ) );
-                                donorDiffN += 3;
                             }
-                            // If the donor row is globally very different from
-                            // the source row, it's likely a misaligned match.
-                            // A well-aligned donor should only differ where
-                            // the overlay pixels are, yielding a moderate avg.
-                            const int donorAvgDiff = ( donorDiffN > 0 ) ? donorDiffSum / donorDiffN : 0;
-                            if( donorAvgDiff > 40 )
+
+                            // For large erase rects (e.g. strip-gated),
+                            // validate donor against source to reject
+                            // misaligned donors.  Skip for compact rects
+                            // where residual detection already confirmed
+                            // these are genuine overlay pixels.
+                            if( !compactEraseRect )
                             {
-                                donorOk = false;
+                                int donorDiffSum = 0, donorDiffN = 0;
+                                for( int ex = exLeft; ex < exRight; ++ex )
+                                {
+                                    const int donorX = ex + donorDx;
+                                    if( donorX < 0 || donorX >= frameWidth )
+                                        continue;
+                                    const size_t dstIdx = ( static_cast<size_t>( ey ) * frameWidth + ex ) * 4;
+                                    const size_t srcIdx = ( static_cast<size_t>( donorY ) * frameWidth + donorX ) * 4;
+                                    donorDiffSum += abs( static_cast<int>( donorPixels[srcIdx + 0] ) - static_cast<int>( sourcePixels[dstIdx + 0] ) )
+                                                 + abs( static_cast<int>( donorPixels[srcIdx + 1] ) - static_cast<int>( sourcePixels[dstIdx + 1] ) )
+                                                 + abs( static_cast<int>( donorPixels[srcIdx + 2] ) - static_cast<int>( sourcePixels[dstIdx + 2] ) );
+                                    donorDiffN += 3;
+                                }
+                                const int donorAvgDiff = ( donorDiffN > 0 ) ? donorDiffSum / donorDiffN : 0;
+                                if( donorAvgDiff > 40 )
+                                {
+                                    donorOk = false;
+                                }
                             }
                             if( !donorOk )
                             {
@@ -9476,6 +9497,29 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                             anyReplaced = true;
                         }
                     }
+
+                    // Fallback for compact erase rects: when no donor was
+                    // found (tail frames or out-of-bounds donors), fill
+                    // from the nearest row just outside the erase rect.
+                    if( !rowReplaced && compactEraseRect )
+                    {
+                        const int exLeft = max( 0, static_cast<int>( er.left ) );
+                        const int exRight = min( frameWidth, static_cast<int>( er.right ) );
+                        // Pick the closest row outside the erase rect.
+                        const int aboveY = max( 0, static_cast<int>( er.top ) - 1 );
+                        const int belowY = min( frameHeight - 1, static_cast<int>( er.bottom ) );
+                        const int fillY = ( ey - aboveY <= belowY - ey ) ? aboveY : belowY;
+                        for( int ex = exLeft; ex < exRight; ++ex )
+                        {
+                            const size_t dstIdx = ( static_cast<size_t>( ey ) * frameWidth + ex ) * 4;
+                            const size_t fillIdx = ( static_cast<size_t>( fillY ) * frameWidth + ex ) * 4;
+                            erasedPixels[dstIdx + 0] = sourcePixels[fillIdx + 0];
+                            erasedPixels[dstIdx + 1] = sourcePixels[fillIdx + 1];
+                            erasedPixels[dstIdx + 2] = sourcePixels[fillIdx + 2];
+                        }
+                        rowReplaced = true;
+                        anyReplaced = true;
+                    }
                 }
 
                 if( anyReplaced )
@@ -9485,8 +9529,10 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
                 if( i == 0 )
                 {
-                    StitchLog( L"[Panorama/Stitch] EraseRect: (%d,%d)-(%d,%d) replaced=%d\n",
-                        er.left, er.top, er.right, er.bottom, anyReplaced ? 1 : 0 );
+                    StitchLog( L"[Panorama/Stitch] EraseRect: (%d,%d)-(%d,%d) replaced=%d compact=%d\n",
+                        er.left, er.top, er.right, er.bottom,
+                        anyReplaced ? 1 : 0,
+                        compactEraseRect ? 1 : 0 );
                 }
             }
             const std::vector<BYTE>& activePixels = *composeSrc;
