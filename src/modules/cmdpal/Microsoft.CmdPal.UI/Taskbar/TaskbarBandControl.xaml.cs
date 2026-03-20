@@ -348,13 +348,16 @@ public sealed partial class TaskbarBandControl : UserControl,
         if (e.Items.Count > 0 && e.Items[0] is DockBandViewModel band)
         {
             _draggedBand = band;
+            _viewModel.DraggedBand = band;
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
     }
 
     private void BandsListView_DragOver(object sender, DragEventArgs e)
     {
-        if (_draggedBand != null)
+        // Accept drops from this window (_draggedBand) or from the dock
+        // window (shared via _viewModel.DraggedBand)
+        if (_draggedBand != null || _viewModel.DraggedBand != null)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
         }
@@ -372,6 +375,50 @@ public sealed partial class TaskbarBandControl : UserControl,
         }
 
         _draggedBand = null;
+        _viewModel.DraggedBand = null;
+    }
+
+    private void BandsListView_Drop(object sender, DragEventArgs e)
+    {
+        // Use local _draggedBand for same-window drags, fall back to shared
+        // _viewModel.DraggedBand for cross-window drags (e.g. from dock)
+        var draggedBand = _draggedBand ?? _viewModel.DraggedBand;
+        if (draggedBand == null)
+        {
+            return;
+        }
+
+        // Only handle cross-section drops; same-list reorders are handled in DragItemsCompleted
+        if (!_viewModel.TaskbarItems.Contains(draggedBand))
+        {
+            var dropIndex = GetDropIndex(BandsListView, e, _viewModel.TaskbarItems.Count);
+            _viewModel.MoveBandWithoutSaving(draggedBand, DockPinSide.Taskbar, dropIndex);
+            e.Handled = true;
+        }
+
+        ResetListViewState(sender);
+    }
+
+    private int GetDropIndex(ListView listView, DragEventArgs e, int itemCount)
+    {
+        var position = e.GetPosition(listView);
+
+        for (var i = 0; i < itemCount; i++)
+        {
+            if (listView.ContainerFromIndex(i) is ListViewItem container)
+            {
+                var itemBounds = container.TransformToVisual(listView).TransformBounds(
+                    new Rect(0, 0, container.ActualWidth, container.ActualHeight));
+
+                // Horizontal layout: check X position
+                if (position.X < itemBounds.X + (itemBounds.Width / 2))
+                {
+                    return i;
+                }
+            }
+        }
+
+        return itemCount;
     }
 
     private void BandsListView_DragEnter(object sender, DragEventArgs e)
@@ -385,6 +432,11 @@ public sealed partial class TaskbarBandControl : UserControl,
     }
 
     private void BandsListView_DragLeave(object sender, DragEventArgs e)
+    {
+        ResetListViewState(sender);
+    }
+
+    private void ResetListViewState(object sender)
     {
         if (sender is ListView view)
         {

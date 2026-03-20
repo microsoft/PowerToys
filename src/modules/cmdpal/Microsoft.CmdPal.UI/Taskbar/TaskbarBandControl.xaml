@@ -191,6 +191,8 @@
         RightTapped="RootPanel_RightTapped">
         <ListView
             x:Name="BandsListView"
+            MinWidth="48"
+            MinHeight="32"
             VerticalAlignment="Center"
             Background="Transparent"
             DragEnter="BandsListView_DragEnter"
@@ -198,6 +200,7 @@
             DragItemsStarting="BandsListView_DragItemsStarting"
             DragLeave="BandsListView_DragLeave"
             DragOver="BandsListView_DragOver"
+            Drop="BandsListView_Drop"
             IsItemClickEnabled="False"
             ItemContainerStyle="{StaticResource TaskbarBandListViewItemStyle}"
             ItemTemplate="{StaticResource TaskbarBandTemplate}"

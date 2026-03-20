@@ -31,6 +31,12 @@ public sealed partial class DockViewModel
 
     public ObservableCollection<DockBandViewModel> TaskbarItems { get; } = new();
 
+    /// <summary>
+    /// Tracks the band currently being dragged. Used for cross-window drag-drop
+    /// coordination between DockControl and TaskbarBandControl.
+    /// </summary>
+    public DockBandViewModel? DraggedBand { get; set; }
+
     public IReadOnlyList<TopLevelViewModel> AllItems => _topLevelCommandManager.GetDockBandsSnapshot();
 
     public DockViewModel(

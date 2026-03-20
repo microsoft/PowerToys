@@ -362,13 +362,14 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         if (e.Items.Count > 0 && e.Items[0] is DockBandViewModel band)
         {
             _draggedBand = band;
+            ViewModel.DraggedBand = band;
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
     }
 
     private void BandListView_DragOver(object sender, DragEventArgs e)
     {
-        if (_draggedBand != null)
+        if (_draggedBand != null || ViewModel.DraggedBand != null)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
         }
@@ -408,6 +409,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         }
 
         _draggedBand = null;
+        ViewModel.DraggedBand = null;
     }
 
     private void StartListView_Drop(object sender, DragEventArgs e)
@@ -430,15 +432,19 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void HandleCrossListDrop(DockPinSide targetSide, DragEventArgs e)
     {
-        if (_draggedBand == null)
+        // Use local _draggedBand for same-window drags, fall back to shared
+        // ViewModel.DraggedBand for cross-window drags (e.g. from taskbar)
+        var draggedBand = _draggedBand ?? ViewModel.DraggedBand;
+        if (draggedBand == null)
         {
             return;
         }
 
         // Check which list the band is currently in
-        var isInStart = ViewModel.StartItems.Contains(_draggedBand);
-        var isInCenter = ViewModel.CenterItems.Contains(_draggedBand);
-        var isInEnd = ViewModel.EndItems.Contains(_draggedBand);
+        var isInStart = ViewModel.StartItems.Contains(draggedBand);
+        var isInCenter = ViewModel.CenterItems.Contains(draggedBand);
+        var isInEnd = ViewModel.EndItems.Contains(draggedBand);
+        var isInTaskbar = ViewModel.TaskbarItems.Contains(draggedBand);
 
         DockPinSide sourceSide;
         if (isInStart)
@@ -449,9 +455,17 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         {
             sourceSide = DockPinSide.Center;
         }
-        else
+        else if (isInEnd)
         {
             sourceSide = DockPinSide.End;
+        }
+        else if (isInTaskbar)
+        {
+            sourceSide = DockPinSide.Taskbar;
+        }
+        else
+        {
+            return;
         }
 
         // Only handle cross-list drops here; same-list reorders are handled in DragItemsCompleted
@@ -474,7 +488,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             var dropIndex = GetDropIndex(targetListView, e, targetCollection.Count);
 
             // Move the band to the new side (without saving - save happens on Done)
-            ViewModel.MoveBandWithoutSaving(_draggedBand, targetSide, dropIndex);
+            ViewModel.MoveBandWithoutSaving(draggedBand, targetSide, dropIndex);
             e.Handled = true;
         }
     }
