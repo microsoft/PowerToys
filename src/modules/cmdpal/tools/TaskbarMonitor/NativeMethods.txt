@@ -1,0 +1,5 @@
+FindWindow
+FindWindowEx
+GetWindowRect
+GetDpiForWindow
+SetProcessDpiAwarenessContext

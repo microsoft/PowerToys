@@ -1,0 +1,3 @@
+<Project>
+  <!-- Isolate from repo-level MSBuild settings so this tool builds standalone with dotnet build -->
+</Project>
