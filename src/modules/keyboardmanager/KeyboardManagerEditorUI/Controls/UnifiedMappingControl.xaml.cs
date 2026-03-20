@@ -1205,6 +1205,10 @@ namespace KeyboardManagerEditorUI.Controls
             ActionTypeComboBox.Items.Add(replaceWithItem);
             ActionTypeComboBox.SelectedIndex = 0;
             ActionTypeComboBox.IsEnabled = false;
+
+            // Manually update SwitchPresenter since programmatic ComboBox item changes
+            // may not reliably trigger the SelectedItem.Tag binding update in WinUI.
+            ActionSwitchPresenter.Value = "ReplaceWith";
         }
 
         private void RestoreNormalActionTypes()
@@ -1223,6 +1227,12 @@ namespace KeyboardManagerEditorUI.Controls
             _savedActionTypeItems = null;
             ActionTypeComboBox.SelectedIndex = 0;
             ActionTypeComboBox.IsEnabled = true;
+
+            // Manually sync SwitchPresenter with the restored first item's Tag.
+            if (ActionTypeComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string tag)
+            {
+                ActionSwitchPresenter.Value = tag;
+            }
         }
 
         #endregion
