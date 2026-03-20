@@ -85,7 +85,8 @@
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Left"
                         Click="Command_Click"
-                        Style="{StaticResource SubtleButtonStyle}">
+                        Style="{StaticResource SubtleButtonStyle}"
+                        UseSystemFocusVisuals="True">
                         <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                             <cpcontrols:IconBox
                                 Width="16"
@@ -110,6 +111,7 @@
                         Padding="0"
                         Command="{x:Bind NavigateCommand, Mode=OneWay}"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
+                        UseSystemFocusVisuals="True"
                         Visibility="{x:Bind IsLink, Mode=OneWay}">
                         <TextBlock Text="{x:Bind Text, Mode=OneWay}" TextWrapping="Wrap" />
                     </HyperlinkButton>
@@ -140,7 +142,7 @@
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="viewModels:DetailsTagsViewModel">
-                <StackPanel Orientation="Vertical" Spacing="4">
+                <StackPanel Orientation="Vertical" Spacing="4" >
                     <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <ItemsControl
                         IsTabStop="False"
@@ -396,6 +398,8 @@
                     Margin="4"
                     HorizontalAlignment="Stretch"
                     ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                    IsTabStop="True"
+                    UseSystemFocusVisuals="True"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
                     BorderThickness="1"
@@ -452,6 +456,7 @@
                             Margin="0,4,0,24"
                             Background="Transparent"
                             Config="{StaticResource DefaultMarkdownConfig}"
+                            IsTabStop="False"
                             Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
                             UseEmphasisExtras="True"
                             UsePipeTables="True" />
