@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
-using PowerDisplay.Common.Utils;
 
 namespace PowerDisplay.Common.Models
 {
@@ -51,38 +50,5 @@ namespace PowerDisplay.Common.Models
         /// </summary>
         [JsonIgnore]
         public string TargetMonitorName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets the display name for the VCP code (for UI display).
-        /// Uses VcpNames.GetCodeName() to get the standard MCCS VCP code name.
-        /// Note: For localized display in Settings UI, use VcpCodeToDisplayNameConverter instead.
-        /// </summary>
-        [JsonIgnore]
-        public string VcpCodeDisplayName => VcpNames.GetCodeName(VcpCode);
-
-        /// <summary>
-        /// Gets the display name for the VCP value (using built-in mapping).
-        /// </summary>
-        [JsonIgnore]
-        public string ValueDisplayName => VcpNames.GetFormattedValueName(VcpCode, Value);
-
-        /// <summary>
-        /// Gets a summary string for display in the UI list.
-        /// Format: "OriginalValue → CustomName" or "OriginalValue → CustomName (MonitorName)"
-        /// </summary>
-        [JsonIgnore]
-        public string DisplaySummary
-        {
-            get
-            {
-                var baseSummary = $"{VcpNames.GetValueName(VcpCode, Value) ?? $"0x{Value:X2}"} → {CustomName}";
-                if (!ApplyToAll && !string.IsNullOrEmpty(TargetMonitorName))
-                {
-                    return $"{baseSummary} ({TargetMonitorName})";
-                }
-
-                return baseSummary;
-            }
-        }
     }
 }
