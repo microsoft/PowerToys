@@ -52,3 +52,19 @@ Reviewed all phases 1–4 of persistence service extraction:
 - Checked error handling (Logger integration comprehensive)
 
 **Verdict:** APPROVED — Architecture is sound, implementation correct, no ABI breaks, no lost functionality, ready to merge.
+
+### 2026-03-20 — Code Review Complete: Remove Raw Model DI Registrations (Iteration 2)
+
+Reviewed iteration 2 diff: removal of bridge DI registrations, IApplicationInfoService injection, and 42+ consumer updates.
+
+**Findings:**
+- ✓ DI registration removal clean and complete
+- ✓ IApplicationInfoService injection correctly implemented
+- ✓ 42+ consumer updates follow consistent pattern
+- ✓ SA1300 pragmas appropriately scoped to private convenience properties
+- ✓ No breaking changes to public APIs
+- ✓ Settings hot-reload semantics correct (expression-bodied properties always read current value)
+- ✓ Test updates (Mock<IApplicationInfoService>) proper
+- ✓ Build clean, 43/43 tests passing
+
+**Verdict:** APPROVED — "Textbook service extraction." No issues found, ready for merge.
