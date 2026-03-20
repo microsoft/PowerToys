@@ -44,14 +44,14 @@ namespace KeyboardManagerEditorUI.Controls
         private bool _urlPathDirty;
         private bool _programPathDirty;
         private bool _expandAbbreviationDirty;
-        private bool _expandedTextDirty;
 
         // Expand trigger key tracking
         private string _expandTriggerKey = "Space";
         private bool _isCapturingExpandTriggerKey;
 
-        // Saved action type items for restoring when switching away from Expand trigger
-        private List<object>? _savedActionTypeItems;
+        // Saved label/icon for restoring "Text" action item after Expand mode
+        private string? _savedTextLabel;
+        private string? _savedTextIconGlyph;
 
         public bool AllowChords { get; set; } = true;
 
@@ -134,6 +134,12 @@ namespace KeyboardManagerEditorUI.Controls
         {
             get
             {
+                // When in Expand trigger mode, the action is always ReplaceWith
+                if (CurrentTriggerType == TriggerType.Expand)
+                {
+                    return ActionType.ReplaceWith;
+                }
+
                 if (ActionTypeComboBox?.SelectedItem is ComboBoxItem item)
                 {
                     return item.Tag?.ToString() switch
@@ -142,7 +148,6 @@ namespace KeyboardManagerEditorUI.Controls
                         "OpenUrl" => ActionType.OpenUrl,
                         "OpenApp" => ActionType.OpenApp,
                         "MouseClick" => ActionType.MouseClick,
-                        "ReplaceWith" => ActionType.ReplaceWith,
                         _ => ActionType.KeyOrShortcut,
                     };
                 }
@@ -611,7 +616,7 @@ namespace KeyboardManagerEditorUI.Controls
             if (CurrentTriggerType == TriggerType.Expand)
             {
                 return !string.IsNullOrWhiteSpace(ExpandAbbreviationBox?.Text)
-                    && !string.IsNullOrWhiteSpace(ExpandedTextBox?.Text);
+                    && !string.IsNullOrWhiteSpace(TextContentBox?.Text);
             }
 
             // Trigger keys are always required for other trigger types
@@ -872,7 +877,7 @@ namespace KeyboardManagerEditorUI.Controls
                         return;
                     }
 
-                    if (ExpandedTextBox != null && _expandedTextDirty && string.IsNullOrWhiteSpace(ExpandedTextBox.Text))
+                    if (TextContentBox != null && _textContentDirty && string.IsNullOrWhiteSpace(TextContentBox.Text))
                     {
                         ShowValidationErrorFromType(ValidationErrorType.EmptyExpandedText);
                         return;
@@ -901,7 +906,6 @@ namespace KeyboardManagerEditorUI.Controls
             _urlPathDirty = false;
             _programPathDirty = false;
             _expandAbbreviationDirty = false;
-            _expandedTextDirty = false;
 
             // Reset expand state
             _expandTriggerKey = "Space";
@@ -912,10 +916,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ExpandAbbreviationBox.Text = string.Empty;
             }
 
-            if (ExpandedTextBox != null)
-            {
-                ExpandedTextBox.Text = string.Empty;
-            }
+            // TextContentBox is shared with expand mode; cleared below with other action fields
 
             if (ExpandTriggerKeyVisual != null)
             {
@@ -1139,18 +1140,6 @@ namespace KeyboardManagerEditorUI.Controls
             }
         }
 
-        private void ExpandedTextBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            CleanupKeyboardHook();
-            UncheckAllToggleButtons();
-        }
-
-        private void ExpandedTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            _expandedTextDirty = true;
-            RaiseValidationStateChanged();
-        }
-
         private void HideAppSpecific()
         {
             if (AppSpecificCheckBox != null)
@@ -1174,71 +1163,51 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void SwitchActionTypeToReplaceWith()
         {
+            if (ActionTypeComboBox == null || ActionTypeTextItem == null)
+            {
+                return;
+            }
+
+            // Select the "Text" action item and override its label to "Replace with"
+            ActionTypeComboBox.SelectedItem = ActionTypeTextItem;
+            ActionTypeComboBox.IsEnabled = false;
+
+            var resourceLoader = new ResourceLoader();
+            if (ActionTypeTextLabel != null)
+            {
+                _savedTextLabel = ActionTypeTextLabel.Text;
+                ActionTypeTextLabel.Text = resourceLoader.GetString("ActionType_ReplaceWith_Text/Text");
+            }
+
+            if (ActionTypeTextIcon != null)
+            {
+                _savedTextIconGlyph = ActionTypeTextIcon.Glyph;
+                ActionTypeTextIcon.Glyph = "\uE8C8";
+            }
+        }
+
+        private void RestoreNormalActionTypes()
+        {
             if (ActionTypeComboBox == null)
             {
                 return;
             }
 
-            // Save current items if not already saved
-            if (_savedActionTypeItems == null)
+            // Restore original label and icon on the "Text" action item
+            if (ActionTypeTextLabel != null && _savedTextLabel != null)
             {
-                _savedActionTypeItems = new List<object>();
-                foreach (var actionItem in ActionTypeComboBox.Items)
-                {
-                    _savedActionTypeItems.Add(actionItem);
-                }
+                ActionTypeTextLabel.Text = _savedTextLabel;
+                _savedTextLabel = null;
             }
 
-            // Replace with single "Replace with" item
-            ActionTypeComboBox.Items.Clear();
-
-            var resourceLoader = new ResourceLoader();
-            var replaceWithItem = new ComboBoxItem
+            if (ActionTypeTextIcon != null && _savedTextIconGlyph != null)
             {
-                Tag = "ReplaceWith",
-                Content = new StackPanel
-                {
-                    Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal,
-                    Spacing = 8,
-                    Children =
-                    {
-                        new FontIcon { Glyph = "\uE8C8", FontSize = 14 },
-                        new TextBlock { Text = resourceLoader.GetString("ActionType_ReplaceWith_Text/Text") },
-                    },
-                },
-            };
-
-            ActionTypeComboBox.Items.Add(replaceWithItem);
-            ActionTypeComboBox.SelectedIndex = 0;
-            ActionTypeComboBox.IsEnabled = false;
-
-            // Manually update SwitchPresenter since programmatic ComboBox item changes
-            // may not reliably trigger the SelectedItem.Tag binding update in WinUI.
-            ActionSwitchPresenter.Value = "ReplaceWith";
-        }
-
-        private void RestoreNormalActionTypes()
-        {
-            if (ActionTypeComboBox == null || _savedActionTypeItems == null)
-            {
-                return;
+                ActionTypeTextIcon.Glyph = _savedTextIconGlyph;
+                _savedTextIconGlyph = null;
             }
 
-            ActionTypeComboBox.Items.Clear();
-            foreach (var actionItem in _savedActionTypeItems)
-            {
-                ActionTypeComboBox.Items.Add(actionItem);
-            }
-
-            _savedActionTypeItems = null;
             ActionTypeComboBox.SelectedIndex = 0;
             ActionTypeComboBox.IsEnabled = true;
-
-            // Manually sync SwitchPresenter with the restored first item's Tag.
-            if (ActionTypeComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is string tag)
-            {
-                ActionSwitchPresenter.Value = tag;
-            }
         }
 
         #endregion
@@ -1249,7 +1218,7 @@ namespace KeyboardManagerEditorUI.Controls
 
         public string GetExpandTriggerKey() => _expandTriggerKey;
 
-        public string GetExpandedText() => ExpandedTextBox?.Text ?? string.Empty;
+        public string GetExpandedText() => TextContentBox?.Text ?? string.Empty;
 
         #endregion
 
@@ -1274,9 +1243,9 @@ namespace KeyboardManagerEditorUI.Controls
 
         public void SetExpandedText(string text)
         {
-            if (ExpandedTextBox != null)
+            if (TextContentBox != null)
             {
-                ExpandedTextBox.Text = text;
+                TextContentBox.Text = text;
             }
         }
 

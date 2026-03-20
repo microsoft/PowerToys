@@ -230,10 +230,10 @@
                         <TextBlock x:Uid="ActionType_KeyOrShortcut_Text" />
                     </StackPanel>
                 </ComboBoxItem>
-                <ComboBoxItem x:Uid="ActionType_Text" Tag="Text">
+                <ComboBoxItem x:Name="ActionTypeTextItem" x:Uid="ActionType_Text" Tag="Text">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon FontSize="14" Glyph="&#xE8D2;" />
-                        <TextBlock x:Uid="ActionType_Text_Text" />
+                        <FontIcon x:Name="ActionTypeTextIcon" FontSize="14" Glyph="&#xE8D2;" />
+                        <TextBlock x:Name="ActionTypeTextLabel" x:Uid="ActionType_Text_Text" />
                     </StackPanel>
                 </ComboBoxItem>
                 <ComboBoxItem x:Uid="ActionType_OpenUrl" Tag="OpenUrl">
@@ -409,20 +409,7 @@
                         </ComboBox>
                     </StackPanel>
                 </tkcontrols:Case>
-                <!--  Replace With Action (for Expand trigger)  -->
-                <tkcontrols:Case Value="ReplaceWith">
-                    <TextBox
-                        x:Name="ExpandedTextBox"
-                        x:Uid="ExpandedTextBox"
-                        MinHeight="120"
-                        MaxHeight="240"
-                        AcceptsReturn="True"
-                        Background="{ThemeResource TextControlBackgroundFocused}"
-                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                        GotFocus="ExpandedTextBox_GotFocus"
-                        TextChanged="ExpandedTextBox_TextChanged"
-                        TextWrapping="Wrap" />
-                </tkcontrols:Case>
+                <!--  Replace With uses the Text case above with label override  -->
                 <!--  Mouse Click Action (Placeholder)  -->
                 <tkcontrols:Case Value="MouseClick">
                     <TextBlock
