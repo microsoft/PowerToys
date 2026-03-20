@@ -12,6 +12,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
 {
     private readonly ICommandItem[] _commands;
     private readonly ICommandItem _band;
+    private readonly SettingsManager _settingsManager = new();
 
     public PerformanceMonitorCommandsProvider()
     {
@@ -19,12 +20,18 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         Id = "PerformanceMonitor";
         Icon = Icons.PerformanceMonitorIcon;
 
-        var page = new PerformanceWidgetsPage(false);
-        var band = new PerformanceWidgetsPage(true);
+        var page = new PerformanceWidgetsPage(_settingsManager, false);
+        var band = new PerformanceWidgetsPage(_settingsManager, true);
         _band = new CommandItem(band) { Title = DisplayName };
         _commands = [
-            new CommandItem(page) { Title = DisplayName },
+            new CommandItem(page)
+            {
+                Title = DisplayName,
+                MoreCommands = [new CommandContextItem(_settingsManager.Settings.SettingsPage)],
+            },
         ];
+
+        Settings = _settingsManager.Settings;
     }
 
     public override ICommandItem[] TopLevelCommands()
