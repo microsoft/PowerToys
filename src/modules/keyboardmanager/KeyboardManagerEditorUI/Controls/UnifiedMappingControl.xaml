@@ -265,7 +265,7 @@
             <tkcontrols:SwitchPresenter
                 x:Name="ActionSwitchPresenter"
                 TargetType="x:String"
-                Value="{Binding SelectedItem.Tag, ElementName=ActionTypeComboBox}">
+                Value="KeyOrShortcut">
                 <!--  Key or Shortcut Action  -->
                 <tkcontrols:Case Value="KeyOrShortcut">
                     <ToggleButton

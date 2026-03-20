@@ -258,6 +258,12 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 string? tag = item.Tag?.ToString();
 
+                // Sync SwitchPresenter with the selected action type
+                if (tag != null && ActionSwitchPresenter != null)
+                {
+                    ActionSwitchPresenter.Value = tag;
+                }
+
                 // Cleanup keyboard hook when switching away from key/shortcut
                 if (tag != "KeyOrShortcut")
                 {
