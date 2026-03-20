@@ -18,6 +18,7 @@ using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -42,8 +43,8 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ThrottledDebouncedAction _refreshThrottledDebouncedAction;
     private readonly TopLevelCommandManager _tlcManager;
     private readonly AliasManager _aliasManager;
-    private readonly Services.ISettingsService _settingsService;
-    private readonly Services.IAppStateService _appStateService;
+    private readonly ISettingsService _settingsService;
+    private readonly IAppStateService _appStateService;
     private readonly ScoringFunction<IListItem> _scoringFunction;
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
@@ -87,8 +88,8 @@ public sealed partial class MainListPage : DynamicListPage,
         TopLevelCommandManager topLevelCommandManager,
         AliasManager aliasManager,
         IFuzzyMatcherProvider fuzzyMatcherProvider,
-        Services.ISettingsService settingsService,
-        Services.IAppStateService appStateService)
+        ISettingsService settingsService,
+        IAppStateService appStateService)
     {
         Id = "com.microsoft.cmdpal.home";
         Title = Resources.builtin_home_name;
@@ -709,7 +710,7 @@ public sealed partial class MainListPage : DynamicListPage,
         RequestRefresh(fullRefresh: false);
     }
 
-    private void SettingsChangedHandler(Services.ISettingsService sender, SettingsModel args) => HotReloadSettings(args);
+    private void SettingsChangedHandler(ISettingsService sender, SettingsModel args) => HotReloadSettings(args);
 
     private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
 

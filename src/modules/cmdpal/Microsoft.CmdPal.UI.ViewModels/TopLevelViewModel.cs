@@ -9,6 +9,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -21,7 +22,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem
 {
-    private readonly Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
@@ -218,7 +219,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         IContextMenuFactory? contextMenuFactory)
     {
         _serviceProvider = serviceProvider;
-        _settingsService = serviceProvider.GetRequiredService<Services.ISettingsService>();
+        _settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         _providerSettings = providerSettings;
         ProviderContext = commandProviderContext;
         _commandItemViewModel = item;

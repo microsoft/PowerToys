@@ -5,12 +5,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class FallbackSettingsViewModel : ObservableObject
 {
-    private readonly Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly FallbackSettings _fallbackSettings;
 
     public string DisplayName { get; private set; } = string.Empty;
@@ -63,7 +64,7 @@ public partial class FallbackSettingsViewModel : ObservableObject
     TopLevelViewModel fallback,
     FallbackSettings fallbackSettings,
     ProviderSettingsViewModel providerSettings,
-    Services.ISettingsService settingsService)
+    ISettingsService settingsService)
     {
         _settingsService = settingsService;
         _fallbackSettings = fallbackSettings;

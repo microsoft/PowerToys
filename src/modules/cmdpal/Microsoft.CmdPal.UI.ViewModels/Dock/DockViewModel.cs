@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -15,7 +16,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 public sealed partial class DockViewModel
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
-    private readonly Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly DockPageContext _pageContext; // only to be used for our own context menu - not for dock bands themselves
     private readonly IContextMenuFactory _contextMenuFactory;
 
@@ -39,7 +40,7 @@ public sealed partial class DockViewModel
         TopLevelCommandManager tlcManager,
         IContextMenuFactory contextMenuFactory,
         TaskScheduler scheduler,
-        Services.ISettingsService settingsService)
+        ISettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
         _contextMenuFactory = contextMenuFactory;

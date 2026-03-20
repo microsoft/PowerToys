@@ -27,7 +27,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         TimeSpan.FromSeconds(180),
     ];
 
-    private readonly Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
 
 #pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
@@ -249,7 +249,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public SettingsExtensionsViewModel Extensions { get; }
 
-    public SettingsViewModel(TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService, Services.ISettingsService settingsService)
+    public SettingsViewModel(TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService, ISettingsService settingsService)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;

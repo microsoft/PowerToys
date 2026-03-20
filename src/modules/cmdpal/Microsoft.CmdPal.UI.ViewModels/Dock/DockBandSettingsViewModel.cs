@@ -5,6 +5,7 @@
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -12,7 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 public partial class DockBandSettingsViewModel : ObservableObject
 {
     private static readonly CompositeFormat PluralItemsFormatString = CompositeFormat.Parse(Properties.Resources.dock_item_count_plural);
-    private readonly Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly DockBandSettings _dockSettingsModel;
     private readonly TopLevelViewModel _adapter;
     private readonly DockBandViewModel? _bandViewModel;
@@ -132,7 +133,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
         DockBandSettings dockSettingsModel,
         TopLevelViewModel topLevelAdapter,
         DockBandViewModel? bandViewModel,
-        Services.ISettingsService settingsService)
+        ISettingsService settingsService)
     {
         _dockSettingsModel = dockSettingsModel;
         _adapter = topLevelAdapter;

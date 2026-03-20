@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -22,7 +23,7 @@ public partial class ProviderSettingsViewModel : ObservableObject
 
     private readonly CommandProviderWrapper _provider;
     private readonly ProviderSettings _providerSettings;
-    private readonly Services.ISettingsService _settingsService;
+    private readonly ISettingsService _settingsService;
     private readonly Lock _initializeSettingsLock = new();
 
 #pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
@@ -34,7 +35,7 @@ public partial class ProviderSettingsViewModel : ObservableObject
     public ProviderSettingsViewModel(
         CommandProviderWrapper provider,
         ProviderSettings providerSettings,
-        Services.ISettingsService settingsService)
+        ISettingsService settingsService)
     {
         _provider = provider;
         _providerSettings = providerSettings;
