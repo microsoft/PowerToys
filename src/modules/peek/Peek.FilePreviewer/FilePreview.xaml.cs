@@ -34,6 +34,8 @@ namespace Peek.FilePreviewer
 
         public event EventHandler<PreviewSizeChangedArgs>? PreviewSizeChanged;
 
+        public event EventHandler<bool>? FullScreenChanged;
+
         public static readonly DependencyProperty ItemProperty =
         DependencyProperty.Register(
             nameof(Item),
@@ -316,6 +318,12 @@ namespace Peek.FilePreviewer
                     BrowserPreviewer.State = PreviewState.Error;
                 }
             }
+        }
+
+        private void BrowserPreview_FullScreenChanged(bool isFullScreen)
+        {
+            // Propagate fullscreen state change to parent (MainWindow)
+            FullScreenChanged?.Invoke(this, isFullScreen);
         }
 
         private void ShellPreviewHandlerPreview_HandlerLoaded(object sender, EventArgs e)
