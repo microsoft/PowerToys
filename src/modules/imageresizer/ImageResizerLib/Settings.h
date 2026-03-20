@@ -19,6 +19,16 @@ public:
         return settings.enabled;
     }
 
+    inline bool GetExtendedContextMenuOnly() const
+    {
+        return settings.extendedContextMenuOnly;
+    }
+
+    inline void SetExtendedContextMenuOnly(bool extendedOnly)
+    {
+        settings.extendedContextMenuOnly = extendedOnly;
+    }
+
     void Save();
     void Load();
 
@@ -26,6 +36,7 @@ private:
     struct Settings
     {
         bool enabled{ true };
+        bool extendedContextMenuOnly{ false }; // Disabled by default.
     };
 
     void RefreshEnabledState();
