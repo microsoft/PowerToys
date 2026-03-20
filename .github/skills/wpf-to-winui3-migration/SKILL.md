@@ -1,7 +1,7 @@
 ---
 name: wpf-to-winui3-migration
-description: Guide for migrating PowerToys modules from WPF to WinUI 3 (Windows App SDK). Use when asked to migrate WPF code, convert WPF XAML to WinUI, replace System.Windows namespaces with Microsoft.UI.Xaml, update Dispatcher to DispatcherQueue, replace DynamicResource with ThemeResource, migrate imaging APIs from System.Windows.Media.Imaging to Windows.Graphics.Imaging, convert WPF Window to WinUI Window, migrate .resx to .resw resources, migrate custom Observable/RelayCommand to CommunityToolkit.Mvvm source generators, handle WPF-UI (Lepo) to WinUI native control migration, or fix installer/build pipeline issues after migration. Keywords: WPF, WinUI, WinUI3, migration, porting, convert, namespace, XAML, Dispatcher, DispatcherQueue, imaging, BitmapImage, Window, ContentDialog, ThemeResource, DynamicResource, ResourceLoader, resw, resx, CommunityToolkit, ObservableProperty, WPF-UI, SizeToContent, AppWindow, SoftwareBitmap.
-license: Complete terms in LICENSE.txt
+description: 'Guide for migrating PowerToys modules from WPF to WinUI 3 (Windows App SDK). Use when asked to migrate WPF code, convert WPF XAML to WinUI, replace System.Windows namespaces with Microsoft.UI.Xaml, update Dispatcher to DispatcherQueue, replace DynamicResource with ThemeResource, migrate imaging APIs from System.Windows.Media.Imaging to Windows.Graphics.Imaging, convert WPF Window to WinUI Window, migrate .resx to .resw resources, migrate custom Observable/RelayCommand to CommunityToolkit.Mvvm source generators, handle WPF-UI (Lepo) to WinUI native control migration, or fix installer/build pipeline issues after migration. Keywords: WPF, WinUI, WinUI3, migration, porting, convert, namespace, XAML, Dispatcher, DispatcherQueue, imaging, BitmapImage, Window, ContentDialog, ThemeResource, DynamicResource, ResourceLoader, resw, resx, CommunityToolkit, ObservableProperty, WPF-UI, SizeToContent, AppWindow, SoftwareBitmap.'
+license: 'Complete terms in LICENSE.txt'
 ---
 
 # WPF to WinUI 3 Migration Skill
@@ -26,24 +26,26 @@ Migrate PowerToys modules from WPF (`System.Windows.*`) to WinUI 3 (`Microsoft.U
 
 - Visual Studio 2022 17.4+
 - Windows App SDK NuGet package (`Microsoft.WindowsAppSDK`)
-- .NET 8+ with `net8.0-windows10.0.19041.0` TFM
+- .NET 8+ with Windows 10 TFM (e.g., `net8.0-windows10.0.19041.0` or `net9.0-windows10.0.26100.0` — match your project's existing TFM)
 - Windows 10 1803+ (April 2018 Update or newer)
 
 ## Migration Strategy
 
 ### Recommended Order
 
-1. **Project file** — Update TFM, NuGet packages, set `<UseWinUI>true</UseWinUI>`
-2. **Data models and business logic** — No UI dependencies, migrate first
-3. **MVVM framework** — Replace custom Observable/RelayCommand with CommunityToolkit.Mvvm
-4. **Resource strings** — Migrate `.resx` → `.resw`, introduce `ResourceLoaderInstance`
-5. **Services and utilities** — Replace `System.Windows` types, async-ify imaging code
-6. **ViewModels** — Update Dispatcher usage, binding patterns
-7. **Views/Pages** — Starting from leaf pages with fewest dependencies
-8. **Main page / shell** — Last, since it depends on everything
-9. **App.xaml / startup code** — Merge carefully (do NOT overwrite WinUI 3 boilerplate)
-10. **Installer & build pipeline** — Update WiX, signing, build events
-11. **Tests** — Adapt for WinUI 3 runtime, async patterns
+> **⚠️ Before each step, read the linked reference doc(s) thoroughly.** The quick-reference tables in this file are summaries — the reference docs contain critical details, edge cases, and code examples needed for correct conversion.
+
+1. **Project file** — Update TFM, NuGet packages, set `<UseWinUI>true</UseWinUI>`. Read [Namespace and API Mapping → Project File Changes](./references/namespace-api-mapping.md) and [PowerToys Patterns → Build Pipeline](./references/powertoys-patterns.md)
+2. **Data models and business logic** — No UI dependencies, migrate first. Read [Namespace and API Mapping](./references/namespace-api-mapping.md) for type replacements
+3. **MVVM framework** — Replace custom Observable/RelayCommand with CommunityToolkit.Mvvm. Read [PowerToys Patterns → MVVM Migration](./references/powertoys-patterns.md)
+4. **Resource strings** — Migrate `.resx` → `.resw`, introduce `ResourceLoaderInstance`. Read [PowerToys Patterns → ResourceLoader](./references/powertoys-patterns.md) and [XAML Migration → Resource Strings](./references/xaml-migration.md)
+5. **Services and utilities** — Replace `System.Windows` types, async-ify imaging code. Read [Imaging API Migration](./references/imaging-migration.md) and [Namespace and API Mapping](./references/namespace-api-mapping.md)
+6. **ViewModels** — Update Dispatcher usage, binding patterns. Read [Threading and Window Management](./references/threading-and-windowing.md)
+7. **Views/Pages** — Starting from leaf pages with fewest dependencies. Read [XAML Migration Guide](./references/xaml-migration.md) thoroughly before converting any XAML
+8. **Main page / shell** — Last, since it depends on everything. Read [XAML Migration Guide](./references/xaml-migration.md) and [Threading and Window Management](./references/threading-and-windowing.md)
+9. **App.xaml / startup code** — Merge carefully (do NOT overwrite WinUI 3 boilerplate). Read [PowerToys Patterns → App Startup](./references/powertoys-patterns.md)
+10. **Installer & build pipeline** — Update WiX, signing, build events. Read [PowerToys Patterns → Installer and Signing](./references/powertoys-patterns.md)
+11. **Tests** — Adapt for WinUI 3 runtime, async patterns. Read [PowerToys Patterns → Test Adaptation](./references/powertoys-patterns.md)
 
 ### Key Principles
 
@@ -163,3 +165,10 @@ Read only the section relevant to your current task:
 | NuGet restore failures | Run `build-essentials.cmd` after adding `Microsoft.WindowsAppSDK` package |
 | `Parallel.ForEach` compilation error | Migrate to `Parallel.ForEachAsync` for async imaging operations |
 | Signing check fails on leaked artifacts | Run `generateAllFileComponents.ps1`; verify only `WinUI3Apps\\` paths in signing config |
+
+## External References
+
+- [WinUI 3 Overview](https://learn.microsoft.com/en-us/windows/apps/winui/winui3/) — WinUI 3 landing page with links to getting started, samples, and the WinUI 3 Gallery
+- [CommunityToolkit.Mvvm Documentation](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/) — ObservableObject, RelayCommand, source generators
+- [WinUI 3 Controls Gallery](https://learn.microsoft.com/en-us/windows/apps/design/controls/) — Native control catalog (replaces WPF-UI controls)
+- [Windows App SDK API Reference](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/) — Full WinUI 3 and Windows App SDK API reference
