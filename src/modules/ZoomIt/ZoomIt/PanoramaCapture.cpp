@@ -4079,6 +4079,12 @@ skipTileMasking:
 
                 const int x = hx * 2;
                 const int y = hy * 2;
+
+                // Skip pixels already covered by the tile mask (e.g. bottom
+                // strip).  Those are handled by tile suppression.
+                if( maskedTileCount > 0 && mask.IsMaskedPixel( x, y ) )
+                    continue;
+
                 fixMinX = min( fixMinX, x );
                 fixMaxX = max( fixMaxX, x );
                 fixMinY = min( fixMinY, y );
@@ -4091,22 +4097,94 @@ skipTileMasking:
         {
             const int erW = fixMaxX - fixMinX + 1;
             const int erH = fixMaxY - fixMinY + 1;
-            if( erW <= frameWidth / 2 && erH <= frameHeight / 2 &&
-                static_cast<__int64>( erW ) * erH <= static_cast<__int64>( frameWidth ) * frameHeight / 4 )
+
+            int finalMinX = fixMinX, finalMaxX = fixMaxX;
+            int finalMinY = fixMinY, finalMaxY = fixMaxY;
+
+            // If the bounding box is too large, find the densest compact
+            // cluster.  Otherwise use the bounding box directly.
+            if( erW > frameWidth / 3 || erH > frameHeight / 3 )
             {
-                const int margin = 6;
-                const int topMargin = 14;
-                mask.eraseRect.left   = max( 0L, static_cast<long>( fixMinX ) - margin );
-                mask.eraseRect.top    = max( 0L, static_cast<long>( fixMinY ) - topMargin );
-                mask.eraseRect.right  = min( static_cast<long>( frameWidth ), static_cast<long>( fixMaxX ) + margin + 2 );
-                mask.eraseRect.bottom = min( static_cast<long>( frameHeight ), static_cast<long>( fixMaxY ) + margin + 2 );
+                const int windowW = min( frameWidth / 4, 120 );
+                const int windowH = min( frameHeight / 4, 120 );
+                int bestCount = 0, bestWx = 0, bestWy = 0;
+
+                for( int wy = 0; wy <= halfH - windowH / 2; wy += 2 )
+                {
+                    for( int wx = 0; wx <= halfW - windowW / 2; wx += 2 )
+                    {
+                        int count = 0;
+                        const int wyEnd = min( wy + windowH / 2, halfH );
+                        const int wxEnd = min( wx + windowW / 2, halfW );
+                        for( int hy = wy; hy < wyEnd; ++hy )
+                        {
+                            for( int hx = wx; hx < wxEnd; ++hx )
+                            {
+                                const size_t idx2 = static_cast<size_t>( hy ) * halfW + hx;
+                                if( pairCountMap[idx2] >= minPairsRequired &&
+                                    hitCount[idx2] * 100 >= pairCountMap[idx2] * minHitPercent &&
+                                    !( maskedTileCount > 0 && mask.IsMaskedPixel( hx * 2, hy * 2 ) ) )
+                                {
+                                    ++count;
+                                }
+                            }
+                        }
+                        if( count > bestCount )
+                        {
+                            bestCount = count;
+                            bestWx = wx;
+                            bestWy = wy;
+                        }
+                    }
+                }
+
+                if( bestCount >= 2 )
+                {
+                    finalMinX = frameWidth; finalMaxX = 0;
+                    finalMinY = frameHeight; finalMaxY = 0;
+                    const int wyEnd = min( bestWy + windowH / 2, halfH );
+                    const int wxEnd = min( bestWx + windowW / 2, halfW );
+                    for( int hy = bestWy; hy < wyEnd; ++hy )
+                    {
+                        for( int hx = bestWx; hx < wxEnd; ++hx )
+                        {
+                            const size_t idx2 = static_cast<size_t>( hy ) * halfW + hx;
+                            if( pairCountMap[idx2] >= minPairsRequired &&
+                                hitCount[idx2] * 100 >= pairCountMap[idx2] * minHitPercent &&
+                                !( maskedTileCount > 0 && mask.IsMaskedPixel( hx * 2, hy * 2 ) ) )
+                            {
+                                finalMinX = min( finalMinX, hx * 2 );
+                                finalMaxX = max( finalMaxX, hx * 2 );
+                                finalMinY = min( finalMinY, hy * 2 );
+                                finalMaxY = max( finalMaxY, hy * 2 );
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    fixedCount = 0;  // No valid cluster found.
+                }
+            }
+
+            if( fixedCount >= 2 )
+            {
+                const int coreW = finalMaxX - finalMinX + 1;
+                const int coreH = finalMaxY - finalMinY + 1;
+                const int marginX = max( 24, coreW );
+                const int marginY = max( 24, coreH );
+                mask.eraseRect.left   = max( 0L, static_cast<long>( finalMinX ) - marginX );
+                mask.eraseRect.top    = max( 0L, static_cast<long>( finalMinY ) - marginY );
+                mask.eraseRect.right  = min( static_cast<long>( frameWidth ), static_cast<long>( finalMaxX ) + marginX + 2 );
+                mask.eraseRect.bottom = min( static_cast<long>( frameHeight ), static_cast<long>( finalMaxY ) + marginY + 2 );
             }
         }
 
-        StitchLog( L"[Panorama/Stitch] ResidualOverlay: pairsUsed=%zu fixedPixels=%d bounds=(%d,%d)-(%d,%d) eraseRect=(%d,%d)-(%d,%d)\n",
+        StitchLog( L"[Panorama/Stitch] ResidualOverlay: pairsUsed=%zu fixedPixels=%d bounds=(%d,%d)-(%d,%d) maskedTiles=%d eraseRect=(%d,%d)-(%d,%d)\n",
                    composedFrameIndices.size() - 1,
                    fixedCount,
                    fixMinX, fixMinY, fixMaxX, fixMaxY,
+                   maskedTileCount,
                    mask.eraseRect.left, mask.eraseRect.top,
                    mask.eraseRect.right, mask.eraseRect.bottom );
     }
