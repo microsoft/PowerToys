@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -458,20 +460,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             try
             {
-                var readyState = await Task.Run(() =>
-                {
-                    PhiSilicaLafHelper.TryUnlock();
-                    return Microsoft.Windows.AI.Text.LanguageModel.GetReadyState();
-                });
+                // Settings doesn't have sparse package identity, so it can't call
+                // LanguageModel.GetReadyState() directly. Instead, probe via AdvancedPaste
+                // which runs with sparse identity. See microsoft-ui-xaml#10856.
+                var result = await Task.Run(() => CheckPhiSilicaViaAdvancedPaste());
 
-                if (readyState == Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem)
+                if (result == "NotSupported")
                 {
                     _isPhiSilicaAvailable = false;
                     ShowPhiSilicaNotAvailableState(
                         "Phi Silica is not available on this device.",
                         "A Copilot+ PC with an NPU is required to use Phi Silica. For on-device AI on any Windows PC, consider using Foundry Local.");
                 }
-                else if (readyState == Microsoft.Windows.AI.AIFeatureReadyState.NotReady)
+                else if (result == "NotReady")
                 {
                     _isPhiSilicaAvailable = false;
                     ShowPhiSilicaNotAvailableState(
@@ -565,6 +566,47 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 PhiSilicaNotAvailableDescription.Text = description;
             }
+        }
+
+        /// <summary>
+        /// Checks Phi Silica availability by launching AdvancedPaste.exe with --check-phi-silica.
+        /// AdvancedPaste has sparse package identity and can call the Windows AI APIs directly.
+        /// Returns "Available", "NotReady", or "NotSupported".
+        /// </summary>
+        private static string CheckPhiSilicaViaAdvancedPaste()
+        {
+            var settingsDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var advancedPastePath = Path.Combine(settingsDir, "PowerToys.AdvancedPaste.exe");
+
+            if (!File.Exists(advancedPastePath))
+            {
+                return "NotSupported";
+            }
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = advancedPastePath,
+                Arguments = "--check-phi-silica",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+
+            using var process = Process.Start(startInfo);
+            if (process == null)
+            {
+                return "NotSupported";
+            }
+
+            var output = process.StandardOutput.ReadToEnd().Trim();
+            process.WaitForExit(10_000);
+
+            return output switch
+            {
+                "Available" => "Available",
+                "NotReady" => "NotReady",
+                _ => "NotSupported",
+            };
         }
 
         private async Task LoadFoundryLocalModelsAsync()

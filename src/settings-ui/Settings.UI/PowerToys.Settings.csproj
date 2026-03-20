@@ -6,7 +6,7 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
-		<ApplicationManifest>Settings.UI.dev.manifest</ApplicationManifest>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<UseWinUI>true</UseWinUI>
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>
@@ -18,10 +18,6 @@
 		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
 		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(CIBuild)'=='true'">
-		<ApplicationManifest>Settings.UI.prod.manifest</ApplicationManifest>
 	</PropertyGroup>
 	
 	<ItemGroup>
@@ -90,7 +86,6 @@
 		<!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
 		<PackageReference Include="MessagePack" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" />
-		<PackageReference Include="Microsoft.WindowsAppSDK.AI" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
 		<PackageReference Include="StreamJsonRpc" />
