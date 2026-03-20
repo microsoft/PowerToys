@@ -81,6 +81,15 @@ try
         {
             dirty = false;
             snapshot = poller.PollAll();
+
+            // When the user right-clicks the taskbar, UIA momentarily
+            // reports 0 children. Skip these transient error snapshots
+            // and keep showing the previous valid data.
+            if (snapshot.Any(s => s.IsBottom && s.ButtonCount == 0))
+            {
+                continue;
+            }
+
             TaskbarView.Render(snapshot, previous);
             previous = snapshot;
         }
