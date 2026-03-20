@@ -3430,7 +3430,7 @@ static int DetectFixedBottomStrip( const std::vector<std::vector<BYTE>>& framePi
                                    int frameWidth,
                                    int frameHeight )
 {
-    if( composedFrameIndices.size() < 10 || frameWidth < 64 || frameHeight < 64 )
+    if( composedFrameIndices.size() < 6 || frameWidth < 64 || frameHeight < 64 )
         return 0;
 
     // Build cumulative Y offsets to find widely-separated frame pairs.
@@ -3463,7 +3463,8 @@ static int DetectFixedBottomStrip( const std::vector<std::vector<BYTE>>& framePi
 
     // For each pair, find the longest matching suffix from the bottom.
     const int maxScanRows = min( frameHeight / 3, 256 );
-    int minMatchingRows = frameHeight;
+    std::vector<int> allMatchingRows;
+    allMatchingRows.reserve( pairs.size() );
     for( size_t pi = 0; pi < pairs.size(); ++pi )
     {
         const auto& p = pairs[pi];
@@ -3473,8 +3474,8 @@ static int DetectFixedBottomStrip( const std::vector<std::vector<BYTE>>& framePi
         {
             StitchLog( L"[Panorama/Stitch] BottomStripDetect: pair %zu (%zu,%zu) EMPTY pixelsA=%zu pixelsB=%zu\n",
                        pi, p.a, p.b, pixA.size(), pixB.size() );
-            minMatchingRows = 0;
-            break;
+            allMatchingRows.push_back( 0 );
+            continue;
         }
 
         int matchingRows = 0;
@@ -3494,7 +3495,11 @@ static int DetectFixedBottomStrip( const std::vector<std::vector<BYTE>>& framePi
                 ++sampleCount;
             }
             const int avgDiff = rowDiffSum / max( 1, sampleCount * 3 );
-            if( avgDiff > 6 )
+            // Threshold raised from 6 to 12 to accommodate VM/RDP
+            // rendering noise — software-rendered or protocol-compressed
+            // displays can produce per-pixel jitter of 5-10 in static content.
+            // True scrolled-content transitions have avgDiff >> 15.
+            if( avgDiff > 12 )
             {
                 firstMismatchY = y;
                 firstMismatchAvgDiff = avgDiff;
@@ -3504,10 +3509,23 @@ static int DetectFixedBottomStrip( const std::vector<std::vector<BYTE>>& framePi
         }
         StitchLog( L"[Panorama/Stitch] BottomStripDetect: pair %zu (%zu,%zu) matchingRows=%d mismatchY=%d mismatchDiff=%d\n",
                    pi, p.a, p.b, matchingRows, firstMismatchY, firstMismatchAvgDiff );
-        minMatchingRows = min( minMatchingRows, matchingRows );
+        allMatchingRows.push_back( matchingRows );
     }
 
-    StitchLog( L"[Panorama/Stitch] BottomStripDetect: minMatchingRows=%d\n", minMatchingRows );
+    // Use a robust aggregation instead of strict minimum: allow up to
+    // 1/3 of pairs to be outliers.  VM or RDP rendering noise, animated
+    // scroll indicators, and subtle overlay state changes can cause a
+    // few pairs to badly disagree even though the static strip is real.
+    if( allMatchingRows.empty() )
+        return 0;
+    std::sort( allMatchingRows.begin(), allMatchingRows.end() );
+    const size_t robustIndex = min( allMatchingRows.size() / 3, allMatchingRows.size() - 1 );
+    const int minMatchingRows = allMatchingRows[robustIndex];
+    StitchLog( L"[Panorama/Stitch] BottomStripDetect: minMatchingRows=%d (robust index=%zu of %zu, values=",
+               minMatchingRows, robustIndex, allMatchingRows.size() );
+    for( size_t ri = 0; ri < allMatchingRows.size(); ++ri )
+        StitchLog( L"%s%d", ri > 0 ? L"," : L"", allMatchingRows[ri] );
+    StitchLog( L")\n" );
     if( minMatchingRows < 3 )
         return 0;
 
