@@ -18,10 +18,6 @@ public partial class DockBandSettingsViewModel : ObservableObject
     private readonly TopLevelViewModel _adapter;
     private readonly DockBandViewModel? _bandViewModel;
 
-#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
-    private SettingsModel _settingsModel => _settingsService.Settings;
-#pragma warning restore SA1300
-
     public string Title => _adapter.Title;
 
     public string Description
@@ -145,7 +141,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
 
     private DockPinSide FetchPinSide()
     {
-        var dockSettings = _settingsModel.DockSettings;
+        var dockSettings = _settingsService.Settings.DockSettings;
         var inStart = dockSettings.StartBands.Any(b => b.CommandId == _dockSettingsModel.CommandId);
         if (inStart)
         {
@@ -193,7 +189,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
 
     public void SetBandPosition(DockPinSide side, int? index)
     {
-        var dockSettings = _settingsModel.DockSettings;
+        var dockSettings = _settingsService.Settings.DockSettings;
 
         // Remove from all sides first
         dockSettings.StartBands.RemoveAll(b => b.CommandId == _dockSettingsModel.CommandId);

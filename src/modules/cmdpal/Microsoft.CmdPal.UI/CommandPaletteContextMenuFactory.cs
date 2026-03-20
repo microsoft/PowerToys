@@ -19,10 +19,6 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
 
-#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
-    private SettingsModel _settingsModel => _settingsService.Settings;
-#pragma warning restore SA1300
-
     public CommandPaletteContextMenuFactory(ISettingsService settingsService, TopLevelCommandManager topLevelCommandManager)
     {
         _settingsService = settingsService;
@@ -70,7 +66,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             var providerId = providerContext.ProviderId;
             if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
             {
-                var providerSettings = _settingsModel.GetProviderSettings(provider);
+                var providerSettings = _settingsService.Settings.GetProviderSettings(provider);
 
                 var alreadyPinnedToTopLevel = providerSettings.PinnedCommandIds.Contains(itemId);
 
@@ -137,7 +133,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         var providerId = providerContext.ProviderId;
         if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
         {
-            var providerSettings = _settingsModel.GetProviderSettings(provider);
+            var providerSettings = _settingsService.Settings.GetProviderSettings(provider);
 
             var isPinnedSubCommand = providerSettings.PinnedCommandIds.Contains(itemId);
             if (isPinnedSubCommand)
@@ -173,16 +169,16 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         List<IContextItem> moreCommands,
         CommandItemViewModel commandItem)
     {
-        if (!_settingsModel.EnableDock)
+        if (!_settingsService.Settings.EnableDock)
         {
             return;
         }
 
-        var inStartBands = _settingsModel.DockSettings.StartBands.Any(band => MatchesBand(band, itemId, providerId));
-        var inCenterBands = _settingsModel.DockSettings.CenterBands.Any(band => MatchesBand(band, itemId, providerId));
-        var inEndBands = _settingsModel.DockSettings.EndBands.Any(band => MatchesBand(band, itemId, providerId));
+        var inStartBands = _settingsService.Settings.DockSettings.StartBands.Any(band => MatchesBand(band, itemId, providerId));
+        var inCenterBands = _settingsService.Settings.DockSettings.CenterBands.Any(band => MatchesBand(band, itemId, providerId));
+        var inEndBands = _settingsService.Settings.DockSettings.EndBands.Any(band => MatchesBand(band, itemId, providerId));
         var alreadyPinned = inStartBands || inCenterBands || inEndBands; /** &&
-                            _settingsModel.DockSettings.PinnedCommands.Contains(this.Id)**/
+                            _settingsService.Settings.DockSettings.PinnedCommands.Contains(this.Id)**/
         var pinToTopLevelCommand = new PinToCommand(
             commandId: itemId,
             providerId: providerId,
@@ -240,10 +236,6 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         private readonly TopLevelCommandManager _topLevelCommandManager;
         private readonly bool _pin;
         private readonly PinLocation _pinLocation;
-
-#pragma warning disable SA1300
-        private SettingsModel _settings => _settingsService.Settings;
-#pragma warning restore SA1300
 
         private bool IsPinToDock => _pinLocation == PinLocation.Dock;
 

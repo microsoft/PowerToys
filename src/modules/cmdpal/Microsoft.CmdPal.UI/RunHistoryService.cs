@@ -12,10 +12,6 @@ internal sealed class RunHistoryService : IRunHistoryService
 {
     private readonly IAppStateService _appStateService;
 
-#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
-    private AppStateModel _appStateModel => _appStateService.State;
-#pragma warning restore SA1300
-
     public RunHistoryService(IAppStateService appStateService)
     {
         _appStateService = appStateService;
@@ -23,18 +19,18 @@ internal sealed class RunHistoryService : IRunHistoryService
 
     public IReadOnlyList<string> GetRunHistory()
     {
-        if (_appStateModel.RunHistory.Count == 0)
+        if (_appStateService.State.RunHistory.Count == 0)
         {
             var history = Microsoft.Terminal.UI.RunHistory.CreateRunHistory();
-            _appStateModel.RunHistory.AddRange(history);
+            _appStateService.State.RunHistory.AddRange(history);
         }
 
-        return _appStateModel.RunHistory;
+        return _appStateService.State.RunHistory;
     }
 
     public void ClearRunHistory()
     {
-        _appStateModel.RunHistory.Clear();
+        _appStateService.State.RunHistory.Clear();
     }
 
     public void AddRunHistoryItem(string item)
@@ -45,10 +41,10 @@ internal sealed class RunHistoryService : IRunHistoryService
             return; // Do not add empty or whitespace items
         }
 
-        _appStateModel.RunHistory.Remove(item);
+        _appStateService.State.RunHistory.Remove(item);
 
         // Add the item to the front of the history
-        _appStateModel.RunHistory.Insert(0, item);
+        _appStateService.State.RunHistory.Insert(0, item);
 
         _appStateService.Save();
     }

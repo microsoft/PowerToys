@@ -49,12 +49,6 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
-#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
-    private SettingsModel _settings => _settingsService.Settings;
-
-    private AppStateModel _appStateModel => _appStateService.State;
-#pragma warning restore SA1300
-
     // Stable separator instances so that the VM cache and InPlaceUpdateList
     // recognise them across successive GetItems() calls
     private readonly Separator _resultsSeparator = new(Resources.results);
@@ -101,8 +95,8 @@ public sealed partial class MainListPage : DynamicListPage,
         _appStateService = appStateService;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
-        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateModel.RecentCommands, _fuzzyMatcherProvider.Current);
-        _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settings.FallbackRanks);
+        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current);
+        _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settingsService.Settings.FallbackRanks);
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
@@ -158,7 +152,7 @@ public sealed partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
 
         _settingsService.SettingsChanged += SettingsChangedHandler;
-        HotReloadSettings(_settings);
+        HotReloadSettings(_settingsService.Settings);
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
 
         IsLoading = true;
@@ -371,7 +365,7 @@ public sealed partial class MainListPage : DynamicListPage,
             }
 
             // prefilter fallbacks
-            var globalFallbacks = _settings.GetGlobalFallbacks();
+            var globalFallbacks = _settingsService.Settings.GetGlobalFallbacks();
             var specialFallbacks = new List<TopLevelViewModel>(globalFallbacks.Length);
             var commonFallbacks = new List<TopLevelViewModel>(commands.Count - globalFallbacks.Length);
 
@@ -486,7 +480,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
                     // We need to remove pinned apps from allNewApps so they don't show twice.
                     // Pinned app command IDs are stored in ProviderSettings.PinnedCommandIds.
-                    _settings.ProviderSettings.TryGetValue(AllAppsCommandProvider.WellKnownId, out var providerSettings);
+                    _settingsService.Settings.ProviderSettings.TryGetValue(AllAppsCommandProvider.WellKnownId, out var providerSettings);
                     var pinnedCommandIds = providerSettings?.PinnedCommandIds;
 
                     if (pinnedCommandIds is not null && pinnedCommandIds.Count > 0)
@@ -685,7 +679,7 @@ public sealed partial class MainListPage : DynamicListPage,
     public void UpdateHistory(IListItem topLevelOrAppItem)
     {
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
-        var history = _appStateModel.RecentCommands;
+        var history = _appStateService.State.RecentCommands;
         history.AddHistoryItem(id);
         _appStateService.Save();
     }

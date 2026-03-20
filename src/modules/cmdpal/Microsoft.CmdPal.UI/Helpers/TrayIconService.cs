@@ -29,10 +29,6 @@ internal sealed partial class TrayIconService
     private readonly ISettingsService _settingsService;
     private readonly uint WM_TASKBAR_RESTART;
 
-#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
-    private SettingsModel _settingsModel => _settingsService.Settings;
-#pragma warning restore SA1300
-
     private Window? _window;
     private HWND _hwnd;
     private WNDPROC? _originalWndProc;
@@ -53,7 +49,7 @@ internal sealed partial class TrayIconService
 
     public void SetupTrayIcon(bool? showSystemTrayIcon = null)
     {
-        if (showSystemTrayIcon ?? _settingsModel.ShowSystemTrayIcon)
+        if (showSystemTrayIcon ?? _settingsService.Settings.ShowSystemTrayIcon)
         {
             if (_window is null)
             {

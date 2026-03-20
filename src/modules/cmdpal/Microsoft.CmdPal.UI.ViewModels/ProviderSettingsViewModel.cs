@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -25,10 +25,6 @@ public partial class ProviderSettingsViewModel : ObservableObject
     private readonly ProviderSettings _providerSettings;
     private readonly ISettingsService _settingsService;
     private readonly Lock _initializeSettingsLock = new();
-
-#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
-    private SettingsModel _settings => _settingsService.Settings;
-#pragma warning restore SA1300
 
     private Task? _initializeSettingsTask;
 

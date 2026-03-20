@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -27,10 +27,6 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
     private readonly IContextMenuFactory _contextMenuFactory;
-
-#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
-    private SettingsModel _settings => _settingsService.Settings;
-#pragma warning restore SA1300
 
     public ICommandProviderContext ProviderContext { get; private set; }
 
@@ -190,9 +186,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
                 return null;
             }
 
-            var bandSettings = _settings.DockSettings.StartBands
-                .Concat(_settings.DockSettings.CenterBands)
-                .Concat(_settings.DockSettings.EndBands)
+            var bandSettings = _settingsService.Settings.DockSettings.StartBands
+                .Concat(_settingsService.Settings.DockSettings.CenterBands)
+                .Concat(_settingsService.Settings.DockSettings.EndBands)
                 .FirstOrDefault(band => band.CommandId == this.Id);
             if (bandSettings is null)
             {
@@ -351,7 +347,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     private void UpdateHotkey()
     {
-        var hotkey = _settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
+        var hotkey = _settingsService.Settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
         if (hotkey is not null)
         {
             _hotkey = hotkey.Hotkey;
