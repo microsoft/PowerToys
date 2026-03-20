@@ -4,6 +4,9 @@
 
 using System.Text.Json;
 using TaskbarMonitor;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 TaskbarPoller.SetDpiAwareness();
 
@@ -16,7 +19,6 @@ using var poller = new TaskbarPoller();
 
 if (jsonMode || debugMode)
 {
-    // Single-shot: poll once and output
     var snapshots = poller.PollAll(debugMode ? Console.Error : null);
     if (jsonMode)
     {
@@ -24,7 +26,6 @@ if (jsonMode || debugMode)
     }
     else
     {
-        // debug mode — the debug lines went to stderr, print results to stdout
         foreach (var s in snapshots)
         {
             Console.WriteLine(s);
@@ -34,7 +35,21 @@ if (jsonMode || debugMode)
     return;
 }
 
+// Event-driven mode: use SetWinEventHook to detect taskbar changes,
+// then re-poll only when something changes.
 List<TaskbarSnapshot>? previous = null;
+var dirty = true; // poll once on startup
+
+using var watcher = new TaskbarWatcher();
+var threadId = PInvoke.GetCurrentThreadId();
+
+watcher.Changed += () =>
+{
+    dirty = true;
+
+    // Wake the message pump so it processes the change
+    PInvoke.PostThreadMessage(threadId, PInvoke.WM_NULL, default, default);
+};
 
 Console.CancelKeyPress += (_, e) =>
 {
@@ -45,20 +60,31 @@ Console.CancelKeyPress += (_, e) =>
 
 TaskbarView.EnterAlternateScreen();
 
+// Initial render
+var snapshot = poller.PollAll();
+TaskbarView.Render(snapshot, previous);
+previous = snapshot;
+dirty = false;
+
 try
 {
-    while (true)
+    // Win32 message pump — required for SetWinEventHook with
+    // WINEVENT_OUTOFCONTEXT. GetMessage blocks until a message arrives,
+    // so we burn zero CPU while idle.
+    MSG msg;
+    while (PInvoke.GetMessage(out msg, HWND.Null, 0, 0))
     {
-        var snapshot = poller.PollAll();
-        TaskbarView.Render(snapshot, previous);
-        previous = snapshot;
-        Thread.Sleep(500);
+        PInvoke.TranslateMessage(in msg);
+        PInvoke.DispatchMessage(in msg);
+
+        if (dirty)
+        {
+            dirty = false;
+            snapshot = poller.PollAll();
+            TaskbarView.Render(snapshot, previous);
+            previous = snapshot;
+        }
     }
-}
-catch (Exception ex)
-{
-    TaskbarView.LeaveAlternateScreen();
-    Console.WriteLine($"An error occurred: {ex.Message}");
 }
 finally
 {

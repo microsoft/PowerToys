@@ -65,7 +65,7 @@ public static class TaskbarView
         }
 
         sb.AppendLine();
-        sb.Append($"  {Esc}[2mPolling every 500ms. Press Ctrl+C to exit.{Esc}[0m\n");
+        sb.Append($"  {Esc}[2mEvent-driven (SetWinEventHook). Press Ctrl+C to exit.{Esc}[0m\n");
 
         Console.Write(sb);
     }
