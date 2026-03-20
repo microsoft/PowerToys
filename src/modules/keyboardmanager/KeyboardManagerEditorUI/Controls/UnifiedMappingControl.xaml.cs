@@ -9,7 +9,6 @@ using System.Linq;
 using KeyboardManagerEditorUI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.ApplicationModel.Resources;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.System;
@@ -1170,11 +1169,10 @@ namespace KeyboardManagerEditorUI.Controls
             ActionTypeComboBox.SelectedItem = ActionTypeTextItem;
             ActionTypeComboBox.IsEnabled = false;
 
-            var resourceLoader = new ResourceLoader();
             if (ActionTypeTextLabel != null)
             {
                 _savedTextLabel = ActionTypeTextLabel.Text;
-                ActionTypeTextLabel.Text = resourceLoader.GetString("ActionType_ReplaceWith_Text/Text");
+                ActionTypeTextLabel.Text = "Replace with";
             }
 
             if (ActionTypeTextIcon != null)
