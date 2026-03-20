@@ -8,8 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
 using System.IO.Abstractions;
-using System.Windows.Media.Imaging;
+using Windows.Graphics.Imaging;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -33,11 +34,8 @@ namespace ImageResizer.Test
         {
             using (var stream = _fileSystem.File.OpenRead(path))
             {
-                var image = BitmapDecoder.Create(
-                    stream,
-                    BitmapCreateOptions.PreservePixelFormat,
-                    BitmapCacheOption.None);
-
+                var winrtStream = stream.AsRandomAccessStream();
+                var image = BitmapDecoder.CreateAsync(winrtStream).AsTask().GetAwaiter().GetResult();
                 action(image);
             }
         }

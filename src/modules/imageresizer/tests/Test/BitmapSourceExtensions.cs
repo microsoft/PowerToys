@@ -1,28 +1,53 @@
-﻿#pragma warning disable IDE0073
+#pragma warning disable IDE0073
 // Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 #pragma warning restore IDE0073
 
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Windows.Graphics.Imaging;
 
 namespace ImageResizer.Test
 {
-    internal static class BitmapSourceExtensions
+    internal static class BitmapDecoderExtensions
     {
-        public static Color GetFirstPixel(this BitmapSource source)
+        public static (byte R, byte G, byte B, byte A) GetFirstPixel(this BitmapDecoder decoder)
         {
-            var pixel = new byte[4];
-            new FormatConvertedBitmap(
-                    new CroppedBitmap(source, new Int32Rect(0, 0, 1, 1)),
-                    PixelFormats.Bgra32,
-                    destinationPalette: null,
-                    alphaThreshold: 0)
-                .CopyPixels(pixel, 4, 0);
+            var frame = decoder.GetFrameAsync(0).AsTask().GetAwaiter().GetResult();
+            var bitmap = frame.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied)
+                .AsTask().GetAwaiter().GetResult();
 
-            return Color.FromArgb(pixel[3], pixel[2], pixel[1], pixel[0]);
+            using var buffer = bitmap.LockBuffer(BitmapBufferAccessMode.Read);
+            using var reference = buffer.CreateReference();
+            unsafe
+            {
+                ((Windows.Foundation.IMemoryBufferByteAccess)reference).GetBuffer(out byte* dataInBytes, out uint capacity);
+                byte b = dataInBytes[0];
+                byte g = dataInBytes[1];
+                byte r = dataInBytes[2];
+                byte a = dataInBytes[3];
+                return (r, g, b, a);
+            }
         }
+    }
+
+    // COM interface for buffer access
+    [System.Runtime.InteropServices.ComImport]
+    [System.Runtime.InteropServices.Guid("5B0D3235-4DBA-4D44-865E-8F1D0E4FD04D")]
+    [System.Runtime.InteropServices.InterfaceType(System.Runtime.InteropServices.ComInterfaceType.InterfaceIsIUnknown)]
+    unsafe interface IMemoryBufferByteAccess
+    {
+        void GetBuffer(out byte* buffer, out uint capacity);
+    }
+}
+
+namespace Windows.Foundation
+{
+    // Extension interface for IMemoryBufferReference
+    [System.Runtime.InteropServices.ComImport]
+    [System.Runtime.InteropServices.Guid("5B0D3235-4DBA-4D44-865E-8F1D0E4FD04D")]
+    [System.Runtime.InteropServices.InterfaceType(System.Runtime.InteropServices.ComInterfaceType.InterfaceIsIUnknown)]
+    unsafe interface IMemoryBufferByteAccess
+    {
+        void GetBuffer(out byte* buffer, out uint capacity);
     }
 }

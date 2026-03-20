@@ -4,6 +4,8 @@
 
 using System.CommandLine;
 
+using ImageResizer.Properties;
+
 namespace ImageResizer.Cli.Options
 {
     public sealed class HelpOption : Option<bool>
@@ -11,7 +13,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--help", "-?", "/?"];
 
         public HelpOption()
-            : base(_aliases, Properties.Resources.CLI_Option_Help)
+            : base(_aliases, ResourceLoaderInstance.ResourceLoader.GetString("CLI_Option_Help"))
         {
         }
     }

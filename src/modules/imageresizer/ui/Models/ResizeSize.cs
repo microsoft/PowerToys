@@ -1,29 +1,30 @@
-﻿#pragma warning disable IDE0073
+#pragma warning disable IDE0073
 // Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 // Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 #pragma warning restore IDE0073
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 
-using ImageResizer.Helpers;
+using CommunityToolkit.Mvvm.ComponentModel;
 using ImageResizer.Properties;
 using ManagedCommon;
 
 namespace ImageResizer.Models
 {
-    public class ResizeSize : Observable, IHasId
+    public class ResizeSize : ObservableObject, IHasId
     {
-        private static readonly Dictionary<string, string> _tokens = new Dictionary<string, string>
+        private static readonly Lazy<Dictionary<string, string>> _tokens = new Lazy<Dictionary<string, string>>(() => new Dictionary<string, string>
         {
-            ["$small$"] = Resources.Small,
-            ["$medium$"] = Resources.Medium,
-            ["$large$"] = Resources.Large,
-            ["$phone$"] = Resources.Phone,
-        };
+            ["$small$"] = ResourceLoaderInstance.ResourceLoader.GetString("Small"),
+            ["$medium$"] = ResourceLoaderInstance.ResourceLoader.GetString("Medium"),
+            ["$large$"] = ResourceLoaderInstance.ResourceLoader.GetString("Large"),
+            ["$phone$"] = ResourceLoaderInstance.ResourceLoader.GetString("Phone"),
+        });
 
         private int _id;
         private string _name;
@@ -51,14 +52,14 @@ namespace ImageResizer.Models
         public int Id
         {
             get => _id;
-            set => Set(ref _id, value);
+            set => SetProperty(ref _id, value);
         }
 
         [JsonPropertyName("name")]
         public virtual string Name
         {
             get => _name;
-            set => Set(ref _name, ReplaceTokens(value));
+            set => SetProperty(ref _name, ReplaceTokens(value));
         }
 
         [JsonPropertyName("fit")]
@@ -68,7 +69,7 @@ namespace ImageResizer.Models
             set
             {
                 var previousFit = _fit;
-                Set(ref _fit, value);
+                SetProperty(ref _fit, value);
                 if (!Equals(previousFit, value))
                 {
                     UpdateShowHeight();
@@ -80,20 +81,20 @@ namespace ImageResizer.Models
         public double Width
         {
             get => _width;
-            set => Set(ref _width, value);
+            set => SetProperty(ref _width, value);
         }
 
         [JsonPropertyName("height")]
         public double Height
         {
             get => _height;
-            set => Set(ref _height, value);
+            set => SetProperty(ref _height, value);
         }
 
         public bool ShowHeight
         {
             get => _showHeight;
-            set => Set(ref _showHeight, value);
+            set => SetProperty(ref _showHeight, value);
         }
 
         public bool HasAuto
@@ -106,7 +107,7 @@ namespace ImageResizer.Models
             set
             {
                 var previousUnit = _unit;
-                Set(ref _unit, value);
+                SetProperty(ref _unit, value);
                 if (!Equals(previousUnit, value))
                 {
                     UpdateShowHeight();
@@ -127,7 +128,7 @@ namespace ImageResizer.Models
                 dpi);
 
         private static string ReplaceTokens(string text)
-            => (text != null && _tokens.TryGetValue(text, out var result))
+            => (text != null && _tokens.Value.TryGetValue(text, out var result))
                 ? result
                 : text;
 

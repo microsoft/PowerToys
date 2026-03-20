@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0073
+#pragma warning disable IDE0073
 // Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
@@ -7,16 +7,14 @@
 using System;
 using System.Globalization;
 using System.Text;
-using System.Windows.Data;
-
 using ImageResizer.Properties;
+using Microsoft.UI.Xaml.Data;
 
 namespace ImageResizer.Views
 {
-    [ValueConversion(typeof(TimeSpan), typeof(string))]
-    internal class TimeRemainingConverter : IValueConverter
+    internal sealed partial class TimeRemainingConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, string language)
         {
             var timeRemaining = (TimeSpan)value;
 
@@ -38,14 +36,14 @@ namespace ImageResizer.Views
             }
 
             return string.Format(
-                culture,
-                Resources.ResourceManager.GetString(builder.ToString(), culture),
+                CultureInfo.CurrentCulture,
+                ResourceLoaderInstance.ResourceLoader.GetString(builder.ToString()),
                 timeRemaining.Hours,
                 timeRemaining.Minutes,
                 timeRemaining.Seconds);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
             => throw new NotImplementedException();
     }
 }

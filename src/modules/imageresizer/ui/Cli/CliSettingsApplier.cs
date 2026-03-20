@@ -76,7 +76,7 @@ namespace ImageResizer.Cli
             }
             else
             {
-                Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Resources.CLI_WarningInvalidSizeIndex, index));
+                Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, ResourceLoaderInstance.ResourceLoader.GetString("CLI_WarningInvalidSizeIndex"), index));
                 CliLogger.Warn($"Invalid size index: {index}");
             }
         }

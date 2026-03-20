@@ -1,17 +1,14 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
-using System.Windows;
-using System.Windows.Data;
-
 using ImageResizer.Models;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Data;
 
 namespace ImageResizer.Views;
 
-[ValueConversion(typeof(ResizeSize), typeof(string))]
 public sealed partial class SizeTypeToHelpTextConverter : IValueConverter
 {
     private const char MultiplicationSign = '\u00D7';
@@ -19,7 +16,7 @@ public sealed partial class SizeTypeToHelpTextConverter : IValueConverter
     private readonly EnumValueConverter _enumConverter = new();
     private readonly AutoDoubleConverter _autoDoubleConverter = new();
 
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(object value, Type targetType, object parameter, string language)
     {
         if (value is not ResizeSize size)
         {
@@ -27,10 +24,10 @@ public sealed partial class SizeTypeToHelpTextConverter : IValueConverter
         }
 
         string EnumToString(Enum value, string parameter = null) =>
-            _enumConverter.Convert(value, typeof(string), parameter, culture) as string;
+            _enumConverter.Convert(value, typeof(string), parameter, language) as string;
 
         string DoubleToString(double value) =>
-            _autoDoubleConverter.Convert(value, typeof(string), null, culture) as string;
+            _autoDoubleConverter.Convert(value, typeof(string), null, language) as string;
 
         var fit = EnumToString(size.Fit, "ThirdPersonSingular");
         var width = DoubleToString(size.Width);
@@ -41,6 +38,6 @@ public sealed partial class SizeTypeToHelpTextConverter : IValueConverter
             $"{fit} {width} {unit}";
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
         => throw new NotImplementedException();
 }

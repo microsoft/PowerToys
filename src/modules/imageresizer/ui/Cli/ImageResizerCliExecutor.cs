@@ -53,7 +53,7 @@ namespace ImageResizer.Cli
 
             if (cliOptions.Files.Count == 0 && string.IsNullOrEmpty(cliOptions.PipeName))
             {
-                Console.WriteLine(Resources.CLI_NoInputFiles);
+                Console.WriteLine(ResourceLoaderInstance.ResourceLoader.GetString("CLI_NoInputFiles"));
                 CliOptions.PrintUsage();
                 return 1;
             }
@@ -85,13 +85,13 @@ namespace ImageResizer.Cli
                         if (milestone > lastReportedMilestone || completed == (int)total)
                         {
                             lastReportedMilestone = milestone;
-                            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, Resources.CLI_ProgressFormat, progress, completed, (int)total));
+                            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, ResourceLoaderInstance.ResourceLoader.GetString("CLI_ProgressFormat"), progress, completed, (int)total));
                         }
                     }
                     else
                     {
                         // Traditional carriage return mode
-                        Console.Write(string.Format(CultureInfo.InvariantCulture, "\r{0}", string.Format(CultureInfo.InvariantCulture, Resources.CLI_ProgressFormat, progress, completed, (int)total)));
+                        Console.Write(string.Format(CultureInfo.InvariantCulture, "\r{0}", string.Format(CultureInfo.InvariantCulture, ResourceLoaderInstance.ResourceLoader.GetString("CLI_ProgressFormat"), progress, completed, (int)total)));
                     }
                 },
                 settings,
@@ -105,7 +105,7 @@ namespace ImageResizer.Cli
             var errorList = errors.ToList();
             if (errorList.Count > 0)
             {
-                Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Resources.CLI_CompletedWithErrors, errorList.Count));
+                Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, ResourceLoaderInstance.ResourceLoader.GetString("CLI_CompletedWithErrors"), errorList.Count));
                 CliLogger.Error($"Processing completed with {errorList.Count} error(s)");
                 foreach (var error in errorList)
                 {
@@ -117,7 +117,7 @@ namespace ImageResizer.Cli
             }
 
             CliLogger.Info("CLI batch completed successfully");
-            Console.WriteLine(Resources.CLI_AllFilesProcessed);
+            Console.WriteLine(ResourceLoaderInstance.ResourceLoader.GetString("CLI_AllFilesProcessed"));
             return 0;
         }
     }

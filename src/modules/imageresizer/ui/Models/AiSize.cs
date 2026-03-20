@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -12,20 +13,22 @@ namespace ImageResizer.Models
 {
     public class AiSize : ResizeSize
     {
-        private static readonly CompositeFormat ScaleFormat = CompositeFormat.Parse(Resources.Input_AiScaleFormat);
+        private static readonly Lazy<CompositeFormat> ScaleFormat = new Lazy<CompositeFormat>(
+            () => CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("Input_AiScaleFormat")));
+
         private int _scale = 2;
 
         /// <summary>
         /// Gets the formatted scale display string (e.g., "2×").
         /// </summary>
         [JsonIgnore]
-        public string ScaleDisplay => string.Format(CultureInfo.CurrentCulture, ScaleFormat, _scale);
+        public string ScaleDisplay => string.Format(CultureInfo.CurrentCulture, ScaleFormat.Value, _scale);
 
         [JsonPropertyName("scale")]
         public int Scale
         {
             get => _scale;
-            set => Set(ref _scale, value);
+            set => SetProperty(ref _scale, value);
         }
 
         [JsonConstructor]

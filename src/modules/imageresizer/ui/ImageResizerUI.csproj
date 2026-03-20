@@ -2,15 +2,15 @@
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
-  
+
   <PropertyGroup>
     <AssemblyTitle>PowerToys.ImageResizer</AssemblyTitle>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <UseWPF>true</UseWPF>
+    <UseWinUI>true</UseWinUI>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -18,43 +18,33 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>ImageResizer</RootNamespace>
     <AssemblyName>PowerToys.ImageResizer</AssemblyName>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>CA1863</NoWarn>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <ApplicationIcon>Resources\ImageResizer.ico</ApplicationIcon>
   </PropertyGroup>
 
-  <!-- <PropertyGroup>
-    <ApplicationManifest>ImageResizerUI.dev.manifest</ApplicationManifest>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(CIBuild)'=='true'">
-    <ApplicationManifest>ImageResizerUI.prod.manifest</ApplicationManifest>
-  </PropertyGroup> -->
-
   <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
+    <Content Include="Strings\en-us\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\ImageResizer.ico" />
+    <Content Include="Resources\ImageResizer.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\ImageResizer.png" />
+    <Content Include="Resources\ImageResizer.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.IO.Abstractions" />
-    <PackageReference Include="WPF-UI" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
@@ -62,14 +52,7 @@
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  
+
   <!-- Ensure Resources directory and ImageResizer.png are available for dependent projects -->
   <Target Name="CopyResourcesToSharedLocation" AfterTargets="Build">
     <ItemGroup>

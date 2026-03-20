@@ -1,37 +1,36 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Globalization;
-using Wpf.Ui.Controls;
+using Windows.Globalization.NumberFormatting;
 
 namespace ImageResizer.Views;
 
-public class ZeroToEmptyStringNumberFormatter : INumberFormatter, INumberParser
+public partial class ZeroToEmptyStringNumberFormatter : INumberFormatter2, INumberParser
 {
-    public string FormatDouble(double? value) => value switch
+    public string FormatDouble(double value) => value switch
     {
-        null => string.Empty,
         0 => string.Empty,
-        _ => value.Value.ToString(CultureInfo.CurrentCulture),
+        _ => value.ToString(CultureInfo.CurrentCulture),
     };
 
-    public double? ParseDouble(string value)
+    public double? ParseDouble(string text)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (string.IsNullOrWhiteSpace(text))
         {
             return 0;
         }
 
-        return double.TryParse(value, NumberStyles.Any, CultureInfo.CurrentCulture, out double result) ? result : 0;
+        return double.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out double result) ? result : 0;
     }
 
-    public string FormatInt(int? value) => throw new NotImplementedException();
+    public string FormatInt(long value) => throw new NotImplementedException();
 
-    public string FormatUInt(uint? value) => throw new NotImplementedException();
+    public string FormatUInt(ulong value) => throw new NotImplementedException();
 
-    public int? ParseInt(string value) => throw new NotImplementedException();
+    public long? ParseInt(string text) => throw new NotImplementedException();
 
-    public uint? ParseUInt(string value) => throw new NotImplementedException();
+    public ulong? ParseUInt(string text) => throw new NotImplementedException();
 }

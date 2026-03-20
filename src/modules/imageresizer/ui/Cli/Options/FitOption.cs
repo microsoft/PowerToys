@@ -4,6 +4,8 @@
 
 using System.CommandLine;
 
+using ImageResizer.Properties;
+
 namespace ImageResizer.Cli.Options
 {
     public sealed class FitOption : Option<ImageResizer.Models.ResizeFit?>
@@ -11,7 +13,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--fit", "-f"];
 
         public FitOption()
-            : base(_aliases, Properties.Resources.CLI_Option_Fit)
+            : base(_aliases, ResourceLoaderInstance.ResourceLoader.GetString("CLI_Option_Fit"))
         {
         }
     }

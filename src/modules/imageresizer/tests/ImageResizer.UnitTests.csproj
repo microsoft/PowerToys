@@ -11,8 +11,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ImageResizer</RootNamespace>
     <AssemblyName>ImageResizer.Test</AssemblyName>
-    
+
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\$(AssemblyName)\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -55,8 +56,7 @@
     <PackageReference Include="MSTest" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="System.CodeDom">
-      <!-- This package is a dependency of System.Management, but we need to set it here so we can exclude the assets, so it doesn't conflict with the 8.0.1 dll coming from .NET SDK. -->
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
+      <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
 </Project>

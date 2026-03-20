@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Windows.Media.Imaging;
+using Windows.Graphics.Imaging;
 
 namespace ImageResizer.Services
 {
@@ -14,14 +14,13 @@ namespace ImageResizer.Services
         {
         }
 
-        public BitmapSource ApplySuperResolution(BitmapSource source, int scale, string filePath)
+        public SoftwareBitmap ApplySuperResolution(SoftwareBitmap source, int scale, string filePath)
         {
             return source;
         }
 
         public void Dispose()
         {
-            // No resources to dispose in no-op implementation
         }
     }
 }

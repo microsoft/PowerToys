@@ -4,6 +4,8 @@
 
 using System.CommandLine;
 
+using ImageResizer.Properties;
+
 namespace ImageResizer.Cli.Options
 {
     public sealed class FileNameOption : Option<string>
@@ -11,7 +13,7 @@ namespace ImageResizer.Cli.Options
         private static readonly string[] _aliases = ["--filename", "-n"];
 
         public FileNameOption()
-            : base(_aliases, Properties.Resources.CLI_Option_FileName)
+            : base(_aliases, ResourceLoaderInstance.ResourceLoader.GetString("CLI_Option_FileName"))
         {
         }
     }

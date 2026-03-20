@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0073
+#pragma warning disable IDE0073
 // Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
@@ -10,14 +10,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-
-using ImageResizer.Helpers;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using ImageResizer.Models;
 using ImageResizer.Views;
 
 namespace ImageResizer.ViewModels
 {
-    public class ProgressViewModel : Observable, IDisposable
+    public class ProgressViewModel : ObservableObject, IDisposable
     {
         private readonly MainViewModel _mainViewModel;
         private readonly ResizeBatch _batch;
@@ -38,20 +38,20 @@ namespace ImageResizer.ViewModels
             _mainViewModel = mainViewModel;
             _mainView = mainView;
 
-            StartCommand = new RelayCommand(Start);
-            StopCommand = new RelayCommand(Stop);
+            StartCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(Start);
+            StopCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(Stop);
         }
 
         public double Progress
         {
             get => _progress;
-            set => Set(ref _progress, value);
+            set => SetProperty(ref _progress, value);
         }
 
         public TimeSpan TimeRemaining
         {
             get => _timeRemaining;
-            set => Set(ref _timeRemaining, value);
+            set => SetProperty(ref _timeRemaining, value);
         }
 
         public ICommand StartCommand { get; }
@@ -80,7 +80,7 @@ namespace ImageResizer.ViewModels
             if (errors.Any())
             {
                 _mainViewModel.Progress = 0;
-                _mainViewModel.CurrentPage = new ResultsViewModel(_mainView, errors);
+                _mainViewModel.CurrentPage = new ResultsPage { DataContext = new ResultsViewModel(_mainView, errors) };
             }
             else
             {
@@ -109,7 +109,6 @@ namespace ImageResizer.ViewModels
 
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
