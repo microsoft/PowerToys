@@ -50,7 +50,7 @@ public sealed class PersistenceService : IPersistenceService
     }
 
     /// <inheritdoc/>
-    public void Save<T>(T model, string filePath, JsonTypeInfo<T> typeInfo, Action<JsonObject>? postProcessMerge = null)
+    public void Save<T>(T model, string filePath, JsonTypeInfo<T> typeInfo)
     {
         try
         {
@@ -62,30 +62,13 @@ public sealed class PersistenceService : IPersistenceService
                 return;
             }
 
-            // Read existing file content for merge
-            var oldContent = File.Exists(filePath) ? File.ReadAllText(filePath) : "{}";
-
-            if (JsonNode.Parse(oldContent) is not JsonObject savedSettings)
-            {
-                savedSettings = new JsonObject();
-            }
-
-            // Shallow merge: new values win, unknown keys preserved
-            foreach (var item in newSettings)
-            {
-                savedSettings[item.Key] = item.Value?.DeepClone();
-            }
-
-            // Let callers remove deprecated keys or apply fixups
-            postProcessMerge?.Invoke(savedSettings);
-
             var directory = Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            var serialized = savedSettings.ToJsonString(typeInfo.Options);
+            var serialized = newSettings.ToJsonString(typeInfo.Options);
             File.WriteAllText(filePath, serialized);
         }
         catch (Exception ex)

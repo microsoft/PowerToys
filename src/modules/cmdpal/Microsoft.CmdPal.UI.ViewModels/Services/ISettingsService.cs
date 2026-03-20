@@ -23,11 +23,6 @@ public interface ISettingsService
     void Save(bool hotReload = true);
 
     /// <summary>
-    /// Reloads settings from disk, replacing the current instance.
-    /// </summary>
-    void Reload();
-
-    /// <summary>
     /// Raised after settings are saved with <paramref name="hotReload"/> enabled, or after <see cref="Reload"/>.
     /// </summary>
     event TypedEventHandler<ISettingsService, SettingsModel> SettingsChanged;

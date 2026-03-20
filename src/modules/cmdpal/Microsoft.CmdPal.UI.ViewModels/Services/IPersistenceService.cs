@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Services;
@@ -26,9 +25,5 @@ public interface IPersistenceService
     /// <param name="model">The model to persist.</param>
     /// <param name="filePath">Target JSON file path.</param>
     /// <param name="typeInfo">AOT-compatible type metadata.</param>
-    /// <param name="postProcessMerge">
-    /// Optional callback invoked on the merged <see cref="JsonObject"/> before writing,
-    /// allowing callers to remove deprecated keys or apply fixups.
-    /// </param>
-    void Save<T>(T model, string filePath, JsonTypeInfo<T> typeInfo, Action<JsonObject>? postProcessMerge = null);
+    void Save<T>(T model, string filePath, JsonTypeInfo<T> typeInfo);
 }

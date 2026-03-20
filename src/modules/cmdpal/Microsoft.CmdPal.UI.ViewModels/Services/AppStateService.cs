@@ -41,7 +41,6 @@ public sealed class AppStateService : IAppStateService
     private string StateJsonPath()
     {
         var directory = _appInfoService.ConfigDirectory;
-        Directory.CreateDirectory(directory);
         return Path.Combine(directory, "state.json");
     }
 }

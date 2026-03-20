@@ -45,8 +45,7 @@ public sealed class SettingsService : ISettingsService
         _persistence.Save(
             Settings,
             _filePath,
-            JsonSerializationContext.Default.SettingsModel,
-            merged => merged.Remove(DeprecatedHotkeyGoesHomeKey));
+            JsonSerializationContext.Default.SettingsModel);
 
         if (hotReload)
         {
@@ -54,18 +53,9 @@ public sealed class SettingsService : ISettingsService
         }
     }
 
-    /// <inheritdoc/>
-    public void Reload()
-    {
-        Settings = _persistence.Load(_filePath, JsonSerializationContext.Default.SettingsModel);
-        ApplyMigrations();
-        SettingsChanged?.Invoke(this, Settings);
-    }
-
     private string SettingsJsonPath()
     {
         var directory = _appInfoService.ConfigDirectory;
-        Directory.CreateDirectory(directory);
         return Path.Combine(directory, "settings.json");
     }
 

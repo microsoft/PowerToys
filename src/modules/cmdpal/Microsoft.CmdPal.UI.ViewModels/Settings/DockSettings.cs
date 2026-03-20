@@ -28,7 +28,7 @@ public class DockSettings
 
     public ColorizationMode ColorizationMode { get; set; }
 
-    public Color CustomThemeColor { get; set; } = new() { A = 0, R = 255, G = 255, B = 255 }; // Transparent — avoids WinUI3 COM dependency on Colors.Transparent
+    public Color CustomThemeColor { get; set; } = new() { A = 0, R = 255, G = 255, B = 255 }; // Transparent — avoids WinUI3 COM dependency on Colors.Transparent and COM in class init
 
     public int CustomThemeColorIntensity { get; set; } = 100;
 

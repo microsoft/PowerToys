@@ -4,7 +4,6 @@
 
 using System;
 using System.IO;
-using System.Text.Json.Nodes;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -100,8 +99,7 @@ public class SettingsServiceTests
             p => p.Save(
                 service.Settings,
                 It.IsAny<string>(),
-                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>(),
-                It.IsAny<Action<JsonObject>?>()),
+                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()),
             Times.Once);
     }
 
@@ -157,60 +155,6 @@ public class SettingsServiceTests
 
         // Assert
         Assert.IsTrue(eventRaised);
-    }
-
-    [TestMethod]
-    public void Reload_LoadsFreshSettings()
-    {
-        // Arrange
-        var loadCallCount = 0;
-        _mockPersistence
-            .Setup(p => p.Load(
-                It.IsAny<string>(),
-                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()))
-            .Returns(() =>
-            {
-                loadCallCount++;
-                var settings = CreateMinimalSettingsModel();
-                settings.ShowAppDetails = loadCallCount == 1 ? false : true;
-                return settings;
-            });
-
-        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
-        Assert.IsFalse(service.Settings.ShowAppDetails); // Initial load
-
-        // Act
-        service.Reload();
-
-        // Assert
-        Assert.IsTrue(service.Settings.ShowAppDetails); // Reloaded
-        _mockPersistence.Verify(
-            p => p.Load(
-                It.IsAny<string>(),
-                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()),
-            Times.Exactly(2)); // Constructor + Reload
-    }
-
-    [TestMethod]
-    public void Reload_RaisesSettingsChangedEvent()
-    {
-        // Arrange
-        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
-        var eventRaised = false;
-        SettingsModel? receivedSettings = null;
-
-        service.SettingsChanged += (sender, settings) =>
-        {
-            eventRaised = true;
-            receivedSettings = settings;
-        };
-
-        // Act
-        service.Reload();
-
-        // Assert
-        Assert.IsTrue(eventRaised);
-        Assert.AreSame(service.Settings, receivedSettings);
     }
 
     [TestMethod]

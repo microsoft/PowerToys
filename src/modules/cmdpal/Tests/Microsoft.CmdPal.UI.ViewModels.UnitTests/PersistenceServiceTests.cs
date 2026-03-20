@@ -5,9 +5,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -112,81 +110,6 @@ public partial class PersistenceServiceTests
         var content = File.ReadAllText(_testFilePath);
         Assert.IsTrue(content.Contains("NewFile"));
         Assert.IsTrue(content.Contains("123"));
-    }
-
-    [TestMethod]
-    public void Save_ShallowMerges_PreservingUnknownKeys()
-    {
-        // Arrange
-        // Write initial file with an extra unknown key
-        var initialJson = """
-        {
-            "Name": "OldName",
-            "Value": 999,
-            "UnknownKey": "ShouldBePreserved"
-        }
-        """;
-        File.WriteAllText(_testFilePath, initialJson);
-
-        var updatedModel = new TestModel { Name = "NewName", Value = 777 };
-
-        // Act
-        _service.Save(updatedModel, _testFilePath, TestJsonContext.Default.TestModel);
-
-        // Assert
-        var savedContent = File.ReadAllText(_testFilePath);
-        var savedObject = JsonNode.Parse(savedContent) as JsonObject;
-        Assert.IsNotNull(savedObject);
-        Assert.AreEqual("NewName", savedObject["Name"]?.GetValue<string>());
-        Assert.AreEqual(777, savedObject["Value"]?.GetValue<int>());
-        Assert.AreEqual("ShouldBePreserved", savedObject["UnknownKey"]?.GetValue<string>());
-    }
-
-    [TestMethod]
-    public void Save_OverwritesExistingKeys_WithNewValues()
-    {
-        // Arrange
-        var initialModel = new TestModel { Name = "Initial", Value = 100 };
-        _service.Save(initialModel, _testFilePath, TestJsonContext.Default.TestModel);
-
-        var updatedModel = new TestModel { Name = "Updated", Value = 200 };
-
-        // Act
-        _service.Save(updatedModel, _testFilePath, TestJsonContext.Default.TestModel);
-
-        // Assert
-        var result = _service.Load(_testFilePath, TestJsonContext.Default.TestModel);
-        Assert.AreEqual("Updated", result.Name);
-        Assert.AreEqual(200, result.Value);
-    }
-
-    [TestMethod]
-    public void Save_InvokesPostProcessMerge_WhenProvided()
-    {
-        // Arrange
-        var model = new TestModel { Name = "Test", Value = 42 };
-        var postProcessCalled = false;
-        JsonObject? capturedMerged = null;
-
-        void PostProcess(JsonObject merged)
-        {
-            postProcessCalled = true;
-            capturedMerged = merged;
-            merged.Remove("Name"); // Remove a key in postProcess
-        }
-
-        // Act
-        _service.Save(model, _testFilePath, TestJsonContext.Default.TestModel, PostProcess);
-
-        // Assert
-        Assert.IsTrue(postProcessCalled);
-        Assert.IsNotNull(capturedMerged);
-
-        var savedContent = File.ReadAllText(_testFilePath);
-        var savedObject = JsonNode.Parse(savedContent) as JsonObject;
-        Assert.IsNotNull(savedObject);
-        Assert.IsFalse(savedObject.ContainsKey("Name")); // Should be removed by postProcess
-        Assert.AreEqual(42, savedObject["Value"]?.GetValue<int>());
     }
 
     [TestMethod]

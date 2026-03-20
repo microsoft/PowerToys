@@ -96,8 +96,7 @@ public class AppStateServiceTests
             p => p.Save(
                 service.State,
                 It.IsAny<string>(),
-                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<AppStateModel>>(),
-                null),
+                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<AppStateModel>>()),
             Times.Once);
     }
 
