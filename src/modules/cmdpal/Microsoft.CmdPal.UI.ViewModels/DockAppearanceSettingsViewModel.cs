@@ -23,12 +23,17 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 /// </summary>
 public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, IDisposable
 {
-    private readonly SettingsModel _settings;
-    private readonly DockSettings _dockSettings;
+    private readonly ISettingsService _settingsService;
     private readonly UISettings _uiSettings;
     private readonly IThemeService _themeService;
     private readonly DispatcherQueueTimer _saveTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
     private readonly DispatcherQueue _uiDispatcher = DispatcherQueue.GetForCurrentThread();
+
+#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
+    private SettingsModel _settings => _settingsService.Settings;
+
+    private DockSettings _dockSettings => _settings.DockSettings;
+#pragma warning restore SA1300
 
     private ElementTheme? _elementThemeOverride;
     private Color _currentSystemAccentColor;
@@ -268,12 +273,11 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
             ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
             : null;
 
-    public DockAppearanceSettingsViewModel(IThemeService themeService, SettingsModel settings)
+    public DockAppearanceSettingsViewModel(IThemeService themeService, ISettingsService settingsService)
     {
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
-        _settings = settings;
-        _dockSettings = settings.DockSettings;
+        _settingsService = settingsService;
 
         _uiSettings = new UISettings();
         _uiSettings.ColorValuesChanged += UiSettingsOnColorValuesChanged;
@@ -302,7 +306,7 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
 
     private void Save()
     {
-        SettingsModel.SaveSettings(_settings);
+        _settingsService.Save();
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 

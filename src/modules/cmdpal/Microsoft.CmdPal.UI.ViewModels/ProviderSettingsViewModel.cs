@@ -22,19 +22,23 @@ public partial class ProviderSettingsViewModel : ObservableObject
 
     private readonly CommandProviderWrapper _provider;
     private readonly ProviderSettings _providerSettings;
-    private readonly SettingsModel _settings;
+    private readonly Services.ISettingsService _settingsService;
     private readonly Lock _initializeSettingsLock = new();
+
+#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
+    private SettingsModel _settings => _settingsService.Settings;
+#pragma warning restore SA1300
 
     private Task? _initializeSettingsTask;
 
     public ProviderSettingsViewModel(
         CommandProviderWrapper provider,
         ProviderSettings providerSettings,
-        SettingsModel settings)
+        Services.ISettingsService settingsService)
     {
         _provider = provider;
         _providerSettings = providerSettings;
-        _settings = settings;
+        _settingsService = settingsService;
 
         LoadingSettings = _provider.Settings?.HasSettings ?? false;
 
@@ -179,18 +183,18 @@ public partial class ProviderSettingsViewModel : ObservableObject
         {
             if (_providerSettings.FallbackCommands.TryGetValue(fallbackItem.Id, out var fallbackSettings))
             {
-                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, fallbackSettings, _settings, this));
+                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, fallbackSettings, this, _settingsService));
             }
             else
             {
-                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, new(), _settings, this));
+                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, new(), this, _settingsService));
             }
         }
 
         FallbackCommands = fallbackViewModels;
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.Save();
 
     private void InitializeSettingsPage()
     {

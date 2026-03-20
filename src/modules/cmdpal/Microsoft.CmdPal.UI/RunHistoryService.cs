@@ -4,16 +4,21 @@
 
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 
 namespace Microsoft.CmdPal.UI;
 
 internal sealed class RunHistoryService : IRunHistoryService
 {
-    private readonly AppStateModel _appStateModel;
+    private readonly IAppStateService _appStateService;
 
-    public RunHistoryService(AppStateModel appStateModel)
+#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
+    private AppStateModel _appStateModel => _appStateService.State;
+#pragma warning restore SA1300
+
+    public RunHistoryService(IAppStateService appStateService)
     {
-        _appStateModel = appStateModel;
+        _appStateService = appStateService;
     }
 
     public IReadOnlyList<string> GetRunHistory()
@@ -45,6 +50,6 @@ internal sealed class RunHistoryService : IRunHistoryService
         // Add the item to the front of the history
         _appStateModel.RunHistory.Insert(0, item);
 
-        AppStateModel.SaveState(_appStateModel);
+        _appStateService.Save();
     }
 }

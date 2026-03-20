@@ -183,11 +183,10 @@ public partial class App : Application, IDisposable
 
     private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
     {
-        // Models
-        var sm = SettingsModel.LoadSettings();
-        services.AddSingleton(sm);
-        var state = AppStateModel.LoadState();
-        services.AddSingleton(state);
+        // Models & persistence services
+        services.AddSingleton<IPersistenceService, PersistenceService>();
+        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<IAppStateService, AppStateService>();
 
         // Services
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();

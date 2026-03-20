@@ -21,11 +21,15 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem
 {
-    private readonly SettingsModel _settings;
+    private readonly Services.ISettingsService _settingsService;
     private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
     private readonly IContextMenuFactory _contextMenuFactory;
+
+#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
+    private SettingsModel _settings => _settingsService.Settings;
+#pragma warning restore SA1300
 
     public ICommandProviderContext ProviderContext { get; private set; }
 
@@ -208,14 +212,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         TopLevelType topLevelType,
         CommandPaletteHost extensionHost,
         ICommandProviderContext commandProviderContext,
-        SettingsModel settings,
         ProviderSettings providerSettings,
         IServiceProvider serviceProvider,
         ICommandItem? commandItem,
         IContextMenuFactory? contextMenuFactory)
     {
         _serviceProvider = serviceProvider;
-        _settings = settings;
+        _settingsService = serviceProvider.GetRequiredService<Services.ISettingsService>();
         _providerSettings = providerSettings;
         ProviderContext = commandProviderContext;
         _commandItemViewModel = item;
@@ -313,7 +316,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         }
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.Save();
 
     private void HandleChangeAlias()
     {

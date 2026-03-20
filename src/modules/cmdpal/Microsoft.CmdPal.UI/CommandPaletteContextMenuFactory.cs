@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -15,12 +16,16 @@ namespace Microsoft.CmdPal.UI;
 
 internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFactory
 {
-    private readonly SettingsModel _settingsModel;
+    private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
 
-    public CommandPaletteContextMenuFactory(SettingsModel settingsModel, TopLevelCommandManager topLevelCommandManager)
+#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
+    private SettingsModel _settingsModel => _settingsService.Settings;
+#pragma warning restore SA1300
+
+    public CommandPaletteContextMenuFactory(ISettingsService settingsService, TopLevelCommandManager topLevelCommandManager)
     {
-        _settingsModel = settingsModel;
+        _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
     }
 
@@ -82,7 +87,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                         providerId: providerId,
                         pin: !alreadyPinnedToTopLevel,
                         PinLocation.TopLevel,
-                        _settingsModel,
+                        _settingsService,
                         _topLevelCommandManager);
 
                     var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
@@ -142,7 +147,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                        providerId: providerId,
                        pin: !isPinnedSubCommand,
                        PinLocation.TopLevel,
-                       _settingsModel,
+                       _settingsService,
                        _topLevelCommandManager);
 
                 var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
@@ -183,7 +188,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             providerId: providerId,
             pin: !alreadyPinned,
             PinLocation.Dock,
-            _settingsModel,
+            _settingsService,
             _topLevelCommandManager);
 
         var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
@@ -231,10 +236,14 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     {
         private readonly string _commandId;
         private readonly string _providerId;
-        private readonly SettingsModel _settings;
+        private readonly ISettingsService _settingsService;
         private readonly TopLevelCommandManager _topLevelCommandManager;
         private readonly bool _pin;
         private readonly PinLocation _pinLocation;
+
+#pragma warning disable SA1300
+        private SettingsModel _settings => _settingsService.Settings;
+#pragma warning restore SA1300
 
         private bool IsPinToDock => _pinLocation == PinLocation.Dock;
 
@@ -251,13 +260,13 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             string providerId,
             bool pin,
             PinLocation pinLocation,
-            SettingsModel settings,
+            ISettingsService settingsService,
             TopLevelCommandManager topLevelCommandManager)
         {
             _commandId = commandId;
             _providerId = providerId;
             _pinLocation = pinLocation;
-            _settings = settings;
+            _settingsService = settingsService;
             _topLevelCommandManager = topLevelCommandManager;
             _pin = pin;
         }

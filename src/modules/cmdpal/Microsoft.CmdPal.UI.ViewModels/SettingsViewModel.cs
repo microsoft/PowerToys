@@ -27,8 +27,12 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         TimeSpan.FromSeconds(180),
     ];
 
-    private readonly SettingsModel _settings;
+    private readonly Services.ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+
+#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
+    private SettingsModel _settings => _settingsService.Settings;
+#pragma warning restore SA1300
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -245,13 +249,13 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public SettingsExtensionsViewModel Extensions { get; }
 
-    public SettingsViewModel(SettingsModel settings, TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService)
+    public SettingsViewModel(TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService, Services.ISettingsService settingsService)
     {
-        _settings = settings;
+        _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
 
-        Appearance = new AppearanceSettingsViewModel(themeService, _settings);
-        DockAppearance = new DockAppearanceSettingsViewModel(themeService, _settings);
+        Appearance = new AppearanceSettingsViewModel(themeService, settingsService);
+        DockAppearance = new DockAppearanceSettingsViewModel(themeService, settingsService);
 
         var activeProviders = GetCommandProviders();
         var allProviderSettings = _settings.ProviderSettings;
@@ -262,9 +266,9 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
         foreach (var item in activeProviders)
         {
-            var providerSettings = settings.GetProviderSettings(item);
+            var providerSettings = _settings.GetProviderSettings(item);
 
-            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _settings);
+            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, settingsService);
             CommandProviders.Add(settingsModel);
 
             fallbacks.AddRange(settingsModel.FallbackCommands);
@@ -311,5 +315,5 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.Save();
 }

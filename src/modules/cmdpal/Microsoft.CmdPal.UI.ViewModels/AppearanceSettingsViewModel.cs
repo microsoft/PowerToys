@@ -87,7 +87,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         Color.FromArgb(255, 126, 115, 95), // #7e735f
     ];
 
-    private readonly SettingsModel _settings;
+    private readonly ISettingsService _settingsService;
+
+#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
+    private SettingsModel _settings => _settingsService.Settings;
+#pragma warning restore SA1300
+
     private readonly UISettings _uiSettings;
     private readonly IThemeService _themeService;
     private readonly DispatcherQueueTimer _saveTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -436,11 +441,11 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
                 ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
                 : null;
 
-    public AppearanceSettingsViewModel(IThemeService themeService, SettingsModel settings)
+    public AppearanceSettingsViewModel(IThemeService themeService, ISettingsService settingsService)
     {
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
-        _settings = settings;
+        _settingsService = settingsService;
 
         _uiSettings = new UISettings();
         _uiSettings.ColorValuesChanged += UiSettingsOnColorValuesChanged;
@@ -469,7 +474,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     private void Save()
     {
-        SettingsModel.SaveSettings(_settings);
+        _settingsService.Save();
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 

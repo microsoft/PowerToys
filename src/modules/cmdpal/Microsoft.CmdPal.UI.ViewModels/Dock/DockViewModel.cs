@@ -15,9 +15,13 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 public sealed partial class DockViewModel
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
-    private readonly SettingsModel _settingsModel;
+    private readonly Services.ISettingsService _settingsService;
     private readonly DockPageContext _pageContext; // only to be used for our own context menu - not for dock bands themselves
     private readonly IContextMenuFactory _contextMenuFactory;
+
+#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
+    private SettingsModel _settingsModel => _settingsService.Settings;
+#pragma warning restore SA1300
 
     private DockSettings _settings;
 
@@ -34,13 +38,13 @@ public sealed partial class DockViewModel
     public DockViewModel(
         TopLevelCommandManager tlcManager,
         IContextMenuFactory contextMenuFactory,
-        SettingsModel settings,
-        TaskScheduler scheduler)
+        TaskScheduler scheduler,
+        Services.ISettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
         _contextMenuFactory = contextMenuFactory;
-        _settingsModel = settings;
-        _settings = settings.DockSettings;
+        _settingsService = settingsService;
+        _settings = _settingsModel.DockSettings;
         Scheduler = scheduler;
         _pageContext = new(this);
 
@@ -148,7 +152,7 @@ public sealed partial class DockViewModel
 
     private void SaveSettings()
     {
-        SettingsModel.SaveSettings(_settingsModel);
+        _settingsService.Save();
     }
 
     public DockBandViewModel? FindBandByTopLevel(TopLevelViewModel tlc)
@@ -301,7 +305,7 @@ public sealed partial class DockViewModel
         _snapshotCenterBands = null;
         _snapshotEndBands = null;
         _snapshotBandViewModels = null;
-        SettingsModel.SaveSettings(_settingsModel);
+        _settingsService.Save();
         Logger.LogDebug("Saved band order to settings");
     }
 

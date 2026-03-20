@@ -27,7 +27,12 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
     private static readonly TimeSpan ReloadDebounceInterval = TimeSpan.FromMilliseconds(500);
 
     private readonly UISettings _uiSettings;
-    private readonly SettingsModel _settings;
+    private readonly ISettingsService _settingsService;
+
+#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
+    private SettingsModel _settings => _settingsService.Settings;
+#pragma warning restore SA1300
+
     private readonly ResourceSwapper _resourceSwapper;
     private readonly NormalThemeProvider _normalThemeProvider;
     private readonly ColorfulThemeProvider _colorfulThemeProvider;
@@ -241,13 +246,12 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         }
     }
 
-    public ThemeService(SettingsModel settings, ResourceSwapper resourceSwapper)
+    public ThemeService(ResourceSwapper resourceSwapper, ISettingsService settingsService)
     {
-        ArgumentNullException.ThrowIfNull(settings);
         ArgumentNullException.ThrowIfNull(resourceSwapper);
 
-        _settings = settings;
-        _settings.SettingsChanged += SettingsOnSettingsChanged;
+        _settingsService = settingsService;
+        _settingsService.SettingsChanged += SettingsOnSettingsChanged;
 
         _resourceSwapper = resourceSwapper;
 
@@ -319,7 +323,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         };
     }
 
-    private void SettingsOnSettingsChanged(SettingsModel sender, object? args)
+    private void SettingsOnSettingsChanged(ISettingsService sender, SettingsModel args)
     {
         RequestReload();
     }
@@ -339,7 +343,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         _disposed = true;
         _dispatcherQueueTimer?.Stop();
         _uiSettings.ColorValuesChanged -= UiSettings_ColorValuesChanged;
-        _settings.SettingsChanged -= SettingsOnSettingsChanged;
+        _settingsService.SettingsChanged -= SettingsOnSettingsChanged;
     }
 
     private sealed class InternalThemeState

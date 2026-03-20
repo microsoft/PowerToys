@@ -12,10 +12,14 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 public partial class DockBandSettingsViewModel : ObservableObject
 {
     private static readonly CompositeFormat PluralItemsFormatString = CompositeFormat.Parse(Properties.Resources.dock_item_count_plural);
-    private readonly SettingsModel _settingsModel;
+    private readonly Services.ISettingsService _settingsService;
     private readonly DockBandSettings _dockSettingsModel;
     private readonly TopLevelViewModel _adapter;
     private readonly DockBandViewModel? _bandViewModel;
+
+#pragma warning disable SA1300 // Intentionally field-like: convenience accessor replacing removed field
+    private SettingsModel _settingsModel => _settingsService.Settings;
+#pragma warning restore SA1300
 
     public string Title => _adapter.Title;
 
@@ -128,12 +132,12 @@ public partial class DockBandSettingsViewModel : ObservableObject
         DockBandSettings dockSettingsModel,
         TopLevelViewModel topLevelAdapter,
         DockBandViewModel? bandViewModel,
-        SettingsModel settingsModel)
+        Services.ISettingsService settingsService)
     {
         _dockSettingsModel = dockSettingsModel;
         _adapter = topLevelAdapter;
         _bandViewModel = bandViewModel;
-        _settingsModel = settingsModel;
+        _settingsService = settingsService;
         _pinSide = FetchPinSide();
         _showLabels = FetchShowLabels();
     }
@@ -175,7 +179,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
 
     private void Save()
     {
-        SettingsModel.SaveSettings(_settingsModel);
+        _settingsService.Save();
     }
 
     private void UpdatePinSide(DockPinSide value)
