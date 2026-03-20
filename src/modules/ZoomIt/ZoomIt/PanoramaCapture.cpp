@@ -4064,7 +4064,7 @@ skipTileMasking:
         }
 
         const int minPairsRequired = 4;
-        const int minHitPercent = 70;
+        const int minHitPercent = 50;
         int fixMinX = frameWidth, fixMaxX = 0, fixMinY = frameHeight, fixMaxY = 0;
         int fixedCount = 0;
         for( int hy = 0; hy < halfH; ++hy )
