@@ -3675,6 +3675,15 @@ static FixedOverlayMask BuildFixedOverlayMask( const std::vector<size_t>& compos
                     if( sameDiff == INT_MAX || shiftedDiff == INT_MAX )
                         continue;
 
+                    // Gate on edge energy.  Bypass the gate when the tile is
+                    // near-perfectly stationary (sameDiff <= 4) with clear
+                    // scroll evidence (shiftedDiff >= 24) — such tiles
+                    // contain a genuine fixed element even on low-contrast
+                    // dark pages where edge energy is minimal.
+                    const bool lowEnergyBypass = ( sameDiff <= 4 && shiftedDiff >= 24 );
+                    if( informativeEnergy < informativeEnergyThreshold && !lowEnergyBypass )
+                        continue;
+
                     const size_t tileIndex = static_cast<size_t>( tileY ) * static_cast<size_t>( mask.tileCols ) + static_cast<size_t>( tileX );
                     supportCount[tileIndex]++;
                     if( diagnostics != nullptr )
@@ -3989,161 +3998,117 @@ skipTileMasking:
             }
         }
 
-        // Build a pixel-level erase rect for floating overlays (e.g.
-        // spinner icon) above the strip.  Try tile-detected tiles first;
-        // if none, fall back to pixel-level scanning for fixed bright
-        // clusters using pairs of nearby frames.
-        // Only count strong (connected) tile detections well above the
-        // strip as evidence of a separate floating overlay.  Tiles adjacent
-        // to the strip are part of the strip itself (the strip detector may
-        // underestimate its height, leaving edge tiles as "connected").
-        const int firstMaskedTileY = mask.FirstMaskedY() >= 0
-            ? mask.FirstMaskedY() / mask.tileHeight : stripStartTileY;
-        const int floatingCutoffTileY = min( stripStartTileY, firstMaskedTileY ) - 2;
-        int aboveSumX = 0, aboveSumY = 0, aboveCount = 0;
-        int fixMinX = frameWidth, fixMaxX = 0, fixMinY = frameHeight, fixMaxY = 0;
-        for( int tileY = 0; tileY < max( 0, floatingCutoffTileY ); ++tileY )
-        {
-            const size_t rowBase = static_cast<size_t>( tileY ) * static_cast<size_t>( mask.tileCols );
-            for( int tileX = 0; tileX < mask.tileCols; ++tileX )
-            {
-                if( connectedTiles[rowBase + static_cast<size_t>( tileX )] != 0 )
-                {
-                    const int tpx = tileX * mask.tileWidth;
-                    const int tpy = tileY * mask.tileHeight;
-                    aboveSumX += tpx + mask.tileWidth / 2;
-                    aboveSumY += tpy + mask.tileHeight / 2;
-                    fixMinX = min( fixMinX, tpx );
-                    fixMaxX = max( fixMaxX, tpx + mask.tileWidth - 1 );
-                    fixMinY = min( fixMinY, tpy );
-                    fixMaxY = max( fixMaxY, tpy + mask.tileHeight - 1 );
-                    ++aboveCount;
-                }
-            }
-        }
-
-        // Pixel-level fallback: scan for fixed overlay pixels above the
-        // strip by comparing far-apart frames.  Page content scrolls away
-        // between distant frames, so only fixed overlay pixels match.
-        if( aboveCount == 0 && composedFrameIndices.size() >= 4 )
-        {
-            // Scan up to the first fully-masked row, not just the first
-            // partially-masked row.  Small overlays (chevron) often sit in
-            // the transition zone where some tiles are masked (strip) and
-            // others still show page content.
-            int firstFullMaskedY = frameHeight;
-            for( int ty = 0; ty < mask.tileRows; ++ty )
-            {
-                if( mask.IsFullWidthMaskedRow( ty * mask.tileHeight ) )
-                {
-                    firstFullMaskedY = ty * mask.tileHeight;
-                    break;
-                }
-            }
-            const int scanBot = ( firstFullMaskedY < frameHeight )
-                ? firstFullMaskedY
-                : max( 0, frameHeight - fixedBottomRows );
-            const int scanTop = max( 0, scanBot - frameHeight / 4 );
-            const int bgThresh = 12;
-            const int matchThresh = 14;
-            const size_t pixelCount = static_cast<size_t>( frameWidth ) * static_cast<size_t>( frameHeight ) * 4;
-
-            // Pick 4-5 frames spread across the composed set for maximum
-            // scroll separation.  Only truly fixed pixels will match all.
-            std::vector<const std::vector<BYTE>*> spread;
-            const size_t n = composedFrameIndices.size();
-            for( size_t si : { size_t(0), n / 4, n / 2, n * 3 / 4, n - 1 } )
-            {
-                if( si < n )
-                {
-                    const auto& fp = framePixels[composedFrameIndices[si]];
-                    if( !fp.empty() && fp.size() == pixelCount )
-                        spread.push_back( &fp );
-                }
-            }
-
-            if( spread.size() >= 3 )
-            {
-                const auto& ref = *spread[0];
-
-                // Sample background from frame edges.
-                int bgR = 0, bgG = 0, bgB = 0, bgN = 0;
-                for( int y = scanTop; y < scanBot; y += 8 )
-                {
-                    for( int sx : { 0, frameWidth - 1 } )
-                    {
-                        const size_t idx = ( static_cast<size_t>( y ) * frameWidth + sx ) * 4;
-                        bgB += ref[idx + 0]; bgG += ref[idx + 1]; bgR += ref[idx + 2]; ++bgN;
-                    }
-                }
-                if( bgN > 0 ) { bgR /= bgN; bgG /= bgN; bgB /= bgN; }
-
-                int fixedCount = 0;
-                for( int y = scanTop; y < scanBot; y += 2 )
-                {
-                    for( int x = 0; x < frameWidth; x += 2 )
-                    {
-                        const size_t idx = ( static_cast<size_t>( y ) * frameWidth + x ) * 4;
-
-                        // Must differ from background.
-                        const int drBg = max( abs( static_cast<int>( ref[idx + 2] ) - bgR ),
-                                              max( abs( static_cast<int>( ref[idx + 1] ) - bgG ),
-                                                   abs( static_cast<int>( ref[idx + 0] ) - bgB ) ) );
-                        if( drBg <= bgThresh )
-                            continue;
-
-                        // Must match ALL far-apart frames.
-                        bool allMatch = true;
-                        for( size_t fi = 1; fi < spread.size() && allMatch; ++fi )
-                        {
-                            const auto& fp = *spread[fi];
-                            const int d = max( abs( static_cast<int>( ref[idx+0] ) - static_cast<int>( fp[idx+0] ) ),
-                                               max( abs( static_cast<int>( ref[idx+1] ) - static_cast<int>( fp[idx+1] ) ),
-                                                    abs( static_cast<int>( ref[idx+2] ) - static_cast<int>( fp[idx+2] ) ) ) );
-                            if( d > matchThresh )
-                                allMatch = false;
-                        }
-                        if( allMatch )
-                        {
-                            fixMinX = min( fixMinX, x );
-                            fixMaxX = max( fixMaxX, x );
-                            fixMinY = min( fixMinY, y );
-                            fixMaxY = max( fixMaxY, y );
-                            ++fixedCount;
-                        }
-                    }
-                }
-
-                if( fixedCount >= 4 )
-                {
-                    aboveSumX = ( fixMinX + fixMaxX ) / 2;
-                    aboveSumY = ( fixMinY + fixMaxY ) / 2;
-                    aboveCount = 1;
-                }
-            }
-        }
-
-        if( aboveCount > 0 )
-        {
-            // Use tight bounds of detected pixels + small margin rather
-            // than a large fixed-size rect.  This avoids replacing valid
-            // page content (text) outside the actual overlay, which would
-            // cause fuzzy/doubled text from slightly-shifted donors.
-            // Top margin is larger because overlay indicators (chevrons)
-            // taper upward — the faintest pixels at the tip fall below the
-            // bgThresh detection threshold but are still visible.
-            const int margin = 6;
-            const int topMargin = 14;
-            mask.eraseRect.left   = max( 0L, static_cast<long>( fixMinX ) - margin );
-            mask.eraseRect.top    = max( 0L, static_cast<long>( fixMinY ) - topMargin );
-            mask.eraseRect.right  = min( static_cast<long>( frameWidth ), static_cast<long>( fixMaxX ) + margin + 2 );
-            mask.eraseRect.bottom = min( static_cast<long>( frameHeight ), static_cast<long>( fixMaxY ) + margin + 2 );
-        }
-
         minTileX = 0;
         minTileY = min( minTileY, stripStartTileY );
         maxTileX = mask.tileCols - 1;
         maxTileY = mask.tileRows - 1;
+    }
+
+    // Detect small floating overlays (e.g. scroll-to-top button, chevron,
+    // spinner) using shift-compensated residual accumulation across
+    // consecutive frame pairs.  For each pair with a known scroll shift,
+    // compare curr[x,y] against prev[x, y+step] — page content matches
+    // after compensation, but a fixed overlay at (x,y) shows residual
+    // because it doesn't scroll.  Pixels with consistent residual across
+    // many pairs are overlay candidates.  Works regardless of overlay
+    // contrast, color, shape, or position.
+    if( mask.eraseRect.right <= mask.eraseRect.left &&
+        composedFrameIndices.size() >= 8 )
+    {
+        const int halfW = ( frameWidth + 1 ) / 2;
+        const int halfH = ( frameHeight + 1 ) / 2;
+        std::vector<int> hitCount( static_cast<size_t>( halfW ) * halfH, 0 );
+        std::vector<int> pairCountMap( static_cast<size_t>( halfW ) * halfH, 0 );
+        const int residualThreshold = 10;
+
+        for( size_t pi = 1; pi < composedFrameIndices.size(); ++pi )
+        {
+            const int stepX = composedFrameSteps[pi].x;
+            const int stepY = composedFrameSteps[pi].y;
+            if( abs( stepX ) < minProgress && abs( stepY ) < minProgress )
+                continue;
+
+            const auto& currPx = framePixels[composedFrameIndices[pi]];
+            const auto& prevPx = framePixels[composedFrameIndices[pi - 1]];
+            if( currPx.empty() || prevPx.empty() )
+                continue;
+
+            for( int hy = 0; hy < halfH; ++hy )
+            {
+                const int y = hy * 2;
+                const int prevY = y + stepY;
+                if( prevY < 0 || prevY >= frameHeight )
+                    continue;
+
+                for( int hx = 0; hx < halfW; ++hx )
+                {
+                    const int x = hx * 2;
+                    const int prevX = x + stepX;
+                    if( prevX < 0 || prevX >= frameWidth )
+                        continue;
+
+                    const size_t ci = ( static_cast<size_t>( y ) * frameWidth + x ) * 4;
+                    const size_t pri = ( static_cast<size_t>( prevY ) * frameWidth + prevX ) * 4;
+                    const int d = max( abs( static_cast<int>( currPx[ci] ) - static_cast<int>( prevPx[pri] ) ),
+                                       max( abs( static_cast<int>( currPx[ci + 1] ) - static_cast<int>( prevPx[pri + 1] ) ),
+                                            abs( static_cast<int>( currPx[ci + 2] ) - static_cast<int>( prevPx[pri + 2] ) ) ) );
+
+                    const size_t idx = static_cast<size_t>( hy ) * halfW + hx;
+                    pairCountMap[idx]++;
+                    if( d > residualThreshold )
+                    {
+                        hitCount[idx]++;
+                    }
+                }
+            }
+        }
+
+        const int minPairsRequired = 4;
+        const int minHitPercent = 70;
+        int fixMinX = frameWidth, fixMaxX = 0, fixMinY = frameHeight, fixMaxY = 0;
+        int fixedCount = 0;
+        for( int hy = 0; hy < halfH; ++hy )
+        {
+            for( int hx = 0; hx < halfW; ++hx )
+            {
+                const size_t idx = static_cast<size_t>( hy ) * halfW + hx;
+                if( pairCountMap[idx] < minPairsRequired )
+                    continue;
+                if( hitCount[idx] * 100 < pairCountMap[idx] * minHitPercent )
+                    continue;
+
+                const int x = hx * 2;
+                const int y = hy * 2;
+                fixMinX = min( fixMinX, x );
+                fixMaxX = max( fixMaxX, x );
+                fixMinY = min( fixMinY, y );
+                fixMaxY = max( fixMaxY, y );
+                ++fixedCount;
+            }
+        }
+
+        if( fixedCount >= 2 )
+        {
+            const int erW = fixMaxX - fixMinX + 1;
+            const int erH = fixMaxY - fixMinY + 1;
+            if( erW <= frameWidth / 2 && erH <= frameHeight / 2 &&
+                static_cast<__int64>( erW ) * erH <= static_cast<__int64>( frameWidth ) * frameHeight / 4 )
+            {
+                const int margin = 6;
+                const int topMargin = 14;
+                mask.eraseRect.left   = max( 0L, static_cast<long>( fixMinX ) - margin );
+                mask.eraseRect.top    = max( 0L, static_cast<long>( fixMinY ) - topMargin );
+                mask.eraseRect.right  = min( static_cast<long>( frameWidth ), static_cast<long>( fixMaxX ) + margin + 2 );
+                mask.eraseRect.bottom = min( static_cast<long>( frameHeight ), static_cast<long>( fixMaxY ) + margin + 2 );
+            }
+        }
+
+        StitchLog( L"[Panorama/Stitch] ResidualOverlay: pairsUsed=%zu fixedPixels=%d bounds=(%d,%d)-(%d,%d) eraseRect=(%d,%d)-(%d,%d)\n",
+                   composedFrameIndices.size() - 1,
+                   fixedCount,
+                   fixMinX, fixMinY, fixMaxX, fixMaxY,
+                   mask.eraseRect.left, mask.eraseRect.top,
+                   mask.eraseRect.right, mask.eraseRect.bottom );
     }
 
     // Fill unmasked holes within the masked bounds.  Small overlay elements
