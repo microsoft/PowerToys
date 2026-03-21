@@ -29,9 +29,9 @@ namespace KeyboardManagerEditorUI.Controls
                 typeof(KeyDropDownButton),
                 new PropertyMetadata(true));
 
-        public static readonly DependencyProperty ShowDisableOptionProperty =
+        public static readonly DependencyProperty UseAccentStyleProperty =
             DependencyProperty.Register(
-                nameof(ShowDisableOption),
+                nameof(UseAccentStyle),
                 typeof(bool),
                 typeof(KeyDropDownButton),
                 new PropertyMetadata(false));
@@ -48,10 +48,10 @@ namespace KeyboardManagerEditorUI.Controls
             set => SetValue(IsShortcutProperty, value);
         }
 
-        public bool ShowDisableOption
+        public bool UseAccentStyle
         {
-            get => (bool)GetValue(ShowDisableOptionProperty);
-            set => SetValue(ShowDisableOptionProperty, value);
+            get => (bool)GetValue(UseAccentStyleProperty);
+            set => SetValue(UseAccentStyleProperty, value);
         }
 
         public event EventHandler<KeyChangedEventArgs>? KeyChanged;
@@ -59,6 +59,13 @@ namespace KeyboardManagerEditorUI.Controls
         public KeyDropDownButton()
         {
             this.InitializeComponent();
+            this.Loaded += (_, _) =>
+            {
+                if (UseAccentStyle)
+                {
+                    KeyButton.Style = (Style)Application.Current.Resources["AccentKeyVisualDropDownButtonStyle"];
+                }
+            };
         }
 
         private void KeyListView_ItemClick(object sender, ItemClickEventArgs e)
@@ -100,12 +107,6 @@ namespace KeyboardManagerEditorUI.Controls
                 {
                     cached = new List<KeyNameEntry>();
                 }
-            }
-
-            if (ShowDisableOption && cached.Count > 0 && cached[0].DisplayName != "Disable")
-            {
-                // VK_DISABLED = 0x100 (256) as used in the old editor
-                cached.Insert(0, new KeyNameEntry(0x100, "Disable"));
             }
 
             return cached;

@@ -78,6 +78,7 @@ namespace KeyboardManagerEditorUI.Controls
             OpenUrl,
             OpenApp,
             MouseClick,
+            Disable,
         }
 
         /// <summary>
@@ -130,6 +131,7 @@ namespace KeyboardManagerEditorUI.Controls
                         "OpenUrl" => ActionType.OpenUrl,
                         "OpenApp" => ActionType.OpenApp,
                         "MouseClick" => ActionType.MouseClick,
+                        "Disable" => ActionType.Disable,
                         _ => ActionType.KeyOrShortcut,
                     };
                 }
@@ -702,6 +704,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.Text => !string.IsNullOrWhiteSpace(TextContentBox?.Text),
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
+                ActionType.Disable => true,
                 _ => false,
             };
         }
@@ -752,7 +755,8 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.Text => 1,
                 ActionType.OpenUrl => 2,
                 ActionType.OpenApp => 3,
-                ActionType.MouseClick => 4,
+                ActionType.Disable => 4,
+                ActionType.MouseClick => 5,
                 _ => 0,
             };
 

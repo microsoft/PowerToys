@@ -208,6 +208,18 @@
   <data name="ActionType_MouseClick_Text.Text" xml:space="preserve">
     <value>Remap to mouse click</value>
   </data>
+  <data name="ActionType_Disable.AutomationProperties.Name" xml:space="preserve">
+    <value>Disable key or shortcut</value>
+  </data>
+  <data name="ActionType_Disable_Text.Text" xml:space="preserve">
+    <value>Disable key or shortcut</value>
+  </data>
+  <data name="DisableDescription.Text" xml:space="preserve">
+    <value>This shortcut will be disabled.</value>
+  </data>
+  <data name="DisabledHeader.Text" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
   <data name="TextContentBox.Header" xml:space="preserve">
     <value>Text to type</value>
   </data>
