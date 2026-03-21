@@ -632,9 +632,12 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     private string SpeedToString(float bytesPerSec)
     {
-        return _settingsManager.UseNetworkSpeedInBytesPerSec
-            ? FormatAsBytesPerSecString(bytesPerSec)
-            : FormatAsBitsPerSecString(bytesPerSec);
+        return _settingsManager.NetworkSpeedUnit switch
+        {
+            NetworkSpeedUnit.BytesPerSecond => FormatAsBytesPerSecString(bytesPerSec),
+            NetworkSpeedUnit.BinaryBytesPerSecond => FormatAsBinaryBytesPerSecString(bytesPerSec),
+            _ => FormatAsBitsPerSecString(bytesPerSec),
+        };
     }
 
     private static string FormatAsBitsPerSecString(float value)
@@ -710,6 +713,42 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
 
         return string.Format(CultureInfo.InvariantCulture, "{0:0} GB/s", value);
+    }
+
+    private static string FormatAsBinaryBytesPerSecString(float value)
+    {
+        // Bytes to KiB
+        value /= 1024;
+        if (value < 1024)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} KiB/s", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} KiB/s", value);
+        }
+
+        // KiB to MiB
+        value /= 1024;
+        if (value < 1024)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} MiB/s", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} MiB/s", value);
+        }
+
+        // MiB to GiB
+        value /= 1024;
+        if (value < 100)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} GiB/s", value);
+        }
+
+        return string.Format(CultureInfo.InvariantCulture, "{0:0} GiB/s", value);
     }
 
     internal override void PushActivate()

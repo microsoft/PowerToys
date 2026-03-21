@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using CoreWidgetProvider.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -14,13 +15,20 @@ internal sealed class SettingsManager : JsonSettingsManager
 
     private static string Namespaced(string propertyName) => $"{Namespace}.{propertyName}";
 
-    private readonly ToggleSetting _useNetworkSpeedInBytesPerSec = new(
-        Namespaced(nameof(UseNetworkSpeedInBytesPerSec)),
+    private readonly ChoiceSetSetting _networkSpeedUnit = new(
+        Namespaced(nameof(NetworkSpeedUnit)),
         Resources.GetResource("Network_Speed_Unit_Setting_Title"),
         Resources.GetResource("Network_Speed_Unit_Setting_Description"),
-        false);
+        [
+            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BitsPerSec"), NetworkSpeedUnit.BitsPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BytesPerSec"), NetworkSpeedUnit.BytesPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BinaryBytesPerSec"), NetworkSpeedUnit.BinaryBytesPerSecond.ToString("G")),
+        ]);
 
-    public bool UseNetworkSpeedInBytesPerSec => _useNetworkSpeedInBytesPerSec.Value;
+    public NetworkSpeedUnit NetworkSpeedUnit =>
+        Enum.TryParse<NetworkSpeedUnit>(_networkSpeedUnit.Value, out var unit)
+            ? unit
+            : NetworkSpeedUnit.BitsPerSecond;
 
     private static string SettingsJsonPath()
     {
@@ -33,7 +41,7 @@ internal sealed class SettingsManager : JsonSettingsManager
     {
         FilePath = SettingsJsonPath();
 
-        Settings.Add(_useNetworkSpeedInBytesPerSec);
+        Settings.Add(_networkSpeedUnit);
 
         LoadSettings();
 
