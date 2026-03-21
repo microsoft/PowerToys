@@ -39,6 +39,8 @@ public sealed partial class DockWindow : WindowEx,
     IRecipient<QuitMessage>,
     IDisposable
 {
+    private static readonly TimeSpan TopmostStateRefreshInterval = TimeSpan.FromSeconds(1);
+
 #pragma warning disable SA1306 // Field names should begin with lower-case letter
 #pragma warning disable SA1310 // Field names should not contain underscore
     private readonly uint WM_TASKBAR_RESTART;
@@ -50,9 +52,13 @@ public sealed partial class DockWindow : WindowEx,
     private readonly DockWindowViewModel _windowViewModel;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerWindowBehavior = new();
 
+    // SHQueryUserNotificationState does not raise change notifications, so we poll lightly.
+    private readonly DispatcherTimer _topmostStateTimer = new();
+
     private HWND _hwnd = HWND.Null;
     private APPBARDATA _appBarData;
     private uint _callbackMessageId;
+    private bool _isWindowTopmost;
 
     private DockSettings _settings;
     private DockViewModel viewModel;
@@ -93,6 +99,8 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         this.Activated += DockWindow_Activated;
+        _topmostStateTimer.Interval = TopmostStateRefreshInterval;
+        _topmostStateTimer.Tick += TopmostStateTimer_Tick;
 
         WeakReferenceMessenger.Default.Register<BringToTopMessage>(this);
         WeakReferenceMessenger.Default.Register<RequestShowPaletteAtMessage>(this);
@@ -145,6 +153,13 @@ public sealed partial class DockWindow : WindowEx,
             BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &value, (uint)sizeof(BOOL));
         }
+
+        UpdateTopmostState();
+    }
+
+    private void TopmostStateTimer_Tick(object? sender, object e)
+    {
+        UpdateTopmostState();
     }
 
     private HWND GetWindowHandle(Window window)
@@ -166,6 +181,18 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         _dock.UpdateSettings(_settings);
+
+        // Only poll for fullscreen changes when AlwaysOnTop is active;
+        // when disabled the timer is unnecessary work.
+        if (_settings.AlwaysOnTop)
+        {
+            _topmostStateTimer.Start();
+        }
+        else
+        {
+            _topmostStateTimer.Stop();
+        }
+
         var side = DockSettingsToViews.GetAppBarEdge(_settings.Side);
 
         if (_appBarData.hWnd != IntPtr.Zero)
@@ -174,6 +201,7 @@ public sealed partial class DockWindow : WindowEx,
             var sameSize = _lastSize == _settings.DockSize;
             if (sameEdge && sameSize)
             {
+                UpdateTopmostState();
                 return;
             }
 
@@ -181,6 +209,7 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         CreateAppBar(_hwnd);
+        UpdateTopmostState();
     }
 
     // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
@@ -278,6 +307,40 @@ public sealed partial class DockWindow : WindowEx,
     {
         PInvoke.SHAppBarMessage(PInvoke.ABM_REMOVE, ref _appBarData);
         _appBarData = default;
+    }
+
+    private void UpdateTopmostState(bool bringToFront = false)
+    {
+        var shouldStayOnTop = _settings.AlwaysOnTop && !WindowHelper.IsWindowFullscreen();
+        const SET_WINDOW_POS_FLAGS flags = SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE;
+
+        if (shouldStayOnTop)
+        {
+            if (_isWindowTopmost && !bringToFront)
+            {
+                return;
+            }
+
+            PInvoke.SetWindowPos(_hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, flags);
+            _isWindowTopmost = true;
+            return;
+        }
+
+        if (bringToFront)
+        {
+            // Win32 trick: briefly set HWND_TOPMOST then immediately clear it
+            // with HWND_NOTOPMOST. This brings the window to the foreground
+            // without permanently pinning it as topmost.
+            PInvoke.SetWindowPos(_hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, flags);
+        }
+
+        if (!_isWindowTopmost && !bringToFront)
+        {
+            return;
+        }
+
+        PInvoke.SetWindowPos(_hwnd, HWND.HWND_NOTOPMOST, 0, 0, 0, 0, flags);
+        _isWindowTopmost = false;
     }
 
     private void UpdateWindowPosition()
@@ -523,9 +586,7 @@ public sealed partial class DockWindow : WindowEx,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            var onTop = message.OnTop ? HWND.HWND_TOPMOST : HWND.HWND_NOTOPMOST;
-            PInvoke.SetWindowPos(_hwnd, onTop, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
-            PInvoke.SetWindowPos(_hwnd, HWND.HWND_NOTOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+            UpdateTopmostState(message.BringToFront);
         });
     }
 
@@ -617,6 +678,8 @@ public sealed partial class DockWindow : WindowEx,
 
     public void Dispose()
     {
+        _topmostStateTimer.Stop();
+        _topmostStateTimer.Tick -= TopmostStateTimer_Tick;
         DisposeAcrylic();
         _windowViewModel.Dispose();
     }
@@ -625,6 +688,8 @@ public sealed partial class DockWindow : WindowEx,
     {
         _settingsService.SettingsChanged -= SettingsChangedHandler;
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
+        _topmostStateTimer.Stop();
+        _topmostStateTimer.Tick -= TopmostStateTimer_Tick;
         DisposeAcrylic();
 
         // Remove our app bar registration
@@ -697,18 +762,20 @@ internal static class ShowDesktop
         if (eventType == PInvoke.EVENT_SYSTEM_FOREGROUND)
         {
             var @class = GetWindowClass(hwnd);
-            if (string.Equals(@class, WORKERW, StringComparison.Ordinal) || string.Equals(@class, PROGMAN, StringComparison.Ordinal))
+            var bringToFront = string.Equals(@class, WORKERW, StringComparison.Ordinal) || string.Equals(@class, PROGMAN, StringComparison.Ordinal);
+            if (bringToFront)
             {
                 Logger.LogDebug("ShowDesktop invoked. Bring us back");
-                WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(true));
             }
+
+            WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(bringToFront));
         }
     }
 
     public static bool IsHooked { get; private set; }
 }
 
-internal sealed record BringToTopMessage(bool OnTop);
+internal sealed record BringToTopMessage(bool BringToFront);
 
 internal sealed record RequestShowPaletteAtMessage(Point PosDips);
 
