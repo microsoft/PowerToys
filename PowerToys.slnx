@@ -365,6 +365,10 @@
     </Project>
   </Folder>
   <Folder Name="/modules/CommandPalette/UI/">
+    <Project Path="src/modules/cmdpal/Microsoft.CmdPal.UI.Utilities/Microsoft.CmdPal.UI.Utilities.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/Microsoft.CmdPal.UI.ViewModels.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

@@ -36,6 +36,7 @@ public sealed unsafe class TaskbarMetrics : IDisposable
 
     /// <summary>
     /// Re-measures the primary taskbar. Returns true if any value changed.
+    /// Thread-safe — can be called from any thread.
     /// </summary>
     public bool Update()
     {
@@ -69,6 +70,12 @@ public sealed unsafe class TaskbarMetrics : IDisposable
         return true;
     }
 
+    /// <summary>
+    /// Re-measures the primary taskbar on a background thread.
+    /// Returns true if any value changed.
+    /// </summary>
+    public Task<bool> UpdateAsync() => Task.Run(Update);
+
     private int MeasureButtons(HWND taskbarHwnd, out int buttonCount)
     {
         buttonCount = 0;
@@ -80,7 +87,6 @@ public sealed unsafe class TaskbarMetrics : IDisposable
         }
 
         IUIAutomationElement* root = null;
-        IUIAutomationElementArray* children = null;
         IUIAutomationElementArray* descendants = null;
         try
         {
@@ -100,9 +106,8 @@ public sealed unsafe class TaskbarMetrics : IDisposable
                 rightBoundary = trayRect.left;
             }
 
-            // Enumerate all UIA descendants. On Win11, buttons live inside
-            // a XAML Islands window, not as direct children of MSTaskListWClass.
-            // Filter to Button control type (50000) within the button area.
+            // Enumerate descendants of the taskbar to find buttons.
+            // On Win11, buttons live inside a XAML Islands window.
             hr = root->FindAll(TreeScope.TreeScope_Descendants, _trueCondition, &descendants);
             int descCount = 0;
             if (hr.Succeeded && descendants != null)
@@ -199,11 +204,6 @@ public sealed unsafe class TaskbarMetrics : IDisposable
             if (descendants != null)
             {
                 ((IUnknown*)descendants)->Release();
-            }
-
-            if (children != null)
-            {
-                ((IUnknown*)children)->Release();
             }
 
             if (root != null)

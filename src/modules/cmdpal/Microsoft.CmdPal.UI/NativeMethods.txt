@@ -116,6 +116,7 @@ WM_DPICHANGED
 FindWindow
 FindWindowEx
 SetParent
+GetParent
 CreateRectRgn
 SetWindowRgn
 WM_DESTROY

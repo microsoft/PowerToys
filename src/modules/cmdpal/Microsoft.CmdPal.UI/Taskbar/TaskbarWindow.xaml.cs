@@ -165,7 +165,17 @@ public sealed partial class TaskbarWindow : WindowEx,
         var oldStyle = (WINDOW_STYLE)PInvoke.GetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE);
         var newStyle = (oldStyle & ~WINDOW_STYLE.WS_POPUP) | WINDOW_STYLE.WS_CHILD;
         _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)newStyle);
-        PInvoke.SetParent(_hwnd, taskbarWindow);
+
+        // Parent to Shell_TrayWnd's parent (the desktop/Shell_TrayParentWnd)
+        // so that CmdPal's XAML tree is NOT a UIA descendant of Shell_TrayWnd.
+        // This prevents TaskbarMetrics from enumerating our own elements.
+        var taskbarParent = PInvoke.GetParent(taskbarWindow);
+        if (taskbarParent.IsNull)
+        {
+            taskbarParent = taskbarWindow;
+        }
+
+        PInvoke.SetParent(_hwnd, taskbarParent);
 
         PInvoke.GetWindowRect(taskbarWindow, out var taskbarRect);
         PInvoke.GetWindowRect(reBarWindow, out var reBarRect);
@@ -190,14 +200,19 @@ public sealed partial class TaskbarWindow : WindowEx,
         ClipWindow().ConfigureAwait(false);
     }
 
-    private bool UpdateTaskbarButtons()
+    private async Task<bool> UpdateTaskbarButtonsAsync()
     {
-        if (!_taskbarMetrics.Update())
+        // Run UIA enumeration on a background thread — it scopes to
+        // ReBarWindow32 to avoid enumerating CmdPal's own XAML tree.
+        var changed = await _taskbarMetrics.UpdateAsync();
+        if (!changed)
         {
             _bandsControl.SetMaxAvailableWidth(_lastContentSpace);
             return false;
         }
 
+        // We're back on the UI thread (DispatcherQueue SynchronizationContext).
+        // Apply the measured values to XAML.
         var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
 
         // ButtonsWidthInPixels spans from the taskbar's left edge to the
@@ -237,7 +252,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private async Task ClipWindow(bool onlyIfButtonsChanged = false)
     {
-        var taskbarChanged = UpdateTaskbarButtons();
+        var taskbarChanged = await UpdateTaskbarButtonsAsync();
         if (onlyIfButtonsChanged && !taskbarChanged)
         {
             return;
