@@ -6,6 +6,7 @@
     xmlns:commoncontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:KeyboardManagerEditorUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -91,14 +92,10 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <commoncontrols:KeyVisual
-                                                Padding="8"
-                                                Background="{ThemeResource ControlFillColorDefaultBrush}"
-                                                BorderThickness="1"
-                                                Content="{Binding}"
-                                                CornerRadius="{StaticResource OverlayCornerRadius}"
-                                                FontSize="16"
-                                                Style="{StaticResource DefaultKeyVisualStyle}" />
+                                            <local:KeyDropDownButton
+                                                KeyName="{Binding}"
+                                                Loaded="TriggerKeyDropDown_Loaded"
+                                                ShowDisableOption="False" />
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -246,15 +243,10 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <commoncontrols:KeyVisual
-                                            Padding="8"
-                                            Background="{ThemeResource CustomAccentBackgroundBrush}"
-                                            BorderThickness="0"
-                                            Content="{Binding}"
-                                            CornerRadius="{StaticResource OverlayCornerRadius}"
-                                            FontSize="16"
-                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                            Style="{StaticResource DefaultKeyVisualStyle}" />
+                                        <local:KeyDropDownButton
+                                            KeyName="{Binding}"
+                                            Loaded="ActionKeyDropDown_Loaded"
+                                            ShowDisableOption="True" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
