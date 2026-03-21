@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <RootNamespace>PowerToys.FileLocksmithUI.UnitTests</RootNamespace>
+    <AssemblyName>PowerToys.FileLocksmithUI.UnitTests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\FileLocksmithUI.UnitTests\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <!-- Link directly to the CliArgHelper source to avoid pulling in WinUI/CsWinRT dependencies -->
+  <ItemGroup>
+    <Compile Include="..\FileLocksmithUI\Helpers\CliArgHelper.cs" Link="Helpers\CliArgHelper.cs" />
+  </ItemGroup>
+
+</Project>
