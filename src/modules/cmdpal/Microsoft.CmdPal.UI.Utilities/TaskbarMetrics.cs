@@ -106,8 +106,7 @@ public sealed unsafe class TaskbarMetrics : IDisposable
                 rightBoundary = trayRect.left;
             }
 
-            // Enumerate descendants of the taskbar to find buttons.
-            // On Win11, buttons live inside a XAML Islands window.
+            // Enumerate all UIA descendants of the taskbar.
             hr = root->FindAll(TreeScope.TreeScope_Descendants, _trueCondition, &descendants);
             int descCount = 0;
             if (hr.Succeeded && descendants != null)
@@ -168,7 +167,10 @@ public sealed unsafe class TaskbarMetrics : IDisposable
                             var btnLeft = (int)x;
                             var btnRight = (int)(x + w);
 
-                            // Count buttons to the left of the tray area
+                            // Count buttons to the left of the tray area.
+                            // CmdPal's own controls are UserControls, not
+                            // UIA buttons, so the typeId==50000 filter above
+                            // already excludes them.
                             if (btnLeft < rightBoundary)
                             {
                                 if (btnRight > maxRight)

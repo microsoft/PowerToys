@@ -165,17 +165,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         var oldStyle = (WINDOW_STYLE)PInvoke.GetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE);
         var newStyle = (oldStyle & ~WINDOW_STYLE.WS_POPUP) | WINDOW_STYLE.WS_CHILD;
         _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)newStyle);
-
-        // Parent to Shell_TrayWnd's parent (the desktop/Shell_TrayParentWnd)
-        // so that CmdPal's XAML tree is NOT a UIA descendant of Shell_TrayWnd.
-        // This prevents TaskbarMetrics from enumerating our own elements.
-        var taskbarParent = PInvoke.GetParent(taskbarWindow);
-        if (taskbarParent.IsNull)
-        {
-            taskbarParent = taskbarWindow;
-        }
-
-        PInvoke.SetParent(_hwnd, taskbarParent);
+        PInvoke.SetParent(_hwnd, taskbarWindow);
 
         PInvoke.GetWindowRect(taskbarWindow, out var taskbarRect);
         PInvoke.GetWindowRect(reBarWindow, out var reBarRect);
@@ -186,8 +176,9 @@ public sealed partial class TaskbarWindow : WindowEx,
         newWindowRect.right = newWindowRect.left + (taskbarRect.right - taskbarRect.left);
         newWindowRect.bottom = newWindowRect.top + (reBarRect.bottom - reBarRect.top);
 
-        _ = PInvoke.SetWindowRgn(_hwnd, HRGN.Null, true);
-
+        // Don't clear the window region — leave the previous clip in
+        // place until ClipWindow applies the updated one. Clearing it
+        // would flash the window across the full taskbar width.
         PInvoke.SetWindowPos(
             _hwnd,
             HWND.Null,
@@ -197,57 +188,86 @@ public sealed partial class TaskbarWindow : WindowEx,
             newWindowRect.Height,
             SET_WINDOW_POS_FLAGS.SWP_FRAMECHANGED | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
 
+        // Apply an immediate clip using pre-loaded metrics so the window
+        // never flashes across the full taskbar width. The async ClipWindow
+        // call will refine this once XAML layout has settled.
+        if (_taskbarMetrics.ButtonsWidthInPixels > 0 || _taskbarMetrics.TrayWidthInPixels > 0)
+        {
+            var clipLeft = _taskbarMetrics.ButtonsWidthInPixels;
+            var clipRight = newWindowRect.Width - _taskbarMetrics.TrayWidthInPixels;
+            if (clipRight > clipLeft)
+            {
+                var hrgn = PInvoke.CreateRectRgn(clipLeft, 0, clipRight, newWindowRect.Height);
+                _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
+            }
+        }
+
         ClipWindow().ConfigureAwait(false);
     }
 
     private async Task<bool> UpdateTaskbarButtonsAsync()
     {
-        // Run UIA enumeration on a background thread — it scopes to
-        // ReBarWindow32 to avoid enumerating CmdPal's own XAML tree.
+        // Run UIA enumeration on a background thread.
         var changed = await _taskbarMetrics.UpdateAsync();
+
+        // After await, we may not be on the UI thread. All XAML updates
+        // must go through the DispatcherQueue.
         if (!changed)
         {
-            _bandsControl.SetMaxAvailableWidth(_lastContentSpace);
+            DispatcherQueue.TryEnqueue(() => _bandsControl.SetMaxAvailableWidth(_lastContentSpace));
             return false;
         }
 
-        // We're back on the UI thread (DispatcherQueue SynchronizationContext).
-        // Apply the measured values to XAML.
-        var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
+        // Capture values from the background result.
+        var buttonsPixels = _taskbarMetrics.ButtonsWidthInPixels;
+        var trayPixels = _taskbarMetrics.TrayWidthInPixels;
 
-        // ButtonsWidthInPixels spans from the taskbar's left edge to the
-        // rightmost app button. This already covers the Start/search area,
-        // so don't add WindowsLogo separately.
-        var buttonsInDips = _taskbarMetrics.ButtonsWidthInPixels / scaleFactor;
-        TaskbarButtons.Width = new GridLength(Math.Max(0, buttonsInDips - WindowsLogo.Width.Value));
-
-        var trayInDips = _taskbarMetrics.TrayWidthInPixels / scaleFactor;
-        TrayIcons.Width = new GridLength(trayInDips);
-
-        var available = this.Bounds.Width;
-        var forContent = available - buttonsInDips - trayInDips;
-
-        if (_lastContentSpace == forContent)
+        var tcs = new TaskCompletionSource<bool>();
+        DispatcherQueue.TryEnqueue(() =>
         {
-            _bandsControl.SetMaxAvailableWidth(forContent);
-            return false;
-        }
+            try
+            {
+                var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
 
-        if (forContent > 0)
-        {
-            ContentColumn.MaxWidth = Root.ActualWidth == 0 ? double.MaxValue : forContent;
-            ContentColumn.Width = GridLength.Auto;
-            _bandsControl.SetMaxAvailableWidth(forContent);
-        }
-        else
-        {
-            ContentColumn.MaxWidth = 0;
-            ContentColumn.Width = new GridLength(0);
-            _bandsControl.SetMaxAvailableWidth(0);
-        }
+                var buttonsInDips = buttonsPixels / scaleFactor;
+                TaskbarButtons.Width = new GridLength(Math.Max(0, buttonsInDips - WindowsLogo.Width.Value));
 
-        _lastContentSpace = forContent;
-        return true;
+                var trayInDips = trayPixels / scaleFactor;
+                TrayIcons.Width = new GridLength(trayInDips);
+
+                var available = this.Bounds.Width;
+                var forContent = available - buttonsInDips - trayInDips;
+
+                if (_lastContentSpace == forContent)
+                {
+                    _bandsControl.SetMaxAvailableWidth(forContent);
+                    tcs.TrySetResult(false);
+                    return;
+                }
+
+                if (forContent > 0)
+                {
+                    ContentColumn.MaxWidth = Root.ActualWidth == 0 ? double.MaxValue : forContent;
+                    ContentColumn.Width = GridLength.Auto;
+                    _bandsControl.SetMaxAvailableWidth(forContent);
+                }
+                else
+                {
+                    ContentColumn.MaxWidth = 0;
+                    ContentColumn.Width = new GridLength(0);
+                    _bandsControl.SetMaxAvailableWidth(0);
+                }
+
+                _lastContentSpace = forContent;
+                tcs.TrySetResult(true);
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+            }
+        });
+
+        return await tcs.Task;
     }
 
     private async Task ClipWindow(bool onlyIfButtonsChanged = false)
@@ -258,24 +278,54 @@ public sealed partial class TaskbarWindow : WindowEx,
             return;
         }
 
+        // Wait for layout to settle, then clip on the UI thread.
         await Task.Delay(100);
-        var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
-        FrameworkElement clipToElement = MainContent;
-        var position = clipToElement.TransformToVisual(this.Content).TransformPoint(default);
-        RECT scaledBounds = new()
-        {
-            left = (int)(position.X * scaleFactor),
-            top = (int)(position.Y * scaleFactor),
-            right = (int)((position.X + clipToElement.ActualWidth) * scaleFactor),
-            bottom = (int)((position.Y + clipToElement.ActualHeight) * scaleFactor),
-        };
 
-        var hrgn = PInvoke.CreateRectRgn(
-            scaledBounds.left,
-            scaledBounds.top,
-            scaledBounds.right,
-            scaledBounds.bottom);
-        _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
+        var tcs = new TaskCompletionSource();
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
+                FrameworkElement clipToElement = MainContent;
+
+                if (clipToElement.ActualWidth <= 0 || clipToElement.ActualHeight <= 0)
+                {
+                    tcs.TrySetResult();
+                    return;
+                }
+
+                var position = clipToElement.TransformToVisual(this.Content).TransformPoint(default);
+                RECT scaledBounds = new()
+                {
+                    left = (int)(position.X * scaleFactor),
+                    top = (int)(position.Y * scaleFactor),
+                    right = (int)((position.X + clipToElement.ActualWidth) * scaleFactor),
+                    bottom = (int)((position.Y + clipToElement.ActualHeight) * scaleFactor),
+                };
+
+                if (scaledBounds.right <= scaledBounds.left || scaledBounds.bottom <= scaledBounds.top)
+                {
+                    tcs.TrySetResult();
+                    return;
+                }
+
+                var hrgn = PInvoke.CreateRectRgn(
+                    scaledBounds.left,
+                    scaledBounds.top,
+                    scaledBounds.right,
+                    scaledBounds.bottom);
+                _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
+            }
+            catch
+            {
+                // Window may have been destroyed
+            }
+
+            tcs.TrySetResult();
+        });
+
+        await tcs.Task;
     }
 
     public void Receive(QuitMessage message)
