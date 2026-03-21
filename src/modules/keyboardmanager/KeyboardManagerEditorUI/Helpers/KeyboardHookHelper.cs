@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using KeyboardManagerEditorUI.Interop;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.System;
 
@@ -19,7 +20,7 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public static KeyboardHookHelper Instance => _instance ??= new KeyboardHookHelper();
 
-        private KeyboardMappingService _mappingService;
+        private KeyboardMappingService? _mappingService;
 
         private HotkeySettingsControlHook? _keyboardHook;
 
@@ -34,7 +35,14 @@ namespace KeyboardManagerEditorUI.Helpers
         // Singleton to make sure only one instance of the hook is active
         private KeyboardHookHelper()
         {
-            _mappingService = new KeyboardMappingService();
+            try
+            {
+                _mappingService = new KeyboardMappingService();
+            }
+            catch (Exception ex) when (ex is DllNotFoundException or InvalidOperationException)
+            {
+                Logger.LogWarning($"Native KBM library unavailable for keyboard hook: {ex.Message}");
+            }
         }
 
         public void ActivateHook(IKeyboardHookTarget target)
@@ -46,11 +54,18 @@ namespace KeyboardManagerEditorUI.Helpers
             _currentlyPressedKeys.Clear();
             _keyPressOrder.Clear();
 
-            _keyboardHook = new HotkeySettingsControlHook(
-                KeyDown,
-                KeyUp,
-                () => true,
-                (key, extraInfo) => true);
+            try
+            {
+                _keyboardHook = new HotkeySettingsControlHook(
+                    KeyDown,
+                    KeyUp,
+                    () => true,
+                    (key, extraInfo) => true);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Keyboard hook unavailable: {ex.Message}");
+            }
         }
 
         public void CleanupHook()
@@ -140,6 +155,11 @@ namespace KeyboardManagerEditorUI.Helpers
                 return new List<string>();
             }
 
+            if (_mappingService is null)
+            {
+                return new List<string>();
+            }
+
             List<string> keyList = new List<string>();
             List<VirtualKey> modifierKeys = new List<VirtualKey>();
             VirtualKey? actionKey = null;
@@ -189,6 +209,11 @@ namespace KeyboardManagerEditorUI.Helpers
 
         private void RemoveExistingModifierVariant(VirtualKey key)
         {
+            if (_mappingService is null)
+            {
+                return;
+            }
+
             KeyType keyType = (KeyType)KeyboardManagerInterop.GetKeyType((int)key);
 
             // No need to remove if the key is an action key

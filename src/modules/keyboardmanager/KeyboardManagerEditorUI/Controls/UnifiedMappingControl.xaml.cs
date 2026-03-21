@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using KeyboardManagerEditorUI.Helpers;
+using KeyboardManagerEditorUI.Interop;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage;
@@ -77,6 +78,7 @@ namespace KeyboardManagerEditorUI.Controls
             OpenUrl,
             OpenApp,
             MouseClick,
+            Disable,
         }
 
         /// <summary>
@@ -129,6 +131,7 @@ namespace KeyboardManagerEditorUI.Controls
                         "OpenUrl" => ActionType.OpenUrl,
                         "OpenApp" => ActionType.OpenApp,
                         "MouseClick" => ActionType.MouseClick,
+                        "Disable" => ActionType.Disable,
                         _ => ActionType.KeyOrShortcut,
                     };
                 }
@@ -209,6 +212,9 @@ namespace KeyboardManagerEditorUI.Controls
                     ActionKeyToggleBtn.IsChecked = false;
                 }
 
+                // Disable dropdowns during recording
+                SetDropDownsEnabled(TriggerKeys, false);
+
                 KeyboardHookHelper.Instance.ActivateHook(this);
             }
         }
@@ -219,6 +225,8 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 CleanupKeyboardHook();
             }
+
+            SetDropDownsEnabled(TriggerKeys, true);
         }
 
         #endregion
@@ -262,6 +270,9 @@ namespace KeyboardManagerEditorUI.Controls
                     TriggerKeyToggleBtn.IsChecked = false;
                 }
 
+                // Disable dropdowns during recording
+                SetDropDownsEnabled(ActionKeys, false);
+
                 KeyboardHookHelper.Instance.ActivateHook(this);
             }
         }
@@ -271,6 +282,132 @@ namespace KeyboardManagerEditorUI.Controls
             if (_currentInputMode == KeyInputMode.RemappedKeys)
             {
                 CleanupKeyboardHook();
+            }
+
+            SetDropDownsEnabled(ActionKeys, true);
+        }
+
+        #endregion
+
+        #region Key Dropdown Handling
+
+        private void TriggerKeyDropDown_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                dropDown.KeyChanged += TriggerKeyDropDown_KeyChanged;
+                dropDown.Unloaded += (s, _) =>
+                {
+                    if (s is KeyDropDownButton dd)
+                    {
+                        dd.KeyChanged -= TriggerKeyDropDown_KeyChanged;
+                    }
+                };
+            }
+        }
+
+        private void ActionKeyDropDown_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                dropDown.KeyChanged += ActionKeyDropDown_KeyChanged;
+                dropDown.Unloaded += (s, _) =>
+                {
+                    if (s is KeyDropDownButton dd)
+                    {
+                        dd.KeyChanged -= ActionKeyDropDown_KeyChanged;
+                    }
+                };
+            }
+        }
+
+        private void TriggerKeyDropDown_KeyChanged(object? sender, KeyChangedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                int index = GetDropDownIndex(TriggerKeys, dropDown);
+                if (index >= 0 && index < _triggerKeys.Count)
+                {
+                    _triggerKeys[index] = e.NewKeyName;
+                    HandleAutoGrowShrink(_triggerKeys, index, e.NewKeyCode);
+                }
+            }
+        }
+
+        private void ActionKeyDropDown_KeyChanged(object? sender, KeyChangedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                int index = GetDropDownIndex(ActionKeys, dropDown);
+                if (index >= 0 && index < _actionKeys.Count)
+                {
+                    _actionKeys[index] = e.NewKeyName;
+                    HandleAutoGrowShrink(_actionKeys, index, e.NewKeyCode);
+                }
+            }
+        }
+
+        private static int GetDropDownIndex(ItemsControl itemsControl, KeyDropDownButton dropDown)
+        {
+            for (int i = 0; i < itemsControl.Items.Count; i++)
+            {
+                var container = itemsControl.ContainerFromIndex(i) as ContentPresenter;
+                if (container != null)
+                {
+                    // Walk the visual tree to find the KeyDropDownButton
+                    var child = FindChild<KeyDropDownButton>(container);
+                    if (child == dropDown)
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        private static T? FindChild<T>(Microsoft.UI.Xaml.DependencyObject parent)
+            where T : Microsoft.UI.Xaml.DependencyObject
+        {
+            int childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is T result)
+                {
+                    return result;
+                }
+
+                var descendant = FindChild<T>(child);
+                if (descendant != null)
+                {
+                    return descendant;
+                }
+            }
+
+            return null;
+        }
+
+        private void HandleAutoGrowShrink(ObservableCollection<string> keys, int changedIndex, int newKeyCode)
+        {
+            const int maxShortcutSize = 5; // 4 modifiers + 1 action key
+
+            // KeyType: 0=Win, 1=Ctrl, 2=Alt, 3=Shift, 4=Action
+            int keyType = KeyboardManagerInterop.GetKeyType(newKeyCode);
+            bool isModifier = keyType < 4;
+
+            if (isModifier && changedIndex == keys.Count - 1 && keys.Count < maxShortcutSize)
+            {
+                // Selected a modifier in the last slot — add an empty slot for the next key
+                // We don't add empty strings; instead the user can record or the next validation pass handles it
+            }
+            else if (!isModifier)
+            {
+                // Selected an action key — trim any trailing entries after this one
+                while (keys.Count > changedIndex + 1)
+                {
+                    keys.RemoveAt(keys.Count - 1);
+                }
             }
         }
 
@@ -567,6 +704,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.Text => !string.IsNullOrWhiteSpace(TextContentBox?.Text),
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
+                ActionType.Disable => true,
                 _ => false,
             };
         }
@@ -617,7 +755,8 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.Text => 1,
                 ActionType.OpenUrl => 2,
                 ActionType.OpenApp => 3,
-                ActionType.MouseClick => 4,
+                ActionType.Disable => 4,
+                ActionType.MouseClick => 5,
                 _ => 0,
             };
 
@@ -745,6 +884,22 @@ namespace KeyboardManagerEditorUI.Controls
             if (ActionKeyToggleBtn?.IsChecked == true)
             {
                 ActionKeyToggleBtn.IsChecked = false;
+            }
+        }
+
+        private static void SetDropDownsEnabled(ItemsControl itemsControl, bool enabled)
+        {
+            for (int i = 0; i < itemsControl.Items.Count; i++)
+            {
+                var container = itemsControl.ContainerFromIndex(i) as ContentPresenter;
+                if (container != null)
+                {
+                    var dropDown = FindChild<KeyDropDownButton>(container);
+                    if (dropDown != null)
+                    {
+                        dropDown.IsEnabled = enabled;
+                    }
+                }
             }
         }
 

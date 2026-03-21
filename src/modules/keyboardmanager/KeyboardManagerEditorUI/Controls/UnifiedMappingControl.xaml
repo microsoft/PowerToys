@@ -6,6 +6,7 @@
     xmlns:commoncontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:KeyboardManagerEditorUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -91,14 +92,7 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <commoncontrols:KeyVisual
-                                                Padding="8"
-                                                Background="{ThemeResource ControlFillColorDefaultBrush}"
-                                                BorderThickness="1"
-                                                Content="{Binding}"
-                                                CornerRadius="{StaticResource OverlayCornerRadius}"
-                                                FontSize="16"
-                                                Style="{StaticResource DefaultKeyVisualStyle}" />
+                                            <local:KeyDropDownButton KeyName="{Binding}" Loaded="TriggerKeyDropDown_Loaded" />
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -204,6 +198,12 @@
                         <TextBlock x:Uid="ActionType_OpenApp_Text" />
                     </StackPanel>
                 </ComboBoxItem>
+                <ComboBoxItem x:Uid="ActionType_Disable" Tag="Disable">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE711;" />
+                        <TextBlock x:Uid="ActionType_Disable_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
                 <!--
                 <ComboBoxItem x:Uid="ActionType_MouseClick" Tag="MouseClick">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -246,15 +246,10 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <commoncontrols:KeyVisual
-                                            Padding="8"
-                                            Background="{ThemeResource CustomAccentBackgroundBrush}"
-                                            BorderThickness="0"
-                                            Content="{Binding}"
-                                            CornerRadius="{StaticResource OverlayCornerRadius}"
-                                            FontSize="16"
-                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                            Style="{StaticResource DefaultKeyVisualStyle}" />
+                                        <local:KeyDropDownButton
+                                            KeyName="{Binding}"
+                                            Loaded="ActionKeyDropDown_Loaded"
+                                            UseAccentStyle="True" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -369,6 +364,13 @@
                 <tkcontrols:Case Value="MouseClick">
                     <TextBlock
                         x:Uid="MouseClickPlaceholder"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                </tkcontrols:Case>
+                <!--  Disable Action  -->
+                <tkcontrols:Case Value="Disable">
+                    <TextBlock
+                        x:Uid="DisableDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                 </tkcontrols:Case>
