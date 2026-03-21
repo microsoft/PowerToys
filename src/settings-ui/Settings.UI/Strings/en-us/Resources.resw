@@ -5877,7 +5877,7 @@ Text uses the current drawing color.</value>
     <value>Welcome to PowerToys</value>
   </data>
   <data name="ShortcutConflictWindow_IgnoreShortcut.Content" xml:space="preserve">
-    <value>Ignore shortcut</value>
+    <value>Ignore conflict</value>
   </data>
   <data name="AdvancedPaste_AddModelButton.Content" xml:space="preserve">
     <value>Add model</value>
