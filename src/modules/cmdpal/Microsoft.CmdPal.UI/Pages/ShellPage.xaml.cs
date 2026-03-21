@@ -122,9 +122,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (App.Current.Services.GetService<SettingsModel>()!.EnableTaskbar)
         {
-            _taskbarWindow = new TaskbarWindow();
-            _taskbarWindow.Show();
+            _ = CreateAndShowTaskbarAsync();
         }
+    }
+
+    private async Task CreateAndShowTaskbarAsync()
+    {
+        _taskbarWindow = await TaskbarWindow.CreateAsync();
+        _taskbarWindow.Show();
     }
 
     /// <summary>
@@ -516,13 +521,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowHideTaskbarMessage message)
     {
-        _ = DispatcherQueue.TryEnqueue(() =>
+        _ = DispatcherQueue.TryEnqueue(async () =>
         {
             if (message.ShowTaskbar)
             {
                 if (_taskbarWindow is null)
                 {
-                    _taskbarWindow = new TaskbarWindow();
+                    _taskbarWindow = await TaskbarWindow.CreateAsync();
                 }
 
                 _taskbarWindow.Show();

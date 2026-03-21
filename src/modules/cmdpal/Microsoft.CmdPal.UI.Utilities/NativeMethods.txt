@@ -1,0 +1,14 @@
+FindWindow
+FindWindowEx
+GetWindowRect
+GetDpiForWindow
+CoCreateInstance
+IUIAutomation
+IUIAutomationElement
+IUIAutomationElementArray
+IUIAutomationCondition
+UIA_PROPERTY_ID
+TreeScope
+SafeArrayGetElement
+VariantClear
+VARIANT

@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Utilities;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,19 +28,40 @@ public sealed partial class TaskbarWindow : WindowEx,
 {
     private readonly uint wMTASKBARRESTART;
     private readonly HWND _hwnd;
-    private readonly Tasklist _tasklist;
+    private readonly TaskbarMetrics _taskbarMetrics;
     private readonly TaskbarBandControl _bandsControl;
 
     private readonly WNDPROC? _originalWndProc;
     private readonly WNDPROC? _customWndProc;
 
     private readonly DispatcherQueueTimer _updateLayoutDebouncer;
-    private readonly DispatcherQueueTimer _updateTaskbarButtonsTimer;
 
     private double _lastContentSpace;
     private bool _disposed;
 
-    public TaskbarWindow()
+    /// <summary>
+    /// Creates a <see cref="TaskbarWindow"/> without blocking the UI thread.
+    /// The first (expensive) UIA/COM initialization runs on a background
+    /// thread; the window itself is created on the UI thread once ready.
+    /// </summary>
+    public static async Task<TaskbarWindow> CreateAsync()
+    {
+        // The very first TaskbarMetrics.Update() is expensive because it
+        // initializes COM and enumerates the full UIA tree. Do that work
+        // on a thread-pool thread so the UI stays responsive.
+        var metrics = await Task.Run(() =>
+        {
+            var m = new TaskbarMetrics();
+            m.Update();
+            return m;
+        });
+
+        // Window creation must happen on the UI thread — we get here
+        // because the caller is an async method on the UI thread.
+        return new TaskbarWindow(metrics);
+    }
+
+    internal TaskbarWindow(TaskbarMetrics metrics)
     {
         var serviceProvider = App.Current.Services;
         var viewModel = serviceProvider.GetRequiredService<DockViewModel>();
@@ -56,16 +78,11 @@ public sealed partial class TaskbarWindow : WindowEx,
 
         _updateLayoutDebouncer = DispatcherQueue.CreateTimer();
 
-        _updateTaskbarButtonsTimer = DispatcherQueue.CreateTimer();
-        _updateTaskbarButtonsTimer.Tick += (s, e) => ClipWindow(onlyIfButtonsChanged: true).ConfigureAwait(false);
-        _updateTaskbarButtonsTimer.Interval = TimeSpan.FromMilliseconds(500);
-        _updateTaskbarButtonsTimer.Start();
-
         MainContent.SizeChanged += MainContent_SizeChanged;
 
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
-        _tasklist = new Tasklist();
+        _taskbarMetrics = metrics;
 
         // LOAD BEARING: The delegate must be stored in a member field.
         // A local variable would be collected, leaving a dangling function pointer.
@@ -175,34 +192,25 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private bool UpdateTaskbarButtons()
     {
-        _tasklist.Update();
-        var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
-
-        var buttons = _tasklist.GetButtons();
-        var maxRightInPixels = 0;
-        foreach (var button in buttons)
+        if (!_taskbarMetrics.Update())
         {
-            var right = button.X + button.Width;
-            if (right > maxRightInPixels)
-            {
-                maxRightInPixels = right;
-            }
+            _bandsControl.SetMaxAvailableWidth(_lastContentSpace);
+            return false;
         }
 
-        var maxRightDips = maxRightInPixels / scaleFactor;
-        TaskbarButtons.Width = new GridLength(maxRightDips);
+        var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
 
-        // Measure notification/tray area
-        var taskBarHwnd = PInvoke.FindWindow("Shell_TrayWnd", null);
-        var notificationHwnd = PInvoke.FindWindowEx(taskBarHwnd, HWND.Null, "TrayNotifyWnd", null);
-        PInvoke.GetWindowRect(notificationHwnd, out var trayRect);
+        // ButtonsWidthInPixels spans from the taskbar's left edge to the
+        // rightmost app button. This already covers the Start/search area,
+        // so don't add WindowsLogo separately.
+        var buttonsInDips = _taskbarMetrics.ButtonsWidthInPixels / scaleFactor;
+        TaskbarButtons.Width = new GridLength(Math.Max(0, buttonsInDips - WindowsLogo.Width.Value));
 
-        var notificationAreaInDips = trayRect.Width / scaleFactor;
-        TrayIcons.Width = new GridLength(notificationAreaInDips);
+        var trayInDips = _taskbarMetrics.TrayWidthInPixels / scaleFactor;
+        TrayIcons.Width = new GridLength(trayInDips);
 
         var available = this.Bounds.Width;
-        var taskbarReservedInDips = WindowsLogo.Width.Value + maxRightDips;
-        var forContent = available - taskbarReservedInDips - notificationAreaInDips;
+        var forContent = available - buttonsInDips - trayInDips;
 
         if (_lastContentSpace == forContent)
         {
@@ -258,7 +266,6 @@ public sealed partial class TaskbarWindow : WindowEx,
     public void Receive(QuitMessage message)
     {
         _updateLayoutDebouncer?.Stop();
-        _updateTaskbarButtonsTimer?.Stop();
         DispatcherQueue.TryEnqueue(() => Close());
     }
 
@@ -267,8 +274,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         if (!_disposed)
         {
             _updateLayoutDebouncer?.Stop();
-            _updateTaskbarButtonsTimer?.Stop();
-            _tasklist.Dispose();
+            _taskbarMetrics.Dispose();
             WeakReferenceMessenger.Default.UnregisterAll(this);
             _disposed = true;
         }
