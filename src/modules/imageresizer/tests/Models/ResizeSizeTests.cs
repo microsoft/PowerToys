@@ -5,10 +5,8 @@
 #pragma warning restore IDE0073
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 
-using ImageResizer.Properties;
 using ImageResizer.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -31,27 +29,7 @@ namespace ImageResizer.Models
             Assert.AreEqual(nameof(ResizeSize.Name), e.Arguments.PropertyName);
         }
 
-        [TestMethod]
-        public void NameReplacesTokens()
-        {
-            var args = new List<(string, string)>
-            {
-                ("$small$", Resources.Small),
-                ("$medium$", Resources.Medium),
-                ("$large$", Resources.Large),
-                ("$phone$", Resources.Phone),
-            };
-            foreach (var (name, expected) in args)
-            {
-                var size = new ResizeSize
-                {
-                    Name = name,
-                };
-
-                Assert.AreEqual(expected, size.Name);
-            }
-        }
-
+        // Note: NameReplacesTokens test removed - requires WinUI ResourceLoader runtime
         [TestMethod]
         public void FitWorks()
         {

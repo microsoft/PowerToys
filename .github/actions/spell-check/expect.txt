@@ -52,6 +52,7 @@ Apm
 APPBARDATA
 APPEXECLINK
 APPLICATIONFRAMEHOST
+apphost
 appmanifest
 APPMODEL
 APPNAME
@@ -1329,6 +1330,7 @@ rundll
 rungameid
 RUNLEVEL
 runtimeclass
+runtimeconfig
 runtimepack
 ruuid
 rvm
@@ -1583,6 +1585,7 @@ TILEDWINDOW
 TILLSON
 timedate
 timediff
+timespan
 timeutil
 TITLEBARINFO
 Titlecase

@@ -25,9 +25,18 @@ namespace ImageResizer.Properties
             WriteIndented = true,
         };
 
-        private static readonly CompositeFormat ValueMustBeBetween = System.Text.CompositeFormat.Parse(Properties.Resources.ValueMustBeBetween);
+        // Cache the validation message format
+        private static CompositeFormat _valueMustBeBetween;
 
-        private static App _imageResizerApp;
+        private static CompositeFormat ValueMustBeBetweenFormat
+        {
+            get
+            {
+                // Use hardcoded string for test since ResourceLoader requires WinUI runtime
+                _valueMustBeBetween ??= System.Text.CompositeFormat.Parse("Value must be between '{0}' and '{1}'.");
+                return _valueMustBeBetween;
+            }
+        }
 
         public SettingsTests()
         {
@@ -38,8 +47,8 @@ namespace ImageResizer.Properties
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            // new App() needs to be created since Settings.Reload() uses App.Current to update properties on the UI thread. App() can be created only once otherwise it results in System.InvalidOperationException : Cannot create more than one System.Windows.Application instance in the same AppDomain.
-            _imageResizerApp = new App();
+            // Note: WinUI App cannot be instantiated in unit tests without the full WinUI runtime.
+            // Settings.Reload() has a fallback mechanism that allows it to work without a DispatcherQueue.
         }
 
         [TestMethod]
@@ -195,7 +204,7 @@ namespace ImageResizer.Properties
 
             // Using InvariantCulture since this is used internally
             Assert.AreEqual(
-                string.Format(CultureInfo.InvariantCulture, ValueMustBeBetween, 1, 100),
+                string.Format(CultureInfo.InvariantCulture, ValueMustBeBetweenFormat, 1, 100),
                 result);
         }
 
@@ -385,8 +394,7 @@ namespace ImageResizer.Properties
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            _imageResizerApp.Dispose();
-            _imageResizerApp = null;
+            // No App instance to dispose in WinUI3 test environment
         }
 
         [TestCleanup]
