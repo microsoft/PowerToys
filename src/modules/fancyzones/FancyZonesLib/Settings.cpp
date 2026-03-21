@@ -20,6 +20,7 @@ namespace NonLocalizable
     const wchar_t MouseMiddleClickSpanningMultipleZonesID[] = L"fancyzones_mouseMiddleClickSpanningMultipleZones";
     const wchar_t OverrideSnapHotKeysID[] = L"fancyzones_overrideSnapHotkeys";
     const wchar_t MoveWindowAcrossMonitorsID[] = L"fancyzones_moveWindowAcrossMonitors";
+    const wchar_t CycleThroughAllZonesID[] = L"fancyzones_cycleThroughAllZones";
     const wchar_t MoveWindowsBasedOnPositionID[] = L"fancyzones_moveWindowsBasedOnPosition";
     const wchar_t OverlappingZonesAlgorithmID[] = L"fancyzones_overlappingZonesAlgorithm";
     const wchar_t DisplayOrWorkAreaChangeMoveWindowsID[] = L"fancyzones_displayOrWorkAreaChange_moveWindows";
@@ -111,6 +112,7 @@ void FancyZonesSettings::LoadSettings()
         SetBoolFlag(values, NonLocalizable::MouseMiddleClickSpanningMultipleZonesID, SettingId::MouseMiddleClickSpanningMultipleZones, m_settings.mouseMiddleClickSpanningMultipleZones);
         SetBoolFlag(values, NonLocalizable::OverrideSnapHotKeysID, SettingId::OverrideSnapHotkeys, m_settings.overrideSnapHotkeys);
         SetBoolFlag(values, NonLocalizable::MoveWindowAcrossMonitorsID, SettingId::MoveWindowAcrossMonitors, m_settings.moveWindowAcrossMonitors);
+        SetBoolFlag(values, NonLocalizable::CycleThroughAllZonesID, SettingId::CycleThroughAllZones, m_settings.cycleThroughAllZones);
         SetBoolFlag(values, NonLocalizable::MoveWindowsBasedOnPositionID, SettingId::MoveWindowsBasedOnPosition, m_settings.moveWindowsBasedOnPosition);
         SetBoolFlag(values, NonLocalizable::DisplayOrWorkAreaChangeMoveWindowsID, SettingId::DisplayOrWorkAreaChangeMoveWindows, m_settings.displayOrWorkAreaChange_moveWindows);
         SetBoolFlag(values, NonLocalizable::ZoneSetChangeMoveWindowsID, SettingId::ZoneSetChangeMoveWindows, m_settings.zoneSetChange_moveWindows);
