@@ -15,6 +15,7 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.Taskbar;
+using Microsoft.CmdPal.UI.Utilities;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
@@ -128,8 +129,25 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private async Task CreateAndShowTaskbarAsync()
     {
-        _taskbarWindow = await TaskbarWindow.CreateAsync();
-        _taskbarWindow.Show();
+        // Capture dispatcher before crossing to a background thread.
+        var dispatcher = DispatcherQueue;
+
+        // Run the expensive first UIA measurement on a background thread.
+        var metrics = await Task.Run(() =>
+        {
+            var m = new TaskbarMetrics();
+            m.Update();
+            return m;
+        });
+
+        // Window creation + Show MUST happen on the UI thread.
+        // WinUI 3 has no SynchronizationContext, so we can't rely on
+        // await resuming on the UI thread. Explicitly dispatch.
+        dispatcher.TryEnqueue(() =>
+        {
+            _taskbarWindow = new TaskbarWindow(metrics);
+            _taskbarWindow.Show();
+        });
     }
 
     /// <summary>
@@ -521,23 +539,28 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowHideTaskbarMessage message)
     {
-        _ = DispatcherQueue.TryEnqueue(async () =>
+        if (message.ShowTaskbar)
         {
-            if (message.ShowTaskbar)
+            if (_taskbarWindow is null)
             {
-                if (_taskbarWindow is null)
+                _ = CreateAndShowTaskbarAsync();
+            }
+            else
+            {
+                DispatcherQueue.TryEnqueue(() => _taskbarWindow.Show());
+            }
+        }
+        else
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_taskbarWindow is not null)
                 {
-                    _taskbarWindow = await TaskbarWindow.CreateAsync();
+                    _taskbarWindow.Close();
+                    _taskbarWindow = null;
                 }
-
-                _taskbarWindow.Show();
-            }
-            else if (_taskbarWindow is not null)
-            {
-                _taskbarWindow.Close();
-                _taskbarWindow = null;
-            }
-        });
+            });
+        }
     }
 
     private void ToggleFilterFocus()

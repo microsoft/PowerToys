@@ -39,28 +39,6 @@ public sealed partial class TaskbarWindow : WindowEx,
     private double _lastContentSpace;
     private bool _disposed;
 
-    /// <summary>
-    /// Creates a <see cref="TaskbarWindow"/> without blocking the UI thread.
-    /// The first (expensive) UIA/COM initialization runs on a background
-    /// thread; the window itself is created on the UI thread once ready.
-    /// </summary>
-    public static async Task<TaskbarWindow> CreateAsync()
-    {
-        // The very first TaskbarMetrics.Update() is expensive because it
-        // initializes COM and enumerates the full UIA tree. Do that work
-        // on a thread-pool thread so the UI stays responsive.
-        var metrics = await Task.Run(() =>
-        {
-            var m = new TaskbarMetrics();
-            m.Update();
-            return m;
-        });
-
-        // Window creation must happen on the UI thread — we get here
-        // because the caller is an async method on the UI thread.
-        return new TaskbarWindow(metrics);
-    }
-
     internal TaskbarWindow(TaskbarMetrics metrics)
     {
         var serviceProvider = App.Current.Services;
@@ -207,6 +185,9 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private async Task<bool> UpdateTaskbarButtonsAsync()
     {
+        // Capture dispatcher before crossing to a background thread.
+        var dispatcher = DispatcherQueue;
+
         // Run UIA enumeration on a background thread.
         var changed = await _taskbarMetrics.UpdateAsync();
 
@@ -214,7 +195,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         // must go through the DispatcherQueue.
         if (!changed)
         {
-            DispatcherQueue.TryEnqueue(() => _bandsControl.SetMaxAvailableWidth(_lastContentSpace));
+            dispatcher.TryEnqueue(() => _bandsControl.SetMaxAvailableWidth(_lastContentSpace));
             return false;
         }
 
@@ -223,7 +204,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         var trayPixels = _taskbarMetrics.TrayWidthInPixels;
 
         var tcs = new TaskCompletionSource<bool>();
-        DispatcherQueue.TryEnqueue(() =>
+        dispatcher.TryEnqueue(() =>
         {
             try
             {
@@ -272,6 +253,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private async Task ClipWindow(bool onlyIfButtonsChanged = false)
     {
+        var dispatcher = DispatcherQueue;
         var taskbarChanged = await UpdateTaskbarButtonsAsync();
         if (onlyIfButtonsChanged && !taskbarChanged)
         {
@@ -282,7 +264,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         await Task.Delay(100);
 
         var tcs = new TaskCompletionSource();
-        DispatcherQueue.TryEnqueue(() =>
+        dispatcher.TryEnqueue(() =>
         {
             try
             {
