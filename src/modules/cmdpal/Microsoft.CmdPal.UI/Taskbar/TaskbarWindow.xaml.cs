@@ -37,6 +37,7 @@ public sealed partial class TaskbarWindow : WindowEx,
     private readonly DispatcherQueueTimer _updateLayoutDebouncer;
 
     private double _lastContentSpace;
+    private int _clipVersion;
     private bool _disposed;
 
     internal TaskbarWindow(TaskbarMetrics metrics)
@@ -191,9 +192,10 @@ public sealed partial class TaskbarWindow : WindowEx,
         // Run UIA enumeration on a background thread.
         var changed = await _taskbarMetrics.UpdateAsync();
 
-        // After await, we may not be on the UI thread. All XAML updates
-        // must go through the DispatcherQueue.
-        if (!changed)
+        // On the very first call _lastContentSpace is 0 and the grid
+        // columns haven't been set yet. Always apply layout in that case,
+        // even if the metrics didn't change (they were pre-loaded).
+        if (!changed && _lastContentSpace != 0)
         {
             dispatcher.TryEnqueue(() => _bandsControl.SetMaxAvailableWidth(_lastContentSpace));
             return false;
@@ -253,19 +255,36 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private async Task ClipWindow(bool onlyIfButtonsChanged = false)
     {
+        // Increment version so that any older in-flight ClipWindow calls
+        // will see a stale version and skip applying their clip region.
+        var myVersion = Interlocked.Increment(ref _clipVersion);
         var dispatcher = DispatcherQueue;
+
         var taskbarChanged = await UpdateTaskbarButtonsAsync();
         if (onlyIfButtonsChanged && !taskbarChanged)
         {
             return;
         }
 
-        // Wait for layout to settle, then clip on the UI thread.
+        // Wait for layout to settle.
         await Task.Delay(100);
+
+        // If another ClipWindow was started while we were waiting, bail.
+        if (Volatile.Read(ref _clipVersion) != myVersion)
+        {
+            return;
+        }
 
         var tcs = new TaskCompletionSource();
         dispatcher.TryEnqueue(() =>
         {
+            // Check again on the UI thread.
+            if (Volatile.Read(ref _clipVersion) != myVersion)
+            {
+                tcs.TrySetResult();
+                return;
+            }
+
             try
             {
                 var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
