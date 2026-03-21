@@ -4058,6 +4058,16 @@ skipTileMasking:
                 if( prevY < 0 || prevY >= frameHeight )
                     continue;
 
+                // Skip comparisons where the shifted position maps
+                // into the fixed toolbar/bottom strip area — those
+                // produce false residual for every pixel near the
+                // bottom of the frame, swamping the real overlay
+                // signal.
+                if( maskedTileCount > 0 && mask.IsMaskedPixel( 0, prevY ) )
+                    continue;
+                if( fixedBottomRows > 0 && prevY >= frameHeight - fixedBottomRows )
+                    continue;
+
                 for( int hx = 0; hx < halfW; ++hx )
                 {
                     const int x = hx * 2;
@@ -4098,17 +4108,24 @@ skipTileMasking:
                 const int x = hx * 2;
                 const int y = hy * 2;
 
+                // Skip the top and bottom frame edges — scroll
+                // clipping at the frame boundary creates natural
+                // residual that isn't a floating overlay.
+                if( y < 8 || y >= frameHeight - 8 )
+                    continue;
+
                 // Skip pixels in or near the bottom fixed region.  The tile
                 // mask and bottom strip cover the toolbar itself, but
                 // toolbar UI elements (icons, borders, edit box) extend
-                // above the mask and produce massive residual noise.
-                // Exclude the bottom portion of the frame generously.
+                // above the mask and produce residual noise.  Use a
+                // moderate margin to suppress toolbar noise while still
+                // allowing floating overlays near the toolbar.
                 if( maskedTileCount > 0 && mask.IsMaskedPixel( x, y ) )
                     continue;
                 const int firstMaskedRow = mask.FirstMaskedY();
-                if( firstMaskedRow >= 0 && y >= firstMaskedRow - 80 )
+                if( firstMaskedRow >= 0 && y >= firstMaskedRow - 40 )
                     continue;
-                if( fixedBottomRows > 0 && y >= frameHeight - fixedBottomRows - 80 )
+                if( fixedBottomRows > 0 && y >= frameHeight - fixedBottomRows - 40 )
                     continue;
 
                 fixMinX = min( fixMinX, x );
@@ -4121,16 +4138,28 @@ skipTileMasking:
 
         if( fixedCount >= 2 )
         {
-            const int erW = fixMaxX - fixMinX + 1;
-            const int erH = fixMaxY - fixMinY + 1;
-
             int finalMinX = fixMinX, finalMaxX = fixMaxX;
             int finalMinY = fixMinY, finalMaxY = fixMaxY;
 
-            // If the bounding box is too large, find the densest compact
-            // cluster.  Otherwise use the bounding box directly.
-            if( erW > frameWidth / 3 || erH > frameHeight / 3 )
+            const int coreW = finalMaxX - finalMinX + 1;
+            const int coreH = finalMaxY - finalMinY + 1;
+            const int64_t bboxArea = static_cast<int64_t>( coreW ) * coreH;
+
+            // A real floating overlay (toolbar bar, button) has its
+            // residual pixels concentrated in a compact region.
+            // Scattered noise from cursor movement or sub-pixel
+            // rendering produces a similar pixel count but spread
+            // across the whole frame, yielding very low density.
+            // Require at least 1% of the bounding box to be filled.
+            const int64_t densityPercent = bboxArea > 0
+                ? ( static_cast<int64_t>( fixedCount ) * 100 / bboxArea )
+                : 0;
+            if( densityPercent < 1 )
             {
+                // The full bounding box is too sparse — likely scattered
+                // noise.  But there might be a real compact overlay
+                // hiding inside the noise.  Search for the densest
+                // sub-window to recover it.
                 const int windowW = min( frameWidth / 4, 120 );
                 const int windowH = min( frameHeight / 4, 120 );
                 int bestCount = 0, bestWx = 0, bestWy = 0;
@@ -4151,6 +4180,12 @@ skipTileMasking:
                                     hitCount[idx2] * 100 >= pairCountMap[idx2] * minHitPercent &&
                                     !( maskedTileCount > 0 && mask.IsMaskedPixel( hx * 2, hy * 2 ) ) )
                                 {
+                                    const int py = hy * 2;
+                                    const int firstMR = mask.FirstMaskedY();
+                                    if( firstMR >= 0 && py >= firstMR - 40 )
+                                        continue;
+                                    if( fixedBottomRows > 0 && py >= frameHeight - fixedBottomRows - 40 )
+                                        continue;
                                     ++count;
                                 }
                             }
@@ -4168,6 +4203,7 @@ skipTileMasking:
                 {
                     finalMinX = frameWidth; finalMaxX = 0;
                     finalMinY = frameHeight; finalMaxY = 0;
+                    fixedCount = 0;
                     const int wyEnd = min( bestWy + windowH / 2, halfH );
                     const int wxEnd = min( bestWx + windowW / 2, halfW );
                     for( int hy = bestWy; hy < wyEnd; ++hy )
@@ -4183,13 +4219,27 @@ skipTileMasking:
                                 finalMaxX = max( finalMaxX, hx * 2 );
                                 finalMinY = min( finalMinY, hy * 2 );
                                 finalMaxY = max( finalMaxY, hy * 2 );
+                                ++fixedCount;
                             }
+                        }
+                    }
+
+                    // Verify the cluster has reasonable density too.
+                    if( fixedCount >= 2 )
+                    {
+                        const int clW = finalMaxX - finalMinX + 1;
+                        const int clH = finalMaxY - finalMinY + 1;
+                        const int64_t clArea = static_cast<int64_t>( clW ) * clH;
+                        const int64_t clDensityPct = clArea > 0 ? static_cast<int64_t>( fixedCount ) * 100 / clArea : 0;
+                        if( clDensityPct < 2 )
+                        {
+                            fixedCount = 0;
                         }
                     }
                 }
                 else
                 {
-                    fixedCount = 0;  // No valid cluster found.
+                    fixedCount = 0;
                 }
             }
 
@@ -9669,6 +9719,26 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                     const size_t dstMaskIndex = dstMaskRowBase + static_cast<size_t>( canvasX );
 
                     if( !lastFrame && overlayMask != nullptr && overlayMask->IsMaskedPixel( x, y ) )
+                    {
+                        if( outSuppressedMask != nullptr )
+                        {
+                            ( *outSuppressedMask )[dstMaskIndex] = 1;
+                        }
+                        ++rowSuppressedPixels;
+                        continue;
+                    }
+
+                    // Suppress pixels from the residual-detected overlay
+                    // region all the way down through any bottom toolbar.
+                    // The overlay bar sits at local-Y ~872-918, the tile
+                    // mask covers the toolbar below at Y ~960-1155, but
+                    // there can be gaps between them.  By suppressing
+                    // from eraseRect.top to frame bottom, we ensure the
+                    // entire fixed region is handled consistently.
+                    if( !lastFrame && overlayMask != nullptr &&
+                        overlayMask->eraseRect.right > overlayMask->eraseRect.left &&
+                        y >= overlayMask->eraseRect.top &&
+                        x >= overlayMask->eraseRect.left && x < overlayMask->eraseRect.right )
                     {
                         if( outSuppressedMask != nullptr )
                         {
