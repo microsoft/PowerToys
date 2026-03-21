@@ -85,6 +85,11 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             Logger.InitializeLogger(@"\Settings\Logs");
 
+            // Workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10856:
+            // Other WinUI apps in the shared WinUI3Apps folder may leave a resources.pri
+            // that MRT loads instead of our module-specific PRI. Overwrite it with ours.
+            EnsureResourcesPri();
+
             string appLanguage = LanguageHelper.LoadLanguage();
             if (!string.IsNullOrEmpty(appLanguage))
             {
@@ -106,6 +111,29 @@ namespace Microsoft.PowerToys.Settings.UI
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             Logger.LogError("Unhandled exception", e.Exception);
+        }
+
+        private static void EnsureResourcesPri()
+        {
+            // Workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10856:
+            // MRT always loads resources.pri if present, even for unpackaged apps.
+            // Other WinUI apps (e.g. AdvancedPaste) may leave a resources.pri in the shared
+            // WinUI3Apps folder containing their resources. Delete it so MRT falls back to
+            // our module-specific PowerToys.Settings.pri.
+            try
+            {
+                var exeDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                var resourcesPri = Path.Combine(exeDir, "resources.pri");
+
+                if (File.Exists(resourcesPri))
+                {
+                    File.Delete(resourcesPri);
+                }
+            }
+            catch
+            {
+                // Best effort — MRT may still find our module PRI by name.
+            }
         }
 
         public static void OpenSettingsWindow(Type type = null, bool ensurePageIsSelected = false)

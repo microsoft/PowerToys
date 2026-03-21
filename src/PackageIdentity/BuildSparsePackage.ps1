@@ -13,7 +13,9 @@ Param(
     [switch]$Clean,
     [switch]$ForceCert,
     [switch]$NoSign,
-    [switch]$CIBuild
+    [switch]$CIBuild,
+    [switch]$DevRegister,
+    [switch]$Unregister
 )
 
 # PowerToys sparse packaging helper.
@@ -21,6 +23,19 @@ Param(
 # Multiple applications (PowerOCR, Settings UI, etc.) can share this single sparse identity.
 
 $ErrorActionPreference = 'Stop'
+
+# Handle -Unregister early exit
+if ($Unregister) {
+    $existing = Get-AppxPackage -Name 'Microsoft.PowerToys.SparseApp' -ErrorAction SilentlyContinue
+    if ($existing) {
+        Write-Host "Removing Microsoft.PowerToys.SparseApp..."
+        $existing | Remove-AppxPackage
+        Write-Host "Done."
+    } else {
+        Write-Host "Microsoft.PowerToys.SparseApp is not registered."
+    }
+    exit 0
+}
 
 $isCIBuild = $false
 if ($CIBuild.IsPresent) {
@@ -420,3 +435,61 @@ if ($NoSign) {
 Write-BuildLog "Register sparse package:" -Level Info
 Write-BuildLog "  Add-AppxPackage -Path `"$msixPath`" -ExternalLocation `"$outDir`"" -Level Warning
 Write-BuildLog "(If already installed and you changed manifest only): Add-AppxPackage -Register `"$manifestPath`" -ExternalLocation `"$outDir`" -ForceApplicationShutdown" -Level Warning
+
+# -DevRegister: automatically register the sparse package for local development
+if ($DevRegister) {
+    Write-BuildLog "`nDev registration requested..." -Level Info
+
+    # Remove existing registration
+    $existing = Get-AppxPackage -Name $script:Config.IdentityName -ErrorAction SilentlyContinue
+    if ($existing) {
+        Write-BuildLog "Removing existing registration..." -Level Info
+        $existing | Remove-AppxPackage
+    }
+
+    # Create a temp manifest with the dev publisher for -Register
+    $devRegDir = Join-Path ([System.IO.Path]::GetTempPath()) "PowerToysSparseDevReg"
+    if (Test-Path $devRegDir) { Remove-Item $devRegDir -Recurse -Force }
+    New-Item -ItemType Directory -Path $devRegDir -Force | Out-Null
+
+    try {
+        Copy-Item $manifestPath (Join-Path $devRegDir 'AppxManifest.xml')
+        $imagesDir = Join-Path $sparseDir 'Images'
+        if (Test-Path $imagesDir) {
+            Copy-Item $imagesDir (Join-Path $devRegDir 'Images') -Recurse
+        }
+
+        $devManifest = Join-Path $devRegDir 'AppxManifest.xml'
+        [xml]$devXml = Get-Content $devManifest -Raw
+        $devIdentity = $devXml.Package.Identity
+
+        if ($devIdentity.Publisher -ne $script:Config.CertSubject) {
+            Write-BuildLog "Rewriting publisher for dev registration" -Level Info
+            $devIdentity.SetAttribute('Publisher', $script:Config.CertSubject)
+            $devXml.Save($devManifest)
+        }
+
+        Write-BuildLog "Registering with ExternalLocation: $outDir" -Level Info
+        Add-AppxPackage -Register $devManifest -ExternalLocation $outDir
+
+        $pkg = Get-AppxPackage -Name $script:Config.IdentityName -ErrorAction SilentlyContinue
+        if ($pkg) {
+            Write-BuildLog "Dev registration successful:" -Level Success
+            Write-BuildLog "  Publisher:         $($pkg.Publisher)" -Level Info
+            Write-BuildLog "  PublisherId:       $($pkg.PublisherId)" -Level Info
+            Write-BuildLog "  IsDevelopmentMode: $($pkg.IsDevelopmentMode)" -Level Info
+            Write-BuildLog "  InstallLocation:   $($pkg.InstallLocation)" -Level Info
+
+            if ($pkg.PublisherId -ne 'djwsxzxb4ksa8') {
+                Write-BuildLog "PublisherId mismatch! Expected 'djwsxzxb4ksa8', got '$($pkg.PublisherId)'. LAF unlock will fail." -Level Warning
+            }
+        } else {
+            Write-BuildLog "Dev registration failed — package not found." -Level Error
+            exit 1
+        }
+    } finally {
+        if (Test-Path $devRegDir) {
+            Remove-Item $devRegDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}

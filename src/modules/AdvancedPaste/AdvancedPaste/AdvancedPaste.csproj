@@ -20,10 +20,8 @@
     <RootNamespace>AdvancedPaste</RootNamespace>
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- Workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10856:
-         SparseApp (unpackaged + self-contained) with package identity only loads resources.pri,
-         ignoring module-specific PRI files. -->
-    <ProjectPriFileName>resources.pri</ProjectPriFileName>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.AdvancedPaste.pri</ProjectPriFileName>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
   </PropertyGroup>
 
@@ -163,4 +161,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <!-- Workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10856:
+       WinAppSDK always emits resources.pri even when ProjectPriFileName is set.
+       This pollutes the shared WinUI3Apps folder and breaks other apps' MRT resolution.
+       Delete it after build; EnsureResourcesPri() in Program.cs recreates it at runtime
+       when AdvancedPaste actually launches with sparse identity. -->
+  <Target Name="RemoveDefaultResourcesPri" AfterTargets="CopyFilesToOutputDirectory;Build">
+    <Delete Files="$(OutDir)resources.pri" Condition="Exists('$(OutDir)resources.pri')" />
+  </Target>
 </Project>
