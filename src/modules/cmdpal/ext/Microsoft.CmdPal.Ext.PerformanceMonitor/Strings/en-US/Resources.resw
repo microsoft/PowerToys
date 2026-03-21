@@ -250,4 +250,19 @@
   <data name="Network_Receive_Subtitle" xml:space="preserve">
     <value>Receive ↓</value>
   </data>
+  <data name="Network_Speed_Unit_Setting_Title" xml:space="preserve">
+    <value>Network speed unit</value>
+  </data>
+  <data name="Network_Speed_Unit_Setting_Description" xml:space="preserve">
+    <value>Choose the unit used to display network transmission speed</value>
+  </data>
+  <data name="Network_Speed_Unit_BitsPerSec" xml:space="preserve">
+    <value>Bits per second (Kbps, Mbps, Gbps)</value>
+  </data>
+  <data name="Network_Speed_Unit_BytesPerSec" xml:space="preserve">
+    <value>Bytes per second (KB/s, MB/s, GB/s)</value>
+  </data>
+  <data name="Network_Speed_Unit_BinaryBytesPerSec" xml:space="preserve">
+    <value>Binary bytes per second (KiB/s, MiB/s, GiB/s)</value>
+  </data>
 </root>
