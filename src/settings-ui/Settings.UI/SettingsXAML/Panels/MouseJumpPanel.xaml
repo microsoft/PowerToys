@@ -137,8 +137,7 @@
                             x:Name="CopyStyleToCustom"
                             x:Uid="MouseUtils_MouseJump_CopyStyle"
                             Margin="20,0,0,0"
-                            Click="CopyStyleToCustom_Click"
-                            IsEnabled="{Binding SelectedIndex, ElementName=PreviewTypeSetting}" />
+                            Click="CopyStyleToCustom_Click" />
                     </StackPanel>
                 </tkcontrols:SettingsCard>
                 <tkcontrols:SettingsCard x:Name="MouseUtils_MouseJump_BackgroundColor1" x:Uid="MouseUtils_MouseJump_BackgroundColor1">

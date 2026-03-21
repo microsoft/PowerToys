@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -52,9 +53,9 @@
                             <Button
                                 x:Uid="GeneralPage_CheckForUpdates"
                                 HorizontalAlignment="Right"
-                                Command="{Binding CheckForUpdatesEventHandler}"
-                                IsEnabled="{Binding IsDownloadAllowed}"
-                                Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
+                                Command="{x:Bind ViewModel.CheckForUpdatesEventHandler, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.IsDownloadAllowed, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" />
                         </Grid>
                         <tkcontrols:SettingsExpander.ItemsHeader>
                             <InfoBar
@@ -116,9 +117,9 @@
                                     <Button
                                         x:Uid="General_DownloadAndInstall"
                                         Margin="0,0,0,16"
-                                        Command="{Binding UpdateNowButtonEventHandler}"
-                                        IsEnabled="{Binding IsDownloadAllowed}"
-                                        Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
+                                        Command="{x:Bind ViewModel.UpdateNowButtonEventHandler, Mode=OneWay}"
+                                        IsEnabled="{x:Bind ViewModel.IsDownloadAllowed, Mode=OneWay}"
+                                        Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" />
 
                                     <!--  In progress panel  -->
                                     <StackPanel
@@ -138,7 +139,7 @@
                                 <HyperlinkButton
                                     x:Uid="SeeWhatsNew"
                                     HorizontalAlignment="Right"
-                                    NavigateUri="{Binding PowerToysNewAvailableVersionLink, Mode=OneWay}"
+                                    NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionUri, Mode=OneWay}"
                                     Style="{StaticResource TextButtonStyle}" />
                             </InfoBar.ActionButton>
                         </InfoBar>
@@ -155,14 +156,14 @@
                                 <Button
                                     x:Uid="General_InstallNow"
                                     Margin="0,0,0,16"
-                                    Command="{Binding UpdateNowButtonEventHandler}"
-                                    IsEnabled="{Binding IsDownloadAllowed}" />
+                                    Command="{x:Bind ViewModel.UpdateNowButtonEventHandler, Mode=OneWay}"
+                                    IsEnabled="{x:Bind ViewModel.IsDownloadAllowed, Mode=OneWay}" />
                             </InfoBar.Content>
                             <InfoBar.ActionButton>
                                 <HyperlinkButton
                                     x:Uid="SeeWhatsNew"
                                     HorizontalAlignment="Right"
-                                    NavigateUri="{Binding PowerToysNewAvailableVersionLink, Mode=OneWay}"
+                                    NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionUri, Mode=OneWay}"
                                     Style="{StaticResource TextButtonStyle}" />
                             </InfoBar.ActionButton>
                         </InfoBar>
@@ -179,9 +180,9 @@
                                 <StackPanel Spacing="16">
                                     <Button
                                         x:Uid="General_TryAgainToDownloadAndInstall"
-                                        Command="{Binding UpdateNowButtonEventHandler}"
-                                        IsEnabled="{Binding IsDownloadAllowed}"
-                                        Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
+                                        Command="{x:Bind ViewModel.UpdateNowButtonEventHandler, Mode=OneWay}"
+                                        IsEnabled="{x:Bind ViewModel.IsDownloadAllowed, Mode=OneWay}"
+                                        Visibility="{x:Bind ViewModel.IsNewVersionDownloading, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" />
 
                                     <!--  In progress panel  -->
                                     <StackPanel
@@ -201,7 +202,7 @@
                                 <HyperlinkButton
                                     x:Uid="SeeWhatsNew"
                                     HorizontalAlignment="Right"
-                                    NavigateUri="{Binding PowerToysNewAvailableVersionLink, Mode=OneWay}"
+                                    NavigateUri="{x:Bind ViewModel.PowerToysNewAvailableVersionUri, Mode=OneWay}"
                                     Style="{StaticResource TextButtonStyle}" />
                             </InfoBar.ActionButton>
                         </InfoBar>
@@ -220,8 +221,8 @@
                         </tkcontrols:SettingsExpander.Description>
                         <Button
                             x:Uid="GeneralPage_RestartAsAdmin_Button"
-                            Command="{Binding RestartElevatedButtonEventHandler}"
-                            IsEnabled="{Binding IsAdminButtonEnabled}" />
+                            Command="{x:Bind ViewModel.RestartElevatedButtonEventHandler, Mode=OneWay}"
+                            IsEnabled="{x:Bind ViewModel.IsAdminButtonEnabled, Mode=OneWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsElevated, Mode=OneWay}">
                                 <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsChecked="{x:Bind ViewModel.RunElevated, Mode=TwoWay}" />
@@ -241,10 +242,15 @@
                         <ComboBox
                             x:Name="Languages_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            AutomationProperties.Name="{Binding ElementName=LanguageHeader, Path=Header}"
-                            DisplayMemberPath="Language"
-                            ItemsSource="{Binding Languages, Mode=TwoWay}"
-                            SelectedIndex="{Binding LanguagesIndex, Mode=TwoWay}" />
+                            AutomationProperties.Name="{x:Bind LanguageHeader.Header, Mode=OneWay}"
+                            ItemsSource="{x:Bind ViewModel.Languages, Mode=OneWay}"
+                            SelectedIndex="{x:Bind ViewModel.LanguagesIndex, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:LanguageModel">
+                                    <TextBlock Text="{x:Bind Language}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="LanguageRestartInfo"
@@ -330,8 +336,8 @@
                         x:Uid="General_SettingsBackupAndRestore"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup" Command="{Binding BackupConfigsEventHandler}" />
-                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore" Command="{Binding RestoreConfigsEventHandler}" />
+                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup" Command="{x:Bind ViewModel.BackupConfigsEventHandler, Mode=OneWay}" />
+                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore" Command="{x:Bind ViewModel.RestoreConfigsEventHandler, Mode=OneWay}" />
                         </StackPanel>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="GeneralSettingsBackupAndRestoreLocationText" x:Uid="General_SettingsBackupAndRestoreLocationText">
@@ -348,17 +354,17 @@
                                         Text="{x:Bind ViewModel.SettingsBackupAndRestoreDir, Mode=TwoWay}"
                                         TextWrapping="Wrap">
                                         <ToolTipService.ToolTip>
-                                            <ToolTip IsEnabled="{Binding IsTextTrimmed, ElementName=pathTextBlock, Mode=OneWay}">
+                                            <ToolTip IsEnabled="{x:Bind pathTextBlock.IsTextTrimmed, Mode=OneWay}">
                                                 <TextBlock Text="{x:Bind ViewModel.SettingsBackupAndRestoreDir, Mode=TwoWay}" />
                                             </ToolTip>
                                         </ToolTipService.ToolTip>
                                     </TextBlock>
-                                    <Button
-                                        x:Uid="General_SettingsBackupAndRestore_ButtonSelectFolder"
-                                        Grid.Column="1"
-                                        Command="{Binding SelectSettingBackupDirEventHandler}"
-                                        Content="&#xe8da;"
-                                        FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                        <Button
+                                            x:Uid="General_SettingsBackupAndRestore_ButtonSelectFolder"
+                                            Grid.Column="1"
+                                            Command="{x:Bind ViewModel.SelectSettingBackupDirEventHandler, Mode=OneWay}"
+                                            Content="&#xe8da;"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}">
                                         <ToolTipService.ToolTip>
                                             <ToolTip>
                                                 <TextBlock x:Uid="General_SettingsBackupAndRestore_ButtonSelectLocation" />

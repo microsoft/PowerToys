@@ -1,6 +1,14 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'PowerToys.Settings' and '$(SkipSettingsRegularBuildForAotPackaging)' == 'true'">
+    <BuildDependsOn>SkipSettingsRegularBuildForAotPackaging</BuildDependsOn>
+  </PropertyGroup>
+
+  <Target Name="SkipSettingsRegularBuildForAotPackaging" Condition="'$(MSBuildProjectName)' == 'PowerToys.Settings' and '$(SkipSettingsRegularBuildForAotPackaging)' == 'true'">
+    <Message Importance="high" Text="[Settings] Skipping regular Build because installer packaging will use Native AOT Publish output instead." />
+  </Target>
+
   <Target Name="IncrementalClean" />
 
 </Project>

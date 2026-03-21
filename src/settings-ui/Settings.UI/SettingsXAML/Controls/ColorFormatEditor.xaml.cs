@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Security.Cryptography;
-using System.Windows.Input;
 
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;

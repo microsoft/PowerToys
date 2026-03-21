@@ -653,6 +653,7 @@ IGo
 iid
 Iindex
 Ijwhost
+Ilc
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
@@ -2081,6 +2082,7 @@ Lbuttondown
 LCh
 lcid
 lcl
+llc
 LEFTALIGN
 leftclick
 Lenovo

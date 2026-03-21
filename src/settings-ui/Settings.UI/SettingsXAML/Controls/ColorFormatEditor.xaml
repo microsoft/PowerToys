@@ -9,7 +9,9 @@
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    x:DataType="models:ColorFormatModel"
     mc:Ignorable="d">
     <UserControl.Resources>
         <converters:ColorFormatConverter x:Key="ColorFormatConverter" />

@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pdmodels="using:PowerDisplay.Common.Models"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
@@ -115,10 +116,14 @@
                                             x:Uid="PowerDisplay_ProfileEditor_ColorTemperature_ComboBox"
                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                                             VerticalAlignment="Center"
-                                            DisplayMemberPath="DisplayName"
                                             ItemsSource="{x:Bind Monitor.ColorPresetsForDisplay, Mode=OneWay}"
-                                            SelectedValue="{x:Bind ColorTemperature, Mode=TwoWay}"
-                                            SelectedValuePath="VcpValue" />
+                                            SelectedItem="{x:Bind SelectedColorPreset, Mode=TwoWay}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="pdmodels:ColorPresetItem">
+                                                    <TextBlock Text="{x:Bind DisplayName}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
                                     </tkcontrols:SettingsCard>
                                 </tkcontrols:SettingsExpander.Items>
                             </tkcontrols:SettingsExpander>
