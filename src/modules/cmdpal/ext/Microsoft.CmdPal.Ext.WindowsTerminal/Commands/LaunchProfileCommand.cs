@@ -32,7 +32,10 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
 
         this.Name = Resources.launch_profile;
         this.Icon = new IconInfo(iconPath);
+        this.Id = MakeId(id, profile);
     }
+
+    internal static string MakeId(string appUserModelId, string profileName) => $"terminal/{appUserModelId}/{profileName}";
 
     private void Launch(string id, string profile)
     {
