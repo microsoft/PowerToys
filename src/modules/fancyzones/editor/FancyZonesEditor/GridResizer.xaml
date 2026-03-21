@@ -30,12 +30,12 @@
                         Width="2"
                         Height="20"
                         Margin="5,0,0,0"
-                        Fill="White" />
+                        Fill="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
                     <Rectangle
                         Width="2"
                         Height="20"
                         Margin="-5,0,0,0"
-                        Fill="White" />
+                        Fill="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
                 </Grid>
             </Border>
             <ControlTemplate.Triggers>

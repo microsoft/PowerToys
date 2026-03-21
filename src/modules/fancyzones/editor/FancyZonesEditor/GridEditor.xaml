@@ -36,9 +36,8 @@
                                 <TextBlock
                                     Margin="0,3,8,0"
                                     FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
                                     Text="&#xE746;" />
-                                <TextBlock Foreground="{DynamicResource PrimaryForegroundBrush}" Text="{x:Static props:Resources.Merge_zones}" />
+                                <TextBlock Text="{x:Static props:Resources.Merge_zones}" />
                             </StackPanel>
                         </Button>
                     </Border>

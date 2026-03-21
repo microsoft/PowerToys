@@ -56,7 +56,6 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
             <Setter Property="Padding" Value="1" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -138,14 +137,14 @@
                     VerticalContentAlignment="Center"
                     Content="ID"
                     DockPanel.Dock="Top"
-                    FontSize="64"
+                    FontSize="56"
                     FontWeight="SemiBold"
                     Foreground="{Binding ElementName=RootBorder, Path=BorderBrush}" />
                 <TextBlock
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     DockPanel.Dock="Bottom"
-                    FontSize="16"
+                    FontSize="14"
                     FontWeight="SemiBold"
                     Foreground="{Binding ElementName=RootBorder, Path=BorderBrush}"
                     Opacity="0.6">
@@ -259,15 +258,13 @@
                 Padding="4"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
-                Background="Transparent"
-                BorderThickness="0"
                 Click="OnClose"
                 Content="&#xE894;"
                 Focusable="False"
                 FontFamily="{StaticResource SymbolThemeFontFamily}"
                 FontSize="16"
                 IsTabStop="False"
-                Style="{DynamicResource CloseButtonStyle}"
+                Style="{DynamicResource SubtleButtonStyle}"
                 ToolTip="{x:Static props:Resources.Delete_Zone}" />
 
             <Canvas x:Name="Body" />

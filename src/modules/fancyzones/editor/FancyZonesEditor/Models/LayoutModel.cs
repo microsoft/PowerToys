@@ -166,27 +166,11 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        public bool CanBeSetAsHorizontalDefault
-        {
-            get
-            {
-                return MainWindowSettingsModel.DefaultLayouts.Layouts[(int)MonitorConfigurationType.Horizontal].Uuid != this.Uuid;
-            }
-        }
-
         public bool IsVerticalDefault
         {
             get
             {
                 return MainWindowSettingsModel.DefaultLayouts.Layouts[MonitorConfigurationType.Vertical].Uuid == this.Uuid;
-            }
-        }
-
-        public bool CanBeSetAsVerticalDefault
-        {
-            get
-            {
-                return MainWindowSettingsModel.DefaultLayouts.Layouts[MonitorConfigurationType.Vertical].Uuid != this.Uuid;
             }
         }
 
@@ -412,8 +396,6 @@ namespace FancyZonesEditor.Models
         {
             FirePropertyChanged(nameof(IsHorizontalDefault));
             FirePropertyChanged(nameof(IsVerticalDefault));
-            FirePropertyChanged(nameof(CanBeSetAsHorizontalDefault));
-            FirePropertyChanged(nameof(CanBeSetAsVerticalDefault));
         }
     }
 }

@@ -354,19 +354,18 @@
     <value>Custom layout</value>
   </data>
   <data name="MergeDescription" xml:space="preserve">
-    <value>Click and drag across zones.</value>
+    <value>Click and drag across zones to merge or delete them.</value>
     <comment>Click mouse, hold button down and drag across multiple zones in tool</comment>
   </data>
   <data name="MergeName" xml:space="preserve">
-    <value>Merge/Delete:</value>
+    <value>Merging or deleting zones</value>
     <comment>Title for concept behind Merging two zones together or removing a zone</comment>
   </data>
   <data name="KeyboardControlsName" xml:space="preserve">
-    <value>Keyboard navigation:</value>
+    <value>Keyboard navigation</value>
   </data>
   <data name="KeyboardControlsDescription" xml:space="preserve">
-    <value>
-• Shift+S to split currently focused zone.
+    <value>• Shift+S to split currently focused zone.
 • Ctrl+Tab to focus zones/resizers.
 • Tab to cycle zones and resizers.
 • Delete to remove the focused resizer.
@@ -381,11 +380,11 @@
 • Ctrl+Arrows to move the focused zone by 1px.</value>
   </data>
   <data name="SplitterDescription" xml:space="preserve">
-    <value>Hold Shift key for vertical split.</value>
+    <value>Click a zone to split it. Hold Shift to change the split direction</value>
     <comment>A segmenter visual for splitting one item into two.  This would be the vertical line. Shift key is referring to key on keyboard</comment>
   </data>
   <data name="SplitterName" xml:space="preserve">
-    <value>Splitter:</value>
+    <value>Splitting zones</value>
     <comment>Title for concept: A segmenter visual for splitting one item into two.  This would be the vertical line</comment>
   </data>
   <data name="QuickKey_Description" xml:space="preserve">

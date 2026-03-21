@@ -10,10 +10,14 @@
         ShadowDepth="1" />
 
     <Style x:Key="GridLayoutSmallScalePreviewStyle" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource LayoutPreviewSmallScaleZoneBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource LayoutItemBackgroundBrush}" />
+        <Setter Property="Background">
+            <Setter.Value>
+                <SolidColorBrush Color="{DynamicResource ControlStrongFillColorDefault}" Opacity="0.2" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlStrongFillColorDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="CornerRadius" Value="2" />
     </Style>
 
     <Style x:Key="GridLayoutActualScalePreviewStyle" TargetType="Border">
@@ -24,10 +28,14 @@
     </Style>
 
     <Style x:Key="CanvasLayoutSmallScalePreviewStyle" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource LayoutPreviewSmallScaleZoneBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource LayoutItemBackgroundBrush}" />
-        <Setter Property="BorderThickness" Value="10" />
-        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Background">
+            <Setter.Value>
+                <SolidColorBrush Color="{DynamicResource ControlStrongFillColorDefault}" Opacity="0.2" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlStrongFillColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="2" />
     </Style>
 
     <Style x:Key="CanvasLayoutActualScalePreviewStyle" TargetType="Border">

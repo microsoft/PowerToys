@@ -9,8 +9,13 @@
     d:DesignWidth="800"
     Loaded="OnLoaded"
     mc:Ignorable="d">
+    <UserControl.Style>
+        <Style TargetType="UserControl">
+            <Setter Property="Background" Value="{DynamicResource SmokeFillColorDefaultBrush}" />
+        </Style>
+    </UserControl.Style>
     <Grid>
-        <Border Background="{DynamicResource LayoutPreviewBackgroundBrush}" CornerRadius="4" />
+        <Border Background="{Binding Background, RelativeSource={RelativeSource AncestorType=UserControl}}" CornerRadius="8" />
         <Grid x:Name="Body" Background="Transparent" />
     </Grid>
 </UserControl>

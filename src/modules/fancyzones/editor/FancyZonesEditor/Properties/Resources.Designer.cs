@@ -19,7 +19,7 @@ namespace FancyZonesEditor.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -547,8 +547,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 
-        ///• Shift+S to split currently focused zone.
+        ///   Looks up a localized string similar to • Shift+S to split currently focused zone.
         ///• Ctrl+Tab to focus zones/resizers.
         ///• Tab to cycle zones and resizers.
         ///• Delete to remove the focused resizer.
@@ -575,7 +574,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Keyboard navigation:.
+        ///   Looks up a localized string similar to Keyboard navigation.
         /// </summary>
         public static string KeyboardControlsName {
             get {
@@ -638,7 +637,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Click and drag across zones..
+        ///   Looks up a localized string similar to Click and drag across zones to merge or delete them..
         /// </summary>
         public static string MergeDescription {
             get {
@@ -647,7 +646,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Merge/Delete:.
+        ///   Looks up a localized string similar to Merging or deleting zones.
         /// </summary>
         public static string MergeName {
             get {
@@ -863,7 +862,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Hold Shift key for vertical split..
+        ///   Looks up a localized string similar to Click a zone to split it. Hold Shift to change the split direction.
         /// </summary>
         public static string SplitterDescription {
             get {
@@ -872,7 +871,7 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Splitter:.
+        ///   Looks up a localized string similar to Splitting zones.
         /// </summary>
         public static string SplitterName {
             get {

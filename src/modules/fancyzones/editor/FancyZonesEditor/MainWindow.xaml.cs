@@ -681,16 +681,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private void SetLayoutAsVerticalDefaultButton_Click(object sender, RoutedEventArgs e)
-        {
-            var dataContext = ((FrameworkElement)sender).DataContext;
-            if (dataContext is LayoutModel model)
-            {
-                MainWindowSettingsModel.DefaultLayouts.Set(model, MonitorConfigurationType.Vertical);
-            }
-        }
-
-        private void SetLayoutAsHorizontalDefaultButton_Click(object sender, RoutedEventArgs e)
+        private void HorizontalDefaultCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             var dataContext = ((FrameworkElement)sender).DataContext;
             if (dataContext is LayoutModel model)
@@ -699,22 +690,23 @@ namespace FancyZonesEditor
             }
         }
 
-        private void HorizontalDefaultLayoutButton_Click(object sender, RoutedEventArgs e)
+        private void HorizontalDefaultCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Horizontal);
+        }
+
+        private void VerticalDefaultCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             var dataContext = ((FrameworkElement)sender).DataContext;
             if (dataContext is LayoutModel model)
             {
-                MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Horizontal);
+                MainWindowSettingsModel.DefaultLayouts.Set(model, MonitorConfigurationType.Vertical);
             }
         }
 
-        private void VerticalDefaultLayoutButton_Click(object sender, RoutedEventArgs e)
+        private void VerticalDefaultCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
-            var dataContext = ((FrameworkElement)sender).DataContext;
-            if (dataContext is LayoutModel model)
-            {
-                MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Vertical);
-            }
+            MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Vertical);
         }
     }
 }

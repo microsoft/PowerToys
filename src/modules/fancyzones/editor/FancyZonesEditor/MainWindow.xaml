@@ -14,7 +14,6 @@
     Title="{x:Static props:Resources.Fancy_Zones_Editor_App_Title}"
     MinWidth="360"
     AutomationProperties.Name="{x:Static props:Resources.Fancy_Zones_Main_Editor}"
-    Background="{DynamicResource PrimaryBackgroundBrush}"
     Closing="OnClosing"
     ContentRendered="OnContentRendered"
     ResizeMode="CanResize"
@@ -115,37 +114,26 @@
             </Border>
         </DataTemplate>
         <DataTemplate x:Key="LayoutItemTemplate">
-            <Grid Background="Transparent">
-                <Grid
-                    Width="180"
-                    Height="140"
-                    Margin="16,12,16,16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="24" />
-                        <RowDefinition Height="124" />
-                        <RowDefinition Height="0" />
-                    </Grid.RowDefinitions>
-                    <TextBlock
-                        Name="layoutName"
-                        Margin="0,0,24,0"
-                        FontSize="16"
-                        FontWeight="SemiBold"
-                        Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}"
-                        Text="{Binding Name}"
-                        TextTrimming="CharacterEllipsis"
-                        ToolTip="{Binding Name}" />
-                    <local:LayoutPreview
-                        Grid.Row="1"
-                        Margin="0,8,0,8"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch" />
-                </Grid>
+            <Grid Width="186" Height="148">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Name="layoutName"
+                    Margin="12,12,24,12"
+                    FontWeight="SemiBold"
+                    Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}"
+                    Text="{Binding Name}"
+                    TextTrimming="CharacterEllipsis"
+                    ToolTip="{Binding Name}" />
+
                 <Button
                     x:Name="EditLayoutButton"
-                    Grid.RowSpan="4"
                     Width="36"
                     Height="36"
-                    Margin="4"
+                    Margin="0,4,4,0"
                     Padding="0"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
@@ -154,7 +142,6 @@
                     Background="Transparent"
                     BorderBrush="Transparent"
                     Click="EditLayout_Click"
-                    Foreground="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContentPresenter}}}"
                     Style="{StaticResource AccentButtonStyle}"
                     ToolTip="{x:Static props:Resources.Edit}"
                     Visibility="{Binding Path=Type, Converter={StaticResource LayoutModelTypeBlankToVisibilityConverter}}">
@@ -162,10 +149,25 @@
                         <TextBlock
                             AutomationProperties.Name="{x:Static props:Resources.Edit}"
                             FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                            FontSize="16"
+                            FontSize="14"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                             Text="&#xE70F;" />
                     </Button.Content>
                 </Button>
+
+                <Border
+                    Grid.Row="1"
+                    Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="0,1,0,0"
+                    CornerRadius="0,0,8,8">
+                    <local:LayoutPreview
+                        Margin="4"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Background="Transparent" />
+                </Border>
+
             </Grid>
         </DataTemplate>
 
@@ -175,12 +177,17 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="1" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-
-        <Grid Grid.Row="1" Background="{DynamicResource PrimaryBackgroundBrush}">
+        <Rectangle
+            Grid.Row="1"
+            Height="1"
+            HorizontalAlignment="Stretch"
+            Fill="{DynamicResource CardStrokeColorDefaultBrush}" />
+        <Grid Grid.Row="2">
             <ScrollViewer>
-                <Grid Margin="16,16,16,32">
+                <Grid Background="{DynamicResource LayerFillColorDefaultBrush}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -191,14 +198,15 @@
 
                     <local:HeadingTextBlock
                         x:Name="TemplatesHeaderBlock"
+                        Margin="24,24,0,0"
                         AutomationProperties.HeadingLevel="Level1"
-                        FontSize="24"
+                        FontSize="16"
                         FontWeight="SemiBold"
                         Text="{x:Static props:Resources.Templates}" />
 
                     <ListView
                         Grid.Row="1"
-                        Margin="-8,8,-8,0"
+                        Margin="16,8,0,24"
                         AutomationProperties.LabeledBy="{Binding ElementName=TemplatesHeaderBlock}"
                         ItemTemplate="{StaticResource LayoutItemTemplate}"
                         ItemsSource="{Binding TemplateModels}"
@@ -222,17 +230,16 @@
                     <local:HeadingTextBlock
                         x:Name="CustomHeaderBlock"
                         Grid.Row="2"
-                        Margin="0,16,0,0"
+                        Margin="24,16,0,0"
                         AutomationProperties.HeadingLevel="Level1"
-                        FontSize="24"
+                        FontSize="16"
                         FontWeight="SemiBold"
                         Text="{x:Static props:Resources.Custom}" />
 
-
+                    <!--  Empty state message  -->
                     <StackPanel
                         Grid.Row="4"
                         Height="240"
-                        Margin="16,48,16,16"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Opacity="0.6"
@@ -250,16 +257,16 @@
                         <Path
                             Height="38"
                             Data="M45,48H25.5V45H45V25.5H25.5v-3H45V3H25.5V0H48V48ZM22.5,48H3V45H22.5V3H3V0H25.5V48ZM0,48V0H3V48Z"
-                            Fill="{DynamicResource SecondaryForegroundBrush}"
+                            Fill="{DynamicResource TextFillColorSecondaryBrush}"
                             Stretch="Uniform" />
                         <TextBlock
                             Margin="0,16,0,0"
-                            Foreground="{DynamicResource SecondaryForegroundBrush}"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                             Text="{x:Static props:Resources.No_Custom_Layouts_Message}" />
                     </StackPanel>
                     <ListView
                         Grid.Row="4"
-                        Margin="-8,8,-8,0"
+                        Margin="16,8,0,0"
                         AutomationProperties.LabeledBy="{Binding ElementName=CustomHeaderBlock}"
                         ItemTemplate="{StaticResource LayoutItemTemplate}"
                         ItemsSource="{Binding CustomModels}"
@@ -303,26 +310,14 @@
                         Foreground="{DynamicResource AccentButtonForeground}"
                         Text="&#xE710;" />
                     <TextBlock
-                        Margin="12,-3,0,0"
+                        Margin="8,-3,0,0"
                         Foreground="{DynamicResource AccentButtonForeground}"
                         Text="{x:Static props:Resources.Create_new_layout}" />
                 </StackPanel>
-                <Button.Effect>
-                    <DropShadowEffect
-                        BlurRadius="6"
-                        Opacity="0.32"
-                        ShadowDepth="1" />
-                </Button.Effect>
             </Button>
         </Grid>
 
-        <Grid Background="{DynamicResource TertiaryBackgroundBrush}">
-            <Grid.Effect>
-                <DropShadowEffect
-                    BlurRadius="6"
-                    Opacity="0.32"
-                    ShadowDepth="1" />
-            </Grid.Effect>
+        <Grid Margin="0,12,0,24">
             <ScrollViewer
                 Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UIElement}}"
                 PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
@@ -375,169 +370,165 @@
             -->
         </Grid>
 
-        <!-- Edit Layout Dialog Overlay -->
-        <Grid x:Name="EditLayoutDialogOverlay" Grid.RowSpan="2" Visibility="Collapsed" Panel.ZIndex="100">
-            <Border Background="#80000000" MouseLeftButtonDown="DialogBackdrop_MouseLeftButtonDown" />
+        <!--  Edit Layout Dialog Overlay  -->
+        <Grid
+            x:Name="EditLayoutDialogOverlay"
+            Grid.RowSpan="2"
+            Panel.ZIndex="100"
+            Visibility="Collapsed">
+            <Border Background="{DynamicResource SmokeFillColorDefaultBrush}" MouseLeftButtonDown="DialogBackdrop_MouseLeftButtonDown" />
             <Border
-                MaxWidth="420"
+                Width="520"
                 Margin="0,40,0,40"
-                Padding="24,16,0,24"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Background="{DynamicResource PrimaryBackgroundBrush}"
+                Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                BorderThickness="1"
                 CornerRadius="8">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+                <Grid Margin="24,16,24,24" DataContext="{Binding SelectedModel}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Border
+                        Grid.RowSpan="2"
+                        Margin="-24,-16,-24,0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Background="{DynamicResource LayerFillColorAltBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="0,0,0,1"
+                        CornerRadius="8,8,0,0" />
+                    <!--  Title  -->
+
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <!-- Title -->
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
                         <local:HeadingTextBlock
                             x:Name="EditLayoutDialogTitle"
-                            MaxWidth="320"
-                            Margin="0,0,96,0"
                             AutomationProperties.HeadingLevel="Level1"
+                            FontSize="20"
+                            FontWeight="SemiBold"
                             Loaded="EditLayoutDialogTitle_Loaded"
                             Style="{StaticResource HeadingTextBlock}" />
 
-                        <!-- Content -->
-                        <Grid Grid.Row="1" Margin="4,4,24,0" DataContext="{Binding SelectedModel}">
+                        <StackPanel
+                            Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Orientation="Horizontal">
+                            <Button
+                                x:Name="duplicateLayoutButton"
+                                AutomationProperties.Name="{x:Static props:Resources.Duplicate}"
+                                Click="DuplicateLayout_Click"
+                                Style="{StaticResource SubtleButtonStyle}"
+                                ToolTip="{x:Static props:Resources.Duplicate}"
+                                Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                                <Button.Content>
+                                    <TextBlock
+                                        AutomationProperties.Name="{x:Static props:Resources.Duplicate}"
+                                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                        FontSize="16"
+                                        Text="&#xE8C8;" />
+                                </Button.Content>
+                            </Button>
+                            <!--  Used by narrator for announcements  -->
+                            <TextBlock x:Name="LayoutCreationAnnounce" />
+                            <Button
+                                x:Name="createFromTemplateLayoutButton"
+                                AutomationProperties.Name="{x:Static props:Resources.Create_Custom_From_Template}"
+                                Click="DuplicateLayout_Click"
+                                Style="{StaticResource SubtleButtonStyle}"
+                                ToolTip="{x:Static props:Resources.Create_Custom_From_Template}"
+                                Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
+                                <Button.Content>
+                                    <TextBlock
+                                        AutomationProperties.Name="{x:Static props:Resources.Create_Custom_From_Template}"
+                                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                        FontSize="16"
+                                        Text="&#xE8C8;" />
+                                </Button.Content>
+                            </Button>
 
-                            <StackPanel
-                                Margin="0,0,0,0"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Top"
-                                Orientation="Horizontal">
-                                <Button
-                                    x:Name="duplicateLayoutButton"
-                                    AutomationProperties.Name="{x:Static props:Resources.Duplicate}"
-                                    Click="DuplicateLayout_Click"
-                                    Style="{StaticResource IconOnlyButtonStyle}"
-                                    ToolTip="{x:Static props:Resources.Duplicate}"
-                                    Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
-                                    <Button.Content>
-                                        <TextBlock
-                                            AutomationProperties.Name="{x:Static props:Resources.Duplicate}"
-                                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                            FontSize="16"
-                                            Text="&#xE8C8;" />
-                                    </Button.Content>
-                                </Button>
-                                <!--  Used by narrator for announcements  -->
-                                <TextBlock x:Name="LayoutCreationAnnounce" />
-                                <Button
-                                    x:Name="createFromTemplateLayoutButton"
-                                    AutomationProperties.Name="{x:Static props:Resources.Create_Custom_From_Template}"
-                                    Click="DuplicateLayout_Click"
-                                    Style="{StaticResource IconOnlyButtonStyle}"
-                                    ToolTip="{x:Static props:Resources.Create_Custom_From_Template}"
-                                    Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
-                                    <Button.Content>
-                                        <TextBlock
-                                            AutomationProperties.Name="{x:Static props:Resources.Create_Custom_From_Template}"
-                                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                            FontSize="16"
-                                            Text="&#xE8C8;" />
-                                    </Button.Content>
-                                </Button>
+                            <Button
+                                x:Name="deleteLayoutButton"
+                                AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                Click="DeleteLayout_Click"
+                                Style="{StaticResource SubtleButtonStyle}"
+                                ToolTip="{x:Static props:Resources.Delete}"
+                                Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
+                                <Button.Content>
+                                    <TextBlock
+                                        AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                        FontSize="16"
+                                        Foreground="#C42B1C"
+                                        Text="&#xE74D;" />
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
 
-                                <Button
-                                    x:Name="deleteLayoutButton"
-                                    AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                                    Click="DeleteLayout_Click"
-                                    Style="{StaticResource IconOnlyButtonStyle}"
-                                    ToolTip="{x:Static props:Resources.Delete}"
-                                    Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeCustomToVisibilityConverter}}">
-                                    <Button.Content>
-                                        <TextBlock
-                                            AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                            FontSize="16"
-                                            Foreground="#C42B1C"
-                                            Text="&#xE74D;" />
-                                    </Button.Content>
-                                </Button>
-                            </StackPanel>
-
+                    <ScrollViewer
+                        Grid.Row="1"
+                        Margin="-24,0,-24,0"
+                        VerticalScrollBarVisibility="Auto">
+                        <!--  Content  -->
+                        <Grid Margin="24,0,24,0">
                             <StackPanel>
                                 <StackPanel
                                     Margin="0,24,0,0"
                                     HorizontalAlignment="Stretch"
-                                    Orientation="Horizontal"
+                                    Orientation="Vertical"
                                     Visibility="{Binding IsCustom, Converter={StaticResource BooleanToVisibilityConverter}}">
-
                                     <TextBlock
                                         Margin="0,0,0,8"
                                         VerticalAlignment="Bottom"
                                         AutomationProperties.Name="{x:Static props:Resources.Name}"
-                                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                        FontSize="16"
-                                        Text="&#xE932;"
+                                        Text="Name"
                                         ToolTip="{x:Static props:Resources.Name}" />
                                     <TextBox
-                                        MinWidth="286"
-                                        MaxWidth="286"
-                                        Margin="12,0,0,0"
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.Name="{x:Static props:Resources.Name}"
                                         GotKeyboardFocus="TextBox_GotKeyboardFocus"
                                         Text="{Binding Name}" />
 
 
-                                </StackPanel>
-
-                                <!--  Shortcut panel  -->
-                                <StackPanel
-                                    Margin="0,12,0,36"
-                                    Orientation="Vertical"
-                                    Visibility="{Binding IsCustom, Converter={StaticResource BooleanToVisibilityConverter}}">
-
-                                    <StackPanel Margin="28,0,0,4" Orientation="Horizontal">
+                                    <!--  Shortcut panel  -->
+                                    <StackPanel Margin="0,16,0,8" Orientation="Horizontal">
                                         <TextBlock x:Name="QuickKeyTitle" Text="{x:Static props:Resources.QuickKey_Title}" />
                                         <TextBlock
                                             Margin="8,4,0,0"
                                             AutomationProperties.Name="{x:Static props:Resources.QuickKey_Description}"
                                             FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                            Foreground="{DynamicResource AccentFillColorDefaultBrush}"
+                                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                             Text="&#xE946;"
                                             ToolTip="{x:Static props:Resources.QuickKey_Description}"
                                             ToolTipService.InitialShowDelay="0" />
                                     </StackPanel>
-
-
-                                    <StackPanel Orientation="Horizontal">
-
-                                        <TextBlock
-                                            VerticalAlignment="Center"
-                                            AutomationProperties.Name="{x:Static props:Resources.QuickKey_Title}"
-                                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                            FontSize="16"
-                                            Text="&#xEDA7;"
-                                            ToolTip="{x:Static props:Resources.QuickKey_Title}" />
-
-                                        <ComboBox
-                                            x:Name="quickKeySelectionComboBox"
-                                            Width="286"
-                                            Margin="12,0,0,0"
-                                            AutomationProperties.HelpText="{x:Static props:Resources.QuickKey_Description}"
-                                            AutomationProperties.LabeledBy="{Binding ElementName=QuickKeyTitle}"
-                                            AutomationProperties.Name="{x:Static props:Resources.QuickKey_Title}"
-                                            ItemsSource="{Binding QuickKeysAvailable}"
-                                            KeyDown="ComboBox_KeyDown"
-                                            SelectedItem="{Binding QuickKey}" />
-                                    </StackPanel>
-
+                                    <ComboBox
+                                        x:Name="quickKeySelectionComboBox"
+                                        HorizontalAlignment="Stretch"
+                                        AutomationProperties.HelpText="{x:Static props:Resources.QuickKey_Description}"
+                                        AutomationProperties.LabeledBy="{Binding ElementName=QuickKeyTitle}"
+                                        AutomationProperties.Name="{x:Static props:Resources.QuickKey_Title}"
+                                        ItemsSource="{Binding QuickKeysAvailable}"
+                                        KeyDown="ComboBox_KeyDown"
+                                        SelectedItem="{Binding QuickKey}" />
                                 </StackPanel>
 
                                 <Grid
                                     Width="218"
                                     Height="124"
-                                    Margin="24,12,0,24"
+                                    Margin="0,24,0,0"
                                     HorizontalAlignment="Left">
                                     <local:LayoutPreview />
-
                                     <Button
                                         x:Name="editZoneLayoutButton"
                                         Width="36"
@@ -564,28 +555,18 @@
                                     Orientation="Horizontal"
                                     Visibility="{Binding Path=Type, Converter={StaticResource LayoutTypeTemplateToVisibilityConverter}}">
 
-                                    <TextBlock
-                                        Margin="0,16,0,0"
-                                        VerticalAlignment="Center"
-                                        AutomationProperties.Name="{x:Static props:Resources.Number_of_zones}"
-                                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                        FontSize="16"
-                                        Text="&#xECA5;"
-                                        ToolTip="{x:Static props:Resources.Number_of_zones}" />
-
                                     <StackPanel Orientation="Vertical">
                                         <TextBlock
                                             x:Name="templateZoneCountTitle"
-                                            Margin="12,0,0,4"
+                                            Margin="0,0,0,8"
                                             Text="{x:Static props:Resources.Number_of_zones}"
                                             TextWrapping="Wrap" />
 
                                         <StackPanel Orientation="Horizontal">
                                             <fancyZonesControls:CustomSlider
                                                 x:Name="TemplateZoneCount"
-                                                MinWidth="216"
-                                                Margin="12,0,0,0"
-                                                HorizontalAlignment="Left"
+                                                MinWidth="256"
+                                                HorizontalAlignment="Stretch"
                                                 AutomationProperties.HelpText="{x:Static props:Resources.Number_of_zones}"
                                                 IsMoveToPointEnabled="True"
                                                 LargeChange="10"
@@ -595,103 +576,65 @@
                                                 ToolTip="{Binding TemplateZoneCount}"
                                                 ValueChanged="TemplateZoneCount_ValueChanged"
                                                 Value="{Binding TemplateZoneCount}" />
-
                                             <TextBlock
-                                                Margin="6,0,0,0"
+                                                Margin="8,0,0,0"
                                                 VerticalAlignment="Center"
                                                 FontSize="12"
-                                                Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                                Text="{Binding TemplateZoneCount}"
-                                                TextWrapping="Wrap" />
-
-                                            <TextBlock
-                                                Margin="6,0,0,0"
-                                                VerticalAlignment="Center"
-                                                FontSize="12"
-                                                Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                                Text="{x:Static props:Resources.Zones}"
-                                                TextWrapping="Wrap" />
+                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                TextWrapping="Wrap">
+                                                <Run Text="{Binding TemplateZoneCount}" />
+                                                <Run Text="{x:Static props:Resources.Zones}" />
+                                            </TextBlock>
                                         </StackPanel>
                                     </StackPanel>
                                 </StackPanel>
 
-                                <StackPanel Margin="0,12,0,0" Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}">
-                                    <TextBlock
-                                        x:Name="spacingTitle"
-                                        Margin="28,0,0,4"
-                                        Text="{x:Static props:Resources.Space_Around_Zones}"
-                                        TextWrapping="Wrap" />
-                                    <StackPanel Orientation="Horizontal">
+                                <StackPanel Margin="0,16,0,0" Visibility="{Binding Converter={StaticResource LayoutModelTypeToVisibilityConverter}}">
+                                    <CheckBox
+                                        x:Name="spaceAroundSetting"
+                                        Margin="0,0,0,8"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="{x:Static props:Resources.Show_Space_Zones}"
+                                        Content="{x:Static props:Resources.Space_Around_Zones}"
+                                        IsChecked="{Binding ShowSpacing}" />
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding IsChecked, ElementName=spaceAroundSetting, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <fancyZonesControls:CustomSlider
+                                            x:Name="Spacing"
+                                            MinWidth="256"
+                                            HorizontalAlignment="Left"
+                                            AutomationProperties.HelpText="{x:Static props:Resources.Space_Around_Zones}"
+                                            IsEnabled="{Binding ShowSpacing}"
+                                            IsMoveToPointEnabled="True"
+                                            LargeChange="10"
+                                            Maximum="{Binding SpacingMaximum}"
+                                            Minimum="{Binding SpacingMinimum}"
+                                            SmallChange="1"
+                                            ToolTip="{Binding Spacing}"
+                                            ValueChanged="Spacing_ValueChanged"
+                                            Value="{Binding Spacing}" />
                                         <TextBlock
+                                            Margin="8,0,0,0"
                                             VerticalAlignment="Center"
-                                            AutomationProperties.Name="{x:Static props:Resources.Space_Around_Zones}"
-                                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                            FontSize="16"
-                                            Text="&#xE91B;"
-                                            ToolTip="{x:Static props:Resources.Space_Around_Zones}" />
-
-                                        <StackPanel Orientation="Horizontal">
-                                            <fancyZonesControls:CustomSlider
-                                                x:Name="Spacing"
-                                                MinWidth="216"
-                                                Margin="12,0,0,0"
-                                                HorizontalAlignment="Left"
-                                                AutomationProperties.HelpText="{x:Static props:Resources.Space_Around_Zones}"
-                                                IsEnabled="{Binding ShowSpacing}"
-                                                IsMoveToPointEnabled="True"
-                                                LargeChange="10"
-                                                Maximum="{Binding SpacingMaximum}"
-                                                Minimum="{Binding SpacingMinimum}"
-                                                SmallChange="1"
-                                                ToolTip="{Binding Spacing}"
-                                                ValueChanged="Spacing_ValueChanged"
-                                                Value="{Binding Spacing}" />
-
-                                            <TextBlock
-                                                Margin="6,0,0,0"
-                                                VerticalAlignment="Center"
-                                                FontSize="12"
-                                                Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                                Text="{Binding Spacing}"
-                                                TextWrapping="Wrap" />
-
-                                            <TextBlock
-                                                Margin="6,0,0,0"
-                                                VerticalAlignment="Center"
-                                                FontSize="12"
-                                                Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                                Text="{x:Static props:Resources.Pixels}"
-                                                TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <CheckBox
-                                            x:Name="spaceAroundSetting"
-                                            Margin="12,0,0,0"
-                                            VerticalAlignment="Center"
-                                            AutomationProperties.Name="{x:Static props:Resources.Show_Space_Zones}"
-                                            IsChecked="{Binding ShowSpacing}" />
-
+                                            FontSize="12"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding}"
+                                            TextWrapping="Wrap">
+                                            <Run Text="{Binding Spacing}" />
+                                            <Run Text="{x:Static props:Resources.Pixels}" />
+                                        </TextBlock>
                                     </StackPanel>
                                 </StackPanel>
 
-                                <StackPanel Margin="0,12,0,0">
+                                <StackPanel Margin="0,16,0,0">
                                     <TextBlock
                                         x:Name="distanceTitle"
-                                        Margin="28,0,0,4"
                                         Text="{x:Static props:Resources.Distance_adjacent_zones}"
                                         TextWrapping="Wrap" />
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock
-                                            VerticalAlignment="Center"
-                                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                            FontSize="16"
-                                            Text="&#xE78A;"
-                                            ToolTip="{x:Static props:Resources.Distance_adjacent_zones}" />
 
                                         <fancyZonesControls:CustomSlider
                                             x:Name="SensitivityInput"
-                                            MinWidth="216"
-                                            Margin="12,0,0,0"
+                                            MinWidth="256"
                                             HorizontalAlignment="Left"
                                             AutomationProperties.HelpText="{x:Static props:Resources.Distance_adjacent_zones}"
                                             DockPanel.Dock="Top"
@@ -705,129 +648,109 @@
                                             Value="{Binding SensitivityRadius}" />
 
                                         <TextBlock
-                                            Margin="6,0,0,0"
+                                            Margin="8,0,0,0"
                                             VerticalAlignment="Center"
                                             FontSize="12"
-                                            Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                            Text="{Binding SensitivityRadius}"
-                                            TextWrapping="Wrap" />
-
-                                        <TextBlock
-                                            Margin="6,0,0,0"
-                                            VerticalAlignment="Center"
-                                            FontSize="12"
-                                            Foreground="{DynamicResource SecondaryForegroundBrush}"
-                                            Text="{x:Static props:Resources.Pixels}"
-                                            TextWrapping="Wrap" />
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                            TextWrapping="Wrap">
+                                            <Run Text="{Binding SensitivityRadius}" />
+                                            <Run Text="{x:Static props:Resources.Pixels}" />
+                                        </TextBlock>
                                     </StackPanel>
                                 </StackPanel>
 
                                 <StackPanel
-                                    Margin="0,16,0,0"
+                                    Margin="0,16,0,16"
                                     HorizontalAlignment="Left"
                                     Orientation="Vertical">
-
-                                    <Button
-                                        x:Name="SetLayoutAsHorizontalDefaultButton"
-                                        AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Horizontal_Default}"
-                                        Click="SetLayoutAsHorizontalDefaultButton_Click"
-                                        Style="{StaticResource IconOnlyButtonStyle}"
-                                        ToolTip="{x:Static props:Resources.Set_Layout_As_Horizontal_Default}"
-                                        Visibility="{Binding CanBeSetAsHorizontalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <Button.Content>
-                                            <TextBlock AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Horizontal_Default}" FontSize="16">
-                                                <Run FontFamily="{DynamicResource SymbolThemeFontFamily}" Text="&#xE734;" />
-                                                <Run Text="{x:Static props:Resources.Default_Layout_Horizontal}" />
-                                            </TextBlock>
-                                        </Button.Content>
-                                    </Button>
-                                    <Button
-                                        x:Name="HorizontalDefaultLayoutButton"
+                                    <CheckBox
+                                        x:Name="HorizontalDefaultCheckBox"
                                         AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Horizontal}"
-                                        Click="HorizontalDefaultLayoutButton_Click"
-                                        Style="{StaticResource IconOnlyButtonStyle}"
-                                        ToolTip="{x:Static props:Resources.Default_Layout_Horizontal}"
-                                        Visibility="{Binding IsHorizontalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <Button.Content>
-                                            <TextBlock AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Horizontal}" FontSize="16">
-                                                <Run FontFamily="{DynamicResource SymbolThemeFontFamily}" Text="&#xE735;" />
-                                                <Run Text="{x:Static props:Resources.Default_Layout_Horizontal}" />
-                                            </TextBlock>
-                                        </Button.Content>
-                                    </Button>
+                                        Checked="HorizontalDefaultCheckBox_Checked"
+                                        Content="{x:Static props:Resources.Default_Layout_Horizontal}"
+                                        IsChecked="{Binding IsHorizontalDefault, Mode=OneWay}"
+                                        Unchecked="HorizontalDefaultCheckBox_Unchecked" />
 
-                                    <Button
-                                        x:Name="SetLayoutAsVerticalDefaultButton"
-                                        AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Vertical_Default}"
-                                        Click="SetLayoutAsVerticalDefaultButton_Click"
-                                        Style="{StaticResource IconOnlyButtonStyle}"
-                                        ToolTip="{x:Static props:Resources.Set_Layout_As_Vertical_Default}"
-                                        Visibility="{Binding CanBeSetAsVerticalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <Button.Content>
-                                            <TextBlock AutomationProperties.Name="{x:Static props:Resources.Set_Layout_As_Vertical_Default}" FontSize="16">
-                                                <Run FontFamily="{DynamicResource SymbolThemeFontFamily}" Text="&#xE734;" />
-                                                <Run Text="{x:Static props:Resources.Default_Layout_Vertical}" />
-                                            </TextBlock>
-                                        </Button.Content>
-                                    </Button>
-                                    <Button
-                                        x:Name="VerticalDefaultLayoutButton"
+                                    <CheckBox
+                                        x:Name="VerticalDefaultCheckBox"
+                                        Margin="0,8,0,0"
                                         AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Vertical}"
-                                        Click="VerticalDefaultLayoutButton_Click"
-                                        Style="{StaticResource IconOnlyButtonStyle}"
-                                        ToolTip="{x:Static props:Resources.Default_Layout_Vertical}"
-                                        Visibility="{Binding IsVerticalDefault, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <Button.Content>
-                                            <TextBlock AutomationProperties.Name="{x:Static props:Resources.Default_Layout_Vertical}" FontSize="16">
-                                                <Run FontFamily="{DynamicResource SymbolThemeFontFamily}" Text="&#xE735;" />
-                                                <Run Text="{x:Static props:Resources.Default_Layout_Vertical}" />
-                                            </TextBlock>
-                                        </Button.Content>
-                                    </Button>
-
+                                        Checked="VerticalDefaultCheckBox_Checked"
+                                        Content="{x:Static props:Resources.Default_Layout_Vertical}"
+                                        IsChecked="{Binding IsVerticalDefault, Mode=OneWay}"
+                                        Unchecked="VerticalDefaultCheckBox_Unchecked" />
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
+                    </ScrollViewer>
 
-                        <!-- Buttons -->
-                        <StackPanel Grid.Row="2" Margin="0,24,24,0" HorizontalAlignment="Right" Orientation="Horizontal">
-                            <Button Margin="0,0,8,0" Click="EditLayoutDialog_SecondaryButtonClick" Content="{x:Static props:Resources.Cancel}" />
-                            <Button Click="EditLayoutDialog_PrimaryButtonClick" Content="{x:Static props:Resources.Save}" Style="{StaticResource AccentButtonStyle}" />
-                        </StackPanel>
+                    <!--  Buttons  -->
+                    <Grid Grid.Row="2" Margin="0,24,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            Click="EditLayoutDialog_SecondaryButtonClick"
+                            Content="{x:Static props:Resources.Cancel}" />
+                        <Button
+                            Click="EditLayoutDialog_PrimaryButtonClick"
+                            Content="{x:Static props:Resources.Save}"
+                            Style="{StaticResource AccentButtonStyle}" />
                     </Grid>
-                </ScrollViewer>
+                </Grid>
             </Border>
         </Grid>
 
-        <!-- New Layout Dialog Overlay -->
-        <Grid x:Name="NewLayoutDialogOverlay" Grid.RowSpan="2" Visibility="Collapsed" Panel.ZIndex="100">
-            <Border Background="#80000000" MouseLeftButtonDown="DialogBackdrop_MouseLeftButtonDown" />
+        <!--  New Layout Dialog Overlay  -->
+        <Grid
+            x:Name="NewLayoutDialogOverlay"
+            Grid.RowSpan="2"
+            Panel.ZIndex="100"
+            Visibility="Collapsed">
+            <Border Background="{DynamicResource SmokeFillColorDefaultBrush}" MouseLeftButtonDown="DialogBackdrop_MouseLeftButtonDown" />
             <Border
                 MaxWidth="520"
                 Margin="0,40,0,40"
-                Padding="24,16,24,24"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Background="{DynamicResource PrimaryBackgroundBrush}"
+                Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                BorderThickness="1"
                 CornerRadius="8">
-                <Grid>
+                <Grid Margin="24,16,24,24">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <!-- Title -->
+                    <Border
+                        Grid.RowSpan="2"
+                        Margin="-24,-16,-24,0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Background="{DynamicResource LayerFillColorAltBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="0,0,0,1"
+                        CornerRadius="8,8,0,0" />
+
+                    <!--  Title  -->
                     <local:HeadingTextBlock
                         AutomationProperties.HeadingLevel="Level1"
+                        FontSize="20"
+                        FontWeight="SemiBold"
                         Style="{StaticResource HeadingTextBlock}"
                         Text="{x:Static props:Resources.Choose_layout_type}" />
 
-                    <!-- Content -->
+                    <!--  Content  -->
                     <StackPanel Grid.Row="1" Margin="0,16,0,0">
                         <TextBlock x:Name="NameHeaderText" Text="{x:Static props:Resources.Name}" />
                         <TextBox
                             x:Name="LayoutNameText"
-                            Margin="3,6,3,0"
+                            Margin="0,8,0,0"
                             AutomationProperties.LabeledBy="{Binding ElementName=NameHeaderText}" />
                         <RadioButton
                             x:Name="GridLayoutRadioButton"
@@ -849,7 +772,7 @@
                                         AutomationProperties.Name="{x:Static props:Resources.Layout_Grid_Title}"
                                         FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                         FontSize="16"
-                                        Foreground="{DynamicResource AccentFillColorDefaultBrush}"
+                                        Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                         Text="&#xF0E2;" />
                                     <StackPanel Grid.Column="1" Orientation="Vertical">
                                         <TextBlock
@@ -859,7 +782,7 @@
                                             TextWrapping="Wrap" />
                                         <TextBlock
                                             Margin="0,4,0,0"
-                                            Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                             Text="{x:Static props:Resources.Layout_Grid_Description}"
                                             TextWrapping="Wrap" />
                                     </StackPanel>
@@ -887,7 +810,7 @@
                                         AutomationProperties.Name="{x:Static props:Resources.Layout_Canvas_Title}"
                                         FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                         FontSize="16"
-                                        Foreground="{DynamicResource AccentFillColorDefaultBrush}"
+                                        Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                         Text="&#xF5ED;" />
                                     <StackPanel Grid.Column="1" Orientation="Vertical">
                                         <TextBlock
@@ -897,7 +820,7 @@
                                             TextWrapping="Wrap" />
                                         <TextBlock
                                             Margin="0,4,0,0"
-                                            Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                             Text="{x:Static props:Resources.Layout_Canvas_Description}"
                                             TextWrapping="Wrap" />
                                     </StackPanel>
@@ -906,10 +829,22 @@
                         </RadioButton>
                     </StackPanel>
 
-                    <!-- Buttons -->
-                    <StackPanel Grid.Row="2" Margin="0,8,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
-                        <Button Margin="0,0,8,0" Click="NewLayoutDialog_SecondaryButtonClick" Content="{x:Static props:Resources.Cancel}" />
-                        <Button x:Name="NewLayoutDialogCreateButton" Click="NewLayoutDialog_PrimaryButtonClick" Content="{x:Static props:Resources.Create}">
+                    <!--  Buttons  -->
+                    <Grid Grid.Row="2" Margin="0,24,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            Click="NewLayoutDialog_SecondaryButtonClick"
+                            Content="{x:Static props:Resources.Cancel}" />
+                        <Button
+                            x:Name="NewLayoutDialogCreateButton"
+                            Click="NewLayoutDialog_PrimaryButtonClick"
+                            Content="{x:Static props:Resources.Create}">
                             <Button.Style>
                                 <Style BasedOn="{StaticResource AccentButtonStyle}" TargetType="Button">
                                     <Style.Triggers>
@@ -920,7 +855,7 @@
                                 </Style>
                             </Button.Style>
                         </Button>
-                    </StackPanel>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>

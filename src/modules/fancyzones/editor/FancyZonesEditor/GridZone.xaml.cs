@@ -21,7 +21,7 @@ namespace FancyZonesEditor
         // Non-localizable strings
         private const string ObjectDependencyID = "IsSelected";
         private const string GridZoneBackgroundBrushID = "GridZoneBackgroundBrush";
-        private const string SecondaryForegroundBrushID = "SecondaryForegroundBrush";
+        private const string TextFillColorSecondaryBrushID = "TextFillColorSecondaryBrush";
         private const string AccentColorBrushID = "SystemControlBackgroundAccentBrush";
         public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
 
@@ -175,7 +175,7 @@ namespace FancyZonesEditor
                 enabled = _canSplit(Orientation.Horizontal, _snappedPositionY);
             }
 
-            Brush disabledBrush = Application.Current.Resources[SecondaryForegroundBrushID] as SolidColorBrush;
+            Brush disabledBrush = Application.Current.Resources[TextFillColorSecondaryBrushID] as SolidColorBrush;
             Brush enabledBrush = Application.Current.Resources[AccentColorBrushID] as SolidColorBrush;
             _splitter.Fill = enabled ? enabledBrush : disabledBrush;
         }
