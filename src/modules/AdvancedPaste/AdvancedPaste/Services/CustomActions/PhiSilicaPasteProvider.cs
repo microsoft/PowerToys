@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using AdvancedPaste.Models;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.Windows.AI;
+using Microsoft.Windows.AI.ContentSafety;
+using Microsoft.Windows.AI.Text;
 using PhiSilicaLanguageModel = Microsoft.Windows.AI.Text.LanguageModel;
 
 namespace AdvancedPaste.Services.CustomActions;
@@ -78,9 +80,10 @@ public sealed class PhiSilicaPasteProvider : IPasteAIProvider
 
             progress?.Report(0.1);
 
-            var fullPrompt = $"""
-                {systemPrompt}
+            var contentFilterOptions = new ContentFilterOptions();
+            var context = languageModel.CreateContext(systemPrompt, contentFilterOptions);
 
+            var userPrompt = $"""
                 User instructions:
                 {prompt}
 
@@ -90,11 +93,41 @@ public sealed class PhiSilicaPasteProvider : IPasteAIProvider
                 Output:
                 """;
 
-            var result = await languageModel.GenerateResponseAsync(fullPrompt).AsTask(cancellationToken).ConfigureAwait(false);
+            if ((ulong)userPrompt.Length > languageModel.GetUsablePromptLength(context, userPrompt))
+            {
+                throw new PasteActionException(
+                    "Prompt is too large for the Phi Silica model context",
+                    new InvalidOperationException("Prompt exceeds usable prompt length"),
+                    aiServiceMessage: "The input text is too large for on-device processing. Try with shorter text.");
+            }
+
+            var options = new LanguageModelOptions
+            {
+                ContentFilterOptions = contentFilterOptions,
+            };
+
+            var result = await languageModel.GenerateResponseAsync(context, userPrompt, options).AsTask(cancellationToken).ConfigureAwait(false);
 
             progress?.Report(0.8);
 
-            var responseText = result?.Text ?? string.Empty;
+            if (result.Status != LanguageModelResponseStatus.Complete)
+            {
+                var statusMessage = result.Status switch
+                {
+                    LanguageModelResponseStatus.BlockedByPolicy => "Response was blocked by policy.",
+                    LanguageModelResponseStatus.PromptBlockedByContentModeration => "Prompt was blocked by content moderation.",
+                    LanguageModelResponseStatus.ResponseBlockedByContentModeration => "Response was blocked by content moderation.",
+                    LanguageModelResponseStatus.PromptLargerThanContext => "Prompt is too large for the model context.",
+                    _ => $"Unexpected status: {result.Status}",
+                };
+
+                throw new PasteActionException(
+                    $"Phi Silica returned status: {result.Status}",
+                    new InvalidOperationException($"LanguageModel response status: {result.Status}"),
+                    aiServiceMessage: statusMessage);
+            }
+
+            var responseText = result.Text ?? string.Empty;
             request.Usage = AIServiceUsage.None;
 
             progress?.Report(1.0);
@@ -136,7 +169,7 @@ public sealed class PhiSilicaPasteProvider : IPasteAIProvider
             PhiSilicaLafHelper.TryUnlock();
             var readyState = PhiSilicaLanguageModel.GetReadyState();
 
-            if (readyState == AIFeatureReadyState.NotSupportedOnCurrentSystem)
+            if (readyState is AIFeatureReadyState.NotSupportedOnCurrentSystem or AIFeatureReadyState.DisabledByUser)
             {
                 throw new PasteActionException(
                     "Phi Silica is not supported on this device. A Copilot+ PC is required.",
@@ -144,16 +177,24 @@ public sealed class PhiSilicaPasteProvider : IPasteAIProvider
                     aiServiceMessage: "Phi Silica requires a Copilot+ PC with an NPU. For on-device AI on any Windows PC, consider using Foundry Local.");
             }
 
-            if (readyState == AIFeatureReadyState.NotReady)
+            if (readyState is AIFeatureReadyState.NotReady)
             {
                 var ensureResult = await PhiSilicaLanguageModel.EnsureReadyAsync().AsTask(cancellationToken).ConfigureAwait(false);
-                if (ensureResult.ExtendedError is not null)
+                if (ensureResult.Status != AIFeatureReadyResultState.Success)
                 {
                     throw new PasteActionException(
                         "Failed to prepare Phi Silica model",
                         ensureResult.ExtendedError,
-                        aiServiceMessage: $"Model installation failed: {ensureResult.ExtendedError.Message}");
+                        aiServiceMessage: $"Model preparation failed (status: {ensureResult.Status})");
                 }
+            }
+
+            if (PhiSilicaLanguageModel.GetReadyState() is not AIFeatureReadyState.Ready)
+            {
+                throw new PasteActionException(
+                    "Phi Silica model is not ready",
+                    new InvalidOperationException("Phi Silica model is not in Ready state after preparation."),
+                    aiServiceMessage: "Phi Silica model is not available. Please ensure the model is downloaded and ready.");
             }
 
             _cachedModel = await PhiSilicaLanguageModel.CreateAsync().AsTask(cancellationToken).ConfigureAwait(false);
