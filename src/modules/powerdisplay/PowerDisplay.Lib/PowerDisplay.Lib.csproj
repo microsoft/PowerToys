@@ -40,4 +40,5 @@
     <ProjectReference Include="..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
   </ItemGroup>
+  <Import Project="..\PowerDisplay.Models\PowerDisplay.Models.projitems" Label="Shared" />
 </Project>
