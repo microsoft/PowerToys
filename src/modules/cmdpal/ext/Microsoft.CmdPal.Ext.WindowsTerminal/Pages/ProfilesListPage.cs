@@ -105,10 +105,11 @@ internal sealed partial class ProfilesListPage : ListPage, INotifyItemsChanged
                 continue;
             }
 
-            result.Add(new ListItem(new LaunchProfileCommand(profile.Terminal.AppUserModelId, profile.Name, profile.Terminal.LogoPath, openNewTab, openQuake, _appSettingsManager))
+            result.Add(new ListItem(new LaunchProfileCommand(profile.Terminal.AppUserModelId, profile.Name, TerminalHelper.ResolveProfileIcon(profile), openNewTab, openQuake, _appSettingsManager))
             {
                 Title = profile.Name,
                 Subtitle = profile.Terminal.DisplayName,
+                Icon = new IconInfo(TerminalHelper.ResolveProfileIcon(profile)),
                 MoreCommands = [
                     new CommandContextItem(new LaunchProfileAsAdminCommand(profile.Terminal.AppUserModelId, profile.Name, openNewTab, openQuake, _appSettingsManager)),
                 ],
