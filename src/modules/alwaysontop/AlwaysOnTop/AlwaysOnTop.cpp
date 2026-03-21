@@ -23,6 +23,8 @@ namespace NonLocalizable
     const static wchar_t* WINDOW_IS_PINNED_PROP = L"AlwaysOnTop_Pinned";
     constexpr UINT SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND = 0xEFE0;
     constexpr ULONG_PTR SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG = 0x414F5450;
+    constexpr DWORD SYSTEM_EVENT_MENU_START = EVENT_SYSTEM_MENUSTART;
+    constexpr DWORD SYSTEM_EVENT_MENU_END = EVENT_SYSTEM_MENUEND;
     constexpr DWORD SYSTEM_EVENT_MENU_POPUP_START = 0x0006;
     constexpr DWORD SYSTEM_EVENT_MENU_POPUP_END = 0x0007;
 }
@@ -63,6 +65,30 @@ namespace
                                 FALSE,
                                 &menuItemInfo) &&
                menuItemInfo.dwItemData == NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG;
+    }
+
+    constexpr bool IsMenuEventObject(LONG objectId) noexcept
+    {
+        return objectId == OBJID_MENU || objectId == OBJID_SYSMENU || objectId == OBJID_WINDOW;
+    }
+
+    HWND ResolveSystemMenuWindow(HWND eventWindow) noexcept
+    {
+        const auto tryResolveWindow = [](HWND candidate) noexcept -> HWND {
+            if (!candidate || !IsWindow(candidate))
+            {
+                return nullptr;
+            }
+
+            return GetSystemMenu(candidate, false) ? candidate : nullptr;
+        };
+
+        if (HWND resolvedWindow = tryResolveWindow(eventWindow))
+        {
+            return resolvedWindow;
+        }
+
+        return tryResolveWindow(GetForegroundWindow());
     }
 }
 
@@ -147,6 +173,8 @@ bool AlwaysOnTop::InitMainWindow()
 
 void AlwaysOnTop::SettingsUpdate(SettingId id)
 {
+    Logger::debug(L"Applying Always On Top setting update: {}", SettingIdToString(id));
+
     switch (id)
     {
     case SettingId::Hotkey:
@@ -230,6 +258,7 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
     }
     else if (message == WM_PRIV_SETTINGS_CHANGED)
     {
+        Logger::debug(L"Always On Top received settings reload message.");
         AlwaysOnTopSettings::instance().LoadSettings();
     }
     
@@ -482,7 +511,9 @@ void AlwaysOnTop::SubscribeToEvents()
 
 void AlwaysOnTop::UpdateSystemMenuEventHooks(bool enable)
 {
-    constexpr std::array<DWORD, 3> menu_events_to_subscribe = {
+    constexpr std::array<DWORD, 5> menu_events_to_subscribe = {
+        NonLocalizable::SYSTEM_EVENT_MENU_START,
+        NonLocalizable::SYSTEM_EVENT_MENU_END,
         NonLocalizable::SYSTEM_EVENT_MENU_POPUP_START,
         NonLocalizable::SYSTEM_EVENT_MENU_POPUP_END,
         EVENT_OBJECT_INVOKED,
@@ -492,6 +523,7 @@ void AlwaysOnTop::UpdateSystemMenuEventHooks(bool enable)
     {
         if (m_systemMenuWinEventHooks.size() == menu_events_to_subscribe.size())
         {
+            Logger::debug(L"Always On Top system menu hooks already enabled.");
             return;
         }
 
@@ -510,10 +542,13 @@ void AlwaysOnTop::UpdateSystemMenuEventHooks(bool enable)
                 Logger::error(L"Failed to set system menu win event hook");
             }
         }
+
+        Logger::debug(L"Always On Top system menu hooks enabled. Registered {} hooks.", m_systemMenuWinEventHooks.size());
     }
     else
     {
         UnsubscribeEvents(m_systemMenuWinEventHooks);
+        Logger::debug(L"Always On Top system menu hooks disabled.");
     }
 }
 
@@ -527,6 +562,7 @@ void AlwaysOnTop::UpdateSystemMenuItem(HWND window) const noexcept
     const auto systemMenu = GetSystemMenu(window, false);
     if (!systemMenu)
     {
+        Logger::debug(L"Skipping Always On Top system menu update because the window has no system menu.");
         return;
     }
 
@@ -536,6 +572,7 @@ void AlwaysOnTop::UpdateSystemMenuItem(HWND window) const noexcept
         if (IsAlwaysOnTopMenuCommand(systemMenu))
         {
             RemoveMenu(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND);
+            Logger::debug(L"Removed Always On Top entry from the system menu.");
         }
         return;
     }
@@ -552,11 +589,13 @@ void AlwaysOnTop::UpdateSystemMenuItem(HWND window) const noexcept
     if (!HasMenuCommand(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND))
     {
         InsertMenuItemW(systemMenu, SC_CLOSE, FALSE, &menuItemInfo);
+        Logger::debug(L"Inserted Always On Top entry into the system menu. Pinned={}", IsPinned(window));
     }
     else if (IsAlwaysOnTopMenuCommand(systemMenu))
     {
         menuItemInfo.fMask = MIIM_STATE | MIIM_STRING;
         SetMenuItemInfoW(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, FALSE, &menuItemInfo);
+        Logger::debug(L"Updated Always On Top entry in the system menu. Pinned={}", IsPinned(window));
     }
     else
     {
@@ -646,19 +685,26 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
 {
     switch (data->event)
     {
+    case NonLocalizable::SYSTEM_EVENT_MENU_START:
     case NonLocalizable::SYSTEM_EVENT_MENU_POPUP_START:
     {
-        if (data->idObject == OBJID_SYSMENU && data->hwnd)
+        if (IsMenuEventObject(data->idObject))
         {
-            m_lastSystemMenuWindow = AlwaysOnTopSettings::settings()->showInSystemMenu ? data->hwnd : nullptr;
-            UpdateSystemMenuItem(data->hwnd);
+            if (HWND targetWindow = ResolveSystemMenuWindow(data->hwnd))
+            {
+                m_lastSystemMenuWindow = AlwaysOnTopSettings::settings()->showInSystemMenu ? targetWindow : nullptr;
+                Logger::debug(L"Always On Top menu start event received. EventObject={}, TargetWindow={:p}", data->idObject, static_cast<void*>(targetWindow));
+                UpdateSystemMenuItem(targetWindow);
+            }
         }
     }
     return;
+    case NonLocalizable::SYSTEM_EVENT_MENU_END:
     case NonLocalizable::SYSTEM_EVENT_MENU_POPUP_END:
     {
-        if (data->idObject == OBJID_SYSMENU && data->hwnd == m_lastSystemMenuWindow)
+        if (IsMenuEventObject(data->idObject))
         {
+            Logger::debug(L"Always On Top menu end event received. Clearing tracked menu window.");
             m_lastSystemMenuWindow = nullptr;
         }
     }
