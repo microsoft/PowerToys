@@ -5,7 +5,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\AdvancedPaste</OutputPath>
     <UseWinUI>true</UseWinUI>
     <ApplicationIcon>Assets\AdvancedPaste\AdvancedPaste.ico</ApplicationIcon>
     <ApplicationManifest>AdvancedPaste.dev.manifest</ApplicationManifest>
@@ -20,8 +20,8 @@
     <RootNamespace>AdvancedPaste</RootNamespace>
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
-    <ProjectPriFileName>PowerToys.AdvancedPaste.pri</ProjectPriFileName>
+    <!-- Separate output folder avoids resources.pri conflict with other WinUI3 apps (see microsoft-ui-xaml#10856) -->
+    <ProjectPriFileName>resources.pri</ProjectPriFileName>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
   </PropertyGroup>
 
@@ -162,12 +162,4 @@
     </Content>
   </ItemGroup>
 
-  <!-- Workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10856:
-       WinAppSDK always emits resources.pri even when ProjectPriFileName is set.
-       This pollutes the shared WinUI3Apps folder and breaks other apps' MRT resolution.
-       Delete it after build; EnsureResourcesPri() in Program.cs recreates it at runtime
-       when AdvancedPaste actually launches with sparse identity. -->
-  <Target Name="RemoveDefaultResourcesPri" AfterTargets="CopyFilesToOutputDirectory;Build">
-    <Delete Files="$(OutDir)resources.pri" Condition="Exists('$(OutDir)resources.pri')" />
-  </Target>
 </Project>

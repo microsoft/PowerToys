@@ -104,7 +104,7 @@ HRESULT AdvancedPasteProcessManager::start_process(const std::wstring& pipe_name
 
     SHELLEXECUTEINFOW sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-    sei.lpFile = L"WinUI3Apps\\PowerToys.AdvancedPaste.exe";
+    sei.lpFile = L"WinUI3Apps\\AdvancedPaste\\PowerToys.AdvancedPaste.exe";
     sei.nShow = SW_SHOWNORMAL;
     sei.lpParameters = executable_args.data();
     if (ShellExecuteExW(&sei))

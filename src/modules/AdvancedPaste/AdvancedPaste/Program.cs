@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 
@@ -28,11 +27,6 @@ namespace AdvancedPaste
                 return CheckPhiSilicaAvailability();
             }
 
-            // Workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10856:
-            // With sparse package identity, MRT only loads resources.pri and ignores
-            // module-specific PRI files. Copy our PRI as resources.pri before WinUI starts.
-            EnsureResourcesPri();
-
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAdvancedPasteEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
@@ -56,29 +50,6 @@ namespace AdvancedPaste
             }
 
             return 0;
-        }
-
-        /// <summary>
-        /// Copies PowerToys.AdvancedPaste.pri to resources.pri so MRT can find it
-        /// when the app runs with sparse package identity.
-        /// </summary>
-        private static void EnsureResourcesPri()
-        {
-            try
-            {
-                var exeDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                var modulePri = Path.Combine(exeDir, "PowerToys.AdvancedPaste.pri");
-                var resourcesPri = Path.Combine(exeDir, "resources.pri");
-
-                if (File.Exists(modulePri))
-                {
-                    File.Copy(modulePri, resourcesPri, overwrite: true);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Failed to copy PRI for sparse identity", ex);
-            }
         }
 
         /// <summary>

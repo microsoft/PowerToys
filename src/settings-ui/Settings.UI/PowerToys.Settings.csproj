@@ -211,11 +211,4 @@
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
 		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=$(CoreTargetFramework);XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
 	</Target>
-
-        <!-- Workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10856:
-             WinAppSDK always emits resources.pri even when ProjectPriFileName is set.
-             Delete it to prevent MRT conflicts with other WinUI apps in the shared output folder. -->
-        <Target Name="RemoveDefaultResourcesPri" AfterTargets="CopyFilesToOutputDirectory;Build">
-                <Delete Files="$(OutDir)resources.pri" Condition="Exists('$(OutDir)resources.pri')" />
-        </Target>
 </Project>

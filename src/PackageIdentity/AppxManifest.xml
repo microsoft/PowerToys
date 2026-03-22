@@ -58,7 +58,7 @@
         AppListEntry="none">
       </uap:VisualElements>
     </Application>
-    <Application Id="PowerToys.AdvancedPasteUI" Executable="WinUI3Apps\PowerToys.AdvancedPaste.exe" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="PowerToys.AdvancedPasteUI" Executable="WinUI3Apps\AdvancedPaste\PowerToys.AdvancedPaste.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys.AdvancedPaste"
         Description="PowerToys Advanced Paste"

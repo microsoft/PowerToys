@@ -49,8 +49,8 @@
             "PowerToys.PowerOCR.exe",
 
             "PowerToys.AdvancedPasteModuleInterface.dll",
-            "WinUI3Apps\\PowerToys.AdvancedPaste.exe",
-            "WinUI3Apps\\PowerToys.AdvancedPaste.dll",
+            "WinUI3Apps\\AdvancedPaste\\PowerToys.AdvancedPaste.exe",
+            "WinUI3Apps\\AdvancedPaste\\PowerToys.AdvancedPaste.dll",
 
             "PowerToys.AwakeModuleInterface.dll",
             "PowerToys.Awake.exe",

@@ -468,8 +468,8 @@ function Test-CoreFiles {
     $winUI3SignedFiles = @(
         'PowerToys.Settings.dll',
         'PowerToys.Settings.exe',
-        'PowerToys.AdvancedPaste.exe',
-        'PowerToys.AdvancedPaste.dll',
+        'AdvancedPaste\PowerToys.AdvancedPaste.exe',
+        'AdvancedPaste\PowerToys.AdvancedPaste.dll',
         'PowerToys.HostsModuleInterface.dll',
         'PowerToys.HostsUILib.dll',
         'PowerToys.Hosts.dll',
