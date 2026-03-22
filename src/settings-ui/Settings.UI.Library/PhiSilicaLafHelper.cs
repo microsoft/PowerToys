@@ -11,8 +11,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library;
 public static class PhiSilicaLafHelper
 {
     private const string FeatureId = "com.microsoft.windows.ai.languagemodel";
-    private const string Token = "RmToMMYJHZkQSrKP5lWesA==";
-    private const string Attestation = "djwsxzxb4ksa8 has registered their use of com.microsoft.windows.ai.languagemodel with Microsoft and agrees to the terms of use.";
 
     private static readonly object _lock = new();
     private static bool _attempted;
@@ -38,8 +36,8 @@ public static class PhiSilicaLafHelper
             {
                 var access = LimitedAccessFeatures.TryUnlockFeature(
                     FeatureId,
-                    Token,
-                    Attestation);
+                    PhiSilicaLafCredentials.Token,
+                    PhiSilicaLafCredentials.Attestation);
 
                 _unlocked = access.Status == LimitedAccessFeatureStatus.Available
                          || access.Status == LimitedAccessFeatureStatus.AvailableWithoutToken;
