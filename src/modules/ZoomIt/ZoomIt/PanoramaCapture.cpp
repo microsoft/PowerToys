@@ -8640,7 +8640,13 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                 {
                     const int absMatcher = abs( dy );
                     const int absAnchor  = abs( anchorScrollDy );
-                    const bool largeHarmonicCorrection = absMatcher > 0 && absAnchor * 2 < absMatcher;
+                    // Don't override to zero — if the anchor thinks the
+                    // frame is stationary but the matcher found a real
+                    // shift, this is almost certainly a content-repeat
+                    // false positive on repetitive/constant content.
+                    // Truly stationary frames are already caught by
+                    // duplicate detection before reaching this point.
+                    const bool largeHarmonicCorrection = absMatcher > 0 && absAnchor > 0 && absAnchor * 2 < absMatcher;
 
                     // Also correct small same-direction misalignments (off-by-1/2)
                     // where the anchor's per-row signature matching is more precise
@@ -9499,10 +9505,11 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                  minY,
                  maxX,
                  maxY );
-    // Keep a hard upper bound to avoid pathological allocations while still
-    // allowing long captures that remain within GDI's practical 16-bit size
-    // envelope (signed range for bitmap dimensions).
-    constexpr int kMaxStitchedCanvasDimension = 32760;
+    // Keep a hard upper bound to avoid pathological allocations.
+    // CreateDIBSection uses LONG dimensions and supports values well
+    // beyond 32767.  65535 allows ~300 MP at typical aspect ratios
+    // while staying within practical memory limits.
+    constexpr int kMaxStitchedCanvasDimension = 65535;
     if( stitchedWidth <= 0 ||
         stitchedHeight <= 0 ||
         stitchedWidth > kMaxStitchedCanvasDimension ||
