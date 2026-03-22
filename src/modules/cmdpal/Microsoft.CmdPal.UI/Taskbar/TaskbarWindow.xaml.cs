@@ -29,6 +29,7 @@ public sealed partial class TaskbarWindow : WindowEx,
     private readonly uint wMTASKBARRESTART;
     private readonly HWND _hwnd;
     private readonly TaskbarMetrics _taskbarMetrics;
+    private readonly TaskbarWatcher _taskbarWatcher;
     private readonly TaskbarBandControl _bandsControl;
 
     private readonly WNDPROC? _originalWndProc;
@@ -63,6 +64,12 @@ public sealed partial class TaskbarWindow : WindowEx,
 
         _taskbarMetrics = metrics;
 
+        // Event-driven: re-measure when taskbar buttons change instead
+        // of polling. The WinEventHook callback is delivered via the
+        // WinUI message pump on this thread.
+        _taskbarWatcher = new TaskbarWatcher();
+        _taskbarWatcher.Changed += OnTaskbarChanged;
+
         // LOAD BEARING: The delegate must be stored in a member field.
         // A local variable would be collected, leaving a dangling function pointer.
         _customWndProc = CustomWndProc;
@@ -85,6 +92,15 @@ public sealed partial class TaskbarWindow : WindowEx,
     private void MainContent_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         ClipWindow().ConfigureAwait(false);
+    }
+
+    private void OnTaskbarChanged()
+    {
+        // Debounce: taskbar events fire many times in quick succession.
+        _updateLayoutDebouncer.Debounce(
+            () => ClipWindow().ConfigureAwait(false),
+            interval: TimeSpan.FromMilliseconds(250),
+            immediate: false);
     }
 
     private LRESULT CustomWndProc(HWND hwnd, uint uMsg, WPARAM wParam, LPARAM lParam)
@@ -288,35 +304,39 @@ public sealed partial class TaskbarWindow : WindowEx,
             try
             {
                 var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
+
+                // The clip region must always stay between the taskbar
+                // buttons and the tray — never overlapping either one.
+                var clipLeft = _taskbarMetrics.ButtonsWidthInPixels;
+                var clipRight = (int)(this.Bounds.Width * scaleFactor) - _taskbarMetrics.TrayWidthInPixels;
+                var clipBottom = (int)(Root.ActualHeight * scaleFactor);
+
+                // If MainContent has laid out, further constrain to its
+                // actual position so we don't show empty space.
                 FrameworkElement clipToElement = MainContent;
-
-                if (clipToElement.ActualWidth <= 0 || clipToElement.ActualHeight <= 0)
+                if (clipToElement.ActualWidth > 0 && clipToElement.ActualHeight > 0)
                 {
-                    tcs.TrySetResult();
-                    return;
+                    var position = clipToElement.TransformToVisual(this.Content).TransformPoint(default);
+                    var contentLeft = (int)(position.X * scaleFactor);
+                    var contentRight = (int)((position.X + clipToElement.ActualWidth) * scaleFactor);
+
+                    // Clamp: content must stay within the buttons/tray bounds
+                    clipLeft = Math.Max(clipLeft, contentLeft);
+                    clipRight = Math.Min(clipRight, contentRight);
                 }
 
-                var position = clipToElement.TransformToVisual(this.Content).TransformPoint(default);
-                RECT scaledBounds = new()
+                if (clipRight <= clipLeft || clipBottom <= 0)
                 {
-                    left = (int)(position.X * scaleFactor),
-                    top = (int)(position.Y * scaleFactor),
-                    right = (int)((position.X + clipToElement.ActualWidth) * scaleFactor),
-                    bottom = (int)((position.Y + clipToElement.ActualHeight) * scaleFactor),
-                };
-
-                if (scaledBounds.right <= scaledBounds.left || scaledBounds.bottom <= scaledBounds.top)
-                {
-                    tcs.TrySetResult();
-                    return;
+                    // No space for content — hide entirely by applying
+                    // a zero-area region outside the visible area.
+                    var hrgn = PInvoke.CreateRectRgn(0, 0, 0, 0);
+                    _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
                 }
-
-                var hrgn = PInvoke.CreateRectRgn(
-                    scaledBounds.left,
-                    scaledBounds.top,
-                    scaledBounds.right,
-                    scaledBounds.bottom);
-                _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
+                else
+                {
+                    var hrgn = PInvoke.CreateRectRgn(clipLeft, 0, clipRight, clipBottom);
+                    _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
+                }
             }
             catch
             {
@@ -340,6 +360,8 @@ public sealed partial class TaskbarWindow : WindowEx,
         if (!_disposed)
         {
             _updateLayoutDebouncer?.Stop();
+            _taskbarWatcher.Changed -= OnTaskbarChanged;
+            _taskbarWatcher.Dispose();
             _taskbarMetrics.Dispose();
             WeakReferenceMessenger.Default.UnregisterAll(this);
             _disposed = true;
