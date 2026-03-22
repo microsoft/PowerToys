@@ -58,54 +58,60 @@ public sealed partial class TaskbarBandControl : UserControl,
 
         BandsListView.Visibility = Visibility.Visible;
 
-        // Measure how much space the bands need
-        double neededSpace = 0;
+        // Measure each band's width
         var items = _viewModel.TaskbarItems;
-        var visibleBands = new List<DockBandViewModel>();
-        var overflowBands = new List<DockBandViewModel>();
-
+        var bandWidths = new List<(DockBandViewModel Band, double Width)>();
         foreach (var band in items)
         {
             if (BandsListView.ContainerFromItem(band) is FrameworkElement container)
             {
                 container.Measure(new Size(availableSpace, ActualHeight));
-                var needed = container.DesiredSize.Width;
-                neededSpace += needed;
+                bandWidths.Add((band, container.DesiredSize.Width));
             }
         }
 
-        if (neededSpace <= availableSpace)
+        // First pass: check if everything fits
+        var totalNeeded = 0.0;
+        foreach (var (_, w) in bandWidths)
         {
-            // Everything fits
+            totalNeeded += w;
+        }
+
+        if (totalNeeded <= availableSpace)
+        {
             MoreButton.Visibility = Visibility.Collapsed;
             OverflowListView.ItemsSource = null;
+            return;
         }
-        else
+
+        // Second pass: some bands overflow. Reserve space for the
+        // MoreButton, then pack bands right-to-left until full.
+        const double moreButtonWidth = 40;
+        var budget = availableSpace - moreButtonWidth;
+        var overflowBands = new List<DockBandViewModel>();
+        double takenSpace = 0;
+        var cutoffIndex = bandWidths.Count;
+
+        for (var i = 0; i < bandWidths.Count; i++)
         {
-            // Some items need to overflow
-            MoreButton.Visibility = Visibility.Visible;
-            double moreButtonWidth = 40; // approximate
-            double takenSpace = moreButtonWidth;
-
-            foreach (var band in items)
+            if (takenSpace + bandWidths[i].Width <= budget)
             {
-                if (BandsListView.ContainerFromItem(band) is FrameworkElement container)
-                {
-                    var needed = container.DesiredSize.Width;
-                    if (takenSpace + needed > availableSpace)
-                    {
-                        overflowBands.Add(band);
-                    }
-                    else
-                    {
-                        visibleBands.Add(band);
-                        takenSpace += needed;
-                    }
-                }
+                takenSpace += bandWidths[i].Width;
             }
-
-            OverflowListView.ItemsSource = overflowBands;
+            else
+            {
+                cutoffIndex = i;
+                break;
+            }
         }
+
+        for (var i = cutoffIndex; i < bandWidths.Count; i++)
+        {
+            overflowBands.Add(bandWidths[i].Band);
+        }
+
+        MoreButton.Visibility = Visibility.Visible;
+        OverflowListView.ItemsSource = overflowBands;
     }
 
     internal void EnterEditMode(bool showFlyout = true)
