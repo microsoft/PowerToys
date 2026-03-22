@@ -328,6 +328,15 @@ namespace KeyboardManagerEditorUI.Controls
                 int index = GetDropDownIndex(TriggerKeys, dropDown);
                 if (index >= 0 && index < _triggerKeys.Count)
                 {
+                    string? validationError = ValidateDropDownSelection(_triggerKeys, index, e.NewKeyCode, e.NewKeyName);
+                    if (validationError != null)
+                    {
+                        // Revert the selection
+                        dropDown.KeyName = e.OldKeyName;
+                        ShowNotificationTip(validationError);
+                        return;
+                    }
+
                     _triggerKeys[index] = e.NewKeyName;
                     HandleAutoGrowShrink(_triggerKeys, index, e.NewKeyCode);
                 }
@@ -341,6 +350,14 @@ namespace KeyboardManagerEditorUI.Controls
                 int index = GetDropDownIndex(ActionKeys, dropDown);
                 if (index >= 0 && index < _actionKeys.Count)
                 {
+                    string? validationError = ValidateDropDownSelection(_actionKeys, index, e.NewKeyCode, e.NewKeyName);
+                    if (validationError != null)
+                    {
+                        dropDown.KeyName = e.OldKeyName;
+                        ShowNotificationTip(validationError);
+                        return;
+                    }
+
                     _actionKeys[index] = e.NewKeyName;
                     HandleAutoGrowShrink(_actionKeys, index, e.NewKeyCode);
                 }
@@ -388,22 +405,68 @@ namespace KeyboardManagerEditorUI.Controls
             return null;
         }
 
-        private void HandleAutoGrowShrink(ObservableCollection<string> keys, int changedIndex, int newKeyCode)
+        /// <summary>
+        /// Validates a key selection from a dropdown before it is applied.
+        /// Returns null if valid, or an error message string if invalid.
+        /// </summary>
+        private static string? ValidateDropDownSelection(ObservableCollection<string> keys, int changedIndex, int newKeyCode, string newKeyName)
         {
-            const int maxShortcutSize = 5; // 4 modifiers + 1 action key
+            const int maxShortcutSize = 5;
 
             // KeyType: 0=Win, 1=Ctrl, 2=Alt, 3=Shift, 4=Action
+            int newKeyType = KeyboardManagerInterop.GetKeyType(newKeyCode);
+            bool isModifier = newKeyType < 4;
+
+            // Rule: action key at position 0 in multi-key shortcut (shortcut must start with modifier)
+            if (!isModifier && changedIndex == 0 && keys.Count > 1)
+            {
+                return ResourceHelper.GetString("Warning_ShortcutStartWithModifier");
+            }
+
+            // Rule: no repeated modifier types
+            if (isModifier)
+            {
+                for (int i = 0; i < keys.Count; i++)
+                {
+                    if (i == changedIndex)
+                    {
+                        continue;
+                    }
+
+                    int existingKeyCode = KeyboardManagerInterop.GetKeyCodeFromName(keys[i]);
+                    int existingKeyType = KeyboardManagerInterop.GetKeyType(existingKeyCode);
+
+                    if (existingKeyType == newKeyType)
+                    {
+                        return ResourceHelper.GetString("Warning_RepeatedModifier");
+                    }
+                }
+            }
+
+            // Rule: modifier at last position when already at max size
+            if (isModifier && changedIndex == keys.Count - 1 && keys.Count >= maxShortcutSize)
+            {
+                return ResourceHelper.GetString("Warning_MaxShortcutSize");
+            }
+
+            return null;
+        }
+
+        private void HandleAutoGrowShrink(ObservableCollection<string> keys, int changedIndex, int newKeyCode)
+        {
+            const int maxShortcutSize = 5;
+
             int keyType = KeyboardManagerInterop.GetKeyType(newKeyCode);
             bool isModifier = keyType < 4;
 
             if (isModifier && changedIndex == keys.Count - 1 && keys.Count < maxShortcutSize)
             {
-                // Selected a modifier in the last slot — add an empty slot for the next key
-                // We don't add empty strings; instead the user can record or the next validation pass handles it
+                // Modifier at last position — auto-grow: add placeholder for next key
+                keys.Add(string.Empty);
             }
             else if (!isModifier)
             {
-                // Selected an action key — trim any trailing entries after this one
+                // Action key — trim any trailing entries after this one
                 while (keys.Count > changedIndex + 1)
                 {
                     keys.RemoveAt(keys.Count - 1);
@@ -590,7 +653,7 @@ namespace KeyboardManagerEditorUI.Controls
 
         public void OnInputLimitReached()
         {
-            ShowNotificationTip("Shortcuts can only have up to 4 modifier keys");
+            ShowNotificationTip(ResourceHelper.GetString("Warning_InputLimitReached"));
         }
 
         #endregion
@@ -600,12 +663,12 @@ namespace KeyboardManagerEditorUI.Controls
         /// <summary>
         /// Gets the trigger keys.
         /// </summary>
-        public List<string> GetTriggerKeys() => _triggerKeys.ToList();
+        public List<string> GetTriggerKeys() => _triggerKeys.Where(k => !string.IsNullOrEmpty(k)).ToList();
 
         /// <summary>
         /// Gets the action keys (for Key/Shortcut action type).
         /// </summary>
-        public List<string> GetActionKeys() => _actionKeys.ToList();
+        public List<string> GetActionKeys() => _actionKeys.Where(k => !string.IsNullOrEmpty(k)).ToList();
 
         /// <summary>
         /// Gets the selected mouse trigger.

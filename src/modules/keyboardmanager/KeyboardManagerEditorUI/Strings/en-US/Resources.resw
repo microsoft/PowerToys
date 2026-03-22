@@ -304,4 +304,88 @@
   <data name="MouseClickPlaceholder.Text" xml:space="preserve">
     <value>Mouse click action - coming soon</value>
   </data>
+  <data name="Validation_EmptyOriginalKeys_Title" xml:space="preserve">
+    <value>Missing original keys</value>
+  </data>
+  <data name="Validation_EmptyOriginalKeys_Message" xml:space="preserve">
+    <value>Please enter at least one original key to create a remapping.</value>
+  </data>
+  <data name="Validation_EmptyRemappedKeys_Title" xml:space="preserve">
+    <value>Missing target keys</value>
+  </data>
+  <data name="Validation_EmptyRemappedKeys_Message" xml:space="preserve">
+    <value>Please enter at least one target key to create a remapping.</value>
+  </data>
+  <data name="Validation_ModifierOnly_Title" xml:space="preserve">
+    <value>Invalid shortcut</value>
+  </data>
+  <data name="Validation_ModifierOnly_Message" xml:space="preserve">
+    <value>Shortcuts must contain at least one action key in addition to modifier keys (Ctrl, Alt, Shift, Win).</value>
+  </data>
+  <data name="Validation_EmptyAppName_Title" xml:space="preserve">
+    <value>Missing application name</value>
+  </data>
+  <data name="Validation_EmptyAppName_Message" xml:space="preserve">
+    <value>You've selected app-specific remapping but haven't specified an application name. Please enter the application name.</value>
+  </data>
+  <data name="Validation_IllegalShortcut_Title" xml:space="preserve">
+    <value>Reserved system shortcut</value>
+  </data>
+  <data name="Validation_IllegalShortcut_Message" xml:space="preserve">
+    <value>Win+L and Ctrl+Alt+Delete are reserved system shortcuts and cannot be remapped.</value>
+  </data>
+  <data name="Validation_DuplicateMapping_Title" xml:space="preserve">
+    <value>Duplicate remapping</value>
+  </data>
+  <data name="Validation_DuplicateMapping_Message" xml:space="preserve">
+    <value>This key or shortcut is already remapped.</value>
+  </data>
+  <data name="Validation_ConflictingModifier_Title" xml:space="preserve">
+    <value>Conflicting modifier</value>
+  </data>
+  <data name="Validation_ConflictingModifier_Message" xml:space="preserve">
+    <value>This key conflicts with an existing remapping that uses a related modifier variant (e.g., Ctrl vs Left Ctrl).</value>
+  </data>
+  <data name="Validation_SelfMapping_Title" xml:space="preserve">
+    <value>Invalid remapping</value>
+  </data>
+  <data name="Validation_SelfMapping_Message" xml:space="preserve">
+    <value>A key or shortcut cannot be remapped to itself. Please choose a different target.</value>
+  </data>
+  <data name="Validation_EmptyTargetText_Title" xml:space="preserve">
+    <value>Missing target text</value>
+  </data>
+  <data name="Validation_EmptyTargetText_Message" xml:space="preserve">
+    <value>Please enter the text to be inserted when the shortcut is pressed.</value>
+  </data>
+  <data name="Validation_EmptyUrl_Title" xml:space="preserve">
+    <value>Missing URL</value>
+  </data>
+  <data name="Validation_EmptyUrl_Message" xml:space="preserve">
+    <value>Please enter the URL to open when the shortcut is pressed.</value>
+  </data>
+  <data name="Validation_EmptyProgramPath_Title" xml:space="preserve">
+    <value>Missing program path</value>
+  </data>
+  <data name="Validation_EmptyProgramPath_Message" xml:space="preserve">
+    <value>Please enter the program path to launch when the shortcut is pressed.</value>
+  </data>
+  <data name="Validation_OneKeyMapping_Title" xml:space="preserve">
+    <value>Invalid remapping</value>
+  </data>
+  <data name="Validation_OneKeyMapping_Message" xml:space="preserve">
+    <value>A single key cannot be remapped to a Program or URL shortcut. Please choose a combination of keys.</value>
+  </data>
+  <data name="Warning_ShortcutStartWithModifier" xml:space="preserve">
+    <value>Shortcuts must start with a modifier key (Ctrl, Alt, Shift, or Win).</value>
+  </data>
+  <data name="Warning_RepeatedModifier" xml:space="preserve">
+    <value>This shortcut already contains a modifier of the same type.</value>
+  </data>
+  <data name="Warning_MaxShortcutSize" xml:space="preserve">
+    <value>Maximum shortcut size reached (4 modifiers + 1 action key).</value>
+  </data>
+  <data name="Warning_InputLimitReached" xml:space="preserve">
+    <value>Shortcuts can only have up to 4 modifier keys.</value>
+  </data>
 </root>
