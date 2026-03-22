@@ -13,15 +13,15 @@ namespace Microsoft.CmdPal.UI.Utilities;
 /// <summary>
 /// Watches for taskbar changes using SetWinEventHook and fires
 /// <see cref="Changed"/> when a change is detected.
-/// Uses WINEVENT_OUTOFCONTEXT — the callback is delivered via the
-/// message pump on the thread that created this _instance.
+/// Scoped to explorer.exe's process to avoid an event storm from
+/// other windows (flyouts, tooltips, etc.).
 /// </summary>
 public sealed unsafe class TaskbarWatcher : IDisposable
 {
     private readonly List<HWINEVENTHOOK> _hooks = new();
     private bool _disposed;
 
-    /// <summary>Raised when any taskbar-related accessibility event fires.</summary>
+    /// <summary>Raised when a taskbar-related accessibility event fires.</summary>
     public event Action? Changed;
 
     private static TaskbarWatcher? _instance;
@@ -43,29 +43,32 @@ public sealed unsafe class TaskbarWatcher : IDisposable
     {
         _instance = this;
 
-        uint[] events =
-        [
-            PInvoke.EVENT_OBJECT_REORDER,
-            PInvoke.EVENT_OBJECT_CREATE,
-            PInvoke.EVENT_OBJECT_DESTROY,
-            PInvoke.EVENT_OBJECT_NAMECHANGE,
-        ];
-
-        foreach (var evt in events)
+        // Find explorer.exe's process ID from Shell_TrayWnd so we
+        // only receive events from the taskbar, not from our own
+        // flyouts/tooltips/teaching tips.
+        var shellTray = PInvoke.FindWindow("Shell_TrayWnd", null);
+        uint explorerPid = 0;
+        if (!shellTray.IsNull)
         {
-            var hook = PInvoke.SetWinEventHook(
-                evt,
-                evt,
-                HMODULE.Null,
-                &WinEventProc,
-                0,
-                0,
-                PInvoke.WINEVENT_OUTOFCONTEXT);
+            _ = PInvoke.GetWindowThreadProcessId(shellTray, &explorerPid);
+        }
 
-            if (!hook.IsNull)
-            {
-                _hooks.Add(hook);
-            }
+        // Only hook EVENT_OBJECT_REORDER — this fires when taskbar
+        // buttons are added, removed, or reordered. The other events
+        // (CREATE, DESTROY, NAMECHANGE) are too noisy and fire for
+        // every UI element in the target process.
+        var hook = PInvoke.SetWinEventHook(
+            PInvoke.EVENT_OBJECT_REORDER,
+            PInvoke.EVENT_OBJECT_REORDER,
+            HMODULE.Null,
+            &WinEventProc,
+            explorerPid,
+            0,
+            PInvoke.WINEVENT_OUTOFCONTEXT);
+
+        if (!hook.IsNull)
+        {
+            _hooks.Add(hook);
         }
     }
 

@@ -24,6 +24,8 @@ namespace Microsoft.CmdPal.UI.Taskbar;
 
 public sealed partial class TaskbarWindow : WindowEx,
     IRecipient<QuitMessage>,
+    IRecipient<EnterEditModeMessage>,
+    IRecipient<ExitEditModeMessage>,
     IDisposable
 {
     private readonly uint wMTASKBARRESTART;
@@ -39,6 +41,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private double _lastContentSpace;
     private int _clipVersion;
+    private bool _clipSuspended;
     private bool _disposed;
 
     internal TaskbarWindow(TaskbarMetrics metrics)
@@ -61,6 +64,8 @@ public sealed partial class TaskbarWindow : WindowEx,
         MainContent.SizeChanged += MainContent_SizeChanged;
 
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
+        WeakReferenceMessenger.Default.Register<EnterEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExitEditModeMessage>(this);
 
         _taskbarMetrics = metrics;
 
@@ -91,16 +96,11 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private void MainContent_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        // During edit mode, don't re-clip on every layout change —
-        // the teaching tip and drag operations cause rapid size changes
-        // that would create an infinite layout loop.
-        if (_bandsControl.IsEditMode)
+        if (_bandsControl.IsEditMode || _clipSuspended)
         {
             return;
         }
 
-        // Debounce: rapid size changes during startup/layout settlement
-        // should collapse into a single clip update.
         _updateLayoutDebouncer.Debounce(
             () => ClipWindow().ConfigureAwait(false),
             interval: TimeSpan.FromMilliseconds(100),
@@ -109,9 +109,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private void OnTaskbarChanged()
     {
-        // Debounce: taskbar events fire many times in quick succession.
-        // Also skip during edit mode to avoid fighting with drag operations.
-        if (_bandsControl.IsEditMode)
+        if (_bandsControl.IsEditMode || _clipSuspended)
         {
             return;
         }
@@ -382,6 +380,62 @@ public sealed partial class TaskbarWindow : WindowEx,
     {
         _updateLayoutDebouncer?.Stop();
         DispatcherQueue.TryEnqueue(() => Close());
+    }
+
+    public void Receive(EnterEditModeMessage message)
+    {
+        _clipSuspended = true;
+        _updateLayoutDebouncer?.Stop();
+    }
+
+    public void Receive(ExitEditModeMessage message)
+    {
+        // Re-apply layout and clip using cached metrics — no UIA
+        // re-enumeration needed. The taskbar buttons/tray haven't
+        // changed, only our content did.
+        _updateLayoutDebouncer.Debounce(
+            () =>
+            {
+                _clipSuspended = false;
+
+                // Re-apply layout from cached metrics
+                var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
+                var buttonsInDips = _taskbarMetrics.ButtonsWidthInPixels / scaleFactor;
+                var trayInDips = _taskbarMetrics.TrayWidthInPixels / scaleFactor;
+                var available = this.Bounds.Width;
+                var forContent = available - buttonsInDips - trayInDips;
+
+                TaskbarButtons.Width = new GridLength(Math.Max(0, buttonsInDips - WindowsLogo.Width.Value));
+                TrayIcons.Width = new GridLength(trayInDips);
+
+                if (forContent > 0)
+                {
+                    ContentColumn.MaxWidth = forContent;
+                    ContentColumn.Width = GridLength.Auto;
+                    _bandsControl.SetMaxAvailableWidth(forContent);
+                }
+                else
+                {
+                    ContentColumn.MaxWidth = 0;
+                    ContentColumn.Width = new GridLength(0);
+                    _bandsControl.SetMaxAvailableWidth(0);
+                }
+
+                _lastContentSpace = forContent;
+
+                // Re-apply clip from cached metrics (synchronous, no UIA)
+                var clipLeft = _taskbarMetrics.ButtonsWidthInPixels;
+                var clipRight = (int)(available * scaleFactor) - _taskbarMetrics.TrayWidthInPixels;
+                var clipBottom = (int)(Root.ActualHeight * scaleFactor);
+
+                if (clipRight > clipLeft && clipBottom > 0)
+                {
+                    var hrgn = PInvoke.CreateRectRgn(clipLeft, 0, clipRight, clipBottom);
+                    _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
+                }
+            },
+            interval: TimeSpan.FromMilliseconds(500),
+            immediate: false);
     }
 
     public void Dispose()
