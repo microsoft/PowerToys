@@ -31,6 +31,12 @@ public sealed partial class TaskbarBandControl : UserControl,
     private DockBandViewModel? _editModeContextBand;
     private DockBandViewModel? _draggedBand;
 
+    /// <summary>
+    /// Minimum width (in DIPs) the band area should occupy during edit
+    /// mode, snapshotted when editing starts.
+    /// </summary>
+    internal bool IsEditMode => _isEditMode;
+
     internal DockViewModel ViewModel => _viewModel;
 
     internal TaskbarBandControl(DockViewModel viewModel)
@@ -49,7 +55,7 @@ public sealed partial class TaskbarBandControl : UserControl,
 
     public void SetMaxAvailableWidth(double availableSpace)
     {
-        if (availableSpace <= 0)
+        if (availableSpace <= 0 && !_isEditMode)
         {
             MoreButton.Visibility = Visibility.Collapsed;
             BandsListView.Visibility = Visibility.Collapsed;
@@ -57,6 +63,14 @@ public sealed partial class TaskbarBandControl : UserControl,
         }
 
         BandsListView.Visibility = Visibility.Visible;
+
+        // In edit mode, show all bands — no overflow.
+        if (_isEditMode)
+        {
+            MoreButton.Visibility = Visibility.Collapsed;
+            OverflowListView.ItemsSource = null;
+            return;
+        }
 
         // Measure each band's width
         var items = _viewModel.TaskbarItems;

@@ -91,12 +91,31 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private void MainContent_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        ClipWindow().ConfigureAwait(false);
+        // During edit mode, don't re-clip on every layout change —
+        // the teaching tip and drag operations cause rapid size changes
+        // that would create an infinite layout loop.
+        if (_bandsControl.IsEditMode)
+        {
+            return;
+        }
+
+        // Debounce: rapid size changes during startup/layout settlement
+        // should collapse into a single clip update.
+        _updateLayoutDebouncer.Debounce(
+            () => ClipWindow().ConfigureAwait(false),
+            interval: TimeSpan.FromMilliseconds(100),
+            immediate: false);
     }
 
     private void OnTaskbarChanged()
     {
         // Debounce: taskbar events fire many times in quick succession.
+        // Also skip during edit mode to avoid fighting with drag operations.
+        if (_bandsControl.IsEditMode)
+        {
+            return;
+        }
+
         _updateLayoutDebouncer.Debounce(
             () => ClipWindow().ConfigureAwait(false),
             interval: TimeSpan.FromMilliseconds(250),
@@ -246,7 +265,17 @@ public sealed partial class TaskbarWindow : WindowEx,
 
                 if (forContent > 0)
                 {
-                    ContentColumn.MaxWidth = Root.ActualWidth == 0 ? double.MaxValue : forContent;
+                    // In edit mode, take the full available width so
+                    // bands don't collapse while being reordered.
+                    if (_bandsControl.IsEditMode)
+                    {
+                        ContentColumn.MaxWidth = forContent;
+                    }
+                    else
+                    {
+                        ContentColumn.MaxWidth = Root.ActualWidth == 0 ? double.MaxValue : forContent;
+                    }
+
                     ContentColumn.Width = GridLength.Auto;
                     _bandsControl.SetMaxAvailableWidth(forContent);
                 }
