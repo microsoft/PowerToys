@@ -306,7 +306,7 @@ namespace KeyboardManagerEditorUI.Pages
             if (_mappingService == null)
             {
                 Logger.LogError("Mapping service is null, cannot save mapping");
-                UnifiedMappingControl.ShowValidationError("Error", "Mapping service is not available.");
+                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_MappingServiceUnavailable_Title"), ResourceHelper.GetString("Error_MappingServiceUnavailable_Message"));
                 args.Cancel = true;
                 return;
             }
@@ -317,7 +317,7 @@ namespace KeyboardManagerEditorUI.Pages
 
                 if (triggerKeys == null || triggerKeys.Count == 0)
                 {
-                    UnifiedMappingControl.ShowValidationError("Missing Original Keys", "Please enter at least one original key to create a remapping.");
+                    UnifiedMappingControl.ShowValidationErrorFromType(ValidationErrorType.EmptyOriginalKeys);
                     args.Cancel = true;
                     return;
                 }
@@ -352,19 +352,19 @@ namespace KeyboardManagerEditorUI.Pages
                 }
                 else
                 {
-                    UnifiedMappingControl.ShowValidationError("Save Failed", "Failed to save the remapping. Please try again.");
+                    UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), ResourceHelper.GetString("Error_SaveFailed_Message"));
                     args.Cancel = true;
                 }
             }
             catch (NotImplementedException ex)
             {
-                UnifiedMappingControl.ShowValidationError("Not Implemented", ex.Message);
+                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_NotImplemented_Title"), ex.Message);
                 args.Cancel = true;
             }
             catch (Exception ex)
             {
                 Logger.LogError("Error saving mapping: " + ex.Message);
-                UnifiedMappingControl.ShowValidationError("Error", "An error occurred while saving: " + ex.Message);
+                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_Generic_Title"), ResourceHelper.GetString("Error_Generic_Message") + ex.Message);
                 args.Cancel = true;
             }
         }

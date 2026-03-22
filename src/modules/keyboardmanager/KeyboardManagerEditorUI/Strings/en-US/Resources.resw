@@ -409,4 +409,13 @@
   <data name="Error_Generic_Message" xml:space="preserve">
     <value>An error occurred while saving: </value>
   </data>
+  <data name="Warning_Title" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="Error_UnknownValidation_Title" xml:space="preserve">
+    <value>Validation error</value>
+  </data>
+  <data name="Error_UnknownValidation_Message" xml:space="preserve">
+    <value>An unknown validation error occurred.</value>
+  </data>
 </root>

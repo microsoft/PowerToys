@@ -1128,7 +1128,7 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void ShowNotificationTip(string message)
         {
-            ShowValidationMessage("Warning", message, InfoBarSeverity.Warning);
+            ShowValidationMessage(ResourceHelper.GetString("Warning_Title"), message, InfoBarSeverity.Warning);
         }
 
         /// <summary>
@@ -1150,7 +1150,7 @@ namespace KeyboardManagerEditorUI.Controls
             }
             else
             {
-                ShowValidationError("Validation Error", "An unknown validation error occurred.");
+                ShowValidationError(ResourceHelper.GetString("Error_UnknownValidation_Title"), ResourceHelper.GetString("Error_UnknownValidation_Message"));
             }
         }
 
