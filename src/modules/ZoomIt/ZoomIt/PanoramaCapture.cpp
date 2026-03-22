@@ -10307,6 +10307,8 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     const auto pfnDwmFlush = reinterpret_cast<pfnDwmFlush_t>(
         GetProcAddress( GetModuleHandleW( L"dwmapi.dll" ), "DwmFlush" ) );
 
+    bool cancelledByEsc = false;
+
     while( !g_PanoramaStopRequested )
     {
         captureIteration++;
@@ -10317,6 +10319,18 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
                        static_cast<long>( msg.wParam ),
                        HotkeyIdToString( msg.wParam ) );
             DispatchMessage( &msg );
+        }
+
+        // Allow ESC to cancel the panorama during the capture phase.
+        // Use GetAsyncKeyState because the focused window belongs to the
+        // application being captured, so WM_KEYDOWN messages go to its
+        // thread queue, not ours.
+        if( GetAsyncKeyState( VK_ESCAPE ) & 0x8000 )
+        {
+            StitchLog( L"[Panorama/Capture] ESC pressed, cancelling capture\n" );
+            cancelledByEsc = true;
+            g_PanoramaStopRequested = true;
+            break;
         }
 
         if( PeekMessage( &msg, nullptr, WM_QUIT, WM_QUIT, PM_REMOVE ) )
@@ -10465,6 +10479,19 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     }
 
     g_SelectRectangle.Stop();
+
+    if( cancelledByEsc )
+    {
+        StitchLog( L"[Panorama/Capture] Cancelled by ESC, discarding %zu frames\n", frames.size() );
+        for( HBITMAP frame : frames )
+        {
+            if( frame != nullptr )
+            {
+                DeleteObject( frame );
+            }
+        }
+        return false;
+    }
 
     HBITMAP panoramaBitmap = nullptr;
     if( frames.size() == 1 )
