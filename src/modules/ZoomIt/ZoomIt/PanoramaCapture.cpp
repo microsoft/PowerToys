@@ -2844,6 +2844,15 @@ struct FixedOverlayMask
     // local background are replaced with the background color.
     RECT eraseRect = {};  // In frame coordinates.  Empty if right<=left.
 
+    // Height of the fixed header at the top of the frame (0 if none).
+    // The first composed frame is exempt from tile-mask suppression
+    // for y < topHeaderHeight so the header appears once at the top.
+    int topHeaderHeight = 0;
+
+    // Pixel row where the fixed bottom strip starts (0 if none).
+    // Used to suppress floating buttons in the margin above the toolbar.
+    int bottomStripY = 0;
+
     bool Empty() const
     {
         return maskedTiles.empty() && eraseRect.right <= eraseRect.left;
@@ -2907,6 +2916,71 @@ struct FixedOverlayMask
             }
         }
         return -1;
+    }
+
+    // Returns the number of rows at the top of the frame that are
+    // mostly masked (majority of tiles in the row are masked).
+    // Returns 0 if there is no contiguous masked header.
+    int TopMaskedRows() const
+    {
+        if( maskedTiles.empty() || tileHeight <= 0 || tileCols <= 0 || tileRows <= 0 )
+            return 0;
+
+        int maskedRowCount = 0;
+        for( int ty = 0; ty < tileRows; ++ty )
+        {
+            const size_t rowBase = static_cast<size_t>( ty ) * static_cast<size_t>( tileCols );
+            int maskedInRow = 0;
+            for( int tx = 0; tx < tileCols; ++tx )
+            {
+                if( maskedTiles[rowBase + static_cast<size_t>( tx )] != 0 )
+                    ++maskedInRow;
+            }
+            // Require majority of tiles masked to count as header row.
+            if( maskedInRow * 2 < tileCols )
+                break;
+            maskedRowCount = ( ty + 1 ) * tileHeight;
+        }
+        return maskedRowCount;
+    }
+
+    // Return the height of a fixed header detected at the top of the
+    // frame.  Uses a lenient check: any tile row starting from the
+    // first masked row that has at least one masked tile is part of
+    // the header.  Returns 0 if there is no header.
+    int TopHeaderHeight() const
+    {
+        if( maskedTiles.empty() || tileHeight <= 0 || tileCols <= 0 || tileRows <= 0 )
+            return 0;
+
+        const int firstMY = FirstMaskedY();
+        if( firstMY < 0 || firstMY > tileHeight )
+            return 0;
+
+        const int startTY = firstMY / max( 1, tileHeight );
+        int headerEndTY = startTY;
+        for( int ty = startTY; ty < tileRows; ++ty )
+        {
+            const size_t rowBase = static_cast<size_t>( ty ) * static_cast<size_t>( tileCols );
+            bool anyMasked = false;
+            for( int tx = 0; tx < tileCols; ++tx )
+            {
+                if( maskedTiles[rowBase + static_cast<size_t>( tx )] != 0 )
+                {
+                    anyMasked = true;
+                    break;
+                }
+            }
+            if( !anyMasked )
+            {
+                headerEndTY = ty;
+                break;
+            }
+        }
+        const int h = headerEndTY * tileHeight;
+        // Sanity: header must be < 1/4 of frame.
+        const int frameH = tileRows * tileHeight;
+        return ( h > 0 && h < frameH / 4 ) ? h : 0;
     }
 };
 
@@ -4059,14 +4133,19 @@ skipTileMasking:
                     continue;
 
                 // Skip comparisons where the shifted position maps
-                // into the fixed toolbar/bottom strip area — those
-                // produce false residual for every pixel near the
-                // bottom of the frame, swamping the real overlay
-                // signal.
-                if( maskedTileCount > 0 && mask.IsMaskedPixel( 0, prevY ) )
-                    continue;
+                // into the fixed header/footer area — those produce
+                // false residual for every pixel near the edges,
+                // swamping the real overlay signal.  Use the detected
+                // strip heights rather than the tile mask, which can
+                // have artifacts from connected components (scrollbar
+                // connecting header to footer).
                 if( fixedBottomRows > 0 && prevY >= frameHeight - fixedBottomRows )
                     continue;
+                {
+                    const int hdrH = mask.TopHeaderHeight();
+                    if( hdrH > 0 && prevY < hdrH )
+                        continue;
+                }
 
                 for( int hx = 0; hx < halfW; ++hx )
                 {
@@ -4114,6 +4193,15 @@ skipTileMasking:
                 if( y < 8 || y >= frameHeight - 8 )
                     continue;
 
+                // Skip pixels within the fixed top header — the
+                // header is stationary and produces residual, but
+                // it's already handled by tile-mask suppression.
+                {
+                    const int topHdrH = mask.TopHeaderHeight();
+                    if( topHdrH > 0 && y < topHdrH + 8 )
+                        continue;
+                }
+
                 // Skip pixels in or near the bottom fixed region.  The tile
                 // mask and bottom strip cover the toolbar itself, but
                 // toolbar UI elements (icons, borders, edit box) extend
@@ -4123,7 +4211,12 @@ skipTileMasking:
                 if( maskedTileCount > 0 && mask.IsMaskedPixel( x, y ) )
                     continue;
                 const int firstMaskedRow = mask.FirstMaskedY();
-                if( firstMaskedRow >= 0 && y >= firstMaskedRow - 40 )
+                const int topHdr = mask.TopHeaderHeight();
+                // Only apply the firstMaskedRow margin when it refers
+                // to the bottom toolbar, not the top header.  When the
+                // header is masked, FirstMaskedY() returns ~0 and the
+                // margin (y >= -40) would exclude every pixel.
+                if( firstMaskedRow > topHdr && y >= firstMaskedRow - 40 )
                     continue;
                 if( fixedBottomRows > 0 && y >= frameHeight - fixedBottomRows - 40 )
                     continue;
@@ -4151,10 +4244,16 @@ skipTileMasking:
             // rendering produces a similar pixel count but spread
             // across the whole frame, yielding very low density.
             // Require at least 1% of the bounding box to be filled.
+            // Also force clustering when the bounding box is very
+            // large (e.g. IDE sidebar + minimap producing widespread
+            // residual) — a real floating overlay is compact, not
+            // frame-spanning.
             const int64_t densityPercent = bboxArea > 0
                 ? ( static_cast<int64_t>( fixedCount ) * 100 / bboxArea )
                 : 0;
-            if( densityPercent < 1 )
+            const bool bboxTooLarge = coreW > frameWidth * 2 / 5 &&
+                                      coreH > frameHeight * 2 / 5;
+            if( densityPercent < 1 || bboxTooLarge )
             {
                 // The full bounding box is too sparse — likely scattered
                 // noise.  But there might be a real compact overlay
@@ -4181,8 +4280,12 @@ skipTileMasking:
                                     !( maskedTileCount > 0 && mask.IsMaskedPixel( hx * 2, hy * 2 ) ) )
                                 {
                                     const int py = hy * 2;
+                                    const int topHdrC2 = mask.TopHeaderHeight();
+                                    if( topHdrC2 > 0 && py < topHdrC2 + 8 )
+                                        continue;
                                     const int firstMR = mask.FirstMaskedY();
-                                    if( firstMR >= 0 && py >= firstMR - 40 )
+                                    const int topHdrC = mask.TopHeaderHeight();
+                                    if( firstMR > topHdrC && py >= firstMR - 40 )
                                         continue;
                                     if( fixedBottomRows > 0 && py >= frameHeight - fixedBottomRows - 40 )
                                         continue;
@@ -4238,6 +4341,18 @@ skipTileMasking:
                     }
                 }
                 else
+                {
+                    fixedCount = 0;
+                }
+            }
+
+            if( fixedCount >= 2 )
+            {
+                // Reject clusters in the top third of the frame —
+                // floating overlays (scroll-to-bottom, FAB, etc.)
+                // sit in the lower portion, not near the header.
+                // Noise near the header edge produces false clusters.
+                if( finalMaxY < frameHeight / 3 )
                 {
                     fixedCount = 0;
                 }
@@ -4338,6 +4453,14 @@ skipTileMasking:
             diagnostics->tileBoundsBottom = min( frameHeight, ( maxTileY + 1 ) * mask.tileHeight );
         }
     }
+
+    mask.topHeaderHeight = mask.TopHeaderHeight();
+    if( mask.topHeaderHeight > 0 )
+    {
+        StitchLog( L"[Panorama/Stitch] TopHeader: height=%d\n", mask.topHeaderHeight );
+    }
+
+    mask.bottomStripY = fixedBottomRows > 0 ? frameHeight - fixedBottomRows : 0;
 
     return mask;
 }
@@ -9718,7 +9841,31 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
 
                     const size_t dstMaskIndex = dstMaskRowBase + static_cast<size_t>( canvasX );
 
+                    const bool firstFrame = ( i == 0 );
+
                     if( !lastFrame && overlayMask != nullptr && overlayMask->IsMaskedPixel( x, y ) )
+                    {
+                        // Exempt the first frame's header region so the
+                        // header appears once at the top of the output,
+                        // mirroring the lastFrame exemption for footers.
+                        if( !firstFrame || y >= overlayMask->topHeaderHeight )
+                        {
+                            if( outSuppressedMask != nullptr )
+                            {
+                                ( *outSuppressedMask )[dstMaskIndex] = 1;
+                            }
+                            ++rowSuppressedPixels;
+                            continue;
+                        }
+                    }
+
+                    // Suppress the entire header region for non-first
+                    // frames so only frame 0's header appears at the
+                    // top.  The tile mask only catches some header
+                    // tiles; this ensures ALL header pixels are kept
+                    // from frame 0 and suppressed from later frames.
+                    if( !lastFrame && !firstFrame && overlayMask != nullptr &&
+                        overlayMask->topHeaderHeight > 0 && y < overlayMask->topHeaderHeight )
                     {
                         if( outSuppressedMask != nullptr )
                         {
@@ -9739,6 +9886,25 @@ static HBITMAP StitchPanoramaFrames(const std::vector<HBITMAP>& frames,
                         overlayMask->eraseRect.right > overlayMask->eraseRect.left &&
                         y >= overlayMask->eraseRect.top &&
                         x >= overlayMask->eraseRect.left && x < overlayMask->eraseRect.right )
+                    {
+                        if( outSuppressedMask != nullptr )
+                        {
+                            ( *outSuppressedMask )[dstMaskIndex] = 1;
+                        }
+                        ++rowSuppressedPixels;
+                        continue;
+                    }
+
+                    // Suppress the gap above the bottom toolbar where
+                    // floating buttons (scroll-to-bottom, etc.) sit.
+                    // These are too small for tile-based detection but
+                    // consistently present at a fixed screen position.
+                    // The overlap region ensures the canvas already has
+                    // clean content from earlier frames.
+                    if( !lastFrame && !firstFrame && overlayMask != nullptr &&
+                        overlayMask->bottomStripY > 0 &&
+                        y >= overlayMask->bottomStripY - 60 &&
+                        !overlayMask->IsMaskedPixel( x, y ) )
                     {
                         if( outSuppressedMask != nullptr )
                         {
