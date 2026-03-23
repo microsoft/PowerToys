@@ -22,9 +22,10 @@ public partial class ProviderSettingsViewModel : ObservableObject
     private static readonly CompositeFormat ExtensionSubtextDisabledFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_disabled);
 
     private readonly CommandProviderWrapper _provider;
-    private readonly ProviderSettings _providerSettings;
     private readonly ISettingsService _settingsService;
     private readonly Lock _initializeSettingsLock = new();
+
+    private ProviderSettings _providerSettings;
 
     private Task? _initializeSettingsTask;
 
@@ -71,7 +72,9 @@ public partial class ProviderSettingsViewModel : ObservableObject
         {
             if (value != _providerSettings.IsEnabled)
             {
-                _providerSettings.IsEnabled = value;
+                var newSettings = _providerSettings with { IsEnabled = value };
+                _providerSettings = newSettings;
+                _settingsService.Settings.ProviderSettings[_provider.ProviderId] = newSettings;
                 Save();
                 WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
                 OnPropertyChanged(nameof(IsEnabled));
@@ -192,6 +195,16 @@ public partial class ProviderSettingsViewModel : ObservableObject
     }
 
     private void Save() => _settingsService.Save();
+
+    internal void UpdateFallbackSettings(string id, FallbackSettings settings)
+    {
+        var newProviderSettings = _providerSettings with
+        {
+            FallbackCommands = _providerSettings.FallbackCommands.SetItem(id, settings),
+        };
+        _providerSettings = newProviderSettings;
+        _settingsService.Settings.ProviderSettings[_provider.ProviderId] = newProviderSettings;
+    }
 
     private void InitializeSettingsPage()
     {

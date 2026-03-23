@@ -413,7 +413,11 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
         if (!providerSettings.PinnedCommandIds.Contains(commandId))
         {
-            providerSettings.PinnedCommandIds.Add(commandId);
+            var newPs = providerSettings with
+            {
+                PinnedCommandIds = providerSettings.PinnedCommandIds.Add(commandId),
+            };
+            settings.ProviderSettings[ProviderId] = newPs;
 
             // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
             this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
@@ -427,8 +431,12 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         var settings = settingsService.Settings;
         var providerSettings = GetProviderSettings(settings);
 
-        if (providerSettings.PinnedCommandIds.Remove(commandId))
+        var newPinned = providerSettings.PinnedCommandIds.Remove(commandId);
+        if (newPinned != providerSettings.PinnedCommandIds)
         {
+            var newPs = providerSettings with { PinnedCommandIds = newPinned };
+            settings.ProviderSettings[ProviderId] = newPs;
+
             // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
             this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
 
