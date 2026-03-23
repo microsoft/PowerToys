@@ -241,10 +241,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public bool EnableTaskbar
     {
-        get => _settings.EnableTaskbar;
+        get => _settingsService.Settings.EnableTaskbar;
         set
         {
-            _settings.EnableTaskbar = value;
+            _settingsService.Settings.EnableTaskbar = value;
             Save();
             WeakReferenceMessenger.Default.Send(new ShowHideTaskbarMessage(value));
         }
