@@ -139,7 +139,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             return;
         }
 
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
+        var settings = settingsService.Settings;
 
         var providerSettings = GetProviderSettings(settings);
         IsActive = providerSettings.IsEnabled;
@@ -249,16 +250,15 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         IServiceProvider serviceProvider,
         ICommandProvider4? four)
     {
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var settings = serviceProvider.GetRequiredService<ISettingsService>().Settings;
         var contextMenuFactory = serviceProvider.GetService<IContextMenuFactory>()!;
-        var state = serviceProvider.GetService<AppStateModel>()!;
         var providerSettings = GetProviderSettings(settings);
         var ourContext = GetProviderContext();
         WeakReference<IPageContext> pageContext = new(this.TopLevelPageContext);
         var make = (ICommandItem? i, TopLevelType t) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext, contextMenuFactory: contextMenuFactory);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, ourContext, settings, providerSettings, serviceProvider, i, contextMenuFactory: contextMenuFactory);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, t, ExtensionHost, ourContext, providerSettings, serviceProvider, i, contextMenuFactory: contextMenuFactory);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
@@ -407,7 +407,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     public void PinCommand(string commandId, IServiceProvider serviceProvider)
     {
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
+        var settings = settingsService.Settings;
         var providerSettings = GetProviderSettings(settings);
 
         if (!providerSettings.PinnedCommandIds.Contains(commandId))
@@ -416,13 +417,14 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
             // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
             this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
-            SettingsModel.SaveSettings(settings, false);
+            settingsService.Save(hotReload: false);
         }
     }
 
     public void UnpinCommand(string commandId, IServiceProvider serviceProvider)
     {
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
+        var settings = settingsService.Settings;
         var providerSettings = GetProviderSettings(settings);
 
         if (providerSettings.PinnedCommandIds.Remove(commandId))
@@ -430,13 +432,14 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
             this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
 
-            SettingsModel.SaveSettings(settings, false);
+            settingsService.Save(hotReload: false);
         }
     }
 
     public void PinDockBand(string commandId, IServiceProvider serviceProvider)
     {
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
+        var settings = settingsService.Settings;
         var bandSettings = new DockBandSettings
         {
             CommandId = commandId,
@@ -447,19 +450,20 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
         this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
 
-        SettingsModel.SaveSettings(settings, false);
+        settingsService.Save(hotReload: false);
     }
 
     public void UnpinDockBand(string commandId, IServiceProvider serviceProvider)
     {
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
+        var settings = settingsService.Settings;
         settings.DockSettings.StartBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId);
         settings.DockSettings.CenterBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId);
         settings.DockSettings.EndBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId);
 
         // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
         this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
-        SettingsModel.SaveSettings(settings, false);
+        settingsService.Save(hotReload: false);
     }
 
     public ICommandProviderContext GetProviderContext() => this;
