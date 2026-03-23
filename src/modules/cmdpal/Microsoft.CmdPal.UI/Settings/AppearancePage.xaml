@@ -203,17 +203,13 @@
                                 x:Uid="Settings_GeneralPage_BackgroundImage_SettingsCard"
                                 Description="{x:Bind ViewModel.Appearance.BackgroundImagePath, Mode=OneWay}"
                                 Visibility="{x:Bind ViewModel.Appearance.IsSingleImageBackgroundControlsVisible, Mode=OneWay}">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseImageButton" Click="PickBackgroundImage_Click" />
-                                </StackPanel>
+                                <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseImageButton" Click="PickBackgroundImage_Click" />
                             </controls:SettingsCard>
                             <controls:SettingsCard
                                 x:Uid="Settings_GeneralPage_BackgroundSlideshowFolder_SettingsCard"
                                 Description="{x:Bind ViewModel.Appearance.BackgroundImageSlideshowFolderPath, Mode=OneWay}"
                                 Visibility="{x:Bind ViewModel.Appearance.IsSlideshowBackgroundControlsVisible, Mode=OneWay}">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseFolderButton" Click="PickBackgroundImageFolder_Click" />
-                                </StackPanel>
+                                <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseFolderButton" Click="PickBackgroundImageFolder_Click" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImageBrightness_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
                                 <Slider
