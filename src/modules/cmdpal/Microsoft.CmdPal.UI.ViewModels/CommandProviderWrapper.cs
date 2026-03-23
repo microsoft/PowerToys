@@ -310,7 +310,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         {
             if (!seenCommandIds.Add(commandId))
             {
-                Logger.LogDebug($"Skipping duplicate pinned dock band command {commandId} for provider {providerId}");
+                Logger.LogWarning($"Skipping duplicate pinned dock band command {commandId} for provider {providerId}");
                 continue;
             }
 
