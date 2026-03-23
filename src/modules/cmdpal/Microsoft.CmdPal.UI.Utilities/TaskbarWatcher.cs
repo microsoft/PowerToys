@@ -76,26 +76,6 @@ public sealed unsafe partial class TaskbarWatcher : IDisposable
                 _hooks.Add(hook);
             }
         }
-
-        // // Only hook EVENT_OBJECT_REORDER — this fires when taskbar
-        // // buttons are added, removed, or reordered. The other events
-        // // (CREATE, DESTROY, NAMECHANGE) are too noisy and fire for
-        // // every UI element in the target process.
-        // var hook = PInvoke.SetWinEventHook(
-        //     PInvoke.EVENT_OBJECT_REORDER,
-        //     PInvoke.EVENT_OBJECT_CREATE,
-        //     PInvoke.EVENT_OBJECT_DESTROY,
-        //     PInvoke.EVENT_OBJECT_NAMECHANGE,
-        //     HMODULE.Null,
-        //     &WinEventProc,
-        //     explorerPid,
-        //     0,
-        //     PInvoke.WINEVENT_OUTOFCONTEXT);
-
-        // if (!hook.IsNull)
-        // {
-        //     _hooks.Add(hook);
-        // }
     }
 
     public void Dispose()

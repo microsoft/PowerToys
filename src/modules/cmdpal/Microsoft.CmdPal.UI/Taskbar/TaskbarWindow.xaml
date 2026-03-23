@@ -31,11 +31,11 @@
         </Grid.ColumnDefinitions>
 
         <!--  Debug: color each column so we can see layout  -->
-        <Border Grid.Column="0" Background="#40FF0000" />
-        <Border Grid.Column="1" Background="#400000FF" />
-        <Border Grid.Column="2" Background="#4000FF00" />
-        <Border Grid.Column="3" Background="#40FF00FF" />
-        <Border Grid.Column="4" Background="#40FFFF00" />
+        <!-- <Border Grid.Column="0" Background="#40FF0000" /> -->
+        <!-- <Border Grid.Column="1" Background="#400000FF" /> -->
+        <!-- <Border Grid.Column="2" Background="#4000FF00" /> -->
+        <!-- <Border Grid.Column="3" Background="#40FF00FF" /> -->
+        <!-- <Border Grid.Column="4" Background="#40FFFF00" /> -->
 
         <ContentControl
             x:Name="MainContent"
