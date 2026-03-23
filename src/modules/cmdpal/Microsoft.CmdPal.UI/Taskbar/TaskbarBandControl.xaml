@@ -186,8 +186,8 @@
     </UserControl.Resources>
 
     <StackPanel
-        Background="Transparent"
         HorizontalAlignment="Right"
+        Background="Transparent"
         Orientation="Horizontal"
         RightTapped="RootPanel_RightTapped">
         <ListView
