@@ -236,7 +236,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             }
 
             // Normal mode - show the command context menu
-            if (item.HasMoreCommands)
+            if (item.CanOpenContextMenu)
             {
                 ContextControl.ViewModel.SelectedItem = item;
                 ContextControl.ShowFilterBox = true;

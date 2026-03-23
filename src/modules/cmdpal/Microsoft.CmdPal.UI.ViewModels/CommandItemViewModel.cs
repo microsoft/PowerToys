@@ -86,6 +86,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public CommandItemViewModel? SecondaryCommand => _secondaryMoreCommand;
 
+    public bool CanOpenContextMenu => AllCommands.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible);
+
     public bool ShouldBeVisible => !string.IsNullOrEmpty(Name);
 
     public bool HasTitle => !string.IsNullOrEmpty(Title);
@@ -238,6 +240,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Initialized |= InitializedState.SelectionInitialized;
         UpdateProperty(nameof(MoreCommands));
         UpdateProperty(nameof(AllCommands));
+        UpdateProperty(nameof(CanOpenContextMenu));
         UpdateProperty(nameof(IsSelectedInitialized));
     }
 
@@ -343,6 +346,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 UpdateProperty(nameof(Title));
                 UpdateProperty(nameof(Icon));
                 UpdateProperty(nameof(HasText));
+                UpdateProperty(nameof(CanOpenContextMenu));
                 break;
 
             case nameof(Title):
@@ -374,7 +378,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
             case nameof(model.MoreCommands):
                 BuildAndInitMoreCommands();
-                UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands), nameof(AllCommands));
+                UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands), nameof(AllCommands), nameof(CanOpenContextMenu));
 
                 break;
             case nameof(DataPackage):
@@ -402,6 +406,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 _itemTitle = model.Title;
                 _titleCache.Invalidate();
                 UpdateProperty(nameof(Title), nameof(Name));
+                UpdateProperty(nameof(CanOpenContextMenu));
 
                 _defaultCommandContextItemViewModel?.UpdateTitle(model.Command.Name);
                 break;
@@ -491,6 +496,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             UpdateProperty(nameof(SecondaryCommand));
             UpdateProperty(nameof(SecondaryCommandName));
             UpdateProperty(nameof(HasMoreCommands));
+            UpdateProperty(nameof(CanOpenContextMenu));
         }
         catch (Exception ex)
         {

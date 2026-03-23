@@ -44,8 +44,6 @@ public sealed partial class CommandBar : UserControl,
 
     public void Receive(OpenContextMenuMessage message)
     {
-        ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
-
         if (message.Element is null)
         {
             // This is invoked from the "More" button on the command bar
@@ -53,6 +51,8 @@ public sealed partial class CommandBar : UserControl,
             {
                 return;
             }
+
+            ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
 
             _ = DispatcherQueue.TryEnqueue(
                 () =>
@@ -69,6 +69,13 @@ public sealed partial class CommandBar : UserControl,
         else
         {
             // This is invoked from a specific element
+            if (!CanOpenContextMenu(ContextControl.ViewModel.SelectedItem))
+            {
+                return;
+            }
+
+            ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
+
             _ = DispatcherQueue.TryEnqueue(
             () =>
             {
@@ -145,6 +152,11 @@ public sealed partial class CommandBar : UserControl,
     public void FocusMoreCommandsButton()
     {
         MoreCommandsButton?.Focus(FocusState.Programmatic);
+    }
+
+    private static bool CanOpenContextMenu(ICommandBarContext? context)
+    {
+        return context?.AllCommands.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible) == true;
     }
 
     private void ContextMenuFlyout_Opened(object sender, object e)
