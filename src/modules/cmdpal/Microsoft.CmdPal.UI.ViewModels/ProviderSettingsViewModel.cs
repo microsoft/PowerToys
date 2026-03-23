@@ -74,8 +74,10 @@ public partial class ProviderSettingsViewModel : ObservableObject
             {
                 var newSettings = _providerSettings with { IsEnabled = value };
                 _providerSettings = newSettings;
-                _settingsService.Settings.ProviderSettings[_provider.ProviderId] = newSettings;
-                Save();
+                _settingsService.UpdateSettings(s => s with
+                {
+                    ProviderSettings = s.ProviderSettings.SetItem(_provider.ProviderId, newSettings),
+                });
                 WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
                 OnPropertyChanged(nameof(IsEnabled));
                 OnPropertyChanged(nameof(ExtensionSubtext));
@@ -194,8 +196,6 @@ public partial class ProviderSettingsViewModel : ObservableObject
         FallbackCommands = fallbackViewModels;
     }
 
-    private void Save() => _settingsService.Save();
-
     internal void UpdateFallbackSettings(string id, FallbackSettings settings)
     {
         var newProviderSettings = _providerSettings with
@@ -203,7 +203,12 @@ public partial class ProviderSettingsViewModel : ObservableObject
             FallbackCommands = _providerSettings.FallbackCommands.SetItem(id, settings),
         };
         _providerSettings = newProviderSettings;
-        _settingsService.Settings.ProviderSettings[_provider.ProviderId] = newProviderSettings;
+        _settingsService.UpdateSettings(
+            s => s with
+            {
+                ProviderSettings = s.ProviderSettings.SetItem(_provider.ProviderId, newProviderSettings),
+            },
+            hotReload: false);
     }
 
     private void InitializeSettingsPage()

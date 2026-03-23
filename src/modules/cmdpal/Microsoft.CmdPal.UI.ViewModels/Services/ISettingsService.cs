@@ -23,6 +23,12 @@ public interface ISettingsService
     void Save(bool hotReload = true);
 
     /// <summary>
+    /// Atomically applies a transformation to the current settings, persists the result,
+    /// and optionally raises <see cref="SettingsChanged"/>.
+    /// </summary>
+    void UpdateSettings(Func<SettingsModel, SettingsModel> transform, bool hotReload = true);
+
+    /// <summary>
     /// Raised after settings are saved with <paramref name="hotReload"/> enabled, or after <see cref="Reload"/>.
     /// </summary>
     event TypedEventHandler<ISettingsService, SettingsModel> SettingsChanged;

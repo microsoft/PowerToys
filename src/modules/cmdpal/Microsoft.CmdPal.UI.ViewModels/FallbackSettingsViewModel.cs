@@ -12,7 +12,9 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class FallbackSettingsViewModel : ObservableObject
 {
     private readonly ISettingsService _settingsService;
-    private readonly FallbackSettings _fallbackSettings;
+    private readonly ProviderSettingsViewModel _providerSettingsViewModel;
+
+    private FallbackSettings _fallbackSettings;
 
     public string DisplayName { get; private set; } = string.Empty;
 
@@ -27,13 +29,15 @@ public partial class FallbackSettingsViewModel : ObservableObject
         {
             if (value != _fallbackSettings.IsEnabled)
             {
-                _fallbackSettings.IsEnabled = value;
+                var newSettings = _fallbackSettings with { IsEnabled = value };
 
-                if (!_fallbackSettings.IsEnabled)
+                if (!newSettings.IsEnabled)
                 {
-                    _fallbackSettings.IncludeInGlobalResults = false;
+                    newSettings = newSettings with { IncludeInGlobalResults = false };
                 }
 
+                _fallbackSettings = newSettings;
+                _providerSettingsViewModel.UpdateFallbackSettings(Id, _fallbackSettings);
                 Save();
                 OnPropertyChanged(nameof(IsEnabled));
             }
@@ -47,13 +51,15 @@ public partial class FallbackSettingsViewModel : ObservableObject
         {
             if (value != _fallbackSettings.IncludeInGlobalResults)
             {
-                _fallbackSettings.IncludeInGlobalResults = value;
+                var newSettings = _fallbackSettings with { IncludeInGlobalResults = value };
 
-                if (!_fallbackSettings.IsEnabled)
+                if (!newSettings.IsEnabled)
                 {
-                    _fallbackSettings.IsEnabled = true;
+                    newSettings = newSettings with { IsEnabled = true };
                 }
 
+                _fallbackSettings = newSettings;
+                _providerSettingsViewModel.UpdateFallbackSettings(Id, _fallbackSettings);
                 Save();
                 OnPropertyChanged(nameof(IncludeInGlobalResults));
             }
@@ -67,6 +73,7 @@ public partial class FallbackSettingsViewModel : ObservableObject
     ISettingsService settingsService)
     {
         _settingsService = settingsService;
+        _providerSettingsViewModel = providerSettings;
         _fallbackSettings = fallbackSettings;
 
         Id = fallback.Id;

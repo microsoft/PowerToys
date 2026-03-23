@@ -75,7 +75,14 @@ public class SettingsServiceTests
     public void Settings_ReturnsLoadedModel()
     {
         // Arrange
-        _testSettings.ShowAppDetails = true;
+        _testSettings = _testSettings with { ShowAppDetails = true };
+
+        // Reset mock to return updated settings
+        _mockPersistence
+            .Setup(p => p.Load(
+                It.IsAny<string>(),
+                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()))
+            .Returns(_testSettings);
 
         // Act
         var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
@@ -89,7 +96,9 @@ public class SettingsServiceTests
     {
         // Arrange
         var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
-        service.Settings.SingleClickActivates = true;
+        service.UpdateSettings(
+            s => s with { SingleClickActivates = true },
+            hotReload: false);
 
         // Act
         service.Save(hotReload: false);

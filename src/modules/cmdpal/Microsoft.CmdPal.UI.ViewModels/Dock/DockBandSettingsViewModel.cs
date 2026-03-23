@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,9 +15,10 @@ public partial class DockBandSettingsViewModel : ObservableObject
 {
     private static readonly CompositeFormat PluralItemsFormatString = CompositeFormat.Parse(Properties.Resources.dock_item_count_plural);
     private readonly ISettingsService _settingsService;
-    private readonly DockBandSettings _dockSettingsModel;
     private readonly TopLevelViewModel _adapter;
     private readonly DockBandViewModel? _bandViewModel;
+
+    private DockBandSettings _dockSettingsModel;
 
     public string Title => _adapter.Title;
 
@@ -54,13 +56,14 @@ public partial class DockBandSettingsViewModel : ObservableObject
             if (value != _showLabels)
             {
                 _showLabels = value;
-                _dockSettingsModel.ShowLabels = value switch
+                var newShowTitles = value switch
                 {
-                    ShowLabelsOption.Default => null,
+                    ShowLabelsOption.Default => (bool?)null,
                     ShowLabelsOption.ShowLabels => true,
                     ShowLabelsOption.HideLabels => false,
                     _ => null,
                 };
+                UpdateModel(_dockSettingsModel with { ShowTitles = newShowTitles });
                 Save();
             }
         }
@@ -176,7 +179,41 @@ public partial class DockBandSettingsViewModel : ObservableObject
 
     private void Save()
     {
-        _settingsService.Save();
+        _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings });
+    }
+
+    private void UpdateModel(DockBandSettings newModel)
+    {
+        var commandId = _dockSettingsModel.CommandId;
+        _settingsService.UpdateSettings(
+            s =>
+            {
+                var dockSettings = s.DockSettings;
+                return s with
+                {
+                    DockSettings = dockSettings with
+                    {
+                        StartBands = ReplaceInList(dockSettings.StartBands, commandId, newModel),
+                        CenterBands = ReplaceInList(dockSettings.CenterBands, commandId, newModel),
+                        EndBands = ReplaceInList(dockSettings.EndBands, commandId, newModel),
+                    },
+                };
+            },
+            hotReload: false);
+        _dockSettingsModel = newModel;
+    }
+
+    private static ImmutableList<DockBandSettings> ReplaceInList(ImmutableList<DockBandSettings> list, string commandId, DockBandSettings newModel)
+    {
+        for (var i = 0; i < list.Count; i++)
+        {
+            if (list[i].CommandId == commandId)
+            {
+                return list.SetItem(i, newModel);
+            }
+        }
+
+        return list;
     }
 
     private void UpdatePinSide(DockPinSide value)
@@ -189,44 +226,31 @@ public partial class DockBandSettingsViewModel : ObservableObject
 
     public void SetBandPosition(DockPinSide side, int? index)
     {
-        var dockSettings = _settingsService.Settings.DockSettings;
+        var commandId = _dockSettingsModel.CommandId;
 
-        // Remove from all sides first
-        dockSettings.StartBands.RemoveAll(b => b.CommandId == _dockSettingsModel.CommandId);
-        dockSettings.CenterBands.RemoveAll(b => b.CommandId == _dockSettingsModel.CommandId);
-        dockSettings.EndBands.RemoveAll(b => b.CommandId == _dockSettingsModel.CommandId);
-
-        // Add to the selected side
-        switch (side)
+        _settingsService.UpdateSettings(s =>
         {
-            case DockPinSide.Start:
-                {
-                    var insertIndex = index ?? dockSettings.StartBands.Count;
-                    dockSettings.StartBands.Insert(insertIndex, _dockSettingsModel);
-                    break;
-                }
+            var dockSettings = s.DockSettings;
 
-            case DockPinSide.Center:
-                {
-                    var insertIndex = index ?? dockSettings.CenterBands.Count;
-                    dockSettings.CenterBands.Insert(insertIndex, _dockSettingsModel);
-                    break;
-                }
+            // Remove from all sides first
+            var newDock = dockSettings with
+            {
+                StartBands = dockSettings.StartBands.RemoveAll(b => b.CommandId == commandId),
+                CenterBands = dockSettings.CenterBands.RemoveAll(b => b.CommandId == commandId),
+                EndBands = dockSettings.EndBands.RemoveAll(b => b.CommandId == commandId),
+            };
 
-            case DockPinSide.End:
-                {
-                    var insertIndex = index ?? dockSettings.EndBands.Count;
-                    dockSettings.EndBands.Insert(insertIndex, _dockSettingsModel);
-                    break;
-                }
+            // Add to the selected side
+            newDock = side switch
+            {
+                DockPinSide.Start => newDock with { StartBands = newDock.StartBands.Insert(index ?? newDock.StartBands.Count, _dockSettingsModel) },
+                DockPinSide.Center => newDock with { CenterBands = newDock.CenterBands.Insert(index ?? newDock.CenterBands.Count, _dockSettingsModel) },
+                DockPinSide.End => newDock with { EndBands = newDock.EndBands.Insert(index ?? newDock.EndBands.Count, _dockSettingsModel) },
+                _ => newDock,
+            };
 
-            case DockPinSide.None:
-            default:
-                // Do nothing
-                break;
-        }
-
-        Save();
+            return s with { DockSettings = newDock };
+        });
     }
 
     private void OnPinSideChanged(DockPinSide value)

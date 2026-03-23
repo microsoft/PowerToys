@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Threading;
 using Microsoft.CmdPal.Common.Services;
 using Windows.Foundation;
 
@@ -22,20 +23,27 @@ public sealed class AppStateService : IAppStateService
         _persistence = persistence;
         _appInfoService = appInfoService;
         _filePath = StateJsonPath();
-        State = _persistence.Load(_filePath, JsonSerializationContext.Default.AppStateModel);
+        _state = _persistence.Load(_filePath, JsonSerializationContext.Default.AppStateModel);
     }
 
+    private AppStateModel _state;
+
     /// <inheritdoc/>
-    public AppStateModel State { get; private set; }
+    public AppStateModel State => _state;
 
     /// <inheritdoc/>
     public event TypedEventHandler<IAppStateService, AppStateModel>? StateChanged;
 
     /// <inheritdoc/>
-    public void Save()
+    public void Save() => UpdateState(s => s);
+
+    /// <inheritdoc/>
+    public void UpdateState(Func<AppStateModel, AppStateModel> transform)
     {
-        _persistence.Save(State, _filePath, JsonSerializationContext.Default.AppStateModel);
-        StateChanged?.Invoke(this, State);
+        var newState = transform(_state);
+        Interlocked.Exchange(ref _state, newState);
+        _persistence.Save(newState, _filePath, JsonSerializationContext.Default.AppStateModel);
+        StateChanged?.Invoke(this, newState);
     }
 
     private string StateJsonPath()

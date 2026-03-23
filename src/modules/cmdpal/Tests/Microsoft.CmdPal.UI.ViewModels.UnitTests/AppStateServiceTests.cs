@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -41,7 +42,7 @@ public class AppStateServiceTests
         // Arrange
         var expectedState = new AppStateModel
         {
-            RunHistory = new List<string> { "command1", "command2" },
+            RunHistory = ImmutableList.Create("command1", "command2"),
         };
         _mockPersistence
             .Setup(p => p.Load(
@@ -86,7 +87,7 @@ public class AppStateServiceTests
     {
         // Arrange
         var service = new AppStateService(_mockPersistence.Object, _mockAppInfo.Object);
-        service.State.RunHistory.Add("test-command");
+        service.UpdateState(s => s with { RunHistory = s.RunHistory.Add("test-command") });
 
         // Act
         service.Save();
