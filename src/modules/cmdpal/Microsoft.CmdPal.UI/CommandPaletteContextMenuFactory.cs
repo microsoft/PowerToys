@@ -60,8 +60,10 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         // AppListItems can be surfaced on the main page even though they still
         // belong to the All Apps provider.
-        if (commandItem.Model.Unsafe is AppListItem &&
-            providerContext.ProviderId != AllAppsCommandProvider.WellKnownId)
+        // MainListPage only returns our in-proc wrappers/items.
+        if (providerContext.ProviderId != AllAppsCommandProvider.WellKnownId &&
+            page is ListViewModel { IsMainPage: true } &&
+            commandItem.Model.Unsafe is AppListItem)
         {
             providerContext = _topLevelCommandManager.LookupProvider(AllAppsCommandProvider.WellKnownId)?.GetProviderContext() ?? providerContext;
         }
