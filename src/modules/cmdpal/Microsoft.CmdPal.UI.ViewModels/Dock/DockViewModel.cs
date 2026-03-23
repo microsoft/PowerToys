@@ -21,6 +21,7 @@ public sealed partial class DockViewModel
     private readonly IContextMenuFactory _contextMenuFactory;
 
     private DockSettings _settings;
+    private bool _isEditing;
 
     public TaskScheduler Scheduler { get; }
 
@@ -52,6 +53,12 @@ public sealed partial class DockViewModel
 
     private void DockBands_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
+        if (_isEditing)
+        {
+            Logger.LogDebug("Skipping DockBands_CollectionChanged during edit mode");
+            return;
+        }
+
         Logger.LogDebug("Starting DockBands_CollectionChanged");
         SetupBands();
         Logger.LogDebug("Ended DockBands_CollectionChanged");
@@ -302,7 +309,12 @@ public sealed partial class DockViewModel
         _snapshotCenterBands = null;
         _snapshotEndBands = null;
         _snapshotBandViewModels = null;
-        _settingsService.Save();
+
+        // Save without hotReload to avoid triggering SettingsChanged → SetupBands,
+        // which could race with stale DockBands_CollectionChanged work items and
+        // re-add bands that were just unpinned.
+        _settingsService.Save(hotReload: false);
+        _isEditing = false;
         Logger.LogDebug("Saved band order to settings");
     }
 
@@ -317,6 +329,8 @@ public sealed partial class DockViewModel
     /// </summary>
     public void SnapshotBandOrder()
     {
+        _isEditing = true;
+
         var dockSettings = _settingsService.Settings.DockSettings;
         _snapshotStartBands = dockSettings.StartBands.Select(b => b.Clone()).ToList();
         _snapshotCenterBands = dockSettings.CenterBands.Select(b => b.Clone()).ToList();
@@ -391,6 +405,7 @@ public sealed partial class DockViewModel
         _snapshotCenterBands = null;
         _snapshotEndBands = null;
         _snapshotBandViewModels = null;
+        _isEditing = false;
         Logger.LogDebug("Restored band order from snapshot");
     }
 
