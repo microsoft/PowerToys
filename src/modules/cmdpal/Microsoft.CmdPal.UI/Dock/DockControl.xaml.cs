@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -196,6 +197,13 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         }
     }
 
+    private ContextMenuFilterLocation GetDockContextMenuFilterLocation()
+    {
+        return DockSide == DockSide.Bottom
+            ? ContextMenuFilterLocation.Bottom
+            : ContextMenuFilterLocation.Top;
+    }
+
     // Stores the band that was right-clicked for edit mode context menu
     private DockBandViewModel? _editModeContextBand;
 
@@ -232,6 +240,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             {
                 ContextControl.ViewModel.SelectedItem = item;
                 ContextControl.ShowFilterBox = true;
+                ContextControl.PrepareForOpen(GetDockContextMenuFilterLocation());
                 ContextMenuFlyout.ShowAt(
                     dockItem,
                     new FlyoutShowOptions()
@@ -320,6 +329,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         {
             ContextControl.ViewModel.SelectedItem = item;
             ContextControl.ShowFilterBox = false;
+            ContextControl.PrepareForOpen(GetDockContextMenuFilterLocation());
             ContextMenuFlyout.ShowAt(
             this.RootGrid,
             new FlyoutShowOptions()

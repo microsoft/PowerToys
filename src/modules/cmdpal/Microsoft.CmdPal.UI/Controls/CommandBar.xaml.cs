@@ -44,6 +44,8 @@ public sealed partial class CommandBar : UserControl,
 
     public void Receive(OpenContextMenuMessage message)
     {
+        ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
+
         if (message.Element is null)
         {
             // This is invoked from the "More" button on the command bar
