@@ -47,6 +47,10 @@ foreach ($csprojFile in $csprojFilesArray) {
     if ($csprojFile -like '*Microsoft.CmdPal.Ext.Shell.csproj') {
         continue
     }
+    # this is a test tool project
+    if ($csprojFile -like '*TaskbarMonitor.csproj') {
+        continue
+    }
 
     $importExists = Test-ImportSharedCsWinRTProps -filePath $csprojFile
     if (!$importExists) {
