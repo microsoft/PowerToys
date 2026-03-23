@@ -27,6 +27,8 @@ namespace
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_HOTKEY[] = L"hotkey";
+    const wchar_t JSON_KEY_INCREASE_OPACITY_HOTKEY[] = L"increase-opacity-hotkey";
+    const wchar_t JSON_KEY_DECREASE_OPACITY_HOTKEY[] = L"decrease-opacity-hotkey";
     const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
@@ -136,48 +138,36 @@ public:
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
-        size_t count = 0;
-        
-        // Hotkey 0: Pin/Unpin (e.g., Win+Ctrl+T)
-        if (m_hotkey.key)
+        constexpr size_t hotkeyCount = 3;
+
+        if (hotkeys && buffer_size >= hotkeyCount)
         {
-            if (hotkeys && buffer_size > count)
-            {
-                hotkeys[count] = m_hotkey;
-                Logger::trace(L"AlwaysOnTop hotkey[0]: win={}, ctrl={}, shift={}, alt={}, key={}", 
-                    m_hotkey.win, m_hotkey.ctrl, m_hotkey.shift, m_hotkey.alt, m_hotkey.key);
-            }
-            count++;
+            hotkeys[0] = m_hotkey;
+            hotkeys[1] = m_increaseOpacityHotkey;
+            hotkeys[2] = m_decreaseOpacityHotkey;
+
+            Logger::trace(L"AlwaysOnTop hotkey[0]: win={}, ctrl={}, shift={}, alt={}, key={}",
+                          hotkeys[0].win,
+                          hotkeys[0].ctrl,
+                          hotkeys[0].shift,
+                          hotkeys[0].alt,
+                          hotkeys[0].key);
+            Logger::trace(L"AlwaysOnTop hotkey[1] (increase opacity): win={}, ctrl={}, shift={}, alt={}, key={}",
+                          hotkeys[1].win,
+                          hotkeys[1].ctrl,
+                          hotkeys[1].shift,
+                          hotkeys[1].alt,
+                          hotkeys[1].key);
+            Logger::trace(L"AlwaysOnTop hotkey[2] (decrease opacity): win={}, ctrl={}, shift={}, alt={}, key={}",
+                          hotkeys[2].win,
+                          hotkeys[2].ctrl,
+                          hotkeys[2].shift,
+                          hotkeys[2].alt,
+                          hotkeys[2].key);
         }
 
-        // Hotkey 1: Increase opacity (same modifiers + VK_OEM_PLUS '=')
-        if (m_hotkey.key)
-        {
-            if (hotkeys && buffer_size > count)
-            {
-                hotkeys[count] = m_hotkey;
-                hotkeys[count].key = VK_OEM_PLUS; // '=' key
-                Logger::trace(L"AlwaysOnTop hotkey[1] (increase opacity): win={}, ctrl={}, shift={}, alt={}, key={}", 
-                    hotkeys[count].win, hotkeys[count].ctrl, hotkeys[count].shift, hotkeys[count].alt, hotkeys[count].key);
-            }
-            count++;
-        }
-
-        // Hotkey 2: Decrease opacity (same modifiers + VK_OEM_MINUS '-')
-        if (m_hotkey.key)
-        {
-            if (hotkeys && buffer_size > count)
-            {
-                hotkeys[count] = m_hotkey;
-                hotkeys[count].key = VK_OEM_MINUS; // '-' key
-                Logger::trace(L"AlwaysOnTop hotkey[2] (decrease opacity): win={}, ctrl={}, shift={}, alt={}, key={}", 
-                    hotkeys[count].win, hotkeys[count].ctrl, hotkeys[count].shift, hotkeys[count].alt, hotkeys[count].key);
-            }
-            count++;
-        }
-
-        Logger::trace(L"AlwaysOnTop get_hotkeys returning count={}", count);
-        return count;
+        Logger::trace(L"AlwaysOnTop get_hotkeys returning count={}", hotkeyCount);
+        return hotkeyCount;
     }
 
     // Enable the powertoy
@@ -279,21 +269,34 @@ private:
 
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
     {
+        const auto parseSingleHotkey = [](const winrt::Windows::Data::Json::JsonObject& propertiesObject, const wchar_t* hotkeyName, Hotkey& hotkey) {
+            try
+            {
+                auto jsonHotkeyObject = propertiesObject.GetNamedObject(hotkeyName).GetNamedObject(JSON_KEY_VALUE);
+                hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+            }
+            catch (...)
+            {
+            }
+        };
+
         auto settingsObject = settings.get_raw_json();
         if (settingsObject.GetView().Size())
         {
             try
             {
-                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_HOTKEY).GetNamedObject(JSON_KEY_VALUE);
-                m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
-                m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
-                m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
-                m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-                m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                parseSingleHotkey(propertiesObject, JSON_KEY_HOTKEY, m_hotkey);
+                parseSingleHotkey(propertiesObject, JSON_KEY_INCREASE_OPACITY_HOTKEY, m_increaseOpacityHotkey);
+                parseSingleHotkey(propertiesObject, JSON_KEY_DECREASE_OPACITY_HOTKEY, m_decreaseOpacityHotkey);
             }
             catch (...)
             {
-                Logger::error("Failed to initialize AlwaysOnTop start shortcut");
+                Logger::error("Failed to initialize AlwaysOnTop shortcuts");
             }
         }
         else
@@ -329,7 +332,9 @@ private:
 
     bool m_enabled = false;
     HANDLE m_hProcess = nullptr;
-    Hotkey m_hotkey;
+    Hotkey m_hotkey{ .win = true, .ctrl = true, .shift = false, .alt = false, .key = 'T' };
+    Hotkey m_increaseOpacityHotkey{ .win = true, .ctrl = true, .shift = false, .alt = false, .key = VK_OEM_PLUS };
+    Hotkey m_decreaseOpacityHotkey{ .win = true, .ctrl = true, .shift = false, .alt = false, .key = VK_OEM_MINUS };
 
     // Handle to event used to pin/unpin windows
     HANDLE m_hPinEvent;

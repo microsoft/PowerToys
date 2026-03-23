@@ -3054,11 +3054,17 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="AlwaysOnTop_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to pin or unpin an app window</value>
   </data>
-  <data name="AlwaysOnTop_IncreaseOpacity" xml:space="preserve">
-    <value>Press **{0}** to increase the opacity of the window</value>
+  <data name="AlwaysOnTop_IncreaseOpacityShortcut.Header" xml:space="preserve">
+    <value>Increase opacity shortcut</value>
   </data>
-  <data name="AlwaysOnTop_DecreaseOpacity" xml:space="preserve">
-    <value>Press **{0}** to decrease the opacity of the window</value>
+  <data name="AlwaysOnTop_IncreaseOpacityShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to increase the opacity of a pinned window</value>
+  </data>
+  <data name="AlwaysOnTop_DecreaseOpacityShortcut.Header" xml:space="preserve">
+    <value>Decrease opacity shortcut</value>
+  </data>
+  <data name="AlwaysOnTop_DecreaseOpacityShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to decrease the opacity of a pinned window</value>
   </data>
   <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>
