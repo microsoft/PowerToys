@@ -436,7 +436,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         }
     }
 
-    public void PinDockBand(string commandId, IServiceProvider serviceProvider)
+    public void PinDockBand(string commandId, IServiceProvider serviceProvider, Dock.DockPinSide side = Dock.DockPinSide.Start, bool? showTitles = null, bool? showSubtitles = null)
     {
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         var settings = settingsService.Settings;
@@ -444,8 +444,23 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         {
             CommandId = commandId,
             ProviderId = this.ProviderId,
+            ShowTitles = showTitles,
+            ShowSubtitles = showSubtitles,
         };
-        settings.DockSettings.StartBands.Add(bandSettings);
+
+        switch (side)
+        {
+            case Dock.DockPinSide.Center:
+                settings.DockSettings.CenterBands.Add(bandSettings);
+                break;
+            case Dock.DockPinSide.End:
+                settings.DockSettings.EndBands.Add(bandSettings);
+                break;
+            case Dock.DockPinSide.Start:
+            default:
+                settings.DockSettings.StartBands.Add(bandSettings);
+                break;
+        }
 
         // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
         this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
