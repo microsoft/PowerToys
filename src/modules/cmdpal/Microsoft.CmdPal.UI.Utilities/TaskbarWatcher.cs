@@ -16,7 +16,7 @@ namespace Microsoft.CmdPal.UI.Utilities;
 /// Scoped to explorer.exe's process to avoid an event storm from
 /// other windows (flyouts, tooltips, etc.).
 /// </summary>
-public sealed unsafe class TaskbarWatcher : IDisposable
+public sealed unsafe partial class TaskbarWatcher : IDisposable
 {
     private readonly List<HWINEVENTHOOK> _hooks = new();
     private bool _disposed;
@@ -53,23 +53,49 @@ public sealed unsafe class TaskbarWatcher : IDisposable
             _ = PInvoke.GetWindowThreadProcessId(shellTray, &explorerPid);
         }
 
-        // Only hook EVENT_OBJECT_REORDER — this fires when taskbar
-        // buttons are added, removed, or reordered. The other events
-        // (CREATE, DESTROY, NAMECHANGE) are too noisy and fire for
-        // every UI element in the target process.
-        var hook = PInvoke.SetWinEventHook(
+        uint[] events =
+        [
             PInvoke.EVENT_OBJECT_REORDER,
-            PInvoke.EVENT_OBJECT_REORDER,
-            HMODULE.Null,
-            &WinEventProc,
-            explorerPid,
-            0,
-            PInvoke.WINEVENT_OUTOFCONTEXT);
-
-        if (!hook.IsNull)
+            PInvoke.EVENT_OBJECT_CREATE,
+            PInvoke.EVENT_OBJECT_DESTROY,
+            PInvoke.EVENT_OBJECT_NAMECHANGE,
+        ];
+        foreach (var evt in events)
         {
-            _hooks.Add(hook);
+            var hook = PInvoke.SetWinEventHook(
+                evt,
+                evt,
+                HMODULE.Null,
+                &WinEventProc,
+                explorerPid,
+                0, // all threads
+                PInvoke.WINEVENT_OUTOFCONTEXT);
+
+            if (!hook.IsNull)
+            {
+                _hooks.Add(hook);
+            }
         }
+
+        // // Only hook EVENT_OBJECT_REORDER — this fires when taskbar
+        // // buttons are added, removed, or reordered. The other events
+        // // (CREATE, DESTROY, NAMECHANGE) are too noisy and fire for
+        // // every UI element in the target process.
+        // var hook = PInvoke.SetWinEventHook(
+        //     PInvoke.EVENT_OBJECT_REORDER,
+        //     PInvoke.EVENT_OBJECT_CREATE,
+        //     PInvoke.EVENT_OBJECT_DESTROY,
+        //     PInvoke.EVENT_OBJECT_NAMECHANGE,
+        //     HMODULE.Null,
+        //     &WinEventProc,
+        //     explorerPid,
+        //     0,
+        //     PInvoke.WINEVENT_OUTOFCONTEXT);
+
+        // if (!hook.IsNull)
+        // {
+        //     _hooks.Add(hook);
+        // }
     }
 
     public void Dispose()
