@@ -37,7 +37,7 @@ public static class PhiSilicaLafHelper
                 var access = LimitedAccessFeatures.TryUnlockFeature(
                     FeatureId,
                     PhiSilicaLafCredentials.Token,
-                    PhiSilicaLafCredentials.Attestation);
+                    PhiSilicaLafCredentials.Attestation + " has registered their use of com.microsoft.windows.ai.languagemodel with Microsoft and agrees to the terms of use.");
 
                 _unlocked = access.Status == LimitedAccessFeatureStatus.Available
                          || access.Status == LimitedAccessFeatureStatus.AvailableWithoutToken;
