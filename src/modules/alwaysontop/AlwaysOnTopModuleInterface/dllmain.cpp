@@ -152,32 +152,44 @@ public:
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
         constexpr size_t hotkeyCount = 3;
+        Hotkey configuredHotkeys[hotkeyCount] = { m_hotkey, m_increaseOpacityHotkey, m_decreaseOpacityHotkey };
 
-        if (hotkeys && buffer_size >= hotkeyCount)
+        for (size_t i = 0; i < hotkeyCount; ++i)
         {
-            hotkeys[0] = m_hotkey;
-            hotkeys[1] = m_increaseOpacityHotkey;
-            hotkeys[2] = m_decreaseOpacityHotkey;
-
-            Logger::trace(L"AlwaysOnTop hotkey[0]: win={}, ctrl={}, shift={}, alt={}, key={}",
-                          hotkeys[0].win,
-                          hotkeys[0].ctrl,
-                          hotkeys[0].shift,
-                          hotkeys[0].alt,
-                          hotkeys[0].key);
-            Logger::trace(L"AlwaysOnTop hotkey[1] (increase opacity): win={}, ctrl={}, shift={}, alt={}, key={}",
-                          hotkeys[1].win,
-                          hotkeys[1].ctrl,
-                          hotkeys[1].shift,
-                          hotkeys[1].alt,
-                          hotkeys[1].key);
-            Logger::trace(L"AlwaysOnTop hotkey[2] (decrease opacity): win={}, ctrl={}, shift={}, alt={}, key={}",
-                          hotkeys[2].win,
-                          hotkeys[2].ctrl,
-                          hotkeys[2].shift,
-                          hotkeys[2].alt,
-                          hotkeys[2].key);
+            configuredHotkeys[i].id = static_cast<int>(i);
+            configuredHotkeys[i].isShown = configuredHotkeys[i].key != 0;
         }
+
+        if (hotkeys)
+        {
+            const size_t countToCopy = (buffer_size < hotkeyCount) ? buffer_size : hotkeyCount;
+            for (size_t i = 0; i < countToCopy; ++i)
+            {
+                hotkeys[i] = configuredHotkeys[i];
+            }
+        }
+
+        Logger::trace(L"AlwaysOnTop hotkey[0]: win={}, ctrl={}, shift={}, alt={}, key={}, shown={}",
+                      configuredHotkeys[0].win,
+                      configuredHotkeys[0].ctrl,
+                      configuredHotkeys[0].shift,
+                      configuredHotkeys[0].alt,
+                      configuredHotkeys[0].key,
+                      configuredHotkeys[0].isShown);
+        Logger::trace(L"AlwaysOnTop hotkey[1] (increase opacity): win={}, ctrl={}, shift={}, alt={}, key={}, shown={}",
+                      configuredHotkeys[1].win,
+                      configuredHotkeys[1].ctrl,
+                      configuredHotkeys[1].shift,
+                      configuredHotkeys[1].alt,
+                      configuredHotkeys[1].key,
+                      configuredHotkeys[1].isShown);
+        Logger::trace(L"AlwaysOnTop hotkey[2] (decrease opacity): win={}, ctrl={}, shift={}, alt={}, key={}, shown={}",
+                      configuredHotkeys[2].win,
+                      configuredHotkeys[2].ctrl,
+                      configuredHotkeys[2].shift,
+                      configuredHotkeys[2].alt,
+                      configuredHotkeys[2].key,
+                      configuredHotkeys[2].isShown);
 
         Logger::trace(L"AlwaysOnTop get_hotkeys returning count={}", hotkeyCount);
         return hotkeyCount;
