@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
@@ -12,6 +13,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.UI.Dispatching;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -42,9 +44,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private readonly Lock _listLock = new();
     private readonly IContextMenuFactory _contextMenuFactory;
 
+    [ThreadStatic]
+    private static Dictionary<ListViewModel, int>? _getItemsDepthByViewModel;
+
     private InterlockedBoolean _isLoading;
     private int _activeFetchCount;
     private int _latestFetchGeneration;
+    private bool _deferredFetchRequested;
+    private bool _deferredFetchKeepSelection = true;
 
     public event TypedEventHandler<ListViewModel, ItemsUpdatedEventArgs>? ItemsUpdated;
 
@@ -129,8 +136,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
-    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems(args.TotalItems == IncrementalRefresh);
+    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args)
+    {
+        RequestFetch(args.TotalItems == IncrementalRefresh);
+    }
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
@@ -205,9 +214,54 @@ public partial class ListViewModel : PageViewModel, IDisposable
         });
     }
 
+    private void RequestFetch(bool keepSelection)
+    {
+        // Keep RPC GetItems work off the UI thread. If the provider raises
+        // ItemsChanged while we're already on a background thread, stay on that
+        // thread so same-thread reentrancy detection still works.
+        if (IsCurrentThreadUiThread())
+        {
+            _ = Task.Run(() => RequestFetch(keepSelection));
+            return;
+        }
+
+        if (IsGetItemsActiveOnCurrentThread())
+        {
+            lock (_fetchStateLock)
+            {
+                _deferredFetchRequested = true;
+                _deferredFetchKeepSelection &= keepSelection;
+            }
+
+            return;
+        }
+
+        FetchItems(keepSelection);
+    }
+
+    private void QueueDeferredFetchIfNeeded()
+    {
+        bool deferredFetchRequested;
+        bool keepSelection;
+        lock (_fetchStateLock)
+        {
+            deferredFetchRequested = _deferredFetchRequested;
+            keepSelection = _deferredFetchKeepSelection;
+            _deferredFetchRequested = false;
+            _deferredFetchKeepSelection = true;
+        }
+
+        if (deferredFetchRequested)
+        {
+            _ = Task.Run(() => FetchItems(keepSelection));
+        }
+    }
+
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchItems(bool keepSelection)
     {
+        System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "FetchItems should not run on the UI thread.");
+
         // If this fetch should reset selection, remember that intent even if
         // a later incremental fetch cancels us.
         if (!keepSelection)
@@ -243,7 +297,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
-            var newItems = _model.Unsafe!.GetItems();
+            IListItem[] newItems;
+            try
+            {
+                EnterGetItemsScope();
+                newItems = _model.Unsafe!.GetItems();
+            }
+            finally
+            {
+                ExitGetItemsScope();
+            }
 
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
@@ -493,6 +556,72 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private Dictionary<IListItem, ListItemViewModel> ReadVmCache() => Volatile.Read(ref _vmCache);
 
+    private static bool IsCurrentThreadUiThread()
+    {
+        try
+        {
+            return DispatcherQueue.GetForCurrentThread()?.HasThreadAccess == true;
+        }
+        catch (COMException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Detects if we're currently within a GetItems call on this thread for this view model. This is used to detect
+    /// reentrant calls to GetItems, so we can defer subsequent calls until the first one finishes, to avoid
+    /// concurrent GetItems calls which most extensions won't be expecting.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if we're currently within a GetItems call on this thread for this view model; otherwise, <see langword="false"/>.
+    /// </returns>
+    private bool IsGetItemsActiveOnCurrentThread()
+    {
+        var depths = _getItemsDepthByViewModel;
+        return depths is not null &&
+               depths.TryGetValue(this, out var depth) &&
+               depth > 0;
+    }
+
+    private void EnterGetItemsScope()
+    {
+        var depths = _getItemsDepthByViewModel ??= [];
+        depths.TryGetValue(this, out var depth);
+        depths[this] = depth + 1;
+    }
+
+    private void ExitGetItemsScope()
+    {
+        var depths = _getItemsDepthByViewModel;
+        if (depths is null || !depths.TryGetValue(this, out var depth))
+        {
+            return;
+        }
+
+        if (depth == 1)
+        {
+            depths.Remove(this);
+            if (depths.Count == 0)
+            {
+                _getItemsDepthByViewModel = null;
+            }
+
+            try
+            {
+                QueueDeferredFetchIfNeeded();
+            }
+            catch (Exception ex)
+            {
+                CoreLogger.LogError("Failed to queue deferred fetch", ex);
+            }
+        }
+        else
+        {
+            depths[this] = depth - 1;
+        }
+    }
+
     private static void CancelAndDisposeTokenSource(ref CancellationTokenSource? tokenSource)
     {
         var tokenSourceToDispose = tokenSource;
@@ -515,7 +644,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    private bool IsLatestFetchGeneration(int fetchGeneration) => Volatile.Read(ref _latestFetchGeneration) == fetchGeneration;
+    private bool IsLatestFetchGeneration(int fetchGeneration)
+    {
+        return Volatile.Read(ref _latestFetchGeneration) == fetchGeneration;
+    }
 
     private void PublishVmCache(Dictionary<IListItem, ListItemViewModel> newCache)
     {
