@@ -122,7 +122,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             _dockWindow.Show();
         }
 
-        if (App.Current.Services.GetService<SettingsModel>()!.EnableTaskbar)
+        if (App.Current.Services.GetRequiredService<ISettingsService>().Settings.EnableTaskbar)
         {
             _ = CreateAndShowTaskbarAsync();
         }
