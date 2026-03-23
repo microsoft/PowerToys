@@ -16,6 +16,8 @@
 namespace NonLocalizable
 {
     const wchar_t ModulePath[] = L"PowerToys.AlwaysOnTop.exe";
+    // Keep in sync with src\modules\alwaysontop\AlwaysOnTop\AlwaysOnTop.cpp
+    const wchar_t PinnedWindowProp[] = L"AlwaysOnTop_Pinned";
 }
 
 namespace
@@ -109,27 +111,38 @@ public:
 
     virtual bool on_hotkey(size_t hotkeyId) override
     {
-        if (m_enabled)
+        if (!m_enabled)
         {
-            Logger::trace(L"AlwaysOnTop hotkey pressed, id={}", hotkeyId);
+            return false;
+        }
+
+        Logger::trace(L"AlwaysOnTop hotkey pressed, id={}", hotkeyId);
+
+        if (hotkeyId == 0)
+        {
             if (!is_process_running())
             {
                 Enable();
             }
 
-            if (hotkeyId == 0)
+            SetEvent(m_hPinEvent);
+            return true;
+        }
+
+        if (hotkeyId == 1 || hotkeyId == 2)
+        {
+            const HWND foregroundWindow = GetForegroundWindow();
+            if (!foregroundWindow || !IsWindow(foregroundWindow) || !GetPropW(foregroundWindow, NonLocalizable::PinnedWindowProp))
             {
-                SetEvent(m_hPinEvent);
-            }
-            else if (hotkeyId == 1)
-            {
-                SetEvent(m_hIncreaseOpacityEvent);
-            }
-            else if (hotkeyId == 2)
-            {
-                SetEvent(m_hDecreaseOpacityEvent);
+                return false;
             }
 
+            if (!is_process_running())
+            {
+                Enable();
+            }
+
+            SetEvent(hotkeyId == 1 ? m_hIncreaseOpacityEvent : m_hDecreaseOpacityEvent);
             return true;
         }
 
