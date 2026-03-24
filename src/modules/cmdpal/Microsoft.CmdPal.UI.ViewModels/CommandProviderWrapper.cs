@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Immutable;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -464,21 +463,40 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         }
     }
 
-    public void PinDockBand(string commandId, IServiceProvider serviceProvider)
+    public void PinDockBand(string commandId, IServiceProvider serviceProvider, Dock.DockPinSide side = Dock.DockPinSide.Start, bool? showTitles = null, bool? showSubtitles = null)
     {
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         var bandSettings = new DockBandSettings
         {
             CommandId = commandId,
             ProviderId = this.ProviderId,
+            ShowTitles = showTitles,
+            ShowSubtitles = showSubtitles,
         };
+
         settingsService.UpdateSettings(
-            s => s with
+            s =>
             {
-                DockSettings = s.DockSettings with
+                var dockSettings = s.DockSettings;
+
+                switch (side)
                 {
-                    StartBands = s.DockSettings.StartBands.Add(bandSettings),
-                },
+                    case Dock.DockPinSide.Center:
+                        dockSettings.CenterBands.Add(bandSettings);
+                        break;
+                    case Dock.DockPinSide.End:
+                        dockSettings.EndBands.Add(bandSettings);
+                        break;
+                    case Dock.DockPinSide.Start:
+                    default:
+                        dockSettings.StartBands.Add(bandSettings);
+                        break;
+                }
+
+                return s with
+                {
+                    DockSettings = dockSettings,
+                };
             },
             hotReload: false);
 

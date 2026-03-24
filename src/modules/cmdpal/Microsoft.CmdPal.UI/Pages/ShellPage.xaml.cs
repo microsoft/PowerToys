@@ -51,6 +51,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
     IRecipient<ShowHideDockMessage>,
+    IRecipient<ShowPinToDockDialogMessage>,
     INotifyPropertyChanged,
     IDisposable
 {
@@ -102,6 +103,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
+        WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
 
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
@@ -208,6 +210,43 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             _toast.ShowToast(message.Message);
         });
+    }
+
+    public void Receive(ShowPinToDockDialogMessage message)
+    {
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            try
+            {
+                await HandlePinToDockDialogOnUiThread(message);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.ToString());
+            }
+        });
+    }
+
+    private async Task HandlePinToDockDialogOnUiThread(ShowPinToDockDialogMessage message)
+    {
+        var (result, content) = await PinToDockDialogContent.ShowAsync(
+            this.XamlRoot,
+            message.Title,
+            message.Subtitle,
+            message.Icon,
+            message.DockSide);
+
+        if (result == ContentDialogResult.Primary)
+        {
+            var pinMessage = new PinToDockMessage(
+                message.ProviderId,
+                message.CommandId,
+                Pin: true,
+                Side: content.SelectedSide,
+                ShowTitles: content.ShowTitles,
+                ShowSubtitles: content.ShowSubtitles);
+            WeakReferenceMessenger.Default.Send(pinMessage);
+        }
     }
 
     // This gets called from the UI thread
