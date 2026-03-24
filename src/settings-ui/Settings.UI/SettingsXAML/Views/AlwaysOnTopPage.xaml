@@ -36,7 +36,7 @@
                         <tkcontrols:SettingsExpander.Items>
                             <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
                             <tkcontrols:SettingsCard Visibility="Collapsed" />
-                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_IncreaseOpacityShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_IncreaseOpacityShortcut">
                                 <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.IncreaseOpacityHotkey, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_DecreaseOpacityShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
