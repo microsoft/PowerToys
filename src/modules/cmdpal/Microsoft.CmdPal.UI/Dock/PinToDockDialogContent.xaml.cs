@@ -7,6 +7,8 @@ using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Dock;
@@ -83,7 +85,28 @@ public sealed partial class PinToDockDialogContent : UserControl
             XamlRoot = xamlRoot,
         };
 
+        // Inner controls (Segmented, CheckBox) may consume the Enter key event,
+        // preventing DefaultButton from activating. Handle it explicitly.
+        var enterPressed = false;
+        dialog.AddHandler(
+            UIElement.KeyDownEvent,
+            new KeyEventHandler((s, e) =>
+            {
+                if (e.Key == VirtualKey.Enter)
+                {
+                    enterPressed = true;
+                    dialog.Hide();
+                }
+            }),
+            true);
+
         var result = await dialog.ShowAsync();
+
+        if (result == ContentDialogResult.None && enterPressed)
+        {
+            result = ContentDialogResult.Primary;
+        }
+
         return (result, content);
     }
 
