@@ -63,7 +63,9 @@ namespace Microsoft.PowerToys.Common.UI.Controls
 
         private static void OnContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((KeyVisual)d).SetVisualStates();
+            var keyVisual = (KeyVisual)d;
+            keyVisual.Update();
+            keyVisual.SetVisualStates();
         }
 
         private static void OnStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -96,6 +98,14 @@ namespace Microsoft.PowerToys.Common.UI.Controls
 
         private void Update()
         {
+            if (_keyPresenter == null)
+            {
+                return;
+            }
+
+            _keyPresenter.Content = Content;
+            _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
+
             if (Content == null)
             {
                 return;
@@ -141,19 +151,19 @@ namespace Microsoft.PowerToys.Common.UI.Controls
                         break;
 
                     case VirtualKey.Up:
-                        _keyPresenter.Content = "\uE0E4";
+                        _keyPresenter.Content = "\u2191";
                         break;
 
                     case VirtualKey.Down:
-                        _keyPresenter.Content = "\uE0E5";
+                        _keyPresenter.Content = "\u2193";
                         break;
 
                     case VirtualKey.Left:
-                        _keyPresenter.Content = "\uE0E2";
+                        _keyPresenter.Content = "\u2190";
                         break;
 
                     case VirtualKey.Right:
-                        _keyPresenter.Content = "\uE0E3";
+                        _keyPresenter.Content = "\u2192";
                         break;
 
                     case VirtualKey.LeftWindows:
