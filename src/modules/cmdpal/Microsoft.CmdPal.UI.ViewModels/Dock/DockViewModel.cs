@@ -316,10 +316,49 @@ public sealed partial class DockViewModel
             band.SaveShowLabels();
         }
 
+        // Preserve any per-band label edits made while in edit mode. Those edits are
+        // saved independently of reorder, so merge the latest band settings back into
+        // the local reordered snapshot before we persist dock settings.
+        var latestBandSettings = BuildBandSettingsLookup(_settingsService.Settings.DockSettings);
+        _settings = _settings with
+        {
+            StartBands = MergeBandSettings(_settings.StartBands, latestBandSettings),
+            CenterBands = MergeBandSettings(_settings.CenterBands, latestBandSettings),
+            EndBands = MergeBandSettings(_settings.EndBands, latestBandSettings),
+        };
+
         _snapshotDockSettings = null;
         _snapshotBandViewModels = null;
         _settingsService.UpdateSettings(s => s with { DockSettings = _settings });
         Logger.LogDebug("Saved band order to settings");
+    }
+
+    private static Dictionary<string, DockBandSettings> BuildBandSettingsLookup(DockSettings dockSettings)
+    {
+        var lookup = new Dictionary<string, DockBandSettings>(StringComparer.Ordinal);
+        foreach (var band in dockSettings.StartBands.Concat(dockSettings.CenterBands).Concat(dockSettings.EndBands))
+        {
+            lookup[band.CommandId] = band;
+        }
+
+        return lookup;
+    }
+
+    private static ImmutableList<DockBandSettings> MergeBandSettings(
+        ImmutableList<DockBandSettings> targetBands,
+        IReadOnlyDictionary<string, DockBandSettings> latestBandSettings)
+    {
+        var merged = targetBands;
+        for (var i = 0; i < merged.Count; i++)
+        {
+            var commandId = merged[i].CommandId;
+            if (latestBandSettings.TryGetValue(commandId, out var latestSettings))
+            {
+                merged = merged.SetItem(i, latestSettings);
+            }
+        }
+
+        return merged;
     }
 
     private DockSettings? _snapshotDockSettings;
