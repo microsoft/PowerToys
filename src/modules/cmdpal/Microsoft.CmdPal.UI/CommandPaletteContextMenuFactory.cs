@@ -4,6 +4,8 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -56,6 +58,17 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         List<IContextItem> moreCommands = [];
         var itemId = commandItem.Command.Id;
         var providerContext = page.ProviderContext;
+
+        // AppListItems can be surfaced on the main page even though they still
+        // belong to the All Apps provider.
+        // MainListPage only returns our in-proc wrappers/items.
+        if (providerContext.ProviderId != AllAppsCommandProvider.WellKnownId &&
+            page is ListViewModel { IsMainPage: true } &&
+            commandItem.Model.Unsafe is AppListItem)
+        {
+            providerContext = _topLevelCommandManager.LookupProvider(AllAppsCommandProvider.WellKnownId)?.GetProviderContext() ?? providerContext;
+        }
+
         var supportsPinning = providerContext.SupportsPinning;
 
         if (supportsPinning &&
@@ -185,7 +198,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             pin: !alreadyPinned,
             PinLocation.Dock,
             _settingsService,
-            _topLevelCommandManager);
+            _topLevelCommandManager,
+            commandItemViewModel: commandItem);
 
         var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
         moreCommands.Add(contextItem);
@@ -236,6 +250,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         private readonly TopLevelCommandManager _topLevelCommandManager;
         private readonly bool _pin;
         private readonly PinLocation _pinLocation;
+        private readonly CommandItemViewModel? _commandItemViewModel;
 
         private bool IsPinToDock => _pinLocation == PinLocation.Dock;
 
@@ -253,7 +268,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             bool pin,
             PinLocation pinLocation,
             ISettingsService settingsService,
-            TopLevelCommandManager topLevelCommandManager)
+            TopLevelCommandManager topLevelCommandManager,
+            CommandItemViewModel? commandItemViewModel = null)
         {
             _commandId = commandId;
             _providerId = providerId;
@@ -261,6 +277,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             _settingsService = settingsService;
             _topLevelCommandManager = topLevelCommandManager;
             _pin = pin;
+            _commandItemViewModel = commandItemViewModel;
         }
 
         public override CommandResult Invoke()
@@ -312,7 +329,11 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         private void PinToDock()
         {
-            PinToDockMessage message = new(_providerId, _commandId, true);
+            var title = _commandItemViewModel?.Title ?? string.Empty;
+            var subtitle = _commandItemViewModel?.Subtitle ?? string.Empty;
+            var icon = _commandItemViewModel?.Icon;
+            var dockSide = _settingsService.Settings.DockSettings.Side;
+            ShowPinToDockDialogMessage message = new(_providerId, _commandId, title, subtitle, icon, dockSide);
             WeakReferenceMessenger.Default.Send(message);
         }
 
