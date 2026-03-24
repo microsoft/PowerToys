@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
@@ -263,12 +262,8 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
 
     public ImageSource? EffectiveBackgroundImageSource =>
         ColorizationMode is ColorizationMode.Image
-        && BackgroundImagePathResolver.ResolvePreviewImagePath(BackgroundImagePath) is string imagePath
-        && Uri.TryCreate(imagePath, UriKind.RelativeOrAbsolute, out var uri)
-            ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(
-                !uri.IsAbsoluteUri && File.Exists(imagePath)
-                    ? new Uri(Path.GetFullPath(imagePath))
-                    : uri)
+        && BackgroundImagePathResolver.CreateImageUri(BackgroundImagePathResolver.ResolvePreviewImagePath(BackgroundImagePath)) is Uri uri
+            ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
             : null;
 
     public DockAppearanceSettingsViewModel(IThemeService themeService, ISettingsService settingsService)

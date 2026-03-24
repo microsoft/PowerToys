@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.WinUI;
@@ -518,13 +517,8 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         !BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsBackgroundImage
             ? null
             : ColorizationMode is ColorizationMode.Image or ColorizationMode.Slideshow
-              && GetEffectiveBackgroundPreviewPath() is string imagePath
-              && !string.IsNullOrWhiteSpace(imagePath)
-              && Uri.TryCreate(imagePath, UriKind.RelativeOrAbsolute, out var uri)
-                ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(
-                    !uri.IsAbsoluteUri && File.Exists(imagePath)
-                        ? new Uri(Path.GetFullPath(imagePath))
-                        : uri)
+              && BackgroundImagePathResolver.CreateImageUri(GetEffectiveBackgroundPreviewPath()) is Uri uri
+                ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
                 : null;
 
     private string? GetEffectiveBackgroundPreviewPath()

@@ -111,6 +111,30 @@ public static class BackgroundImagePathResolver
         return files.Count > 0 ? files[0] : null;
     }
 
+    /// <summary>
+    /// Creates a <see cref="Uri"/> suitable for <see cref="Microsoft.UI.Xaml.Media.Imaging.BitmapImage"/>
+    /// from a resolved image path. Returns null when the path is empty or invalid.
+    /// </summary>
+    public static Uri? CreateImageUri(string? imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+        {
+            return null;
+        }
+
+        if (!Uri.TryCreate(imagePath, UriKind.RelativeOrAbsolute, out var uri))
+        {
+            return null;
+        }
+
+        if (!uri.IsAbsoluteUri && File.Exists(imagePath))
+        {
+            return new Uri(Path.GetFullPath(imagePath));
+        }
+
+        return uri;
+    }
+
     private static bool IsSupportedImageFile(string filePath)
     {
         var extension = Path.GetExtension(filePath);
