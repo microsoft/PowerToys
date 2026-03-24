@@ -90,6 +90,10 @@ namespace AdvancedPaste
             viewModel = GetService<OptionsViewModel>();
 
             UnhandledException += App_UnhandledException;
+
+            // Start a background pipe server so Settings UI can query Phi Silica status.
+            // This runs with MSIX package identity, so LAF + GetReadyState() work.
+            StartPhiSilicaStatusServer();
         }
 
         public MainWindow GetMainWindow()
@@ -109,11 +113,110 @@ namespace AdvancedPaste
         }
 
         /// <summary>
+        /// Starts a background named pipe server that responds to Phi Silica status queries
+        /// from Settings UI. The pipe runs for the lifetime of the app.
+        /// </summary>
+        private static void StartPhiSilicaStatusServer()
+        {
+            Task.Run(async () =>
+            {
+                // Check status once (with MSIX identity) and cache
+                string status;
+                try
+                {
+                    PhiSilicaLafHelper.TryUnlock();
+                    var readyState = Microsoft.Windows.AI.Text.LanguageModel.GetReadyState();
+                    status = readyState switch
+                    {
+                        Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem => "NotSupported",
+                        Microsoft.Windows.AI.AIFeatureReadyState.NotReady => "NotReady",
+                        _ => "Available",
+                    };
+                }
+                catch
+                {
+                    status = "NotSupported";
+                }
+
+                Logger.LogDebug($"Phi Silica status: {status}");
+
+                // Serve status to any client that connects
+                while (true)
+                {
+                    try
+                    {
+                        using var server = new System.IO.Pipes.NamedPipeServerStream(
+                            "powertoys_advancedpaste_phi_status",
+                            System.IO.Pipes.PipeDirection.Out,
+                            1,
+                            System.IO.Pipes.PipeTransmissionMode.Byte,
+                            System.IO.Pipes.PipeOptions.Asynchronous);
+
+                        await server.WaitForConnectionAsync();
+
+                        var bytes = System.Text.Encoding.UTF8.GetBytes(status);
+                        await server.WriteAsync(bytes);
+                        server.WaitForPipeDrain();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Phi Silica status pipe error", ex);
+                        await Task.Delay(1000);
+                    }
+                }
+            });
+        }
+
+        /// <summary>
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
+            // Try protocol activation args first (MSIX launch via x-advancedpaste:// URI)
+            try
+            {
+                var activatedArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+                Logger.LogDebug($"Activation kind: {activatedArgs?.Kind}");
+
+                if (activatedArgs?.Kind == Microsoft.Windows.AppLifecycle.ExtendedActivationKind.Protocol &&
+                    activatedArgs.Data is Windows.ApplicationModel.Activation.IProtocolActivatedEventArgs protocolArgs)
+                {
+                    var uri = protocolArgs.Uri;
+                    Logger.LogDebug($"Protocol URI: {uri}");
+
+                    // Parse query parameters manually to avoid System.Web dependency
+                    var pid = GetQueryParam(uri.Query, "pid");
+                    var pipeName = GetQueryParam(uri.Query, "pipe");
+
+                    Logger.LogDebug($"Parsed pid={pid}, pipe={pipeName}");
+
+                    if (int.TryParse(pid, out int powerToysRunnerPid))
+                    {
+                        RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
+                        {
+                            _dispatcherQueue.TryEnqueue(() =>
+                            {
+                                Dispose();
+                                Environment.Exit(0);
+                            });
+                        });
+                    }
+
+                    if (!string.IsNullOrEmpty(pipeName))
+                    {
+                        ProcessNamedPipe(pipeName);
+                    }
+
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to process protocol activation args", ex);
+            }
+
+            // Fallback: command-line args (direct exe launch)
             var cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs?.Length > 1)
             {
@@ -138,9 +241,31 @@ namespace AdvancedPaste
 
         private void ProcessNamedPipe(string pipeName)
         {
+            Logger.LogDebug($"Connecting to named pipe: {pipeName}");
             void OnMessage(string message) => _dispatcherQueue.TryEnqueue(async () => await OnNamedPipeMessage(message));
 
             Task.Run(async () => await NamedPipeProcessor.ProcessNamedPipeAsync(pipeName, connectTimeout: TimeSpan.FromSeconds(10), OnMessage, CancellationToken.None));
+        }
+
+        private static string GetQueryParam(string query, string key)
+        {
+            if (string.IsNullOrEmpty(query))
+            {
+                return null;
+            }
+
+            // Remove leading '?' if present
+            var q = query.StartsWith('?') ? query.Substring(1) : query;
+            foreach (var part in q.Split('&'))
+            {
+                var kv = part.Split('=', 2);
+                if (kv.Length == 2 && kv[0].Equals(key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Uri.UnescapeDataString(kv[1]);
+                }
+            }
+
+            return null;
         }
 
         private async Task OnNamedPipeMessage(string message)

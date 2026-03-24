@@ -42,15 +42,4 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <!-- Generate PhiSilicaLafCredentials.g.cs from MSBuild properties (overridable via /p: in release pipelines) -->
-    <Target Name="GeneratePhiSilicaLafCredentials" BeforeTargets="BeforeCompile;CoreCompile" Inputs="$(MSBuildProjectFile)" Outputs="$(IntermediateOutputPath)PhiSilicaLafCredentials.g.cs">
-        <PropertyGroup>
-            <PhiSilicaLafCredentialsPath>$(IntermediateOutputPath)PhiSilicaLafCredentials.g.cs</PhiSilicaLafCredentialsPath>
-        </PropertyGroup>
-        <WriteLinesToFile File="$(PhiSilicaLafCredentialsPath)" Overwrite="true" Lines="// &lt;auto-generated/&gt;&#10;namespace Microsoft.PowerToys.Settings.UI.Library%3B&#10;&#10;internal static class PhiSilicaLafCredentials&#10;{&#10;    internal const string Token = &quot;$(PhiSilicaLafToken)&quot;%3B&#10;    internal const string Attestation = &quot;$(PhiSilicaLafAttestation)&quot;%3B&#10;}" />
-        <ItemGroup>
-            <Compile Include="$(PhiSilicaLafCredentialsPath)" Condition="!@(Compile->AnyHaveMetadataValue('Identity', '$(PhiSilicaLafCredentialsPath)'))" />
-        </ItemGroup>
-    </Target>
-
 </Project>

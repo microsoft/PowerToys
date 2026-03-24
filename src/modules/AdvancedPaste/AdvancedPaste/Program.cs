@@ -3,11 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
 using System.Threading;
 
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 
@@ -21,11 +19,6 @@ namespace AdvancedPaste
             Logger.InitializeLogger("\\AdvancedPaste\\Logs");
 
             WinRT.ComWrappersSupport.InitializeComWrappers();
-
-            if (args.Contains("--check-phi-silica", StringComparer.OrdinalIgnoreCase))
-            {
-                return CheckPhiSilicaAvailability();
-            }
 
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAdvancedPasteEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
@@ -50,39 +43,6 @@ namespace AdvancedPaste
             }
 
             return 0;
-        }
-
-        /// <summary>
-        /// Checks Phi Silica availability without starting the WinUI app.
-        /// Used by Settings UI to probe API status via subprocess.
-        /// Exit codes: 0 = available, 1 = not ready (model needs download), 2 = not supported or error.
-        /// </summary>
-        private static int CheckPhiSilicaAvailability()
-        {
-            try
-            {
-                PhiSilicaLafHelper.TryUnlock();
-                var readyState = Microsoft.Windows.AI.Text.LanguageModel.GetReadyState();
-
-                switch (readyState)
-                {
-                    case Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem:
-                        Console.Out.WriteLine("NotSupported");
-                        return 2;
-                    case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
-                        Console.Out.WriteLine("NotReady");
-                        return 1;
-                    default:
-                        Console.Out.WriteLine("Available");
-                        return 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex.Message);
-                Console.Out.WriteLine("NotSupported");
-                return 2;
-            }
         }
     }
 }

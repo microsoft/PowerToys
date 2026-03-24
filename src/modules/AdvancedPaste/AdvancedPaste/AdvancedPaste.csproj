@@ -8,26 +8,30 @@
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\AdvancedPaste</OutputPath>
     <UseWinUI>true</UseWinUI>
     <ApplicationIcon>Assets\AdvancedPaste\AdvancedPaste.ico</ApplicationIcon>
-    <ApplicationManifest>AdvancedPaste.dev.manifest</ApplicationManifest>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <WindowsPackageType>None</WindowsPackageType>
+    <EnableMsixTooling>true</EnableMsixTooling>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <AssemblyName>PowerToys.AdvancedPaste</AssemblyName>
     <AssemblyDescription>PowerToys AdvancedPaste</AssemblyDescription>
     <RootNamespace>AdvancedPaste</RootNamespace>
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- Separate output folder avoids resources.pri conflict with other WinUI3 apps (see microsoft-ui-xaml#10856) -->
-    <ProjectPriFileName>resources.pri</ProjectPriFileName>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(CIBuild)'=='true'">
-    <ApplicationManifest>AdvancedPaste.prod.manifest</ApplicationManifest>
+  <PropertyGroup Condition="'$(CIBuild)'=='true' or '$(GeneratePackageLocally)'=='true'">
+    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <AppxBundle>Never</AppxBundle>
+    <AppxPackageTestDir>$(OutputPath)\AppPackages\PowerToys.AdvancedPaste_$(Version)_Test\</AppxPackageTestDir>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest" Condition="'$(CIBuild)'=='true'" />
+    <AppxManifest Include="Package-Dev.appxmanifest" Condition="'$(CIBuild)'!='true'" />
+  </ItemGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
@@ -81,11 +85,6 @@
     <PackageReference Include="WinUIEx" />
     <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
     <PackageReference Include="System.Text.Json" />
-    <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
-    <PackageReference Include="Microsoft.Web.WebView2" />
-    <!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->
-    <PackageReference Include="CommunityToolkit.Common" />
-    <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
   <PropertyGroup>

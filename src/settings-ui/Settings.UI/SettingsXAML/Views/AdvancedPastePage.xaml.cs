@@ -569,44 +569,41 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         }
 
         /// <summary>
-        /// Checks Phi Silica availability by launching AdvancedPaste.exe with --check-phi-silica.
-        /// AdvancedPaste has sparse package identity and can call the Windows AI APIs directly.
+        /// Checks Phi Silica availability by querying the running AdvancedPaste process
+        /// via a well-known named pipe. AdvancedPaste runs as a packaged MSIX with identity
+        /// and checks the API status on startup.
         /// Returns "Available", "NotReady", or "NotSupported".
         /// </summary>
         private static string CheckPhiSilicaViaAdvancedPaste()
         {
-            var settingsDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var advancedPastePath = Path.Combine(settingsDir, "AdvancedPaste", "PowerToys.AdvancedPaste.exe");
+            try
+            {
+                using var client = new System.IO.Pipes.NamedPipeClientStream(
+                    ".",
+                    "powertoys_advancedpaste_phi_status",
+                    System.IO.Pipes.PipeDirection.In);
 
-            if (!File.Exists(advancedPastePath))
+                client.Connect(timeout: 5000);
+
+                using var reader = new StreamReader(client, System.Text.Encoding.UTF8);
+                var status = reader.ReadToEnd().Trim();
+
+                return status switch
+                {
+                    "Available" => "Available",
+                    "NotReady" => "NotReady",
+                    _ => "NotSupported",
+                };
+            }
+            catch (TimeoutException)
+            {
+                // AdvancedPaste not running or pipe not ready
+                return "NotSupported";
+            }
+            catch
             {
                 return "NotSupported";
             }
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = advancedPastePath,
-                Arguments = "--check-phi-silica",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            };
-
-            using var process = Process.Start(startInfo);
-            if (process == null)
-            {
-                return "NotSupported";
-            }
-
-            var output = process.StandardOutput.ReadToEnd().Trim();
-            process.WaitForExit(10_000);
-
-            return output switch
-            {
-                "Available" => "Available",
-                "NotReady" => "NotReady",
-                _ => "NotSupported",
-            };
         }
 
         private async Task LoadFoundryLocalModelsAsync()

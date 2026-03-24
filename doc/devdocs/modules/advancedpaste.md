@@ -118,20 +118,15 @@ pwsh src/PackageIdentity/BuildSparsePackage.ps1 -Unregister
 
 ### How Settings UI checks Phi Silica availability
 
-Settings UI does not have sparse package identity. To check whether Phi Silica is available, it launches Advanced Paste as a subprocess:
+Settings UI does not have MSIX package identity. To check whether Phi Silica is available, it queries the running Advanced Paste process via a named pipe (`powertoys_advancedpaste_phi_status`).
 
-```
-PowerToys.AdvancedPaste.exe --check-phi-silica
-```
-
-This flag skips the WinUI app and outputs one of:
-- `Available` (exit code 0) — model is ready
-- `NotReady` (exit code 1) — model needs download via Windows Update
-- `NotSupported` (exit code 2) — not a Copilot+ PC or API unavailable
+Advanced Paste checks LAF + `GetReadyState()` once on startup (with MSIX identity), caches the result, and serves it to any client that connects. Settings connects with a 5-second timeout and reads one of:
+- `Available` — model is ready
+- `NotReady` — model needs download via Windows Update
+- `NotSupported` — not a Copilot+ PC, API unavailable, or Advanced Paste not running
 
 ### See also
 
-- [`src/PackageIdentity/readme.md`](/src/PackageIdentity/readme.md) — full sparse package documentation
 - [microsoft/microsoft-ui-xaml#10856](https://github.com/microsoft/microsoft-ui-xaml/issues/10856) — the WinUI bug requiring separate output folder
 
 ## Settings
