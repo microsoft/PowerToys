@@ -88,6 +88,7 @@ public class AppStateServiceTests
         // Arrange
         var service = new AppStateService(_mockPersistence.Object, _mockAppInfo.Object);
         service.UpdateState(s => s with { RunHistory = s.RunHistory.Add("test-command") });
+        _mockPersistence.Invocations.Clear(); // Reset after Arrange — UpdateState also persists
 
         // Act
         service.Save();

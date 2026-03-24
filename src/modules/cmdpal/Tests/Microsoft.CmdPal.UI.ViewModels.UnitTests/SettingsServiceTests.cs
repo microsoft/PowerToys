@@ -99,6 +99,7 @@ public class SettingsServiceTests
         service.UpdateSettings(
             s => s with { SingleClickActivates = true },
             hotReload: false);
+        _mockPersistence.Invocations.Clear(); // Reset after Arrange — UpdateSettings also persists
 
         // Act
         service.Save(hotReload: false);
