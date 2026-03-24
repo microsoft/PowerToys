@@ -209,7 +209,7 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void OpenSettingsItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            App.OpenSettingsWindow();
+            App.OpenSettingsWindow(ensurePageIsSelected: true);
         }
     }
 }
