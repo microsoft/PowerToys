@@ -5,7 +5,6 @@
 #nullable enable
 
 using Microsoft.CmdPal.Ext.WindowsTerminal.Commands;
-using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
