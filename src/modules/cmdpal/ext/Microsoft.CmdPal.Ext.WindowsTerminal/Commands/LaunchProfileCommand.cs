@@ -16,15 +16,15 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Commands;
 
 internal sealed partial class LaunchProfileCommand : InvokableCommand
 {
-    private readonly string _id;
+    private readonly string _appUserModelId;
     private readonly string _profile;
     private readonly bool _openNewTab;
     private readonly bool _openQuake;
     private readonly AppSettingsManager _appSettingsManager;
 
-    internal LaunchProfileCommand(string id, string profile, string iconPath, bool openNewTab, bool openQuake, AppSettingsManager appSettingsManager)
+    internal LaunchProfileCommand(string appUserModelId, string profile, string iconPath, bool openNewTab, bool openQuake, AppSettingsManager appSettingsManager)
     {
-        this._id = id;
+        this._appUserModelId = appUserModelId;
         this._profile = profile;
         this._openNewTab = openNewTab;
         this._openQuake = openQuake;
@@ -32,12 +32,12 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
 
         this.Name = Resources.launch_profile;
         this.Icon = new IconInfo(iconPath);
-        this.Id = MakeId(id, profile);
+        this.Id = MakeId(appUserModelId, profile);
     }
 
     internal static string MakeId(string appUserModelId, string profileName) => $"terminal/{appUserModelId}/{profileName}";
 
-    private void Launch(string id, string profile)
+    private void Launch(string appUserModelId, string profile)
     {
         IApplicationActivationManager appManager;
 
@@ -55,7 +55,7 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
         var queryArguments = TerminalHelper.GetArguments(profile, _openNewTab, _openQuake);
         try
         {
-            appManager.ActivateApplication(id, queryArguments, noFlags, out var unusedPid);
+            appManager.ActivateApplication(appUserModelId, queryArguments, noFlags, out var unusedPid);
         }
 #pragma warning disable IDE0059, CS0168
         catch (Exception ex)
@@ -70,7 +70,7 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
 
         try
         {
-            _appSettingsManager.Current.AddRecentlyUsedProfile(id, profile);
+            _appSettingsManager.Current.AddRecentlyUsedProfile(appUserModelId, profile);
             _appSettingsManager.Save();
         }
         catch (Exception ex)
@@ -85,7 +85,7 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
     {
         try
         {
-            Launch(_id, _profile);
+            Launch(_appUserModelId, _profile);
         }
         catch
         {
