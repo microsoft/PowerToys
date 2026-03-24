@@ -95,7 +95,15 @@ public static class TerminalHelper
         var hidden = (hiddenElement.ValueKind == JsonValueKind.False || hiddenElement.ValueKind == JsonValueKind.True) && hiddenElement.GetBoolean();
 
         profileElement.TryGetProperty("guid", out var guidElement);
-        var guid = guidElement.ValueKind == JsonValueKind.String ? Guid.Parse(guidElement.GetString()!) : null as Guid?;
+        Guid? guid = null;
+        if (guidElement.ValueKind == JsonValueKind.String)
+        {
+            var guidString = guidElement.GetString();
+            if (!string.IsNullOrWhiteSpace(guidString) && Guid.TryParse(guidString, out var parsedGuid))
+            {
+                guid = parsedGuid;
+            }
+        }
 
         profileElement.TryGetProperty("icon", out var iconElement);
         var icon = iconElement.ValueKind == JsonValueKind.String ? iconElement.GetString() : null;
