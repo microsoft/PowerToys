@@ -106,19 +106,19 @@ namespace Microsoft.PowerToys.Common.UI.Controls
                 switch (key)
                 {
                     case nameof(VirtualKey.Up):
-                        SetGlyphOrText("\uE0E4", VirtualKey.Up, forceGlyph: true);
+                        SetGlyphOrText("\uE0E4", VirtualKey.Up);
                         break;
 
                     case nameof(VirtualKey.Down):
-                        SetGlyphOrText("\uE0E5", VirtualKey.Down, forceGlyph: true);
+                        SetGlyphOrText("\uE0E5", VirtualKey.Down);
                         break;
 
                     case nameof(VirtualKey.Left):
-                        SetGlyphOrText("\uE0E2", VirtualKey.Left, forceGlyph: true);
+                        SetGlyphOrText("\uE0E2", VirtualKey.Left);
                         break;
 
                     case nameof(VirtualKey.Right):
-                        SetGlyphOrText("\uE0E3", VirtualKey.Right, forceGlyph: true);
+                        SetGlyphOrText("\uE0E3", VirtualKey.Right);
                         break;
 
                     case "Copilot":
@@ -157,19 +157,19 @@ namespace Microsoft.PowerToys.Common.UI.Controls
                         break;
 
                     case VirtualKey.Up:
-                        SetGlyphOrText("\uE0E4", virtualKey, forceGlyph: true);
+                        SetGlyphOrText("\uE0E4", virtualKey);
                         break;
 
                     case VirtualKey.Down:
-                        SetGlyphOrText("\uE0E5", virtualKey, forceGlyph: true);
+                        SetGlyphOrText("\uE0E5", virtualKey);
                         break;
 
                     case VirtualKey.Left:
-                        SetGlyphOrText("\uE0E2", virtualKey, forceGlyph: true);
+                        SetGlyphOrText("\uE0E2", virtualKey);
                         break;
 
                     case VirtualKey.Right:
-                        SetGlyphOrText("\uE0E3", virtualKey, forceGlyph: true);
+                        SetGlyphOrText("\uE0E3", virtualKey);
                         break;
 
                     case VirtualKey.LeftWindows:
@@ -180,9 +180,9 @@ namespace Microsoft.PowerToys.Common.UI.Controls
             }
         }
 
-        private void SetGlyphOrText(string glyph, VirtualKey key, bool forceGlyph = false)
+        private void SetGlyphOrText(string glyph, VirtualKey key)
         {
-            if (RenderKeyAsGlyph || forceGlyph)
+            if (RenderKeyAsGlyph)
             {
                 _keyPresenter.Content = glyph;
                 _keyPresenter.Style = (Style)Application.Current.Resources["GlyphKeyCharPresenterStyle"];
