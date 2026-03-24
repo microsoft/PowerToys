@@ -3055,7 +3055,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Customize the shortcut to pin or unpin an app window</value>
   </data>
   <data name="AlwaysOnTop_IncreaseOpacityShortcut.Header" xml:space="preserve">
-    <value>Increase opacity shortcut</value>
+    <value>Increase opacity</value>
   </data>
   <data name="AlwaysOnTop_IncreaseOpacityShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to increase the opacity of a pinned window</value>
