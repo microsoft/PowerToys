@@ -69,7 +69,7 @@ public sealed partial class CommandBar : UserControl,
         else
         {
             // This is invoked from a specific element
-            if (!CanOpenContextMenu(ContextControl.ViewModel.SelectedItem))
+            if (!(ContextControl.ViewModel.SelectedItem?.CanOpenContextMenu ?? false))
             {
                 return;
             }
@@ -152,11 +152,6 @@ public sealed partial class CommandBar : UserControl,
     public void FocusMoreCommandsButton()
     {
         MoreCommandsButton?.Focus(FocusState.Programmatic);
-    }
-
-    private static bool CanOpenContextMenu(ICommandBarContext? context)
-    {
-        return context?.AllCommands.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible) == true;
     }
 
     private void ContextMenuFlyout_Opened(object sender, object e)

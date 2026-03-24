@@ -105,7 +105,8 @@ public sealed partial class CommandBarViewModel : ObservableObject,
     {
         switch (e.PropertyName)
         {
-            case nameof(SelectedItem.HasMoreCommands):
+            case nameof(SelectedItem.CanOpenContextMenu):
+            case nameof(SelectedItem.SecondaryCommand):
                 UpdateContextItems();
                 break;
         }
