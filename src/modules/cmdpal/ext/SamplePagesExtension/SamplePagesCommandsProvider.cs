@@ -22,6 +22,11 @@ public partial class SamplePagesCommandsProvider : CommandProvider
            Title = "Sample Pages",
            Subtitle = "View example commands",
        },
+       new CommandItem(new Pages.SampleGoToLandingPage())
+       {
+           Title = "GoToPage Sample: Landing Page",
+           Subtitle = "Target landing page for the GoToPage sample",
+       },
     ];
 
     public override ICommandItem[] TopLevelCommands()

@@ -469,6 +469,16 @@ public partial class ShellViewModel : ObservableObject,
 
                     break;
                 }
+
+            case CommandResultKind.GoToPage:
+                {
+                    if (result.Args is IGoToPageArgs a)
+                    {
+                        WeakReferenceMessenger.Default.Send<GoToPageResultMessage>(new(a));
+                    }
+
+                    break;
+                }
         }
     }
 

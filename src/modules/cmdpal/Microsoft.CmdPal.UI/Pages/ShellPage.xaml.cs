@@ -51,6 +51,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
     IRecipient<ShowHideDockMessage>,
+    IRecipient<GoToPageResultMessage>,
     INotifyPropertyChanged,
     IDisposable
 {
@@ -100,6 +101,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
+        WeakReferenceMessenger.Default.Register<GoToPageResultMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
 
@@ -202,6 +204,21 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         });
     }
 
+    public void Receive(GoToPageResultMessage message)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                HandleGoToPageOnUiThread(message.Args);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.ToString());
+            }
+        });
+    }
+
     public void Receive(ShowToastMessage message)
     {
         DispatcherQueue.TryEnqueue(() =>
@@ -264,6 +281,55 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     }
 
     private void InitializeConfirmationDialog(ConfirmResultViewModel vm) => vm.SafeInitializePropertiesSynchronous();
+
+    // This gets called from the UI thread
+    private void HandleGoToPageOnUiThread(IGoToPageArgs? args)
+    {
+        if (args is null)
+        {
+            return;
+        }
+
+        var pageId = args.PageId;
+        var navigationMode = args.NavigationMode;
+
+        if (string.IsNullOrEmpty(pageId))
+        {
+            Logger.LogWarning("GoToPage: PageId is null or empty");
+            return;
+        }
+
+        var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+        var topLevelCommand = tlcManager.LookupCommand(pageId);
+
+        if (topLevelCommand is null)
+        {
+            Logger.LogWarning($"GoToPage: Could not find page with ID '{pageId}'");
+            return;
+        }
+
+        switch (navigationMode)
+        {
+            case NavigationMode.GoHome:
+                GoHome(withAnimation: false, focusSearch: false);
+                break;
+
+            case NavigationMode.GoBack:
+                if (RootFrame.CanGoBack)
+                {
+                    GoBack(withAnimation: false, focusSearch: false);
+                }
+
+                break;
+
+            case NavigationMode.Push:
+            default:
+                break;
+        }
+
+        var msg = topLevelCommand.GetPerformCommandMessage();
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(msg);
+    }
 
     public void Receive(OpenSettingsMessage message)
     {

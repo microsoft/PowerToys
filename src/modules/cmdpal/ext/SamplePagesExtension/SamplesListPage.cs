@@ -124,7 +124,12 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Issue-specific samples",
             Subtitle = "Samples designed to reproduce specific issues",
-        }
+        },
+        new ListItem(new SampleGoToPage())
+        {
+            Title = "GoToPage Sample",
+            Subtitle = "Demonstrates CommandResult.GoToPage() with Push, GoBack, and GoHome modes",
+        },
     ];
 
     public SamplesListPage()
