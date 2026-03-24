@@ -63,9 +63,7 @@ namespace Microsoft.PowerToys.Common.UI.Controls
 
         private static void OnContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var keyVisual = (KeyVisual)d;
-            keyVisual.Update();
-            keyVisual.SetVisualStates();
+            ((KeyVisual)d).SetVisualStates();
         }
 
         private static void OnStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -98,14 +96,6 @@ namespace Microsoft.PowerToys.Common.UI.Controls
 
         private void Update()
         {
-            if (_keyPresenter == null)
-            {
-                return;
-            }
-
-            _keyPresenter.Content = Content;
-            _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
-
             if (Content == null)
             {
                 return;
