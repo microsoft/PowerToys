@@ -7,10 +7,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using CommunityToolkit.WinUI.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -26,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public ScoobeReleaseNotesPage()
         {
             this.InitializeComponent();
+            ActualThemeChanged += Page_ActualThemeChanged;
         }
 
         /// <summary>
@@ -152,7 +156,35 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            ApplyHeadingTheme();
             DisplayReleaseNotes();
+        }
+
+        private void ApplyHeadingTheme()
+        {
+            if (ReleaseNotesMarkdown?.Config?.Themes is not MarkdownThemes themes)
+            {
+                return;
+            }
+
+            var headingBrush = new SolidColorBrush(ActualTheme == ElementTheme.Dark ? Colors.White : Colors.Black);
+
+            themes.H1Foreground = headingBrush;
+            themes.H2Foreground = headingBrush;
+            themes.H3Foreground = headingBrush;
+            themes.H4Foreground = headingBrush;
+            themes.H5Foreground = headingBrush;
+            themes.H6Foreground = headingBrush;
+        }
+
+        private void Page_ActualThemeChanged(FrameworkElement sender, object args)
+        {
+            ApplyHeadingTheme();
+
+            if (_currentReleases is { Count: > 0 })
+            {
+                DisplayReleaseNotes();
+            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

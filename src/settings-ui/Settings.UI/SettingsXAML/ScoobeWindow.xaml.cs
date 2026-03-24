@@ -39,9 +39,9 @@ namespace Microsoft.PowerToys.Settings.UI
         public ScoobeWindow()
         {
             App.ThemeService.ThemeChanged += OnThemeChanged;
-            App.ThemeService.ApplyTheme();
 
             this.InitializeComponent();
+            App.ThemeService.ApplyTheme();
 
             SetTitleBar();
 
