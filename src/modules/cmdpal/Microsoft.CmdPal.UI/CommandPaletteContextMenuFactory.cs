@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -15,12 +16,12 @@ namespace Microsoft.CmdPal.UI;
 
 internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFactory
 {
-    private readonly SettingsModel _settingsModel;
+    private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
 
-    public CommandPaletteContextMenuFactory(SettingsModel settingsModel, TopLevelCommandManager topLevelCommandManager)
+    public CommandPaletteContextMenuFactory(ISettingsService settingsService, TopLevelCommandManager topLevelCommandManager)
     {
-        _settingsModel = settingsModel;
+        _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
     }
 
@@ -65,7 +66,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             var providerId = providerContext.ProviderId;
             if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
             {
-                var providerSettings = _settingsModel.GetProviderSettings(provider);
+                var providerSettings = _settingsService.Settings.GetProviderSettings(provider);
 
                 var alreadyPinnedToTopLevel = providerSettings.PinnedCommandIds.Contains(itemId);
 
@@ -82,7 +83,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                         providerId: providerId,
                         pin: !alreadyPinnedToTopLevel,
                         PinLocation.TopLevel,
-                        _settingsModel,
+                        _settingsService,
                         _topLevelCommandManager);
 
                     var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
@@ -132,7 +133,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         var providerId = providerContext.ProviderId;
         if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
         {
-            var providerSettings = _settingsModel.GetProviderSettings(provider);
+            var providerSettings = _settingsService.Settings.GetProviderSettings(provider);
 
             var isPinnedSubCommand = providerSettings.PinnedCommandIds.Contains(itemId);
             if (isPinnedSubCommand)
@@ -142,7 +143,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                        providerId: providerId,
                        pin: !isPinnedSubCommand,
                        PinLocation.TopLevel,
-                       _settingsModel,
+                       _settingsService,
                        _topLevelCommandManager);
 
                 var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
@@ -168,22 +169,22 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         List<IContextItem> moreCommands,
         CommandItemViewModel commandItem)
     {
-        if (!_settingsModel.EnableDock)
+        if (!_settingsService.Settings.EnableDock)
         {
             return;
         }
 
-        var inStartBands = _settingsModel.DockSettings.StartBands.Any(band => MatchesBand(band, itemId, providerId));
-        var inCenterBands = _settingsModel.DockSettings.CenterBands.Any(band => MatchesBand(band, itemId, providerId));
-        var inEndBands = _settingsModel.DockSettings.EndBands.Any(band => MatchesBand(band, itemId, providerId));
+        var inStartBands = _settingsService.Settings.DockSettings.StartBands.Any(band => MatchesBand(band, itemId, providerId));
+        var inCenterBands = _settingsService.Settings.DockSettings.CenterBands.Any(band => MatchesBand(band, itemId, providerId));
+        var inEndBands = _settingsService.Settings.DockSettings.EndBands.Any(band => MatchesBand(band, itemId, providerId));
         var alreadyPinned = inStartBands || inCenterBands || inEndBands; /** &&
-                            _settingsModel.DockSettings.PinnedCommands.Contains(this.Id)**/
+                            _settingsService.Settings.DockSettings.PinnedCommands.Contains(this.Id)**/
         var pinToTopLevelCommand = new PinToCommand(
             commandId: itemId,
             providerId: providerId,
             pin: !alreadyPinned,
             PinLocation.Dock,
-            _settingsModel,
+            _settingsService,
             _topLevelCommandManager);
 
         var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
@@ -231,7 +232,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     {
         private readonly string _commandId;
         private readonly string _providerId;
-        private readonly SettingsModel _settings;
+        private readonly ISettingsService _settingsService;
         private readonly TopLevelCommandManager _topLevelCommandManager;
         private readonly bool _pin;
         private readonly PinLocation _pinLocation;
@@ -251,13 +252,13 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             string providerId,
             bool pin,
             PinLocation pinLocation,
-            SettingsModel settings,
+            ISettingsService settingsService,
             TopLevelCommandManager topLevelCommandManager)
         {
             _commandId = commandId;
             _providerId = providerId;
             _pinLocation = pinLocation;
-            _settings = settings;
+            _settingsService = settingsService;
             _topLevelCommandManager = topLevelCommandManager;
             _pin = pin;
         }

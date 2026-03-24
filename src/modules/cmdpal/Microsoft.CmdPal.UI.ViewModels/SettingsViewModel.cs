@@ -27,7 +27,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         TimeSpan.FromSeconds(180),
     ];
 
-    private readonly SettingsModel _settings;
+    private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -38,10 +38,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public HotkeySettings? Hotkey
     {
-        get => _settings.Hotkey;
+        get => _settingsService.Settings.Hotkey;
         set
         {
-            _settings.Hotkey = value ?? SettingsModel.DefaultActivationShortcut;
+            _settingsService.Settings.Hotkey = value ?? SettingsModel.DefaultActivationShortcut;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             Save();
         }
@@ -49,10 +49,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public bool UseLowLevelGlobalHotkey
     {
-        get => _settings.UseLowLevelGlobalHotkey;
+        get => _settingsService.Settings.UseLowLevelGlobalHotkey;
         set
         {
-            _settings.UseLowLevelGlobalHotkey = value;
+            _settingsService.Settings.UseLowLevelGlobalHotkey = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             Save();
         }
@@ -60,100 +60,100 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public bool AllowExternalReload
     {
-        get => _settings.AllowExternalReload;
+        get => _settingsService.Settings.AllowExternalReload;
         set
         {
-            _settings.AllowExternalReload = value;
+            _settingsService.Settings.AllowExternalReload = value;
             Save();
         }
     }
 
     public bool ShowAppDetails
     {
-        get => _settings.ShowAppDetails;
+        get => _settingsService.Settings.ShowAppDetails;
         set
         {
-            _settings.ShowAppDetails = value;
+            _settingsService.Settings.ShowAppDetails = value;
             Save();
         }
     }
 
     public bool BackspaceGoesBack
     {
-        get => _settings.BackspaceGoesBack;
+        get => _settingsService.Settings.BackspaceGoesBack;
         set
         {
-            _settings.BackspaceGoesBack = value;
+            _settingsService.Settings.BackspaceGoesBack = value;
             Save();
         }
     }
 
     public bool SingleClickActivates
     {
-        get => _settings.SingleClickActivates;
+        get => _settingsService.Settings.SingleClickActivates;
         set
         {
-            _settings.SingleClickActivates = value;
+            _settingsService.Settings.SingleClickActivates = value;
             Save();
         }
     }
 
     public bool HighlightSearchOnActivate
     {
-        get => _settings.HighlightSearchOnActivate;
+        get => _settingsService.Settings.HighlightSearchOnActivate;
         set
         {
-            _settings.HighlightSearchOnActivate = value;
+            _settingsService.Settings.HighlightSearchOnActivate = value;
             Save();
         }
     }
 
     public bool KeepPreviousQuery
     {
-        get => _settings.KeepPreviousQuery;
+        get => _settingsService.Settings.KeepPreviousQuery;
         set
         {
-            _settings.KeepPreviousQuery = value;
+            _settingsService.Settings.KeepPreviousQuery = value;
             Save();
         }
     }
 
     public int MonitorPositionIndex
     {
-        get => (int)_settings.SummonOn;
+        get => (int)_settingsService.Settings.SummonOn;
         set
         {
-            _settings.SummonOn = (MonitorBehavior)value;
+            _settingsService.Settings.SummonOn = (MonitorBehavior)value;
             Save();
         }
     }
 
     public bool ShowSystemTrayIcon
     {
-        get => _settings.ShowSystemTrayIcon;
+        get => _settingsService.Settings.ShowSystemTrayIcon;
         set
         {
-            _settings.ShowSystemTrayIcon = value;
+            _settingsService.Settings.ShowSystemTrayIcon = value;
             Save();
         }
     }
 
     public bool IgnoreShortcutWhenFullscreen
     {
-        get => _settings.IgnoreShortcutWhenFullscreen;
+        get => _settingsService.Settings.IgnoreShortcutWhenFullscreen;
         set
         {
-            _settings.IgnoreShortcutWhenFullscreen = value;
+            _settingsService.Settings.IgnoreShortcutWhenFullscreen = value;
             Save();
         }
     }
 
     public bool DisableAnimations
     {
-        get => _settings.DisableAnimations;
+        get => _settingsService.Settings.DisableAnimations;
         set
         {
-            _settings.DisableAnimations = value;
+            _settingsService.Settings.DisableAnimations = value;
             Save();
         }
     }
@@ -162,7 +162,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     {
         get
         {
-            var index = AutoGoHomeIntervals.IndexOf(_settings.AutoGoHomeInterval);
+            var index = AutoGoHomeIntervals.IndexOf(_settingsService.Settings.AutoGoHomeInterval);
             return index >= 0 ? index : 0;
         }
 
@@ -170,7 +170,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         {
             if (value >= 0 && value < AutoGoHomeIntervals.Count)
             {
-                _settings.AutoGoHomeInterval = AutoGoHomeIntervals[value];
+                _settingsService.Settings.AutoGoHomeInterval = AutoGoHomeIntervals[value];
             }
 
             Save();
@@ -179,60 +179,60 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public int EscapeKeyBehaviorIndex
     {
-        get => (int)_settings.EscapeKeyBehaviorSetting;
+        get => (int)_settingsService.Settings.EscapeKeyBehaviorSetting;
         set
         {
-            _settings.EscapeKeyBehaviorSetting = (EscapeKeyBehavior)value;
+            _settingsService.Settings.EscapeKeyBehaviorSetting = (EscapeKeyBehavior)value;
             Save();
         }
     }
 
     public DockSide Dock_Side
     {
-        get => _settings.DockSettings.Side;
+        get => _settingsService.Settings.DockSettings.Side;
         set
         {
-            _settings.DockSettings.Side = value;
+            _settingsService.Settings.DockSettings.Side = value;
             Save();
         }
     }
 
     public DockSize Dock_DockSize
     {
-        get => _settings.DockSettings.DockSize;
+        get => _settingsService.Settings.DockSettings.DockSize;
         set
         {
-            _settings.DockSettings.DockSize = value;
+            _settingsService.Settings.DockSettings.DockSize = value;
             Save();
         }
     }
 
     public DockBackdrop Dock_Backdrop
     {
-        get => _settings.DockSettings.Backdrop;
+        get => _settingsService.Settings.DockSettings.Backdrop;
         set
         {
-            _settings.DockSettings.Backdrop = value;
+            _settingsService.Settings.DockSettings.Backdrop = value;
             Save();
         }
     }
 
     public bool Dock_ShowLabels
     {
-        get => _settings.DockSettings.ShowLabels;
+        get => _settingsService.Settings.DockSettings.ShowLabels;
         set
         {
-            _settings.DockSettings.ShowLabels = value;
+            _settingsService.Settings.DockSettings.ShowLabels = value;
             Save();
         }
     }
 
     public bool EnableDock
     {
-        get => _settings.EnableDock;
+        get => _settingsService.Settings.EnableDock;
         set
         {
-            _settings.EnableDock = value;
+            _settingsService.Settings.EnableDock = value;
             Save();
             WeakReferenceMessenger.Default.Send(new ShowHideDockMessage(value));
             WeakReferenceMessenger.Default.Send(new ReloadCommandsMessage()); // TODO! we need to update the MoreCommands of all top level items, but we don't _really_ want to reload
@@ -245,26 +245,26 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public SettingsExtensionsViewModel Extensions { get; }
 
-    public SettingsViewModel(SettingsModel settings, TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService)
+    public SettingsViewModel(TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService, ISettingsService settingsService)
     {
-        _settings = settings;
+        _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
 
-        Appearance = new AppearanceSettingsViewModel(themeService, _settings);
-        DockAppearance = new DockAppearanceSettingsViewModel(themeService, _settings);
+        Appearance = new AppearanceSettingsViewModel(themeService, settingsService);
+        DockAppearance = new DockAppearanceSettingsViewModel(themeService, settingsService);
 
         var activeProviders = GetCommandProviders();
-        var allProviderSettings = _settings.ProviderSettings;
+        var allProviderSettings = _settingsService.Settings.ProviderSettings;
 
         var fallbacks = new List<FallbackSettingsViewModel>();
-        var currentRankings = _settings.FallbackRanks;
+        var currentRankings = _settingsService.Settings.FallbackRanks;
         var needsSave = false;
 
         foreach (var item in activeProviders)
         {
-            var providerSettings = settings.GetProviderSettings(item);
+            var providerSettings = _settingsService.Settings.GetProviderSettings(item);
 
-            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _settings);
+            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, settingsService);
             CommandProviders.Add(settingsModel);
 
             fallbacks.AddRange(settingsModel.FallbackCommands);
@@ -306,10 +306,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public void ApplyFallbackSort()
     {
-        _settings.FallbackRanks = FallbackRankings.Select(s => s.Id).ToArray();
+        _settingsService.Settings.FallbackRanks = FallbackRankings.Select(s => s.Id).ToArray();
         Save();
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.Save();
 }

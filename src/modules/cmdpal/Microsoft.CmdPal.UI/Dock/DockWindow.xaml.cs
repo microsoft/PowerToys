@@ -46,6 +46,7 @@ public sealed partial class DockWindow : WindowEx,
 #pragma warning restore SA1306 // Field names should begin with lower-case letter
 
     private readonly IThemeService _themeService;
+    private readonly ISettingsService _settingsService;
     private readonly DockWindowViewModel _windowViewModel;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerWindowBehavior = new();
 
@@ -69,8 +70,9 @@ public sealed partial class DockWindow : WindowEx,
     public DockWindow()
     {
         var serviceProvider = App.Current.Services;
-        var mainSettings = serviceProvider.GetService<SettingsModel>()!;
-        mainSettings.SettingsChanged += SettingsChangedHandler;
+        var mainSettings = serviceProvider.GetRequiredService<ISettingsService>().Settings;
+        _settingsService = serviceProvider.GetRequiredService<ISettingsService>();
+        _settingsService.SettingsChanged += SettingsChangedHandler;
         _settings = mainSettings.DockSettings;
         _lastSize = _settings.DockSize;
 
@@ -129,9 +131,9 @@ public sealed partial class DockWindow : WindowEx,
         UpdateSettingsOnUiThread();
     }
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    private void SettingsChangedHandler(ISettingsService sender, SettingsModel args)
     {
-        _settings = sender.DockSettings;
+        _settings = args.DockSettings;
         DispatcherQueue.TryEnqueue(UpdateSettingsOnUiThread);
     }
 

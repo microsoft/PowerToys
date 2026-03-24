@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -87,7 +87,8 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         Color.FromArgb(255, 126, 115, 95), // #7e735f
     ];
 
-    private readonly SettingsModel _settings;
+    private readonly ISettingsService _settingsService;
+
     private readonly UISettings _uiSettings;
     private readonly IThemeService _themeService;
     private readonly DispatcherQueueTimer _saveTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -100,18 +101,18 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int ThemeIndex
     {
-        get => (int)_settings.Theme;
+        get => (int)_settingsService.Settings.Theme;
         set => Theme = (UserTheme)value;
     }
 
     public UserTheme Theme
     {
-        get => _settings.Theme;
+        get => _settingsService.Settings.Theme;
         set
         {
-            if (_settings.Theme != value)
+            if (_settingsService.Settings.Theme != value)
             {
-                _settings.Theme = value;
+                _settingsService.Settings.Theme = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ThemeIndex));
                 Save();
@@ -121,12 +122,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public ColorizationMode ColorizationMode
     {
-        get => _settings.ColorizationMode;
+        get => _settingsService.Settings.ColorizationMode;
         set
         {
-            if (_settings.ColorizationMode != value)
+            if (_settingsService.Settings.ColorizationMode != value)
             {
-                _settings.ColorizationMode = value;
+                _settingsService.Settings.ColorizationMode = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ColorizationModeIndex));
                 OnPropertyChanged(nameof(IsCustomTintVisible));
@@ -152,18 +153,18 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int ColorizationModeIndex
     {
-        get => (int)_settings.ColorizationMode;
+        get => (int)_settingsService.Settings.ColorizationMode;
         set => ColorizationMode = (ColorizationMode)value;
     }
 
     public Color ThemeColor
     {
-        get => _settings.CustomThemeColor;
+        get => _settingsService.Settings.CustomThemeColor;
         set
         {
-            if (_settings.CustomThemeColor != value)
+            if (_settingsService.Settings.CustomThemeColor != value)
             {
-                _settings.CustomThemeColor = value;
+                _settingsService.Settings.CustomThemeColor = value;
 
                 OnPropertyChanged();
 
@@ -179,10 +180,10 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int ColorIntensity
     {
-        get => _settings.CustomThemeColorIntensity;
+        get => _settingsService.Settings.CustomThemeColorIntensity;
         set
         {
-            _settings.CustomThemeColorIntensity = value;
+            _settingsService.Settings.CustomThemeColorIntensity = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(EffectiveTintIntensity));
             Save();
@@ -191,10 +192,10 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackgroundImageTintIntensity
     {
-        get => _settings.BackgroundImageTintIntensity;
+        get => _settingsService.Settings.BackgroundImageTintIntensity;
         set
         {
-            _settings.BackgroundImageTintIntensity = value;
+            _settingsService.Settings.BackgroundImageTintIntensity = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(EffectiveTintIntensity));
             Save();
@@ -203,12 +204,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public string BackgroundImagePath
     {
-        get => _settings.BackgroundImagePath ?? string.Empty;
+        get => _settingsService.Settings.BackgroundImagePath ?? string.Empty;
         set
         {
-            if (_settings.BackgroundImagePath != value)
+            if (_settingsService.Settings.BackgroundImagePath != value)
             {
-                _settings.BackgroundImagePath = value;
+                _settingsService.Settings.BackgroundImagePath = value;
                 OnPropertyChanged();
 
                 if (BackgroundImageOpacity == 0)
@@ -223,12 +224,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackgroundImageOpacity
     {
-        get => _settings.BackgroundImageOpacity;
+        get => _settingsService.Settings.BackgroundImageOpacity;
         set
         {
-            if (_settings.BackgroundImageOpacity != value)
+            if (_settingsService.Settings.BackgroundImageOpacity != value)
             {
-                _settings.BackgroundImageOpacity = value;
+                _settingsService.Settings.BackgroundImageOpacity = value;
                 OnPropertyChanged();
                 Save();
             }
@@ -237,12 +238,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackgroundImageBrightness
     {
-        get => _settings.BackgroundImageBrightness;
+        get => _settingsService.Settings.BackgroundImageBrightness;
         set
         {
-            if (_settings.BackgroundImageBrightness != value)
+            if (_settingsService.Settings.BackgroundImageBrightness != value)
             {
-                _settings.BackgroundImageBrightness = value;
+                _settingsService.Settings.BackgroundImageBrightness = value;
                 OnPropertyChanged();
                 Save();
             }
@@ -251,12 +252,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackgroundImageBlurAmount
     {
-        get => _settings.BackgroundImageBlurAmount;
+        get => _settingsService.Settings.BackgroundImageBlurAmount;
         set
         {
-            if (_settings.BackgroundImageBlurAmount != value)
+            if (_settingsService.Settings.BackgroundImageBlurAmount != value)
             {
-                _settings.BackgroundImageBlurAmount = value;
+                _settingsService.Settings.BackgroundImageBlurAmount = value;
                 OnPropertyChanged();
                 Save();
             }
@@ -265,12 +266,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public BackgroundImageFit BackgroundImageFit
     {
-        get => _settings.BackgroundImageFit;
+        get => _settingsService.Settings.BackgroundImageFit;
         set
         {
-            if (_settings.BackgroundImageFit != value)
+            if (_settingsService.Settings.BackgroundImageFit != value)
             {
-                _settings.BackgroundImageFit = value;
+                _settingsService.Settings.BackgroundImageFit = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(BackgroundImageFitIndex));
                 Save();
@@ -299,12 +300,12 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackdropOpacity
     {
-        get => _settings.BackdropOpacity;
+        get => _settingsService.Settings.BackdropOpacity;
         set
         {
-            if (_settings.BackdropOpacity != value)
+            if (_settingsService.Settings.BackdropOpacity != value)
             {
-                _settings.BackdropOpacity = value;
+                _settingsService.Settings.BackdropOpacity = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(EffectiveBackdropStyle));
                 OnPropertyChanged(nameof(EffectiveImageOpacity));
@@ -315,13 +316,13 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public int BackdropStyleIndex
     {
-        get => (int)_settings.BackdropStyle;
+        get => (int)_settingsService.Settings.BackdropStyle;
         set
         {
             var newStyle = (BackdropStyle)value;
-            if (_settings.BackdropStyle != newStyle)
+            if (_settingsService.Settings.BackdropStyle != newStyle)
             {
-                _settings.BackdropStyle = newStyle;
+                _settingsService.Settings.BackdropStyle = newStyle;
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsBackdropOpacityVisible));
@@ -343,25 +344,25 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     /// Gets whether the backdrop opacity slider should be visible.
     /// </summary>
     public bool IsBackdropOpacityVisible =>
-        BackdropStyles.Get(_settings.BackdropStyle).SupportsOpacity;
+        BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsOpacity;
 
     /// <summary>
     /// Gets whether the backdrop description (for styles without options) should be visible.
     /// </summary>
     public bool IsMicaBackdropDescriptionVisible =>
-        !BackdropStyles.Get(_settings.BackdropStyle).SupportsOpacity;
+        !BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsOpacity;
 
     /// <summary>
     /// Gets whether background/colorization settings are available.
     /// </summary>
     public bool IsBackgroundSettingsEnabled =>
-        BackdropStyles.Get(_settings.BackdropStyle).SupportsColorization;
+        BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsColorization;
 
     /// <summary>
     /// Gets whether the "not available" message should be shown (inverse of IsBackgroundSettingsEnabled).
     /// </summary>
     public bool IsBackgroundNotAvailableVisible =>
-        !BackdropStyles.Get(_settings.BackdropStyle).SupportsColorization;
+        !BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsColorization;
 
     public BackdropStyle? EffectiveBackdropStyle
     {
@@ -370,9 +371,9 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
             // Return style when transparency/blur is visible (not fully opaque Acrylic)
             // - Clear/Mica/MicaAlt/AcrylicThin always show their effect
             // - Acrylic shows effect only when opacity < 100
-            if (_settings.BackdropStyle != BackdropStyle.Acrylic || _settings.BackdropOpacity < 100)
+            if (_settingsService.Settings.BackdropStyle != BackdropStyle.Acrylic || _settingsService.Settings.BackdropOpacity < 100)
             {
-                return _settings.BackdropStyle;
+                return _settingsService.Settings.BackdropStyle;
             }
 
             return null;
@@ -381,39 +382,39 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     public double EffectiveImageOpacity =>
         EffectiveBackdropStyle is not null
-            ? (BackgroundImageOpacity / 100f) * Math.Sqrt(_settings.BackdropOpacity / 100.0)
+            ? (BackgroundImageOpacity / 100f) * Math.Sqrt(_settingsService.Settings.BackdropOpacity / 100.0)
             : (BackgroundImageOpacity / 100f);
 
     [ObservableProperty]
     public partial bool IsColorizationDetailsExpanded { get; set; }
 
-    public bool IsCustomTintVisible => _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.Image;
+    public bool IsCustomTintVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.Image;
 
-    public bool IsColorIntensityVisible => _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor;
+    public bool IsColorIntensityVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor;
 
-    public bool IsImageTintIntensityVisible => _settings.ColorizationMode is ColorizationMode.Image;
+    public bool IsImageTintIntensityVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.Image;
 
     /// <summary>
     /// Gets the effective tint intensity for the preview, based on the current colorization mode.
     /// </summary>
-    public int EffectiveTintIntensity => _settings.ColorizationMode is ColorizationMode.Image
-        ? _settings.BackgroundImageTintIntensity
-        : _settings.CustomThemeColorIntensity;
+    public int EffectiveTintIntensity => _settingsService.Settings.ColorizationMode is ColorizationMode.Image
+        ? _settingsService.Settings.BackgroundImageTintIntensity
+        : _settingsService.Settings.CustomThemeColorIntensity;
 
-    public bool IsBackgroundControlsVisible => _settings.ColorizationMode is ColorizationMode.Image;
+    public bool IsBackgroundControlsVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.Image;
 
-    public bool IsNoBackgroundVisible => _settings.ColorizationMode is ColorizationMode.None;
+    public bool IsNoBackgroundVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.None;
 
-    public bool IsAccentColorControlsVisible => _settings.ColorizationMode is ColorizationMode.WindowsAccentColor;
+    public bool IsAccentColorControlsVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.WindowsAccentColor;
 
-    public bool IsResetButtonVisible => _settings.ColorizationMode is ColorizationMode.Image;
+    public bool IsResetButtonVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.Image;
 
     public BackdropParameters EffectiveBackdrop { get; private set; } = new(Colors.Black, Colors.Black, 0.5f, 0.5f);
 
     public ElementTheme EffectiveTheme => _elementThemeOverride ?? _themeService.Current.Theme;
 
     public Color EffectiveThemeColor =>
-        !BackdropStyles.Get(_settings.BackdropStyle).SupportsColorization
+        !BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsColorization
             ? Colors.Transparent
             : ColorizationMode switch
             {
@@ -428,7 +429,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     public double EffectiveBackgroundImageBrightness => BackgroundImageBrightness / 100.0;
 
     public ImageSource? EffectiveBackgroundImageSource =>
-        !BackdropStyles.Get(_settings.BackdropStyle).SupportsBackgroundImage
+        !BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsBackgroundImage
             ? null
             : ColorizationMode is ColorizationMode.Image
               && !string.IsNullOrWhiteSpace(BackgroundImagePath)
@@ -436,11 +437,11 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
                 ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
                 : null;
 
-    public AppearanceSettingsViewModel(IThemeService themeService, SettingsModel settings)
+    public AppearanceSettingsViewModel(IThemeService themeService, ISettingsService settingsService)
     {
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
-        _settings = settings;
+        _settingsService = settingsService;
 
         _uiSettings = new UISettings();
         _uiSettings.ColorValuesChanged += UiSettingsOnColorValuesChanged;
@@ -448,7 +449,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
         Reapply();
 
-        IsColorizationDetailsExpanded = _settings.ColorizationMode != ColorizationMode.None && IsBackgroundSettingsEnabled;
+        IsColorizationDetailsExpanded = _settingsService.Settings.ColorizationMode != ColorizationMode.None && IsBackgroundSettingsEnabled;
     }
 
     private void UiSettingsOnColorValuesChanged(UISettings sender, object args) => _uiDispatcher.TryEnqueue(() => UpdateAccentColor(sender));
@@ -469,7 +470,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
     private void Save()
     {
-        SettingsModel.SaveSettings(_settings);
+        _settingsService.Save();
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 
