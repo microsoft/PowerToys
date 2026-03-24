@@ -180,11 +180,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private void Page_ActualThemeChanged(FrameworkElement sender, object args)
         {
             ApplyHeadingTheme();
-
-            if (_currentReleases is { Count: > 0 })
-            {
-                DisplayReleaseNotes();
-            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
