@@ -53,21 +53,23 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             return results;
         }
 
+        List<IContextItem> moreCommands = [];
+        var itemId = commandItem.Command.Id;
+        var providerContext = page.ProviderContext;
+        var supportsPinning = providerContext.SupportsPinning;
+
         // Also bail early for ListItemViewModels that wrap a TopLevelViewModel.
         // For those items, TopLevelViewModel.BuildContextMenu() already includes
         // the correct pin commands by calling AddMoreCommandsToTopLevel with the
         // item's own provider context. Adding them again here (using the page's
         // potentially incorrect provider context) would produce duplicate pin
         // entries such as two "Pin to Dock" buttons.
-        if (commandItem.Model.Unsafe is TopLevelViewModel)
+        // Check SupportsPinning first to avoid the .Unsafe type-check in the
+        // common non-pinning case.
+        if (supportsPinning && commandItem.Model.Unsafe is TopLevelViewModel)
         {
             return results;
         }
-
-        List<IContextItem> moreCommands = [];
-        var itemId = commandItem.Command.Id;
-        var providerContext = page.ProviderContext;
-        var supportsPinning = providerContext.SupportsPinning;
 
         if (supportsPinning &&
             !string.IsNullOrEmpty(itemId))
