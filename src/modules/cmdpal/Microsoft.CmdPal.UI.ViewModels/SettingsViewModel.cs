@@ -252,9 +252,12 @@ public partial class SettingsViewModel : INotifyPropertyChanged
             fallbacks.AddRange(settingsModel.FallbackCommands);
         }
 
-        // Persist the connected provider settings
-        var finalModel = currentModel;
-        _settingsService.UpdateSettings(_ => finalModel, hotReload: false);
+        // Only persist if provider enumeration actually changed the model
+        if (!ReferenceEquals(currentModel, _settingsService.Settings))
+        {
+            var finalModel = currentModel;
+            _settingsService.UpdateSettings(_ => finalModel, hotReload: false);
+        }
 
         var fallbackRankings = new List<Scored<FallbackSettingsViewModel>>(fallbacks.Count);
         foreach (var fallback in fallbacks)

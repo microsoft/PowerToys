@@ -98,6 +98,13 @@ public record SettingsModel
         }
 
         var connected = settings.WithConnection(provider);
+
+        // If WithConnection returned the same instance, nothing changed — skip SetItem
+        if (ReferenceEquals(connected, settings))
+        {
+            return (this, connected);
+        }
+
         var newModel = this with
         {
             ProviderSettings = ProviderSettings.SetItem(provider.ProviderId, connected),

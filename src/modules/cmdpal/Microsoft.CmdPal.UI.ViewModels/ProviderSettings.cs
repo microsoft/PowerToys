@@ -45,10 +45,17 @@ public record ProviderSettings
 
     /// <summary>
     /// Returns a new ProviderSettings connected to the given wrapper.
+    /// Returns <see langword="this"/> when the connection produces no changes.
     /// Pure function — does not mutate this instance.
     /// </summary>
     public ProviderSettings WithConnection(CommandProviderWrapper wrapper)
     {
+        if (string.IsNullOrWhiteSpace(wrapper.ProviderId))
+        {
+            throw new ArgumentException("ProviderId must not be null, empty, or whitespace.", nameof(wrapper));
+        }
+
+        var changed = false;
         var builder = FallbackCommands.ToBuilder();
         if (wrapper.FallbackItems.Length > 0)
         {
@@ -59,16 +66,28 @@ public record ProviderSettings
                     var enableGlobalResults = (wrapper.Extension is null)
                         && !_excludedBuiltInFallbacks.Contains(fallback.Id);
                     builder[fallback.Id] = new FallbackSettings(enableGlobalResults);
+                    changed = true;
                 }
             }
+        }
+
+        var isBuiltin = wrapper.Extension is null;
+
+        // If nothing changed, return the same instance to avoid unnecessary allocations and saves
+        if (!changed
+            && ProviderId == wrapper.ProviderId
+            && IsBuiltin == isBuiltin
+            && ProviderDisplayName == wrapper.DisplayName)
+        {
+            return this;
         }
 
         return this with
         {
             ProviderId = wrapper.ProviderId,
-            IsBuiltin = wrapper.Extension is null,
+            IsBuiltin = isBuiltin,
             ProviderDisplayName = wrapper.DisplayName,
-            FallbackCommands = builder.ToImmutable(),
+            FallbackCommands = changed ? builder.ToImmutable() : FallbackCommands,
         };
     }
 }
