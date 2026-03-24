@@ -64,7 +64,6 @@ public partial class DockBandSettingsViewModel : ObservableObject
                     _ => null,
                 };
                 UpdateModel(_dockSettingsModel with { ShowTitles = newShowTitles });
-                Save();
             }
         }
     }
@@ -175,11 +174,6 @@ public partial class DockBandSettingsViewModel : ObservableObject
         }
 
         return bandVm.Items.Count;
-    }
-
-    private void Save()
-    {
-        _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings });
     }
 
     private void UpdateModel(DockBandSettings newModel)
