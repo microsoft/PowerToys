@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -12,10 +13,10 @@ public partial class HotkeyManager : ObservableObject
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly List<TopLevelHotkey> _commandHotkeys;
 
-    public HotkeyManager(TopLevelCommandManager tlcManager, SettingsModel settings)
+    public HotkeyManager(TopLevelCommandManager tlcManager, ISettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
-        _commandHotkeys = settings.CommandHotkeys;
+        _commandHotkeys = settingsService.Settings.CommandHotkeys;
     }
 
     public void UpdateHotkey(string commandId, HotkeySettings? hotkey)

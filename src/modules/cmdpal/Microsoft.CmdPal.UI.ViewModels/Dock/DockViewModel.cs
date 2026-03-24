@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -15,7 +16,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 public sealed partial class DockViewModel
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
-    private readonly SettingsModel _settingsModel;
+    private readonly ISettingsService _settingsService;
     private readonly DockPageContext _pageContext; // only to be used for our own context menu - not for dock bands themselves
     private readonly IContextMenuFactory _contextMenuFactory;
 
@@ -34,13 +35,13 @@ public sealed partial class DockViewModel
     public DockViewModel(
         TopLevelCommandManager tlcManager,
         IContextMenuFactory contextMenuFactory,
-        SettingsModel settings,
-        TaskScheduler scheduler)
+        TaskScheduler scheduler,
+        ISettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
         _contextMenuFactory = contextMenuFactory;
-        _settingsModel = settings;
-        _settings = settings.DockSettings;
+        _settingsService = settingsService;
+        _settings = _settingsService.Settings.DockSettings;
         Scheduler = scheduler;
         _pageContext = new(this);
 
@@ -148,7 +149,7 @@ public sealed partial class DockViewModel
 
     private void SaveSettings()
     {
-        SettingsModel.SaveSettings(_settingsModel);
+        _settingsService.Save();
     }
 
     public DockBandViewModel? FindBandByTopLevel(TopLevelViewModel tlc)
@@ -193,7 +194,7 @@ public sealed partial class DockViewModel
     public void SyncBandPosition(DockBandViewModel band, DockPinSide targetSide, int targetIndex)
     {
         var bandId = band.Id;
-        var dockSettings = _settingsModel.DockSettings;
+        var dockSettings = _settingsService.Settings.DockSettings;
 
         var bandSettings = dockSettings.StartBands.FirstOrDefault(b => b.CommandId == bandId)
                         ?? dockSettings.CenterBands.FirstOrDefault(b => b.CommandId == bandId)
@@ -228,7 +229,7 @@ public sealed partial class DockViewModel
     public void MoveBandWithoutSaving(DockBandViewModel band, DockPinSide targetSide, int targetIndex)
     {
         var bandId = band.Id;
-        var dockSettings = _settingsModel.DockSettings;
+        var dockSettings = _settingsService.Settings.DockSettings;
 
         var bandSettings = dockSettings.StartBands.FirstOrDefault(b => b.CommandId == bandId)
                         ?? dockSettings.CenterBands.FirstOrDefault(b => b.CommandId == bandId)
@@ -301,7 +302,7 @@ public sealed partial class DockViewModel
         _snapshotCenterBands = null;
         _snapshotEndBands = null;
         _snapshotBandViewModels = null;
-        SettingsModel.SaveSettings(_settingsModel);
+        _settingsService.Save();
         Logger.LogDebug("Saved band order to settings");
     }
 
@@ -316,7 +317,7 @@ public sealed partial class DockViewModel
     /// </summary>
     public void SnapshotBandOrder()
     {
-        var dockSettings = _settingsModel.DockSettings;
+        var dockSettings = _settingsService.Settings.DockSettings;
         _snapshotStartBands = dockSettings.StartBands.Select(b => b.Clone()).ToList();
         _snapshotCenterBands = dockSettings.CenterBands.Select(b => b.Clone()).ToList();
         _snapshotEndBands = dockSettings.EndBands.Select(b => b.Clone()).ToList();
@@ -358,7 +359,7 @@ public sealed partial class DockViewModel
             band.RestoreShowLabels();
         }
 
-        var dockSettings = _settingsModel.DockSettings;
+        var dockSettings = _settingsService.Settings.DockSettings;
 
         // Restore settings from snapshot
         dockSettings.StartBands.Clear();
@@ -400,7 +401,7 @@ public sealed partial class DockViewModel
             return;
         }
 
-        var dockSettings = _settingsModel.DockSettings;
+        var dockSettings = _settingsService.Settings.DockSettings;
 
         StartItems.Clear();
         CenterItems.Clear();
@@ -433,7 +434,7 @@ public sealed partial class DockViewModel
 
     private void RebuildUICollections()
     {
-        var dockSettings = _settingsModel.DockSettings;
+        var dockSettings = _settingsService.Settings.DockSettings;
 
         // Create a lookup of all current band ViewModels
         var allBands = StartItems.Concat(CenterItems).Concat(EndItems).ToDictionary(b => b.Id);
@@ -510,7 +511,7 @@ public sealed partial class DockViewModel
 
         // Create settings for the new band
         var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId, ShowLabels = null };
-        var dockSettings = _settingsModel.DockSettings;
+        var dockSettings = _settingsService.Settings.DockSettings;
 
         // Create the band view model
         var bandVm = CreateBandItem(bandSettings, topLevel.ItemViewModel);
@@ -550,7 +551,7 @@ public sealed partial class DockViewModel
     public void UnpinBand(DockBandViewModel band)
     {
         var bandId = band.Id;
-        var dockSettings = _settingsModel.DockSettings;
+        var dockSettings = _settingsService.Settings.DockSettings;
 
         // Remove from settings
         dockSettings.StartBands.RemoveAll(b => b.CommandId == bandId);
@@ -616,7 +617,7 @@ public sealed partial class DockViewModel
 
     private void EmitDockConfiguration()
     {
-        var isDockEnabled = _settingsModel.EnableDock;
+        var isDockEnabled = _settingsService.Settings.EnableDock;
         var dockSide = isDockEnabled ? _settings.Side.ToString().ToLowerInvariant() : "none";
 
         static string FormatBands(List<DockBandSettings> bands) =>

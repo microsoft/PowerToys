@@ -5,6 +5,7 @@
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -12,7 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 public partial class DockBandSettingsViewModel : ObservableObject
 {
     private static readonly CompositeFormat PluralItemsFormatString = CompositeFormat.Parse(Properties.Resources.dock_item_count_plural);
-    private readonly SettingsModel _settingsModel;
+    private readonly ISettingsService _settingsService;
     private readonly DockBandSettings _dockSettingsModel;
     private readonly TopLevelViewModel _adapter;
     private readonly DockBandViewModel? _bandViewModel;
@@ -128,19 +129,19 @@ public partial class DockBandSettingsViewModel : ObservableObject
         DockBandSettings dockSettingsModel,
         TopLevelViewModel topLevelAdapter,
         DockBandViewModel? bandViewModel,
-        SettingsModel settingsModel)
+        ISettingsService settingsService)
     {
         _dockSettingsModel = dockSettingsModel;
         _adapter = topLevelAdapter;
         _bandViewModel = bandViewModel;
-        _settingsModel = settingsModel;
+        _settingsService = settingsService;
         _pinSide = FetchPinSide();
         _showLabels = FetchShowLabels();
     }
 
     private DockPinSide FetchPinSide()
     {
-        var dockSettings = _settingsModel.DockSettings;
+        var dockSettings = _settingsService.Settings.DockSettings;
         var inStart = dockSettings.StartBands.Any(b => b.CommandId == _dockSettingsModel.CommandId);
         if (inStart)
         {
@@ -175,7 +176,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
 
     private void Save()
     {
-        SettingsModel.SaveSettings(_settingsModel);
+        _settingsService.Save();
     }
 
     private void UpdatePinSide(DockPinSide value)
@@ -188,7 +189,7 @@ public partial class DockBandSettingsViewModel : ObservableObject
 
     public void SetBandPosition(DockPinSide side, int? index)
     {
-        var dockSettings = _settingsModel.DockSettings;
+        var dockSettings = _settingsService.Settings.DockSettings;
 
         // Remove from all sides first
         dockSettings.StartBands.RemoveAll(b => b.CommandId == _dockSettingsModel.CommandId);

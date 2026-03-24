@@ -18,6 +18,7 @@ using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -42,8 +43,8 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ThrottledDebouncedAction _refreshThrottledDebouncedAction;
     private readonly TopLevelCommandManager _tlcManager;
     private readonly AliasManager _aliasManager;
-    private readonly SettingsModel _settings;
-    private readonly AppStateModel _appStateModel;
+    private readonly ISettingsService _settingsService;
+    private readonly IAppStateService _appStateService;
     private readonly ScoringFunction<IListItem> _scoringFunction;
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
@@ -79,23 +80,23 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public MainListPage(
         TopLevelCommandManager topLevelCommandManager,
-        SettingsModel settings,
         AliasManager aliasManager,
-        AppStateModel appStateModel,
-        IFuzzyMatcherProvider fuzzyMatcherProvider)
+        IFuzzyMatcherProvider fuzzyMatcherProvider,
+        ISettingsService settingsService,
+        IAppStateService appStateService)
     {
         Id = "com.microsoft.cmdpal.home";
         Title = Resources.builtin_home_name;
         Icon = IconHelpers.FromRelativePath("Assets\\Square44x44Logo.altform-unplated_targetsize-256.png");
         PlaceholderText = Properties.Resources.builtin_main_list_page_searchbar_placeholder;
 
-        _settings = settings;
+        _settingsService = settingsService;
         _aliasManager = aliasManager;
-        _appStateModel = appStateModel;
+        _appStateService = appStateService;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
-        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateModel.RecentCommands, _fuzzyMatcherProvider.Current);
-        _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settings.FallbackRanks);
+        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current);
+        _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settingsService.Settings.FallbackRanks);
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
@@ -150,8 +151,8 @@ public sealed partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
 
-        settings.SettingsChanged += SettingsChangedHandler;
-        HotReloadSettings(settings);
+        _settingsService.SettingsChanged += SettingsChangedHandler;
+        HotReloadSettings(_settingsService.Settings);
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
 
         IsLoading = true;
@@ -364,9 +365,9 @@ public sealed partial class MainListPage : DynamicListPage,
             }
 
             // prefilter fallbacks
-            var configuredGlobalFallbackIds = _settings.GetGlobalFallbacks();
-            var specialFallbacks = new List<TopLevelViewModel>(configuredGlobalFallbackIds.Length);
-            var commonFallbacks = new List<TopLevelViewModel>(Math.Max(commands.Count - configuredGlobalFallbackIds.Length, 0));
+            var globalFallbacks = _settingsService.Settings.GetGlobalFallbacks();
+            var specialFallbacks = new List<TopLevelViewModel>(globalFallbacks.Length);
+            var commonFallbacks = new List<TopLevelViewModel>(commands.Count - globalFallbacks.Length);
 
             foreach (var s in commands)
             {
@@ -479,7 +480,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
                     // We need to remove pinned apps from allNewApps so they don't show twice.
                     // Pinned app command IDs are stored in ProviderSettings.PinnedCommandIds.
-                    _settings.ProviderSettings.TryGetValue(AllAppsCommandProvider.WellKnownId, out var providerSettings);
+                    _settingsService.Settings.ProviderSettings.TryGetValue(AllAppsCommandProvider.WellKnownId, out var providerSettings);
                     var pinnedCommandIds = providerSettings?.PinnedCommandIds;
 
                     if (pinnedCommandIds is not null && pinnedCommandIds.Count > 0)
@@ -678,9 +679,9 @@ public sealed partial class MainListPage : DynamicListPage,
     public void UpdateHistory(IListItem topLevelOrAppItem)
     {
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
-        var history = _appStateModel.RecentCommands;
+        var history = _appStateService.State.RecentCommands;
         history.AddHistoryItem(id);
-        AppStateModel.SaveState(_appStateModel);
+        _appStateService.Save();
     }
 
     private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
@@ -703,7 +704,7 @@ public sealed partial class MainListPage : DynamicListPage,
         RequestRefresh(fullRefresh: false);
     }
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
+    private void SettingsChangedHandler(ISettingsService sender, SettingsModel args) => HotReloadSettings(args);
 
     private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
 
@@ -716,9 +717,9 @@ public sealed partial class MainListPage : DynamicListPage,
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
 
-        if (_settings is not null)
+        if (_settingsService is not null)
         {
-            _settings.SettingsChanged -= SettingsChangedHandler;
+            _settingsService.SettingsChanged -= SettingsChangedHandler;
         }
 
         WeakReferenceMessenger.Default.UnregisterAll(this);
