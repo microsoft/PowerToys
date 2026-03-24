@@ -141,19 +141,19 @@ namespace Microsoft.PowerToys.Common.UI.Controls
                         break;
 
                     case VirtualKey.Up:
-                        SetGlyph("\uE0E4");
+                        SetGlyphOrText("\uE0E4", virtualKey, forceGlyph: true);
                         break;
 
                     case VirtualKey.Down:
-                        SetGlyph("\uE0E5");
+                        SetGlyphOrText("\uE0E5", virtualKey, forceGlyph: true);
                         break;
 
                     case VirtualKey.Left:
-                        SetGlyph("\uE0E2");
+                        SetGlyphOrText("\uE0E2", virtualKey, forceGlyph: true);
                         break;
 
                     case VirtualKey.Right:
-                        SetGlyph("\uE0E3");
+                        SetGlyphOrText("\uE0E3", virtualKey, forceGlyph: true);
                         break;
 
                     case VirtualKey.LeftWindows:
@@ -164,23 +164,18 @@ namespace Microsoft.PowerToys.Common.UI.Controls
             }
         }
 
-        private void SetGlyphOrText(string glyph, VirtualKey key)
+        private void SetGlyphOrText(string glyph, VirtualKey key, bool forceGlyph = false)
         {
-            if (RenderKeyAsGlyph)
+            if (RenderKeyAsGlyph || forceGlyph)
             {
-                SetGlyph(glyph);
+                _keyPresenter.Content = glyph;
+                _keyPresenter.Style = (Style)Application.Current.Resources["GlyphKeyCharPresenterStyle"];
             }
             else
             {
                 _keyPresenter.Content = key.ToString();
                 _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
             }
-        }
-
-        private void SetGlyph(string glyph)
-        {
-            _keyPresenter.Content = glyph;
-            _keyPresenter.Style = (Style)Application.Current.Resources["GlyphKeyCharPresenterStyle"];
         }
 
         private void KeyVisual_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
