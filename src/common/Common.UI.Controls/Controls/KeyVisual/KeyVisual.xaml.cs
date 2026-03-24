@@ -151,19 +151,19 @@ namespace Microsoft.PowerToys.Common.UI.Controls
                         break;
 
                     case VirtualKey.Up:
-                        _keyPresenter.Content = "\u2191";
+                        SetGlyph("\uE0E4");
                         break;
 
                     case VirtualKey.Down:
-                        _keyPresenter.Content = "\u2193";
+                        SetGlyph("\uE0E5");
                         break;
 
                     case VirtualKey.Left:
-                        _keyPresenter.Content = "\u2190";
+                        SetGlyph("\uE0E2");
                         break;
 
                     case VirtualKey.Right:
-                        _keyPresenter.Content = "\u2192";
+                        SetGlyph("\uE0E3");
                         break;
 
                     case VirtualKey.LeftWindows:
@@ -178,14 +178,19 @@ namespace Microsoft.PowerToys.Common.UI.Controls
         {
             if (RenderKeyAsGlyph)
             {
-                _keyPresenter.Content = glyph;
-                _keyPresenter.Style = (Style)Application.Current.Resources["GlyphKeyCharPresenterStyle"];
+                SetGlyph(glyph);
             }
             else
             {
                 _keyPresenter.Content = key.ToString();
                 _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
             }
+        }
+
+        private void SetGlyph(string glyph)
+        {
+            _keyPresenter.Content = glyph;
+            _keyPresenter.Style = (Style)Application.Current.Resources["GlyphKeyCharPresenterStyle"];
         }
 
         private void KeyVisual_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)

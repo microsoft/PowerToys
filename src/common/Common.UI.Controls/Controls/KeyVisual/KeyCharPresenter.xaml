@@ -95,6 +95,7 @@
                             <FontIcon
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 FontSize="{TemplateBinding FontSize}"
                                 FontWeight="{TemplateBinding FontWeight}"
                                 Glyph="{TemplateBinding Content}" />
