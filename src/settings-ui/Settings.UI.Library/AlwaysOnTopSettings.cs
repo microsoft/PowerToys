@@ -40,6 +40,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     () => Properties.Hotkey.Value,
                     value => Properties.Hotkey.Value = value ?? AlwaysOnTopProperties.DefaultHotkeyValue,
                     "AlwaysOnTop_ActivationShortcut"),
+                new HotkeyAccessor(
+                    () => Properties.IncreaseOpacityHotkey.Value,
+                    value => Properties.IncreaseOpacityHotkey.Value = value ?? AlwaysOnTopProperties.DefaultIncreaseOpacityHotkeyValue,
+                    "AlwaysOnTop_IncreaseOpacityShortcut"),
+                new HotkeyAccessor(
+                    () => Properties.DecreaseOpacityHotkey.Value,
+                    value => Properties.DecreaseOpacityHotkey.Value = value ?? AlwaysOnTopProperties.DefaultDecreaseOpacityHotkeyValue,
+                    "AlwaysOnTop_DecreaseOpacityShortcut"),
             };
 
             return hotkeyAccessors.ToArray();
