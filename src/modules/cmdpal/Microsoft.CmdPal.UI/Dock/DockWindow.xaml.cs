@@ -5,7 +5,6 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -27,7 +26,6 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinRT.Interop;
 using WinUIEx;
-using WindowExtensions = Microsoft.CmdPal.UI.Helpers.WindowExtensions;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -62,6 +60,7 @@ public sealed partial class DockWindow : WindowEx,
     private bool _isUpdatingBackdrop;
     private BackdropParameters? _lastAppliedAcrylicBackdrop;
     private DockSize _lastSize;
+    private bool _isDisposed;
 
     // Store the original WndProc
     private WNDPROC? _originalWndProc;
@@ -671,18 +670,38 @@ public sealed partial class DockWindow : WindowEx,
 
     public void Dispose()
     {
-        DisposeAcrylic();
-        _windowViewModel.Dispose();
+        Cleanup();
+        GC.SuppressFinalize(this);
     }
 
     private void DockWindow_Closed(object sender, WindowEventArgs args)
     {
-        _settingsService.SettingsChanged -= SettingsChangedHandler;
+        Dispose();
+    }
+
+    private void Cleanup()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+
+        _settingsService?.SettingsChanged -= SettingsChangedHandler;
+
+        Activated -= DockWindow_Activated;
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+
         DisposeAcrylic();
+        _windowViewModel.Dispose();
 
         // Remove our app bar registration
-        DestroyAppBar(_hwnd);
+        if (_appBarData.hWnd != IntPtr.Zero)
+        {
+            DestroyAppBar(_hwnd);
+        }
 
         // Unhook the window procedure
         ShowDesktop.RemoveHook();
