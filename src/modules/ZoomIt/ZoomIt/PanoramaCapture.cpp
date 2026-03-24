@@ -2567,9 +2567,7 @@ static bool ComputeInformativePixelDifference( const std::vector<BYTE>& currentP
                                                int frameWidth,
                                                int frameHeight,
                                                unsigned __int64& informativeDiff,
-                                               unsigned __int64& informativeCount,
-                                               const std::vector<BYTE>& precomputedPrevLuma = {},
-                                               const std::vector<BYTE>& precomputedCurrLuma = {} )
+                                               unsigned __int64& informativeCount )
 {
     informativeDiff = 0;
     informativeCount = 0;
@@ -2578,47 +2576,31 @@ static bool ComputeInformativePixelDifference( const std::vector<BYTE>& currentP
 
     const int stride = frameWidth * 4;
     const int edgeThreshold = 4;
-    const bool hasLuma = !precomputedPrevLuma.empty() && !precomputedCurrLuma.empty();
 
     // Sample every 2nd pixel to keep it fast.
     for( int y = 1; y < frameHeight - 1; y += 2 )
     {
         const int rowOff = y * stride;
-        const int lumaRow = y * frameWidth;
         for( int x = 1; x < frameWidth - 1; x += 2 )
         {
             const int idx = rowOff + x * 4;
-
-            int prevLuma, gradH, gradV;
-            int currLuma, gradH2, gradV2;
-
-            if( hasLuma )
+            // Luma of current position in the PREVIOUS frame (where
+            // we want to detect edges).
+            auto lumaAt = [&]( const std::vector<BYTE>& px, int ix, int iy ) -> int
             {
-                // Fast path: use precomputed luma byte lookups.
-                const int li = lumaRow + x;
-                prevLuma = precomputedPrevLuma[li];
-                gradH = abs( prevLuma - static_cast<int>( precomputedPrevLuma[li + 1] ) );
-                gradV = abs( prevLuma - static_cast<int>( precomputedPrevLuma[li + frameWidth] ) );
-                currLuma = precomputedCurrLuma[li];
-                gradH2 = abs( currLuma - static_cast<int>( precomputedCurrLuma[li + 1] ) );
-                gradV2 = abs( currLuma - static_cast<int>( precomputedCurrLuma[li + frameWidth] ) );
-            }
-            else
-            {
-                // Fallback: compute luma from BGRA on the fly.
-                auto lumaAt = [&]( const std::vector<BYTE>& px, int ix, int iy ) -> int
-                {
-                    const int i = ( iy * frameWidth + ix ) * 4;
-                    return ( px[i + 2] * 77 + px[i + 1] * 150 + px[i + 0] * 29 ) >> 8;
-                };
+                const int i = ( iy * frameWidth + ix ) * 4;
+                return ( px[i + 2] * 77 + px[i + 1] * 150 + px[i + 0] * 29 ) >> 8;
+            };
 
-                prevLuma = lumaAt( previousPixels, x, y );
-                gradH = abs( prevLuma - lumaAt( previousPixels, x + 1, y ) );
-                gradV = abs( prevLuma - lumaAt( previousPixels, x, y + 1 ) );
-                currLuma = lumaAt( currentPixels, x, y );
-                gradH2 = abs( currLuma - lumaAt( currentPixels, x + 1, y ) );
-                gradV2 = abs( currLuma - lumaAt( currentPixels, x, y + 1 ) );
-            }
+            // Check gradient in previous frame.
+            const int prevLuma = lumaAt( previousPixels, x, y );
+            const int gradH = abs( prevLuma - lumaAt( previousPixels, x + 1, y ) );
+            const int gradV = abs( prevLuma - lumaAt( previousPixels, x, y + 1 ) );
+
+            // Also check gradient in current frame (text may have scrolled in).
+            const int currLuma = lumaAt( currentPixels, x, y );
+            const int gradH2 = abs( currLuma - lumaAt( currentPixels, x + 1, y ) );
+            const int gradV2 = abs( currLuma - lumaAt( currentPixels, x, y + 1 ) );
 
             if( ( gradH + gradV ) >= edgeThreshold || ( gradH2 + gradV2 ) >= edgeThreshold )
             {
@@ -2710,13 +2692,12 @@ static void BuildFullLumaFrame( const std::vector<BYTE>& pixels,
         const __m128i l32 = _mm_packs_epi32( _mm_srli_epi32( sum_lo, 8 ),
                                              _mm_srli_epi32( sum_hi, 8 ) );
         const __m128i l8 = _mm_packus_epi16( l32, zero );
-        // l8 has luma bytes at even positions [l0, 0, l1, 0, l2, 0, l3, 0, ...].
-        // Extract as a 64-bit value and pack into 4 contiguous bytes.
-        const unsigned __int64 v = static_cast<unsigned __int64>( _mm_cvtsi128_si64( l8 ) );
-        dst[p + 0] = static_cast<BYTE>( v );
-        dst[p + 1] = static_cast<BYTE>( v >> 16 );
-        dst[p + 2] = static_cast<BYTE>( v >> 32 );
-        dst[p + 3] = static_cast<BYTE>( v >> 48 );
+        // l8 has [l0, 0, l1, 0, l2, 0, l3, 0, ...] because the odd 32-bit
+        // lanes were zero before packing.  Extract even bytes.
+        dst[p + 0] = static_cast<BYTE>( _mm_extract_epi16( l8, 0 ) & 0xFF );
+        dst[p + 1] = static_cast<BYTE>( _mm_extract_epi16( l8, 1 ) & 0xFF );
+        dst[p + 2] = static_cast<BYTE>( _mm_extract_epi16( l8, 2 ) & 0xFF );
+        dst[p + 3] = static_cast<BYTE>( _mm_extract_epi16( l8, 3 ) & 0xFF );
     }
 #endif
 
@@ -5097,46 +5078,10 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
     {
         unsigned __int64 totalDiff = 0;
         unsigned __int64 samples = 0;
-        const int xEnd = dsW - marginX;
         for( int y = 0; y < dsH; ++y )
         {
             const int row = y * dsW;
-            int x = marginX;
-#if defined(_M_ARM64)
-            // NEON: deinterleave 16 consecutive bytes to get 8 even-indexed
-            // (stride-2) samples per iteration.
-            for( ; x + 16 <= xEnd; x += 16 )
-            {
-                const uint8x8x2_t pDeint = vld2_u8( previousLuma.data() + row + x );
-                const uint8x8x2_t cDeint = vld2_u8( currentLuma.data() + row + x );
-                const uint8x8_t absDiff = vabd_u8( pDeint.val[0], cDeint.val[0] );
-                const uint16x4_t sum16 = vpaddl_u8( absDiff );
-                const uint32x2_t sum32 = vpaddl_u16( sum16 );
-                const uint64x1_t sum64 = vpaddl_u32( sum32 );
-                totalDiff += vget_lane_u64( sum64, 0 );
-                samples += 8;
-            }
-#elif defined(_M_X64) || defined(_M_IX86)
-            // SSE2: compute abs difference for 16 consecutive bytes, mask
-            // to even positions (stride-2), and sum.
-            {
-                const __m128i evenMask = _mm_set1_epi16( 0x00FF );
-                const __m128i zero = _mm_setzero_si128();
-                for( ; x + 16 <= xEnd; x += 16 )
-                {
-                    const __m128i a = _mm_loadu_si128( reinterpret_cast<const __m128i*>( previousLuma.data() + row + x ) );
-                    const __m128i b = _mm_loadu_si128( reinterpret_cast<const __m128i*>( currentLuma.data() + row + x ) );
-                    const __m128i d1 = _mm_subs_epu8( a, b );
-                    const __m128i d2 = _mm_subs_epu8( b, a );
-                    const __m128i absDiff = _mm_and_si128( _mm_or_si128( d1, d2 ), evenMask );
-                    const __m128i sad = _mm_sad_epu8( absDiff, zero );
-                    totalDiff += static_cast<unsigned __int64>( _mm_cvtsi128_si64( sad ) ) +
-                                 static_cast<unsigned __int64>( _mm_cvtsi128_si64( _mm_srli_si128( sad, 8 ) ) );
-                    samples += 8;
-                }
-            }
-#endif
-            for( ; x < xEnd; x += 2 )
+            for( int x = marginX; x < dsW - marginX; x += 2 )
             {
                 totalDiff += static_cast<unsigned __int64>(
                     abs( static_cast<int>( previousLuma[row + x] ) -
@@ -5301,9 +5246,7 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
         {
             if( ComputeInformativePixelDifference( previousPixels, currentPixels,
                                                    frameWidth, frameHeight,
-                                                   hcfInfDiff, hcfInfCount,
-                                                   precomputedPrevLuma,
-                                                   precomputedCurrLuma ) &&
+                                                   hcfInfDiff, hcfInfCount ) &&
                 hcfInfCount > 0 )
             {
                 // Convert per-channel sum to approximate luma diff.
@@ -5465,65 +5408,20 @@ static bool FindBestFrameShiftVerticalOnly( const std::vector<BYTE>& previousPix
                 const int cY = ( direction < 0 ) ? y : ( y + absStep );
                 const int prevRow = pY * dsW;
                 const int currRow = cY * dsW;
-                const int xEnd = dsW - marginX;
-
-                if( veryLowEntropyPair )
+                for( int x = marginX; x < dsW - marginX; x += 2 )
                 {
-                    // VLE path: score only informative pixels (scalar).
-                    for( int x = marginX; x < xEnd; x += 2 )
+                    // For very-low-entropy pairs, only score informative
+                    // pixels (those near edges/text in either frame).
+                    if( veryLowEntropyPair &&
+                        !dsMaskPrev[prevRow + x] && !dsMaskCurr[currRow + x] )
                     {
-                        if( !dsMaskPrev[prevRow + x] && !dsMaskCurr[currRow + x] )
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        totalDiff += static_cast<unsigned __int64>(
-                            abs( static_cast<int>( previousLuma[prevRow + x] ) -
-                                 static_cast<int>( currentLuma[currRow + x] ) ) );
-                        samples++;
-                    }
-                }
-                else
-                {
-                    // Standard path: score all stride-2 pixels (SIMD).
-                    int x = marginX;
-#if defined(_M_ARM64)
-                    for( ; x + 16 <= xEnd; x += 16 )
-                    {
-                        const uint8x8x2_t pDeint = vld2_u8( previousLuma.data() + prevRow + x );
-                        const uint8x8x2_t cDeint = vld2_u8( currentLuma.data() + currRow + x );
-                        const uint8x8_t absDiff = vabd_u8( pDeint.val[0], cDeint.val[0] );
-                        const uint16x4_t sum16 = vpaddl_u8( absDiff );
-                        const uint32x2_t sum32 = vpaddl_u16( sum16 );
-                        const uint64x1_t sum64 = vpaddl_u32( sum32 );
-                        totalDiff += vget_lane_u64( sum64, 0 );
-                        samples += 8;
-                    }
-#elif defined(_M_X64) || defined(_M_IX86)
-                    {
-                        const __m128i evenMask = _mm_set1_epi16( 0x00FF );
-                        const __m128i zero = _mm_setzero_si128();
-                        for( ; x + 16 <= xEnd; x += 16 )
-                        {
-                            const __m128i a = _mm_loadu_si128( reinterpret_cast<const __m128i*>( previousLuma.data() + prevRow + x ) );
-                            const __m128i b = _mm_loadu_si128( reinterpret_cast<const __m128i*>( currentLuma.data() + currRow + x ) );
-                            const __m128i d1 = _mm_subs_epu8( a, b );
-                            const __m128i d2 = _mm_subs_epu8( b, a );
-                            const __m128i absDiff = _mm_and_si128( _mm_or_si128( d1, d2 ), evenMask );
-                            const __m128i sad = _mm_sad_epu8( absDiff, zero );
-                            totalDiff += static_cast<unsigned __int64>( _mm_cvtsi128_si64( sad ) ) +
-                                         static_cast<unsigned __int64>( _mm_cvtsi128_si64( _mm_srli_si128( sad, 8 ) ) );
-                            samples += 8;
-                        }
-                    }
-#endif
-                    for( ; x < xEnd; x += 2 )
-                    {
-                        totalDiff += static_cast<unsigned __int64>(
-                            abs( static_cast<int>( previousLuma[prevRow + x] ) -
-                                 static_cast<int>( currentLuma[currRow + x] ) ) );
-                        samples++;
-                    }
+                    totalDiff += static_cast<unsigned __int64>(
+                        abs( static_cast<int>( previousLuma[prevRow + x] ) -
+                             static_cast<int>( currentLuma[currRow + x] ) ) );
+                    samples++;
                 }
 
                 // Early termination: if running average already exceeds
