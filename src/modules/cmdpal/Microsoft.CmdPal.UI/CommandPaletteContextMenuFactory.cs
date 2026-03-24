@@ -4,6 +4,8 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -56,6 +58,17 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         List<IContextItem> moreCommands = [];
         var itemId = commandItem.Command.Id;
         var providerContext = page.ProviderContext;
+
+        // AppListItems can be surfaced on the main page even though they still
+        // belong to the All Apps provider.
+        // MainListPage only returns our in-proc wrappers/items.
+        if (providerContext.ProviderId != AllAppsCommandProvider.WellKnownId &&
+            page is ListViewModel { IsMainPage: true } &&
+            commandItem.Model.Unsafe is AppListItem)
+        {
+            providerContext = _topLevelCommandManager.LookupProvider(AllAppsCommandProvider.WellKnownId)?.GetProviderContext() ?? providerContext;
+        }
+
         var supportsPinning = providerContext.SupportsPinning;
 
         if (supportsPinning &&
