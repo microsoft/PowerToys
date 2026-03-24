@@ -39,7 +39,7 @@
                             <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_IncreaseOpacityShortcut">
                                 <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.IncreaseOpacityHotkey, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_DecreaseOpacityShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_DecreaseOpacityShortcut">
                                 <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.DecreaseOpacityHotkey, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
