@@ -37,93 +37,91 @@
             <x:String x:Key="RightEndPath">M52.25 8C53.8125 8 55.3021 8.3125 56.7188 8.9375C58.1354 9.5625 59.3854 10.4167 60.4688 11.5C61.5521 12.5833 62.4062 13.8333 63.0312 15.25C63.6562 16.6667 63.9792 18.1667 64 19.75V44.25C64 45.8125 63.6875 47.3021 63.0625 48.7188C62.4375 50.1354 61.5833 51.3854 60.5 52.4688C59.4167 53.5521 58.1667 54.4062 56.75 55.0312C55.3333 55.6562 53.8333 55.9792 52.25 56H11.75C10.1875 56 8.69792 55.6875 7.28125 55.0625C5.86458 54.4375 4.61458 53.5833 3.53125 52.5C2.44792 51.4167 1.59375 50.1667 0.96875 48.75C0.34375 47.3333 0.0208333 45.8333 0 44.25V19.75C0 18.1875 0.3125 16.6979 0.9375 15.2812C1.5625 13.8646 2.41667 12.6146 3.5 11.5312C4.58333 10.4479 5.83333 9.59375 7.25 8.96875C8.66667 8.34375 10.1667 8.02083 11.75 8H52.25ZM11.8438 12C10.8021 12 9.8125 12.2083 8.875 12.625C7.9375 13.0417 7.10417 13.6146 6.375 14.3438C5.64583 15.0729 5.07292 15.9062 4.65625 16.8438C4.23958 17.7812 4.02083 18.7812 4 19.8438V44.1562C4 45.1979 4.20833 46.1875 4.625 47.125C5.04167 48.0625 5.61458 48.8958 6.34375 49.625C7.07292 50.3542 7.90625 50.9271 8.84375 51.3438C9.78125 51.7604 10.7812 51.9792 11.8438 52H52.1562C53.1979 52 54.1875 51.7917 55.125 51.375C56.0625 50.9583 56.8958 50.3854 57.625 49.6562C58.3542 48.9271 58.9271 48.0938 59.3438 47.1562C59.7604 46.2188 59.9792 45.2188 60 44.1562V19.8438C60 18.8021 59.7917 17.8125 59.375 16.875C58.9583 15.9375 58.3854 15.1042 57.6562 14.375C56.9271 13.6458 56.0938 13.0729 55.1562 12.6562C54.2188 12.2396 53.2188 12.0208 52.1562 12H11.8438ZM52 34C53.1046 34 54 34.8954 54 36V48C54 49.1046 53.1046 50 52 50C50.8954 50 50 49.1046 50 48V36C50 34.8954 50.8954 34 52 34Z</x:String>
         </ResourceDictionary>
     </UserControl.Resources>
+    <ScrollViewer>
+        <StackPanel Width="420" Spacing="16">
+            <!--  Preview  -->
+            <StackPanel Spacing="8">
+                <Border
+                    Padding="12,8"
+                    HorizontalAlignment="Left"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{ThemeResource ControlCornerRadius}">
+                    <Grid ColumnSpacing="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-    <StackPanel Width="420" Spacing="16">
-        <!--  Preview  -->
-        <StackPanel Spacing="8">
-            <!--<TextBlock
-                x:Uid="PinToDock_PreviewHeader"
-                FontWeight="SemiBold"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />-->
-            <Border
-                Padding="12,8"
-                HorizontalAlignment="Left"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="{ThemeResource ControlCornerRadius}">
-                <Grid ColumnSpacing="8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                        <!--  Icon  -->
+                        <cpcontrols:IconBox
+                            x:Name="PreviewIcon"
+                            Width="16"
+                            Height="16"
+                            VerticalAlignment="Center"
+                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
 
-                    <!--  Icon  -->
-                    <cpcontrols:IconBox
-                        x:Name="PreviewIcon"
-                        Width="16"
-                        Height="16"
-                        VerticalAlignment="Center"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
+                        <!--  Text  -->
+                        <StackPanel
+                            x:Name="PreviewTextPanel"
+                            Grid.Column="1"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center">
+                            <TextBlock
+                                x:Name="PreviewTitleText"
+                                FontSize="12"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap" />
+                            <TextBlock
+                                x:Name="PreviewSubtitleText"
+                                FontSize="10"
+                                Foreground="{ThemeResource TextFillColorTertiary}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
 
-                    <!--  Text  -->
-                    <StackPanel
-                        x:Name="PreviewTextPanel"
-                        Grid.Column="1"
-                        VerticalAlignment="Center">
-                        <TextBlock
-                            x:Name="PreviewTitleText"
-                            FontSize="12"
-                            TextTrimming="CharacterEllipsis"
-                            TextWrapping="NoWrap" />
-                        <TextBlock
-                            x:Name="PreviewSubtitleText"
-                            FontSize="10"
-                            Foreground="{ThemeResource TextFillColorTertiary}"
-                            TextTrimming="CharacterEllipsis"
-                            TextWrapping="NoWrap" />
-                    </StackPanel>
-                </Grid>
-            </Border>
-        </StackPanel>
-
-        <Rectangle
-            Height="1"
-            Margin="-24,0,-24,0"
-            HorizontalAlignment="Stretch"
-            Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-
-        <!--  Dock Section Selector  -->
-        <StackPanel Spacing="8">
-            <TextBlock
-                x:Uid="PinToDock_SectionHeader"
-                FontWeight="SemiBold"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-            <tkcontrols:Segmented
-                x:Name="SectionSegmented"
+            <Rectangle
+                Height="1"
+                Margin="-24,0,-24,0"
                 HorizontalAlignment="Stretch"
-                SelectedIndex="0"
-                SelectionMode="Single">
-                <tkcontrols:SegmentedItem x:Name="StartSegmentedItem" x:Uid="PinToDock_Start" />
-                <tkcontrols:SegmentedItem x:Name="CenterSegmentedItem" x:Uid="PinToDock_Center" />
-                <tkcontrols:SegmentedItem x:Name="EndSegmentedItem" x:Uid="PinToDock_End" />
-            </tkcontrols:Segmented>
-        </StackPanel>
+                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
 
-        <!--  Label Options  -->
-        <StackPanel Spacing="4">
-            <CheckBox
-                x:Name="ShowTitleCheckBox"
-                x:Uid="PinToDock_ShowTitle"
-                Checked="OnLabelOptionChanged"
-                IsChecked="True"
-                Unchecked="OnLabelOptionChanged" />
-            <CheckBox
-                x:Name="ShowSubtitleCheckBox"
-                x:Uid="PinToDock_ShowSubtitle"
-                Checked="OnLabelOptionChanged"
-                IsChecked="True"
-                Unchecked="OnLabelOptionChanged" />
+            <!--  Dock Section Selector  -->
+            <StackPanel Spacing="8">
+                <TextBlock
+                    x:Uid="PinToDock_SectionHeader"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <tkcontrols:Segmented
+                    x:Name="SectionSegmented"
+                    HorizontalAlignment="Stretch"
+                    SelectedIndex="0"
+                    SelectionMode="Single">
+                    <tkcontrols:SegmentedItem x:Name="StartSegmentedItem" x:Uid="PinToDock_Start" />
+                    <tkcontrols:SegmentedItem x:Name="CenterSegmentedItem" x:Uid="PinToDock_Center" />
+                    <tkcontrols:SegmentedItem x:Name="EndSegmentedItem" x:Uid="PinToDock_End" />
+                </tkcontrols:Segmented>
+            </StackPanel>
+
+            <!--  Label Options  -->
+            <StackPanel Spacing="4">
+                <CheckBox
+                    x:Name="ShowTitleCheckBox"
+                    x:Uid="PinToDock_ShowTitle"
+                    Checked="OnLabelOptionChanged"
+                    IsChecked="True"
+                    Unchecked="OnLabelOptionChanged" />
+                <CheckBox
+                    x:Name="ShowSubtitleCheckBox"
+                    x:Uid="PinToDock_ShowSubtitle"
+                    Checked="OnLabelOptionChanged"
+                    IsChecked="True"
+                    Unchecked="OnLabelOptionChanged" />
+            </StackPanel>
         </StackPanel>
-    </StackPanel>
+    </ScrollViewer>
 </UserControl>
