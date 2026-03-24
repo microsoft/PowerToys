@@ -37,7 +37,7 @@ public sealed class SettingsService : ISettingsService
     private SettingsModel _settings;
 
     /// <inheritdoc/>
-    public SettingsModel Settings => _settings;
+    public SettingsModel Settings => Volatile.Read(ref _settings);
 
     /// <inheritdoc/>
     public event TypedEventHandler<ISettingsService, SettingsModel>? SettingsChanged;
@@ -48,12 +48,19 @@ public sealed class SettingsService : ISettingsService
     /// <inheritdoc/>
     public void UpdateSettings(Func<SettingsModel, SettingsModel> transform, bool hotReload = true)
     {
-        var newSettings = transform(_settings);
-        Interlocked.Exchange(ref _settings, newSettings);
-        _persistence.Save(newSettings, _filePath, JsonSerializationContext.Default.SettingsModel);
+        SettingsModel snapshot;
+        SettingsModel updated;
+        do
+        {
+            snapshot = Volatile.Read(ref _settings);
+            updated = transform(snapshot);
+        }
+        while (Interlocked.CompareExchange(ref _settings, updated, snapshot) != snapshot);
+
+        _persistence.Save(updated, _filePath, JsonSerializationContext.Default.SettingsModel);
         if (hotReload)
         {
-            SettingsChanged?.Invoke(this, newSettings);
+            SettingsChanged?.Invoke(this, updated);
         }
     }
 

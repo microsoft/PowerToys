@@ -162,4 +162,44 @@ public class AppStateServiceTests
         // Assert
         Assert.AreEqual(2, eventCount);
     }
+
+    [TestMethod]
+    public void UpdateState_ConcurrentUpdates_NoLostUpdates()
+    {
+        // Arrange — two threads each add items to RunHistory concurrently.
+        // With the CAS loop, every add must land (no lost updates).
+        var service = new AppStateService(_mockPersistence.Object, _mockAppInfo.Object);
+        const int iterations = 50;
+        var barrier = new System.Threading.Barrier(2);
+
+        // Act
+        var t1 = System.Threading.Tasks.Task.Run(() =>
+        {
+            barrier.SignalAndWait();
+            for (var i = 0; i < iterations; i++)
+            {
+                service.UpdateState(s => s with { RunHistory = s.RunHistory.Add($"t1-{i}") });
+            }
+        });
+
+        var t2 = System.Threading.Tasks.Task.Run(() =>
+        {
+            barrier.SignalAndWait();
+            for (var i = 0; i < iterations; i++)
+            {
+                service.UpdateState(s => s with { RunHistory = s.RunHistory.Add($"t2-{i}") });
+            }
+        });
+
+        System.Threading.Tasks.Task.WaitAll(t1, t2);
+
+        // Assert — all 100 items must be present (no lost updates)
+        Assert.AreEqual(iterations * 2, service.State.RunHistory.Count, "All concurrent updates should be preserved");
+
+        for (var i = 0; i < iterations; i++)
+        {
+            Assert.IsTrue(service.State.RunHistory.Contains($"t1-{i}"), $"Missing t1-{i}");
+            Assert.IsTrue(service.State.RunHistory.Contains($"t2-{i}"), $"Missing t2-{i}");
+        }
+    }
 }

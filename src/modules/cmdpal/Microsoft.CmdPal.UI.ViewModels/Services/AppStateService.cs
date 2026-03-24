@@ -29,7 +29,7 @@ public sealed class AppStateService : IAppStateService
     private AppStateModel _state;
 
     /// <inheritdoc/>
-    public AppStateModel State => _state;
+    public AppStateModel State => Volatile.Read(ref _state);
 
     /// <inheritdoc/>
     public event TypedEventHandler<IAppStateService, AppStateModel>? StateChanged;
@@ -40,10 +40,17 @@ public sealed class AppStateService : IAppStateService
     /// <inheritdoc/>
     public void UpdateState(Func<AppStateModel, AppStateModel> transform)
     {
-        var newState = transform(_state);
-        Interlocked.Exchange(ref _state, newState);
-        _persistence.Save(newState, _filePath, JsonSerializationContext.Default.AppStateModel);
-        StateChanged?.Invoke(this, newState);
+        AppStateModel snapshot;
+        AppStateModel updated;
+        do
+        {
+            snapshot = Volatile.Read(ref _state);
+            updated = transform(snapshot);
+        }
+        while (Interlocked.CompareExchange(ref _state, updated, snapshot) != snapshot);
+
+        _persistence.Save(updated, _filePath, JsonSerializationContext.Default.AppStateModel);
+        StateChanged?.Invoke(this, updated);
     }
 
     private string StateJsonPath()

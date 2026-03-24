@@ -188,4 +188,40 @@ public class SettingsServiceTests
         Assert.AreSame(service, receivedSender);
         Assert.AreSame(service.Settings, receivedSettings);
     }
+
+    [TestMethod]
+    public void UpdateSettings_ConcurrentUpdates_NoLostUpdates()
+    {
+        // Arrange — two threads each set a different property to true, 100 times.
+        // Without a CAS loop, one thread's Exchange can overwrite the other's
+        // property back to false from a stale snapshot. With CAS, both survive.
+        var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
+        const int iterations = 100;
+        var barrier = new System.Threading.Barrier(2);
+
+        // Act — t1 sets ShowAppDetails=true, t2 sets SingleClickActivates=true
+        var t1 = System.Threading.Tasks.Task.Run(() =>
+        {
+            barrier.SignalAndWait();
+            for (var i = 0; i < iterations; i++)
+            {
+                service.UpdateSettings(s => s with { ShowAppDetails = true }, hotReload: false);
+            }
+        });
+
+        var t2 = System.Threading.Tasks.Task.Run(() =>
+        {
+            barrier.SignalAndWait();
+            for (var i = 0; i < iterations; i++)
+            {
+                service.UpdateSettings(s => s with { SingleClickActivates = true }, hotReload: false);
+            }
+        });
+
+        System.Threading.Tasks.Task.WaitAll(t1, t2);
+
+        // Assert — both properties must be true; neither should have been overwritten
+        Assert.IsTrue(service.Settings.ShowAppDetails, "ShowAppDetails lost — a stale snapshot overwrote it");
+        Assert.IsTrue(service.Settings.SingleClickActivates, "SingleClickActivates lost — a stale snapshot overwrote it");
+    }
 }
