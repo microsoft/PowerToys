@@ -5,7 +5,6 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -27,7 +26,6 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinRT.Interop;
 using WinUIEx;
-using WindowExtensions = Microsoft.CmdPal.UI.Helpers.WindowExtensions;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -690,9 +688,7 @@ public sealed partial class DockWindow : WindowEx,
 
         _isDisposed = true;
 
-        var serviceProvider = App.Current.Services;
-        var settings = serviceProvider.GetService<SettingsModel>();
-        settings?.SettingsChanged -= SettingsChangedHandler;
+        _settingsService?.SettingsChanged -= SettingsChangedHandler;
 
         Activated -= DockWindow_Activated;
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
