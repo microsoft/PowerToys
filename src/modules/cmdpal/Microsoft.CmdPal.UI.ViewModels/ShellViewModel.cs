@@ -271,7 +271,9 @@ public partial class ShellViewModel : ObservableObject,
         // the providerContext that is passed to the new page view-model.
         var isMainPage = command == _rootPage;
 
-        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
+        var host = isMainPage
+            ? _appHostService.GetDefaultHost()
+            : _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
         var providerContext = isMainPage
             ? CommandProviderContext.Empty
             : _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
