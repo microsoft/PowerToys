@@ -75,7 +75,7 @@ internal sealed partial class NowDockBand : ListItem
 
     public NowDockBand()
     {
-        Command = new NoOpCommand() { Id = "com.microsoft.cmdpal.timedate.dockBand" };
+        Command = new CalendarPage();
         _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_time_command_name };
         _copyDateCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_date_command_name };
         MoreCommands = [

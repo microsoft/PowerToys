@@ -444,4 +444,8 @@
     <value>Copy date</value>
     <comment>Name of a command to copy the current date to the clipboard</comment>
   </data>
+  <data name="timedate_calendar_page_name" xml:space="preserve">
+    <value>Calendar</value>
+    <comment>Name of the calendar page shown when clicking the clock in the dock</comment>
+  </data>
 </root>

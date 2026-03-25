@@ -959,5 +959,14 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
                 return ResourceManager.GetString("timedate_copy_time_command_name", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Calendar.
+        /// </summary>
+        public static string timedate_calendar_page_name {
+            get {
+                return ResourceManager.GetString("timedate_calendar_page_name", resourceCulture);
+            }
+        }
     }
 }
