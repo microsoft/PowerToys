@@ -301,8 +301,19 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         var dockSettings = settings.DockSettings;
         var allPinnedCommands = dockSettings.AllPinnedCommands;
         var pinnedBandsForThisProvider = allPinnedCommands.Where(c => c.ProviderId == ProviderId);
+
+        // Track which command IDs we've already added to avoid duplicates
+        // from settings that were pinned multiple times.
+        HashSet<string> seenCommandIds = new(bands.Select(b => b.Id));
+
         foreach (var (providerId, commandId) in pinnedBandsForThisProvider)
         {
+            if (!seenCommandIds.Add(commandId))
+            {
+                Logger.LogWarning($"Skipping duplicate pinned dock band command {commandId} for provider {providerId}");
+                continue;
+            }
+
             Logger.LogDebug($"Looking for pinned dock band command {commandId} for provider {providerId}");
 
             // First, try to lookup the command as one of this provider's
@@ -440,6 +451,17 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
     {
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         var settings = settingsService.Settings;
+        var dockSettings = settings.DockSettings;
+
+        // Prevent duplicate pins — check all sections
+        if (dockSettings.StartBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
+            dockSettings.CenterBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
+            dockSettings.EndBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId))
+        {
+            Logger.LogDebug($"Dock band '{commandId}' from provider '{this.ProviderId}' is already pinned; skipping.");
+            return;
+        }
+
         var bandSettings = new DockBandSettings
         {
             CommandId = commandId,
