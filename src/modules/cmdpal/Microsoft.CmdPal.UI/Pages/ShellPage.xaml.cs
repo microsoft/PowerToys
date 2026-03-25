@@ -547,20 +547,23 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // However, then we have more fine-grained control on the back stack, managing the VM cache, and not
         // having that all be a black box, though then we wouldn't cache the XAML page itself, but sometimes that is a drawback.
         // However, we do a good job here, see ForwardStack.Clear below, and BackStack.Clear above about managing that.
-        if (withAnimation)
+        if (RootFrame.CanGoBack)
         {
-            RootFrame.GoBack();
-        }
-        else
-        {
-            RootFrame.GoBack(_noAnimation);
-        }
+            if (withAnimation)
+            {
+                RootFrame.GoBack();
+            }
+            else
+            {
+                RootFrame.GoBack(_noAnimation);
+            }
 
-        // Don't store pages we're navigating away from in the Frame cache
-        // TODO: In the future we probably want a short cache (3-5?) of recent VMs in case the user re-navigates
-        // back to a recent page they visited (like the Pokedex) so we don't have to reload it from  scratch.
-        // That'd be retrieved as we re-navigate in the PerformCommandMessage logic above
-        RootFrame.ForwardStack.Clear();
+            // Don't store pages we're navigating away from in the Frame cache
+            // TODO: In the future we probably want a short cache (3-5?) of recent VMs in case the user re-navigates
+            // back to a recent page they visited (like the Pokedex) so we don't have to reload it from  scratch.
+            // That'd be retrieved as we re-navigate in the PerformCommandMessage logic above
+            RootFrame.ForwardStack.Clear();
+        }
 
         if (!RootFrame.CanGoBack)
         {
