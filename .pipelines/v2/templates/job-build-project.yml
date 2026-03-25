@@ -482,7 +482,22 @@ jobs:
           !**\obj\**
 
   - pwsh: |-
-      $Packages = Get-ChildItem -Recurse -Filter "PowerToys.AdvancedPaste_*.msix"
+      $SearchRoot = "$(Build.SourcesDirectory)/$(BuildPlatform)/$(BuildConfiguration)"
+      Write-Host "Searching for AdvancedPaste MSIX in: $SearchRoot"
+      if (-not (Test-Path $SearchRoot)) {
+          Write-Warning "Search root does not exist: $SearchRoot"
+          $SearchRoot = "$(Build.SourcesDirectory)"
+          Write-Host "Falling back to: $SearchRoot"
+      }
+      # Log the AdvancedPaste output folder structure for diagnostics
+      $apDir = Join-Path $SearchRoot "WinUI3Apps/AdvancedPaste"
+      if (Test-Path $apDir) {
+          Write-Host "AdvancedPaste output folder contents:"
+          Get-ChildItem $apDir -Recurse -Include "*.msix","*.appx" | ForEach-Object { Write-Host "  - $($_.FullName)" }
+      } else {
+          Write-Host "AdvancedPaste output folder not found at: $apDir"
+      }
+      $Packages = Get-ChildItem -Path $SearchRoot -Recurse -Filter "PowerToys.AdvancedPaste_*.msix" -ErrorAction SilentlyContinue
       Write-Host "Found $($Packages.Count) AdvancedPaste MSIX package(s):"
       foreach ($pkg in $Packages) {
           Write-Host "  - $($pkg.FullName)"
@@ -502,6 +517,7 @@ jobs:
           Write-Host "##vso[task.setvariable variable=AdvancedPastePackagePath]${PackageFilename}"
       } else {
           Write-Warning "No AdvancedPaste MSIX packages found!"
+          Write-Host "##vso[task.setvariable variable=AdvancedPastePackagePath]"
       }
     displayName: Locate the AdvancedPaste MSIX
 
@@ -555,8 +571,13 @@ jobs:
       displayName: Re-pack the new CmdPal package after signing
 
     - pwsh: |-
+        if (-not "$(AdvancedPastePackagePath)") {
+            Write-Host "AdvancedPaste MSIX not found, skipping unpack"
+            exit 0
+        }
         & "$(MakeAppxPath)" unpack /p "$(AdvancedPastePackagePath)" /d "$(JobOutputDirectory)/AdvancedPastePackageContents"
       displayName: Unpack the AdvancedPaste MSIX for signing
+      condition: and(succeeded(), ne(variables['AdvancedPastePackagePath'], ''))
 
     - template: steps-esrp-signing.yml
       parameters:
@@ -569,6 +590,10 @@ jobs:
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
     - pwsh: |-
+        if (-not "$(AdvancedPastePackagePath)") {
+            Write-Host "AdvancedPaste MSIX not found, skipping repack"
+            exit 0
+        }
         $outDir = New-Item -Type Directory "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
         $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(AdvancedPastePackagePath)")
         & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(JobOutputDirectory)/AdvancedPastePackageContents"
@@ -576,6 +601,7 @@ jobs:
         Remove-Item -Force -Recurse "$(JobOutputDirectory)/AdvancedPastePackageContents" -ErrorAction:Ignore
         Remove-Item -Force -Recurse "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
       displayName: Re-pack the new AdvancedPaste package after signing
+      condition: and(succeeded(), ne(variables['AdvancedPastePackagePath'], ''))
 
     - pwsh: |
         $testsPath = "$(Build.SourcesDirectory)/$(BuildPlatform)/$(BuildConfiguration)/tests"
@@ -612,6 +638,7 @@ jobs:
   - pwsh: |-
       Copy-Item -Verbose -Force "$(AdvancedPastePackagePath)" "$(JobOutputDirectory)"
     displayName: Stage the final AdvancedPaste package
+    condition: and(succeeded(), ne(variables['AdvancedPastePackagePath'], ''))
 
 
 
