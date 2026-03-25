@@ -364,9 +364,9 @@ public sealed partial class MainListPage : DynamicListPage,
             }
 
             // prefilter fallbacks
-            var globalFallbacks = _settings.GetGlobalFallbacks();
-            var specialFallbacks = new List<TopLevelViewModel>(globalFallbacks.Length);
-            var commonFallbacks = new List<TopLevelViewModel>(Math.Max(commands.Count - globalFallbacks.Length, 0));
+            var configuredGlobalFallbackIds = _settings.GetGlobalFallbacks();
+            var specialFallbacks = new List<TopLevelViewModel>(configuredGlobalFallbackIds.Length);
+            var commonFallbacks = new List<TopLevelViewModel>(Math.Max(commands.Count - configuredGlobalFallbackIds.Length, 0));
 
             foreach (var s in commands)
             {
