@@ -22,6 +22,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     private readonly ExtensionObject<ICommandProvider> _commandProvider;
 
+    private readonly ICommandProvider4? _commandProvider4;
+
     private readonly TaskScheduler _taskScheduler;
 
     private readonly ICommandProviderCache? _commandProviderCache;
@@ -59,6 +61,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         // This ctor is only used for in-proc builtin commands. So the Unsafe!
         // calls are pretty dang safe actually.
         _commandProvider = new(provider);
+        _commandProvider4 = provider as ICommandProvider4;
         _taskScheduler = mainThread;
         TopLevelPageContext = new(this, _taskScheduler);
 
@@ -69,6 +72,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         _commandProvider.Unsafe!.ItemsChanged += CommandProvider_ItemsChanged;
 
         isValid = true;
+        SupportsPinning = _commandProvider4 is not null;
         Id = provider.Id;
         DisplayName = provider.DisplayName;
         Icon = new(provider.Icon);
@@ -102,6 +106,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         }
 
         _commandProvider = new(provider);
+        _commandProvider4 = provider as ICommandProvider4;
 
         try
         {
@@ -123,6 +128,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         }
 
         isValid = true;
+        SupportsPinning = _commandProvider4 is not null;
     }
 
     private ProviderSettings GetProviderSettings(SettingsModel settings)
@@ -182,12 +188,9 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             }
 
             ICommandItem[] pinnedCommands = [];
-            ICommandProvider4? four = null;
-            if (model is ICommandProvider4 definitelyFour)
+            var four = _commandProvider4;
+            if (four is not null)
             {
-                four = definitelyFour; // stash this away so we don't need to QI again
-                SupportsPinning = true;
-
                 // Load pinned commands from saved settings
                 pinnedCommands = LoadPinnedCommands(four, providerSettings);
             }
@@ -482,6 +485,25 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
     }
 
     public ICommandProviderContext GetProviderContext() => this;
+
+    public ICommandItem? GetCommandItem(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return null;
+        }
+
+        try
+        {
+            return _commandProvider4?.GetCommandItem(id);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError($"Failed to load command item {id} from provider {ProviderId}: {e.Message}");
+        }
+
+        return null;
+    }
 
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;
 

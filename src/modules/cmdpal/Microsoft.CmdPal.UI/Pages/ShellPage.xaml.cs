@@ -26,7 +26,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
-using Windows.UI.Core;
 using WinUIEx;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
@@ -47,6 +46,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<SettingsWindowClosedMessage>,
     IRecipient<GoHomeMessage>,
     IRecipient<GoBackMessage>,
+    IRecipient<GoToPageMessage>,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
@@ -99,6 +99,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<GoBackMessage>(this);
+        WeakReferenceMessenger.Default.Register<GoToPageMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
@@ -210,6 +211,26 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         DispatcherQueue.TryEnqueue(() =>
         {
             _toast.ShowToast(message.Message);
+        });
+    }
+
+    public void Receive(GoToPageMessage message)
+    {
+        _ = DispatcherQueue.TryEnqueue(() =>
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            try
+            {
+                HandleGoToPageOnUiThread(message);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to handle GoToPage message", ex);
+            }
         });
     }
 
@@ -472,6 +493,34 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     }
 
     public void Receive(GoBackMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoBack(message.WithAnimation, message.FocusSearch));
+
+    private void HandleGoToPageOnUiThread(GoToPageMessage message)
+    {
+        switch (message.NavigationMode)
+        {
+            case NavigationMode.GoHome:
+                GoHome(message.CommandMessage.WithAnimation, focusSearch: false);
+                break;
+            case NavigationMode.GoBack:
+                GoBack(message.CommandMessage.WithAnimation, focusSearch: false);
+                break;
+            case NavigationMode.Push:
+            default:
+                break;
+        }
+
+        _ = _queue.TryEnqueue(() =>
+        {
+            try
+            {
+                WeakReferenceMessenger.Default.Send(message.CommandMessage);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.ToString());
+            }
+        });
+    }
 
     private void GoBack(bool withAnimation = true, bool focusSearch = true)
     {

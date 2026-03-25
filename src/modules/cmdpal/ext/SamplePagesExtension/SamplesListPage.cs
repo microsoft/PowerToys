@@ -49,6 +49,7 @@ public partial class SamplesListPage : ListPage
             Title = "Demo of OnLoad/OnUnload",
             Subtitle = "Changes the list of items every time the page is opened / closed",
         },
+        SampleNavigationCommandCatalog.CreateRootListItem(),
         new ListItem(new SampleIconPage())
         {
             Title = "Sample Icon Page",
