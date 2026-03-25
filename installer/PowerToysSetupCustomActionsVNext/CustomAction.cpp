@@ -1415,6 +1415,80 @@ UINT __stdcall UnRegisterCmdPalPackageCA(MSIHANDLE hInstall)
     return WcaFinalize(er);
 }
 
+UINT __stdcall InstallAdvancedPastePackageCA(MSIHANDLE hInstall)
+{
+    using namespace winrt::Windows::Foundation;
+    using namespace winrt::Windows::Management::Deployment;
+
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+
+    hr = WcaInitialize(hInstall, "InstallAdvancedPastePackage");
+    hr = getInstallFolder(hInstall, installationFolder);
+
+    try
+    {
+        auto msix = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\AdvancedPaste\\", false);
+        auto dependencies = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\AdvancedPaste\\Dependencies\\", true);
+
+        if (!msix.empty())
+        {
+            auto msixPath = msix[0];
+
+            if (!package::RegisterPackage(msixPath, dependencies))
+            {
+                Logger::error(L"Failed to install AdvancedPaste package");
+                er = ERROR_INSTALL_FAILURE;
+            }
+        }
+    }
+    catch (std::exception &e)
+    {
+        std::string errorMessage{"Exception thrown while trying to install AdvancedPaste package: "};
+        errorMessage += e.what();
+        Logger::error(errorMessage);
+
+        er = ERROR_INSTALL_FAILURE;
+    }
+
+    er = er == ERROR_SUCCESS ? (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE) : er;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall UnRegisterAdvancedPastePackageCA(MSIHANDLE hInstall)
+{
+    using namespace winrt::Windows::Foundation;
+    using namespace winrt::Windows::Management::Deployment;
+
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+
+    hr = WcaInitialize(hInstall, "UnRegisterAdvancedPastePackageCA");
+
+    try
+    {
+        std::wstring packageToRemoveDisplayName{L"PowerToys Advanced Paste"};
+
+        if (!package::UnRegisterPackage(packageToRemoveDisplayName))
+        {
+            Logger::error(L"Failed to unregister package: " + packageToRemoveDisplayName);
+            er = ERROR_INSTALL_FAILURE;
+        }
+    }
+    catch (std::exception &e)
+    {
+        std::string errorMessage{"Exception thrown while trying to unregister the AdvancedPaste package: "};
+        errorMessage += e.what();
+        Logger::error(errorMessage);
+
+        er = ERROR_INSTALL_FAILURE;
+    }
+
+    er = er == ERROR_SUCCESS ? (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE) : er;
+    return WcaFinalize(er);
+}
+
 
 UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
 {

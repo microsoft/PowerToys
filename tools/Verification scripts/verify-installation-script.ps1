@@ -468,8 +468,6 @@ function Test-CoreFiles {
     $winUI3SignedFiles = @(
         'PowerToys.Settings.dll',
         'PowerToys.Settings.exe',
-        'AdvancedPaste\PowerToys.AdvancedPaste.exe',
-        'AdvancedPaste\PowerToys.AdvancedPaste.dll',
         'PowerToys.HostsModuleInterface.dll',
         'PowerToys.HostsUILib.dll',
         'PowerToys.Hosts.dll',
@@ -721,6 +719,26 @@ function Test-CommandPalettePackages {
     }
     else {
         Add-CheckResult -Category "Command Palette" -CheckName "CmdPal Module" -Status 'Warning' -Message "Command Palette module not found at: $cmdPalPath"
+    }
+}
+
+function Test-AdvancedPastePackage {
+    param(
+        [string]$InstallPath
+    )
+    
+    $advancedPastePath = Join-Path $InstallPath "WinUI3Apps\AdvancedPaste"
+    if (Test-Path $advancedPastePath) {
+        $msixFiles = Get-ChildItem $advancedPastePath -Filter "*.msix" -ErrorAction SilentlyContinue
+        if ($msixFiles) {
+            Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste MSIX Package" -Status 'Pass' -Message "Found $($msixFiles.Count) Advanced Paste MSIX package(s)"
+        }
+        else {
+            Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste MSIX Package" -Status 'Warning' -Message "No Advanced Paste MSIX packages found"
+        }
+    }
+    else {
+        Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste Module" -Status 'Warning' -Message "Advanced Paste module not found at: $advancedPastePath"
     }
 }
 

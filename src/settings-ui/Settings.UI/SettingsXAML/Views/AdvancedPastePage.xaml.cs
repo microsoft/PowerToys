@@ -460,9 +460,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             try
             {
-                // Settings doesn't have sparse package identity, so it can't call
+                // Settings doesn't have package identity, so it can't call
                 // LanguageModel.GetReadyState() directly. Instead, probe via AdvancedPaste
-                // which runs with sparse identity. See microsoft-ui-xaml#10856.
+                // which runs with its own package identity. See microsoft-ui-xaml#10856.
                 var result = await Task.Run(() => CheckPhiSilicaViaAdvancedPaste());
 
                 if (result == "NotSupported")

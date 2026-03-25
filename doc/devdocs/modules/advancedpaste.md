@@ -33,7 +33,9 @@ See the `ExecutePasteFormatAsync(PasteFormat, PasteActionSource)` method in `Opt
 
 ## Debugging
 
-Advanced Paste outputs to its own subfolder (`WinUI3Apps/AdvancedPaste/`) rather than the shared `WinUI3Apps/` folder. This isolates its `resources.pri` from other WinUI 3 apps due to a [known WinUI bug](https://github.com/microsoft/microsoft-ui-xaml/issues/10856).
+Advanced Paste is packaged as a self-contained MSIX with its own identity (`Microsoft.PowerToys.AdvancedPaste`). This gives it native package identity for Windows AI APIs (Phi Silica) and clean `ms-appx:///` resource resolution without workarounds.
+
+The MSIX is output to `WinUI3Apps/AdvancedPaste/` and registered by the module interface at runtime (or by the installer on release builds).
 
 ### Running and attaching the debugger
 
@@ -44,77 +46,31 @@ Advanced Paste outputs to its own subfolder (`WinUI3Apps/AdvancedPaste/`) rather
 
 Alternatively, use the VS Code launch configuration **"Run AdvancedPaste"** from [.vscode/launch.json](/.vscode/launch.json) to launch the exe directly — but note that without the Runner, IPC and hotkeys won't work.
 
-### Sparse package identity (local development)
+### MSIX package identity
 
-Advanced Paste uses the Windows AI APIs (Phi Silica / `Microsoft.Windows.AI.Text.LanguageModel`) which require **package identity** at runtime. PowerToys provides this via a shared sparse MSIX package (`Microsoft.PowerToys.SparseApp`).
+Advanced Paste uses the Windows AI APIs (Phi Silica / `Microsoft.Windows.AI.Text.LanguageModel`) which require **package identity** at runtime. The app is packaged as a self-contained MSIX (following the same pattern as Command Palette).
 
-#### Why is this needed?
+#### How it works
 
-- The `LanguageModel` API requires a Limited Access Feature (LAF) unlock, which only succeeds when the calling process has a matching package identity.
-- Advanced Paste is an unpackaged, self-contained WinUI 3 app. The sparse package grants it identity without converting it to a full MSIX.
-- There is a [known WinUI bug](https://github.com/microsoft/microsoft-ui-xaml/issues/10856) where self-contained WinUI 3 apps with sparse identity only load `resources.pri` instead of module-specific PRI files. To avoid conflicts with other WinUI apps, Advanced Paste outputs to its own subfolder (`WinUI3Apps/AdvancedPaste/`) and uses `resources.pri` as its PRI filename.
+- **Build**: The csproj has `EnableMsixTooling=true` and `GenerateAppxPackageOnBuild=true` (CI builds). This produces an MSIX in `AppPackages/`.
+- **Local dev**: VS registers the package automatically via `Add-AppxPackage -Register AppxManifest.xml` when you build.
+- **Installer**: The WiX installer deploys the MSIX file and a custom action (`InstallAdvancedPastePackageCA`) registers it via `PackageManager`.
 
-#### One-time setup
+#### Local development setup
 
-1. **Build the sparse package** for your platform and configuration:
+For local debug builds, Visual Studio handles MSIX registration automatically. Select the **"PowerToys.AdvancedPaste (Package)"** launch profile in the debug dropdown.
 
-   ```powershell
-   pwsh src/PackageIdentity/BuildSparsePackage.ps1 -Platform ARM64 -Configuration Debug
-   ```
-
-   This generates `PowerToysSparse.msix` in `ARM64\Debug\`, creates a dev certificate, and signs the package.
-
-2. **Trust the dev certificate** (first time only):
-
-   ```powershell
-   Import-Certificate -FilePath "src/PackageIdentity/.user/PowerToysSparse.certificate.sample.cer" -CertStoreLocation Cert:\CurrentUser\TrustedPeople
-   ```
-
-3. **Register the sparse package for development** by adding `-DevRegister` to the build command:
-
-   ```powershell
-   pwsh src/PackageIdentity/BuildSparsePackage.ps1 -Platform ARM64 -Configuration Debug -DevRegister
-   ```
-
-   The `-DevRegister` flag automatically:
-   - Removes any existing registration
-   - Creates a temporary copy of `AppxManifest.xml` with the dev publisher
-   - Registers it via `Add-AppxPackage -Register` with `-ExternalLocation` pointing to your build output
-   - Verifies the result
-
-   You can combine it with the initial build (step 1) in a single command.
-
-4. **Verify the registration:**
-
-   ```powershell
-   $pkg = Get-AppxPackage -Name "*SparseApp*"
-   $pkg.Publisher           # Should be: CN=PowerToys Dev, O=PowerToys, L=Redmond, S=Washington, C=US
-   $pkg.PublisherId         # Should be: djwsxzxb4ksa8
-   $pkg.IsDevelopmentMode   # Should be: True
-   ```
-
-#### Re-registration
-
-Re-register after rebuilding the sparse package, changing `AppxManifest.xml`, or switching platforms/configurations:
-
+To manually register:
 ```powershell
-pwsh src/PackageIdentity/BuildSparsePackage.ps1 -Platform ARM64 -Configuration Debug -DevRegister
+Add-AppxPackage -Register "ARM64\Debug\WinUI3Apps\AdvancedPaste\AppxManifest.xml"
 ```
 
-#### Unregistering
-
+Verify:
 ```powershell
-pwsh src/PackageIdentity/BuildSparsePackage.ps1 -Unregister
+$pkg = Get-AppxPackage -Name "*AdvancedPaste*"
+$pkg.Name               # Microsoft.PowerToys.AdvancedPaste.Dev
+$pkg.IsDevelopmentMode   # True
 ```
-
-#### Troubleshooting
-
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| `Cannot locate resource from 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml'` | Sparse package not registered, or registered without `-ExternalLocation` | Re-register using step 3 above |
-| `IsDevelopmentMode` is `False` after registration | Used `Add-AppxPackage -Path *.msix` instead of `-Register` | Remove and re-register using the `-Register` form |
-| LAF unlock returns `Unavailable` | Publisher mismatch | Verify `$pkg.PublisherId` is `djwsxzxb4ksa8` |
-| `HRESULT 0x800B0109` (trust failure) | Dev certificate not trusted | Run `Import-Certificate` (step 2) for both `TrustedPeople` and `TrustedRoot` |
 
 ### How Settings UI checks Phi Silica availability
 
@@ -124,10 +80,6 @@ Advanced Paste checks LAF + `GetReadyState()` once on startup (with MSIX identit
 - `Available` — model is ready
 - `NotReady` — model needs download via Windows Update
 - `NotSupported` — not a Copilot+ PC, API unavailable, or Advanced Paste not running
-
-### See also
-
-- [microsoft/microsoft-ui-xaml#10856](https://github.com/microsoft/microsoft-ui-xaml/issues/10856) — the WinUI bug requiring separate output folder
 
 ## Settings
 
