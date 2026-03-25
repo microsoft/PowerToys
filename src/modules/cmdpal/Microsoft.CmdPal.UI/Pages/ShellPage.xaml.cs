@@ -499,27 +499,40 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         switch (message.NavigationMode)
         {
             case NavigationMode.GoHome:
+                // GoToPage is composite: go home first, then run the target command.
+                // Queue the second step so CurrentPage can update after navigation.
                 GoHome(message.CommandMessage.WithAnimation, focusSearch: false);
-                break;
+                _ = _queue.TryEnqueue(() => SafeSendGoToPageCommand(message.CommandMessage));
+                return;
+
             case NavigationMode.GoBack:
+                // Same idea as GoHome: go back first, then run the target command;
+                // TODO: This is consistent with the other modes, but I wonder if we should instead try to be smarter
+                //   and see if the target page is already in the back stack, and if so just go back to it.
+                //   That might be a nicer experience, but it also might be more complex to implement, at least with
+                //   parameterized pages.
                 GoBack(message.CommandMessage.WithAnimation, focusSearch: false);
-                break;
+                _ = _queue.TryEnqueue(() => SafeSendGoToPageCommand(message.CommandMessage));
+                return;
+
             case NavigationMode.Push:
             default:
-                break;
+                // Push has no rewind step, so we can run the target command now.
+                SafeSendGoToPageCommand(message.CommandMessage);
+                return;
         }
 
-        _ = _queue.TryEnqueue(() =>
+        void SafeSendGoToPageCommand(PerformCommandMessage commandMessage)
         {
             try
             {
-                WeakReferenceMessenger.Default.Send(message.CommandMessage);
+                WeakReferenceMessenger.Default.Send(commandMessage);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex.ToString());
+                Logger.LogError("Failed to dispatch deferred GoToPage command", ex);
             }
-        });
+        }
     }
 
     private void GoBack(bool withAnimation = true, bool focusSearch = true)

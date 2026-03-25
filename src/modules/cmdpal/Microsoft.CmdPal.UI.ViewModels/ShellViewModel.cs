@@ -505,6 +505,10 @@ public partial class ShellViewModel : ObservableObject,
         ICommandItem? targetItem;
         try
         {
+            // Resolve the target command item before we hop onto the UI thread.
+            // ICommandProvider4.GetCommandItem may need to materialize a dynamic
+            // command by id, and we do not want that provider work to block frame
+            // navigation or input processing.
             targetItem = providerContext.GetCommandItem(args.PageId);
         }
         catch (Exception ex)
@@ -523,6 +527,10 @@ public partial class ShellViewModel : ObservableObject,
 
         var performMessage = new PerformCommandMessage(new ExtensionObject<ICommand>(targetCommand), new ExtensionObject<ICommandItem>(targetItem))
         {
+            // Preserve the original extension identity across the deferred
+            // GoBack/GoHome + follow-up command sequence. By the time the
+            // follow-up PerformCommandMessage runs, CurrentPage may already be
+            // pointing at the page we navigated back to.
             HostOverride = host,
             ProviderContextOverride = providerContext,
             TransientPage = transientPage,
