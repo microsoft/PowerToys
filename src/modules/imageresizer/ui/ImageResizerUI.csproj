@@ -57,7 +57,6 @@
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-	<PackageReference Include="WinUIEx" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />

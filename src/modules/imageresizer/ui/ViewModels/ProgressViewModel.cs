@@ -94,7 +94,6 @@ namespace ImageResizer.ViewModels
                         _dispatcherQueue.TryEnqueue(() =>
                         {
                             Progress = progress;
-                            _mainViewModel.Progress = progress;
                             TimeRemaining = timeRemaining;
                         });
                     },
@@ -104,7 +103,6 @@ namespace ImageResizer.ViewModels
                 // so we can update UI directly without DispatcherQueue.
                 if (errors.Any())
                 {
-                    _mainViewModel.Progress = 0;
                     _mainViewModel.CurrentPage = new ResultsViewModel(_mainView, errors);
                 }
                 else

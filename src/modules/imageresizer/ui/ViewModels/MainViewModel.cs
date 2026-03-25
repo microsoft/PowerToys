@@ -19,9 +19,6 @@ namespace ImageResizer.ViewModels
         [ObservableProperty]
         private object _currentPage;
 
-        [ObservableProperty]
-        private double _progress;
-
         public MainViewModel(ResizeBatch batch, Settings settings)
         {
             _batch = batch;

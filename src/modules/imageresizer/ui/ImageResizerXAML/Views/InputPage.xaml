@@ -1,4 +1,4 @@
-﻿<!--  Copyright (c) Microsoft Corporation. All rights reserved.  -->
+<!--  Copyright (c) Microsoft Corporation. All rights reserved.  -->
 <!--  Licensed under the MIT License.  -->
 <Page
     x:Class="ImageResizer.Views.InputPage"
@@ -28,7 +28,7 @@
                     <TextBlock
                         Margin="4,0,0,0"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="×"
+                        Text="&#xD7;"
                         Visibility="{x:Bind ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <TextBlock
                         Margin="4,0,0,0"
@@ -72,13 +72,13 @@
         <StackPanel Grid.Row="0" Margin="16">
             <ComboBox
                 x:Name="SizeComboBox"
-                Height="64"
+                MinHeight="64"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 VerticalContentAlignment="Stretch"
                 ItemTemplateSelector="{StaticResource SizeTemplateSelector}"
-                ItemsSource="{Binding Settings.AllSizes, Mode=OneWay}"
-                SelectedItem="{Binding Settings.SelectedSize, Mode=TwoWay}" />
+                ItemsSource="{x:Bind ViewModel.Settings.AllSizes, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.Settings.SelectedSize, Mode=TwoWay}" />
         </StackPanel>
 
         <Grid Grid.Row="1">
@@ -99,36 +99,36 @@
             <!--  AI Configuration Panel  -->
             <Grid Grid.Row="0" Margin="16">
                 <!--  AI Model Download Prompt  -->
-                <StackPanel Visibility="{Binding ShowModelDownloadPrompt, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Visibility="{x:Bind ViewModel.ShowModelDownloadPrompt, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <InfoBar
                         IsClosable="False"
                         IsOpen="True"
-                        Message="{Binding ModelStatusMessage, Mode=OneWay}"
+                        Message="{x:Bind ViewModel.ModelStatusMessage, Mode=OneWay}"
                         Severity="Informational" />
 
                     <Button
                         Margin="0,8,0,0"
                         HorizontalAlignment="Stretch"
-                        Command="{Binding DownloadModelCommand}"
+                        Command="{x:Bind ViewModel.DownloadModelCommand}"
                         Style="{StaticResource AccentButtonStyle}"
-                        Visibility="{Binding IsModelDownloading, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
+                        Visibility="{x:Bind ViewModel.IsDownloadingModel, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
                         <TextBlock x:Uid="Input_AiModelDownloadButton" />
                     </Button>
 
-                    <StackPanel Margin="0,8,0,0" Visibility="{Binding IsModelDownloading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Margin="0,8,0,0" Visibility="{x:Bind ViewModel.IsDownloadingModel, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ProgressBar IsIndeterminate="True" />
                         <TextBlock
                             Margin="0,8,0,0"
                             HorizontalAlignment="Center"
-                            Text="{Binding ModelStatusMessage, Mode=OneWay}" />
+                            Text="{x:Bind ViewModel.ModelStatusMessage, Mode=OneWay}" />
                     </StackPanel>
                 </StackPanel>
 
                 <!--  AI Scale Controls  -->
-                <StackPanel Visibility="{Binding ShowAiControls, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Visibility="{x:Bind ViewModel.ShowAiControls, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid>
                         <TextBlock x:Uid="Input_AiCurrentLabel" />
-                        <TextBlock HorizontalAlignment="Right" Text="{Binding AiScaleDisplay, Mode=OneWay}" />
+                        <TextBlock HorizontalAlignment="Right" Text="{x:Bind ViewModel.AiScaleDisplay, Mode=OneWay}" />
                     </Grid>
 
                     <Slider
@@ -137,19 +137,19 @@
                         Minimum="1"
                         TickFrequency="1"
                         TickPlacement="BottomRight"
-                        Value="{Binding AiSuperResolutionScale, Mode=TwoWay}" />
+                        Value="{x:Bind ViewModel.AiSuperResolutionScale, Mode=TwoWay}" />
 
-                    <StackPanel Margin="0,16,0,0" Visibility="{Binding ShowAiSizeDescriptions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Margin="0,16,0,0" Visibility="{x:Bind ViewModel.ShowAiSizeDescriptions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <Grid>
                             <TextBlock x:Uid="Input_AiCurrentLabel" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             <TextBlock
                                 HorizontalAlignment="Right"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="{Binding CurrentResolutionDescription, Mode=OneWay}" />
+                                Text="{x:Bind ViewModel.CurrentResolutionDescription, Mode=OneWay}" />
                         </Grid>
                         <Grid Margin="0,8,0,0">
                             <TextBlock x:Uid="Input_AiNewLabel" />
-                            <TextBlock HorizontalAlignment="Right" Text="{Binding NewResolutionDescription, Mode=OneWay}" />
+                            <TextBlock HorizontalAlignment="Right" Text="{x:Bind ViewModel.NewResolutionDescription, Mode=OneWay}" />
                         </Grid>
                     </StackPanel>
                 </StackPanel>
@@ -159,7 +159,8 @@
             <Grid
                 Grid.Row="0"
                 Margin="16"
-                Visibility="{Binding IsCustomSizeSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                RowSpacing="8"
+                Visibility="{x:Bind ViewModel.IsCustomSizeSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="24" />
                     <ColumnDefinition Width="*" />
@@ -169,7 +170,6 @@
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="8" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -188,7 +188,7 @@
                     KeyDown="NumberBox_KeyDown"
                     Minimum="0"
                     SpinButtonPlacementMode="Inline"
-                    Value="{Binding Settings.SelectedSize.Width, Mode=TwoWay}" />
+                    Value="{x:Bind ViewModel.Settings.SelectedSize.Width, Mode=TwoWay}" />
 
                 <FontIcon
                     Grid.Column="3"
@@ -199,7 +199,7 @@
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE799;"
                     RenderTransformOrigin="0.5,0.5"
-                    Visibility="{Binding Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    Visibility="{x:Bind ViewModel.Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <FontIcon.RenderTransform>
                         <RotateTransform Angle="90" />
                     </FontIcon.RenderTransform>
@@ -212,22 +212,22 @@
                     KeyDown="NumberBox_KeyDown"
                     Minimum="0"
                     SpinButtonPlacementMode="Inline"
-                    Visibility="{Binding Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                    Value="{Binding Settings.SelectedSize.Height, Mode=TwoWay}" />
+                    Visibility="{x:Bind ViewModel.Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Value="{x:Bind ViewModel.Settings.SelectedSize.Height, Mode=TwoWay}" />
                 <FontIcon
-                    Grid.Row="2"
+                    Grid.Row="1"
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
                     FontSize="16"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE7A8;" />
                 <ComboBox
-                    Grid.Row="2"
+                    Grid.Row="1"
                     Grid.Column="1"
                     Margin="8,0,0,0"
                     HorizontalAlignment="Stretch"
-                    ItemsSource="{Binding ResizeFitValues, Mode=OneWay}"
-                    SelectedIndex="{Binding Settings.SelectedSize.Fit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
+                    ItemsSource="{x:Bind ViewModel.ResizeFitValues, Mode=OneWay}"
+                    SelectedIndex="{x:Bind ViewModel.Settings.SelectedSize.Fit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="m:ResizeFit">
                             <TextBlock Padding="2,0" Text="{x:Bind Converter={StaticResource EnumValueConverter}}" />
@@ -236,7 +236,7 @@
                 </ComboBox>
 
                 <FontIcon
-                    Grid.Row="2"
+                    Grid.Row="1"
                     Grid.Column="3"
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
@@ -244,12 +244,12 @@
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xECC6;" />
                 <ComboBox
-                    Grid.Row="2"
+                    Grid.Row="1"
                     Grid.Column="4"
                     Margin="8,0,0,0"
                     HorizontalAlignment="Stretch"
-                    ItemsSource="{Binding ResizeUnitValues, Mode=OneWay}"
-                    SelectedIndex="{Binding Settings.SelectedSize.Unit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
+                    ItemsSource="{x:Bind ViewModel.ResizeUnitValues, Mode=OneWay}"
+                    SelectedIndex="{x:Bind ViewModel.Settings.SelectedSize.Unit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="m:ResizeUnit">
                             <TextBlock Padding="2,0" Text="{x:Bind Converter={StaticResource EnumValueConverter}}" />
@@ -263,19 +263,19 @@
                 Grid.Row="1"
                 Margin="16"
                 Orientation="Vertical">
-                <CheckBox IsChecked="{Binding Settings.ShrinkOnly, Mode=TwoWay}">
+                <CheckBox IsChecked="{x:Bind ViewModel.Settings.ShrinkOnly, Mode=TwoWay}">
                     <TextBlock x:Uid="Input_ShrinkOnly" TextWrapping="Wrap" />
                 </CheckBox>
 
-                <CheckBox IsChecked="{Binding Settings.IgnoreOrientation, Mode=TwoWay}">
+                <CheckBox IsChecked="{x:Bind ViewModel.Settings.IgnoreOrientation, Mode=TwoWay}">
                     <TextBlock x:Uid="Input_IgnoreOrientation" TextWrapping="Wrap" />
                 </CheckBox>
 
-                <CheckBox IsChecked="{Binding Settings.Replace, Mode=TwoWay}">
+                <CheckBox IsChecked="{x:Bind ViewModel.Settings.Replace, Mode=TwoWay}">
                     <TextBlock x:Uid="Input_Replace" TextWrapping="Wrap" />
                 </CheckBox>
 
-                <CheckBox IsChecked="{Binding Settings.RemoveMetadata, Mode=TwoWay}">
+                <CheckBox IsChecked="{x:Bind ViewModel.Settings.RemoveMetadata, Mode=TwoWay}">
                     <TextBlock x:Uid="Input_RemoveMetadata" TextWrapping="Wrap" />
                 </CheckBox>
             </StackPanel>
@@ -293,7 +293,7 @@
                 Grid.Row="3"
                 Margin="16,0"
                 IsClosable="False"
-                IsOpen="{Binding TryingToResizeGifFiles, Mode=OneWay}"
+                IsOpen="{x:Bind ViewModel.TryingToResizeGifFiles, Mode=OneWay}"
                 Severity="Warning">
                 <TextBlock x:Uid="Input_GifWarning" />
             </InfoBar>
@@ -309,7 +309,7 @@
                 <Button
                     x:Uid="Open_settings_button"
                     Padding="8"
-                    Command="{Binding OpenSettingsCommand}"
+                    Command="{x:Bind ViewModel.OpenSettingsCommand}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon FontSize="16" Glyph="&#xE713;" />
                     <ToolTipService.ToolTip>
@@ -320,11 +320,11 @@
                 <Button
                     Grid.Column="1"
                     MinWidth="76"
-                    Command="{Binding ResizeCommand}"
+                    Command="{x:Bind ViewModel.ResizeCommand}"
                     Style="{StaticResource AccentButtonStyle}">
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xE740;" />
-                        <TextBlock x:Uid="Input_Resize" Margin="8,0,0,0" />
+                        <TextBlock x:Uid="Input_Resize" />
                     </StackPanel>
                 </Button>
 
@@ -332,7 +332,7 @@
                     Grid.Column="2"
                     MinWidth="76"
                     Margin="8,0,0,0"
-                    Command="{Binding CancelCommand}">
+                    Command="{x:Bind ViewModel.CancelCommand}">
                     <TextBlock x:Uid="Cancel" />
                 </Button>
             </Grid>

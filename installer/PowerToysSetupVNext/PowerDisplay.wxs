@@ -31,7 +31,6 @@
         <RemoveFolder Id="RemoveFolderPowerDisplayAssetsFolder" Directory="PowerDisplayAssetsInstallFolder" On="uninstall"/>
       </Component>
             <ComponentRef Id="PowerDisplayAssetsFiles_Component" />
-            <ComponentRef Id="PowerDisplayAssetsFiles_Component" />
     </ComponentGroup>
 
   </Fragment>

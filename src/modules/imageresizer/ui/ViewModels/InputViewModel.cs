@@ -235,33 +235,40 @@ namespace ImageResizer.ViewModels
 
         private async void UpdateAiDetails()
         {
-            if (Settings == null || Settings.SelectedSize is not AiSize)
+            try
             {
-                CurrentResolutionDescription = string.Empty;
-                NewResolutionDescription = string.Empty;
-                return;
+                if (Settings == null || Settings.SelectedSize is not AiSize)
+                {
+                    CurrentResolutionDescription = string.Empty;
+                    NewResolutionDescription = string.Empty;
+                    return;
+                }
+
+                EnsureAiScaleWithinRange();
+
+                if (_hasMultipleFiles)
+                {
+                    CurrentResolutionDescription = string.Empty;
+                    NewResolutionDescription = string.Empty;
+                    return;
+                }
+
+                await EnsureOriginalDimensionsLoadedAsync();
+
+                var hasConcreteSize = _originalWidth.HasValue && _originalHeight.HasValue;
+                CurrentResolutionDescription = hasConcreteSize
+                    ? FormatDimensions(_originalWidth!.Value, _originalHeight!.Value)
+                    : ResourceLoaderInstance.ResourceLoader.GetString("Input_AiUnknownSize");
+
+                var scale = Settings.AiSize.Scale;
+                NewResolutionDescription = hasConcreteSize
+                    ? FormatDimensions((long)_originalWidth!.Value * scale, (long)_originalHeight!.Value * scale)
+                    : ResourceLoaderInstance.ResourceLoader.GetString("Input_AiUnknownSize");
             }
-
-            EnsureAiScaleWithinRange();
-
-            if (_hasMultipleFiles)
+            catch (Exception ex)
             {
-                CurrentResolutionDescription = string.Empty;
-                NewResolutionDescription = string.Empty;
-                return;
+                Logger.LogError($"UpdateAiDetails failed: {ex.Message}");
             }
-
-            await EnsureOriginalDimensionsLoadedAsync();
-
-            var hasConcreteSize = _originalWidth.HasValue && _originalHeight.HasValue;
-            CurrentResolutionDescription = hasConcreteSize
-                ? FormatDimensions(_originalWidth!.Value, _originalHeight!.Value)
-                : ResourceLoaderInstance.ResourceLoader.GetString("Input_AiUnknownSize");
-
-            var scale = Settings.AiSize.Scale;
-            NewResolutionDescription = hasConcreteSize
-                ? FormatDimensions((long)_originalWidth!.Value * scale, (long)_originalHeight!.Value * scale)
-                : ResourceLoaderInstance.ResourceLoader.GetString("Input_AiUnknownSize");
         }
 
         private static string FormatDimensions(long width, long height)

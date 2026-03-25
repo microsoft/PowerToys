@@ -133,12 +133,6 @@
   <data name="Unit" xml:space="preserve">
     <value>Unit</value>
   </data>
-  <data name="AllFilesFilter" xml:space="preserve">
-    <value>All Files</value>
-  </data>
-  <data name="PictureFilter" xml:space="preserve">
-    <value>All Picture Files</value>
-  </data>
   <data name="Input_Auto" xml:space="preserve">
     <value>(auto)</value>
   </data>

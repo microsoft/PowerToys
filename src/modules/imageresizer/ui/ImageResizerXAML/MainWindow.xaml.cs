@@ -8,20 +8,24 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using ImageResizer.Utilities;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
-using WinUIEx;
 
 namespace ImageResizer
 {
-    public sealed partial class MainWindow : WindowEx, IMainView
+    public sealed partial class MainWindow : Window, IMainView
     {
+        private const int InitialWidth = 400;
+        private const int InitialHeight = 506;
+
         public MainViewModel ViewModel { get; }
 
         private PropertyChangedEventHandler _selectedSizeChangedHandler;
@@ -36,10 +40,22 @@ namespace ImageResizer
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
             AppWindow.SetIcon("Assets/ImageResizer/ImageResizer.ico");
-            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 
-            // Center the window on screen
-            this.CenterOnScreen();
+            // Configure window to be non-resizable with no minimize/maximize buttons
+            if (AppWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.IsMaximizable = false;
+                presenter.IsMinimizable = false;
+                presenter.IsResizable = false;
+            }
+
+            var hwnd = WindowNative.GetWindowHandle(this);
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(hwnd);
+
+            // Set initial size and center on screen
+            var scale = NativeMethods.GetDpiForWindow(hwnd) / 96.0;
+            AppWindow.Resize(new SizeInt32((int)(InitialWidth * scale), (int)(InitialHeight * scale)));
+            CenterOnScreen();
 
             // Listen to ViewModel property changes
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
@@ -69,7 +85,7 @@ namespace ImageResizer
 
             if (page is InputViewModel inputVM)
             {
-                var inputPage = new InputPage { ViewModel = inputVM, DataContext = inputVM };
+                var inputPage = new InputPage { ViewModel = inputVM };
                 contentPresenter.Content = inputPage;
 
                 // Adjust window height based on selected size type
@@ -77,7 +93,7 @@ namespace ImageResizer
             }
             else if (page is ProgressViewModel progressVM)
             {
-                var progressPage = new ProgressPage { ViewModel = progressVM, DataContext = progressVM };
+                var progressPage = new ProgressPage { ViewModel = progressVM };
                 contentPresenter.Content = progressPage;
 
                 // Size to content after layout
@@ -85,7 +101,7 @@ namespace ImageResizer
             }
             else if (page is ResultsViewModel resultsVM)
             {
-                var resultsPage = new ResultsPage { ViewModel = resultsVM, DataContext = resultsVM };
+                var resultsPage = new ResultsPage { ViewModel = resultsVM };
                 contentPresenter.Content = resultsPage;
 
                 // Size to content after layout
@@ -117,7 +133,7 @@ namespace ImageResizer
 
             // Size immediately so the window is correct before Activate
             SizeToContent();
-            this.CenterOnScreen();
+            CenterOnScreen();
         }
 
         /// <summary>
@@ -140,11 +156,29 @@ namespace ImageResizer
                 return;
             }
 
-            var scale = this.GetDpiForWindow() / 96.0;
+            var scale = NativeMethods.GetDpiForWindow(WindowNative.GetWindowHandle(this)) / 96.0;
             var clientWidth = AppWindow.ClientSize.Width;
             var clientHeight = (int)Math.Ceiling(desiredHeight * scale);
 
             AppWindow.ResizeClient(new SizeInt32(clientWidth, clientHeight));
+        }
+
+        /// <summary>
+        /// Centers the window on the nearest display area.
+        /// </summary>
+        private void CenterOnScreen()
+        {
+            var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
+            if (displayArea != null)
+            {
+                var windowSize = AppWindow.Size;
+                var centeredPosition = new PointInt32
+                {
+                    X = (displayArea.WorkArea.Width - windowSize.Width) / 2,
+                    Y = (displayArea.WorkArea.Height - windowSize.Height) / 2,
+                };
+                AppWindow.Move(centeredPosition);
+            }
         }
 
         public async Task<IEnumerable<string>> OpenPictureFilesAsync()
@@ -152,7 +186,7 @@ namespace ImageResizer
             var picker = new FileOpenPicker();
 
             // Initialize the picker with the window handle
-            var hwnd = this.GetWindowHandle();
+            var hwnd = WindowNative.GetWindowHandle(this);
             InitializeWithWindow.Initialize(picker, hwnd);
 
             picker.ViewMode = PickerViewMode.Thumbnail;
@@ -178,7 +212,7 @@ namespace ImageResizer
                 return files.Select(f => f.Path);
             }
 
-            return Enumerable.Empty<string>();
+            return [];
         }
 
         void IMainView.Close()
