@@ -37,7 +37,7 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
 
         if (IsUseNewEditorEnabled())
         {
-            yield return new ListItem(new OpenNewKeyboardManagerEditorCommand())
+            yield return new ListItem(new OpenNewKeyboardManagerEditorCommand() { Id = "com.microsoft.powertoys.keyboardManager.openNewEditor" })
             {
                 Title = Resources.KeyboardManager_OpenNewEditor_Title,
                 Subtitle = Resources.KeyboardManager_OpenNewEditor_Subtitle,

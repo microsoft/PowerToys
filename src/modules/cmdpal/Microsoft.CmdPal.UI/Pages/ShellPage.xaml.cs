@@ -51,6 +51,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
     IRecipient<ShowHideDockMessage>,
+    IRecipient<ShowPinToDockDialogMessage>,
     INotifyPropertyChanged,
     IDisposable
 {
@@ -72,6 +73,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
+    private bool _isDisposed;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
@@ -102,6 +104,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
+        WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
 
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
@@ -210,6 +213,43 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         });
     }
 
+    public void Receive(ShowPinToDockDialogMessage message)
+    {
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            try
+            {
+                await HandlePinToDockDialogOnUiThread(message);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.ToString());
+            }
+        });
+    }
+
+    private async Task HandlePinToDockDialogOnUiThread(ShowPinToDockDialogMessage message)
+    {
+        var (result, content) = await PinToDockDialogContent.ShowAsync(
+            this.XamlRoot,
+            message.Title,
+            message.Subtitle,
+            message.Icon,
+            message.DockSide);
+
+        if (result == ContentDialogResult.Primary)
+        {
+            var pinMessage = new PinToDockMessage(
+                message.ProviderId,
+                message.CommandId,
+                Pin: true,
+                Side: content.SelectedSide,
+                ShowTitles: content.ShowTitles,
+                ShowSubtitles: content.ShowSubtitles);
+            WeakReferenceMessenger.Default.Send(pinMessage);
+        }
+    }
+
     // This gets called from the UI thread
     private async Task HandleConfirmArgsOnUiThread(IConfirmationArgs? args)
     {
@@ -269,6 +309,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         _ = DispatcherQueue.TryEnqueue(() =>
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             OpenSettings(message.SettingsPageTag);
         });
     }
@@ -489,6 +534,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         _ = DispatcherQueue.TryEnqueue(() =>
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             if (message.ShowDock)
             {
                 if (_dockWindow is null)
@@ -790,10 +840,33 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Dispose()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+
         _focusAfterLoadedCts?.Cancel();
         _focusAfterLoadedCts?.Dispose();
         _focusAfterLoadedCts = null;
 
-        _dockWindow?.Dispose();
+        var dockWindow = _dockWindow;
+        _dockWindow = null;
+
+        if (dockWindow is not null)
+        {
+            if (DispatcherQueue.HasThreadAccess)
+            {
+                dockWindow.Close();
+            }
+            else
+            {
+                DispatcherQueue.TryEnqueue(dockWindow.Close);
+            }
+        }
+
+        GC.SuppressFinalize(this);
     }
 }

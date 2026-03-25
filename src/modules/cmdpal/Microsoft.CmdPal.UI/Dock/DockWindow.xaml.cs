@@ -5,7 +5,6 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -27,7 +26,6 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinRT.Interop;
 using WinUIEx;
-using WindowExtensions = Microsoft.CmdPal.UI.Helpers.WindowExtensions;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -59,7 +57,10 @@ public sealed partial class DockWindow : WindowEx,
     private DockControl _dock;
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
+    private bool _isUpdatingBackdrop;
+    private BackdropParameters? _lastAppliedAcrylicBackdrop;
     private DockSize _lastSize;
+    private bool _isDisposed;
 
     // Store the original WndProc
     private WNDPROC? _originalWndProc;
@@ -78,6 +79,7 @@ public sealed partial class DockWindow : WindowEx,
         viewModel = serviceProvider.GetService<DockViewModel>()!;
         _themeService = serviceProvider.GetRequiredService<IThemeService>();
         _themeService.ThemeChanged += ThemeService_ThemeChanged;
+        InitializeBackdropSupport();
         _windowViewModel = new DockWindowViewModel(_themeService);
         _dock = new DockControl(viewModel);
 
@@ -156,14 +158,7 @@ public sealed partial class DockWindow : WindowEx,
     private void UpdateSettingsOnUiThread()
     {
         this.viewModel.UpdateSettings(_settings);
-
-        SystemBackdrop = DockSettingsToViews.GetSystemBackdrop(_settings.Backdrop);
-
-        // If the backdrop is acrylic, things are more complicated
-        if (_settings.Backdrop == DockBackdrop.Acrylic)
-        {
-            SetAcrylic();
-        }
+        UpdateBackdrop();
 
         _dock.UpdateSettings(_settings);
         var side = DockSettingsToViews.GetAppBarEdge(_settings.Side);
@@ -183,31 +178,98 @@ public sealed partial class DockWindow : WindowEx,
         CreateAppBar(_hwnd);
     }
 
-    // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
-    // other Shell surfaces are using, this cannot be set in XAML however.
-    private void SetAcrylic()
+    private void InitializeBackdropSupport()
     {
         if (DesktopAcrylicController.IsSupported())
         {
-            // Hooking up the policy object.
             _configurationSource = new SystemBackdropConfiguration
             {
-                // Initial configuration state.
                 IsInputActive = true,
             };
-            UpdateAcrylic();
         }
     }
 
-    private void UpdateAcrylic()
+    private void UpdateBackdrop()
     {
-        if (_acrylicController != null)
+        // Prevent re-entrance when backdrop changes trigger theme refresh work.
+        if (_isUpdatingBackdrop)
+        {
+            return;
+        }
+
+        _isUpdatingBackdrop = true;
+
+        try
+        {
+            switch (_settings.Backdrop)
+            {
+                case DockBackdrop.Transparent:
+                    if (SystemBackdrop is not TransparentTintBackdrop)
+                    {
+                        CleanupBackdropControllers();
+                        SetupTransparentBackdrop();
+                    }
+
+                    break;
+
+                case DockBackdrop.Acrylic:
+                default:
+                    SetupDesktopAcrylic(_themeService.CurrentDockTheme.BackdropParameters);
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to update dock backdrop", ex);
+        }
+        finally
+        {
+            _isUpdatingBackdrop = false;
+        }
+    }
+
+    private void SetupTransparentBackdrop()
+    {
+        if (SystemBackdrop is not TransparentTintBackdrop)
+        {
+            SystemBackdrop = new TransparentTintBackdrop();
+        }
+
+        _lastAppliedAcrylicBackdrop = null;
+    }
+
+    private void CleanupBackdropControllers()
+    {
+        if (_acrylicController is not null)
         {
             _acrylicController.RemoveAllSystemBackdropTargets();
             _acrylicController.Dispose();
+            _acrylicController = null;
         }
 
-        var backdrop = _themeService.CurrentDockTheme.BackdropParameters;
+        _lastAppliedAcrylicBackdrop = null;
+    }
+
+    private void SetupDesktopAcrylic(BackdropParameters backdrop)
+    {
+        var needsAcrylicUpdate = _acrylicController is null || _lastAppliedAcrylicBackdrop != backdrop;
+        if (!needsAcrylicUpdate)
+        {
+            return;
+        }
+
+        CleanupBackdropControllers();
+
+        // Fall back to the transparent backdrop if acrylic is not supported.
+        if (_configurationSource is null || !DesktopAcrylicController.IsSupported())
+        {
+            SetupTransparentBackdrop();
+            return;
+        }
+
+        // DesktopAcrylicController and SystemBackdrop can't be active simultaneously.
+        SystemBackdrop = null;
+
         _acrylicController = new DesktopAcrylicController
         {
             Kind = DesktopAcrylicKind.Thin,
@@ -221,29 +283,20 @@ public sealed partial class DockWindow : WindowEx,
         // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
         _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
         _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
+        _lastAppliedAcrylicBackdrop = backdrop;
     }
 
     private void DisposeAcrylic()
     {
-        if (_acrylicController is not null)
-        {
-            _acrylicController.Dispose();
-            _acrylicController = null!;
-            _configurationSource = null!;
-        }
+        CleanupBackdropControllers();
+        _configurationSource = null;
     }
 
     private void ThemeService_ThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            // We only need to handle acrylic here.
-            // Transparent background is handled directly in XAML by binding to
-            // the DockWindowViewModel's ColorizationColor properties.
-            if (_settings.Backdrop == DockBackdrop.Acrylic)
-            {
-                UpdateAcrylic();
-            }
+            UpdateBackdrop();
 
             // ActualTheme / RequestedTheme sync,
             // as pilfered from WindowThemeSynchronizer
@@ -617,18 +670,38 @@ public sealed partial class DockWindow : WindowEx,
 
     public void Dispose()
     {
-        DisposeAcrylic();
-        _windowViewModel.Dispose();
+        Cleanup();
+        GC.SuppressFinalize(this);
     }
 
     private void DockWindow_Closed(object sender, WindowEventArgs args)
     {
-        _settingsService.SettingsChanged -= SettingsChangedHandler;
+        Dispose();
+    }
+
+    private void Cleanup()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+
+        _settingsService?.SettingsChanged -= SettingsChangedHandler;
+
+        Activated -= DockWindow_Activated;
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+
         DisposeAcrylic();
+        _windowViewModel.Dispose();
 
         // Remove our app bar registration
-        DestroyAppBar(_hwnd);
+        if (_appBarData.hWnd != IntPtr.Zero)
+        {
+            DestroyAppBar(_hwnd);
+        }
 
         // Unhook the window procedure
         ShowDesktop.RemoveHook();
