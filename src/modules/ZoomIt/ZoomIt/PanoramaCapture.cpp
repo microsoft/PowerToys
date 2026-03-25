@@ -3458,7 +3458,7 @@ static int ComputeTileAverageRgbDifference( const std::vector<BYTE>& aPixels,
     return static_cast<int>( diffSum / ( sampleCount * 3 ) );
 }
 
-static bool IsStrongFixedOverlayTile( int supports, int stationary, int scrolled )
+static constexpr bool IsStrongFixedOverlayTile( int supports, int stationary, int scrolled )
 {
     return supports >= 4 &&
            stationary >= 3 &&
@@ -3466,7 +3466,7 @@ static bool IsStrongFixedOverlayTile( int supports, int stationary, int scrolled
            stationary * 2 >= supports + 1;
 }
 
-static bool IsWeakFixedOverlayTile( int supports, int stationary, int scrolled )
+static constexpr bool IsWeakFixedOverlayTile( int supports, int stationary, int scrolled )
 {
     return supports >= 3 &&
            stationary >= 2 &&
@@ -4360,10 +4360,10 @@ skipTileMasking:
 
             if( fixedCount >= 2 )
             {
-                const int coreW = finalMaxX - finalMinX + 1;
-                const int coreH = finalMaxY - finalMinY + 1;
-                const int marginX = max( 24, coreW );
-                const int marginY = max( 24, coreH );
+                const int coreW2 = finalMaxX - finalMinX + 1;
+                const int coreH2 = finalMaxY - finalMinY + 1;
+                const int marginX = max( 24, coreW2 );
+                const int marginY = max( 24, coreH2 );
                 mask.eraseRect.left   = max( 0L, static_cast<long>( finalMinX ) - marginX );
                 mask.eraseRect.top    = max( 0L, static_cast<long>( finalMinY ) - marginY );
                 mask.eraseRect.right  = min( static_cast<long>( frameWidth ), static_cast<long>( finalMaxX ) + marginX + 2 );
