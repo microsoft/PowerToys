@@ -501,7 +501,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // That'd be retrieved as we re-navigate in the PerformCommandMessage logic above
             RootFrame.ForwardStack.Clear();
         }
-        else
+
+        if (!RootFrame.CanGoBack)
         {
             ViewModel.GoHome(withAnimation, focusSearch);
         }
