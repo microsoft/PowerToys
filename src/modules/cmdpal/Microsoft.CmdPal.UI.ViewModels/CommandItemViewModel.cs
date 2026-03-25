@@ -215,22 +215,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         BuildAndInitMoreCommands();
 
-        if (!string.IsNullOrEmpty(model.Command?.Name))
-        {
-            _defaultCommandContextItemViewModel = new CommandContextItemViewModel(new CommandContextItem(model.Command!), PageContext)
-            {
-                _itemTitle = Name,
-                Subtitle = Subtitle,
-                Command = Command,
-
-                // TODO this probably should just be a CommandContextItemViewModel(CommandItemViewModel) ctor, or a copy ctor or whatever
-                // Anything we set manually here must stay in sync with the corresponding properties on CommandItemViewModel.
-            };
-
-            // Only set the icon on the context item for us if our command didn't
-            // have its own icon
-            UpdateDefaultContextItemIcon();
-        }
+        TryCreateDefaultCommandContextItem(model);
 
         lock (_moreCommandsLock)
         {
@@ -240,6 +225,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Initialized |= InitializedState.SelectionInitialized;
         UpdateProperty(nameof(MoreCommands));
         UpdateProperty(nameof(AllCommands));
+        UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands));
         UpdateProperty(nameof(CanOpenContextMenu));
         UpdateProperty(nameof(IsSelectedInitialized));
     }
@@ -338,9 +324,16 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.
                 _itemTitle = model.Title;
 
-                _defaultCommandContextItemViewModel?.Command = Command;
-                _defaultCommandContextItemViewModel?.UpdateTitle(_itemTitle);
-                UpdateDefaultContextItemIcon();
+                if (_defaultCommandContextItemViewModel is not null)
+                {
+                    _defaultCommandContextItemViewModel.Command = Command;
+                    _defaultCommandContextItemViewModel.UpdateTitle(_itemTitle);
+                    UpdateDefaultContextItemIcon();
+                }
+                else
+                {
+                    TryCreateDefaultCommandContextItem(model);
+                }
 
                 UpdateProperty(nameof(Name));
                 UpdateProperty(nameof(Title));
@@ -408,7 +401,15 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 UpdateProperty(nameof(Title), nameof(Name));
                 UpdateProperty(nameof(CanOpenContextMenu));
 
-                _defaultCommandContextItemViewModel?.UpdateTitle(model.Command.Name);
+                if (_defaultCommandContextItemViewModel is not null)
+                {
+                    _defaultCommandContextItemViewModel.UpdateTitle(model.Command.Name);
+                }
+                else
+                {
+                    TryCreateDefaultCommandContextItem(model);
+                }
+
                 break;
 
             case nameof(Command.Icon):
@@ -416,6 +417,46 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 UpdateProperty(nameof(Icon));
                 break;
         }
+    }
+
+    /// <summary>
+    /// Creates <see cref="_defaultCommandContextItemViewModel"/> when it does not exist
+    /// yet and the current command has a non-empty name. This covers the case
+    /// where an extension initially exposes a <c>NoOpCommand</c> (empty name)
+    /// and later switches to a concrete command after <see cref="SlowInitializeProperties"/> has already run.
+    /// When a new instance is created, the snapshot is refreshed and
+    /// <see cref="AllCommands"/> is notified.
+    /// </summary>
+    private void TryCreateDefaultCommandContextItem(ICommandItem model)
+    {
+        if (_defaultCommandContextItemViewModel is not null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(model.Command?.Name))
+        {
+            return;
+        }
+
+        _defaultCommandContextItemViewModel = new CommandContextItemViewModel(new CommandContextItem(model.Command!), PageContext)
+        {
+            _itemTitle = Name,
+            Subtitle = Subtitle,
+            Command = Command,
+
+            // TODO this probably should just be a CommandContextItemViewModel(CommandItemViewModel) ctor, or a copy ctor or whatever
+            // Anything we set manually here must stay in sync with the corresponding properties on CommandItemViewModel.
+        };
+
+        UpdateDefaultContextItemIcon();
+
+        lock (_moreCommandsLock)
+        {
+            RefreshMoreCommandStateUnsafe();
+        }
+
+        UpdateProperty(nameof(AllCommands));
     }
 
     private void UpdateDefaultContextItemIcon() =>
