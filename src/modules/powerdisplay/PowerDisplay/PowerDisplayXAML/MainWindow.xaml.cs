@@ -16,6 +16,7 @@ using Microsoft.UI.Xaml.Input;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
+using PowerDisplay.Models;
 using PowerDisplay.ViewModels;
 using Windows.Graphics;
 using WinUIEx;

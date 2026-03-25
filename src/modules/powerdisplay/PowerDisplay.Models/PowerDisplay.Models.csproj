@@ -1,0 +1,23 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE file in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>PowerDisplay.Models</RootNamespace>
+    <Platforms>x64;ARM64</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <Nullable>enable</Nullable>
+    <AssemblyName>PowerDisplay.Models</AssemblyName>
+  </PropertyGroup>
+  <!-- Native AOT Configuration -->
+  <PropertyGroup>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+</Project>

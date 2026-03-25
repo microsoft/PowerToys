@@ -12,10 +12,8 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using Windows.ApplicationModel.DataTransfer;
-using CustomVcpValueMapping = Microsoft.PowerToys.Settings.UI.Library.CustomVcpValueMapping;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -127,11 +125,29 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private string GenerateDefaultProfileName()
         {
-            // Use shared ProfileHelper for consistent profile name generation
-            var existingNames = ViewModel.Profiles.Select(p => p.Name).ToHashSet();
+            var existingNames = ViewModel.Profiles.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             var baseName = resourceLoader.GetString("PowerDisplay_Profile_DefaultBaseName");
-            return ProfileHelper.GenerateUniqueProfileName(existingNames, baseName);
+            if (string.IsNullOrEmpty(baseName))
+            {
+                baseName = "Profile";
+            }
+
+            if (!existingNames.Contains(baseName))
+            {
+                return baseName;
+            }
+
+            for (int i = 2; i < 1000; i++)
+            {
+                var candidate = $"{baseName} {i}";
+                if (!existingNames.Contains(candidate))
+                {
+                    return candidate;
+                }
+            }
+
+            return $"{baseName} {DateTime.Now.Ticks}";
         }
 
         // Custom VCP Mapping event handlers

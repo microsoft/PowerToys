@@ -5,7 +5,7 @@
     xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     xmlns:helpers="using:PowerDisplay.Helpers"
     xmlns:local="using:PowerDisplay"
-    xmlns:models="using:PowerDisplay.Common.Models"
+    xmlns:models="using:PowerDisplay.Models"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:vm="using:PowerDisplay.ViewModels"

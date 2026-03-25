@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Telemetry;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using PowerDisplay.Serialization;
 using PowerDisplay.Services;
 using PowerDisplay.Telemetry.Events;
