@@ -17,6 +17,7 @@ using Windows.Storage.Streams;
 using ImageResizer.Helpers;
 using ImageResizer.Properties;
 using ImageResizer.Services;
+using ImageResizer.Utilities;
 using Microsoft.VisualBasic.FileIO;
 using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
@@ -34,26 +35,16 @@ namespace ImageResizer.Models
         // Cache CompositeFormat for AI error message formatting (CA1863)
         private static CompositeFormat _aiErrorFormat;
 
-        private static CompositeFormat AiErrorFormat
-        {
-            get
-            {
-                if (_aiErrorFormat == null)
-                {
-                    _aiErrorFormat = CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("Error_AiProcessingFailed"));
-                }
-
-                return _aiErrorFormat;
-            }
-        }
+        private static CompositeFormat AiErrorFormat =>
+            _aiErrorFormat ??= CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("Error_AiProcessingFailed"));
 
         // Filenames to avoid according to https://learn.microsoft.com/windows/win32/fileio/naming-a-file#file-and-directory-names
         private static readonly string[] _avoidFilenames =
-            {
+            [
                 "CON", "PRN", "AUX", "NUL",
                 "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
                 "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
-            };
+            ];
 
         public ResizeOperation(string file, string destinationDirectory, Settings settings, IAISuperResolutionService aiSuperResolutionService = null)
         {

@@ -24,8 +24,8 @@ namespace ImageResizer.ViewModels
         private readonly MainViewModel _mainViewModel;
         private readonly ResizeBatch _batch;
         private readonly IMainView _mainView;
-        private readonly Stopwatch _stopwatch = new Stopwatch();
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly Stopwatch _stopwatch = new();
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
         private readonly DispatcherQueue _dispatcherQueue;
 
         private bool _disposedValue;
@@ -39,19 +39,8 @@ namespace ImageResizer.ViewModels
 
         private static CompositeFormat _progressTimeRemainingFormat;
 
-        private static CompositeFormat ProgressTimeRemainingFormat
-        {
-            get
-            {
-                if (_progressTimeRemainingFormat == null)
-                {
-                    var formatString = ResourceLoaderInstance.ResourceLoader.GetString("Progress_TimeRemaining");
-                    _progressTimeRemainingFormat = CompositeFormat.Parse(formatString);
-                }
-
-                return _progressTimeRemainingFormat;
-            }
-        }
+        private static CompositeFormat ProgressTimeRemainingFormat =>
+            _progressTimeRemainingFormat ??= CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("Progress_TimeRemaining"));
 
         public string TimeRemainingDisplay
         {

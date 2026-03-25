@@ -167,7 +167,7 @@ namespace ImageResizer.Models
                     }
                     catch (Exception ex)
                     {
-                        errors.Add(new ResizeError { File = _fileSystem.Path.GetFileName(file), Error = ex.Message });
+                        errors.Add(new ResizeError(_fileSystem.Path.GetFileName(file), ex.Message));
                     }
 
                     Interlocked.Increment(ref completed);

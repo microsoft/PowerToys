@@ -48,18 +48,8 @@ namespace ImageResizer.Properties
 
         private static CompositeFormat _valueMustBeBetween;
 
-        private static CompositeFormat ValueMustBeBetween
-        {
-            get
-            {
-                if (_valueMustBeBetween == null)
-                {
-                    _valueMustBeBetween = System.Text.CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("ValueMustBeBetween"));
-                }
-
-                return _valueMustBeBetween;
-            }
-        }
+        private static CompositeFormat ValueMustBeBetween =>
+            _valueMustBeBetween ??= System.Text.CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("ValueMustBeBetween"));
 
         // Used to synchronize access to the settings.json file (in-process only)
         private static readonly System.Threading.Lock _jsonSyncLock = new();

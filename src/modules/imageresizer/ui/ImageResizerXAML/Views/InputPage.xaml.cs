@@ -22,40 +22,21 @@ namespace ImageResizer.Views
 
         private void NumberBox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == Windows.System.VirtualKey.Enter)
+            if (e.Key == Windows.System.VirtualKey.Enter
+                && sender is NumberBox numberBox
+                && ViewModel is not null
+                && !double.IsNaN(numberBox.Value))
             {
-                var numberBox = sender as NumberBox;
-                if (numberBox != null && ViewModel != null)
+                KeyPressParams keyParams = numberBox.Name switch
                 {
-                    KeyPressParams keyParams;
-                    var value = numberBox.Value;
+                    "WidthNumberBox" => new KeyPressParams { Value = numberBox.Value, Dimension = Dimension.Width },
+                    "HeightNumberBox" => new KeyPressParams { Value = numberBox.Value, Dimension = Dimension.Height },
+                    _ => null,
+                };
 
-                    if (!double.IsNaN(value))
-                    {
-                        switch (numberBox.Name)
-                        {
-                            case "WidthNumberBox":
-                                keyParams = new KeyPressParams
-                                {
-                                    Value = value,
-                                    Dimension = Dimension.Width,
-                                };
-                                break;
-
-                            case "HeightNumberBox":
-                                keyParams = new KeyPressParams
-                                {
-                                    Value = value,
-                                    Dimension = Dimension.Height,
-                                };
-                                break;
-
-                            default:
-                                return;
-                        }
-
-                        ViewModel.EnterKeyPressedCommand.Execute(keyParams);
-                    }
+                if (keyParams is not null)
+                {
+                    ViewModel.EnterKeyPressedCommand.Execute(keyParams);
                 }
             }
         }
