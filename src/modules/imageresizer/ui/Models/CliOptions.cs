@@ -56,7 +56,7 @@ namespace ImageResizer.Models
 
         public string PipeName { get; set; }
 
-        public IReadOnlyList<string> ParseErrors { get; private set; } = Array.Empty<string>();
+        public IReadOnlyList<string> ParseErrors { get; private set; } = [];
 
         private static bool? ToBoolOrNull(bool value) => value ? true : null;
 

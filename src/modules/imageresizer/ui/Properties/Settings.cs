@@ -62,7 +62,7 @@ namespace ImageResizer.Properties
         }
 
         // Used to synchronize access to the settings.json file (in-process only)
-        private static readonly object _jsonSyncLock = new();
+        private static readonly System.Threading.Lock _jsonSyncLock = new();
         private static string _settingsPath = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Image Resizer", "settings.json");
         private string _fileNameFormat;
         private bool _shrinkOnly;

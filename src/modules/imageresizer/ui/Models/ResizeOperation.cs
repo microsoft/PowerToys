@@ -17,7 +17,6 @@ using Windows.Storage.Streams;
 using ImageResizer.Helpers;
 using ImageResizer.Properties;
 using ImageResizer.Services;
-using ImageResizer.Utilities;
 using Microsoft.VisualBasic.FileIO;
 using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
@@ -355,7 +354,7 @@ namespace ImageResizer.Models
         }
 
         private float GetJpegQualityFraction()
-            => (float)MathHelpers.Clamp(_settings.JpegQualityLevel, 1, 100) / 100f;
+            => (float)Math.Clamp(_settings.JpegQualityLevel, 1, 100) / 100f;
 
         private async Task ConfigureEncoderPropertiesAsync(BitmapEncoder encoder, Guid encoderGuid)
         {

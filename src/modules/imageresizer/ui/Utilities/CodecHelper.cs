@@ -39,12 +39,12 @@ namespace ImageResizer.Utilities
         // Encoder ID -> supported file extensions
         private static readonly Dictionary<Guid, string[]> EncoderExtensions = new()
         {
-            [BitmapEncoder.JpegEncoderId] = new[] { ".jpg", ".jpeg", ".jpe", ".jfif" },
-            [BitmapEncoder.PngEncoderId] = new[] { ".png" },
-            [BitmapEncoder.BmpEncoderId] = new[] { ".bmp", ".dib", ".rle" },
-            [BitmapEncoder.TiffEncoderId] = new[] { ".tiff", ".tif" },
-            [BitmapEncoder.GifEncoderId] = new[] { ".gif" },
-            [BitmapEncoder.JpegXREncoderId] = new[] { ".jxr", ".wdp" },
+            [BitmapEncoder.JpegEncoderId] = [".jpg", ".jpeg", ".jpe", ".jfif"],
+            [BitmapEncoder.PngEncoderId] = [".png"],
+            [BitmapEncoder.BmpEncoderId] = [".bmp", ".dib", ".rle"],
+            [BitmapEncoder.TiffEncoderId] = [".tiff", ".tif"],
+            [BitmapEncoder.GifEncoderId] = [".gif"],
+            [BitmapEncoder.JpegXREncoderId] = [".jxr", ".wdp"],
         };
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace ImageResizer.Utilities
         public static string[] GetSupportedExtensions(Guid encoderId)
             => EncoderExtensions.TryGetValue(encoderId, out var extensions)
                 ? extensions
-                : Array.Empty<string>();
+                : [];
 
         /// <summary>
         /// Returns the default (first) file extension for the given encoder ID.
