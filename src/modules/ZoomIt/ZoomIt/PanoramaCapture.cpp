@@ -443,7 +443,10 @@ static void StitchLog( const wchar_t* format, ... )
         return;
     }
     va_list args;
+#pragma warning(push)
+#pragma warning(disable: 26492) // Don't use const_cast - unavoidable in va_start macro
     va_start( args, format );
+#pragma warning(pop)
     wchar_t buffer[1024]{};
     _vsnwprintf_s( buffer, _TRUNCATE, format, args );
     va_end( args );
