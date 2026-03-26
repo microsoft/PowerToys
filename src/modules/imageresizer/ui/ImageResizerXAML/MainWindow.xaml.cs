@@ -13,6 +13,7 @@ using ImageResizer.Views;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
 using Windows.Storage.Pickers;
 using WinUIEx;
@@ -22,6 +23,7 @@ namespace ImageResizer
     public sealed partial class MainWindow : WindowEx, IMainView
     {
         private const int MinWindowWidth = 400;
+        private const int InitialWindowHeight = 1;
 
         private bool _isFirstShow = true;
 
@@ -42,9 +44,10 @@ namespace ImageResizer
 
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 
-            // Use a tall initial height so content is not clipped during first layout.
-            // SizeToContent will shrink to the actual needed height after Loaded.
-            this.SetWindowSize(MinWindowWidth, 800);
+            // Keep the window hidden until content is loaded and measured.
+            // A tiny provisional height avoids stretching the page during the first layout pass.
+            this.SetWindowSize(MinWindowWidth, InitialWindowHeight);
+            AppWindow.Hide();
 
             // Listen to ViewModel property changes
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
@@ -153,7 +156,16 @@ namespace ImageResizer
             {
                 _isFirstShow = false;
                 this.CenterOnScreen();
+                this.Show();
                 Activate();
+
+                // Compact the visible window after the first shown layout pass.
+                // This trims any slack that remains after hidden-state sizing.
+                DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+                {
+                    CompactWindowToRenderedContent();
+                    this.CenterOnScreen();
+                });
             }
         }
 
@@ -168,6 +180,8 @@ namespace ImageResizer
             {
                 element.LayoutUpdated -= OnLayoutUpdated;
                 SizeToContent();
+
+                DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, CompactWindowToRenderedContent);
             }
 
             element.LayoutUpdated += OnLayoutUpdated;
@@ -175,13 +189,16 @@ namespace ImageResizer
 
         /// <summary>
         /// WinUI3 has no built-in SizeToContent (unlike WPF).
-        /// Measure the root content at the current client width with unconstrained height,
-        /// then resize the client area to match.
+        /// Measure the title bar and current page content at the current client width with
+        /// unconstrained height, then resize the client area to match.
+        ///
+        /// Measuring the Page itself can over-report height because the Page may already be
+        /// stretched to the window's provisional size from the first layout pass.
         /// </summary>
         private void SizeToContent()
         {
-            var rootContent = this.Content as FrameworkElement;
-            if (rootContent == null)
+            var pageContentRoot = GetCurrentPageContentRoot();
+            if (pageContentRoot == null)
             {
                 return;
             }
@@ -190,17 +207,64 @@ namespace ImageResizer
             var clientWidth = AppWindow.ClientSize.Width;
             var availableWidth = clientWidth / scale;
 
-            rootContent.Measure(new Windows.Foundation.Size(availableWidth, double.PositiveInfinity));
-            var desiredHeight = rootContent.DesiredSize.Height;
+            titleBar.Measure(new Windows.Foundation.Size(availableWidth, double.PositiveInfinity));
+            pageContentRoot.Measure(new Windows.Foundation.Size(availableWidth, double.PositiveInfinity));
+
+            var desiredHeight = titleBar.DesiredSize.Height + pageContentRoot.DesiredSize.Height;
 
             if (desiredHeight <= 0)
             {
                 return;
             }
 
-            var clientHeight = (int)Math.Ceiling(desiredHeight * scale);
+            ApplyWindowSizeForClientContent(desiredHeight);
+        }
 
-            AppWindow.ResizeClient(new SizeInt32(clientWidth, clientHeight));
+        private FrameworkElement GetCurrentPageContentRoot()
+        {
+            if (contentPresenter.Content is Page page)
+            {
+                return page.Content as FrameworkElement ?? page;
+            }
+
+            return contentPresenter.Content as FrameworkElement;
+        }
+
+        private void CompactWindowToRenderedContent()
+        {
+            var pageContentRoot = GetCurrentPageContentRoot();
+            var windowContentRoot = this.Content as FrameworkElement;
+            if (pageContentRoot == null || windowContentRoot == null)
+            {
+                return;
+            }
+
+            var totalRenderedHeight = windowContentRoot.ActualHeight;
+            var occupiedHeight = titleBar.ActualHeight + pageContentRoot.ActualHeight;
+            var slackHeight = totalRenderedHeight - occupiedHeight;
+
+            if (slackHeight <= 1)
+            {
+                return;
+            }
+
+            var reducedHeight = totalRenderedHeight - slackHeight;
+
+            if (reducedHeight <= 0 || reducedHeight >= totalRenderedHeight)
+            {
+                return;
+            }
+
+            ApplyWindowSizeForClientContent(reducedHeight);
+        }
+
+        private void ApplyWindowSizeForClientContent(double desiredClientHeight)
+        {
+            var scale = this.GetDpiForWindow() / 96.0;
+            var frameHeight = Math.Max(0, AppWindow.Size.Height - AppWindow.ClientSize.Height) / scale;
+            var outerHeight = desiredClientHeight + frameHeight;
+
+            this.SetWindowSize(MinWindowWidth, outerHeight);
         }
 
         public async Task<IEnumerable<string>> OpenPictureFilesAsync()

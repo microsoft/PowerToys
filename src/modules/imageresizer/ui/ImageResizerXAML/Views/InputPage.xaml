@@ -8,6 +8,8 @@
     xmlns:local="using:ImageResizer.Views"
     xmlns:m="using:ImageResizer.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Top"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -63,7 +65,7 @@
             ResizeSizeTemplate="{StaticResource ResizeSizeTemplate}" />
     </Page.Resources>
 
-    <Grid>
+    <Grid VerticalAlignment="Top">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -97,7 +99,10 @@
                 BorderThickness="0,1,0,0" />
 
             <!--  AI Configuration Panel  -->
-            <Grid Grid.Row="0" Margin="16">
+            <Grid
+                Grid.Row="0"
+                Margin="16,16,16,8"
+                Visibility="{x:Bind ViewModel.ShowAiConfigurationSection, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                 <!--  AI Model Download Prompt  -->
                 <StackPanel Visibility="{x:Bind ViewModel.ShowModelDownloadPrompt, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <InfoBar
@@ -158,7 +163,7 @@
             <!--  Custom input matrix  -->
             <Grid
                 Grid.Row="0"
-                Margin="16"
+                Margin="16,16,16,8"
                 RowSpacing="8"
                 Visibility="{x:Bind ViewModel.IsCustomSizeSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
@@ -261,7 +266,7 @@
             <!--  CheckBoxes  -->
             <StackPanel
                 Grid.Row="1"
-                Margin="16"
+                Margin="16,8,16,16"
                 Orientation="Vertical">
                 <CheckBox IsChecked="{x:Bind ViewModel.Settings.ShrinkOnly, Mode=TwoWay}">
                     <TextBlock x:Uid="Input_ShrinkOnly" TextWrapping="Wrap" />
@@ -287,13 +292,14 @@
             Grid.Row="2"
             Margin="16,8,16,0"
             IsClosable="False"
-            IsOpen="{x:Bind ViewModel.TryingToResizeGifFiles, Mode=OneWay}"
+            IsOpen="True"
+            Visibility="{x:Bind ViewModel.TryingToResizeGifFiles, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
             Severity="Warning">
             <TextBlock x:Uid="Input_GifWarning" />
         </InfoBar>
 
         <!--  Buttons (outside gray area)  -->
-        <Grid Grid.Row="3" Margin="10,8,16,8">
+        <Grid Grid.Row="3" Margin="10,16,16,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />

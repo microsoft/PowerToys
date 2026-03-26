@@ -122,6 +122,8 @@ namespace ImageResizer.ViewModels
             Settings?.SelectedSize is AiSize &&
             App.AiAvailabilityState == AiAvailabilityState.Ready;
 
+        public bool ShowAiConfigurationSection => ShowModelDownloadPrompt || ShowAiControls;
+
         public bool CanResize
         {
             get
@@ -338,6 +340,7 @@ namespace ImageResizer.ViewModels
             OnPropertyChanged(nameof(IsDownloadingModel));
             OnPropertyChanged(nameof(ShowModelDownloadPrompt));
             OnPropertyChanged(nameof(ShowAiControls));
+            OnPropertyChanged(nameof(ShowAiConfigurationSection));
             OnPropertyChanged(nameof(ShowAiSizeDescriptions));
             OnPropertyChanged(nameof(CanResize));
         }
