@@ -181,32 +181,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                [ModuleName] = [ToggleShortcut, EditorShortcut],
+                [ModuleName] = [EditorShortcut],
             };
 
             return hotkeysDict;
-        }
-
-        public HotkeySettings ToggleShortcut
-        {
-            get => Settings.Properties.ToggleShortcut;
-            set
-            {
-                if (value != Settings.Properties.ToggleShortcut)
-                {
-                    Settings.Properties.ToggleShortcut = value == null ? Settings.Properties.DefaultToggleShortcut : value;
-
-                    OnPropertyChanged(nameof(ToggleShortcut));
-                    NotifySettingsChanged();
-
-                    SendConfigMSG(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                            KeyboardManagerSettings.ModuleName,
-                            JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.KeyboardManagerSettings)));
-                }
-            }
         }
 
         public bool UseNewEditor
