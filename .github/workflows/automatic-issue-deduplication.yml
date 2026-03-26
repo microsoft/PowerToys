@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Deduplicate Action
-        uses: pelikhan/action-genai-issue-dedup@v0
+        uses: pelikhan/action-genai-issue-dedup@bdb3b5d9451c1090ffcdf123d7447a5e7c7a2528 # v0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           label_as_duplicate: true
