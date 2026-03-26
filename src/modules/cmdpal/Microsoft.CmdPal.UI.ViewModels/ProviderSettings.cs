@@ -12,6 +12,7 @@ public class ProviderSettings
     private readonly string[] _excludedBuiltInFallbacks = [
         "com.microsoft.cmdpal.builtin.indexer.fallback",
         "com.microsoft.cmdpal.builtin.calculator.fallback",
+        "com.microsoft.cmdpal.builtin.remotedesktop.fallback",
         ];
 
     public bool IsEnabled { get; set; } = true;
