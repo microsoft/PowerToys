@@ -1,30 +1,29 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-// Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 
+// Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using ImageResizer.Utilities;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using Windows.Storage.Pickers;
-using WinRT.Interop;
+using WinUIEx;
 
 namespace ImageResizer
 {
-    public sealed partial class MainWindow : Window, IMainView
+    public sealed partial class MainWindow : WindowEx, IMainView
     {
-        private const int InitialWidth = 400;
-        private const int InitialHeight = 506;
+        private const int MinWindowWidth = 400;
+
+        private bool _isFirstShow = true;
 
         public MainViewModel ViewModel { get; }
 
@@ -39,23 +38,13 @@ namespace ImageResizer
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
-            AppWindow.SetIcon("Assets/ImageResizer/ImageResizer.ico");
+            this.SetIcon("Assets/ImageResizer/ImageResizer.ico");
 
-            // Configure window to be non-resizable with no minimize/maximize buttons
-            if (AppWindow.Presenter is OverlappedPresenter presenter)
-            {
-                presenter.IsMaximizable = false;
-                presenter.IsMinimizable = false;
-                presenter.IsResizable = false;
-            }
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 
-            var hwnd = WindowNative.GetWindowHandle(this);
-            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(hwnd);
-
-            // Set initial size and center on screen
-            var scale = NativeMethods.GetDpiForWindow(hwnd) / 96.0;
-            AppWindow.Resize(new SizeInt32((int)(InitialWidth * scale), (int)(InitialHeight * scale)));
-            CenterOnScreen();
+            // Use a tall initial height so content is not clipped during first layout.
+            // SizeToContent will shrink to the actual needed height after Loaded.
+            this.SetWindowSize(MinWindowWidth, 800);
 
             // Listen to ViewModel property changes
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
@@ -88,39 +77,40 @@ namespace ImageResizer
                 var inputPage = new InputPage { ViewModel = inputVM };
                 contentPresenter.Content = inputPage;
 
-                AdjustWindowHeightForInputPage(inputVM, inputPage);
+                AdjustWindowForInputPage(inputVM, inputPage);
             }
             else if (page is ProgressViewModel progressVM)
             {
                 var progressPage = new ProgressPage { ViewModel = progressVM };
                 contentPresenter.Content = progressPage;
 
-                SizeToContentOnLoaded(progressPage);
+                SizeAndShowOnLoaded(progressPage);
             }
             else if (page is ResultsViewModel resultsVM)
             {
                 var resultsPage = new ResultsPage { ViewModel = resultsVM };
                 contentPresenter.Content = resultsPage;
 
-                SizeToContentOnLoaded(resultsPage);
+                SizeAndShowOnLoaded(resultsPage);
             }
         }
 
         /// <summary>
-        /// Sizes the window to fit content once the element has completed layout.
+        /// After the element completes layout, size the window to fit and show it.
         /// </summary>
-        private void SizeToContentOnLoaded(FrameworkElement element)
+        private void SizeAndShowOnLoaded(FrameworkElement element)
         {
             void OnLoaded(object sender, RoutedEventArgs e)
             {
                 element.Loaded -= OnLoaded;
                 SizeToContent();
+                ShowWindow();
             }
 
             element.Loaded += OnLoaded;
         }
 
-        private void AdjustWindowHeightForInputPage(InputViewModel inputVM, InputPage inputPage)
+        private void AdjustWindowForInputPage(InputViewModel inputVM, InputPage inputPage)
         {
             // Unsubscribe previous handler to prevent memory leak
             if (_selectedSizeChangedHandler != null && _currentInputViewModel?.Settings != null)
@@ -133,9 +123,9 @@ namespace ImageResizer
             // Create and store handler reference for future cleanup
             _selectedSizeChangedHandler = (s, e) =>
             {
-                if (e.PropertyName == nameof(inputVM.Settings.SelectedSize))
+                if (e.PropertyName == nameof(inputVM.Settings.SelectedSizeIndex))
                 {
-                    // Content visibility changes after SelectedSize changes;
+                    // Content visibility changes after the selected size option changes;
                     // listen for the next LayoutUpdated to re-measure once layout settles.
                     SizeToContentAfterLayout(inputPage);
                 }
@@ -148,10 +138,23 @@ namespace ImageResizer
             {
                 inputPage.Loaded -= OnLoaded;
                 SizeToContent();
-                CenterOnScreen();
+                ShowWindow();
             }
 
             inputPage.Loaded += OnLoaded;
+        }
+
+        /// <summary>
+        /// Activate and center the window on first show; subsequent calls are no-ops.
+        /// </summary>
+        private void ShowWindow()
+        {
+            if (_isFirstShow)
+            {
+                _isFirstShow = false;
+                this.CenterOnScreen();
+                Activate();
+            }
         }
 
         /// <summary>
@@ -172,7 +175,8 @@ namespace ImageResizer
 
         /// <summary>
         /// WinUI3 has no built-in SizeToContent (unlike WPF).
-        /// Measure the root content (including TitleBar), then use ResizeClient to set the client area directly.
+        /// Measure the root content at the current client width with unconstrained height,
+        /// then resize the client area to match.
         /// </summary>
         private void SizeToContent()
         {
@@ -182,7 +186,7 @@ namespace ImageResizer
                 return;
             }
 
-            var scale = NativeMethods.GetDpiForWindow(WindowNative.GetWindowHandle(this)) / 96.0;
+            var scale = this.GetDpiForWindow() / 96.0;
             var clientWidth = AppWindow.ClientSize.Width;
             var availableWidth = clientWidth / scale;
 
@@ -199,32 +203,9 @@ namespace ImageResizer
             AppWindow.ResizeClient(new SizeInt32(clientWidth, clientHeight));
         }
 
-        /// <summary>
-        /// Centers the window on the nearest display area.
-        /// </summary>
-        private void CenterOnScreen()
-        {
-            var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
-            if (displayArea != null)
-            {
-                var windowSize = AppWindow.Size;
-                var centeredPosition = new PointInt32
-                {
-                    X = (displayArea.WorkArea.Width - windowSize.Width) / 2,
-                    Y = (displayArea.WorkArea.Height - windowSize.Height) / 2,
-                };
-                AppWindow.Move(centeredPosition);
-            }
-        }
-
         public async Task<IEnumerable<string>> OpenPictureFilesAsync()
         {
-            var picker = new FileOpenPicker();
-
-            // Initialize the picker with the window handle
-            var hwnd = WindowNative.GetWindowHandle(this);
-            InitializeWithWindow.Initialize(picker, hwnd);
-
+            var picker = this.CreateOpenFilePicker();
             picker.ViewMode = PickerViewMode.Thumbnail;
             picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
             picker.FileTypeFilter.Add(".bmp");

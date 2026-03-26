@@ -123,9 +123,9 @@ namespace ImageResizer
                     }
                 }
 
-                // Load ViewModel (sets page content) then activate so the window appears with content ready
+                // Load ViewModel (sets page content).
+                // MainWindow will Activate itself after layout is settled to avoid flash.
                 await mainWindow.LoadViewModelAsync();
-                mainWindow.Activate();
             });
         }
 

@@ -293,7 +293,7 @@
         </InfoBar>
 
         <!--  Buttons (outside gray area)  -->
-        <Grid Grid.Row="3" Margin="10,8,16,16">
+        <Grid Grid.Row="3" Margin="10,8,16,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
