@@ -15,7 +15,8 @@
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    
+    <!-- Suppress auto-generated VERSIONINFO to avoid duplicate with AdvancedPaste.base.rc -->
+    <GenerateVersionInfoResource>false</GenerateVersionInfoResource>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
