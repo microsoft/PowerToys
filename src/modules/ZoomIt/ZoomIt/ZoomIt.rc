@@ -113,26 +113,26 @@ END
 // Dialog
 //
 
-OPTIONS DIALOGEX 0, 0, 299, 325
+OPTIONS DIALOGEX 0, 0, 299, 331
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CLIPSIBLINGS | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "ZoomIt - Sysinternals: www.sysinternals.com"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,186,306,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,243,306,50,14
+    DEFPUSHBUTTON   "OK",IDOK,184,308,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,241,308,50,14
     LTEXT           "ZoomIt v10.1",IDC_VERSION,42,7,73,10
     LTEXT           "Copyright \251 2006-2026 Mark Russinovich",IDC_COPYRIGHT,42,17,251,8
     CONTROL         "<a HREF=""https://www.sysinternals.com"">Sysinternals - www.sysinternals.com</a>",IDC_LINK,
                     "SysLink",WS_TABSTOP,42,26,150,9
     ICON            "APPICON",IDC_STATIC,12,9,20,20
-    CONTROL         "Show tray icon",IDC_SHOW_TRAY_ICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,295,105,10
-    CONTROL         "",IDC_TAB,"SysTabControl32",TCS_MULTILINE | WS_TABSTOP,8,46,285,247
-    CONTROL         "Run ZoomIt when Windows starts",IDC_AUTOSTART,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,309,122,10
+    CONTROL         "Show tray icon",IDC_SHOW_TRAY_ICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,302,105,10
+    CONTROL         "",IDC_TAB,"SysTabControl32",TCS_MULTILINE | WS_TABSTOP,8,45,285,255
+    CONTROL         "Run ZoomIt when Windows starts",IDC_AUTOSTART,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,316,122,10
 END
 
-ADVANCED_BREAK DIALOGEX 0, 0, 209, 225
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+ADVANCED_BREAK DIALOGEX 0, 0, 209, 223
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Advanced Break Options"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -158,8 +158,8 @@ BEGIN
     EDITTEXT        IDC_BACKGROUND_FILE,62,164,125,12,ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "&...",IDC_BACKGROUND_BROWSE,188,164,13,11
     CONTROL         "Scale to screen:",IDC_CHECK_BACKGROUND_STRETCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,58,180,67,10,WS_EX_RIGHT
-    DEFPUSHBUTTON   "OK",IDOK,97,199,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,150,199,50,14
+    DEFPUSHBUTTON   "OK",IDOK,97,202,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,150,202,50,14
     LTEXT           "Alarm Sound File:",IDC_STATIC_SOUND_FILE,61,26,56,8
     LTEXT           "Timer Opacity:",IDC_STATIC,8,59,48,8
     LTEXT           "Timer Position:",IDC_STATIC,8,77,48,8
@@ -215,21 +215,23 @@ BEGIN
     GROUPBOX        "Sample",IDC_TEXT_FONT,8,61,99,28
 END
 
-BREAK DIALOGEX 0, 0, 260, 123
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_SYSMENU
+BREAK DIALOGEX 0, 0, 260, 159
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_BREAK_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,52,67,80,12
-    EDITTEXT        IDC_TIMER,52,86,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_SPIN_TIMER,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,66,86,11,12
-    LTEXT           "minutes",IDC_STATIC,88,88,25,8
-    PUSHBUTTON      "&Advanced",IDC_ADVANCED_BREAK,192,102,41,14
-    LTEXT           "Enter timer mode by using the ZoomIt tray icon's Break menu item. Increase and decrease time with the arrow keys. If you Alt-Tab away from the timer window, reactivate it by left-clicking on the ZoomIt tray icon. Exit timer mode with Escape. ",IDC_STATIC,7,7,230,33
-    LTEXT           "Start Timer:",IDC_STATIC,7,70,39,8
-    LTEXT           "Timer:",IDC_STATIC,7,88,20,8
-    LTEXT           "Change the break timer color using the same keys that the drawing color. The break timer font is the same as text font.",IDC_STATIC,7,45,230,20
+    CONTROL         "",IDC_BREAK_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,52,74,80,12
+    EDITTEXT        IDC_TIMER,52,93,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_TIMER,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,66,93,11,12
+    LTEXT           "minutes",IDC_STATIC,88,95,25,8
+    PUSHBUTTON      "&Advanced",IDC_ADVANCED_BREAK,213,140,41,14
+    LTEXT           "Enter timer mode by using the ZoomIt tray icon's Break menu item. Increase and decrease time with the arrow keys. If you Alt-Tab away from the timer window, reactivate it by left-clicking on the ZoomIt tray icon. Exit timer mode with Escape. ",IDC_STATIC,7,7,242,33
+    LTEXT           "Start Timer:",IDC_STATIC,7,77,39,8
+    LTEXT           "Timer:",IDC_STATIC,7,95,20,8
+    LTEXT           "Change the break timer color using the same keys that the drawing color, including background color. The break timer font is the same as text font.",IDC_STATIC,7,45,241,26
     CONTROL         "Show Time Elapsed After Expiration:",IDC_CHECK_SHOW_EXPIRED,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,8,104,132,10
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,111,130,10
+    CONTROL         "Lock Workstation During Break:",IDC_CHECK_LOCK_WORKSTATION,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,126,113,10
 END
 
 1543 DIALOGEX 100, 50, 216, 131
@@ -249,19 +251,19 @@ BEGIN
     CTEXT           "AaBbYyZz",1092,16,88,127,31,SS_NOPREFIX | NOT WS_VISIBLE
 END
 
-LIVEZOOM DIALOGEX 0, 0, 260, 134
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_SYSMENU
+LIVEZOOM DIALOGEX 0, 0, 317, 136
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_LIVE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,69,108,80,12
-    LTEXT           "LiveZoom mode is supported on Windows 7 and higher where window updates show while zoomed. ",IDC_STATIC,7,7,230,18
+    LTEXT           "LiveZoom mode is supported on Windows 7 and higher where window updates show while zoomed. ",IDC_STATIC,7,7,255,18
     LTEXT           "LiveZoom Toggle:",IDC_STATIC,7,110,62,8
     LTEXT           "To enter and exit LiveZoom, enter the hotkey specified below.",IDC_STATIC,7,94,230,13
-    LTEXT           "Note that in LiveZoom you must use Ctrl+Up and Ctrl+Down to control the zoom level. To enter drawing mode, use the standard zoom-without-draw hotkey and then escape to go back to LiveZoom.",IDC_STATIC,7,30,230,27
-    LTEXT           "Use LiveDraw to draw and annotate the live desktop. To activate LiveDraw, enter the hotkey with the Shift key in the opposite mode. You can remove LiveDraw annotations by activating LiveDraw and enter the escape key",IDC_STATIC,7,62,230,32
+    LTEXT           "Use LiveDraw to draw and annotate the live desktop. To activate LiveDraw, enter the hotkey with the Shift key in the opposite mode. You can remove LiveDraw annotations by activating LiveDraw and enter the escape key",IDC_STATIC,7,62,249,32
+    LTEXT           "Note that in LiveZoom you must use Ctrl+Up and Ctrl+Down to control the zoom level. To enter drawing mode, use the standard zoom-without-draw hotkey and then escape to go back to LiveZoom.",IDC_STATIC,7,30,255,27
 END
 
-RECORD DIALOGEX 0, 0, 260, 181
+RECORD DIALOGEX 0, 0, 263, 224
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -282,19 +284,33 @@ BEGIN
     CONTROL         "Mono",IDC_MIC_MONO_MIX,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,98,161,30,10
     COMBOBOX        IDC_MICROPHONE,81,176,152,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Microphone:",IDC_MICROPHONE_LABEL,32,178,47,8
+    PUSHBUTTON      "&Trim",IDC_TRIM_FILE,207,209,53,14
 END
 
-SNIP DIALOGEX 0, 0, 260, 68
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
+SNIP DIALOGEX 0, 0, 260, 80
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_SNIP_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,55,32,80,12
+    LTEXT           "Copy a region of the screen to the clipboard or enter the hotkey with the Shift key in the opposite mode to save it to a file.",IDC_STATIC,7,7,230,19
     LTEXT           "Snip Toggle:",IDC_STATIC,7,33,45,8
-    LTEXT           "Copy a region of the screen to the clipboard or enter the hotkey with the Shift key in the opposite mode to save it to a file. ",IDC_STATIC,7,7,230,19
+    CONTROL         "",IDC_SNIP_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,67,32,80,12
+    LTEXT           "Copy text from the selected region to the clipboard:",IDC_STATIC,7,50,230,10
+    LTEXT           "Text Toggle:",IDC_STATIC,7,65,55,8
+    CONTROL         "",IDC_SNIP_OCR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,67,63,80,12
+END
+
+PANORAMA DIALOGEX 0, 0, 260, 105
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Capture a scrolling panorama of a selected screen region. Select the area, then scroll the content. Move slowly and consistently, and do not rewind to previously covered areas. Press the hotkey again or with Shift to save to a file.",IDC_STATIC,7,7,245,33
+    LTEXT           "Panorama Toggle:",IDC_STATIC,7,74,63,8
+    CONTROL         "",IDC_SNIP_PANORAMA_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,73,72,80,12
+    LTEXT           "For the best results, scroll slowly and at a constant rate, do not include stationary content (like scrollbars) in the capture area, and avoid content that is changing (e.g., animations or videos). ",IDC_STATIC,7,41,245,30
 END
 
 DEMOTYPE DIALOGEX 0, 0, 260, 249
-STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_DEMOTYPE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,74,154,80,12
@@ -308,11 +324,11 @@ BEGIN
     LTEXT           "Fast",IDC_DEMOTYPE_STATIC2,186,213,17,8
     EDITTEXT        IDC_DEMOTYPE_FILE,44,137,167,12,ES_AUTOHSCROLL | ES_READONLY
     LTEXT           "Input file:",IDC_STATIC,7,139,32,8
-    LTEXT           "When you reach the end of the file, ZoomIt will reload the file and start at the beginning. Enter the hotkey with the Shift key in the opposite mode to step back to the last [end].",IDC_STATIC,7,108,230,24
-    LTEXT           "DemoType has ZoomIt type text specified in the input file when you enter the DemoType toggle. Simply separate snippets with the [end] keyword, or you can insert text from the clipboard if it is prefixed with the [start].",IDC_STATIC,7,7,230,24
+    LTEXT           "When you reach the end of the file, ZoomIt will reload the file and start at the beginning. Enter the hotkey with the Shift key in the opposite mode to step back to the last [end].",IDC_STATIC,7,108,249,24
+    LTEXT           "DemoType has ZoomIt type text specified in the input file when you enter the DemoType toggle. Simply separate snippets with the [end] keyword, or you can insert text from the clipboard if it is prefixed with the [start].",IDC_STATIC,7,7,247,24
     LTEXT           "  - Insert pauses with the [pause:n] keyword where 'n' is seconds. ",IDC_STATIC,19,34,218,11
-    LTEXT           "You can have ZoomIt send text automatically, or select the option to drive input with typing. ZoomIt will block keyboard input while sending output.",IDC_STATIC,7,68,230,16
-    LTEXT           "When driving input, hit the space bar to unblock keyboard input at the end of a snippet. In auto mode, control will be returned upon completion.",IDC_STATIC,7,88,230,16
+    LTEXT           "You can have ZoomIt send text automatically, or select the option to drive input with typing. ZoomIt will block keyboard input while sending output.",IDC_STATIC,7,68,245,16
+    LTEXT           "When driving input, hit the space bar to unblock keyboard input at the end of a snippet. In auto mode, control will be returned upon completion.",IDC_STATIC,7,88,243,16
     LTEXT           "- Send text via the clipboard with [paste] and [/paste]. ",IDC_STATIC,23,45,210,8
     LTEXT           "- Send keystrokes with [enter], [up], [down], [left], and [right].",IDC_STATIC,23,56,210,8
 END
@@ -349,13 +365,13 @@ BEGIN
     "OPTIONS", DIALOG
     BEGIN
         RIGHTMARGIN, 293
-        BOTTOMMARGIN, 320
+        BOTTOMMARGIN, 326
     END
 
     "ADVANCED_BREAK", DIALOG
     BEGIN
         RIGHTMARGIN, 207
-        BOTTOMMARGIN, 215
+        BOTTOMMARGIN, 214
     END
 
     "ZOOM", DIALOG
@@ -383,7 +399,7 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         TOPMARGIN, 7
-        BOTTOMMARGIN, 116
+        BOTTOMMARGIN, 154
     END
 
     1543, DIALOG
@@ -395,22 +411,27 @@ BEGIN
     "LIVEZOOM", DIALOG
     BEGIN
         LEFTMARGIN, 7
+        RIGHTMARGIN, 181
         TOPMARGIN, 7
-        BOTTOMMARGIN, 127
+        BOTTOMMARGIN, 89
     END
 
     "RECORD", DIALOG
     BEGIN
         LEFTMARGIN, 7
+        RIGHTMARGIN, 260
         TOPMARGIN, 7
-        BOTTOMMARGIN, 164
+        BOTTOMMARGIN, 223
     END
 
     "SNIP", DIALOG
     BEGIN
         LEFTMARGIN, 7
         TOPMARGIN, 7
-        BOTTOMMARGIN, 61
+    END
+
+    "PANORAMA", DIALOG
+    BEGIN
     END
 
     "DEMOTYPE", DIALOG
@@ -492,6 +513,16 @@ BEGIN
 END
 
 IDD_VIDEO_TRIM AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+ADVANCED_BREAK AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+PANORAMA AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
