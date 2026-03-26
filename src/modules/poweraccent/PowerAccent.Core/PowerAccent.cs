@@ -5,7 +5,6 @@
 using System.Globalization;
 using System.Text;
 using System.Unicode;
-using System.Windows;
 
 using ManagedCommon;
 using PowerAccent.Core.Services;
@@ -240,21 +239,25 @@ public partial class PowerAccent : IDisposable
 
     private void ProcessNextChar(TriggerKey triggerKey, bool shiftPressed)
     {
+        shiftPressed = shiftPressed || WindowsFunctions.IsShiftState();
+
         if (_visible && _selectedIndex == -1)
         {
-            if (triggerKey == TriggerKey.Left)
+            if (triggerKey == TriggerKey.Space)
+            {
+                _selectedIndex = shiftPressed ? (_characters.Length - 1) : 0;
+            }
+            else if (_settingService.StartSelectionFromTheLeft)
+            {
+                _selectedIndex = 0;
+            }
+            else if (triggerKey == TriggerKey.Left)
             {
                 _selectedIndex = (_characters.Length / 2) - 1;
             }
-
-            if (triggerKey == TriggerKey.Right)
+            else if (triggerKey == TriggerKey.Right)
             {
                 _selectedIndex = _characters.Length / 2;
-            }
-
-            if (triggerKey == TriggerKey.Space || _settingService.StartSelectionFromTheLeft)
-            {
-                _selectedIndex = 0;
             }
 
             if (_selectedIndex < 0)
@@ -321,22 +324,47 @@ public partial class PowerAccent : IDisposable
         OnSelectCharacter?.Invoke(_selectedIndex, _characters[_selectedIndex]);
     }
 
+    /// <summary>
+    /// Calculates the coordinates at which a window of the specified size should be
+    /// displayed, based on the current display settings and user preferences.
+    /// </summary>
+    /// <remarks>The calculated coordinates take into account the active display's
+    /// location, size, DPI, and the user's configured position preferences.</remarks>
+    /// <param name="window">The size of the window for which to calculate display
+    /// coordinates.</param>
+    /// <returns>A point representing the top-left coordinates where the window should be
+    /// positioned on the active display, in physical/raw coordinates suitable for Win32
+    /// APIs like SetWindowPos.</returns>
     public Point GetDisplayCoordinates(Size window)
     {
         (Point Location, Size Size, double Dpi) activeDisplay = WindowsFunctions.GetActiveDisplay();
         Rect screen = new(activeDisplay.Location, activeDisplay.Size);
         Position position = _settingService.Position;
 
-        /* Debug.WriteLine("Dpi: " + activeDisplay.Dpi); */
-
-        return Calculation.GetRawCoordinatesFromPosition(position, screen, window, activeDisplay.Dpi) / activeDisplay.Dpi;
+        return Calculation.GetRawCoordinatesFromPosition(position, screen, window, activeDisplay.Dpi);
     }
 
+    /// <summary>
+    /// Gets the maximum width for the toolbar display based on the active screen
+    /// dimensions.
+    /// </summary>
+    /// <returns>The maximum width in logical pixels, accounting for screen padding.
+    /// </returns>
     public double GetDisplayMaxWidth()
     {
-        return WindowsFunctions.GetActiveDisplay().Size.Width - ScreenMinPadding;
+        // Note: activeDisplay.Size.Width is in raw physical pixels.
+        // We divide by DPI to convert to WPF logical pixels (Device-Independent Pixels),
+        // because ScreenMinPadding is a logical pixel value and WPF MaxWidth expects
+        // logical pixels.
+        var activeDisplay = WindowsFunctions.GetActiveDisplay();
+        return (activeDisplay.Size.Width / activeDisplay.Dpi) - ScreenMinPadding;
     }
 
+    /// <summary>
+    /// Gets the user-configured position preference for the toolbar display. For example
+    /// <see cref="Position.TopLeft"/>.
+    /// </summary>
+    /// <returns>The preferred location for the toolbar.</returns>
     public Position GetToolbarPosition()
     {
         return _settingService.Position;
