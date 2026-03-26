@@ -53,17 +53,17 @@ Go to the <a href="https://aka.ms/installPowerToys">PowerToys GitHub releases</a
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.99%22
 [github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.98%22
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.0/PowerToysUserSetup-0.98.0-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.0/PowerToysUserSetup-0.98.0-arm64.exe 
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.0/PowerToysSetup-0.98.0-x64.exe 
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.0/PowerToysSetup-0.98.0-arm64.exe
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.1/PowerToysUserSetup-0.98.1-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.1/PowerToysUserSetup-0.98.1-arm64.exe 
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.1/PowerToysSetup-0.98.1-x64.exe 
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.1/PowerToysSetup-0.98.1-arm64.exe
  
 |  Description   | Filename |
 |----------------|----------|
-| Per user - x64       | [PowerToysUserSetup-0.98.0-x64.exe][ptUserX64] |
-| Per user - ARM64     | [PowerToysUserSetup-0.98.0-arm64.exe][ptUserArm64] |
-| Machine wide - x64   | [PowerToysSetup-0.98.0-x64.exe][ptMachineX64] |
-| Machine wide - ARM64 | [PowerToysSetup-0.98.0-arm64.exe][ptMachineArm64] |
+| Per user - x64       | [PowerToysUserSetup-0.98.1-x64.exe][ptUserX64] |
+| Per user - ARM64     | [PowerToysUserSetup-0.98.1-arm64.exe][ptUserArm64] |
+| Machine wide - x64   | [PowerToysSetup-0.98.1-x64.exe][ptMachineX64] |
+| Machine wide - ARM64 | [PowerToysSetup-0.98.1-arm64.exe][ptMachineArm64] |
 
 </details>
 
@@ -106,7 +106,7 @@ There are <a href="https://learn.microsoft.com/windows/powertoys/install#communi
 
 [![What's new image](doc/images/readme/Release-Banner.png)](https://github.com/microsoft/PowerToys/releases)
 
-To see what's new, check out the [release notes](https://github.com/microsoft/PowerToys/releases/tag/v0.98.0).
+To see what's new, check out the [release notes](https://github.com/microsoft/PowerToys/releases/tag/v0.98.1).
 
 ## 🛣️ Roadmap 
 We are planning some nice new features and improvements for the next releases – PowerDisplay, Command Palette improvements and a brand-new Shortcut Guide experience! Stay tuned for [v0.99][github-next-release-work]!
