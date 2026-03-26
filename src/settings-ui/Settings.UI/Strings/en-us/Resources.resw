@@ -1910,12 +1910,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Activation_Shortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to activate this module</value>
   </data>
-  <data name="KeyboardManager_Toggle_Shortcut.Header" xml:space="preserve">
-    <value>Shortcut</value>
-  </data>
-  <data name="KeyboardManager_Toggle_Shortcut.Description" xml:space="preserve">
-    <value>Enable or disable this module (Note: the Settings UI will not update)</value>
-  </data>
 	<data name="KeyboardManager_Editor_Shortcut.Header" xml:space="preserve">
     <value>Editor shortcut</value>
   </data>
