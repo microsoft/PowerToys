@@ -217,7 +217,7 @@ namespace ImageResizer.ViewModels
             switch (e.PropertyName)
             {
                 case nameof(Settings.SelectedSizeIndex):
-                case nameof(Settings.SelectedSize):
+                    OnPropertyChanged(nameof(IsCustomSizeSelected));
                     NotifyAiStateChanged();
                     UpdateAiDetails();
                     ResizeCommand.NotifyCanExecuteChanged();
@@ -335,7 +335,6 @@ namespace ImageResizer.ViewModels
 
         private void NotifyAiStateChanged()
         {
-            OnPropertyChanged(nameof(IsCustomSizeSelected));
             OnPropertyChanged(nameof(IsDownloadingModel));
             OnPropertyChanged(nameof(ShowModelDownloadPrompt));
             OnPropertyChanged(nameof(ShowAiControls));

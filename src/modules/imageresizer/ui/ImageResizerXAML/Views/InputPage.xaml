@@ -66,7 +66,9 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="16">
@@ -78,20 +80,18 @@
                 VerticalContentAlignment="Stretch"
                 ItemTemplateSelector="{StaticResource SizeTemplateSelector}"
                 ItemsSource="{x:Bind ViewModel.Settings.AllSizes, Mode=OneWay}"
-                SelectedItem="{x:Bind ViewModel.Settings.SelectedSize, Mode=TwoWay}" />
+                SelectedIndex="{x:Bind ViewModel.Settings.SelectedSizeIndex, Mode=TwoWay}" />
         </StackPanel>
 
+        <!--  Content area with gray background (AI/Custom panels + checkboxes)  -->
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <Border
-                Grid.RowSpan="5"
+                Grid.RowSpan="2"
                 Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0" />
@@ -188,7 +188,7 @@
                     KeyDown="NumberBox_KeyDown"
                     Minimum="0"
                     SpinButtonPlacementMode="Inline"
-                    Value="{x:Bind ViewModel.Settings.SelectedSize.Width, Mode=TwoWay}" />
+                    Value="{x:Bind ViewModel.Settings.CustomSize.Width, Mode=TwoWay}" />
 
                 <FontIcon
                     Grid.Column="3"
@@ -199,7 +199,7 @@
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE799;"
                     RenderTransformOrigin="0.5,0.5"
-                    Visibility="{x:Bind ViewModel.Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    Visibility="{x:Bind ViewModel.Settings.CustomSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <FontIcon.RenderTransform>
                         <RotateTransform Angle="90" />
                     </FontIcon.RenderTransform>
@@ -212,8 +212,8 @@
                     KeyDown="NumberBox_KeyDown"
                     Minimum="0"
                     SpinButtonPlacementMode="Inline"
-                    Visibility="{x:Bind ViewModel.Settings.SelectedSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                    Value="{x:Bind ViewModel.Settings.SelectedSize.Height, Mode=TwoWay}" />
+                    Visibility="{x:Bind ViewModel.Settings.CustomSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Value="{x:Bind ViewModel.Settings.CustomSize.Height, Mode=TwoWay}" />
                 <FontIcon
                     Grid.Row="1"
                     VerticalAlignment="Center"
@@ -227,7 +227,7 @@
                     Margin="8,0,0,0"
                     HorizontalAlignment="Stretch"
                     ItemsSource="{x:Bind ViewModel.ResizeFitValues, Mode=OneWay}"
-                    SelectedIndex="{x:Bind ViewModel.Settings.SelectedSize.Fit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
+                    SelectedIndex="{x:Bind ViewModel.Settings.CustomSize.Fit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="m:ResizeFit">
                             <TextBlock Padding="2,0" Text="{x:Bind Converter={StaticResource EnumValueConverter}}" />
@@ -249,7 +249,7 @@
                     Margin="8,0,0,0"
                     HorizontalAlignment="Stretch"
                     ItemsSource="{x:Bind ViewModel.ResizeUnitValues, Mode=OneWay}"
-                    SelectedIndex="{x:Bind ViewModel.Settings.SelectedSize.Unit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
+                    SelectedIndex="{x:Bind ViewModel.Settings.CustomSize.Unit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="m:ResizeUnit">
                             <TextBlock Padding="2,0" Text="{x:Bind Converter={StaticResource EnumValueConverter}}" />
@@ -280,62 +280,55 @@
                 </CheckBox>
             </StackPanel>
 
-            <!--  Separator line  -->
-            <Border
-                Grid.Row="2"
-                Height="1"
-                Margin="0,8"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Top"
-                Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+        </Grid>
 
-            <InfoBar
-                Grid.Row="3"
-                Margin="16,0"
-                IsClosable="False"
-                IsOpen="{x:Bind ViewModel.TryingToResizeGifFiles, Mode=OneWay}"
-                Severity="Warning">
-                <TextBlock x:Uid="Input_GifWarning" />
-            </InfoBar>
+        <!--  GIF warning (outside gray area)  -->
+        <InfoBar
+            Grid.Row="2"
+            Margin="16,8,16,0"
+            IsClosable="False"
+            IsOpen="{x:Bind ViewModel.TryingToResizeGifFiles, Mode=OneWay}"
+            Severity="Warning">
+            <TextBlock x:Uid="Input_GifWarning" />
+        </InfoBar>
 
-            <!--  Buttons  -->
-            <Grid Grid.Row="4" Margin="10,8,16,16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+        <!--  Buttons (outside gray area)  -->
+        <Grid Grid.Row="3" Margin="10,8,16,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-                <Button
-                    x:Uid="Open_settings_button"
-                    Padding="8"
-                    Command="{x:Bind ViewModel.OpenSettingsCommand}"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon FontSize="16" Glyph="&#xE713;" />
-                    <ToolTipService.ToolTip>
-                        <TextBlock x:Uid="Open_settings" />
-                    </ToolTipService.ToolTip>
-                </Button>
+            <Button
+                x:Uid="Open_settings_button"
+                Padding="8"
+                Command="{x:Bind ViewModel.OpenSettingsCommand}"
+                Style="{StaticResource SubtleButtonStyle}">
+                <FontIcon FontSize="16" Glyph="&#xE713;" />
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="Open_settings" />
+                </ToolTipService.ToolTip>
+            </Button>
 
-                <Button
-                    Grid.Column="1"
-                    MinWidth="76"
-                    Command="{x:Bind ViewModel.ResizeCommand}"
-                    Style="{StaticResource AccentButtonStyle}">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon FontSize="14" Glyph="&#xE740;" />
-                        <TextBlock x:Uid="Input_Resize" />
-                    </StackPanel>
-                </Button>
+            <Button
+                Grid.Column="1"
+                MinWidth="76"
+                Command="{x:Bind ViewModel.ResizeCommand}"
+                Style="{StaticResource AccentButtonStyle}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon FontSize="14" Glyph="&#xE740;" />
+                    <TextBlock x:Uid="Input_Resize" />
+                </StackPanel>
+            </Button>
 
-                <Button
-                    Grid.Column="2"
-                    MinWidth="76"
-                    Margin="8,0,0,0"
-                    Command="{x:Bind ViewModel.CancelCommand}">
-                    <TextBlock x:Uid="Cancel" />
-                </Button>
-            </Grid>
+            <Button
+                Grid.Column="2"
+                MinWidth="76"
+                Margin="8,0,0,0"
+                Command="{x:Bind ViewModel.CancelCommand}">
+                <TextBlock x:Uid="Cancel" />
+            </Button>
         </Grid>
     </Grid>
 </Page>

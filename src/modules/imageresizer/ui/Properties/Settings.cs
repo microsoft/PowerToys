@@ -39,6 +39,7 @@ namespace ImageResizer.Properties
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
         {
             NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            PropertyNameCaseInsensitive = true,
             WriteIndented = true,
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
@@ -314,9 +315,13 @@ namespace ImageResizer.Properties
             get => _selectedSizeIndex;
             set
             {
+                if (_selectedSizeIndex == value)
+                {
+                    return;
+                }
+
                 _selectedSizeIndex = value;
                 NotifyPropertyChanged();
-                NotifyPropertyChanged(nameof(SelectedSize));
             }
         }
 

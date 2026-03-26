@@ -88,28 +88,39 @@ namespace ImageResizer
                 var inputPage = new InputPage { ViewModel = inputVM };
                 contentPresenter.Content = inputPage;
 
-                // Adjust window height based on selected size type
-                AdjustWindowHeightForInputPage(inputVM);
+                AdjustWindowHeightForInputPage(inputVM, inputPage);
             }
             else if (page is ProgressViewModel progressVM)
             {
                 var progressPage = new ProgressPage { ViewModel = progressVM };
                 contentPresenter.Content = progressPage;
 
-                // Size to content after layout
-                DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => SizeToContent());
+                SizeToContentOnLoaded(progressPage);
             }
             else if (page is ResultsViewModel resultsVM)
             {
                 var resultsPage = new ResultsPage { ViewModel = resultsVM };
                 contentPresenter.Content = resultsPage;
 
-                // Size to content after layout
-                DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => SizeToContent());
+                SizeToContentOnLoaded(resultsPage);
             }
         }
 
-        private void AdjustWindowHeightForInputPage(InputViewModel inputVM)
+        /// <summary>
+        /// Sizes the window to fit content once the element has completed layout.
+        /// </summary>
+        private void SizeToContentOnLoaded(FrameworkElement element)
+        {
+            void OnLoaded(object sender, RoutedEventArgs e)
+            {
+                element.Loaded -= OnLoaded;
+                SizeToContent();
+            }
+
+            element.Loaded += OnLoaded;
+        }
+
+        private void AdjustWindowHeightForInputPage(InputViewModel inputVM, InputPage inputPage)
         {
             // Unsubscribe previous handler to prevent memory leak
             if (_selectedSizeChangedHandler != null && _currentInputViewModel?.Settings != null)
@@ -124,40 +135,65 @@ namespace ImageResizer
             {
                 if (e.PropertyName == nameof(inputVM.Settings.SelectedSize))
                 {
-                    // Delay to allow layout to update
-                    DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => SizeToContent());
+                    // Content visibility changes after SelectedSize changes;
+                    // listen for the next LayoutUpdated to re-measure once layout settles.
+                    SizeToContentAfterLayout(inputPage);
                 }
             };
 
             inputVM.Settings.PropertyChanged += _selectedSizeChangedHandler;
 
-            // Size immediately so the window is correct before Activate
-            SizeToContent();
-            CenterOnScreen();
+            // Size after initial layout completes (bindings resolved, content measured)
+            void OnLoaded(object sender, RoutedEventArgs e)
+            {
+                inputPage.Loaded -= OnLoaded;
+                SizeToContent();
+                CenterOnScreen();
+            }
+
+            inputPage.Loaded += OnLoaded;
+        }
+
+        /// <summary>
+        /// Sizes the window after the next layout pass completes.
+        /// Used when content changes on an already-loaded element (e.g., visibility toggles).
+        /// LayoutUpdated fires once per layout pass, so we unsubscribe immediately.
+        /// </summary>
+        private void SizeToContentAfterLayout(FrameworkElement element)
+        {
+            void OnLayoutUpdated(object sender, object e)
+            {
+                element.LayoutUpdated -= OnLayoutUpdated;
+                SizeToContent();
+            }
+
+            element.LayoutUpdated += OnLayoutUpdated;
         }
 
         /// <summary>
         /// WinUI3 has no built-in SizeToContent (unlike WPF).
-        /// Measure content, then use ResizeClient to set the client area directly.
+        /// Measure the root content (including TitleBar), then use ResizeClient to set the client area directly.
         /// </summary>
         private void SizeToContent()
         {
-            var content = contentPresenter.Content as FrameworkElement;
-            if (content == null)
-            {
-                return;
-            }
-
-            content.Measure(new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
-            var desiredHeight = content.DesiredSize.Height;
-
-            if (desiredHeight <= 0)
+            var rootContent = this.Content as FrameworkElement;
+            if (rootContent == null)
             {
                 return;
             }
 
             var scale = NativeMethods.GetDpiForWindow(WindowNative.GetWindowHandle(this)) / 96.0;
             var clientWidth = AppWindow.ClientSize.Width;
+            var availableWidth = clientWidth / scale;
+
+            rootContent.Measure(new Windows.Foundation.Size(availableWidth, double.PositiveInfinity));
+            var desiredHeight = rootContent.DesiredSize.Height;
+
+            if (desiredHeight <= 0)
+            {
+                return;
+            }
+
             var clientHeight = (int)Math.Ceiling(desiredHeight * scale);
 
             AppWindow.ResizeClient(new SizeInt32(clientWidth, clientHeight));
