@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Threading;
 using Microsoft.CmdPal.Common.Services;
 using Windows.Foundation;
 
@@ -49,8 +48,9 @@ public sealed class AppStateService : IAppStateService
         }
         while (Interlocked.CompareExchange(ref _state, updated, snapshot) != snapshot);
 
-        _persistence.Save(updated, _filePath, JsonSerializationContext.Default.AppStateModel);
-        StateChanged?.Invoke(this, updated);
+        var newState = Volatile.Read(ref _state);
+        _persistence.Save(newState, _filePath, JsonSerializationContext.Default.AppStateModel);
+        StateChanged?.Invoke(this, newState);
     }
 
     private string StateJsonPath()

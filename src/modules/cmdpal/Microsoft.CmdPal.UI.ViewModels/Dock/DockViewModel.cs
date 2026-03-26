@@ -340,7 +340,7 @@ public sealed partial class DockViewModel
         // Save without hotReload to avoid triggering SettingsChanged → SetupBands,
         // which could race with stale DockBands_CollectionChanged work items and
         // re-add bands that were just unpinned.
-        _settingsService.UpdateSettings(s => s with { DockSettings = _settings });
+        _settingsService.UpdateSettings(s => s with { DockSettings = _settings }, false);
         _isEditing = false;
         Logger.LogDebug("Saved band order to settings");
     }
@@ -385,12 +385,14 @@ public sealed partial class DockViewModel
         _isEditing = true;
 
         var dockSettings = _settingsService.Settings.DockSettings;
+
         var snapshotStartBandsCount = dockSettings.StartBands.Count;
         var snapshotCenterBandsCount = dockSettings.CenterBands.Count;
         var snapshotEndBandsCount = dockSettings.EndBands.Count;
 
         // Snapshot band ViewModels so we can restore unpinned bands
         // Use a dictionary but handle potential duplicates gracefully
+        _snapshotDockSettings = dockSettings;
         _snapshotBandViewModels = new Dictionary<string, DockBandViewModel>();
         foreach (var band in StartItems.Concat(CenterItems).Concat(EndItems))
         {

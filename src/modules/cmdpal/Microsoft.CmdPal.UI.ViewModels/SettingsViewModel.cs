@@ -225,7 +225,11 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public SettingsExtensionsViewModel Extensions { get; }
 
-    public SettingsViewModel(TopLevelCommandManager topLevelCommandManager, TaskScheduler scheduler, IThemeService themeService, ISettingsService settingsService)
+    public SettingsViewModel(
+        TopLevelCommandManager topLevelCommandManager,
+        TaskScheduler scheduler,
+        IThemeService themeService,
+        ISettingsService settingsService)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
@@ -239,23 +243,26 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         var fallbacks = new List<FallbackSettingsViewModel>();
         var currentRankings = _settingsService.Settings.FallbackRanks;
         var needsSave = false;
-        var currentModel = _settingsService.Settings;
+        var currentSettingsModel = _settingsService.Settings;
 
         foreach (var item in activeProviders)
         {
-            var (newModel, providerSettings) = currentModel.GetProviderSettings(item);
-            currentModel = newModel;
+            var (newModel, providerSettings) = currentSettingsModel.GetProviderSettings(item);
+            currentSettingsModel = newModel;
 
-            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, settingsService);
-            CommandProviders.Add(settingsModel);
+            var providerSettingsModel = new ProviderSettingsViewModel(item, providerSettings, settingsService);
+            CommandProviders.Add(providerSettingsModel);
 
-            fallbacks.AddRange(settingsModel.FallbackCommands);
+            fallbacks.AddRange(providerSettingsModel.FallbackCommands);
         }
 
         // Only persist if provider enumeration actually changed the model
-        if (!ReferenceEquals(currentModel, _settingsService.Settings))
+        // Smelly? Yes, but it avoids an unnecessary write to disk.
+        // I don't love it, but it seems better than the alternatives.
+        // Open to suggestions.
+        if (!ReferenceEquals(currentSettingsModel, _settingsService.Settings))
         {
-            var finalModel = currentModel;
+            var finalModel = currentSettingsModel;
             _settingsService.UpdateSettings(_ => finalModel, hotReload: false);
         }
 

@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
-using System.Threading;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Windows.Foundation;
@@ -57,10 +56,11 @@ public sealed class SettingsService : ISettingsService
         }
         while (Interlocked.CompareExchange(ref _settings, updated, snapshot) != snapshot);
 
-        _persistence.Save(updated, _filePath, JsonSerializationContext.Default.SettingsModel);
+        var newSettings = Volatile.Read(ref _settings);
+        _persistence.Save(newSettings, _filePath, JsonSerializationContext.Default.SettingsModel);
         if (hotReload)
         {
-            SettingsChanged?.Invoke(this, updated);
+            SettingsChanged?.Invoke(this, newSettings);
         }
     }
 

@@ -38,8 +38,9 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
                 _fallbackSettings = newSettings;
                 _providerSettingsViewModel.UpdateFallbackSettings(Id, _fallbackSettings);
-                Save();
+
                 OnPropertyChanged(nameof(IsEnabled));
+                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
             }
         }
     }
@@ -60,8 +61,9 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
                 _fallbackSettings = newSettings;
                 _providerSettingsViewModel.UpdateFallbackSettings(Id, _fallbackSettings);
-                Save();
+
                 OnPropertyChanged(nameof(IncludeInGlobalResults));
+                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
             }
         }
     }
@@ -83,11 +85,5 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
         Icon = new(fallback.InitialIcon);
         Icon.InitializeProperties();
-    }
-
-    private void Save()
-    {
-        _settingsService.Save();
-        WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
     }
 }

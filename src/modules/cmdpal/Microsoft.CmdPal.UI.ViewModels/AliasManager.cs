@@ -15,6 +15,18 @@ public partial class AliasManager : ObservableObject
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly ISettingsService _settingsService;
 
+    private static readonly ImmutableList<CommandAlias> _defaultAliases = new List<CommandAlias>
+    {
+        new CommandAlias(":", "com.microsoft.cmdpal.registry", true),
+        new CommandAlias("$", "com.microsoft.cmdpal.windowsSettings", true),
+        new CommandAlias("=", "com.microsoft.cmdpal.calculator", true),
+        new CommandAlias(">", "com.microsoft.cmdpal.shell", true),
+        new CommandAlias("<", "com.microsoft.cmdpal.windowwalker", true),
+        new CommandAlias("??", "com.microsoft.cmdpal.websearch", true),
+        new CommandAlias("file", "com.microsoft.indexer.fileSearch", false),
+        new CommandAlias(")", "com.microsoft.cmdpal.timedate", true),
+    }.ToImmutableList();
+
     public AliasManager(TopLevelCommandManager tlcManager, ISettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
@@ -55,14 +67,7 @@ public partial class AliasManager : ObservableObject
             s => s with
             {
                 Aliases = s.Aliases
-                    .Add(":", new CommandAlias(":", "com.microsoft.cmdpal.registry", true))
-                    .Add("$", new CommandAlias("$", "com.microsoft.cmdpal.windowsSettings", true))
-                    .Add("=", new CommandAlias("=", "com.microsoft.cmdpal.calculator", true))
-                    .Add(">", new CommandAlias(">", "com.microsoft.cmdpal.shell", true))
-                    .Add("<", new CommandAlias("<", "com.microsoft.cmdpal.windowwalker", true))
-                    .Add("??", new CommandAlias("??", "com.microsoft.cmdpal.websearch", true))
-                    .Add("file", new CommandAlias("file", "com.microsoft.indexer.fileSearch", false))
-                    .Add(")", new CommandAlias(")", "com.microsoft.cmdpal.timedate", true)),
+                    .AddRange(_defaultAliases.ToDictionary(a => a.SearchPrefix, a => a)),
             },
             hotReload: false);
     }

@@ -73,11 +73,12 @@ public partial class ProviderSettingsViewModel : ObservableObject
             if (value != _providerSettings.IsEnabled)
             {
                 var newSettings = _providerSettings with { IsEnabled = value };
-                _providerSettings = newSettings;
                 _settingsService.UpdateSettings(s => s with
                 {
+
                     ProviderSettings = s.ProviderSettings.SetItem(_provider.ProviderId, newSettings),
                 });
+                _providerSettings = newSettings;
                 WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
                 OnPropertyChanged(nameof(IsEnabled));
                 OnPropertyChanged(nameof(ExtensionSubtext));
