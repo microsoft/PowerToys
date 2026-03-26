@@ -166,8 +166,7 @@ public partial class App : Application, IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError("Couldn't load winget");
-            Logger.LogError(ex.ToString());
+            Logger.LogError("Couldn't load winget", ex);
         }
 
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
@@ -178,7 +177,16 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
-        services.AddSingleton<ICommandProvider, PerformanceMonitorCommandsProvider>();
+
+        try
+        {
+            var performanceMonitor = new PerformanceMonitorCommandsProvider();
+            services.AddSingleton<ICommandProvider>(performanceMonitor);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Couldn't load performance monitor", ex);
+        }
     }
 
     private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)

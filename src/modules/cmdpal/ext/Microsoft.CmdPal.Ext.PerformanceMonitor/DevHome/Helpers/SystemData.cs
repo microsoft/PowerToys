@@ -6,21 +6,24 @@ using System;
 
 namespace CoreWidgetProvider.Helpers;
 
-internal sealed partial class SystemData : IDisposable
+internal sealed partial class SystemData
 {
-    public static MemoryStats MemStats { get; set; } = new MemoryStats();
+    public static SystemData Shared { get; } = new();
 
-    public static NetworkStats NetStats { get; set; } = new NetworkStats();
+    private readonly Lazy<MemoryStats> _memoryStats = new(() => new MemoryStats());
+    private readonly Lazy<NetworkStats> _networkStats = new(() => new NetworkStats());
+    private readonly Lazy<GPUStats> _gpuStats = new(() => new GPUStats());
+    private readonly Lazy<CPUStats> _cpuStats = new(() => new CPUStats());
 
-    public static GPUStats GPUStats { get; set; } = new GPUStats();
+    public MemoryStats MemoryStats => _memoryStats.Value;
 
-    public static CPUStats CpuStats { get; set; } = new CPUStats();
+    public NetworkStats NetworkStats => _networkStats.Value;
 
-    public SystemData()
-    {
-    }
+    public GPUStats GPUStats => _gpuStats.Value;
 
-    public void Dispose()
+    public CPUStats CpuStats => _cpuStats.Value;
+
+    private SystemData()
     {
     }
 }
