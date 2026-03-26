@@ -181,8 +181,22 @@ function Ensure-VsDevEnvironment {
     try {
 
     if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR -or $env:DevEnvDir -or $env:VCToolsInstallDir) {
-        Write-Host "[VS] VS developer environment already present"
-        return $true
+        # BuildTools editions may lack full C++ support (e.g. empty PlatformToolsetVersion,
+        # missing ATL headers). When a full Visual Studio installation is available, prefer it.
+        $currentVsDir = if ($env:VSINSTALLDIR) { $env:VSINSTALLDIR } else { $env:VCINSTALLDIR }
+        if ($currentVsDir -and $currentVsDir -match 'BuildTools') {
+            Write-Host "[VS] Existing environment points to BuildTools; clearing for clean VS initialization..."
+            # Clear VS environment so Enter-VsDevShell / VsDevCmd.bat can initialize cleanly
+            foreach ($v in @('VSINSTALLDIR','VCINSTALLDIR','DevEnvDir','VCToolsInstallDir',
+                             'VCToolsVersion','VisualStudioVersion','VSCMD_ARG_HOST_ARCH',
+                             'VSCMD_ARG_TGT_ARCH','VSCMD_VER','__VSCMD_PREINIT_PATH',
+                             'INCLUDE','LIB','LIBPATH')) {
+                [Environment]::SetEnvironmentVariable($v, $null, 'Process')
+            }
+        } else {
+            Write-Host "[VS] VS developer environment already present"
+            return $true
+        }
     }
 
     # Locate vswhere if available
@@ -195,17 +209,35 @@ function Ensure-VsDevEnvironment {
 
     $instPaths = @()
     if ($vswhere) {
-        # First try with the VC tools requirement (preferred)
-        try { $p = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null; if ($p) { $instPaths += $p } } catch {}
-        # Fallback: try without -requires to find any VS installations
+        # First try with the VC tools requirement, including prerelease/Insiders builds (preferred)
+        try { $p = & $vswhere -latest -prerelease -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null; if ($p) { $instPaths += $p } } catch {}
+        # Fallback: any prerelease installation
         if (-not $instPaths) {
-            try { $p2 = & $vswhere -latest -products * -property installationPath 2>$null; if ($p2) { $instPaths += $p2 } } catch {}
+            try { $p2 = & $vswhere -latest -prerelease -products * -property installationPath 2>$null; if ($p2) { $instPaths += $p2 } } catch {}
+        }
+        # Fallback: stable releases with VC tools
+        if (-not $instPaths) {
+            try { $p3 = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null; if ($p3) { $instPaths += $p3 } } catch {}
+        }
+        # Fallback: any stable installation
+        if (-not $instPaths) {
+            try { $p4 = & $vswhere -latest -products * -property installationPath 2>$null; if ($p4) { $instPaths += $p4 } } catch {}
         }
     }
 
-    # Add explicit common year-based candidates as a last resort
+    # Add explicit common candidates as a last resort (newest first)
     if (-not $instPaths) {
         $explicit = @(
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Insiders",
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Preview",
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Community",
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Professional",
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Enterprise",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Insiders",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Preview",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Community",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Professional",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Enterprise",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Community",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Professional",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Enterprise",
