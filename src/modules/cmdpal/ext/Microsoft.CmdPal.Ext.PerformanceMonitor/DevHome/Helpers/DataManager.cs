@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Timer = System.Timers.Timer;
 
 namespace CoreWidgetProvider.Helpers;
@@ -62,6 +63,9 @@ internal sealed partial class DataManager : IDisposable
 
     private void UpdateTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
     {
+        var firstUpdateBlockSuffix = GetFirstUpdateBlockSuffix();
+        var isTracked = firstUpdateBlockSuffix is not null && PerformanceMonitorCommandsProvider.CrashSentinel.BeginBlock(firstUpdateBlockSuffix);
+
         try
         {
             switch (_dataType)
@@ -96,10 +100,20 @@ internal sealed partial class DataManager : IDisposable
                     }
             }
 
+            if (isTracked)
+            {
+                PerformanceMonitorCommandsProvider.CrashSentinel.CompleteBlock(firstUpdateBlockSuffix!);
+            }
+
             _updateAction?.Invoke();
         }
         catch (Exception ex)
         {
+            if (isTracked)
+            {
+                PerformanceMonitorCommandsProvider.CrashSentinel.CancelBlock(firstUpdateBlockSuffix!);
+            }
+
             _updateTimer.Stop();
             if (!_updateFailureLogged)
             {
@@ -107,6 +121,19 @@ internal sealed partial class DataManager : IDisposable
                 Microsoft.CmdPal.Common.CoreLogger.LogError($"Unexpected exception while updating performance monitor data for {_dataType}. Timer stopped.", ex);
             }
         }
+    }
+
+    private string? GetFirstUpdateBlockSuffix()
+    {
+        return _dataType switch
+        {
+            DataType.CPU => "CPU.FirstUpdate",
+            DataType.CpuWithTopProcesses => "CPU.FirstUpdate",
+            DataType.GPU => "GPU.FirstUpdate",
+            DataType.Memory => "Memory.FirstUpdate",
+            DataType.Network => "Network.FirstUpdate",
+            _ => null,
+        };
     }
 
     internal MemoryStats GetMemoryStats()
