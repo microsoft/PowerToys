@@ -86,7 +86,7 @@
                         HorizontalContentAlignment="Left"
                         Click="Command_Click"
                         Style="{StaticResource SubtleButtonStyle}"
-                        UseSystemFocusVisuals="True">
+                        UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">
                         <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                             <cpcontrols:IconBox
                                 Width="16"
@@ -111,7 +111,7 @@
                         Padding="0"
                         Command="{x:Bind NavigateCommand, Mode=OneWay}"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
-                        UseSystemFocusVisuals="True"
+                        UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}"
                         Visibility="{x:Bind IsLink, Mode=OneWay}">
                         <TextBlock Text="{x:Bind Text, Mode=OneWay}" TextWrapping="Wrap" />
                     </HyperlinkButton>
@@ -398,12 +398,17 @@
                     Margin="4"
                     HorizontalAlignment="Stretch"
                     ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                    AutomationProperties.AccessibilityView="Content"
+                    AutomationProperties.HelpText="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
+                    AutomationProperties.LandmarkType="Custom"
+                    AutomationProperties.LocalizedLandmarkType="Details"
+                    AutomationProperties.Name="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="{StaticResource ControlCornerRadius}"
                     IsTabStop="True"
-                    UseSystemFocusVisuals="True"
+                    UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}"
                     Visibility="Collapsed">
                     <animations:Implicit.ShowAnimations>
                         <animations:OpacityAnimation
@@ -463,6 +468,7 @@
 
                         <ItemsRepeater
                             Grid.Row="3"
+                            IsTabStop="False"
                             ItemTemplate="{StaticResource DetailsDataTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.Details.Metadata, Mode=OneWay}">
                             <ItemsRepeater.Layout>
