@@ -14,6 +14,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using PowerToys.FileLocksmithLib.Interop;
+using PowerToys.FileLocksmithUI.Helpers;
 
 namespace PowerToys.FileLocksmithUI.ViewModels
 {
@@ -79,8 +80,19 @@ namespace PowerToys.FileLocksmithUI.ViewModels
 
         public MainViewModel()
         {
-            paths = NativeMethods.ReadPathsFromFile();
-            Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files selected.");
+            var cliPaths = CliArgHelper.GetPathsFromArgs(Environment.GetCommandLineArgs());
+
+            if (cliPaths.Length > 0)
+            {
+                paths = cliPaths;
+                Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files from command line.");
+            }
+            else
+            {
+                paths = NativeMethods.ReadPathsFromFile();
+                Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files selected.");
+            }
+
             LoadProcessesCommand = new AsyncRelayCommand(LoadProcessesAsync);
         }
 
