@@ -70,6 +70,7 @@ void AlwaysOnTopSettings::InitFileWatcher()
 {
     const std::wstring& settingsFileName = GetSettingsFileName();
     m_settingsFileWatcher = std::make_unique<FileWatcher>(settingsFileName, [&]() {
+        Logger::debug(L"Always On Top settings file changed. Scheduling reload.");
         PostMessageW(HWND_BROADCAST, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
     });
 }
@@ -237,6 +238,7 @@ void AlwaysOnTopSettings::LoadSettings()
             m_settings.store(std::shared_ptr<const Settings>(updatedSettings), std::memory_order_release);
             for (const auto changedSetting : changedSettings)
             {
+                Logger::debug(L"Always On Top setting changed: {}", SettingIdToString(changedSetting));
                 NotifyObservers(changedSetting);
             }
         }
