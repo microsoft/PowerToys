@@ -12,7 +12,7 @@ internal sealed partial class PerformanceMonitorDisabledPage : ContentPage
 {
     private readonly MarkdownContent _content;
 
-    public PerformanceMonitorDisabledPage(PerformanceMonitorCommandsProvider provider, bool isBandPage)
+    public PerformanceMonitorDisabledPage(PerformanceMonitorCommandsProvider provider)
     {
         Id = PerformanceMonitorCommandsProvider.PageIdValue;
         Name = Resources.GetResource("Performance_Monitor_Disabled_Title");

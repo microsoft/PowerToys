@@ -99,8 +99,8 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     {
         DisposeActivePages();
 
-        var page = new PerformanceMonitorDisabledPage(this, isBandPage: false);
-        var band = new PerformanceMonitorDisabledPage(this, isBandPage: true);
+        var page = new PerformanceMonitorDisabledPage(this);
+        var band = new PerformanceMonitorDisabledPage(this);
         _band = new CommandItem(band)
         {
             Title = Resources.GetResource("Performance_Monitor_Disabled_Band_Title"),

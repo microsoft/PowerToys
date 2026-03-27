@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -125,8 +126,55 @@ public sealed class ProviderCrashSentinel
             return [];
         }
 
-        var json = File.ReadAllText(sentinelPath);
-        return JsonNode.Parse(json)?.AsObject() ?? [];
+        try
+        {
+            var json = File.ReadAllText(sentinelPath);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                CoreLogger.LogWarning($"Crash sentinel state file '{sentinelPath}' was empty. Treating as empty state.");
+                DeleteInvalidStateFile(sentinelPath);
+                return [];
+            }
+
+            if (JsonNode.Parse(json) is JsonObject state)
+            {
+                return state;
+            }
+
+            CoreLogger.LogError($"Crash sentinel state file '{sentinelPath}' did not contain a JSON object. Treating as empty state.");
+            DeleteInvalidStateFile(sentinelPath);
+        }
+        catch (JsonException ex)
+        {
+            CoreLogger.LogError($"Failed to parse crash sentinel state from '{sentinelPath}'. Treating as empty state.", ex);
+            DeleteInvalidStateFile(sentinelPath);
+        }
+        catch (IOException ex)
+        {
+            CoreLogger.LogError($"Failed to read crash sentinel state from '{sentinelPath}'. Treating as empty state.", ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            CoreLogger.LogError($"Access denied reading crash sentinel state from '{sentinelPath}'. Treating as empty state.", ex);
+        }
+
+        return [];
+    }
+
+    private static void DeleteInvalidStateFile(string sentinelPath)
+    {
+        try
+        {
+            File.Delete(sentinelPath);
+        }
+        catch (IOException ex)
+        {
+            CoreLogger.LogError($"Failed to delete invalid crash sentinel state file '{sentinelPath}'.", ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            CoreLogger.LogError($"Access denied deleting invalid crash sentinel state file '{sentinelPath}'.", ex);
+        }
     }
 
     private static void SaveState(string sentinelPath, JsonObject state)
