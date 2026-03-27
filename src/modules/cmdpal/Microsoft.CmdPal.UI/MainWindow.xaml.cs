@@ -910,8 +910,7 @@ public sealed partial class MainWindow : WindowEx,
             // the last non-dock placement because dock sessions intentionally skip updates.
             if (_currentWindowPosition.IsSizeValid)
             {
-                settings.LastWindowPosition = _currentWindowPosition;
-                settingsService.Save();
+                settingsService.UpdateSettings(s => s with { LastWindowPosition = _currentWindowPosition });
             }
         }
 
