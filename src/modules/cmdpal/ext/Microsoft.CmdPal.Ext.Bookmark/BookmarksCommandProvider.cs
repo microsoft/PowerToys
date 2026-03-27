@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -129,4 +129,36 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
     [Pure]
     private ICommandItem[] BuildTopLevelCommandsUnsafe() => [_addNewItem, .. _bookmarks];
+
+    public override ICommandItem[]? GetDockBands()
+    {
+        BookmarkListItem[] bookmarks;
+
+        lock (_bookmarksLock)
+        {
+            bookmarks = [.. _bookmarksManager.Bookmarks
+                .Select(bookmark => new BookmarkListItem(
+                    bookmark,
+                    _bookmarksManager,
+                    _commandResolver,
+                    _iconLocator,
+                    _placeholderParser,
+                    asBand: true))];
+        }
+
+        var bands = new List<ICommandItem>();
+        foreach (var b in bookmarks)
+        {
+            // TODO! replace this string interpolation with some static public function
+            var wrapped = new WrappedDockItem(items: [b], id: $"Bookmarks.Docked.{b.BookmarkId}", displayTitle: b.Title)
+            {
+                // TODO! I don't think this icon is right at this time, so I think we can just remove it.
+                // We resolve the icon for this command much later
+                // Icon = b.Icon,
+            };
+            bands.Add(wrapped);
+        }
+
+        return bands.Count > 0 ? bands.ToArray() : null;
+    }
 }

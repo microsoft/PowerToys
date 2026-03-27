@@ -567,12 +567,14 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             return;
         }
 
-        if (e.DataView.Contains(StandardDataFormats.StorageItems))
+        if (e.DataView.Contains(StandardDataFormats.StorageItems) ||
+            e.DataView.Contains(StandardDataFormats.Uri))
         {
             e.AcceptedOperation = DataPackageOperation.Link;
             e.DragUIOverride.Caption = RS_.GetString("Dock_DropFile_Caption");
             e.DragUIOverride.IsGlyphVisible = true;
             e.DragUIOverride.IsCaptionVisible = true;
+
             // DON'T mark the event as handled - if you do, we won't get the Drop event.
         }
     }
@@ -585,7 +587,10 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             return;
         }
 
-        if (!e.DataView.Contains(StandardDataFormats.StorageItems))
+        var hasStorageItems = e.DataView.Contains(StandardDataFormats.StorageItems);
+        var hasUri = e.DataView.Contains(StandardDataFormats.Uri);
+
+        if (!hasStorageItems && !hasUri)
         {
             return;
         }
@@ -594,32 +599,59 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
         try
         {
-            var items = await e.DataView.GetStorageItemsAsync();
             var bookmarksManager = App.Current.Services.GetService<IBookmarksManager>();
             if (bookmarksManager == null)
             {
                 return;
             }
 
-            foreach (var item in items)
+            var foundItem = false;
+            if (hasStorageItems)
             {
-                var path = item.Path;
-                if (string.IsNullOrEmpty(path))
+                var items = await e.DataView.GetStorageItemsAsync();
+                foreach (var item in items)
                 {
-                    continue;
+                    var path = item.Path;
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        continue;
+                    }
+
+                    var name = Path.GetFileNameWithoutExtension(path);
+                    AddBookmarkAndPinToDock(bookmarksManager, name, path);
+                    foundItem = true;
                 }
+            }
 
-                var name = Path.GetFileNameWithoutExtension(path);
-                var bookmark = bookmarksManager.Add(name, path);
+            if (foundItem)
+            {
+                return;
+            }
 
-                // CommandId format matches LaunchBookmarkCommand.Id
-                var commandId = "Bookmarks.Launch." + bookmark.Id;
-                WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true));
+            if (hasUri)
+            {
+                var uri = await e.DataView.GetUriAsync();
+                var url = uri.AbsoluteUri;
+                var name = uri.Host;
+                AddBookmarkAndPinToDock(bookmarksManager, name, url);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError("Error handling file drop on dock", ex);
         }
+    }
+
+    private static void AddBookmarkAndPinToDock(IBookmarksManager bookmarksManager, string name, string bookmarkValue)
+    {
+        Logger.LogDebug($"Attempting to pin '{name}': '{bookmarkValue}' to the dock");
+        var bookmark = bookmarksManager.Add(name, bookmarkValue);
+
+        // CommandId format is specific to dock bands, because it's real weird
+        // TODO! replace hardcoded string interpolation with public static function in bookmarks codebase
+        // TODO! MORE TODO! - we actually do need to make the command id
+        // exactly the same as the ID it would have in the top-level list, so that pinning to the dock from the top-level is seamless.
+        var commandId = $"Bookmarks.Docked.{bookmark.Id}";
+        WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true));
     }
 }
