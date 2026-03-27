@@ -35,10 +35,7 @@ public sealed partial class DockItemControl : Control
     {
         if (d is DockItemControl control)
         {
-            // Collapse the tooltip when the string is null or empty so an
-            // empty tooltip bubble doesn't appear on hover.
-            var text = e.NewValue as string;
-            ToolTipService.SetToolTip(control, string.IsNullOrEmpty(text) ? null : text);
+            control.UpdateToolTip();
         }
     }
 
@@ -91,6 +88,7 @@ public sealed partial class DockItemControl : Control
 
     private FrameworkElement? _iconPresenter;
     private DockControl? _parentDock;
+    private ToolTip? _toolTip;
     private long _dockSideCallbackToken = -1;
 
     private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -184,7 +182,31 @@ public sealed partial class DockItemControl : Control
     {
         UpdateTextVisibility();
         UpdateIconVisibility();
+        UpdateToolTip();
         UpdateAlignment();
+    }
+
+    private void UpdateToolTip()
+    {
+        var text = ToolTip;
+        if (string.IsNullOrEmpty(text))
+        {
+            ToolTipService.SetToolTip(this, null);
+            _toolTip = null;
+            return;
+        }
+
+        // Wait until the control is connected to a XamlRoot before creating
+        // the tooltip popup; dock items are materialized very early in startup.
+        if (XamlRoot is null)
+        {
+            return;
+        }
+
+        _toolTip ??= new ToolTip();
+        _toolTip.Content = text;
+        _toolTip.XamlRoot = XamlRoot;
+        ToolTipService.SetToolTip(this, _toolTip);
     }
 
     protected override void OnApplyTemplate()
@@ -232,6 +254,8 @@ public sealed partial class DockItemControl : Control
                 DockControl.DockSideProperty,
                 OnParentDockSideChanged);
         }
+
+        UpdateToolTip();
     }
 
     private void DockItemControl_ActualThemeChanged(FrameworkElement sender, object args)
@@ -250,6 +274,9 @@ public sealed partial class DockItemControl : Control
             _dockSideCallbackToken = -1;
             _parentDock = null;
         }
+
+        ToolTipService.SetToolTip(this, null);
+        _toolTip = null;
     }
 
     private void OnParentDockSideChanged(DependencyObject sender, DependencyProperty dp)

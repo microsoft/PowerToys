@@ -314,6 +314,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionPage_Alias_SettingsCard.Description" xml:space="preserve">
     <value>A short keyword used to navigate to this command.</value>
   </data>
+  <data name="Settings_ExtensionPage_Alias_SettingsCard.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Alias</value>
+  </data>
   <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Header" xml:space="preserve">
     <value>Alias activation</value>
   </data>
@@ -399,7 +402,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Dock (Preview)</value>
   </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Open Command Palette settings</value>
+    <value>Open Command Palette settings, shortcut Control plus comma</value>
   </data>
   <data name="ActivationSettingsHeader.Text" xml:space="preserve">
     <value>Activation</value>
@@ -462,6 +465,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Settings_ExtensionPage_Alias_PlaceholderText.PlaceholderText" xml:space="preserve">
     <value>Enter alias</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_PlaceholderText.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Alias</value>
   </data>
   <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Show status messages</value>
@@ -982,5 +988,69 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="SettingsPage_NewInfoBadge.Text" xml:space="preserve">
     <value>NEW</value>
 	<comment>Must be all caps</comment>  
+  </data>
+  <data name="PinToDock_DialogTitle" xml:space="preserve">
+    <value>Pin to Dock</value>
+    <comment>Title for the pin to dock configuration dialog</comment>
+  </data>
+  <data name="PinToDock_PreviewHeader.Text" xml:space="preserve">
+    <value>Preview</value>
+    <comment>Header for the preview section in the pin to dock dialog</comment>
+  </data>
+  <data name="PinToDock_SectionHeader.Text" xml:space="preserve">
+    <value>Choose where to pin this command</value>
+    <comment>Header for the dock section selector in the pin to dock dialog</comment>
+  </data>
+  <data name="PinToDock_Start.Content" xml:space="preserve">
+    <value>Start</value>
+    <comment>Start section option in pin to dock dialog</comment>
+  </data>
+  <data name="PinToDock_Center.Content" xml:space="preserve">
+    <value>Center</value>
+    <comment>Center section option in pin to dock dialog</comment>
+  </data>
+  <data name="PinToDock_End.Content" xml:space="preserve">
+    <value>End</value>
+    <comment>End section option in pin to dock dialog</comment>
+  </data>
+  <data name="PinToDock_ShowTitle.Content" xml:space="preserve">
+    <value>Show title</value>
+    <comment>Checkbox label to show the title of a pinned dock item</comment>
+  </data>
+  <data name="PinToDock_ShowSubtitle.Content" xml:space="preserve">
+    <value>Show subtitle</value>
+    <comment>Checkbox label to show the subtitle of a pinned dock item</comment>
+  </data>
+  <data name="PinToDock_PinButton" xml:space="preserve">
+    <value>Pin</value>
+    <comment>Button text to confirm pinning an item to the dock</comment>
+  </data>
+  <data name="PinToDock_CancelButton" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Button text to cancel pinning an item to the dock</comment>
+  </data>
+  <data name="PinToDock_Left" xml:space="preserve">
+    <value>Left</value>
+    <comment>Left section option in pin to dock dialog (horizontal dock)</comment>
+  </data>
+  <data name="PinToDock_Right" xml:space="preserve">
+    <value>Right</value>
+    <comment>Right section option in pin to dock dialog (horizontal dock)</comment>
+  </data>
+  <data name="PinToDock_Top" xml:space="preserve">
+    <value>Top</value>
+    <comment>Top section option in pin to dock dialog (vertical dock)</comment>
+  </data>
+  <data name="PinToDock_Bottom" xml:space="preserve">
+    <value>Bottom</value>
+    <comment>Bottom section option in pin to dock dialog (vertical dock)</comment>
+  </data>
+  <data name="PinToDock_CenterLabel" xml:space="preserve">
+    <value>Center</value>
+    <comment>Center section label in pin to dock dialog (code access)</comment>
+  </data>
+  <data name="PinToDock_RightLabel" xml:space="preserve">
+    <value>Right</value>
+    <comment>Right section label in pin to dock dialog (code access, horizontal end)</comment>
   </data>
 </root>
