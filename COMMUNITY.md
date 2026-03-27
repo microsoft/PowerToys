@@ -174,91 +174,91 @@ Project creator: Truong Do (Đỗ Đức Trường)
 
 Other contributors:
 
-* Microsoft Garage: Quinn Hawkins, Michael Low, Joe Coplen, Nino Yuniardi, Gwyneth Marshall, David Andrews, Karen Luecking
-* Peter Hauge - Visual Studio
-* Bruce Dawson - Windows Fundamentals
-* Alan Myrvold - Office Security
-* Adrian Garside - WEX
-* Scott Bradner - Surface
-* Aleks Gershaft - Windows Azure
-* Chinh Huynh - Windows Azure
-* Long Nguyen - Data Center
-* Triet Le - Cloud Engineering
-* Luke Schoen - Excel
-* Bao Nguyen - Bing
-* Ross Nichols - Windows
-* Ryan Baltazar - Windows
-* Ed Essey - The Garage
-* Mario Madden - The Garage
-* Karthick Mahalingam - ACE
-* Pooja Kamra - ACE
-* Justin White - SA
-* Chris Ransom - SA
-* Mike Ricks - Red Team
-* Randy Santossio - Surface
-* Ashish Sen Jaswal - Device Health
-* Zoltan Harmath - Security Tools
-* Luciano Krigun - Security Products
-* Jo Hemmerlein - Red Team
-* Chris Johnson - Surface Hub
-* Loren Ponten - Surface Hub
-* Paul Schmitt - WWL
-* And many other Users!
+- Microsoft Garage: Quinn Hawkins, Michael Low, Joe Coplen, Nino Yuniardi, Gwyneth Marshall, David Andrews, Karen Luecking
+- Peter Hauge - Visual Studio
+- Bruce Dawson - Windows Fundamentals
+- Alan Myrvold - Office Security
+- Adrian Garside - WEX
+- Scott Bradner - Surface
+- Aleks Gershaft - Windows Azure
+- Chinh Huynh - Windows Azure
+- Long Nguyen - Data Center
+- Triet Le - Cloud Engineering
+- Luke Schoen - Excel
+- Bao Nguyen - Bing
+- Ross Nichols - Windows
+- Ryan Baltazar - Windows
+- Ed Essey - The Garage
+- Mario Madden - The Garage
+- Karthick Mahalingam - ACE
+- Pooja Kamra - ACE
+- Justin White - SA
+- Chris Ransom - SA
+- Mike Ricks - Red Team
+- Randy Santossio - Surface
+- Ashish Sen Jaswal - Device Health
+- Zoltan Harmath - Security Tools
+- Luciano Krigun - Security Products
+- Jo Hemmerlein - Red Team
+- Chris Johnson - Surface Hub
+- Loren Ponten - Surface Hub
+- Paul Schmitt - WWL
+- And many other Users!
 
 ## ZoomIt original contributors
 
 ZoomIt source code was originally implemented by [Sysinternals](https://sysinternals.com):
 
-* [@markrussinovich](https://github.com/markrussinovich) - Mark Russinovich
-* [@foxmsft](https://github.com/foxmsft) - Alex Mihaiuc
-* [@johnstep](https://github.com/johnstep) - John Stephens
+- [@markrussinovich](https://github.com/markrussinovich) - Mark Russinovich
+- [@foxmsft](https://github.com/foxmsft) - Alex Mihaiuc
+- [@johnstep](https://github.com/johnstep) - John Stephens
 
 ## PowerToys core team
 
-* [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
-* [@niels9001](https://github.com/niels9001/) - Niels Laute - Product Manager
-* [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev Lead
-* [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev Lead
-* [@lei9444](https://github.com/lei9444) - Leilei Zhang - Dev
-* [@shuaiyuanxx](https://github.com/shuaiyuanxx) - Shawn Yuan - Dev
-* [@moooyo](https://github.com/moooyo) - Yu Leng - Dev
-* [@haoliuu](https://github.com/haoliuu) - Hao Liu - Dev
-* [@vanzue](https://github.com/vanzue) - Kai Tao - Dev
-* [@zadjii-msft](https://github.com/zadjii-msft) - Mike Griese - Dev
-* [@khmyznikov](https://github.com/khmyznikov) - Gleb Khmyznikov - Dev
-* [@chatasweetie](https://github.com/chatasweetie) - Jessica Earley-Cha - Dev
-* [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
-* [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee) - Jaylyn Barbee - Dev
-* [@zateutsch](https://github.com/zateutsch) - Zach Teutsch - Dev
-* [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Overhead
+- [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
+- [@niels9001](https://github.com/niels9001/) - Niels Laute - Product Manager
+- [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev Lead
+- [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev Lead
+- [@lei9444](https://github.com/lei9444) - Leilei Zhang - Dev
+- [@shuaiyuanxx](https://github.com/shuaiyuanxx) - Shawn Yuan - Dev
+- [@moooyo](https://github.com/moooyo) - Yu Leng - Dev
+- [@haoliuu](https://github.com/haoliuu) - Hao Liu - Dev
+- [@vanzue](https://github.com/vanzue) - Kai Tao - Dev
+- [@zadjii-msft](https://github.com/zadjii-msft) - Mike Griese - Dev
+- [@khmyznikov](https://github.com/khmyznikov) - Gleb Khmyznikov - Dev
+- [@chatasweetie](https://github.com/chatasweetie) - Jessica Earley-Cha - Dev
+- [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
+- [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee) - Jaylyn Barbee - Dev
+- [@zateutsch](https://github.com/zateutsch) - Zach Teutsch - Dev
+- [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Overhead
 
 ## Former PowerToys core team members
 
-* [@indierawk2k2](https://github.com/indierawk2k2) - Mike Harsh - Product Manager
-* [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Product Manager
-* [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
-* [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
-* [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
-* [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
-* [@enricogior](https://github.com/enricogior) - Enrico Giordani - Dev Lead
-* [@bzoz](https://github.com/bzoz) - Bartosz Sosnowski - Dev
-* [@ivan100sic](https://github.com/ivan100sic) - Ivan Stošić - Dev
-* [@mykhailopylyp](https://github.com/mykhailopylyp) - Mykhailo Pylyp - Dev
-* [@taras-janea](https://github.com/taras-janea) - Taras Sich - Dev
-* [@yuyoyuppe](https://github.com/yuyoyuppe) - Andrey Nekrasov - Dev
-* [@gokcekantarci](https://github.com/gokcekantarci) - Gokce Kantarci - Dev
-* [@drawbyperpetual](https://github.com/drawbyperpetual) - Anirudha Shankar - Dev
-* [@mantaionut](https://github.com/mantaionut) - Ionut Manta - Dev
-* [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
-* [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
-* [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
-* [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev Lead
-* [@haoliuu](https://github.com/haoliuu) - Hao Liu - Dev
-* [@chenmy77](https://github.com/chenmy77) - Mengyuan Chen - Dev
-* [@chemwolf6922](https://github.com/chemwolf6922) - Feng Wang - Dev
-* [@yaqingmi](https://github.com/yaqingmi) - Yaqing Mi - Dev
-* [@zhaoqpcn](https://github.com/zhaoqpcn) - Qingpeng Zhao - Dev
-* [@urnotdfs](https://github.com/urnotdfs) - Xiaofeng Wang - Dev
-* [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
-* [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
-* [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev Lead
+- [@indierawk2k2](https://github.com/indierawk2k2) - Mike Harsh - Product Manager
+- [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Product Manager
+- [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
+- [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
+- [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
+- [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
+- [@enricogior](https://github.com/enricogior) - Enrico Giordani - Dev Lead
+- [@bzoz](https://github.com/bzoz) - Bartosz Sosnowski - Dev
+- [@ivan100sic](https://github.com/ivan100sic) - Ivan Stošić - Dev
+- [@mykhailopylyp](https://github.com/mykhailopylyp) - Mykhailo Pylyp - Dev
+- [@taras-janea](https://github.com/taras-janea) - Taras Sich - Dev
+- [@yuyoyuppe](https://github.com/yuyoyuppe) - Andrey Nekrasov - Dev
+- [@gokcekantarci](https://github.com/gokcekantarci) - Gokce Kantarci - Dev
+- [@drawbyperpetual](https://github.com/drawbyperpetual) - Anirudha Shankar - Dev
+- [@mantaionut](https://github.com/mantaionut) - Ionut Manta - Dev
+- [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
+- [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
+- [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
+- [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev Lead
+- [@haoliuu](https://github.com/haoliuu) - Hao Liu - Dev
+- [@chenmy77](https://github.com/chenmy77) - Mengyuan Chen - Dev
+- [@chemwolf6922](https://github.com/chemwolf6922) - Feng Wang - Dev
+- [@yaqingmi](https://github.com/yaqingmi) - Yaqing Mi - Dev
+- [@zhaoqpcn](https://github.com/zhaoqpcn) - Qingpeng Zhao - Dev
+- [@urnotdfs](https://github.com/urnotdfs) - Xiaofeng Wang - Dev
+- [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
+- [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
+- [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev Lead

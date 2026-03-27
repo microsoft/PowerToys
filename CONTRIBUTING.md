@@ -16,12 +16,12 @@ Please follow this rule to help eliminate wasted effort and frustration, and to 
 
 When requesting new features or enhancements, providing additional evidence, data, tweets, blog posts, or research is extremely helpful. This information gives context to the scenario that may otherwise be lost.
 
-* Unsure whether it’s an issue or feature request? File an issue.
-* Have a question that isn't answered in the docs, videos, etc.? File an issue.
-* Want to know if we’re planning a particular feature? File an issue.
-* Got a great idea for a new utility or feature? File an issue/request/idea.
-* Don’t understand how to do something? File an issue/Community Guidance Request.
-* Found an existing issue that describes yours? Great! Upvote and add additional commentary, info, or repro steps.
+- Unsure whether it's an issue or feature request? File an issue.
+- Have a question that isn't answered in the docs, videos, etc.? File an issue.
+- Want to know if we're planning a particular feature? File an issue.
+- Got a great idea for a new utility or feature? File an issue/request/idea.
+- Don't understand how to do something? File an issue/Community Guidance Request.
+- Found an existing issue that describes yours? Great! Upvote and add additional commentary, info, or repro steps.
 
 A quick search before filing an issue could be helpful. It’s likely someone else has found the same problem, and they may even be working on or have already contributed a fix!
 
