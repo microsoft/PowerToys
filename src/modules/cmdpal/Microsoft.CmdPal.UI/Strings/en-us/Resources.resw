@@ -955,6 +955,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Dock_EditMode_Unpin.Text" xml:space="preserve">
     <value>Unpin</value>
   </data>
+  <data name="Dock_DropFile_Caption" xml:space="preserve">
+    <value>Pin to Dock</value>
+    <comment>Drag-over caption shown when dragging a file or shortcut onto the dock to bookmark and pin it</comment>
+  </data>
   <data name="Dock_AddBand_NoCommandsAvailable.Text" xml:space="preserve">
     <value>All available bands are already pinned.</value>
   </data>

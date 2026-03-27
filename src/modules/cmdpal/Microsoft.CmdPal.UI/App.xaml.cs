@@ -145,7 +145,10 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider>(files);
-        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>(_ => BookmarksCommandProvider.CreateWithDefaultStore());
+
+        var bookmarks = BookmarksCommandProvider.CreateWithDefaultStore();
+        services.AddSingleton<ICommandProvider>(bookmarks);
+        services.AddSingleton<IBookmarksManager>(bookmarks.BookmarksManager);
 
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();

@@ -24,6 +24,8 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
     private readonly IBookmarkResolver _commandResolver;
     private readonly IBookmarkIconLocator _iconLocator = new IconLocator();
 
+    public IBookmarksManager BookmarksManager => _bookmarksManager;
+
     private readonly ListItem _addNewItem;
     private readonly Lock _bookmarksLock = new();
 

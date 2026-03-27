@@ -7,11 +7,13 @@ using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -19,6 +21,8 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -552,6 +556,70 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         if (sender is ListView listView)
         {
             listView.Background = new SolidColorBrush(Colors.Transparent);
+        }
+    }
+
+    private void RootGrid_DragOver(object sender, DragEventArgs e)
+    {
+        // Don't intercept internal band drag-drop during edit mode
+        if (_draggedBand != null)
+        {
+            return;
+        }
+
+        if (e.DataView.Contains(StandardDataFormats.StorageItems))
+        {
+            e.AcceptedOperation = DataPackageOperation.Link;
+            e.DragUIOverride.Caption = RS_.GetString("Dock_DropFile_Caption");
+            e.DragUIOverride.IsGlyphVisible = true;
+            e.DragUIOverride.IsCaptionVisible = true;
+            // DON'T mark the event as handled - if you do, we won't get the Drop event.
+        }
+    }
+
+    private async void RootGrid_Drop(object sender, DragEventArgs e)
+    {
+        // Don't intercept internal band drag-drop during edit mode
+        if (_draggedBand != null)
+        {
+            return;
+        }
+
+        if (!e.DataView.Contains(StandardDataFormats.StorageItems))
+        {
+            return;
+        }
+
+        e.Handled = true;
+
+        try
+        {
+            var items = await e.DataView.GetStorageItemsAsync();
+            var bookmarksManager = App.Current.Services.GetService<IBookmarksManager>();
+            if (bookmarksManager == null)
+            {
+                return;
+            }
+
+            foreach (var item in items)
+            {
+                var path = item.Path;
+                if (string.IsNullOrEmpty(path))
+                {
+                    continue;
+                }
+
+                var name = Path.GetFileNameWithoutExtension(path);
+                var bookmark = bookmarksManager.Add(name, path);
+
+                // CommandId format matches LaunchBookmarkCommand.Id
+                var commandId = "Bookmarks.Launch." + bookmark.Id;
+                WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true));
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error handling file drop on dock", ex);
         }
     }
 }

@@ -209,7 +209,10 @@
 
     <Grid
         x:Name="RootGrid"
+        AllowDrop="True"
         BorderThickness="0,0,0,1"
+        DragOver="RootGrid_DragOver"
+        Drop="RootGrid_Drop"
         RightTapped="RootGrid_RightTapped">
         <!--  Dock content with Start / Center / End sections  -->
         <local:DockContentControl
