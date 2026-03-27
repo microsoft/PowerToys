@@ -26,6 +26,7 @@ For architecture details and module types, see [Architecture Overview](doc/devdo
 ## Conventions
 
 For detailed coding conventions, see:
+
 - [Coding Guidelines](doc/devdocs/development/guidelines.md) – Dependencies, testing, PR management
 - [Coding Style](doc/devdocs/development/style.md) – Formatting, C++/C#/XAML style rules
 - [Logging](doc/devdocs/development/logging.md) – C++ spdlog and C# Logger usage
@@ -33,6 +34,7 @@ For detailed coding conventions, see:
 ### Component-Specific Instructions
 
 These instruction files are automatically applied when working in their respective areas:
+
 - [Runner & Settings UI](.github/instructions/runner-settings-ui.instructions.md) – IPC contracts, schema migrations
 - [Common Libraries](.github/instructions/common-libraries.instructions.md) – ABI stability, shared code guidelines
 
@@ -65,6 +67,7 @@ These instruction files are automatically applied when working in their respecti
 ### Build Logs
 
 Located next to the solution/project being built:
+
 - `build.<configuration>.<platform>.errors.log` – errors only (check this first)
 - `build.<configuration>.<platform>.all.log` – full log
 - `build.<configuration>.<platform>.trace.binlog` – for MSBuild Structured Log Viewer
@@ -144,12 +147,14 @@ Before finishing, verify:
 ## Documentation Index
 
 ### Core Architecture
+
 - [Architecture Overview](doc/devdocs/core/architecture.md)
 - [Runner](doc/devdocs/core/runner.md)
 - [Settings System](doc/devdocs/core/settings/readme.md)
 - [Module Interface](doc/devdocs/modules/interface.md)
 
 ### Development
+
 - [Coding Guidelines](doc/devdocs/development/guidelines.md)
 - [Coding Style](doc/devdocs/development/style.md)
 - [Logging](doc/devdocs/development/logging.md)
@@ -157,9 +162,11 @@ Before finishing, verify:
 - [Fuzzing Tests](doc/devdocs/tools/fuzzingtesting.md)
 
 ### Build & Tools
+
 - [Build Guidelines](tools/build/BUILD-GUIDELINES.md)
 - [Tools Overview](doc/devdocs/tools/readme.md)
 
 ### Instructions (Auto-Applied)
+
 - [Runner & Settings UI](.github/instructions/runner-settings-ui.instructions.md)
 - [Common Libraries](.github/instructions/common-libraries.instructions.md)
