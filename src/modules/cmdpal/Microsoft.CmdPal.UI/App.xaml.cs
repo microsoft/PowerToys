@@ -77,7 +77,7 @@ public partial class App : Application, IDisposable
 
         Services = ConfigureServices(appInfoService);
 
-        IconCacheProvider.Initialize(Services);
+        IconProvider.Initialize(Services);
 
         this.InitializeComponent();
 
