@@ -1,5 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
     <RootNamespace>PowerToys.LightSwitch.UITests</RootNamespace>
     <AssemblyName>LightSwitch.UITests</AssemblyName>

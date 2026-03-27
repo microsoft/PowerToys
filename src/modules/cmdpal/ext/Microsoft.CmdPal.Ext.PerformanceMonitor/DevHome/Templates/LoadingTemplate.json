@@ -1,0 +1,20 @@
+{
+  "type": "AdaptiveCard",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "%Widget_Template/Loading%",
+          "wrap": true,
+          "horizontalAlignment": "center"
+        }
+      ],
+      "verticalContentAlignment": "center",
+      "height": "stretch"
+    }
+  ]
+}

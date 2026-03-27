@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\Common.SelfContained.props" />
-  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
     <AssemblyTitle>PowerToys.ImageResizerCLI</AssemblyTitle>
@@ -12,7 +12,7 @@
     <Platforms>x64;ARM64</Platforms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
     <AssemblyName>PowerToys.ImageResizerCLI</AssemblyName>
     <NoWarn>$(NoWarn);SA1500;SA1402;CA1852</NoWarn>
   </PropertyGroup>

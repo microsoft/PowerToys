@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -18,30 +18,20 @@ public sealed partial class ListItemTemplateSelector : DataTemplateSelector
 
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
     {
-        DataTemplate? dataTemplate = ListItem;
-
-        if (container is ListViewItem listItem)
+        if (item is not ListItemViewModel element)
         {
-            if (item is ListItemViewModel element)
-            {
-                if (container is ListViewItem li && element.IsSectionOrSeparator)
-                {
-                    li.IsEnabled = false;
-                    li.AllowFocusWhenDisabled = false;
-                    li.AllowFocusOnInteraction = false;
-                    li.IsHitTestVisible = false;
-                    dataTemplate = string.IsNullOrWhiteSpace(element.Section) ? Separator : Section;
-                }
-                else
-                {
-                    listItem.IsEnabled = true;
-                    listItem.AllowFocusWhenDisabled = true;
-                    listItem.AllowFocusOnInteraction = true;
-                    listItem.IsHitTestVisible = true;
-                }
-            }
+            return ListItem;
         }
 
-        return dataTemplate;
+        switch (element.Type)
+        {
+            case ListItemType.Separator:
+                return Separator;
+            case ListItemType.SectionHeader:
+                return Section;
+            case ListItemType.Item:
+            default:
+                return ListItem;
+        }
     }
 }

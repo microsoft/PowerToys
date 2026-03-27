@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.Bookmarks</RootNamespace>
     <Nullable>enable</Nullable>
@@ -15,9 +15,9 @@
     <ProjectReference Include="..\..\ext\Microsoft.CmdPal.Ext.Indexer\Microsoft.CmdPal.Ext.Indexer.csproj" />
   </ItemGroup>
   <ItemGroup>
-	  <Content Update="Assets\**\*.*">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
+    <Content Update="Assets\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <InternalsVisibleTo Include="Microsoft.CmdPal.Ext.Bookmarks.UnitTests" />
+    <InternalsVisibleTo Include="Microsoft.CmdPal.Ext.Bookmarks.UnitTests" />
   </ItemGroup>
 </Project>

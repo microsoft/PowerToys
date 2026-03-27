@@ -15,9 +15,27 @@ VS Code extensions Needed:
 ---
 
 ## Building in VS Code
-### Configure Developer Powershell for VS 2022 or Developer Powershell for VS for more convenient dev in vscode.
-1. Configure profile in in settings, entry:  "terminal.integrated.profiles.windows"
-2. Add below config as entry (choose VS 2022 or VS 2026 based on your installation):
+### Configure Developer PowerShell for VS for more convenient development experience in VS Code
+1. Configure profile in settings, entry: `terminal.integrated.profiles.windows`
+2. Add below config as entry (choose VS 2026 or VS 2022 based on your installation):
+
+**For Visual Studio 2026 (recommended):**
+```json
+    "Developer PowerShell for VS": {
+		// Configure based on your preference
+        "path": "C:\\Program Files\\WindowsApps\\Microsoft.PowerShell_7.5.2.0_arm64__8wekyb3d8bbwe\\pwsh.exe",
+        "args": [
+            "-NoExit",
+            "-Command",
+            "& {",
+            "$orig = Get-Location;",
+            // Adjust path based on your edition (Community/Professional/Enterprise)
+            "& 'C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\Common7\\Tools\\Launch-VsDevShell.ps1';",
+            "Set-Location $orig",
+            "}"
+        ]
+    },
+```
 
 **For Visual Studio 2022:**
 ```json
@@ -31,24 +49,6 @@ VS Code extensions Needed:
             "$orig = Get-Location;",
             // Adjust path based on your edition (Community/Professional/Enterprise)
             "& 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\Launch-VsDevShell.ps1';",
-            "Set-Location $orig",
-            "}"
-        ]
-    },
-```
-
-**For Visual Studio 2026:**
-```json
-    "Developer PowerShell for VS": {
-		// Configure based on your preference
-        "path": "C:\\Program Files\\WindowsApps\\Microsoft.PowerShell_7.5.2.0_arm64__8wekyb3d8bbwe\\pwsh.exe",
-        "args": [
-            "-NoExit",
-            "-Command",
-            "& {",
-            "$orig = Get-Location;",
-            // Adjust path based on your edition (Community/Professional/Enterprise)
-            "& 'C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\Common7\\Tools\\Launch-VsDevShell.ps1';",
             "Set-Location $orig",
             "}"
         ]

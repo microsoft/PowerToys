@@ -2,12 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.Services;
 
+/// <summary>
+/// Input parameters for theme computation, passed to theme providers.
+/// </summary>
 internal sealed record ThemeContext
 {
     public ElementTheme Theme { get; init; }
@@ -21,4 +25,8 @@ internal sealed record ThemeContext
     public double BackgroundImageOpacity { get; init; }
 
     public int? ColorIntensity { get; init; }
+
+    public BackdropStyle? BackdropStyle { get; init; }
+
+    public float BackdropOpacity { get; init; } = 1.0f;
 }

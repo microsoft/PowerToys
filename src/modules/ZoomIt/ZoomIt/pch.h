@@ -53,6 +53,9 @@
 #include <winrt/Windows.Storage.Pickers.h>
 #include <winrt/Windows.Storage.FileProperties.h>
 #include <winrt/Windows.Devices.Enumeration.h>
+#include <winrt/Windows.Media.Ocr.h>
+
+#include <Windows.Graphics.Imaging.Interop.h>
 
 #include <filesystem>
 
@@ -69,6 +72,7 @@
 // WIL
 #include <wil/com.h>
 #include <wil/resource.h>
+#include <wil/coroutine.h>
 
 // DirectX
 #include <d3d11_4.h>

@@ -289,3 +289,6 @@ St&yle
 
 # Microsoft Store URLs and product IDs
 ms-windows-store://\S+
+
+# ANSI color codes
+(?:\\(?:u00|x)1[Bb]|\\03[1-7]|\x1b|\\u\{1[Bb]\})\[\d+(?:;\d+)*m

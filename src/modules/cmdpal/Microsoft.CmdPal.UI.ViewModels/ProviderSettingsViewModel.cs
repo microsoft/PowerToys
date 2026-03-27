@@ -1,24 +1,29 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ProviderSettingsViewModel : ObservableObject
 {
     private static readonly IconInfoViewModel EmptyIcon = new(null);
+    private static readonly CompositeFormat ExtensionSubtextFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext);
+    private static readonly CompositeFormat ExtensionSubtextWithFallbackFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_with_fallback);
+    private static readonly CompositeFormat ExtensionSubtextDisabledFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_disabled);
 
     private readonly CommandProviderWrapper _provider;
     private readonly ProviderSettings _providerSettings;
-    private readonly SettingsModel _settings;
+    private readonly ISettingsService _settingsService;
     private readonly Lock _initializeSettingsLock = new();
 
     private Task? _initializeSettingsTask;
@@ -26,11 +31,11 @@ public partial class ProviderSettingsViewModel : ObservableObject
     public ProviderSettingsViewModel(
         CommandProviderWrapper provider,
         ProviderSettings providerSettings,
-        SettingsModel settings)
+        ISettingsService settingsService)
     {
         _provider = provider;
         _providerSettings = providerSettings;
-        _settings = settings;
+        _settingsService = settingsService;
 
         LoadingSettings = _provider.Settings?.HasSettings ?? false;
 
@@ -39,13 +44,13 @@ public partial class ProviderSettingsViewModel : ObservableObject
 
     public string DisplayName => _provider.DisplayName;
 
-    public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? "Built-in";
+    public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? Resources.builtin_extension_name;
 
     public string ExtensionSubtext => IsEnabled ?
         HasFallbackCommands ?
-            $"{ExtensionName}, {TopLevelCommands.Count} commands, {_provider.FallbackItems?.Length} fallback commands" :
-            $"{ExtensionName}, {TopLevelCommands.Count} commands" :
-        $"{ExtensionName}, {Resources.builtin_disabled_extension}";
+            string.Format(CultureInfo.CurrentCulture, ExtensionSubtextWithFallbackFormat, ExtensionName, TopLevelCommands.Count, _provider.FallbackItems?.Length ?? 0) :
+            string.Format(CultureInfo.CurrentCulture, ExtensionSubtextFormat, ExtensionName, TopLevelCommands.Count) :
+        string.Format(CultureInfo.CurrentCulture, ExtensionSubtextDisabledFormat, ExtensionName, Resources.builtin_disabled_extension);
 
     [MemberNotNullWhen(true, nameof(Extension))]
     public bool IsFromExtension => _provider.Extension is not null;
@@ -175,18 +180,18 @@ public partial class ProviderSettingsViewModel : ObservableObject
         {
             if (_providerSettings.FallbackCommands.TryGetValue(fallbackItem.Id, out var fallbackSettings))
             {
-                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, fallbackSettings, _settings, this));
+                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, fallbackSettings, this, _settingsService));
             }
             else
             {
-                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, new(), _settings, this));
+                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, new(), this, _settingsService));
             }
         }
 
         FallbackCommands = fallbackViewModels;
     }
 
-    private void Save() => SettingsModel.SaveSettings(_settings);
+    private void Save() => _settingsService.Save();
 
     private void InitializeSettingsPage()
     {

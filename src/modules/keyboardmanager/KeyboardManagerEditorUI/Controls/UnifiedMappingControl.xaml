@@ -1,0 +1,387 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="KeyboardManagerEditorUI.Controls.UnifiedMappingControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:commoncontrols="using:Microsoft.PowerToys.Common.UI.Controls"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    Loaded="UserControl_Loaded"
+    mc:Ignorable="d">
+
+    <Grid
+        Width="720"
+        MinHeight="480"
+        ColumnSpacing="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!--  Left Column: Original Input (Trigger)  -->
+        <StackPanel
+            Grid.Row="0"
+            Grid.Column="0"
+            Orientation="Vertical"
+            Spacing="8">
+            <TextBlock x:Uid="TriggerLabel" FontWeight="SemiBold" />
+            <ComboBox
+                x:Name="TriggerTypeComboBox"
+                HorizontalAlignment="Stretch"
+                SelectionChanged="TriggerTypeComboBox_SelectionChanged">
+                <ComboBoxItem
+                    x:Uid="TriggerType_KeyOrShortcut"
+                    IsSelected="True"
+                    Tag="KeyOrShortcut">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xEDA7;" />
+                        <TextBlock x:Uid="TriggerType_KeyOrShortcut_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <!--
+                <ComboBoxItem x:Uid="TriggerType_Mouse" Tag="Mouse">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="16" Glyph="&#xE962;" />
+                        <TextBlock x:Uid="TriggerType_Mouse_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
+                -->
+            </ComboBox>
+            <Rectangle
+                Height="1"
+                Margin="0,12,0,12"
+                HorizontalAlignment="Stretch"
+                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+            <tkcontrols:SwitchPresenter
+                x:Name="TriggerSwitchPresenter"
+                TargetType="x:String"
+                Value="{Binding SelectedItem.Tag, ElementName=TriggerTypeComboBox}">
+
+                <!--  Key or Shortcut Trigger  -->
+                <tkcontrols:Case Value="KeyOrShortcut">
+                    <StackPanel Orientation="Vertical" Spacing="8">
+                        <ToggleButton
+                            x:Name="TriggerKeyToggleBtn"
+                            MinHeight="86"
+                            Padding="8,24,8,24"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Checked="TriggerKeyToggleBtn_Checked"
+                            Style="{StaticResource CustomShortcutToggleButtonStyle}"
+                            Unchecked="TriggerKeyToggleBtn_Unchecked">
+                            <ToggleButton.Content>
+                                <ItemsControl x:Name="TriggerKeys">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <controls:WrapPanel
+                                                HorizontalSpacing="4"
+                                                Orientation="Horizontal"
+                                                VerticalSpacing="4" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <commoncontrols:KeyVisual
+                                                Padding="8"
+                                                Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                Content="{Binding}"
+                                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                                FontSize="16"
+                                                Style="{StaticResource DefaultKeyVisualStyle}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ToggleButton.Content>
+                        </ToggleButton>
+                        <CheckBox
+                            x:Name="AllowChordsCheckBox"
+                            x:Uid="AllowChordsCheckBox"
+                            Click="AllowChordsCheckBox_Click"
+                            IsChecked="True" />
+                    </StackPanel>
+                </tkcontrols:Case>
+                <!--  Mouse Button Trigger  -->
+                <tkcontrols:Case Value="Mouse">
+                    <ComboBox
+                        x:Name="MouseTriggerComboBox"
+                        MinHeight="86"
+                        HorizontalAlignment="Stretch"
+                        VerticalContentAlignment="Center">
+                        <ComboBoxItem x:Uid="MouseButton_Left" Tag="LeftMouse" />
+                        <ComboBoxItem x:Uid="MouseButton_Center" Tag="CenterMouse" />
+                        <ComboBoxItem x:Uid="MouseButton_Right" Tag="RightMouse" />
+                        <ComboBoxItem x:Uid="MouseButton_Button1" Tag="Button1" />
+                        <ComboBoxItem x:Uid="MouseButton_Button2" Tag="Button2" />
+                    </ComboBox>
+                </tkcontrols:Case>
+            </tkcontrols:SwitchPresenter>
+            <CheckBox
+                x:Name="AppSpecificCheckBox"
+                x:Uid="AppSpecificCheckBox"
+                IsEnabled="False" />
+            <TextBox
+                x:Name="AppNameTextBox"
+                x:Uid="AppNameTextBox"
+                Background="{ThemeResource TextControlBackgroundFocused}"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                GotFocus="AppNameTextBox_GotFocus"
+                Visibility="Collapsed" />
+        </StackPanel>
+        <!--  Arrow Separator  -->
+        <Grid
+            Grid.Row="0"
+            Grid.Column="1"
+            RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Rectangle
+                Width="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Fill="{ThemeResource TextFillColorDisabledBrush}" />
+            <Viewbox
+                Grid.Row="1"
+                Width="12"
+                Height="12">
+                <PathIcon Data="{StaticResource ArrowIconData}" Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+            </Viewbox>
+            <Rectangle
+                Grid.Row="2"
+                Width="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
+                Fill="{ThemeResource TextFillColorDisabledBrush}" />
+        </Grid>
+        <!--  Right Column: Action Output  -->
+        <StackPanel
+            Grid.Row="0"
+            Grid.Column="2"
+            Orientation="Vertical"
+            Spacing="8">
+            <TextBlock x:Uid="ActionLabel" FontWeight="SemiBold" />
+            <ComboBox
+                x:Name="ActionTypeComboBox"
+                HorizontalAlignment="Stretch"
+                SelectionChanged="ActionTypeComboBox_SelectionChanged">
+                <ComboBoxItem
+                    x:Uid="ActionType_KeyOrShortcut"
+                    IsSelected="True"
+                    Tag="KeyOrShortcut">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xEDA7;" />
+                        <TextBlock x:Uid="ActionType_KeyOrShortcut_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <ComboBoxItem x:Uid="ActionType_Text" Tag="Text">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE8D2;" />
+                        <TextBlock x:Uid="ActionType_Text_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <ComboBoxItem x:Uid="ActionType_OpenUrl" Tag="OpenUrl">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE774;" />
+                        <TextBlock x:Uid="ActionType_OpenUrl_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <ComboBoxItem x:Uid="ActionType_OpenApp" Tag="OpenApp">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xECAA;" />
+                        <TextBlock x:Uid="ActionType_OpenApp_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <!--
+                <ComboBoxItem x:Uid="ActionType_MouseClick" Tag="MouseClick">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE962;" />
+                        <TextBlock x:Uid="ActionType_MouseClick_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
+                -->
+            </ComboBox>
+            <Rectangle
+                Height="1"
+                Margin="0,12,0,12"
+                HorizontalAlignment="Stretch"
+                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            <tkcontrols:SwitchPresenter
+                x:Name="ActionSwitchPresenter"
+                TargetType="x:String"
+                Value="{Binding SelectedItem.Tag, ElementName=ActionTypeComboBox}">
+                <!--  Key or Shortcut Action  -->
+                <tkcontrols:Case Value="KeyOrShortcut">
+                    <ToggleButton
+                        x:Name="ActionKeyToggleBtn"
+                        MinHeight="86"
+                        Padding="8,24,8,24"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Checked="ActionKeyToggleBtn_Checked"
+                        Style="{StaticResource CustomShortcutToggleButtonStyle}"
+                        Unchecked="ActionKeyToggleBtn_Unchecked">
+                        <ToggleButton.Content>
+                            <ItemsControl x:Name="ActionKeys">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <controls:WrapPanel
+                                            HorizontalSpacing="4"
+                                            Orientation="Horizontal"
+                                            VerticalSpacing="4" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <commoncontrols:KeyVisual
+                                            Padding="8"
+                                            Background="{ThemeResource CustomAccentBackgroundBrush}"
+                                            BorderThickness="0"
+                                            Content="{Binding}"
+                                            CornerRadius="{StaticResource OverlayCornerRadius}"
+                                            FontSize="16"
+                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                            Style="{StaticResource DefaultKeyVisualStyle}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ToggleButton.Content>
+                    </ToggleButton>
+                </tkcontrols:Case>
+                <!--  Text Action  -->
+                <tkcontrols:Case Value="Text">
+                    <TextBox
+                        x:Name="TextContentBox"
+                        x:Uid="TextContentBox"
+                        MinHeight="120"
+                        MaxHeight="240"
+                        AcceptsReturn="True"
+                        Background="{ThemeResource TextControlBackgroundFocused}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        GotFocus="TextContentBox_GotFocus"
+                        TextChanged="TextContentBox_TextChanged"
+                        TextWrapping="Wrap" />
+                </tkcontrols:Case>
+                <!--  Open URL Action  -->
+                <tkcontrols:Case Value="OpenUrl">
+                    <TextBox
+                        x:Name="UrlPathInput"
+                        x:Uid="UrlPathInput"
+                        Background="{ThemeResource TextControlBackgroundFocused}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        GotFocus="UrlPathInput_GotFocus"
+                        TextChanged="UrlPathInput_TextChanged" />
+                </tkcontrols:Case>
+                <!--  Open App Action  -->
+                <tkcontrols:Case Value="OpenApp">
+                    <StackPanel Orientation="Vertical" Spacing="16">
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox
+                                x:Name="ProgramPathInput"
+                                x:Uid="ProgramPathInput"
+                                HorizontalAlignment="Stretch"
+                                GotFocus="ProgramPathInput_GotFocus"
+                                TextChanged="ProgramPathInput_TextChanged" />
+                            <Button
+                                x:Name="ProgramPathSelectButton"
+                                x:Uid="ProgramPathSelectButton"
+                                Grid.Column="1"
+                                VerticalAlignment="Bottom"
+                                Click="ProgramPathSelectButton_Click"
+                                Content="{ui:FontIcon Glyph=&#xE8DA;,
+                                                      FontSize=16}"
+                                Style="{StaticResource SubtleButtonStyle}" />
+                        </Grid>
+                        <TextBox
+                            x:Name="ProgramArgsInput"
+                            x:Uid="ProgramArgsInput"
+                            GotFocus="ProgramArgsInput_GotFocus" />
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox
+                                x:Name="StartInPathInput"
+                                x:Uid="StartInPathInput"
+                                HorizontalAlignment="Stretch"
+                                GotFocus="StartInPathInput_GotFocus" />
+                            <Button
+                                x:Name="StartInSelectButton"
+                                x:Uid="StartInSelectButton"
+                                Grid.Column="1"
+                                VerticalAlignment="Bottom"
+                                Click="StartInSelectButton_Click"
+                                Content="{ui:FontIcon Glyph=&#xE8DA;,
+                                                      FontSize=16}"
+                                Style="{StaticResource SubtleButtonStyle}" />
+                        </Grid>
+                        <ComboBox
+                            x:Name="ElevationComboBox"
+                            x:Uid="ElevationComboBox"
+                            HorizontalAlignment="Stretch"
+                            SelectedIndex="0">
+                            <ComboBoxItem x:Uid="Elevation_Normal" />
+                            <ComboBoxItem x:Uid="Elevation_Elevated" />
+                            <ComboBoxItem x:Uid="Elevation_DifferentUser" />
+                        </ComboBox>
+                        <ComboBox
+                            x:Name="IfRunningComboBox"
+                            x:Uid="IfRunningComboBox"
+                            HorizontalAlignment="Stretch"
+                            SelectedIndex="0">
+                            <ComboBoxItem x:Uid="IfRunning_ShowWindow" />
+                            <ComboBoxItem x:Uid="IfRunning_StartAnother" />
+                            <ComboBoxItem x:Uid="IfRunning_DoNothing" />
+                            <ComboBoxItem x:Uid="IfRunning_Close" />
+                            <ComboBoxItem x:Uid="IfRunning_EndTask" />
+                        </ComboBox>
+                        <ComboBox
+                            x:Name="VisibilityComboBox"
+                            x:Uid="VisibilityComboBox"
+                            HorizontalAlignment="Stretch"
+                            SelectedIndex="0">
+                            <ComboBoxItem x:Uid="Visibility_Normal" />
+                            <ComboBoxItem x:Uid="Visibility_Hidden" />
+                            <ComboBoxItem x:Uid="Visibility_Minimized" />
+                            <ComboBoxItem x:Uid="Visibility_Maximized" />
+                        </ComboBox>
+                    </StackPanel>
+                </tkcontrols:Case>
+                <!--  Mouse Click Action (Placeholder)  -->
+                <tkcontrols:Case Value="MouseClick">
+                    <TextBlock
+                        x:Uid="MouseClickPlaceholder"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                </tkcontrols:Case>
+            </tkcontrols:SwitchPresenter>
+        </StackPanel>
+        <!--  Validation InfoBar spanning all columns  -->
+        <InfoBar
+            x:Name="ValidationInfoBar"
+            Grid.Row="1"
+            Grid.ColumnSpan="3"
+            Margin="0,16,0,0"
+            IsClosable="False"
+            IsOpen="False"
+            Severity="Warning" />
+    </Grid>
+</UserControl>

@@ -1,5 +1,3 @@
-
-
 #include "pch.h"
 #include "template_item.h"
 #include <shellapi.h>
@@ -60,10 +58,91 @@ std::wstring template_item::get_target_filename(const bool include_starting_digi
 
 std::wstring template_item::remove_starting_digits_from_filename(std::wstring filename) const
 {
-    filename.erase(0, std::min(filename.find_first_not_of(L"0123456789"), filename.size()));
-    filename.erase(0, std::min(filename.find_first_not_of(L" ."), filename.size()));
+    // Filename cases to support
+    // type      | filename                             | result
+    // [file]    | 01. First entry.txt                  | First entry.txt
+    // [folder]  | 02. Second entry                     | Second entry
+    // [folder]  | 03 Third entry                       | Third entry
+    // [file]    | 04 Fourth entry.txt                  | Fourth entry.txt
+    // [file]    | 05.Fifth entry.txt                   | Fifth entry.txt
+    // [folder]  | 001231                               | 001231
+    // [file]    | 001231.txt                           | 001231.txt
+    // [file]    | 13. 0123456789012345.txt             | 0123456789012345.txt
 
-    return filename;
+    std::filesystem::path filename_path(filename);
+    const std::wstring stem = filename_path.stem().wstring();
+
+    bool stem_is_only_digits = !stem.empty();
+    for (const wchar_t c : stem)
+    {
+        if (c < L'0' || c > L'9')
+        {
+            stem_is_only_digits = false;
+            break;
+        }
+    }
+
+    if (stem_is_only_digits)
+    {
+        // Edge cases where digits ARE the filename.
+        // If it's a file, we always keep it (e.g. 001231.txt or 001231).
+        // If it's a folder, we only strip if it looks like it has an extension (which is actually part of the name for folders).
+        // e.g. "0123.Name" -> Strip. "001231" -> Keep.
+        const bool is_folder = helpers::filesystem::is_directory(path);
+        const bool has_extension = filename_path.has_extension();
+
+        if (!is_folder || !has_extension)
+        {
+            return filename;
+        }
+    }
+
+    // Find end of leading digits
+    size_t digits_end_index = 0;
+    while (digits_end_index < filename.length() && filename[digits_end_index] >= L'0' && filename[digits_end_index] <= L'9')
+    {
+        digits_end_index++;
+    }
+
+    if (digits_end_index == 0)
+    {
+        // No leading digits
+        return filename;
+    }
+
+    // Determine if we should also strip a separator (dot or space)
+    size_t strip_length = digits_end_index;
+
+    // Check patterns to strip separators:
+    // 1. "01. Name" -> Strip "01. "
+    // 2. "01 .Name" -> Strip "01 ."
+    // 3. "01.Name"  -> Strip "01."
+    // 4. "01 Name"  -> Strip "01 "
+    // 5. "01Name"   -> Strip "01" (No separator)
+
+    if (strip_length < filename.length())
+    {
+        if (filename[strip_length] == L'.')
+        {
+            strip_length++;
+            // If dot is followed by space, strip that too (e.g. "01. Name")
+            if (strip_length < filename.length() && filename[strip_length] == L' ')
+            {
+                strip_length++;
+            }
+        }
+        else if (filename[strip_length] == L' ')
+        {
+            strip_length++;
+            // If space is followed by dot, strip that too (e.g. "01 .Name")
+            if (strip_length < filename.length() && filename[strip_length] == L'.')
+            {
+                strip_length++;
+            }
+        }
+    }
+
+    return filename.substr(strip_length);
 }
 
 std::wstring template_item::get_explorer_icon() const

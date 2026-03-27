@@ -52,8 +52,11 @@ void PowerDisplayProcessManager::send_message(const std::wstring& message_type, 
 {
     submit_task([this, message_type, message_arg] {
         // Ensure process is running before sending message
-        if (!is_process_running() && m_enabled)
+        // If process is not running, enable and start it - this allows Quick Access launch
+        // to work even when the module was not previously enabled
+        if (!is_process_running())
         {
+            m_enabled = true;
             refresh();
         }
         send_named_pipe_message(message_type, message_arg);

@@ -4,21 +4,24 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class AliasManager : ObservableObject
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly ISettingsService _settingsService;
 
     // REMEMBER, CommandAlias.SearchPrefix is what we use as keys
     private readonly Dictionary<string, CommandAlias> _aliases;
 
-    public AliasManager(TopLevelCommandManager tlcManager, SettingsModel settings)
+    public AliasManager(TopLevelCommandManager tlcManager, ISettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
-        _aliases = settings.Aliases;
+        _settingsService = settingsService;
+        _aliases = _settingsService.Settings.Aliases;
 
         if (_aliases.Count == 0)
         {
@@ -107,7 +110,7 @@ public partial class AliasManager : ObservableObject
             }
 
             // Look for the alias belonging to another command, and remove it
-            if (newAlias is not null && kv.Value.Alias == newAlias.Alias)
+            if (newAlias is not null && kv.Value.Alias == newAlias.Alias && kv.Value.CommandId != commandId)
             {
                 toRemove.Add(kv.Value);
 

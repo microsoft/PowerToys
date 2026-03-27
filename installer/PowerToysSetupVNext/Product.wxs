@@ -53,7 +53,6 @@
       <ComponentGroupRef Id="LightSwitchComponentGroup" />
       <ComponentGroupRef Id="PeekComponentGroup" />
       <ComponentGroupRef Id="PowerRenameComponentGroup" />
-      <ComponentGroupRef Id="PowerDisplayComponentGroup" />
       <ComponentGroupRef Id="RegistryPreviewComponentGroup" />
       <ComponentGroupRef Id="RunComponentGroup" />
       <ComponentGroupRef Id="SettingsComponentGroup" />
@@ -147,7 +146,7 @@
       <Custom Action="UnRegisterCmdPalPackage" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UninstallCommandNotFound" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UpgradeCommandNotFound" After="InstallFiles" Condition="WIX_UPGRADE_DETECTED" />
-      <Custom Action="UninstallPackageIdentityMSIX" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UninstallPackageIdentityMSIX" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UninstallServicesTask" After="InstallFinalize" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
         <!-- TODO: Use to activate embedded MSIX -->
       <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">
@@ -161,6 +160,9 @@
 
       <!-- Clean Video Conference Mute registry keys that might be around from previous installations. We've deprecated this utility since then. -->
       <Custom Action="CleanVideoConferenceRegistry" Before="InstallFinalize" Condition="NOT Installed" />
+
+      <!-- Restore built-in "New" context menu in case user disabled it via New+ -->
+      <Custom Action="RestoreBuiltInNewContextMenu" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
 
     </InstallExecuteSequence>
 
@@ -262,6 +264,8 @@
     <CustomAction Id="InstallCmdPalPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallCmdPalPackageCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="SetBundleInstallLocation" Return="ignore" Impersonate="no" Execute="deferred" DllEntry="SetBundleInstallLocationCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="RestoreBuiltInNewContextMenu" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="RestoreBuiltInNewContextMenuCA" BinaryRef="PTCustomActions" />
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />

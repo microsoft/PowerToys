@@ -15,7 +15,7 @@ Before you can start debugging PowerToys, you need to set up your development en
 
 You can build the entire solution from the command line, which is sometimes faster than building within Visual Studio:
 
-1. Open `Developer Command Prompt for VS 2022` or `Developer Command Prompt for VS`
+1. Open `Developer Command Prompt for VS`
 2. Navigate to the repository root directory
 3. Run the following command(don't forget to set the correct platform):
    ```pwsh
@@ -105,7 +105,7 @@ If you encounter build errors about missing image files (e.g., `.png`, `.ico`, o
 
 1. **Clean the solution in Visual Studio**: Build > Clean Solution
 
-   Or from the command line (Developer Command Prompt for VS 2022 or Developer Command Prompt for VS):
+   Or from the command line (`Developer Command Prompt for VS`):
    ```pwsh
    msbuild PowerToys.slnx /t:Clean /p:Platform=x64 /p:Configuration=Debug
    ```
