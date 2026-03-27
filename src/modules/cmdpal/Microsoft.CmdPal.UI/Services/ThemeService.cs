@@ -37,8 +37,15 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
     private DispatcherQueueTimer? _dispatcherQueueTimer;
     private bool _isInitialized;
     private bool _disposed;
+    private int _rotateMainBackgroundOnActivation;
     private InternalThemeState _currentState;
     private DockThemeSnapshot _currentDockState;
+    private string? _mainBackgroundFolderPath;
+    private string? _mainBackgroundImagePath;
+    private DateTimeOffset _mainBackgroundChangedAtUtc;
+    private int _mainBackgroundSequentialIndex = -1;
+    private int[]? _shuffledOrder;
+    private int _shuffleCursor;
 
     public event EventHandler<ThemeChangedEventArgs>? ThemeChanged;
 
@@ -69,6 +76,17 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         Reload();
     }
 
+    public void RefreshThemeForActivation()
+    {
+        if (!_isInitialized || _settingsService.Settings.ColorizationMode != ColorizationMode.Slideshow)
+        {
+            return;
+        }
+
+        Interlocked.Exchange(ref _rotateMainBackgroundOnActivation, 1);
+        Reload();
+    }
+
     private void Reload()
     {
         if (!_isInitialized)
@@ -76,10 +94,12 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             return;
         }
 
+        var rotateMainBackgroundOnActivation = Interlocked.Exchange(ref _rotateMainBackgroundOnActivation, 0) == 1;
+
         // provider selection
         var themeColorIntensity = Math.Clamp(_settingsService.Settings.CustomThemeColorIntensity, 0, 100);
         var imageTintIntensity = Math.Clamp(_settingsService.Settings.BackgroundImageTintIntensity, 0, 100);
-        var effectiveColorIntensity = _settingsService.Settings.ColorizationMode == ColorizationMode.Image
+        var effectiveColorIntensity = _settingsService.Settings.ColorizationMode is ColorizationMode.Image or ColorizationMode.Slideshow
             ? imageTintIntensity
             : themeColorIntensity;
 
@@ -91,11 +111,12 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             ColorizationMode.CustomColor => _settingsService.Settings.CustomThemeColor,
             ColorizationMode.WindowsAccentColor => _uiSettings.GetColorValue(UIColorType.Accent),
             ColorizationMode.Image => _settingsService.Settings.CustomThemeColor,
+            ColorizationMode.Slideshow => _settingsService.Settings.CustomThemeColor,
             _ => Colors.Transparent,
         };
         var effectiveTheme = GetElementTheme((ElementTheme)_settingsService.Settings.Theme);
-        var imageSource = _settingsService.Settings.ColorizationMode == ColorizationMode.Image
-            ? LoadImageSafe(_settingsService.Settings.BackgroundImagePath)
+        var imageSource = _settingsService.Settings.ColorizationMode is ColorizationMode.Image or ColorizationMode.Slideshow
+            ? LoadImageSafe(ResolveMainBackgroundImagePath(rotateMainBackgroundOnActivation))
             : null;
         var stretch = _settingsService.Settings.BackgroundImageFit switch
         {
@@ -122,7 +143,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
 
         // Create public snapshot (no provider!)
         var hasColorization = effectiveColorIntensity > 0
-            && _settingsService.Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image;
+            && _settingsService.Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image or ColorizationMode.Slideshow;
 
         var snapshot = new ThemeSnapshot
         {
@@ -165,7 +186,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         };
         var dockEffectiveTheme = GetElementTheme((ElementTheme)dockSettings.Theme);
         var dockImageSource = dockSettings.ColorizationMode == ColorizationMode.Image
-            ? LoadImageSafe(dockSettings.BackgroundImagePath)
+            ? LoadImageSafe(BackgroundImagePathResolver.ResolvePreviewImagePath(dockSettings.BackgroundImagePath))
             : null;
         var dockStretch = dockSettings.BackgroundImageFit switch
         {
@@ -210,7 +231,131 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
     private bool UseColorfulProvider(int effectiveColorIntensity)
     {
         return _settingsService.Settings.ColorizationMode == ColorizationMode.Image
+               || _settingsService.Settings.ColorizationMode == ColorizationMode.Slideshow
                || (effectiveColorIntensity > 0 && _settingsService.Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor);
+    }
+
+    private static string? NormalizeConfiguredPath(string? configuredPath)
+        => string.IsNullOrWhiteSpace(configuredPath) ? null : configuredPath.Trim();
+
+    private string? ResolveMainBackgroundImagePath(bool rotateOnActivation)
+    {
+        if (_settingsService.Settings.ColorizationMode != ColorizationMode.Slideshow)
+        {
+            ResetMainBackgroundImageState();
+
+            var configuredImagePath = NormalizeConfiguredPath(_settingsService.Settings.BackgroundImagePath);
+            if (BackgroundImagePathResolver.TryGetLocalFolderPath(configuredImagePath, out _))
+            {
+                return BackgroundImagePathResolver.ResolvePreviewImagePath(configuredImagePath);
+            }
+
+            return configuredImagePath;
+        }
+
+        if (!BackgroundImagePathResolver.TryGetLocalFolderPath(NormalizeConfiguredPath(_settingsService.Settings.BackgroundImageSlideshowFolderPath), out var folderPath))
+        {
+            ResetMainBackgroundImageState();
+            return null;
+        }
+
+        var files = BackgroundImagePathResolver.GetSupportedImageFiles(folderPath);
+        if (files.Count == 0)
+        {
+            ResetMainBackgroundImageState();
+            return null;
+        }
+
+        var folderChanged = !string.Equals(_mainBackgroundFolderPath, folderPath, StringComparison.OrdinalIgnoreCase);
+        var hasSelection = !string.IsNullOrWhiteSpace(_mainBackgroundImagePath);
+        var selectedPath = _mainBackgroundImagePath ?? string.Empty;
+        var selectedImageStillValid =
+            hasSelection
+            && File.Exists(selectedPath)
+            && files.Any(path => string.Equals(path, selectedPath, StringComparison.OrdinalIgnoreCase));
+
+        var intervalMinutes = Math.Max(_settingsService.Settings.BackgroundImageChangeIntervalMinutes, 0);
+        var intervalElapsed = intervalMinutes == 0
+            || (DateTimeOffset.UtcNow - _mainBackgroundChangedAtUtc) >= TimeSpan.FromMinutes(intervalMinutes);
+
+        var shouldRotate =
+            folderChanged
+            || !selectedImageStillValid
+            || (rotateOnActivation && intervalElapsed);
+
+        if (!shouldRotate && selectedImageStillValid)
+        {
+            return _mainBackgroundImagePath;
+        }
+
+        var nextIndex = GetNextMainBackgroundImageIndex(files.Count, folderChanged, _settingsService.Settings.BackgroundImageShuffle);
+        _mainBackgroundFolderPath = folderPath;
+        _mainBackgroundSequentialIndex = nextIndex;
+        _mainBackgroundImagePath = files[nextIndex];
+        _mainBackgroundChangedAtUtc = DateTimeOffset.UtcNow;
+        return _mainBackgroundImagePath;
+    }
+
+    private int GetNextMainBackgroundImageIndex(int fileCount, bool folderChanged, bool shuffle)
+    {
+        if (fileCount <= 1)
+        {
+            return 0;
+        }
+
+        if (shuffle)
+        {
+            if (folderChanged || _shuffledOrder is null || _shuffledOrder.Length != fileCount || _shuffleCursor >= _shuffledOrder.Length)
+            {
+                _shuffledOrder = FisherYatesShuffle(fileCount);
+                _shuffleCursor = 0;
+
+                // Avoid repeating the last image at the start of a new deck.
+                if (!folderChanged
+                    && _shuffledOrder.Length > 1
+                    && _mainBackgroundSequentialIndex >= 0
+                    && _shuffledOrder[0] == _mainBackgroundSequentialIndex)
+                {
+                    (_shuffledOrder[0], _shuffledOrder[^1]) = (_shuffledOrder[^1], _shuffledOrder[0]);
+                }
+            }
+
+            return _shuffledOrder[_shuffleCursor++];
+        }
+
+        if (folderChanged || _mainBackgroundSequentialIndex < 0 || _mainBackgroundSequentialIndex >= fileCount)
+        {
+            return 0;
+        }
+
+        return (_mainBackgroundSequentialIndex + 1) % fileCount;
+    }
+
+    private static int[] FisherYatesShuffle(int count)
+    {
+        var indices = new int[count];
+        for (var i = 0; i < count; i++)
+        {
+            indices[i] = i;
+        }
+
+        for (var i = count - 1; i > 0; i--)
+        {
+            var j = Random.Shared.Next(i + 1);
+            (indices[i], indices[j]) = (indices[j], indices[i]);
+        }
+
+        return indices;
+    }
+
+    private void ResetMainBackgroundImageState()
+    {
+        _mainBackgroundFolderPath = null;
+        _mainBackgroundImagePath = null;
+        _mainBackgroundChangedAtUtc = default;
+        _mainBackgroundSequentialIndex = -1;
+        _shuffledOrder = null;
+        _shuffleCursor = 0;
     }
 
     private static BitmapImage? LoadImageSafe(string? path)

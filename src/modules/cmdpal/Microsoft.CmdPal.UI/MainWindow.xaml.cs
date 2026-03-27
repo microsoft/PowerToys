@@ -839,6 +839,9 @@ public sealed partial class MainWindow : WindowEx,
             // Sure, it's not ideal, but at least it's not visible.
         }
 
+        // Rotate slideshow while hidden so the next summon doesn't visibly swap images.
+        _themeService.RefreshThemeForActivation();
+
         WeakReferenceMessenger.Default.Send(new WindowHiddenMessage());
 
         // Start auto-go-home timer

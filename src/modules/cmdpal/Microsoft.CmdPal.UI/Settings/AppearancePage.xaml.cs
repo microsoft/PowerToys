@@ -55,8 +55,7 @@ public sealed partial class AppearancePage : Page
                 ViewMode = PickerViewMode.Thumbnail,
             };
 
-            string[] extensions = [".png", ".bmp", ".jpg", ".jpeg", ".jfif", ".gif", ".tiff", ".tif", ".webp", ".jxr"];
-            foreach (var ext in extensions)
+            foreach (var ext in BackgroundImagePathResolver.SupportedImageExtensions)
             {
                 picker.FileTypeFilter!.Add(ext);
             }
@@ -64,12 +63,44 @@ public sealed partial class AppearancePage : Page
             var file = await picker.PickSingleFileAsync()!;
             if (file != null)
             {
+                ViewModel.Appearance.ColorizationMode = ColorizationMode.Image;
                 ViewModel.Appearance.BackgroundImagePath = file.Path ?? string.Empty;
             }
         }
         catch (Exception ex)
         {
             Logger.LogError("Failed to pick background image file", ex);
+        }
+    }
+
+    private async void PickBackgroundImageFolder_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (XamlRoot?.ContentIslandEnvironment is null)
+            {
+                return;
+            }
+
+            var windowId = XamlRoot?.ContentIslandEnvironment?.AppWindowId ?? new WindowId(0);
+
+            var picker = new FolderPicker(windowId)
+            {
+                CommitButtonText = ViewModels.Properties.Resources.builtin_settings_appearance_pick_background_folder_title!,
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+                ViewMode = PickerViewMode.Thumbnail,
+            };
+
+            var folder = await picker.PickSingleFolderAsync()!;
+            if (folder != null)
+            {
+                ViewModel.Appearance.ColorizationMode = ColorizationMode.Slideshow;
+                ViewModel.Appearance.BackgroundImageSlideshowFolderPath = folder.Path ?? string.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to pick background image folder", ex);
         }
     }
 

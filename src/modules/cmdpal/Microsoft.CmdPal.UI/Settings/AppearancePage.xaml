@@ -149,6 +149,7 @@
                                 <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_WindowsAccent" />
                                 <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_CustomColor" />
                                 <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_Image" />
+                                <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_Slideshow" />
                             </ComboBox>
                             <TextBlock
                                 x:Uid="Settings_GeneralPage_Background_NotAvailable"
@@ -201,8 +202,14 @@
                             <controls:SettingsCard
                                 x:Uid="Settings_GeneralPage_BackgroundImage_SettingsCard"
                                 Description="{x:Bind ViewModel.Appearance.BackgroundImagePath, Mode=OneWay}"
-                                Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
+                                Visibility="{x:Bind ViewModel.Appearance.IsSingleImageBackgroundControlsVisible, Mode=OneWay}">
                                 <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseImageButton" Click="PickBackgroundImage_Click" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard
+                                x:Uid="Settings_GeneralPage_BackgroundSlideshowFolder_SettingsCard"
+                                Description="{x:Bind ViewModel.Appearance.BackgroundImageSlideshowFolderPath, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.Appearance.IsSlideshowBackgroundControlsVisible, Mode=OneWay}">
+                                <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseFolderButton" Click="PickBackgroundImageFolder_Click" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImageBrightness_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
                                 <Slider
@@ -225,6 +232,18 @@
                                     <ComboBoxItem x:Uid="BackgroundImageFit_ComboBoxItem_Fill" />
                                     <ComboBoxItem x:Uid="BackgroundImageFit_ComboBoxItem_Stretch" />
                                 </ComboBox>
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImageChangeInterval_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundSlideshowControlsVisible, Mode=OneWay}">
+                                <ComboBox SelectedIndex="{x:Bind ViewModel.Appearance.BackgroundImageChangeIntervalIndex, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="Settings_GeneralPage_BackgroundImageChangeInterval_Activation" />
+                                    <ComboBoxItem x:Uid="Settings_GeneralPage_BackgroundImageChangeInterval_1Minute" />
+                                    <ComboBoxItem x:Uid="Settings_GeneralPage_BackgroundImageChangeInterval_10Minutes" />
+                                    <ComboBoxItem x:Uid="Settings_GeneralPage_BackgroundImageChangeInterval_30Minutes" />
+                                    <ComboBoxItem x:Uid="Settings_GeneralPage_BackgroundImageChangeInterval_60Minutes" />
+                                </ComboBox>
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImageShuffle_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundSlideshowControlsVisible, Mode=OneWay}">
+                                <ToggleSwitch IsOn="{x:Bind ViewModel.Appearance.BackgroundImageShuffle, Mode=TwoWay}" />
                             </controls:SettingsCard>
 
                             <!--  Background tint color and intensity  -->

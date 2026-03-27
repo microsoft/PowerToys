@@ -135,6 +135,9 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
                 OnPropertyChanged(nameof(IsImageTintIntensityVisible));
                 OnPropertyChanged(nameof(EffectiveTintIntensity));
                 OnPropertyChanged(nameof(IsBackgroundControlsVisible));
+                OnPropertyChanged(nameof(IsSingleImageBackgroundControlsVisible));
+                OnPropertyChanged(nameof(IsSlideshowBackgroundControlsVisible));
+                OnPropertyChanged(nameof(IsBackgroundSlideshowControlsVisible));
                 OnPropertyChanged(nameof(IsNoBackgroundVisible));
                 OnPropertyChanged(nameof(IsAccentColorControlsVisible));
                 OnPropertyChanged(nameof(IsResetButtonVisible));
@@ -211,6 +214,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
             {
                 _settingsService.Settings.BackgroundImagePath = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(EffectiveBackgroundImageSource));
 
                 if (BackgroundImageOpacity == 0)
                 {
@@ -296,6 +300,78 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
             1 => BackgroundImageFit.Fill,
             _ => BackgroundImageFit.UniformToFill,
         };
+    }
+
+    public string BackgroundImageSlideshowFolderPath
+    {
+        get => _settingsService.Settings.BackgroundImageSlideshowFolderPath ?? string.Empty;
+        set
+        {
+            if (_settingsService.Settings.BackgroundImageSlideshowFolderPath != value)
+            {
+                _settingsService.Settings.BackgroundImageSlideshowFolderPath = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsBackgroundSlideshowControlsVisible));
+                OnPropertyChanged(nameof(EffectiveBackgroundImageSource));
+
+                if (BackgroundImageOpacity == 0)
+                {
+                    BackgroundImageOpacity = 100;
+                }
+
+                Save();
+            }
+        }
+    }
+
+    public int BackgroundImageChangeIntervalMinutes
+    {
+        get => Math.Max(_settingsService.Settings.BackgroundImageChangeIntervalMinutes, 0);
+        set
+        {
+            var normalized = Math.Max(value, 0);
+            if (_settingsService.Settings.BackgroundImageChangeIntervalMinutes != normalized)
+            {
+                _settingsService.Settings.BackgroundImageChangeIntervalMinutes = normalized;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(BackgroundImageChangeIntervalIndex));
+                Save();
+            }
+        }
+    }
+
+    public int BackgroundImageChangeIntervalIndex
+    {
+        get => BackgroundImageChangeIntervalMinutes switch
+        {
+            1 => 1,
+            10 => 2,
+            30 => 3,
+            60 => 4,
+            _ => 0,
+        };
+        set => BackgroundImageChangeIntervalMinutes = value switch
+        {
+            1 => 1,
+            2 => 10,
+            3 => 30,
+            4 => 60,
+            _ => 0,
+        };
+    }
+
+    public bool BackgroundImageShuffle
+    {
+        get => _settingsService.Settings.BackgroundImageShuffle;
+        set
+        {
+            if (_settingsService.Settings.BackgroundImageShuffle != value)
+            {
+                _settingsService.Settings.BackgroundImageShuffle = value;
+                OnPropertyChanged();
+                Save();
+            }
+        }
     }
 
     public int BackdropOpacity
@@ -388,26 +464,35 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     [ObservableProperty]
     public partial bool IsColorizationDetailsExpanded { get; set; }
 
-    public bool IsCustomTintVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.Image;
+    public bool IsCustomTintVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.Image or ColorizationMode.Slideshow;
 
     public bool IsColorIntensityVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor;
 
-    public bool IsImageTintIntensityVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.Image;
+    public bool IsImageTintIntensityVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.Image or ColorizationMode.Slideshow;
 
     /// <summary>
     /// Gets the effective tint intensity for the preview, based on the current colorization mode.
     /// </summary>
-    public int EffectiveTintIntensity => _settingsService.Settings.ColorizationMode is ColorizationMode.Image
+    public int EffectiveTintIntensity => _settingsService.Settings.ColorizationMode is ColorizationMode.Image or ColorizationMode.Slideshow
         ? _settingsService.Settings.BackgroundImageTintIntensity
         : _settingsService.Settings.CustomThemeColorIntensity;
 
-    public bool IsBackgroundControlsVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.Image;
+    public bool IsBackgroundControlsVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.Image or ColorizationMode.Slideshow;
+
+    public bool IsSingleImageBackgroundControlsVisible =>
+        _settingsService.Settings.ColorizationMode is ColorizationMode.Image;
+
+    public bool IsSlideshowBackgroundControlsVisible =>
+        _settingsService.Settings.ColorizationMode is ColorizationMode.Slideshow;
+
+    public bool IsBackgroundSlideshowControlsVisible =>
+        IsSlideshowBackgroundControlsVisible && BackgroundImagePathResolver.TryGetLocalFolderPath(BackgroundImageSlideshowFolderPath, out _);
 
     public bool IsNoBackgroundVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.None;
 
     public bool IsAccentColorControlsVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.WindowsAccentColor;
 
-    public bool IsResetButtonVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.Image;
+    public bool IsResetButtonVisible => _settingsService.Settings.ColorizationMode is ColorizationMode.Image or ColorizationMode.Slideshow;
 
     public BackdropParameters EffectiveBackdrop { get; private set; } = new(Colors.Black, Colors.Black, 0.5f, 0.5f);
 
@@ -419,7 +504,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
             : ColorizationMode switch
             {
                 ColorizationMode.WindowsAccentColor => _currentSystemAccentColor,
-                ColorizationMode.CustomColor or ColorizationMode.Image => ThemeColor,
+                ColorizationMode.CustomColor or ColorizationMode.Image or ColorizationMode.Slideshow => ThemeColor,
                 _ => Colors.Transparent,
             };
 
@@ -431,11 +516,19 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     public ImageSource? EffectiveBackgroundImageSource =>
         !BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsBackgroundImage
             ? null
-            : ColorizationMode is ColorizationMode.Image
-              && !string.IsNullOrWhiteSpace(BackgroundImagePath)
-              && Uri.TryCreate(BackgroundImagePath, UriKind.RelativeOrAbsolute, out var uri)
+            : ColorizationMode is ColorizationMode.Image or ColorizationMode.Slideshow
+              && BackgroundImagePathResolver.CreateImageUri(GetEffectiveBackgroundPreviewPath()) is Uri uri
                 ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
                 : null;
+
+    private string? GetEffectiveBackgroundPreviewPath()
+    {
+        return ColorizationMode switch
+        {
+            ColorizationMode.Slideshow => BackgroundImagePathResolver.ResolvePreviewImagePath(BackgroundImageSlideshowFolderPath),
+            _ => BackgroundImagePath,
+        };
+    }
 
     public AppearanceSettingsViewModel(IThemeService themeService, ISettingsService settingsService)
     {
@@ -504,6 +597,8 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         BackgroundImageFit = BackgroundImageFit.UniformToFill;
         BackgroundImageOpacity = 100;
         BackgroundImageTintIntensity = 0;
+        BackgroundImageChangeIntervalMinutes = 0;
+        BackgroundImageShuffle = true;
     }
 
     [RelayCommand]
@@ -518,6 +613,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
 
         // Reset background image settings
         BackgroundImagePath = string.Empty;
+        BackgroundImageSlideshowFolderPath = string.Empty;
         ResetBackgroundImageProperties();
 
         // Reset colorization
