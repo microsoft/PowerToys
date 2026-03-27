@@ -1,6 +1,6 @@
 # Community
 
-The PowerToys team is extremely grateful to have the support of an amazing active community. The work you do is incredibly important. PowerToys wouldn’t be near what it is without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thanks and to recognize your work. This is a living document dedicated to highlighting the high impact community members and their contributions.
+The PowerToys team is extremely grateful to have the support of an amazing active community. The work you do is incredibly important. PowerToys wouldn't be near what it is without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thanks and to recognize your work. This is a living document dedicated to highlighting the high impact community members and their contributions.
 
 Names are in alphabetical order, based on first name.
 
