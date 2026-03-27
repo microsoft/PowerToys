@@ -124,6 +124,24 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
                 var browseCommand = firstContextCommand.Command;
                 if (browseCommand != null)
                 {
+                    // if (browseCommand is Command c && command.Icon is IconInfo i)
+                    // {
+                    //    // preserve the icon when we flip the commands
+                    //    c.Icon = i;
+                    // }
+                    if (browseCommand is Command c)
+                    {
+                        command.PropChanged += (s, e) =>
+                        {
+                            if (e.PropertyName == nameof(ICommand.Icon) &&
+                                (s as ICommand)?.Icon is IconInfo i)
+                            {
+                                c.Icon = i;
+                            }
+                        };
+                    }
+
+                    // (browseCommand as Command)?.Icon = command.Icon;
                     contextMenu.RemoveAt(0);
                     contextMenu.Insert(0, new CommandContextItem(command));
                     command = browseCommand;

@@ -6,6 +6,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Pages;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.CmdPal.Ext.Bookmarks.Services;
@@ -150,7 +151,8 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         foreach (var b in bookmarks)
         {
             // TODO! replace this string interpolation with some static public function
-            var wrapped = new WrappedDockItem(items: [b], id: $"Bookmarks.Docked.{b.BookmarkId}", displayTitle: b.Title)
+            var id = CommandIds.GetLaunchBookmarkItemId(b.BookmarkId);
+            var wrapped = new WrappedDockItem(items: [b], id: id, displayTitle: b.Title)
             {
                 // TODO! I don't think this icon is right at this time, so I think we can just remove it.
                 // We resolve the icon for this command much later
