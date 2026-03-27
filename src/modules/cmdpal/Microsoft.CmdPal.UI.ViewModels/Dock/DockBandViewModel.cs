@@ -131,19 +131,21 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
     private void ReplaceBandInSettings(DockBandSettings newSettings)
     {
         var commandId = _bandSettings.CommandId;
-        _settingsService.UpdateSettings(s =>
-        {
-            var dockSettings = s.DockSettings;
-            return s with
-            {
-                DockSettings = dockSettings with
+        _settingsService.UpdateSettings(
+            s =>
                 {
-                    StartBands = ReplaceBandInList(dockSettings.StartBands, commandId, newSettings),
-                    CenterBands = ReplaceBandInList(dockSettings.CenterBands, commandId, newSettings),
-                    EndBands = ReplaceBandInList(dockSettings.EndBands, commandId, newSettings),
+                    var dockSettings = s.DockSettings;
+                    return s with
+                    {
+                        DockSettings = dockSettings with
+                        {
+                            StartBands = ReplaceBandInList(dockSettings.StartBands, commandId, newSettings),
+                            CenterBands = ReplaceBandInList(dockSettings.CenterBands, commandId, newSettings),
+                            EndBands = ReplaceBandInList(dockSettings.EndBands, commandId, newSettings),
+                        },
+                    };
                 },
-            };
-        });
+            false);
         _bandSettings = newSettings;
     }
 
