@@ -25,7 +25,7 @@
 PowerToys includes over 25 utilities to help you customize and optimize your Windows experience:
 
 |   |   |   |
-|---|---|---|
+| --- | --- | --- |
 | [<img src="doc/images/icons/AdvancedPaste.png" alt="Advanced Paste icon" height="16"> Advanced Paste](https://aka.ms/PowerToysOverview_AdvancedPaste) | [<img src="doc/images/icons/Always%20On%20Top.png" alt="Always on Top icon" height="16"> Always on Top](https://aka.ms/PowerToysOverview_AoT) | [<img src="doc/images/icons/Awake.png" alt="Awake icon" height="16"> Awake](https://aka.ms/PowerToysOverview_Awake) |
 | [<img src="doc/images/icons/Color%20Picker.png" alt="Color Picker icon" height="16"> Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [<img src="doc/images/icons/Command%20Not%20Found.png" alt="Command Not Found icon" height="16"> Command Not Found](https://aka.ms/PowerToysOverview_CmdNotFound) | [<img src="doc/images/icons/Command Palette.png" alt="Command Palette icon" height="16"> Command Palette](https://aka.ms/PowerToysOverview_CmdPal) |
 | [<img src="doc/images/icons/Crop%20And%20Lock.png" alt="Crop and Lock icon" height="16"> Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) | [<img src="doc/images/icons/Environment%20Manager.png" alt="Environment Variables icon" height="16"> Environment Variables](https://aka.ms/PowerToysOverview_EnvironmentVariables) | [<img src="doc/images/icons/FancyZones.png" alt="FancyZones icon" height="16"> FancyZones](https://aka.ms/PowerToysOverview_FancyZones) |
@@ -55,8 +55,8 @@ Go to the [PowerToys GitHub releases](https://aka.ms/installPowerToys), click **
 [ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.1/PowerToysSetup-0.98.1-x64.exe
 [ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.1/PowerToysSetup-0.98.1-arm64.exe
 
-|  Description   | Filename |
-|----------------|----------|
+| Description | Filename |
+| --- | --- |
 | Per user - x64       | [PowerToysUserSetup-0.98.1-x64.exe][ptUserX64] |
 | Per user - ARM64     | [PowerToysUserSetup-0.98.1-arm64.exe][ptUserArm64] |
 | Machine wide - x64   | [PowerToysSetup-0.98.1-x64.exe][ptMachineX64] |
