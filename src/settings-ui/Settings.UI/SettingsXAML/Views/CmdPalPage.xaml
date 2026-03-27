@@ -12,7 +12,7 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <Grid>
-        <ScrollViewer AutomationProperties.AutomationId="PageScrollViewer" Background="Red">
+        <ScrollViewer AutomationProperties.AutomationId="PageScrollViewer">
             <Grid>
                 <Grid
                     MaxWidth="{StaticResource PageMaxWidth}"
