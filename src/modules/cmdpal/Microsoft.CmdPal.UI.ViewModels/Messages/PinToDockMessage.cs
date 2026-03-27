@@ -4,4 +4,4 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record PinToDockMessage(string ProviderId, string CommandId, bool Pin);
+public record PinToDockMessage(string ProviderId, string CommandId, bool Pin, bool WithReload = true);

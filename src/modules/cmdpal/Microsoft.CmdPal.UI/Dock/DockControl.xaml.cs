@@ -652,6 +652,6 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         // TODO! MORE TODO! - we actually do need to make the command id
         // exactly the same as the ID it would have in the top-level list, so that pinning to the dock from the top-level is seamless.
         var commandId = $"Bookmarks.Docked.{bookmark.Id}";
-        WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true));
+        WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true, WithReload: false));
     }
 }

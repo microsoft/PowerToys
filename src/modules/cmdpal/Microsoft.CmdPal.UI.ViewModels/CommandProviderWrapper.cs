@@ -436,7 +436,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         }
     }
 
-    public void PinDockBand(string commandId, IServiceProvider serviceProvider)
+    public void PinDockBand(string commandId, IServiceProvider serviceProvider, bool withReload)
     {
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         var settings = settingsService.Settings;
@@ -448,12 +448,15 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         settings.DockSettings.StartBands.Add(bandSettings);
 
         // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
-        this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        if (withReload)
+        {
+            this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        }
 
         settingsService.Save(hotReload: false);
     }
 
-    public void UnpinDockBand(string commandId, IServiceProvider serviceProvider)
+    public void UnpinDockBand(string commandId, IServiceProvider serviceProvider, bool withReload)
     {
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         var settings = settingsService.Settings;
@@ -462,7 +465,11 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         settings.DockSettings.EndBands.RemoveAll(b => b.CommandId == commandId && b.ProviderId == ProviderId);
 
         // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
-        this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        if (withReload)
+        {
+            this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        }
+
         settingsService.Save(hotReload: false);
     }
 

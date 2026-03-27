@@ -707,11 +707,11 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         {
             if (message.Pin)
             {
-                wrapper?.PinDockBand(message.CommandId, _serviceProvider);
+                wrapper?.PinDockBand(message.CommandId, _serviceProvider, message.WithReload);
             }
             else
             {
-                wrapper?.UnpinDockBand(message.CommandId, _serviceProvider);
+                wrapper?.UnpinDockBand(message.CommandId, _serviceProvider, message.WithReload);
             }
         }
     }
