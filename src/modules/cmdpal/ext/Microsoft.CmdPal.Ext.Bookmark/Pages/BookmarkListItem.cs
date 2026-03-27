@@ -122,15 +122,11 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
             if (firstContextCommand != null)
             {
                 var browseCommand = firstContextCommand.Command;
-                if (browseCommand is DirectoryPage browsePage)
+                if (browseCommand != null)
                 {
                     contextMenu.RemoveAt(0);
                     contextMenu.Insert(0, new CommandContextItem(command));
-
-                    // Keep the command ID matching the bookmark's launch ID so
-                    // the dock can look up this item by its pinned command ID.
-                    browsePage.Id = CommandIds.GetLaunchBookmarkItemId(_bookmark.Id);
-                    command = browsePage;
+                    command = browseCommand;
                 }
             }
         }

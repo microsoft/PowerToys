@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
-public static class CommandIds
+internal static class CommandIds
 {
     /// <summary>
     /// Returns id of a command associated with a bookmark item. This id is for a command that launches the bookmark - regardless of whether

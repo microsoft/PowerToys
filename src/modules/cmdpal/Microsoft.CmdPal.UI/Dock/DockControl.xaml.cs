@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks;
-using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -648,7 +647,11 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         Logger.LogDebug($"Attempting to pin '{name}': '{bookmarkValue}' to the dock");
         var bookmark = bookmarksManager.Add(name, bookmarkValue);
 
-        var commandId = CommandIds.GetLaunchBookmarkItemId(bookmark.Id);
+        // CommandId format is specific to dock bands, because it's real weird
+        // TODO! replace hardcoded string interpolation with public static function in bookmarks codebase
+        // TODO! MORE TODO! - we actually do need to make the command id
+        // exactly the same as the ID it would have in the top-level list, so that pinning to the dock from the top-level is seamless.
+        var commandId = $"Bookmarks.Docked.{bookmark.Id}";
         WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true));
     }
 }
