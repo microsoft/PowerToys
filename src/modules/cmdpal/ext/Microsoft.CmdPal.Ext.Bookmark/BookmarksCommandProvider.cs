@@ -132,33 +132,11 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
     public override ICommandItem[]? GetDockBands()
     {
-        BookmarkListItem[] bookmarks;
-
-        lock (_bookmarksLock)
-        {
-            bookmarks = [.. _bookmarksManager.Bookmarks
-                .Select(bookmark => new BookmarkListItem(
-                    bookmark,
-                    _bookmarksManager,
-                    _commandResolver,
-                    _iconLocator,
-                    _placeholderParser,
-                    asBand: true))];
-        }
-
-        var bands = new List<ICommandItem>();
-        foreach (var b in bookmarks)
-        {
-            // TODO! replace this string interpolation with some static public function
-            var wrapped = new WrappedDockItem(items: [b], id: $"Bookmarks.Docked.{b.BookmarkId}", displayTitle: b.Title)
-            {
-                // TODO! I don't think this icon is right at this time, so I think we can just remove it.
-                // We resolve the icon for this command much later
-                // Icon = b.Icon,
-            };
-            bands.Add(wrapped);
-        }
-
-        return bands.Count > 0 ? bands.ToArray() : null;
+        // Bookmarks are pinned to the dock individually via PinToDockMessage,
+        // not returned as always-visible bands here. Returning all bookmarks
+        // would cause an event storm: each reload creates new BookmarkListItems
+        // with async classification, each triggering property changes that
+        // cascade into more reloads.
+        return null;
     }
 }
