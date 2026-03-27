@@ -8,7 +8,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public record HistoryItem
 {
-    public required string CommandId { get; set; }
+    public required string CommandId { get; init; }
 
-    public required int Uses { get; set; }
+    public required int Uses { get; init; }
 }

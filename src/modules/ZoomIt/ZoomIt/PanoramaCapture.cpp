@@ -118,6 +118,16 @@
 #include <commctrl.h>
 #if defined(_M_X64) || defined(_M_IX86)
 #include <emmintrin.h>
+#if defined(_M_IX86)
+// _mm_cvtsi128_si64 is unavailable on 32-bit x86; emulate via _mm_storel_epi64.
+inline __int64 _mm_cvtsi128_si64_compat( __m128i v )
+{
+    __int64 r;
+    _mm_storel_epi64( reinterpret_cast<__m128i*>( &r ), v );
+    return r;
+}
+#define _mm_cvtsi128_si64 _mm_cvtsi128_si64_compat
+#endif
 #elif defined(_M_ARM64)
 #include <arm_neon.h>
 #endif

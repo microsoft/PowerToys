@@ -39,24 +39,24 @@ public record HotkeySettings// : ICmdLineRepresentable
     }
 
     [JsonPropertyName("win")]
-    public bool Win { get; set; }
+    public bool Win { get; init; }
 
     [JsonPropertyName("ctrl")]
-    public bool Ctrl { get; set; }
+    public bool Ctrl { get; init; }
 
     [JsonPropertyName("alt")]
-    public bool Alt { get; set; }
+    public bool Alt { get; init; }
 
     [JsonPropertyName("shift")]
-    public bool Shift { get; set; }
+    public bool Shift { get; init; }
 
     [JsonPropertyName("code")]
-    public int Code { get; set; }
+    public int Code { get; init; }
 
     // This is currently needed for FancyZones, we need to unify these two objects
     // see src\common\settings_objects.h
     [JsonPropertyName("key")]
-    public string Key { get; set; } = string.Empty;
+    public string Key { get; init; } = string.Empty;
 
     public override string ToString()
     {
