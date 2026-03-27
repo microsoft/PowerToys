@@ -133,7 +133,7 @@ namespace Peek.FilePreviewer.Previewers.Archives
                             archive.Entries
                                 .Select(e => e.Key)));
                     var detectionResult = CharsetDetector.DetectFromBytes(fileNameBytes);
-                    if (detectionResult.Detected != null && detectionResult.Detected.Confidence > 0.5)
+                    if (detectionResult.Detected != null)
                     {
                         encoding = detectionResult.Detected.Encoding;
                     }
@@ -153,7 +153,7 @@ namespace Peek.FilePreviewer.Previewers.Archives
                     {
                         continue;
                     }
-
+                    cancellationToken.ThrowIfCancellationRequested();
                     if (encodingDetermined)
                     {
                         // Use the key provided by SharpCompress directly.
@@ -163,7 +163,6 @@ namespace Peek.FilePreviewer.Previewers.Archives
                     {
                         // Re-decode the key from the raw CP437 bytes using the detected encoding.
                         string decodedKey = encoding.GetString(cp437.GetBytes(entry.Key));
-                        cancellationToken.ThrowIfCancellationRequested();
                         await AddEntryAsync(entry, cancellationToken, decodedKey);
                     }
                 }
