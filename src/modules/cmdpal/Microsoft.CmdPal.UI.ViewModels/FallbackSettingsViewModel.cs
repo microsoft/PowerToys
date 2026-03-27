@@ -4,15 +4,17 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class FallbackSettingsViewModel : ObservableObject
 {
-    private readonly SettingsModel _settings;
-    private readonly FallbackSettings _fallbackSettings;
+    private readonly ISettingsService _settingsService;
+    private readonly ProviderSettingsViewModel _providerSettingsViewModel;
+
+    private FallbackSettings _fallbackSettings;
 
     public string DisplayName { get; private set; } = string.Empty;
 
@@ -27,15 +29,18 @@ public partial class FallbackSettingsViewModel : ObservableObject
         {
             if (value != _fallbackSettings.IsEnabled)
             {
-                _fallbackSettings.IsEnabled = value;
+                var newSettings = _fallbackSettings with { IsEnabled = value };
 
-                if (!_fallbackSettings.IsEnabled)
+                if (!newSettings.IsEnabled)
                 {
-                    _fallbackSettings.IncludeInGlobalResults = false;
+                    newSettings = newSettings with { IncludeInGlobalResults = false };
                 }
 
-                Save();
+                _fallbackSettings = newSettings;
+                _providerSettingsViewModel.UpdateFallbackSettings(Id, _fallbackSettings);
+
                 OnPropertyChanged(nameof(IsEnabled));
+                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
             }
         }
     }
@@ -47,15 +52,18 @@ public partial class FallbackSettingsViewModel : ObservableObject
         {
             if (value != _fallbackSettings.IncludeInGlobalResults)
             {
-                _fallbackSettings.IncludeInGlobalResults = value;
+                var newSettings = _fallbackSettings with { IncludeInGlobalResults = value };
 
-                if (!_fallbackSettings.IsEnabled)
+                if (!newSettings.IsEnabled)
                 {
-                    _fallbackSettings.IsEnabled = true;
+                    newSettings = newSettings with { IsEnabled = true };
                 }
 
-                Save();
+                _fallbackSettings = newSettings;
+                _providerSettingsViewModel.UpdateFallbackSettings(Id, _fallbackSettings);
+
                 OnPropertyChanged(nameof(IncludeInGlobalResults));
+                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
             }
         }
     }
@@ -63,10 +71,11 @@ public partial class FallbackSettingsViewModel : ObservableObject
     public FallbackSettingsViewModel(
     TopLevelViewModel fallback,
     FallbackSettings fallbackSettings,
-    SettingsModel settingsModel,
-    ProviderSettingsViewModel providerSettings)
+    ProviderSettingsViewModel providerSettings,
+    ISettingsService settingsService)
     {
-        _settings = settingsModel;
+        _settingsService = settingsService;
+        _providerSettingsViewModel = providerSettings;
         _fallbackSettings = fallbackSettings;
 
         Id = fallback.Id;
@@ -76,11 +85,5 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
         Icon = new(fallback.InitialIcon);
         Icon.InitializeProperties();
-    }
-
-    private void Save()
-    {
-        SettingsModel.SaveSettings(_settings);
-        WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
     }
 }

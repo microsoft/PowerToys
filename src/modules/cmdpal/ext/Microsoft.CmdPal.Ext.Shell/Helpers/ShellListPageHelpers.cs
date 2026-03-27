@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text;
-using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 

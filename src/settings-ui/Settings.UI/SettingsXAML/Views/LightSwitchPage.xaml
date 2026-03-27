@@ -214,7 +214,7 @@
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
-                        <InfoBar
+                        <!-- <InfoBar
                             x:Name="PowerDisplayDisabledWarningBar"
                             x:Uid="LightSwitch_PowerDisplayDisabledWarningBar"
                             Background="Transparent"
@@ -265,7 +265,7 @@
                                         SelectedItem="{x:Bind ViewModel.SelectedLightModeProfile, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
-                        </tkcontrols:SettingsExpander>
+                        </tkcontrols:SettingsExpander>-->
                     </controls:SettingsGroup>
                     <!--  Force mode buttons  -->
                     <!--<tkcontrols:SettingsCard
@@ -375,6 +375,12 @@
                                 Height="40"
                                 VerticalAlignment="Center"
                                 IsActive="False"
+                                Visibility="Collapsed" />
+                            <TextBlock
+                                x:Name="LocationErrorText"
+                                Grid.Row="2"
+                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                TextWrapping="Wrap"
                                 Visibility="Collapsed" />
                             <Grid
                                 x:Name="LocationResultPanel"

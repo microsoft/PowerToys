@@ -3,17 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Messages;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Commands;
 
@@ -38,7 +33,7 @@ internal sealed partial class EndTaskCommand : InvokableCommand
         // Validate process
         if (!window.IsWindow || !window.Process.DoesExist || string.IsNullOrEmpty(window.Process.Name) || !window.Process.Name.Equals(WindowProcess.GetProcessNameFromProcessID(window.Process.ProcessID), StringComparison.Ordinal))
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"Cannot kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}), because it doesn't exist." });
+            ExtensionHost.LogMessage(new LogMessage { Message = $"Cannot kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}), because it doesn't exist." });
 
             // TODO GH #86 -- need to figure out how to show status message once implemented on host
             return false;

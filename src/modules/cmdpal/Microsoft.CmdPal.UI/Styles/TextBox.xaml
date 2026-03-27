@@ -158,12 +158,24 @@
                             Grid.ColumnSpan="1"
                             Margin="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
-                            Foreground="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForeground}}"
                             IsHitTestVisible="False"
                             Text="{TemplateBinding PlaceholderText}"
                             TextAlignment="{TemplateBinding TextAlignment}"
-                            TextWrapping="{TemplateBinding TextWrapping}"
-                            Visibility="{Binding Description, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ReverseStringVisibilityConverter}, Mode=OneWay}" />
+                            TextWrapping="{TemplateBinding TextWrapping}">
+                            <TextBlock.Visibility>
+                                <Binding
+                                    Converter="{StaticResource ReverseStringVisibilityConverter}"
+                                    Mode="OneWay"
+                                    Path="Description"
+                                    RelativeSource="{RelativeSource TemplatedParent}" />
+                            </TextBlock.Visibility>
+                            <TextBlock.Foreground>
+                                <Binding
+                                    Path="PlaceholderForeground"
+                                    RelativeSource="{RelativeSource TemplatedParent}"
+                                    TargetNullValue="{ThemeResource TextControlPlaceholderForeground}" />
+                            </TextBlock.Foreground>
+                        </TextBlock>
                         <Button
                             x:Name="DeleteButton"
                             Grid.Column="2"
@@ -188,9 +200,15 @@
                             CharacterSpacing="15"
                             FontFamily="{TemplateBinding FontFamily}"
                             FontSize="{TemplateBinding FontSize}"
-                            Foreground="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForeground}}"
                             Text="{TemplateBinding Description}"
-                            TextWrapping="{TemplateBinding TextWrapping}" />
+                            TextWrapping="{TemplateBinding TextWrapping}">
+                            <TextBlock.Foreground>
+                                <Binding
+                                    Path="PlaceholderForeground"
+                                    RelativeSource="{RelativeSource TemplatedParent}"
+                                    TargetNullValue="{ThemeResource TextControlPlaceholderForeground}" />
+                            </TextBlock.Foreground>
+                        </TextBlock>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -212,7 +230,14 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundDisabled}}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Binding
+                                                        Path="PlaceholderForeground"
+                                                        RelativeSource="{RelativeSource TemplatedParent}"
+                                                        TargetNullValue="{ThemeResource TextControlPlaceholderForegroundDisabled}" />
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -225,20 +250,41 @@
                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundPointerOver}" />
                                     </ObjectAnimationUsingKeyFrames>-->
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundPointerOver}}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Binding
+                                                        Path="PlaceholderForeground"
+                                                        RelativeSource="{RelativeSource TemplatedParent}"
+                                                        TargetNullValue="{ThemeResource TextControlPlaceholderForegroundPointerOver}" />
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DescriptionPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundPointerOver}}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Binding
+                                                        Path="PlaceholderForeground"
+                                                        RelativeSource="{RelativeSource TemplatedParent}"
+                                                        TargetNullValue="{ThemeResource TextControlPlaceholderForegroundPointerOver}" />
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Focused">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundFocused}}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Binding
+                                                        Path="PlaceholderForeground"
+                                                        RelativeSource="{RelativeSource TemplatedParent}"
+                                                        TargetNullValue="{ThemeResource TextControlPlaceholderForegroundFocused}" />
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
                                         </ObjectAnimationUsingKeyFrames>
                                         <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundFocused}" />
@@ -253,7 +299,14 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundFocused}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DescriptionPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundFocused}}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Binding
+                                                        Path="PlaceholderForeground"
+                                                        RelativeSource="{RelativeSource TemplatedParent}"
+                                                        TargetNullValue="{ThemeResource TextControlPlaceholderForegroundFocused}" />
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>

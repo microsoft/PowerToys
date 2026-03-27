@@ -406,7 +406,10 @@ static bool LoadGifFrames(const std::wstring& gifPath, VideoRecordingSession::Tr
 
     const auto& lastFrame = pData->gifFrames.back();
     pData->videoDuration = winrt::TimeSpan{ lastFrame.start.count() + lastFrame.duration.count() };
-    pData->trimEnd = pData->videoDuration;
+    if( pData->trimEnd.count() <= 0 )
+    {
+        pData->trimEnd = pData->videoDuration;
+    }
     pData->gifFramesLoaded = true;
     pData->gifLastFrameIndex = 0;
 
@@ -721,13 +724,9 @@ namespace
             SetDlgItemText(hDlg, IDC_TRIM_DURATION_LABEL, durationText.c_str());
         }
 
-        // Enable OK when trimming is active (even if unchanged since dialog opened),
-        // or when the user changed the selection (including reverting to full length).
-        const bool trimChanged = (pData->trimStart.count() != pData->originalTrimStart.count()) ||
-                                 (pData->trimEnd.count() != pData->originalTrimEnd.count());
-        const bool trimIsActive = (pData->trimStart.count() > 0) ||
-                                  (pData->videoDuration.count() > 0 && pData->trimEnd.count() < pData->videoDuration.count());
-        EnableWindow(GetDlgItem(hDlg, IDOK), trimChanged || trimIsActive);
+        // Always enable OK so users can close the dialog after previewing
+        // without being forced to use Cancel.
+        EnableWindow(GetDlgItem(hDlg, IDOK), TRUE);
     }
 
         RECT GetTimelineTrackRect(const RECT& clientRect, UINT dpi)
@@ -940,10 +939,12 @@ VideoRecordingSession::VideoRecordingSession(
     video.PixelAspectRatio().Denominator(1);
     m_encodingProfile.Video(video);
 
-    // Always set up audio profile for loopback capture (stereo AAC)
-    auto audio = m_encodingProfile.Audio();
-    audio = winrt::AudioEncodingProperties::CreateAac(48000, 2, 192000);
-    m_encodingProfile.Audio(audio);
+    if (captureAudio || captureSystemAudio)
+    {
+        auto audio = m_encodingProfile.Audio();
+        audio = winrt::AudioEncodingProperties::CreateAac(48000, 2, 192000);
+        m_encodingProfile.Audio(audio);
+    }
 
     // Describe our input: uncompressed BGRA8 buffers
     auto properties = winrt::VideoEncodingProperties::CreateUncompressed(
@@ -964,8 +965,14 @@ VideoRecordingSession::VideoRecordingSession(
     winrt::check_hresult(m_previewSwapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
     winrt::check_hresult(m_d3dDevice->CreateRenderTargetView(backBuffer.get(), nullptr, m_renderTargetView.put()));
 
-    // Always create audio generator for loopback capture; captureAudio controls microphone
-    m_audioGenerator = std::make_unique<AudioSampleGenerator>(captureAudio, captureSystemAudio, micMonoMix);
+    if (captureAudio || captureSystemAudio)
+    {
+        m_audioGenerator = std::make_unique<AudioSampleGenerator>(captureAudio, captureSystemAudio, micMonoMix);
+    }
+    else
+    {
+        m_audioGenerator = nullptr;
+    }
 }
 
 
@@ -1207,14 +1214,8 @@ void VideoRecordingSession::OnMediaStreamSourceSampleRequested(
     {
         try
         {
-            if (auto sample = m_audioGenerator->TryGetNextSample())
-            {
-                request.Sample(sample.value());
-            }
-            else
-            {
-                request.Sample(nullptr);
-            }
+            auto sample = m_audioGenerator ? m_audioGenerator->TryGetNextSample() : std::optional<winrt::MediaStreamSample>{};
+            request.Sample(sample.has_value() ? sample.value() : nullptr);
         }
         catch (winrt::hresult_error const& error)
         {
@@ -1343,7 +1344,10 @@ public:
                 auto trimResult = VideoRecordingSession::ShowTrimDialog(hParent, m_videoPath, *m_pTrimStart, *m_pTrimEnd);
                 if (trimResult == IDOK)
                 {
-                    *m_pShouldTrim = true;
+                    // Trim values are only written back when the user actually
+                    // changed the selection, so a non-zero trimEnd means a
+                    // real trim is requested.
+                    *m_pShouldTrim = (m_pTrimEnd->count() > 0);
                 }
                 else if( trimResult == IDCANCEL )
                 {
@@ -1500,12 +1504,13 @@ INT_PTR VideoRecordingSession::ShowTrimDialog(
     HWND hParent,
     const std::wstring& videoPath,
     winrt::TimeSpan& trimStart,
-    winrt::TimeSpan& trimEnd)
+    winrt::TimeSpan& trimEnd,
+    bool standaloneMode)
 {
     std::promise<INT_PTR> resultPromise;
     auto resultFuture = resultPromise.get_future();
 
-    std::thread staThread([hParent, videoPath, &trimStart, &trimEnd, promise = std::move(resultPromise)]() mutable
+    std::thread staThread([hParent, videoPath, &trimStart, &trimEnd, standaloneMode, promise = std::move(resultPromise)]() mutable
     {
         bool coInitialized = false;
         try
@@ -1523,7 +1528,7 @@ INT_PTR VideoRecordingSession::ShowTrimDialog(
 
         try
         {
-            INT_PTR dlgResult = ShowTrimDialogInternal(hParent, videoPath, trimStart, trimEnd);
+            INT_PTR dlgResult = ShowTrimDialogInternal(hParent, videoPath, trimStart, trimEnd, standaloneMode);
             promise.set_value(dlgResult);
         }
         catch (const winrt::hresult_error& e)
@@ -1582,7 +1587,8 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
     HWND hParent,
     const std::wstring& videoPath,
     winrt::TimeSpan& trimStart,
-    winrt::TimeSpan& trimEnd)
+    winrt::TimeSpan& trimEnd,
+    bool standaloneMode)
 {
     TrimDialogData data;
     data.videoPath = videoPath;
@@ -1590,6 +1596,7 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
     data.trimStart = trimStart;
     data.trimEnd = trimEnd;
     data.isGif = IsGifPath(videoPath);
+    data.standaloneMode = standaloneMode;
 
     if (data.isGif)
     {
@@ -1784,8 +1791,17 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
 
     if (result == IDOK)
     {
-        trimStart = data.trimStart;
-        trimEnd = data.trimEnd;
+        // Only write back trim values when the user actually changed the
+        // selection.  This lets the caller distinguish "confirmed without
+        // trimming" (preview-only) from a real trim operation.
+        const bool selectionChanged =
+            (data.trimStart.count() != data.originalTrimStart.count()) ||
+            (data.trimEnd.count() != data.originalTrimEnd.count());
+        if (selectionChanged)
+        {
+            trimStart = data.trimStart;
+            trimEnd = data.trimEnd;
+        }
     }
 
     return result;
@@ -3888,6 +3904,12 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         // Make OK the default button
         SendMessage(hDlg, DM_SETDEFID, IDOK, 0);
 
+        // In standalone mode, change OK button text to "Save As"
+        if (pData->standaloneMode)
+        {
+            SetDlgItemText(hDlg, IDOK, L"Save As");
+        }
+
         // Subclass the dialog to handle resize grip hit testing
         SetWindowSubclass(hDlg, TrimDialogSubclassProc, 0, reinterpret_cast<DWORD_PTR>(pData));
 
@@ -5027,6 +5049,115 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
         case IDOK:
             pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
             StopPlayback(hDlg, pData);
+
+            if (pData->standaloneMode)
+            {
+                // In standalone mode, "Save As" shows a save dialog and performs the trim
+                auto saveDialog = wil::CoCreateInstance<::IFileSaveDialog>(CLSID_FileSaveDialog);
+
+                FILEOPENDIALOGOPTIONS options;
+                if (SUCCEEDED(saveDialog->GetOptions(&options)))
+                    saveDialog->SetOptions(options | FOS_FORCEFILESYSTEM);
+
+                wil::com_ptr<::IShellItem> videosItem;
+                if (SUCCEEDED(SHGetKnownFolderItem(FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr,
+                    IID_IShellItem, (void**)videosItem.put())))
+                    saveDialog->SetDefaultFolder(videosItem.get());
+
+                // Derive suggested filename from source
+                std::wstring suggestedName;
+                {
+                    auto pos = pData->videoPath.find_last_of(L"\\/");
+                    suggestedName = (pos != std::wstring::npos) ? pData->videoPath.substr(pos + 1) : pData->videoPath;
+                    auto dot = suggestedName.find_last_of(L'.');
+                    if (dot != std::wstring::npos)
+                        suggestedName.insert(dot, L"_trimmed");
+                    else
+                        suggestedName += L"_trimmed";
+                }
+
+                if (pData->isGif)
+                {
+                    saveDialog->SetDefaultExtension(L".gif");
+                    COMDLG_FILTERSPEC fileTypes[] = { { L"GIF Animation", L"*.gif" } };
+                    saveDialog->SetFileTypes(_countof(fileTypes), fileTypes);
+                }
+                else
+                {
+                    saveDialog->SetDefaultExtension(L".mp4");
+                    COMDLG_FILTERSPEC fileTypes[] = { { L"MP4 Video", L"*.mp4" } };
+                    saveDialog->SetFileTypes(_countof(fileTypes), fileTypes);
+                }
+                saveDialog->SetFileName(suggestedName.c_str());
+                saveDialog->SetTitle(L"ZoomIt: Save Trimmed Video As...");
+
+                HRESULT hr = saveDialog->Show(hDlg);
+                if (FAILED(hr))
+                {
+                    // User cancelled save dialog — return to trim editor
+                    return TRUE;
+                }
+
+                wil::com_ptr<::IShellItem> resultItem;
+                THROW_IF_FAILED(saveDialog->GetResult(resultItem.put()));
+                wil::unique_cotaskmem_string savePath;
+                THROW_IF_FAILED(resultItem->GetDisplayName(SIGDN_FILESYSPATH, savePath.put()));
+
+                // Capture what we need before closing the dialog
+                std::wstring videoPath = pData->videoPath;
+                bool isGif = pData->isGif;
+                auto trimStart = pData->trimStart;
+                auto trimEnd = pData->trimEnd;
+                std::wstring savePathStr(savePath.get());
+
+                // Close the trim dialog immediately
+                EndDialog(hDlg, IDOK);
+
+                // Perform the trim after the dialog is closed
+                try
+                {
+                    auto trimOp = isGif
+                        ? TrimGifAsync(videoPath, trimStart, trimEnd)
+                        : TrimVideoAsync(videoPath, trimStart, trimEnd);
+
+                    // Pump messages while waiting for async operation
+                    while (trimOp.Status() == winrt::AsyncStatus::Started)
+                    {
+                        MSG msg;
+                        while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+                        {
+                            TranslateMessage(&msg);
+                            DispatchMessage(&msg);
+                        }
+                        Sleep(10);
+                    }
+
+                    auto trimmedPath = std::wstring(trimOp.GetResults());
+                    if (trimmedPath.empty())
+                    {
+                        MessageBox(nullptr, L"Failed to trim video.", L"Error", MB_OK | MB_ICONERROR);
+                        return TRUE;
+                    }
+
+                    // Copy trimmed file to the user-chosen save location
+                    if (!CopyFile(trimmedPath.c_str(), savePathStr.c_str(), FALSE))
+                    {
+                        MessageBox(nullptr, L"Failed to save the trimmed file.", L"Error", MB_OK | MB_ICONERROR);
+                        DeleteFile(trimmedPath.c_str());
+                        return TRUE;
+                    }
+
+                    // Clean up temp file
+                    DeleteFile(trimmedPath.c_str());
+                }
+                catch (...)
+                {
+                    MessageBox(nullptr, L"Failed to trim video.", L"Error", MB_OK | MB_ICONERROR);
+                }
+
+                return TRUE;
+            }
+
             // Trim times are already set by mouse dragging
             EndDialog(hDlg, IDOK);
             return TRUE;

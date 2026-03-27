@@ -9,9 +9,10 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json.Nodes;
+using System.Threading;
 using CoreWidgetProvider.Helpers;
 using CoreWidgetProvider.Widgets.Enums;
-using Microsoft.CmdPal.Core.Common;
+using Microsoft.CmdPal.Common;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel;
@@ -32,7 +33,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     public override string Title => Resources.GetResource("Performance_Monitor_Title");
 
-    public override IconInfo Icon => Icons.StackedAreaIcon;
+    public override IconInfo Icon => Icons.PerformanceMonitorIcon;
 
     private readonly bool _isBandPage;
 
@@ -262,17 +263,17 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     /// </summary>
     internal virtual void PushActivate()
     {
-        _loadCount++;
+        Interlocked.Increment(ref _loadCount);
     }
 
     internal virtual void PopActivate()
     {
-        _loadCount--;
+        Interlocked.Decrement(ref _loadCount);
     }
 
     private int _loadCount;
 
-    protected bool IsActive => _loadCount > 0;
+    protected bool IsActive => Volatile.Read(ref _loadCount) > 0;
 
     protected override void Loaded()
     {
