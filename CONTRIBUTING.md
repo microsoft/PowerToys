@@ -33,7 +33,7 @@ To let the team know which issues are important, upvote by clicking the [+😊] 
 
 ## Contributing Fixes/Features
 
-Please comment on our ["Would you like to contribute to PowerToys?"](https://github.com/microsoft/PowerToys/issues/28769) thread to let us know you're interested in working on something before you start. This helps avoid multiple people unexpectedly working on the same thing and ensures everyone is clear on what should be done. It's less work for everyone to establish this up front.
+Please comment on our [Would you like to contribute to PowerToys?](https://github.com/microsoft/PowerToys/issues/28769) thread to let us know you're interested in working on something before you start. This helps avoid multiple people unexpectedly working on the same thing and ensures everyone is clear on what should be done. It's less work for everyone to establish this up front.
 
 ### Localization Issues
 
@@ -61,7 +61,7 @@ Names should be descriptive and straightforward, clearly reflecting functionalit
 
 ### Becoming a Collaborator on the PowerToys Team
 
-Be an active community member! Make helpful contributions by filing bugs, offering suggestions, developing fixes and features, conducting code reviews, and updating documentation. 
+Be an active community member! Make helpful contributions by filing bugs, offering suggestions, developing fixes and features, conducting code reviews, and updating documentation.
 
 When the time comes, Microsoft will reach out to you about becoming a formal team member. Just make sure they have a way to contact you. 😊
 
