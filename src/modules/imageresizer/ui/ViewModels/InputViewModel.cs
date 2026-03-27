@@ -1,6 +1,8 @@
-// Copyright (c) Microsoft Corporation
-// The Microsoft Corporation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
+#pragma warning disable IDE0073, SA1636
+// Copyright (c) Brice Lambson
+// The Brice Lambson licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+#pragma warning restore IDE0073, SA1636
 
 using System;
 using System.Collections.Generic;
@@ -44,6 +46,7 @@ namespace ImageResizer.ViewModels
         private readonly ResizeBatch _batch;
         private readonly MainViewModel _mainViewModel;
         private readonly IMainView _mainView;
+        private readonly bool _hasGifFiles;
         private readonly bool _hasMultipleFiles;
         private bool _originalDimensionsLoaded;
         private int? _originalWidth;
@@ -70,6 +73,7 @@ namespace ImageResizer.ViewModels
             _batch = batch;
             _mainViewModel = mainViewModel;
             _mainView = mainView;
+            _hasGifFiles = _batch?.Files.Any(filename => filename.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)) == true;
             _hasMultipleFiles = _batch?.Files.Count > 1;
 
             Settings = settings;
@@ -137,8 +141,7 @@ namespace ImageResizer.ViewModels
             }
         }
 
-        public bool TryingToResizeGifFiles =>
-            _batch?.Files.Any(filename => filename.EndsWith(".gif", StringComparison.InvariantCultureIgnoreCase)) == true;
+        public bool HasGifFiles => _hasGifFiles;
 
         [RelayCommand(CanExecute = nameof(CanResize))]
         public void Resize()

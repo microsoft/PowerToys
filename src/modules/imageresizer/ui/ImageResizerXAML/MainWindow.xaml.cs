@@ -136,15 +136,7 @@ namespace ImageResizer
 
             inputVM.Settings.PropertyChanged += _selectedSizeChangedHandler;
 
-            // Size after initial layout completes (bindings resolved, content measured)
-            void OnLoaded(object sender, RoutedEventArgs e)
-            {
-                inputPage.Loaded -= OnLoaded;
-                SizeToContent();
-                ShowWindow();
-            }
-
-            inputPage.Loaded += OnLoaded;
+            SizeAndShowOnLoaded(inputPage);
         }
 
         /// <summary>
@@ -272,20 +264,13 @@ namespace ImageResizer
             var picker = this.CreateOpenFilePicker();
             picker.ViewMode = PickerViewMode.Thumbnail;
             picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
-            picker.FileTypeFilter.Add(".bmp");
-            picker.FileTypeFilter.Add(".dib");
-            picker.FileTypeFilter.Add(".exif");
-            picker.FileTypeFilter.Add(".gif");
-            picker.FileTypeFilter.Add(".jfif");
-            picker.FileTypeFilter.Add(".jpe");
-            picker.FileTypeFilter.Add(".jpeg");
-            picker.FileTypeFilter.Add(".jpg");
-            picker.FileTypeFilter.Add(".jxr");
-            picker.FileTypeFilter.Add(".png");
-            picker.FileTypeFilter.Add(".rle");
-            picker.FileTypeFilter.Add(".tif");
-            picker.FileTypeFilter.Add(".tiff");
-            picker.FileTypeFilter.Add(".wdp");
+            string[] imageExtensions = [".bmp", ".dib", ".exif", ".gif", ".jfif", ".jpe",
+                ".jpeg", ".jpg", ".jxr", ".png", ".rle", ".tif", ".tiff", ".wdp"];
+
+            foreach (var ext in imageExtensions)
+            {
+                picker.FileTypeFilter.Add(ext);
+            }
 
             var files = await picker.PickMultipleFilesAsync();
             if (files != null && files.Count > 0)

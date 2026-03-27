@@ -38,6 +38,12 @@ namespace ImageResizer.Models
         private static CompositeFormat AiErrorFormat =>
             _aiErrorFormat ??= CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("Error_AiProcessingFailed"));
 
+        private static readonly string[] RenderingMetadataProperties =
+            [
+                "System.Photo.Orientation",
+                "System.Image.ColorSpace",
+            ];
+
         // Filenames to avoid according to https://learn.microsoft.com/windows/win32/fileio/naming-a-file#file-and-directory-names
         private static readonly string[] _avoidFilenames =
             [
@@ -74,37 +80,21 @@ namespace ImageResizer.Models
 
                 if (_settings.SelectedSize is AiSize)
                 {
-                    // AI super resolution path
                     path = await ExecuteAiAsync(decoder, winrtInputStream, encoderGuid);
                 }
                 else
                 {
-                    // Standard resize path
                     var originalWidth = (int)decoder.PixelWidth;
                     var originalHeight = (int)decoder.PixelHeight;
-                    var dpiX = decoder.DpiX;
-                    var dpiY = decoder.DpiY;
 
                     var (scaledWidth, scaledHeight, cropBounds, noTransformNeeded) =
-                        CalculateDimensions(originalWidth, originalHeight, dpiX, dpiY);
+                        CalculateDimensions(originalWidth, originalHeight, decoder.DpiX, decoder.DpiY);
 
-                    // For destination path, calculate final output dimensions
-                    int outputWidth, outputHeight;
-                    if (noTransformNeeded)
-                    {
-                        outputWidth = originalWidth;
-                        outputHeight = originalHeight;
-                    }
-                    else if (cropBounds.HasValue)
-                    {
-                        outputWidth = (int)cropBounds.Value.Width;
-                        outputHeight = (int)cropBounds.Value.Height;
-                    }
-                    else
-                    {
-                        outputWidth = (int)scaledWidth;
-                        outputHeight = (int)scaledHeight;
-                    }
+                    var (outputWidth, outputHeight) = noTransformNeeded
+                        ? (originalWidth, originalHeight)
+                        : cropBounds.HasValue
+                            ? ((int)cropBounds.Value.Width, (int)cropBounds.Value.Height)
+                            : ((int)scaledWidth, (int)scaledHeight);
 
                     path = GetDestinationPath(encoderGuid, outputWidth, outputHeight);
                     _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(path));
@@ -112,72 +102,40 @@ namespace ImageResizer.Models
                     using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.Write))
                     {
                         var winrtOutputStream = outputStream.AsRandomAccessStream();
-
-                        if (!_settings.RemoveMetadata)
-                        {
-                            // Transcode path: preserves all metadata automatically
-                            winrtInputStream.Seek(0);
-                            var encoder = await BitmapEncoder.CreateForTranscodingAsync(winrtOutputStream, decoder);
-
-                            if (!noTransformNeeded)
+                        await EncodeToStreamAsync(
+                            decoder,
+                            winrtInputStream,
+                            winrtOutputStream,
+                            encoderGuid,
+                            async (encoder, isTranscode) =>
                             {
-                                encoder.BitmapTransform.ScaledWidth = scaledWidth;
-                                encoder.BitmapTransform.ScaledHeight = scaledHeight;
-                                encoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Fant;
-
-                                if (cropBounds.HasValue)
+                                if (isTranscode)
                                 {
-                                    encoder.BitmapTransform.Bounds = cropBounds.Value;
+                                    if (!noTransformNeeded)
+                                    {
+                                        encoder.BitmapTransform.ScaledWidth = scaledWidth;
+                                        encoder.BitmapTransform.ScaledHeight = scaledHeight;
+                                        encoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Fant;
+
+                                        if (cropBounds.HasValue)
+                                        {
+                                            encoder.BitmapTransform.Bounds = cropBounds.Value;
+                                        }
+                                    }
                                 }
-                            }
-
-                            await ConfigureEncoderPropertiesAsync(encoder, encoderGuid);
-                            await encoder.FlushAsync();
-                        }
-                        else
-                        {
-                            // Strip metadata path: fresh encoder = no old metadata
-                            var encoder = await CreateFreshEncoderAsync(encoderGuid, winrtOutputStream);
-
-                            var transform = new BitmapTransform();
-                            if (!noTransformNeeded)
-                            {
-                                transform.ScaledWidth = scaledWidth;
-                                transform.ScaledHeight = scaledHeight;
-                                transform.InterpolationMode = BitmapInterpolationMode.Fant;
-
-                                if (cropBounds.HasValue)
+                                else
                                 {
-                                    transform.Bounds = cropBounds.Value;
+                                    await EncodeFramesAsync(
+                                        encoder,
+                                        decoder,
+                                        scaledWidth,
+                                        scaledHeight,
+                                        cropBounds,
+                                        noTransformNeeded,
+                                        originalWidth,
+                                        originalHeight);
                                 }
-                            }
-                            else
-                            {
-                                transform.ScaledWidth = (uint)originalWidth;
-                                transform.ScaledHeight = (uint)originalHeight;
-                            }
-
-                            // Handle multi-frame images (e.g., GIF)
-                            for (uint i = 0; i < decoder.FrameCount; i++)
-                            {
-                                if (i > 0)
-                                {
-                                    await encoder.GoToNextFrameAsync();
-                                }
-
-                                var frame = await decoder.GetFrameAsync(i);
-                                var bitmap = await frame.GetSoftwareBitmapAsync(
-                                    frame.BitmapPixelFormat,
-                                    BitmapAlphaMode.Premultiplied,
-                                    transform,
-                                    ExifOrientationMode.IgnoreExifOrientation,
-                                    ColorManagementMode.DoNotColorManage);
-
-                                encoder.SetSoftwareBitmap(bitmap);
-                            }
-
-                            await encoder.FlushAsync();
-                        }
+                            });
                     }
                 }
             }
@@ -199,12 +157,11 @@ namespace ImageResizer.Models
         {
             try
             {
-                // Get the source bitmap for AI processing
-                var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+                using var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
                     BitmapPixelFormat.Bgra8,
                     BitmapAlphaMode.Premultiplied);
 
-                var aiResult = _aiSuperResolutionService.ApplySuperResolution(
+                using var aiResult = _aiSuperResolutionService.ApplySuperResolution(
                     softwareBitmap,
                     _settings.AiSize.Scale,
                     _file);
@@ -223,24 +180,16 @@ namespace ImageResizer.Models
                 using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.Write))
                 {
                     var winrtOutputStream = outputStream.AsRandomAccessStream();
-
-                    if (!_settings.RemoveMetadata)
-                    {
-                        // Transcode path: preserves metadata
-                        winrtInputStream.Seek(0);
-                        var encoder = await BitmapEncoder.CreateForTranscodingAsync(winrtOutputStream, decoder);
-                        encoder.SetSoftwareBitmap(aiResult);
-                        await ConfigureEncoderPropertiesAsync(encoder, encoderGuid);
-                        await encoder.FlushAsync();
-                    }
-                    else
-                    {
-                        // Strip metadata path
-                        var encoder = await CreateFreshEncoderAsync(encoderGuid, winrtOutputStream);
-
-                        encoder.SetSoftwareBitmap(aiResult);
-                        await encoder.FlushAsync();
-                    }
+                    await EncodeToStreamAsync(
+                        decoder,
+                        winrtInputStream,
+                        winrtOutputStream,
+                        encoderGuid,
+                        (encoder, _) =>
+                        {
+                            encoder.SetSoftwareBitmap(aiResult);
+                            return Task.CompletedTask;
+                        });
                 }
 
                 return path;
@@ -249,6 +198,140 @@ namespace ImageResizer.Models
             {
                 var errorMessage = string.Format(CultureInfo.CurrentCulture, AiErrorFormat, ex.Message);
                 throw new InvalidOperationException(errorMessage, ex);
+            }
+        }
+
+        /// <summary>
+        /// Common encode pipeline: creates the appropriate encoder (transcode or fresh),
+        /// delegates content writing, preserves rendering metadata when stripping, and flushes.
+        /// </summary>
+        /// <param name="writeContent">
+        /// Callback to configure the encoder content. The bool parameter is true for transcode
+        /// (set BitmapTransform properties) and false for fresh encoder (set SoftwareBitmap directly).
+        /// </param>
+        private async Task EncodeToStreamAsync(
+            BitmapDecoder decoder,
+            IRandomAccessStream inputStream,
+            IRandomAccessStream outputStream,
+            Guid encoderGuid,
+            Func<BitmapEncoder, bool, Task> writeContent)
+        {
+            if (!_settings.RemoveMetadata)
+            {
+                // Transcode path: preserves all metadata automatically
+                inputStream.Seek(0);
+                var encoder = await BitmapEncoder.CreateForTranscodingAsync(outputStream, decoder);
+                await writeContent(encoder, true);
+                await ConfigureEncoderPropertiesAsync(encoder, encoderGuid);
+                await encoder.FlushAsync();
+            }
+            else
+            {
+                // Fresh encoder: strips metadata, then restores rendering-critical properties
+                var renderingMetadata = await ReadRenderingMetadataAsync(decoder);
+                var encoder = await CreateFreshEncoderAsync(encoderGuid, outputStream);
+                await writeContent(encoder, false);
+                await RestoreRenderingMetadataAsync(encoder, renderingMetadata);
+                await encoder.FlushAsync();
+            }
+        }
+
+        /// <summary>
+        /// Decodes each frame with the given transform and writes it to the encoder.
+        /// Used by the strip-metadata path where frames must be manually re-encoded.
+        /// </summary>
+        private static async Task EncodeFramesAsync(
+            BitmapEncoder encoder,
+            BitmapDecoder decoder,
+            uint scaledWidth,
+            uint scaledHeight,
+            BitmapBounds? cropBounds,
+            bool noTransformNeeded,
+            int originalWidth,
+            int originalHeight)
+        {
+            var transform = new BitmapTransform();
+            if (!noTransformNeeded)
+            {
+                transform.ScaledWidth = scaledWidth;
+                transform.ScaledHeight = scaledHeight;
+                transform.InterpolationMode = BitmapInterpolationMode.Fant;
+
+                if (cropBounds.HasValue)
+                {
+                    transform.Bounds = cropBounds.Value;
+                }
+            }
+            else
+            {
+                transform.ScaledWidth = (uint)originalWidth;
+                transform.ScaledHeight = (uint)originalHeight;
+            }
+
+            for (uint i = 0; i < decoder.FrameCount; i++)
+            {
+                if (i > 0)
+                {
+                    await encoder.GoToNextFrameAsync();
+                }
+
+                var frame = await decoder.GetFrameAsync(i);
+                using var bitmap = await frame.GetSoftwareBitmapAsync(
+                    frame.BitmapPixelFormat,
+                    BitmapAlphaMode.Premultiplied,
+                    transform,
+                    ExifOrientationMode.IgnoreExifOrientation,
+                    ColorManagementMode.DoNotColorManage);
+
+                encoder.SetSoftwareBitmap(bitmap);
+            }
+        }
+
+        /// <summary>
+        /// Reads rendering-critical metadata (orientation, color space) from the decoder
+        /// so it can be restored after stripping all other metadata.
+        /// </summary>
+        private static async Task<BitmapPropertySet> ReadRenderingMetadataAsync(BitmapDecoder decoder)
+        {
+            try
+            {
+                var props = await decoder.BitmapProperties.GetPropertiesAsync(RenderingMetadataProperties);
+                if (props.Count > 0)
+                {
+                    var result = new BitmapPropertySet();
+                    foreach (var prop in props)
+                    {
+                        result[prop.Key] = prop.Value;
+                    }
+
+                    return result;
+                }
+            }
+            catch
+            {
+                // Some formats (e.g. BMP) don't support property queries.
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Restores rendering-critical metadata on the encoder after the content has been set.
+        /// </summary>
+        private static async Task RestoreRenderingMetadataAsync(BitmapEncoder encoder, BitmapPropertySet metadata)
+        {
+            if (metadata == null || metadata.Count == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                await encoder.BitmapProperties.SetPropertiesAsync(metadata);
+            }
+            catch
+            {
+                // The encoder format may not support these properties (e.g. BMP).
             }
         }
 

@@ -145,7 +145,7 @@
   <data name="Input_IgnoreOrientation.Text" xml:space="preserve">
     <value>Ignore the orientation of pictures</value>
   </data>
-  <data name="Input_GifWarning.Text" xml:space="preserve">
+  <data name="Input_GifWarning.Message" xml:space="preserve">
     <value>Gif files with animations may not be correctly resized.</value>
   </data>
   <data name="Input_Replace.Text" xml:space="preserve">

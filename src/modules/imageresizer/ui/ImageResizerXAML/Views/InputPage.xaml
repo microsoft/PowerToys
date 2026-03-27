@@ -289,14 +289,13 @@
 
         <!--  GIF warning (outside gray area)  -->
         <InfoBar
+            x:Uid="Input_GifWarning"
             Grid.Row="2"
             Margin="16,8,16,0"
             IsClosable="False"
             IsOpen="True"
             Severity="Warning"
-            Visibility="{x:Bind ViewModel.TryingToResizeGifFiles, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-            <TextBlock x:Uid="Input_GifWarning" />
-        </InfoBar>
+            Visibility="{x:Bind ViewModel.HasGifFiles, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
         <!--  Buttons (outside gray area)  -->
         <Grid Grid.Row="3" Margin="10,16,16,16">
