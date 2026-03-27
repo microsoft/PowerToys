@@ -293,8 +293,8 @@
             Margin="16,8,16,0"
             IsClosable="False"
             IsOpen="True"
-            Visibility="{x:Bind ViewModel.TryingToResizeGifFiles, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-            Severity="Warning">
+            Severity="Warning"
+            Visibility="{x:Bind ViewModel.TryingToResizeGifFiles, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock x:Uid="Input_GifWarning" />
         </InfoBar>
 
