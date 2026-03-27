@@ -10,7 +10,7 @@ Below is our guidance for reporting issues, proposing new features, and submitti
 
 **Importance of Filing an Issue First**
 
-Please follow this rule to help eliminate wasted effort and frustration, and to ensure an efficient and effective use of everyone’s time:
+Please follow this rule to help eliminate wasted effort and frustration, and to ensure an efficient and effective use of everyone's time:
 
 > 👉 If you have a question, think you've discovered an issue, or would like to propose a new feature, please find/file an issue **BEFORE** starting work to fix/implement it.
 
@@ -23,7 +23,7 @@ When requesting new features or enhancements, providing additional evidence, dat
 - Don't understand how to do something? File an issue/Community Guidance Request.
 - Found an existing issue that describes yours? Great! Upvote and add additional commentary, info, or repro steps.
 
-A quick search before filing an issue could be helpful. It’s likely someone else has found the same problem, and they may even be working on or have already contributed a fix!
+A quick search before filing an issue could be helpful. It's likely someone else has found the same problem, and they may even be working on or have already contributed a fix!
 
 ### Indicating Interest in Issues
 
