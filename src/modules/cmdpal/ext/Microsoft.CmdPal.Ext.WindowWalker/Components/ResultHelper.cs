@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using System;
-using System.Collections.Generic;
+
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
-using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
-using Microsoft.CmdPal.Ext.WindowWalker.Properties;
-using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.CmdPal.Ext.WindowWalker.Pages;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
@@ -34,10 +31,6 @@ internal static class ResultHelper
         for (var i = 0; i < list.Count; i++)
         {
             var window = list[i].Item;
-            if (window?.Process is null)
-            {
-                continue;
-            }
 
             if (string.Equals(window.Process.Name, "explorer.exe", StringComparison.OrdinalIgnoreCase) && window.Process.IsShellProcess)
             {

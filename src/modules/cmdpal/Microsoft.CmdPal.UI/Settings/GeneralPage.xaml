@@ -19,7 +19,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <ScrollViewer Grid.Row="1">
-            <Grid Padding="16">
+            <Grid Padding="16,0,16,16">
                 <StackPanel
                     MaxWidth="1000"
                     HorizontalAlignment="Stretch"
@@ -36,6 +36,11 @@
               </StackPanel.ChildrenTransitions>-->
 
                     <!--  'Activation' section  -->
+                    <HyperlinkButton
+                        x:Uid="CmdPal_LearnMore"
+                        Padding="0"
+                        FontWeight="SemiBold"
+                        NavigateUri="https://aka.ms/cmdpal" />
 
                     <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <controls:SettingsExpander
@@ -67,6 +72,9 @@
                     </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE933;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_KeepPreviousQuery_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE81C;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.KeepPreviousQuery, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind viewModel.MonitorPositionIndex, Mode=TwoWay}">

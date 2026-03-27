@@ -5,11 +5,8 @@
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
-using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
@@ -34,10 +31,10 @@ public sealed partial class AppearancePage : Page
     {
         InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
         var themeService = App.Current.Services.GetRequiredService<IThemeService>();
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-        ViewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)

@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -27,9 +26,9 @@ internal sealed class PowerToysAppHostService : IAppHostService
         return topLevelHost ?? currentHost ?? CommandPaletteHost.Instance;
     }
 
-    public CommandProviderContext GetProviderContextForCommand(object? command, CommandProviderContext? currentContext)
+    public ICommandProviderContext GetProviderContextForCommand(object? command, ICommandProviderContext? currentContext)
     {
-        CommandProviderContext? topLevelId = null;
+        ICommandProviderContext? topLevelId = null;
         if (command is TopLevelViewModel topLevelViewModel)
         {
             topLevelId = topLevelViewModel.ProviderContext;

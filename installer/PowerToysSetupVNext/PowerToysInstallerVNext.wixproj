@@ -47,7 +47,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\NewPlus.wxs.bk ..\..\..\NewPlus.wxs
       call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs
       call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
-      call move /Y ..\..\..\PowerDisplay.wxs.bk ..\..\..\PowerDisplay.wxs
       call move /Y ..\..\..\Product.wxs.bk ..\..\..\Product.wxs
       call move /Y ..\..\..\RegistryPreview.wxs.bk ..\..\..\RegistryPreview.wxs
       call move /Y ..\..\..\Resources.wxs.bk ..\..\..\Resources.wxs
@@ -124,7 +123,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="KeyboardManager.wxs" />
     <Compile Include="Peek.wxs" />
     <Compile Include="PowerRename.wxs" />
-    <Compile Include="PowerDisplay.wxs" />
     <Compile Include="DscResources.wxs" />
     <Compile Include="RegistryPreview.wxs" />
     <Compile Include="Run.wxs" />

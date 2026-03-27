@@ -94,25 +94,30 @@ if (-not $SkipLongPaths) {
     try {
         $regValue = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -ErrorAction SilentlyContinue
         $longPathsEnabled = ($regValue.LongPathsEnabled -eq 1)
-    } catch {
+    }
+    catch {
         $longPathsEnabled = $false
     }
 
     if ($longPathsEnabled) {
         Write-Host "  Long paths already enabled" -ForegroundColor Green
-    } elseif ($isAdmin) {
+    }
+    elseif ($isAdmin) {
         Write-Host "  Enabling long paths..."
         try {
             Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -Type DWord
             Write-Host "  Long paths enabled" -ForegroundColor Green
-        } catch {
+        }
+        catch {
             Write-Warning "  Failed to enable long paths: $_"
         }
-    } else {
+    }
+    else {
         Write-Warning "  Long paths not enabled. Run as Administrator to enable, or run manually:"
         Write-Host "  Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -Value 1" -ForegroundColor DarkGray
     }
-} else {
+}
+else {
     Write-Host "[1/4] Skipping long path check" -ForegroundColor DarkGray
 }
 
@@ -126,13 +131,15 @@ if (-not $SkipDevMode) {
     try {
         $regValue = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" -Name "AllowDevelopmentWithoutDevLicense" -ErrorAction SilentlyContinue
         $devModeEnabled = ($regValue.AllowDevelopmentWithoutDevLicense -eq 1)
-    } catch {
+    }
+    catch {
         $devModeEnabled = $false
     }
 
     if ($devModeEnabled) {
         Write-Host "  Developer Mode already enabled" -ForegroundColor Green
-    } elseif ($isAdmin) {
+    }
+    elseif ($isAdmin) {
         Write-Host "  Enabling Developer Mode..."
         try {
             $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
@@ -141,14 +148,17 @@ if (-not $SkipDevMode) {
             }
             Set-ItemProperty -Path $regPath -Name "AllowDevelopmentWithoutDevLicense" -Value 1 -Type DWord
             Write-Host "  Developer Mode enabled" -ForegroundColor Green
-        } catch {
+        }
+        catch {
             Write-Warning "  Failed to enable Developer Mode: $_"
         }
-    } else {
+    }
+    else {
         Write-Warning "  Developer Mode not enabled. Run as Administrator to enable, or enable manually:"
         Write-Host "  Settings > System > For developers > Developer Mode" -ForegroundColor DarkGray
     }
-} else {
+}
+else {
     Write-Host "[2/4] Skipping Developer Mode check" -ForegroundColor DarkGray
 }
 
@@ -161,11 +171,12 @@ if (-not $SkipVSComponents) {
     $vsConfigPath = Join-Path $repoRoot ".vsconfig"
     if (-not (Test-Path $vsConfigPath)) {
         Write-Warning "  .vsconfig not found at $vsConfigPath"
-    } else {
+    }
+    else {
         $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 
         if (-not $VSInstallPath -and (Test-Path $vsWhere)) {
-            $VSInstallPath = & $vsWhere -latest -property installationPath 2>$null
+            $VSInstallPath = & $vsWhere -latest -prerelease -property installationPath 2>$null
         }
 
         if (-not $VSInstallPath) {
@@ -188,7 +199,8 @@ if (-not $SkipVSComponents) {
         if (-not $VSInstallPath -or -not (Test-Path $VSInstallPath)) {
             Write-Warning "  Could not find Visual Studio installation"
             Write-Warning "  Please install Visual Studio 2026 (or 2022 17.4+) and try again, or import .vsconfig manually"
-        } else {
+        }
+        else {
             Write-Host "  Found: $VSInstallPath" -ForegroundColor DarkGray
 
             $vsInstaller = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
@@ -218,35 +230,42 @@ if (-not $SkipVSComponents) {
                         # Check if VS Installer is already running (it runs as setup.exe from the Installer folder)
                         $vsInstallerDir = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer"
                         $vsInstallerRunning = Get-Process -Name "setup" -ErrorAction SilentlyContinue |
-                            Where-Object { $_.Path -and $_.Path.StartsWith($vsInstallerDir, [System.StringComparison]::OrdinalIgnoreCase) }
+                        Where-Object { $_.Path -and $_.Path.StartsWith($vsInstallerDir, [System.StringComparison]::OrdinalIgnoreCase) }
                         if ($vsInstallerRunning) {
                             Write-Warning "  Visual Studio Installer is already running"
                             Write-Host "  Close it and run this script again, or import .vsconfig manually" -ForegroundColor DarkGray
-                        } else {
+                        }
+                        else {
                             Write-Host "  Launching Visual Studio Installer..."
                             Write-Host "  Close Visual Studio if it's running." -ForegroundColor DarkGray
                             $process = Start-Process -FilePath $vsInstaller -ArgumentList "modify", "--installPath", "`"$VSInstallPath`"", "--config", "`"$vsConfigPath`"" -Wait -PassThru
                             if ($process.ExitCode -eq 0) {
                                 Write-Host "  VS component installation completed" -ForegroundColor Green
-                            } elseif ($process.ExitCode -eq 3010) {
+                            }
+                            elseif ($process.ExitCode -eq 3010) {
                                 Write-Host "  VS component installation completed (restart may be required)" -ForegroundColor Green
-                            } else {
+                            }
+                            else {
                                 Write-Warning "  VS Installer exited with code $($process.ExitCode)"
                                 Write-Host "  You may need to run the installer manually" -ForegroundColor DarkGray
                             }
                         }
-                    } else {
+                    }
+                    else {
                         Write-Host "  Skipped VS component installation"
                     }
-                } catch {
+                }
+                catch {
                     Write-Host "  Non-interactive mode. Run the command above manually if needed." -ForegroundColor DarkGray
                 }
-            } else {
+            }
+            else {
                 Write-Warning "  Visual Studio Installer not found"
             }
         }
     }
-} else {
+}
+else {
     Write-Host "[3/4] Skipping VS component check" -ForegroundColor DarkGray
 }
 
@@ -263,21 +282,26 @@ if (-not $SkipSubmodules) {
 
         if ($uninitializedCount -eq 0 -and $submoduleStatus) {
             Write-Host "  Submodules already initialized" -ForegroundColor Green
-        } else {
+        }
+        else {
             Write-Host "  Running: git submodule update --init --recursive" -ForegroundColor DarkGray
             git submodule update --init --recursive
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "  Submodules initialized" -ForegroundColor Green
-            } else {
+            }
+            else {
                 Write-Warning "  Submodule initialization may have encountered issues (exit code: $LASTEXITCODE)"
             }
         }
-    } catch {
+    }
+    catch {
         Write-Warning "  Failed to initialize submodules: $_"
-    } finally {
+    }
+    finally {
         Pop-Location
     }
-} else {
+}
+else {
     Write-Host "[4/4] Skipping submodule initialization" -ForegroundColor DarkGray
 }
 

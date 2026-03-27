@@ -3,15 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 // Code forked from Betsegaw Tadele's https://github.com/betsegaw/windowwalker/
-using System;
-using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
-
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
 /// <summary>
 /// Class containing methods to control the live preview
 /// </summary>
-internal sealed class LivePreview
+internal static class LivePreview
 {
     /// <summary>
     /// Makes sure that a window is excluded from the live preview

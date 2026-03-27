@@ -360,3 +360,8 @@ src/common/Telemetry/*.etl
 # PowerToysInstaller Build Temp Files
 installer/*/*.wxs.bk
 /src/modules/awake/.claude
+
+# Squad / Copilot agents — local-only, not committed
+.squad/
+.squad-workstream
+.github/agents/

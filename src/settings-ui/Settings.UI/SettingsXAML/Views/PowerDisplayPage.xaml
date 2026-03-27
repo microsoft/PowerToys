@@ -27,7 +27,7 @@
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
@@ -71,7 +71,7 @@
                         IsExpanded="{x:Bind ViewModel.HasCustomVcpMappings, Mode=OneWay}"
                         ItemsSource="{x:Bind ViewModel.CustomVcpMappings, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.ItemTemplate>
-                            <DataTemplate x:DataType="pdmodels:CustomVcpValueMapping">
+                            <DataTemplate x:DataType="library:CustomVcpValueMapping">
                                 <tkcontrols:SettingsCard Description="{x:Bind VcpCodeDisplayName}" Header="{x:Bind DisplaySummary}">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Button

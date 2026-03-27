@@ -10,7 +10,6 @@ using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Messages;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Pages;
 
@@ -46,8 +45,8 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
         _cancellationTokenSource = new System.Threading.CancellationTokenSource();
 
         WindowWalkerCommandsProvider.VirtualDesktopHelperInstance.UpdateDesktopList();
@@ -59,7 +58,7 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
         {
             if (!SettingsManager.Instance.InMruOrder)
             {
-                windows.Sort(static (a, b) => string.Compare(a?.Title, b?.Title, StringComparison.OrdinalIgnoreCase));
+                windows.Sort(static (a, b) => string.Compare(a.Title, b.Title, StringComparison.OrdinalIgnoreCase));
             }
 
             var results = new Scored<Window>[windows.Count];
@@ -78,7 +77,7 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
     private static int ScoreFunction(string q, Window window)
     {
         var titleScore = FuzzyStringMatcher.ScoreFuzzy(q, window.Title);
-        var processNameScore = FuzzyStringMatcher.ScoreFuzzy(q, window.Process?.Name ?? string.Empty);
+        var processNameScore = FuzzyStringMatcher.ScoreFuzzy(q, window.Process.Name ?? string.Empty);
         return Math.Max(titleScore, processNameScore);
     }
 
@@ -128,7 +127,8 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
             if (disposing)
             {
                 WeakReferenceMessenger.Default.UnregisterAll(this);
-                _cancellationTokenSource?.Dispose();
+                _cancellationTokenSource.Dispose();
+                WeakReferenceMessenger.Default.UnregisterAll(this);
                 _disposed = true;
             }
         }
