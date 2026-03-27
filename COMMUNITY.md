@@ -48,11 +48,11 @@ Jay has helped triaging, discussing, creating a substantial number of issues and
 
 ### [@jefflord](https://github.com/Jjefflord) - Jeff Lord
 
-Jeff added in multiple new features into Keyboard manager, such as key chord support and launching apps. He also contributed multiple features/fixes to PowerToys.
+Jeff added multiple new features to Keyboard Manager, such as key chord support and launching apps. He also contributed multiple features/fixes to PowerToys.
 
 ### [@snickler](https://github.com/snickler) - [Jeremy Sinclair](http://sinclairinat0r.com)
 
-Jeremy has helped drive large sums of the ARM64 support inside PowerToys.
+Jeremy has helped drive substantial ARM64 support within PowerToys.
 
 ### [@jiripolasek](https://github.com/jiripolasek) - [Jiří Polášek](https://github.com/jiripolasek)
 
@@ -60,7 +60,7 @@ Jiří has contributed a massive number of features and improvements to Command 
 
 ### [@TheJoeFin](https://github.com/TheJoeFin) - [Joe Finney](https://joefinapps.com)
 
-Joe has helped triaging, discussing, issues as well as fixing bugs and building features for Text Extractor.
+Joe has helped with triaging, discussing issues as well as fixing bugs and building features for Text Extractor.
 
 ### [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie
 
@@ -100,7 +100,7 @@ Roy has helped out contributing multiple features to PowerToys Run
 
 ### [@ThiefZero](https://github.com/ThiefZero)
 
-ThiefZero has helped out contributing a features to PowerToys Run such as the unit converter plugin
+ThiefZero has helped contribute features to PowerToys Run, such as the unit converter plugin
 
 ### [@TobiasSekan](https://github.com/TobiasSekan) - Tobias Sekan
 
