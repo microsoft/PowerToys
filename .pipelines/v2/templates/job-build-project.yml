@@ -503,14 +503,14 @@ jobs:
       } else {
           Write-Host "AdvancedPaste output folder not found at: $apDir"
       }
-      $Packages = Get-ChildItem -Path $SearchRoot -Recurse -Filter "AdvancedPaste_*.msix" -ErrorAction SilentlyContinue
+      $Packages = Get-ChildItem -Path $SearchRoot -Recurse -Filter "PowerToys.AdvancedPaste_*.msix" -ErrorAction SilentlyContinue
       Write-Host "Found $($Packages.Count) AdvancedPaste MSIX package(s):"
       foreach ($pkg in $Packages) {
           Write-Host "  - $($pkg.FullName)"
       }
       
       if ($Packages.Count -gt 0) {
-          $PlatformPackage = $Packages | Where-Object { $_.Name -match "AdvancedPaste_.*_(x64|arm64)\.msix$" } | Select-Object -First 1
+          $PlatformPackage = $Packages | Where-Object { $_.Name -match "PowerToys\.AdvancedPaste_.*_(x64|arm64)\.msix$" } | Select-Object -First 1
           if ($PlatformPackage) {
               $Package = $PlatformPackage
               Write-Host "Using platform-specific package: $($Package.FullName)"

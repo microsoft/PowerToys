@@ -25,6 +25,7 @@
   <PropertyGroup Condition="'$(CIBuild)'=='true' or '$(GeneratePackageLocally)'=='true'">
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
     <AppxBundle>Never</AppxBundle>
+    <AppxPackageName>PowerToys.AdvancedPaste</AppxPackageName>
     <AppxPackageTestDir>$(OutputPath)\AppPackages\PowerToys.AdvancedPaste_$(Version)_Test\</AppxPackageTestDir>
   </PropertyGroup>
 
