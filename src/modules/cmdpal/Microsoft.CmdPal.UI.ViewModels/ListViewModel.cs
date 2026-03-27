@@ -147,9 +147,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         // something needs to change, by raising ItemsChanged.
         if (_isDynamic)
         {
-            filterCancellationTokenSource?.Cancel();
-            filterCancellationTokenSource?.Dispose();
-            filterCancellationTokenSource = new CancellationTokenSource();
+            CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
+            var filterCts = filterCancellationTokenSource = new CancellationTokenSource();
+            var filterToken = filterCts.Token;
 
             // Hop off to an exclusive scheduler background thread to update the
             // extension. We do this to ensure that all filter update requests
@@ -159,7 +159,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             _ = filterTaskFactory.StartNew(
                 () =>
                 {
-                    filterCancellationTokenSource.Token.ThrowIfCancellationRequested();
+                    filterToken.ThrowIfCancellationRequested();
 
                     try
                     {
@@ -176,7 +176,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         ShowException(ex, _model?.Unsafe?.Name);
                     }
                 },
-                filterCancellationTokenSource.Token,
+                filterToken,
                 TaskCreationOptions.None,
                 filterTaskFactory.Scheduler!);
         }
@@ -221,7 +221,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         // thread so same-thread reentrancy detection still works.
         if (IsCurrentThreadUiThread())
         {
-            _ = Task.Run(() => RequestFetch(keepSelection));
+            QueueObservedBackgroundFetch(() => RequestFetch(keepSelection), "Failed to request background fetch");
             return;
         }
 
@@ -253,8 +253,27 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         if (deferredFetchRequested)
         {
-            _ = Task.Run(() => FetchItems(keepSelection));
+            QueueObservedBackgroundFetch(() => FetchItems(keepSelection), "Failed to execute deferred fetch");
         }
+    }
+
+    private static void QueueObservedBackgroundFetch(Action action, string logMessage)
+    {
+        _ = Task.Run(
+            () =>
+            {
+                try
+                {
+                    action();
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    CoreLogger.LogError(logMessage, ex);
+                }
+            });
     }
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
@@ -274,8 +293,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         lock (_fetchStateLock)
         {
             // Cancel any previous FetchItems operation
-            _fetchItemsCancellationTokenSource?.Cancel();
-            _fetchItemsCancellationTokenSource?.Dispose();
+            CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
             _fetchItemsCancellationTokenSource = new CancellationTokenSource();
 
             cancellationToken = _fetchItemsCancellationTokenSource.Token;
@@ -624,8 +642,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private static void CancelAndDisposeTokenSource(ref CancellationTokenSource? tokenSource)
     {
-        var tokenSourceToDispose = tokenSource;
-        tokenSource = null;
+        var tokenSourceToDispose = Interlocked.Exchange(ref tokenSource, null);
         if (tokenSourceToDispose is null)
         {
             return;

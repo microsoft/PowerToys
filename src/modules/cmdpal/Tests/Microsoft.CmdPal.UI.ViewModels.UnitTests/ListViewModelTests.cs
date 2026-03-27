@@ -81,8 +81,6 @@ public partial class ListViewModelTests
 
         var completed = await Task.WhenAny(page.DeferredFetchObserved, Task.Delay(TimeSpan.FromSeconds(2)));
         Assert.AreSame(page.DeferredFetchObserved, completed);
-
-        await Task.Delay(100);
         Assert.AreEqual(2, page.GetItemsCallCount);
 
         viewModel.SafeCleanup();
