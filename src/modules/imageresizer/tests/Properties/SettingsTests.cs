@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 
+using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ImageResizer.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -25,19 +26,6 @@ namespace ImageResizer.Properties
             WriteIndented = true,
         };
 
-        // Cache the validation message format
-        private static CompositeFormat _valueMustBeBetween;
-
-        private static CompositeFormat ValueMustBeBetweenFormat
-        {
-            get
-            {
-                // Use hardcoded string for test since ResourceLoader requires WinUI runtime
-                _valueMustBeBetween ??= System.Text.CompositeFormat.Parse("Value must be between '{0}' and '{1}'.");
-                return _valueMustBeBetween;
-            }
-        }
-
         public SettingsTests()
         {
             // Change settings.json path to a temp file
@@ -47,8 +35,7 @@ namespace ImageResizer.Properties
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            // Note: WinUI App cannot be instantiated in unit tests without the full WinUI runtime.
-            // Settings.Reload() has a fallback mechanism that allows it to work without a DispatcherQueue.
+            ResourceLoaderInstance.GetString = key => key;
         }
 
         [TestMethod]
@@ -202,9 +189,11 @@ namespace ImageResizer.Properties
 
             var result = ((IDataErrorInfo)settings)["JpegQualityLevel"];
 
-            // Using InvariantCulture since this is used internally
+            // With test ResourceLoaderInstance, GetString returns the key itself ("ValueMustBeBetween")
+            // which becomes the CompositeFormat. Format it the same way the production code does.
+            var expectedFormat = CompositeFormat.Parse(ResourceLoaderInstance.GetString("ValueMustBeBetween"));
             Assert.AreEqual(
-                string.Format(CultureInfo.InvariantCulture, ValueMustBeBetweenFormat, 1, 100),
+                string.Format(CultureInfo.InvariantCulture, expectedFormat, 1, 100),
                 result);
         }
 
@@ -284,7 +273,11 @@ namespace ImageResizer.Properties
         {
             // Arrange
             var settings = new Settings();
-            settings.Save();    // To create the settings file
+            settings.SelectedSizeIndex = 2;
+            settings.Save();
+
+            // Reset to default so Reload will trigger a real change
+            settings.SelectedSizeIndex = 0;
 
             var shrinkOnlyChanged = false;
             var replaceChanged = false;

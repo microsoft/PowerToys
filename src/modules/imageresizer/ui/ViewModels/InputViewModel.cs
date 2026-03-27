@@ -180,7 +180,7 @@ namespace ImageResizer.ViewModels
             try
             {
                 IsDownloadingModel = true;
-                ModelStatusMessage = ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelDownloading");
+                ModelStatusMessage = ResourceLoaderInstance.GetString("Input_AiModelDownloading");
                 NotifyAiStateChanged();
 
                 var result = await WinAiSuperResolutionService.EnsureModelReadyAsync();
@@ -202,13 +202,13 @@ namespace ImageResizer.ViewModels
                 }
                 else
                 {
-                    ModelStatusMessage = ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelDownloadFailed");
+                    ModelStatusMessage = ResourceLoaderInstance.GetString("Input_AiModelDownloadFailed");
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError($"AI model download failed: {ex.Message}");
-                ModelStatusMessage = ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelDownloadFailed");
+                ModelStatusMessage = ResourceLoaderInstance.GetString("Input_AiModelDownloadFailed");
             }
             finally
             {
@@ -263,12 +263,12 @@ namespace ImageResizer.ViewModels
                 var hasConcreteSize = _originalWidth.HasValue && _originalHeight.HasValue;
                 CurrentResolutionDescription = hasConcreteSize
                     ? FormatDimensions(_originalWidth!.Value, _originalHeight!.Value)
-                    : ResourceLoaderInstance.ResourceLoader.GetString("Input_AiUnknownSize");
+                    : ResourceLoaderInstance.GetString("Input_AiUnknownSize");
 
                 var scale = Settings.AiSize.Scale;
                 NewResolutionDescription = hasConcreteSize
                     ? FormatDimensions((long)_originalWidth!.Value * scale, (long)_originalHeight!.Value * scale)
-                    : ResourceLoaderInstance.ResourceLoader.GetString("Input_AiUnknownSize");
+                    : ResourceLoaderInstance.GetString("Input_AiUnknownSize");
             }
             catch (Exception ex)
             {
@@ -332,8 +332,8 @@ namespace ImageResizer.ViewModels
             ModelStatusMessage = App.AiAvailabilityState switch
             {
                 AiAvailabilityState.Ready => string.Empty,
-                AiAvailabilityState.ModelNotReady => ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelNotAvailable"),
-                AiAvailabilityState.NotSupported => ResourceLoaderInstance.ResourceLoader.GetString("Input_AiModelNotSupported"),
+                AiAvailabilityState.ModelNotReady => ResourceLoaderInstance.GetString("Input_AiModelNotAvailable"),
+                AiAvailabilityState.NotSupported => ResourceLoaderInstance.GetString("Input_AiModelNotSupported"),
                 _ => string.Empty,
             };
         }

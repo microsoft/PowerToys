@@ -17,15 +17,13 @@ namespace ImageResizer.Models
 {
     public partial class ResizeSize : ObservableObject, IHasId
     {
-        // Lazy initialization to avoid ResourceLoader call during class loading (enables unit testing)
-        private static readonly Lazy<Dictionary<string, string>> _tokens = new Lazy<Dictionary<string, string>>(() =>
-            new Dictionary<string, string>
-            {
-                ["$small$"] = ResourceLoaderInstance.ResourceLoader.GetString("Small"),
-                ["$medium$"] = ResourceLoaderInstance.ResourceLoader.GetString("Medium"),
-                ["$large$"] = ResourceLoaderInstance.ResourceLoader.GetString("Large"),
-                ["$phone$"] = ResourceLoaderInstance.ResourceLoader.GetString("Phone"),
-            });
+        private static readonly Dictionary<string, string> _tokenKeys = new Dictionary<string, string>
+        {
+            ["$small$"] = "Small",
+            ["$medium$"] = "Medium",
+            ["$large$"] = "Large",
+            ["$phone$"] = "Phone",
+        };
 
         [ObservableProperty]
         [JsonPropertyName("Id")]
@@ -90,8 +88,8 @@ namespace ImageResizer.Models
                 dpi);
 
         private static string ReplaceTokens(string text)
-            => (text != null && _tokens.Value.TryGetValue(text, out var result))
-                ? result
+            => text != null && _tokenKeys.TryGetValue(text, out var key)
+                ? ResourceLoaderInstance.GetString(key)
                 : text;
 
         private double ConvertToPixels(double value, ResizeUnit unit, int originalValue, double dpi)

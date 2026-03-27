@@ -42,7 +42,7 @@ namespace ImageResizer.Converters
                     .Append(parameter);
             }
 
-            var targetValue = ResourceLoaderInstance.ResourceLoader.GetString(builder.ToString());
+            var targetValue = ResourceLoaderInstance.GetString(builder.ToString());
 
             if (toLower && !string.IsNullOrEmpty(targetValue))
             {

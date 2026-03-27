@@ -6,7 +6,9 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 
+using ImageResizer.Helpers;
 using ImageResizer.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -15,6 +17,12 @@ namespace ImageResizer.Models
     [TestClass]
     public class ResizeSizeTests
     {
+        [ClassInitialize]
+        public static void ClassInit(TestContext context)
+        {
+            ResourceLoaderInstance.GetString = key => key;
+        }
+
         [TestMethod]
         public void NameWorks()
         {
@@ -29,19 +37,30 @@ namespace ImageResizer.Models
             Assert.AreEqual(nameof(ResizeSize.Name), e.Arguments.PropertyName);
         }
 
-        // Note: NameReplacesTokens test removed - requires WinUI ResourceLoader runtime
+        [TestMethod]
+        public void NameReplacesTokens()
+        {
+            var size = new ResizeSize();
+
+            size.Name = "$small$";
+
+            Assert.AreEqual("Small", size.Name);
+        }
+
         [TestMethod]
         public void FitWorks()
         {
             var size = new ResizeSize();
 
-            var e = AssertEx.Raises<PropertyChangedEventArgs>(
+            var events = AssertEx.RaisesAll<PropertyChangedEventArgs>(
                 h => size.PropertyChanged += h,
                 h => size.PropertyChanged -= h,
                 () => size.Fit = ResizeFit.Stretch);
 
             Assert.AreEqual(ResizeFit.Stretch, size.Fit);
-            Assert.AreEqual(nameof(ResizeSize.Fit), e.Arguments.PropertyName);
+            Assert.IsTrue(
+                events.Any(e => e.Arguments.PropertyName == nameof(ResizeSize.Fit)),
+                "Expected PropertyChanged for Fit");
         }
 
         [TestMethod]
@@ -113,13 +132,15 @@ namespace ImageResizer.Models
         {
             var size = new ResizeSize();
 
-            var e = AssertEx.Raises<PropertyChangedEventArgs>(
+            var events = AssertEx.RaisesAll<PropertyChangedEventArgs>(
                 h => size.PropertyChanged += h,
                 h => size.PropertyChanged -= h,
                 () => size.Unit = ResizeUnit.Inch);
 
             Assert.AreEqual(ResizeUnit.Inch, size.Unit);
-            Assert.AreEqual(nameof(ResizeSize.Unit), e.Arguments.PropertyName);
+            Assert.IsTrue(
+                events.Any(e => e.Arguments.PropertyName == nameof(ResizeSize.Unit)),
+                "Expected PropertyChanged for Unit");
         }
 
         [TestMethod]

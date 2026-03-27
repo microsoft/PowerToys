@@ -50,7 +50,7 @@ namespace ImageResizer.Properties
         private static CompositeFormat _valueMustBeBetween;
 
         private static CompositeFormat ValueMustBeBetween =>
-            _valueMustBeBetween ??= System.Text.CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("ValueMustBeBetween"));
+            _valueMustBeBetween ??= System.Text.CompositeFormat.Parse(ResourceLoaderInstance.GetString("ValueMustBeBetween"));
 
         // Used to synchronize access to the settings.json file (in-process only)
         private static readonly System.Threading.Lock _jsonSyncLock = new();
@@ -551,18 +551,21 @@ namespace ImageResizer.Properties
                 }
             }
 
-            // Apply deserialized snapshot to live properties on the UI thread
-            var currentDispatcher = DispatcherQueue.GetForCurrentThread();
-            if (currentDispatcher != null)
+            // Apply deserialized snapshot to live properties on the UI thread.
+            if (_uiDispatcherQueue != null)
             {
-                ReloadCore(jsonSettings);
-            }
-            else if (_uiDispatcherQueue != null)
-            {
-                _uiDispatcherQueue.TryEnqueue(() => ReloadCore(jsonSettings));
+                if (_uiDispatcherQueue.HasThreadAccess)
+                {
+                    ReloadCore(jsonSettings);
+                }
+                else
+                {
+                    _uiDispatcherQueue.TryEnqueue(() => ReloadCore(jsonSettings));
+                }
             }
             else
             {
+                // No UI context (unit tests or CLI mode) — call directly.
                 ReloadCore(jsonSettings);
             }
         }

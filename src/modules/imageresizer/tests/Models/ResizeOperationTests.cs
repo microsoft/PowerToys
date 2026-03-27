@@ -21,6 +21,7 @@ namespace ImageResizer.Models
         // Known legacy container format GUID for PNG, used as FallbackEncoder value in settings JSON
         private static readonly Guid PngContainerFormatGuid = new Guid("1b7cfaf4-713f-473c-bbcd-6137425faeaf");
 
+        private static readonly string[] CommentPropertyQuery = new[] { "System.Comment" };
         private static readonly string[] DateTakenPropertyQuery = new[] { "System.Photo.DateTaken" };
         private static readonly string[] CameraModelPropertyQuery = new[] { "System.Photo.CameraModel" };
 
@@ -38,8 +39,9 @@ namespace ImageResizer.Models
                 _directory.File(),
                 async decoder =>
                 {
-                    var props = await decoder.BitmapProperties.GetPropertiesAsync(DateTakenPropertyQuery);
-                    Assert.IsTrue(props.ContainsKey("System.Photo.DateTaken"), "Metadata should be preserved during transcode");
+                    var props = await decoder.BitmapProperties.GetPropertiesAsync(CommentPropertyQuery);
+                    Assert.IsTrue(props.ContainsKey("System.Comment"), "Comment metadata should be preserved during transcode");
+                    Assert.AreEqual("Test", (string)props["System.Comment"].Value, "Comment value should be preserved");
                 });
         }
 

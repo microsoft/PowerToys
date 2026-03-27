@@ -120,53 +120,53 @@ namespace ImageResizer.Models
 
         public static void PrintConfig(ImageResizer.Properties.Settings settings)
         {
-            var loader = ResourceLoaderInstance.ResourceLoader;
+            var getString = ResourceLoaderInstance.GetString;
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Console.WriteLine(loader.GetString("CLI_ConfigTitle"));
+            Console.WriteLine(getString("CLI_ConfigTitle"));
             Console.WriteLine();
-            Console.WriteLine(loader.GetString("CLI_ConfigGeneralSettings"));
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigShrinkOnly"), settings.ShrinkOnly));
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigReplaceOriginal"), settings.Replace));
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigIgnoreOrientation"), settings.IgnoreOrientation));
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigRemoveMetadata"), settings.RemoveMetadata));
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigKeepDateModified"), settings.KeepDateModified));
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigJpegQuality"), settings.JpegQualityLevel));
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigPngInterlace"), settings.PngInterlaceOption));
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigTiffCompress"), settings.TiffCompressOption));
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigFilenameFormat"), settings.FileName));
+            Console.WriteLine(getString("CLI_ConfigGeneralSettings"));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigShrinkOnly"), settings.ShrinkOnly));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigReplaceOriginal"), settings.Replace));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigIgnoreOrientation"), settings.IgnoreOrientation));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigRemoveMetadata"), settings.RemoveMetadata));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigKeepDateModified"), settings.KeepDateModified));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigJpegQuality"), settings.JpegQualityLevel));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigPngInterlace"), settings.PngInterlaceOption));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigTiffCompress"), settings.TiffCompressOption));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigFilenameFormat"), settings.FileName));
             Console.WriteLine();
-            Console.WriteLine(loader.GetString("CLI_ConfigCustomSize"));
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigWidth"), settings.CustomSize.Width, settings.CustomSize.Unit));
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigHeight"), settings.CustomSize.Height, settings.CustomSize.Unit));
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigFitMode"), settings.CustomSize.Fit));
+            Console.WriteLine(getString("CLI_ConfigCustomSize"));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigWidth"), settings.CustomSize.Width, settings.CustomSize.Unit));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigHeight"), settings.CustomSize.Height, settings.CustomSize.Unit));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigFitMode"), settings.CustomSize.Fit));
             Console.WriteLine();
-            Console.WriteLine(loader.GetString("CLI_ConfigPresetSizes"));
+            Console.WriteLine(getString("CLI_ConfigPresetSizes"));
             for (int i = 0; i < settings.Sizes.Count; i++)
             {
                 var size = settings.Sizes[i];
                 var selected = i == settings.SelectedSizeIndex ? "*" : " ";
-                Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigPresetSizeFormat"), i, selected, size.Name, size.Width, size.Height, size.Unit, size.Fit));
+                Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigPresetSizeFormat"), i, selected, size.Name, size.Width, size.Height, size.Unit, size.Fit));
             }
 
             if (settings.SelectedSizeIndex >= settings.Sizes.Count)
             {
-                Console.WriteLine(string.Format(CultureInfo.InvariantCulture, loader.GetString("CLI_ConfigCustomSelected"), settings.CustomSize.Width, settings.CustomSize.Height, settings.CustomSize.Unit, settings.CustomSize.Fit));
+                Console.WriteLine(string.Format(CultureInfo.InvariantCulture, getString("CLI_ConfigCustomSelected"), settings.CustomSize.Width, settings.CustomSize.Height, settings.CustomSize.Unit, settings.CustomSize.Fit));
             }
         }
 
         public static void PrintUsage()
         {
-            var loader = ResourceLoaderInstance.ResourceLoader;
+            var getString = ResourceLoaderInstance.GetString;
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Console.WriteLine(loader.GetString("CLI_UsageTitle"));
+            Console.WriteLine(getString("CLI_UsageTitle"));
             Console.WriteLine();
 
             var cmd = new ImageResizerRootCommand();
 
-            Console.WriteLine(loader.GetString("CLI_UsageLine"));
+            Console.WriteLine(getString("CLI_UsageLine"));
             Console.WriteLine();
 
-            Console.WriteLine(loader.GetString("CLI_UsageOptions"));
+            Console.WriteLine(getString("CLI_UsageOptions"));
             foreach (var option in cmd.Options)
             {
                 var aliases = string.Join(", ", option.Aliases);
@@ -175,11 +175,11 @@ namespace ImageResizer.Models
             }
 
             Console.WriteLine();
-            Console.WriteLine(loader.GetString("CLI_UsageExamples"));
-            Console.WriteLine(loader.GetString("CLI_UsageExampleHelp"));
-            Console.WriteLine(loader.GetString("CLI_UsageExampleDimensions"));
-            Console.WriteLine(loader.GetString("CLI_UsageExamplePercent"));
-            Console.WriteLine(loader.GetString("CLI_UsageExamplePreset"));
+            Console.WriteLine(getString("CLI_UsageExamples"));
+            Console.WriteLine(getString("CLI_UsageExampleHelp"));
+            Console.WriteLine(getString("CLI_UsageExampleDimensions"));
+            Console.WriteLine(getString("CLI_UsageExamplePercent"));
+            Console.WriteLine(getString("CLI_UsageExamplePreset"));
         }
     }
 }

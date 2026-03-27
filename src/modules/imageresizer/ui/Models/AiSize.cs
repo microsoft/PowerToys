@@ -15,7 +15,7 @@ namespace ImageResizer.Models
         private static CompositeFormat _scaleFormat;
 
         private static CompositeFormat ScaleFormat =>
-            _scaleFormat ??= CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("Input_AiScaleFormat"));
+            _scaleFormat ??= CompositeFormat.Parse(ResourceLoaderInstance.GetString("Input_AiScaleFormat"));
 
         [ObservableProperty]
         [JsonPropertyName("scale")]

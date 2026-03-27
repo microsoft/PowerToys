@@ -84,6 +84,24 @@ namespace ImageResizer.Test
             return raisedEvent;
         }
 
+        public static IList<RaisedEvent<PropertyChangedEventArgs>> RaisesAll<T>(
+            Action<PropertyChangedEventHandler> attach,
+            Action<PropertyChangedEventHandler> detach,
+            Action testCode)
+            where T : PropertyChangedEventArgs
+        {
+            var events = new List<RaisedEvent<PropertyChangedEventArgs>>();
+            PropertyChangedEventHandler handler = (sender, e)
+                => events.Add(new RaisedEvent<PropertyChangedEventArgs>(sender, e));
+            attach(handler);
+            testCode();
+            detach(handler);
+
+            Assert.IsTrue(events.Count > 0, "Expected at least one PropertyChanged event.");
+
+            return events;
+        }
+
         public sealed class RaisedEvent<TArgs>
         {
             public RaisedEvent(object sender, TArgs args)

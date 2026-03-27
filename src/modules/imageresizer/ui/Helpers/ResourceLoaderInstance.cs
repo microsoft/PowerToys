@@ -2,17 +2,26 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
 using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace ImageResizer.Helpers
 {
     internal static class ResourceLoaderInstance
     {
-        internal static ResourceLoader ResourceLoader { get; private set; }
+        private static Func<string, string> _getString;
 
-        static ResourceLoaderInstance()
+        internal static Func<string, string> GetString
         {
-            ResourceLoader = new ResourceLoader("PowerToys.ImageResizer.pri");
+            get => _getString ??= CreateDefault();
+            set => _getString = value;
+        }
+
+        private static Func<string, string> CreateDefault()
+        {
+            var loader = new ResourceLoader("PowerToys.ImageResizer.pri");
+            return loader.GetString;
         }
     }
 }

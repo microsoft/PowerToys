@@ -40,7 +40,7 @@ namespace ImageResizer.ViewModels
         private static CompositeFormat _progressTimeRemainingFormat;
 
         private static CompositeFormat ProgressTimeRemainingFormat =>
-            _progressTimeRemainingFormat ??= CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("Progress_TimeRemaining"));
+            _progressTimeRemainingFormat ??= CompositeFormat.Parse(ResourceLoaderInstance.GetString("Progress_TimeRemaining"));
 
         public string TimeRemainingDisplay
         {

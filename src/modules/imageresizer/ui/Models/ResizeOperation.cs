@@ -36,7 +36,7 @@ namespace ImageResizer.Models
         private static CompositeFormat _aiErrorFormat;
 
         private static CompositeFormat AiErrorFormat =>
-            _aiErrorFormat ??= CompositeFormat.Parse(ResourceLoaderInstance.ResourceLoader.GetString("Error_AiProcessingFailed"));
+            _aiErrorFormat ??= CompositeFormat.Parse(ResourceLoaderInstance.GetString("Error_AiProcessingFailed"));
 
         private static readonly string[] RenderingMetadataProperties =
             [
@@ -99,7 +99,7 @@ namespace ImageResizer.Models
                     path = GetDestinationPath(encoderGuid, outputWidth, outputHeight);
                     _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(path));
 
-                    using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.Write))
+                    using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.ReadWrite))
                     {
                         var winrtOutputStream = outputStream.AsRandomAccessStream();
                         await EncodeToStreamAsync(
@@ -168,7 +168,7 @@ namespace ImageResizer.Models
 
                 if (aiResult == null)
                 {
-                    throw new InvalidOperationException(ResourceLoaderInstance.ResourceLoader.GetString("Error_AiConversionFailed"));
+                    throw new InvalidOperationException(ResourceLoaderInstance.GetString("Error_AiConversionFailed"));
                 }
 
                 var outputWidth = aiResult.PixelWidth;
@@ -177,7 +177,7 @@ namespace ImageResizer.Models
                 var path = GetDestinationPath(encoderGuid, outputWidth, outputHeight);
                 _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(path));
 
-                using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.Write))
+                using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.ReadWrite))
                 {
                     var winrtOutputStream = outputStream.AsRandomAccessStream();
                     await EncodeToStreamAsync(
@@ -201,14 +201,6 @@ namespace ImageResizer.Models
             }
         }
 
-        /// <summary>
-        /// Common encode pipeline: creates the appropriate encoder (transcode or fresh),
-        /// delegates content writing, preserves rendering metadata when stripping, and flushes.
-        /// </summary>
-        /// <param name="writeContent">
-        /// Callback to configure the encoder content. The bool parameter is true for transcode
-        /// (set BitmapTransform properties) and false for fresh encoder (set SoftwareBitmap directly).
-        /// </param>
         private async Task EncodeToStreamAsync(
             BitmapDecoder decoder,
             IRandomAccessStream inputStream,
@@ -216,29 +208,81 @@ namespace ImageResizer.Models
             Guid encoderGuid,
             Func<BitmapEncoder, bool, Task> writeContent)
         {
-            if (!_settings.RemoveMetadata)
+            var decoderEncoderId = CodecHelper.GetEncoderIdForDecoder(decoder);
+            bool canTranscode = !_settings.RemoveMetadata
+                && decoderEncoderId.HasValue
+                && decoderEncoderId.Value == encoderGuid;
+
+            if (canTranscode)
             {
-                // Transcode path: preserves all metadata automatically
-                inputStream.Seek(0);
-                var encoder = await BitmapEncoder.CreateForTranscodingAsync(outputStream, decoder);
-                await writeContent(encoder, true);
-                await ConfigureEncoderPropertiesAsync(encoder, encoderGuid);
-                await encoder.FlushAsync();
+                await TranscodeAsync(decoder, inputStream, outputStream, writeContent);
             }
             else
             {
-                // Fresh encoder: strips metadata, then restores rendering-critical properties
-                var renderingMetadata = await ReadRenderingMetadataAsync(decoder);
-                var encoder = await CreateFreshEncoderAsync(encoderGuid, outputStream);
-                await writeContent(encoder, false);
-                await RestoreRenderingMetadataAsync(encoder, renderingMetadata);
-                await encoder.FlushAsync();
+                await FreshEncodeAsync(decoder, outputStream, encoderGuid, writeContent);
             }
         }
 
         /// <summary>
-        /// Decodes each frame with the given transform and writes it to the encoder.
-        /// Used by the strip-metadata path where frames must be manually re-encoded.
+        /// Transcode path: re-encodes pixels via BitmapTransform while preserving all metadata.
+        /// The <paramref name="writeContent"/> callback receives isTranscode=true and should
+        /// configure <see cref="BitmapEncoder.BitmapTransform"/> properties only.
+        /// </summary>
+        private static async Task TranscodeAsync(
+            BitmapDecoder decoder,
+            IRandomAccessStream inputStream,
+            IRandomAccessStream outputStream,
+            Func<BitmapEncoder, bool, Task> writeContent)
+        {
+            inputStream.Seek(0);
+            var encoder = await BitmapEncoder.CreateForTranscodingAsync(outputStream, decoder);
+            await writeContent(encoder, true);
+
+            // Safety net: some JPEG files with large/unusual metadata blocks (e.g. 54 KB
+            // embedded thumbnails) lose EXIF properties during transcode — the WPF equivalent
+            // threw InvalidOperationException on encoder.Metadata = decoder.Metadata for these.
+            // Re-set known critical properties to ensure they survive.
+            await CopyKnownMetadataAsync(decoder, encoder);
+
+            await encoder.FlushAsync();
+        }
+
+        /// <summary>
+        /// Fresh encoder path: creates a blank encoder and manually writes pixel data.
+        /// Used when metadata must be stripped (RemoveMetadata) or format doesn't match (ICO→PNG).
+        /// The <paramref name="writeContent"/> callback receives isTranscode=false and should
+        /// call <see cref="EncodeFramesAsync"/> or <see cref="BitmapEncoder.SetSoftwareBitmap"/>.
+        /// </summary>
+        private async Task FreshEncodeAsync(
+            BitmapDecoder decoder,
+            IRandomAccessStream outputStream,
+            Guid encoderGuid,
+            Func<BitmapEncoder, bool, Task> writeContent)
+        {
+            // Read rendering-critical metadata before encoding so we can restore it on
+            // the blank encoder. Only needed for RemoveMetadata; format-mismatch files
+            // (e.g. ICO) rarely carry meaningful EXIF data.
+            BitmapPropertySet renderingMetadata = null;
+            if (_settings.RemoveMetadata)
+            {
+                renderingMetadata = await ReadMetadataAsync(decoder, RenderingMetadataProperties);
+            }
+
+            var encoder = await CreateFreshEncoderAsync(encoderGuid, outputStream);
+            await writeContent(encoder, false);
+
+            if (renderingMetadata != null)
+            {
+                await WriteMetadataAsync(encoder, renderingMetadata);
+            }
+
+            await encoder.FlushAsync();
+        }
+
+        /// <summary>
+        /// Decodes each frame, applies the transform, and writes pixel data to the encoder.
+        /// Uses GetPixelDataAsync + SetPixelData for explicit pixel format control — the
+        /// SetSoftwareBitmap API can fail with ArgumentException for some decoder outputs.
         /// </summary>
         private static async Task EncodeFramesAsync(
             BitmapEncoder encoder,
@@ -268,6 +312,9 @@ namespace ImageResizer.Models
                 transform.ScaledHeight = (uint)originalHeight;
             }
 
+            uint outWidth = cropBounds?.Width ?? (noTransformNeeded ? (uint)originalWidth : scaledWidth);
+            uint outHeight = cropBounds?.Height ?? (noTransformNeeded ? (uint)originalHeight : scaledHeight);
+
             for (uint i = 0; i < decoder.FrameCount; i++)
             {
                 if (i > 0)
@@ -276,26 +323,43 @@ namespace ImageResizer.Models
                 }
 
                 var frame = await decoder.GetFrameAsync(i);
-                using var bitmap = await frame.GetSoftwareBitmapAsync(
-                    frame.BitmapPixelFormat,
+                var pixelData = await frame.GetPixelDataAsync(
+                    BitmapPixelFormat.Bgra8,
                     BitmapAlphaMode.Premultiplied,
                     transform,
                     ExifOrientationMode.IgnoreExifOrientation,
                     ColorManagementMode.DoNotColorManage);
 
-                encoder.SetSoftwareBitmap(bitmap);
+                encoder.SetPixelData(
+                    BitmapPixelFormat.Bgra8,
+                    BitmapAlphaMode.Premultiplied,
+                    outWidth,
+                    outHeight,
+                    frame.DpiX,
+                    frame.DpiY,
+                    pixelData.DetachPixelData());
             }
         }
 
+        private static readonly string[] KnownMetadataProperties =
+        [
+            "System.Photo.DateTaken",
+            "System.Photo.CameraModel",
+            "System.Photo.CameraManufacturer",
+            "System.Photo.Orientation",
+            "System.Image.ColorSpace",
+            "System.Comment",
+        ];
+
         /// <summary>
-        /// Reads rendering-critical metadata (orientation, color space) from the decoder
-        /// so it can be restored after stripping all other metadata.
+        /// Best-effort read of metadata properties from the decoder.
+        /// Returns null if the format doesn't support metadata (e.g. BMP).
         /// </summary>
-        private static async Task<BitmapPropertySet> ReadRenderingMetadataAsync(BitmapDecoder decoder)
+        private static async Task<BitmapPropertySet> ReadMetadataAsync(BitmapDecoder decoder, string[] propertyNames)
         {
             try
             {
-                var props = await decoder.BitmapProperties.GetPropertiesAsync(RenderingMetadataProperties);
+                var props = await decoder.BitmapProperties.GetPropertiesAsync(propertyNames);
                 if (props.Count > 0)
                 {
                     var result = new BitmapPropertySet();
@@ -316,9 +380,9 @@ namespace ImageResizer.Models
         }
 
         /// <summary>
-        /// Restores rendering-critical metadata on the encoder after the content has been set.
+        /// Best-effort write of metadata properties to the encoder.
         /// </summary>
-        private static async Task RestoreRenderingMetadataAsync(BitmapEncoder encoder, BitmapPropertySet metadata)
+        private static async Task WriteMetadataAsync(BitmapEncoder encoder, BitmapPropertySet metadata)
         {
             if (metadata == null || metadata.Count == 0)
             {
@@ -331,8 +395,19 @@ namespace ImageResizer.Models
             }
             catch
             {
-                // The encoder format may not support these properties (e.g. BMP).
+                // Some encoders don't support these properties (e.g. BMP).
             }
+        }
+
+        /// <summary>
+        /// Safety net for the transcode path: re-sets known EXIF properties that
+        /// CreateForTranscodingAsync may silently drop for files with large or
+        /// unusual metadata blocks (see TestMetadataIssue2447.jpg).
+        /// </summary>
+        private static async Task CopyKnownMetadataAsync(BitmapDecoder decoder, BitmapEncoder encoder)
+        {
+            var metadata = await ReadMetadataAsync(decoder, KnownMetadataProperties);
+            await WriteMetadataAsync(encoder, metadata);
         }
 
         private (uint ScaledWidth, uint ScaledHeight, BitmapBounds? CropBounds, bool NoTransformNeeded) CalculateDimensions(
@@ -429,17 +504,6 @@ namespace ImageResizer.Models
 
         private float GetJpegQualityFraction()
             => (float)Math.Clamp(_settings.JpegQualityLevel, 1, 100) / 100f;
-
-        private async Task ConfigureEncoderPropertiesAsync(BitmapEncoder encoder, Guid encoderGuid)
-        {
-            if (encoderGuid == BitmapEncoder.JpegEncoderId)
-            {
-                await encoder.BitmapProperties.SetPropertiesAsync(new BitmapPropertySet
-                {
-                    { "ImageQuality", new BitmapTypedValue(GetJpegQualityFraction(), PropertyType.Single) },
-                });
-            }
-        }
 
         private BitmapPropertySet GetEncoderPropertySet(Guid encoderGuid)
         {

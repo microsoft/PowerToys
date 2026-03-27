@@ -14,7 +14,7 @@ namespace ImageResizer.Converters
         {
             if (value is double d && (d == 0 || double.IsNaN(d)))
             {
-                return ResourceLoaderInstance.ResourceLoader.GetString("Auto");
+                return ResourceLoaderInstance.GetString("Auto");
             }
 
             return value?.ToString();

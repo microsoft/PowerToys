@@ -14,7 +14,7 @@ namespace ImageResizer.Models
         [JsonIgnore]
         public override string Name
         {
-            get => ResourceLoaderInstance.ResourceLoader.GetString("Input_Custom");
+            get => ResourceLoaderInstance.GetString("Input_Custom");
             set { /* no-op */ }
         }
 
