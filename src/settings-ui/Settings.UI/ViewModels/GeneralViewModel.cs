@@ -31,6 +31,7 @@ using Windows.System.Profile;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
+    [WinRT.GeneratedBindableCustomProperty]
     public partial class GeneralViewModel : PageViewModelBase
     {
         public enum InstallScope
@@ -1012,9 +1013,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _newAvailableVersionLink = value;
                     NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(PowerToysNewAvailableVersionUri));
                 }
             }
         }
+
+        public Uri PowerToysNewAvailableVersionUri =>
+            Uri.TryCreate(_newAvailableVersionLink, UriKind.Absolute, out var uri) ? uri : null;
 
         public bool IsNewVersionDownloading
         {

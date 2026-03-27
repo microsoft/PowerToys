@@ -216,7 +216,7 @@ namespace Microsoft.PowerToys.UITest
             Rectangle bounds = new Rectangle(0, 0, screenWidth, screenHeight);
             using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format24bppRgb))
             {
-                using (Graphics g = Graphics.FromImage(bitmap))
+                using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(bitmap))
                 {
                     g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
 

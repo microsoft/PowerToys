@@ -8,6 +8,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pdmodels="using:PowerDisplay.Common.Models"
     xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -53,8 +54,7 @@
                             <ComboBox
                                 x:Name="ModeSelector"
                                 AutomationProperties.AutomationId="ModeSelection_LightSwitch"
-                                SelectedValue="{x:Bind ViewModel.ScheduleMode, Mode=TwoWay}"
-                                SelectedValuePath="Tag"
+                                SelectedIndex="{x:Bind ViewModel.ScheduleModeIndex, Mode=TwoWay}"
                                 SelectionChanged="ModeSelector_SelectionChanged">
                                 <ComboBoxItem
                                     x:Uid="LightSwitch_ModeOff"
@@ -245,10 +245,15 @@
                                     </tkcontrols:SettingsCard.Header>
                                     <ComboBox
                                         MinWidth="200"
-                                        DisplayMemberPath="Name"
                                         IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}"
                                         ItemsSource="{x:Bind ViewModel.AvailableProfiles, Mode=OneWay}"
-                                        SelectedItem="{x:Bind ViewModel.SelectedDarkModeProfile, Mode=TwoWay}" />
+                                        SelectedItem="{x:Bind ViewModel.SelectedDarkModeProfile, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="pdmodels:PowerDisplayProfile">
+                                                <TextBlock Text="{x:Bind Name}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard>
                                     <tkcontrols:SettingsCard.Header>
@@ -259,10 +264,15 @@
                                     </tkcontrols:SettingsCard.Header>
                                     <ComboBox
                                         MinWidth="200"
-                                        DisplayMemberPath="Name"
                                         IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}"
                                         ItemsSource="{x:Bind ViewModel.AvailableProfiles, Mode=OneWay}"
-                                        SelectedItem="{x:Bind ViewModel.SelectedLightModeProfile, Mode=TwoWay}" />
+                                        SelectedItem="{x:Bind ViewModel.SelectedLightModeProfile, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="pdmodels:PowerDisplayProfile">
+                                                <TextBlock Text="{x:Bind Name}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>-->

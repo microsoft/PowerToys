@@ -5,6 +5,7 @@
 #nullable enable
 
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Library;
 
@@ -13,7 +14,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     /// <summary>
     /// ViewModel for monitor selection in profile editor
     /// </summary>
-    public class MonitorSelectionItem : INotifyPropertyChanged
+    [WinRT.GeneratedBindableCustomProperty]
+    public partial class MonitorSelectionItem : INotifyPropertyChanged
     {
         private bool _isSelected;
         private int _brightness = 100;
@@ -106,6 +108,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     {
                         IncludeColorTemperature = true;
                     }
+                }
+            }
+        }
+
+        public PowerDisplay.Common.Models.ColorPresetItem? SelectedColorPreset
+        {
+            get => Monitor?.ColorPresetsForDisplay?.FirstOrDefault(p => p.VcpValue == ColorTemperature);
+            set
+            {
+                if (value is not null)
+                {
+                    ColorTemperature = value.VcpValue;
                 }
             }
         }

@@ -5,6 +5,8 @@
     <PropertyGroup>
         <Description>PowerToys Settings UI Library</Description>
         <AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
+        <!-- Enable WinUI to access Microsoft.UI.Xaml.Input.ICommand for AOT-compatible command binding -->
+        <UseWinUI>true</UseWinUI>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,6 +17,7 @@
 
     <ItemGroup>
         <PackageReference Include="System.IO.Abstractions" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" />
     </ItemGroup>
 
     <ItemGroup>

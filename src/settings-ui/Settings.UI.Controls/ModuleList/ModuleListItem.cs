@@ -5,7 +5,7 @@
 using System; // For Action
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {

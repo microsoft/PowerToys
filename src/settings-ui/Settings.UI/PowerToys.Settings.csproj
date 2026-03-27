@@ -1,12 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<!-- Look at Directory.Build.props in root for common stuff as well -->
 	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 	<Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<UseWinUI>true</UseWinUI>
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>
@@ -19,6 +21,27 @@
 		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
 	</PropertyGroup>
+
+	<!-- Settings Native AOT is enabled on this branch; packaging chooses whether to publish and normalize it. -->
+	<PropertyGroup>
+		<EnableSettingsAOT>true</EnableSettingsAOT>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(EnableSettingsAOT)' == 'true'">
+		<SelfContained>true</SelfContained>
+		<PublishSingleFile>false</PublishSingleFile>
+		<DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+		<PublishAot>true</PublishAot>
+		<NormalizeSettingsAotOutput Condition="'$(NormalizeSettingsAotOutput)' == ''">false</NormalizeSettingsAotOutput>
+		<SettingsAotNormalizedOutputDir Condition="'$(SettingsAotNormalizedOutputDir)' == ''">$(OutputPath)</SettingsAotNormalizedOutputDir>
+		<!-- Use environmental tools to bypass VS version detection issue with VS 2026 -->
+		<IlcUseEnvironmentalTools>true</IlcUseEnvironmentalTools>
+		<!-- Trim is mandatory for AOT, but disable reflection removal to preserve WPF compatibility -->
+		<IlcDisableReflection>false</IlcDisableReflection>
+		<!-- Suppress trim/AOT warnings from third-party assemblies and XAML Command binding type checks -->
+		<NoWarn>$(NoWarn);IL2026;IL2060;IL2070;IL2071;IL2072;IL2075;IL2076;IL2104;IL3000;IL3002;IL3050;IL3053;WMC1121</NoWarn>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<None Remove="Assets\Settings\Icons\Models\Azure.svg" />
 		<None Remove="Assets\Settings\Icons\Models\FoundryLocal.svg" />
@@ -59,9 +82,25 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- Navigation Icons - PNG files (required for AOT publish) -->
+		<Content Include="Assets\Settings\Icons\*.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<!-- Module Images - PNG files (required for AOT publish) -->
+		<Content Include="Assets\Settings\Modules\*.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<!-- OOBE media is consumed directly by the installed app and must be present in AOT publish output. -->
+		<Content Include="Assets\Settings\Modules\OOBE\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
 		<!-- AI Model Provider Icons - SVG files -->
 		<Content Include="Assets\Settings\Icons\Models\*.svg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</Content>
 	</ItemGroup>
 
@@ -136,7 +175,7 @@
 		<!-- TODO: fix issues and reenable -->
 		<!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->
 		<!-- We might want to add that to the project and fix the issues as well -->
-		<NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
+		<NoWarn>$(NoWarn);VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
 	</PropertyGroup>
 
 	<!-- Removed hard-coded resource exclusion. -->
@@ -155,24 +194,38 @@
 	<ItemGroup>
 		<None Update="Assets\Settings\icon.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
 		</None>
+		<Content Update="Assets\Settings\*.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Update="Assets\Settings\Scripts\CheckCmdNotFoundRequirements.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
 		</None>
 		<None Update="Assets\Settings\Scripts\InstallWinGetClientModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
 		</None>
 		<None Update="Assets\Settings\Scripts\InstallPowerShell7.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
 		</None>
 		<None Update="Assets\Settings\Scripts\EnableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
 		</None>
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</None>
+		<None Update="Assets\Settings\Scripts\UpgradeModule.ps1">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
 		</None>
 		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
 			<Generator>MSBuild:Compile</Generator>
@@ -210,4 +263,29 @@
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
 		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=$(CoreTargetFramework);XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
 	</Target>
+
+	<Target Name="NormalizeSettingsAotPublishOutput" AfterTargets="_CopyAotSymbols" Condition="'$(PublishAot)' == 'true' and '$(NormalizeSettingsAotOutput)' == 'true'">
+		<PropertyGroup>
+			<_SettingsAotPublishDir>$([MSBuild]::EnsureTrailingSlash('$(PublishDir)'))</_SettingsAotPublishDir>
+			<_SettingsAotNormalizedOutputDir>$([MSBuild]::EnsureTrailingSlash('$(SettingsAotNormalizedOutputDir)'))</_SettingsAotNormalizedOutputDir>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<_SettingsAotPublishFiles Include="$(_SettingsAotPublishDir)**\*" />
+		</ItemGroup>
+
+		<Message Importance="high" Text="[Settings] Normalizing Native AOT publish output from '$(_SettingsAotPublishDir)' to '$(_SettingsAotNormalizedOutputDir)'" />
+		<Copy SourceFiles="@(_SettingsAotPublishFiles)" DestinationFiles="@(_SettingsAotPublishFiles->'$(_SettingsAotNormalizedOutputDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+	</Target>
+
+	<!-- Build information for AOT -->
+	<PropertyGroup Condition=" '$(PublishAot)' == 'true' ">
+		<DefineConstants>$(DefineConstants);BUILD_INFO_PUBLISH_AOT</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(PublishTrimmed)' == 'true' ">
+		<DefineConstants>$(DefineConstants);BUILD_INFO_PUBLISH_TRIMMED</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(CIBuild)' == 'true' ">
+		<DefineConstants>$(DefineConstants);BUILD_INFO_CIBUILD</DefineConstants>
+	</PropertyGroup>
 </Project>

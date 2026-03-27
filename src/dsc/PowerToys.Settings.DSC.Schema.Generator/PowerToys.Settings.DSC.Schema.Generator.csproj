@@ -30,7 +30,7 @@
 
     <!-- The following sections assume that the machine we're building on is always x64. That means we won't be able to run/inspect arm64 executables, therefore we must always execute x64 generator. -->
 
-    <Target Name="PostBuildAction" AfterTargets="Build" Outputs="$(GeneratedDSCModule)" Condition="'$(Platform)'!='ARM64'">
+    <Target Name="PostBuildAction" AfterTargets="Build" Outputs="$(GeneratedDSCModule)" Condition="'$(Platform)'!='ARM64' and '$(SkipSettingsDscSchemaPostBuild)' != 'true'">
         <Exec Command="&quot;$(OutDir)$(AssemblyName).exe&quot; &quot;..\..\..\x64\$(Configuration)\WinUI3Apps\PowerToys.Settings.UI.Lib.dll&quot; $(GeneratedDSCModule) $(GeneratedDSCManifest)" />
     </Target>
 </Project>

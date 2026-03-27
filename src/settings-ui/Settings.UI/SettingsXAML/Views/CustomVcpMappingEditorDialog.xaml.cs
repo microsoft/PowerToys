@@ -41,6 +41,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             public string DisplayName { get; set; } = string.Empty;
 
             public bool IsCustomOption => Value == CustomValueMarker;
+
+            public override string ToString() => DisplayName;
         }
 
         /// <summary>
@@ -51,6 +53,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             public string Id { get; set; } = string.Empty;
 
             public string DisplayName { get; set; } = string.Empty;
+
+            public override string ToString() => DisplayName;
         }
 
         private readonly IEnumerable<MonitorInfo>? _monitors;

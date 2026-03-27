@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -22,7 +23,7 @@ using Windows.Devices.Enumeration;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class ZoomItViewModel : Observable
+    public partial class ZoomItViewModel : Observable
     {
         private const string FormatGif = "GIF";
         private const string FormatMp4 = "MP4";
@@ -52,25 +53,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public int DemoTypeMinTypingSpeed { get; } = 100;
 
-        public ObservableCollection<Tuple<string, string>> MicrophoneList { get; set; } = new ObservableCollection<Tuple<string, string>>();
+        public ObservableCollection<MicrophoneItem> MicrophoneList { get; set; } = new ObservableCollection<MicrophoneItem>();
 
         private async void LoadMicrophoneList()
         {
             ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
             string recordDefaultMicrophone = resourceLoader.GetString("ZoomIt_Record_Microphones_Default_Name");
-            MicrophoneList.Add(new Tuple<string, string>(string.Empty, recordDefaultMicrophone));
+            MicrophoneList.Add(new MicrophoneItem(string.Empty, recordDefaultMicrophone));
             var microphones = await DeviceInformation.FindAllAsync(DeviceClass.AudioCapture);
             foreach (var microphone in microphones)
             {
-                MicrophoneList.Add(new Tuple<string, string>(microphone.Id, microphone.Name));
+                MicrophoneList.Add(new MicrophoneItem(microphone.Id, microphone.Name));
             }
         }
-
-        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
-        {
-            MaxDepth = 0,
-            IncludeFields = true,
-        };
 
         public ZoomItViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string, string, int, string> pickFileDialog, Func<LOGFONT, LOGFONT> pickFontDialog)
         {
@@ -84,7 +79,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             var zoomItSettings = global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.LoadSettingsJson();
-            _zoomItSettings = JsonSerializer.Deserialize<ZoomItSettings>(zoomItSettings, _serializerOptions);
+
+            // Use source-generated deserializer for AOT compatibility (IL2026/IL3050)
+            _zoomItSettings = JsonSerializer.Deserialize(zoomItSettings, SettingsSerializationContext.Default.ZoomItSettings);
 
             InitializeEnabledValue();
 
@@ -452,7 +449,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var encodedFont = _zoomItSettings.Properties.Font.Value;
                 byte[] decodedFont = Convert.FromBase64String(encodedFont);
-                int size = Marshal.SizeOf(typeof(LOGFONT));
+                int size = Marshal.SizeOf<LOGFONT>();
                 if (size != decodedFont.Length)
                 {
                     throw new InvalidOperationException("Expected byte array from saved Settings doesn't match the LOGFONT structure size");
@@ -466,7 +463,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Marshal.Copy(decodedFont, 0, ptr, size);
 
                     // Marshal the unmanaged memory back to a LOGFONT structure
-                    return (LOGFONT)Marshal.PtrToStructure(ptr, typeof(LOGFONT));
+                    // Use generic overload for AOT compatibility
+                    return Marshal.PtrToStructure<LOGFONT>(ptr);
                 }
                 finally
                 {
@@ -478,7 +476,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set
             {
                 _typeFont = value;
-                int size = Marshal.SizeOf(typeof(LOGFONT));
+                int size = Marshal.SizeOf<LOGFONT>();
                 byte[] bytes = new byte[size];
 
                 // Allocate unmanaged memory for the LOGFONT structure
@@ -882,7 +880,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     // Reload settings to get the new format's scaling value
                     var reloadedSettings = global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.LoadSettingsJson();
-                    var reloaded = JsonSerializer.Deserialize<ZoomItSettings>(reloadedSettings, _serializerOptions);
+
+                    // Use source-generated deserializer for AOT compatibility (IL2026/IL3050)
+                    var reloaded = JsonSerializer.Deserialize(reloadedSettings, SettingsSerializationContext.Default.ZoomItSettings);
                     if (reloaded != null && reloaded.Properties != null)
                     {
                         _zoomItSettings.Properties.RecordScaling.Value = reloaded.Properties.RecordScaling.Value;
@@ -943,15 +943,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.MicrophoneDeviceId.Value = value ?? string.Empty; // If we're trying to save a null, just default to empty string, which means default microphone.
                     OnPropertyChanged(nameof(RecordMicrophoneDeviceId));
+                    OnPropertyChanged(nameof(SelectedMicrophone));
                     NotifySettingsChanged();
+                }
+            }
+        }
+
+        public MicrophoneItem SelectedMicrophone
+        {
+            get => MicrophoneList.FirstOrDefault(item => item.Item1 == RecordMicrophoneDeviceId) ?? MicrophoneList.FirstOrDefault();
+            set
+            {
+                if (value is not null)
+                {
+                    RecordMicrophoneDeviceId = value.Item1;
                 }
             }
         }
 
         private void NotifySettingsChanged()
         {
+            // Use source-generated serializer for AOT compatibility (IL2026/IL3050)
             global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(
-                JsonSerializer.Serialize(_zoomItSettings));
+                JsonSerializer.Serialize(_zoomItSettings, SettingsSerializationContext.Default.ZoomItSettings));
             SendCustomAction("refresh_settings");
         }
 
