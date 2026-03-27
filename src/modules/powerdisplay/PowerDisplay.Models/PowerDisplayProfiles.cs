@@ -9,17 +9,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace PowerDisplay.Common.Models
+namespace PowerDisplay.Models
 {
     /// <summary>
     /// Container for all PowerDisplay profiles
     /// </summary>
     public class PowerDisplayProfiles
     {
-        // NOTE: Custom profile concept has been removed. Profiles are now templates, not states.
-        // This constant is kept for backward compatibility (cleaning up legacy Custom profiles).
-        public const string CustomProfileName = "Custom";
-
         [JsonPropertyName("profiles")]
         public List<PowerDisplayProfile> Profiles { get; set; }
 

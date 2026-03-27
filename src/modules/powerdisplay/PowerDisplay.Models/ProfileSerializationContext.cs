@@ -4,9 +4,8 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using PowerDisplay.Common.Models;
 
-namespace PowerDisplay.Common.Serialization
+namespace PowerDisplay.Models
 {
     /// <summary>
     /// JSON serialization context for PowerDisplay Profile types.
@@ -23,11 +22,6 @@ namespace PowerDisplay.Common.Serialization
     [JsonSerializable(typeof(PowerDisplayProfile))]
     [JsonSerializable(typeof(List<PowerDisplayProfile>))]
     [JsonSerializable(typeof(PowerDisplayProfiles))]
-
-    // Monitor State Types
-    [JsonSerializable(typeof(MonitorStateEntry))]
-    [JsonSerializable(typeof(MonitorStateFile))]
-    [JsonSerializable(typeof(Dictionary<string, MonitorStateEntry>))]
     public partial class ProfileSerializationContext : JsonSerializerContext
     {
     }

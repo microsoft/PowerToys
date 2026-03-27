@@ -16,6 +16,7 @@ using Microsoft.UI.Xaml;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
+using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.ViewModels;
@@ -468,8 +469,14 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// Gets human-readable color temperature preset name (e.g., "6500K", "sRGB")
     /// Uses custom mappings if available; falls back to built-in names if not.
     /// </summary>
-    public string ColorTemperaturePresetName =>
-        Common.Utils.VcpNames.GetFormattedValueName(0x14, _monitor.CurrentColorTemperature, _mainViewModel?.CustomVcpMappings, _monitor.Id);
+    public string ColorTemperaturePresetName
+    {
+        get
+        {
+            var name = Common.Utils.VcpNames.GetValueName(0x14, _monitor.CurrentColorTemperature, _mainViewModel?.CustomVcpMappings, _monitor.Id);
+            return name != null ? $"{name} (0x{_monitor.CurrentColorTemperature:X2})" : $"0x{_monitor.CurrentColorTemperature:X2}";
+        }
+    }
 
     /// <summary>
     /// Gets a value indicating whether this monitor supports color temperature via VCP 0x14
@@ -549,7 +556,7 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         _availableColorPresets = presetValues.Select(value => new ColorTemperatureItem
         {
             VcpValue = value,
-            DisplayName = Common.Utils.VcpNames.GetFormattedValueName(0x14, value, _mainViewModel?.CustomVcpMappings, _monitor.Id),
+            DisplayName = Common.Utils.VcpNames.GetValueName(0x14, value, _mainViewModel?.CustomVcpMappings, _monitor.Id) is string n ? $"{n} (0x{value:X2})" : $"0x{value:X2}",
             IsSelected = value == _monitor.CurrentColorTemperature,
             MonitorId = _monitor.Id,
         }).ToList();

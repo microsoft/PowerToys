@@ -23,6 +23,7 @@ using PowerDisplay.Common.Drivers.DDC;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
+using PowerDisplay.Models;
 using PowerDisplay.PowerDisplayXAML;
 
 namespace PowerDisplay.ViewModels;
