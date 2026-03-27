@@ -85,7 +85,8 @@
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Left"
                         Click="Command_Click"
-                        Style="{StaticResource SubtleButtonStyle}">
+                        Style="{StaticResource SubtleButtonStyle}"
+                        UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">
                         <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                             <cpcontrols:IconBox
                                 Width="16"
@@ -110,6 +111,7 @@
                         Padding="0"
                         Command="{x:Bind NavigateCommand, Mode=OneWay}"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
+                        UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}"
                         Visibility="{x:Bind IsLink, Mode=OneWay}">
                         <TextBlock Text="{x:Bind Text, Mode=OneWay}" TextWrapping="Wrap" />
                     </HyperlinkButton>
@@ -119,6 +121,7 @@
                 <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <ItemsControl
+                        IsTabStop="False"
                         ItemTemplate="{StaticResource CommandTemplate}"
                         ItemsSource="{x:Bind Commands, Mode=OneWay}"
                         Visibility="{x:Bind HasCommands, Mode=OneWay}" />
@@ -142,6 +145,7 @@
                 <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <ItemsControl
+                        IsTabStop="False"
                         ItemTemplate="{StaticResource TagTemplate}"
                         ItemsSource="{x:Bind Tags, Mode=OneWay}"
                         Visibility="{x:Bind HasTags, Mode=OneWay}">
@@ -394,10 +398,17 @@
                     Margin="4"
                     HorizontalAlignment="Stretch"
                     ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                    AutomationProperties.AccessibilityView="Content"
+                    AutomationProperties.HelpText="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
+                    AutomationProperties.LandmarkType="Custom"
+                    AutomationProperties.LocalizedLandmarkType="Details"
+                    AutomationProperties.Name="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="{StaticResource ControlCornerRadius}"
+                    IsTabStop="True"
+                    UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}"
                     Visibility="Collapsed">
                     <animations:Implicit.ShowAnimations>
                         <animations:OpacityAnimation
@@ -450,12 +461,14 @@
                             Margin="0,4,0,24"
                             Background="Transparent"
                             Config="{StaticResource DefaultMarkdownConfig}"
+                            IsTabStop="False"
                             Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
                             UseEmphasisExtras="True"
                             UsePipeTables="True" />
 
                         <ItemsRepeater
                             Grid.Row="3"
+                            IsTabStop="False"
                             ItemTemplate="{StaticResource DetailsDataTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.Details.Metadata, Mode=OneWay}">
                             <ItemsRepeater.Layout>
