@@ -277,13 +277,13 @@
     <value>Fallbacks</value>
   </data>
   <data name="dock_edit_dock_name" xml:space="preserve">
-    <value>Edit dock</value>
+    <value>Edit Dock</value>
     <comment>Command name for editing the dock</comment>
   </data>
   <data name="dock_settings_name" xml:space="preserve">
-    <value>Dock settings</value>
+    <value>Settings</value>
     <comment>Command name for opening dock settings</comment>
-  </data> 
+  </data>
   <data name="ShowDetailsCommand" xml:space="preserve">
     <value>Show details</value>
     <comment>Name for the command that shows details of an item</comment>
@@ -295,5 +295,8 @@
   <data name="results" xml:space="preserve">
     <value>Results</value>
     <comment>Section title for list of all search results that doesn't fall into any other category</comment>
+  </data>
+  <data name="home_sections_commands_title" xml:space="preserve">
+    <value>Commands</value>
   </data>
 </root>

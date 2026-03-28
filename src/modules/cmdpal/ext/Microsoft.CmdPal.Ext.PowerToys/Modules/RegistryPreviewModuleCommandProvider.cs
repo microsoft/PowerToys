@@ -21,7 +21,7 @@ internal sealed class RegistryPreviewModuleCommandProvider : ModuleCommandProvid
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new OpenRegistryPreviewCommand())
+            yield return new ListItem(new OpenRegistryPreviewCommand() { Id = "com.microsoft.powertoys.registryPreview.open" })
             {
                 Title = Resources.RegistryPreview_Open_Title,
                 Subtitle = Resources.RegistryPreview_Open_Subtitle,
@@ -29,7 +29,7 @@ internal sealed class RegistryPreviewModuleCommandProvider : ModuleCommandProvid
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.registryPreview.openSettings" })
         {
             Title = title,
             Subtitle = Resources.RegistryPreview_Settings_Subtitle,

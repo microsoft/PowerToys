@@ -56,6 +56,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 settingsUpgraded = true;
             }
 
+            // Add ActivationMode property if it doesn't exist (for users upgrading from older versions)
+            if (Properties.ActivationMode == null)
+            {
+                Properties.ActivationMode = new IntProperty(0); // Default to Always (0=Always, 1=HoldingCtrl, 2=HoldingShift)
+                settingsUpgraded = true;
+            }
+
             // Add DisableCursorWrapOnSingleMonitor property if it doesn't exist (for users upgrading from older versions)
             if (Properties.DisableCursorWrapOnSingleMonitor == null)
             {

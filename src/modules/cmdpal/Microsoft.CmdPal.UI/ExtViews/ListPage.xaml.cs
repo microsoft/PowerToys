@@ -9,6 +9,7 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -42,6 +43,13 @@ public sealed partial class ListPage : Page,
 
     private ListItemViewModel? _stickySelectedItem;
     private ListItemViewModel? _lastPushedToVm;
+
+    // A single search-text change can produce multiple ItemsUpdated calls
+    // dispatched as separate UI-thread callbacks. A later "soft" update
+    // (ForceFirstItem = false) must not overwrite a prior force-first
+    // intent. This flag latches true whenever any update requests
+    // force-first and is only cleared once selection stabilizes.
+    private bool _forceFirstPending;
 
     internal ListViewModel? ViewModel
     {
@@ -148,21 +156,7 @@ public sealed partial class ListPage : Page,
     /// </summary>
     private int GetFirstSelectableIndex()
     {
-        var items = ItemView.Items;
-        if (items is null || items.Count == 0)
-        {
-            return -1;
-        }
-
-        for (var i = 0; i < items.Count; i++)
-        {
-            if (!IsSeparator(items[i]))
-            {
-                return i;
-            }
-        }
-
-        return -1;
+        return FindSelectableIndex(0, 1);
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
@@ -176,7 +170,7 @@ public sealed partial class ListPage : Page,
                 return;
             }
 
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
             if (settings.SingleClickActivates)
             {
                 ViewModel?.InvokeItemCommand.Execute(item);
@@ -196,7 +190,7 @@ public sealed partial class ListPage : Page,
     {
         if (ItemView.SelectedItem is ListItemViewModel vm)
         {
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
             if (!settings.SingleClickActivates)
             {
                 ViewModel?.InvokeItemCommand.Execute(vm);
@@ -224,6 +218,10 @@ public sealed partial class ListPage : Page,
 
         _stickySelectedItem = li;
 
+        // User explicitly changed selection — any pending force-first intent
+        // is superseded by the user's navigation.
+        _forceFirstPending = false;
+
         // Do not Task.Run (it reorders selection updates).
         vm?.UpdateSelectedItemCommand.Execute(li);
 
@@ -231,25 +229,7 @@ public sealed partial class ListPage : Page,
         if (_scrollOnNextSelectionChange)
         {
             _scrollOnNextSelectionChange = false;
-
-            var scrollTarget = li;
-
-            // If the previous item is a separator, also scroll it into view to provide
-            // better context for the user
-            var index = ItemView.Items.IndexOf(li);
-            if (index > 0)
-            {
-                var prevItem = ItemView.Items[index - 1] as ListItemViewModel;
-                if (prevItem?.Type == ListItemType.SectionHeader)
-                {
-                    scrollTarget = prevItem;
-                }
-            }
-
-            if (scrollTarget is not null)
-            {
-                ItemView.ScrollIntoView(scrollTarget);
-            }
+            ScrollToItem(li);
         }
 
         // Automation notification for screen readers
@@ -260,6 +240,28 @@ public sealed partial class ListPage : Page,
                 ItemsList,
                 li.Title,
                 "CommandPaletteSelectedItemChanged");
+        }
+    }
+
+    private void ScrollToItem(ListItemViewModel li)
+    {
+        var scrollTarget = li;
+
+        // If the previous item is a separator, also scroll it into view to provide
+        // better context for the user
+        var index = ItemView.Items.IndexOf(li);
+        if (index > 0)
+        {
+            var prevItem = ItemView.Items[index - 1] as ListItemViewModel;
+            if (prevItem?.Type == ListItemType.SectionHeader)
+            {
+                scrollTarget = prevItem;
+            }
+        }
+
+        if (scrollTarget is not null)
+        {
+            ItemView.ScrollIntoView(scrollTarget);
         }
     }
 
@@ -588,7 +590,42 @@ public sealed partial class ListPage : Page,
             ? Math.Min(itemCount - 1, currentIndex + Math.Max(1, itemsPerPage))
             : Math.Max(0, currentIndex - Math.Max(1, itemsPerPage));
 
+        targetIndex = FindSelectableIndexForPageNavigation(targetIndex, isPageDown);
+        if (targetIndex == -1)
+        {
+            return null;
+        }
+
         return (currentIndex, targetIndex);
+    }
+
+    private int FindSelectableIndex(int startIndex, int step)
+    {
+        var items = ItemView.Items;
+        var count = items.Count;
+        if (count == 0 || step == 0)
+        {
+            return -1;
+        }
+
+        startIndex = Math.Clamp(startIndex, 0, count - 1);
+
+        for (var i = startIndex; i >= 0 && i < count; i += step)
+        {
+            if (!IsSeparator(items[i]))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private int FindSelectableIndexForPageNavigation(int targetIndex, bool isPageDown)
+    {
+        var step = isPageDown ? 1 : -1;
+        var index = FindSelectableIndex(targetIndex, step);
+        return index != -1 ? index : FindSelectableIndex(targetIndex - step, -step);
     }
 
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -602,10 +639,12 @@ public sealed partial class ListPage : Page,
 
             if (e.NewValue is ListViewModel page)
             {
+                @this._forceFirstPending = false;
                 page.ItemsUpdated += @this.Page_ItemsUpdated;
             }
             else if (e.NewValue is null)
             {
+                @this._forceFirstPending = false;
                 Logger.LogDebug("cleared view model");
             }
         }
@@ -616,25 +655,32 @@ public sealed partial class ListPage : Page,
     private void Page_ItemsUpdated(ListViewModel sender, ItemsUpdatedEventArgs args)
     {
         var version = Interlocked.Increment(ref _itemsUpdatedVersion);
-        var forceFirstItem = args.ForceFirstItem;
+
+        // Latch: once any update requests force-first, keep it until consumed.
+        _forceFirstPending |= args.ForceFirstItem;
+        var forceFirstItem = _forceFirstPending;
 
         // Try to handle selection immediately — items should already be available
         // since FilteredItems is a direct ObservableCollection bound as ItemsSource.
-        if (!TrySetSelectionAfterUpdate(sender, version, forceFirstItem))
+        // TrySetSelectionAfterUpdate clears _forceFirstPending internally once
+        // selection stabilizes (no repair needed), so we don't clear it here.
+        if (TrySetSelectionAfterUpdate(sender, version, forceFirstItem))
         {
-            // Fallback: binding hasn't propagated yet, defer to next tick.
-            _ = DispatcherQueue.TryEnqueue(
-                Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
-                () =>
-                {
-                    if (version != Volatile.Read(ref _itemsUpdatedVersion))
-                    {
-                        return;
-                    }
-
-                    TrySetSelectionAfterUpdate(sender, version, forceFirstItem);
-                });
+            return;
         }
+
+        // Fallback: binding hasn't propagated yet, defer to next tick.
+        _ = DispatcherQueue.TryEnqueue(
+            Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+            () =>
+            {
+                if (version != Volatile.Read(ref _itemsUpdatedVersion))
+                {
+                    return;
+                }
+
+                TrySetSelectionAfterUpdate(sender, version, forceFirstItem);
+            });
     }
 
     /// <summary>
@@ -717,18 +763,27 @@ public sealed partial class ListPage : Page,
         {
             using (SuppressSelectionChangedScope())
             {
+                ListItemViewModel? stickyRestored = null;
+                ListItemViewModel? firstSelected = null;
+
                 if (!forceFirstItem &&
                     _stickySelectedItem is not null &&
                     items.Contains(_stickySelectedItem) &&
                     !IsSeparator(_stickySelectedItem))
                 {
-                    // Preserve sticky selection for nested dynamic updates.
+                    // Restore sticky selection only when force-first is not
+                    // active. The latched _forceFirstPending flag guarantees
+                    // that a prior force-first intent survives superseding
+                    // soft updates, so we never accidentally restore a stale
+                    // sticky item when the list was meant to reset.
                     ItemView.SelectedItem = _stickySelectedItem;
+                    stickyRestored = _stickySelectedItem;
                 }
                 else
                 {
                     // Select the first interactive item.
                     ItemView.SelectedItem = items[firstUsefulIndex];
+                    firstSelected = ItemView.SelectedItem as ListItemViewModel;
                 }
 
                 // Prevent any pending "scroll on selection" logic from fighting this.
@@ -741,7 +796,37 @@ public sealed partial class ListPage : Page,
                         return;
                     }
 
-                    ResetScrollToTop();
+                    ItemView.UpdateLayout();
+
+                    if (stickyRestored is not null)
+                    {
+                        ScrollToItem(stickyRestored);
+                    }
+                    else if (firstSelected is not null)
+                    {
+                        ScrollToItem(firstSelected);
+                        ResetScrollToTop();
+                    }
+                    else
+                    {
+                        ResetScrollToTop();
+                    }
+                });
+            }
+        }
+        else
+        {
+            // Selection is valid and unchanged: the force-first intent (if any)
+            // has been fully delivered and selection has stabilized. Safe to clear.
+            _forceFirstPending = false;
+
+            // Just make sure the item is visible
+            if (_stickySelectedItem is ListItemViewModel li)
+            {
+                _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    ItemView.UpdateLayout();
+                    ScrollToItem(li);
                 });
             }
         }
@@ -981,39 +1066,24 @@ public sealed partial class ListPage : Page,
     /// </summary>
     private void NavigateUp()
     {
-        var newIndex = ItemView.SelectedIndex;
-
-        if (ItemView.SelectedIndex > 0)
+        if (ItemView.Items.Count == 0)
         {
-            newIndex--;
-
-            while (
-                newIndex >= 0 &&
-                IsSeparator(ItemView.Items[newIndex]) &&
-                newIndex != ItemView.SelectedIndex)
-            {
-                newIndex--;
-            }
-
-            if (newIndex < 0)
-            {
-                newIndex = ItemView.Items.Count - 1;
-
-                while (
-                    newIndex >= 0 &&
-                    IsSeparator(ItemView.Items[newIndex]) &&
-                    newIndex != ItemView.SelectedIndex)
-                {
-                    newIndex--;
-                }
-            }
-        }
-        else
-        {
-            newIndex = ItemView.Items.Count - 1;
+            return;
         }
 
-        ItemView.SelectedIndex = newIndex;
+        var newIndex = ItemView.SelectedIndex > 0
+            ? FindSelectableIndex(ItemView.SelectedIndex - 1, -1)
+            : -1;
+
+        if (newIndex == -1)
+        {
+            newIndex = FindSelectableIndex(ItemView.Items.Count - 1, -1);
+        }
+
+        if (newIndex != -1)
+        {
+            ItemView.SelectedIndex = newIndex;
+        }
     }
 
     private void Items_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
@@ -1104,50 +1174,24 @@ public sealed partial class ListPage : Page,
     /// </summary>
     private void NavigateDown()
     {
-        var newIndex = ItemView.SelectedIndex;
-
-        if (ItemView.SelectedIndex == ItemView.Items.Count - 1)
+        if (ItemView.Items.Count == 0)
         {
-            newIndex = 0;
-            while (
-                newIndex < ItemView.Items.Count &&
-                IsSeparator(ItemView.Items[newIndex]))
-            {
-                newIndex++;
-            }
-
-            if (newIndex >= ItemView.Items.Count)
-            {
-                return;
-            }
-        }
-        else
-        {
-            newIndex++;
-
-            while (
-                newIndex < ItemView.Items.Count &&
-                IsSeparator(ItemView.Items[newIndex]) &&
-                newIndex != ItemView.SelectedIndex)
-            {
-                newIndex++;
-            }
-
-            if (newIndex >= ItemView.Items.Count)
-            {
-                newIndex = 0;
-
-                while (
-                    newIndex < ItemView.Items.Count &&
-                    IsSeparator(ItemView.Items[newIndex]) &&
-                    newIndex != ItemView.SelectedIndex)
-                {
-                    newIndex++;
-                }
-            }
+            return;
         }
 
-        ItemView.SelectedIndex = newIndex;
+        var newIndex = ItemView.SelectedIndex < ItemView.Items.Count - 1
+            ? FindSelectableIndex(ItemView.SelectedIndex + 1, 1)
+            : -1;
+
+        if (newIndex == -1)
+        {
+            newIndex = FindSelectableIndex(0, 1);
+        }
+
+        if (newIndex != -1)
+        {
+            ItemView.SelectedIndex = newIndex;
+        }
     }
 
     private bool IsSeparator(object? item) => item is ListItemViewModel li && !li.IsInteractive;

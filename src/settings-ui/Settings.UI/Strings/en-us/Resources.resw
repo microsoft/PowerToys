@@ -558,6 +558,10 @@ opera.exe</value>
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
+	<data name="KeyboardManager_Editor.Header" xml:space="preserve">
+    <value>Editor</value>
+    <comment>Keyboard Manager new editor header</comment>
+  </data>
   <data name="KeyboardManager_Keys.Header" xml:space="preserve">
     <value>Keys</value>
     <comment>Keyboard Manager remap keyboard header</comment>
@@ -571,8 +575,32 @@ opera.exe</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
   <data name="KeyboardManager_All_Apps_Description" xml:space="preserve">
-    <value>All Apps</value>
+    <value>All apps</value>
     <comment>Should be the same as EditShortcuts_AllApps from keyboard manager editor</comment>
+  </data>
+  <data name="KeyboardManager_TryNewExperience.Header" xml:space="preserve">
+    <value>Try the new editor</value>
+    <comment>Keyboard Manager toggle to switch to the new unified editor</comment>
+  </data>
+  <data name="KeyboardManager_TryNewExperience.Description" xml:space="preserve">
+    <value>Switch to the new editor. You can switch back at any time.</value>
+    <comment>Description for the new experience toggle</comment>
+  </data>
+  <data name="KeyboardManager_OpenNewEditor.Header" xml:space="preserve">
+    <value>Editor</value>
+    <comment>Keyboard Manager button to open the new unified editor</comment>
+  </data>
+  <data name="KeyboardManager_OpenNewEditor.Description" xml:space="preserve">
+    <value>Set and manage your remappings</value>
+    <comment>Description for the new editor button</comment>
+  </data>
+  <data name="Dashboard_KeyboardManager_OpenEditor" xml:space="preserve">
+    <value>Open Keyboard Manager</value>
+    <comment>Label for the Keyboard Manager editor shortcut on the dashboard page</comment>
+  </data>
+  <data name="KeyboardManager_GoBackClassic.Content" xml:space="preserve">
+    <value>Switch back to the classic editor</value>
+    <comment>Keyboard Manager link to switch back to the classic editor UI</comment>
   </data>
   <data name="Shortcut.Header" xml:space="preserve">
     <value>Shortcut</value>
@@ -1882,13 +1910,19 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Activation_Shortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to activate this module</value>
   </data>
-  <data name="KeyboardManager_Toggle_Shortcut.Header" xml:space="preserve">
-    <value>Toggle shortcut</value>
+	<data name="KeyboardManager_Editor_Shortcut.Header" xml:space="preserve">
+    <value>Editor shortcut</value>
   </data>
-  <data name="KeyboardManager_Toggle_Shortcut.Description" xml:space="preserve">
-    <value>Use a shortcut to toggle this module on or off (note that the Settings UI will not update)</value>
+	<data name="KeyboardManager_Editor_Open_Shortcut.Header" xml:space="preserve">
+    <value>Open editor shortcut</value>
   </data>
-  <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
+	<data name="KeyboardManager_Editor_Open_Shortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to open the Keyboard Manager editor</value>
+  </data>
+	<data name="KeyboardManager_LaunchEditor_Button.Content" xml:space="preserve">
+    <value>Open editor</value>
+  </data>	
+	<data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
     <value>Paste as plain text directly</value>
   </data>
   <data name="AdvancedPasteUI_Actions.Header" xml:space="preserve">
@@ -2194,6 +2228,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="ScoobeWindow_TitleTxt.Title" xml:space="preserve">
     <value>What's new in PowerToys</value>
+  </data>
+  <data name="Scoobe_OpenSettings.Content" xml:space="preserve">
+    <value>Settings</value>
   </data>
   <data name="ScoobeReleaseNotes_ViewOnGitHub" xml:space="preserve">
     <value>View on GitHub</value>
@@ -2501,6 +2538,26 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_WrapMode_Both.Content" xml:space="preserve">
     <value>Vertical and horizontal</value>
   </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode.Header" xml:space="preserve">
+    <value>Wrapping activation</value>
+    <comment>CursorWrap: Label for activation mode dropdown</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode.Description" xml:space="preserve">
+    <value>Control when cursor wrapping occurs as the pointer reaches the screen edge.</value>
+    <comment>CursorWrap: Description for activation mode dropdown</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode_Always.Content" xml:space="preserve">
+    <value>Always</value>
+    <comment>CursorWrap: Activation mode - always wrap</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode_HoldingCtrl.Content" xml:space="preserve">
+    <value>Holding Ctrl</value>
+    <comment>CursorWrap: Activation mode - wrap only when Ctrl held</comment>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationMode_HoldingShift.Content" xml:space="preserve">
+    <value>Holding Shift</value>
+    <comment>CursorWrap: Activation mode - wrap only when Shift held</comment>
+  </data>		
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
@@ -2991,11 +3048,17 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="AlwaysOnTop_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to pin or unpin an app window</value>
   </data>
-  <data name="AlwaysOnTop_IncreaseOpacity" xml:space="preserve">
-    <value>Press **{0}** to increase the opacity of the window</value>
+  <data name="AlwaysOnTop_IncreaseOpacityShortcut.Header" xml:space="preserve">
+    <value>Increase opacity</value>
   </data>
-  <data name="AlwaysOnTop_DecreaseOpacity" xml:space="preserve">
-    <value>Press **{0}** to decrease the opacity of the window</value>
+  <data name="AlwaysOnTop_IncreaseOpacityShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to increase the opacity of a pinned window</value>
+  </data>
+  <data name="AlwaysOnTop_DecreaseOpacityShortcut.Header" xml:space="preserve">
+    <value>Decrease opacity</value>
+  </data>
+  <data name="AlwaysOnTop_DecreaseOpacityShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to decrease the opacity of a pinned window</value>
   </data>
   <data name="Oobe_AlwaysOnTop.Title" xml:space="preserve">
     <value>Always On Top</value>
@@ -4389,6 +4452,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Hide the built-in "New" context menu</value>
     <comment>Localize New in accordance with Windows New</comment>
   </data>
+  <data name="NewPlus_BuiltInNewRegistryUpdateError" xml:space="preserve">
+    <value>Couldn't update the built-in "New" context menu setting.</value>
+    <comment>User-facing error shown when New+ fails to update the built-in New registry setting</comment>
+  </data>
   <data name="NewPlus_behavior.Header" xml:space="preserve">
     <value>Behavior</value>
     <comment>New+ behavior related settings label</comment>
@@ -4740,6 +4807,9 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_Microphones_Default_Name" xml:space="preserve">
     <value>Default</value>
   </data>
+  <data name="ZoomIt_Break_LockWorkstation.Content" xml:space="preserve">
+    <value>Lock workstation during break</value>
+  </data>
   <data name="ZoomIt_SnipGroup.Header" xml:space="preserve">
     <value>Snip</value>
   </data>
@@ -4751,6 +4821,24 @@ The break timer font matches the text font.</value>
   </data>
   <data name="ZoomIt_Snip_Shortcut_Save" xml:space="preserve">
     <value>Press **{0}** to save the snip to a file instead of the clipboard.</value>
+  </data>
+  <data name="ZoomIt_SnipOcr_Shortcut.Header" xml:space="preserve">
+    <value>Snip OCR activation</value>
+  </data>
+  <data name="ZoomIt_SnipOcr_Shortcut.Description" xml:space="preserve">
+    <value>Copy text from the selected region to the clipboard.</value>
+  </data>
+  <data name="ZoomIt_PanoramaGroup.Header" xml:space="preserve">
+    <value>Panorama</value>
+  </data>
+  <data name="ZoomIt_PanoramaGroup.Description" xml:space="preserve">
+    <value>Capture a scrolling panorama of a selected screen region.</value>
+  </data>
+  <data name="ZoomIt_Panorama_Shortcut.Header" xml:space="preserve">
+    <value>Panorama activation</value>
+  </data>
+  <data name="ZoomIt_Panorama_Shortcut.Description" xml:space="preserve">
+    <value>Select the area, then scroll the content. Move slowly and consistently, and do not rewind to previously covered areas. Press the hotkey again or with Shift to save to a file.</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
@@ -5149,6 +5237,12 @@ The break timer font matches the text font.</value>
   </data>
   <data name="LightSwitch_SunsetTooltip.Text" xml:space="preserve">
     <value>Sunset</value>
+  </data>
+  <data name="LightSwitch_LocationError_Timeout" xml:space="preserve">
+    <value>Unable to connect to location services. Please try again or enter your coordinates manually.</value>
+  </data>
+  <data name="LightSwitch_LocationError_Unavailable" xml:space="preserve">
+    <value>Location services unavailable. Please enter your coordinates manually.</value>
   </data>
   <data name="Close_NavViewItem.Content" xml:space="preserve">
     <value>Close PowerToys</value>
@@ -5804,7 +5898,7 @@ Text uses the current drawing color.</value>
     <value>Welcome to PowerToys</value>
   </data>
   <data name="ShortcutConflictWindow_IgnoreShortcut.Content" xml:space="preserve">
-    <value>Ignore shortcut</value>
+    <value>Ignore conflict</value>
   </data>
   <data name="AdvancedPaste_AddModelButton.Content" xml:space="preserve">
     <value>Add model</value>

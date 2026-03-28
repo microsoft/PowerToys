@@ -60,10 +60,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:DockItemControl">
-                        <Grid
-                            x:Name="PART_HitTestGrid"
-                            Background="Transparent"
-                            ToolTipService.ToolTip="{TemplateBinding ToolTip}">
+                        <Grid x:Name="PART_HitTestGrid" Background="Transparent">
                             <Grid
                                 x:Name="PART_RootGrid"
                                 MinWidth="32"
@@ -95,13 +92,14 @@
                                     <StackPanel
                                         x:Name="TextPanel"
                                         Grid.Column="1"
+                                        HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center"
                                         Visibility="{TemplateBinding TextVisibility}">
                                         <TextBlock
                                             x:Name="TitleText"
                                             MinWidth="24"
                                             MaxWidth="100"
-                                            HorizontalAlignment="Left"
+                                            HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"
                                             FontFamily="Segoe UI"
                                             FontSize="12"
@@ -112,14 +110,14 @@
                                         <TextBlock
                                             x:Name="SubtitleText"
                                             MaxWidth="100"
-                                            Margin="0,-4,0,0"
-                                            HorizontalAlignment="Left"
+                                            Margin="0,-2,0,0"
+                                            HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"
                                             FontFamily="Segoe UI"
                                             FontSize="10"
                                             Foreground="{ThemeResource TextFillColorTertiary}"
                                             Text="{TemplateBinding Subtitle}"
-                                            TextAlignment="Center"
+                                            TextAlignment="Left"
                                             TextTrimming="CharacterEllipsis"
                                             TextWrapping="NoWrap" />
                                     </StackPanel>
@@ -176,6 +174,21 @@
                                     <VisualState x:Name="IconHidden">
                                         <VisualState.Setters>
                                             <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
+                                            <Setter Target="IconPresenter.Visibility" Value="Collapsed" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="TextAlignmentStates">
+                                    <VisualState x:Name="TextLeftAligned">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.TextAlignment" Value="Left" />
+                                            <Setter Target="SubtitleText.TextAlignment" Value="Left" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="TextCentered">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.TextAlignment" Value="Center" />
+                                            <Setter Target="SubtitleText.TextAlignment" Value="Center" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>

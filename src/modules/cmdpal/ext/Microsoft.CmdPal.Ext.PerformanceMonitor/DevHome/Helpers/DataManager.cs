@@ -3,22 +3,23 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Timer = System.Timers.Timer;
 
 namespace CoreWidgetProvider.Helpers;
 
 internal sealed partial class DataManager : IDisposable
 {
-    private readonly SystemData _systemData;
+    private readonly SystemData _systemData = SystemData.Shared;
     private readonly DataType _dataType;
     private readonly Timer _updateTimer;
     private readonly Action _updateAction;
+    private bool _updateFailureLogged;
 
     private const int OneSecondInMilliseconds = 1000;
 
     public DataManager(DataType type, Action updateWidget)
     {
-        _systemData = new SystemData();
         _updateAction = updateWidget;
         _dataType = type;
 
@@ -30,102 +31,140 @@ internal sealed partial class DataManager : IDisposable
 
     private void GetMemoryData()
     {
-        lock (SystemData.MemStats)
+        lock (_systemData.MemoryStats)
         {
-            SystemData.MemStats.GetData();
+            _systemData.MemoryStats.GetData();
         }
     }
 
     private void GetNetworkData()
     {
-        lock (SystemData.NetStats)
+        lock (_systemData.NetworkStats)
         {
-            SystemData.NetStats.GetData();
+            _systemData.NetworkStats.GetData();
         }
     }
 
     private void GetGPUData()
     {
-        lock (SystemData.GPUStats)
+        lock (_systemData.GPUStats)
         {
-            SystemData.GPUStats.GetData();
+            _systemData.GPUStats.GetData();
         }
     }
 
     private void GetCPUData(bool includeTopProcesses)
     {
-        lock (SystemData.CpuStats)
+        lock (_systemData.CpuStats)
         {
-            SystemData.CpuStats.GetData(includeTopProcesses);
+            _systemData.CpuStats.GetData(includeTopProcesses);
         }
     }
 
     private void UpdateTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
     {
-        switch (_dataType)
+        var firstUpdateBlockSuffix = GetFirstUpdateBlockSuffix();
+        var isTracked = firstUpdateBlockSuffix is not null && PerformanceMonitorCommandsProvider.CrashSentinel.BeginBlock(firstUpdateBlockSuffix);
+
+        try
         {
-            case DataType.CPU:
-            case DataType.CpuWithTopProcesses:
-                {
-                    // CPU
-                    GetCPUData(_dataType == DataType.CpuWithTopProcesses);
-                    break;
-                }
+            switch (_dataType)
+            {
+                case DataType.CPU:
+                case DataType.CpuWithTopProcesses:
+                    {
+                        // CPU
+                        GetCPUData(_dataType == DataType.CpuWithTopProcesses);
+                        break;
+                    }
 
-            case DataType.GPU:
-                {
-                    // gpu
-                    GetGPUData();
-                    break;
-                }
+                case DataType.GPU:
+                    {
+                        // gpu
+                        GetGPUData();
+                        break;
+                    }
 
-            case DataType.Memory:
-                {
-                    // memory
-                    GetMemoryData();
-                    break;
-                }
+                case DataType.Memory:
+                    {
+                        // memory
+                        GetMemoryData();
+                        break;
+                    }
 
-            case DataType.Network:
-                {
-                    // network
-                    GetNetworkData();
-                    break;
-                }
+                case DataType.Network:
+                    {
+                        // network
+                        GetNetworkData();
+                        break;
+                    }
+            }
+
+            if (isTracked)
+            {
+                PerformanceMonitorCommandsProvider.CrashSentinel.CompleteBlock(firstUpdateBlockSuffix!);
+            }
+
+            _updateAction?.Invoke();
         }
+        catch (Exception ex)
+        {
+            if (isTracked)
+            {
+                PerformanceMonitorCommandsProvider.CrashSentinel.CancelBlock(firstUpdateBlockSuffix!);
+            }
 
-        _updateAction?.Invoke();
+            _updateTimer.Stop();
+            if (!_updateFailureLogged)
+            {
+                _updateFailureLogged = true;
+                Microsoft.CmdPal.Common.CoreLogger.LogError($"Unexpected exception while updating performance monitor data for {_dataType}. Timer stopped.", ex);
+            }
+        }
+    }
+
+    private string? GetFirstUpdateBlockSuffix()
+    {
+        return _dataType switch
+        {
+            DataType.CPU => "CPU.FirstUpdate",
+            DataType.CpuWithTopProcesses => "CPU.FirstUpdate",
+            DataType.GPU => "GPU.FirstUpdate",
+            DataType.Memory => "Memory.FirstUpdate",
+            DataType.Network => "Network.FirstUpdate",
+            _ => null,
+        };
     }
 
     internal MemoryStats GetMemoryStats()
     {
-        lock (SystemData.MemStats)
+        lock (_systemData.MemoryStats)
         {
-            return SystemData.MemStats;
+            return _systemData.MemoryStats;
         }
     }
 
     internal NetworkStats GetNetworkStats()
     {
-        lock (SystemData.NetStats)
+        lock (_systemData.NetworkStats)
         {
-            return SystemData.NetStats;
+            return _systemData.NetworkStats;
         }
     }
 
     internal GPUStats GetGPUStats()
     {
-        lock (SystemData.GPUStats)
+        lock (_systemData.GPUStats)
         {
-            return SystemData.GPUStats;
+            return _systemData.GPUStats;
         }
     }
 
     internal CPUStats GetCPUStats()
     {
-        lock (SystemData.CpuStats)
+        lock (_systemData.CpuStats)
         {
-            return SystemData.CpuStats;
+            return _systemData.CpuStats;
         }
     }
 
@@ -141,7 +180,6 @@ internal sealed partial class DataManager : IDisposable
 
     public void Dispose()
     {
-        _systemData.Dispose();
         _updateTimer.Dispose();
     }
 }

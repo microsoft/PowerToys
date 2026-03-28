@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -66,11 +68,60 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     {
         _viewModel = viewModel;
         InitializeComponent();
-        WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
+        Loaded += DockControl_Loaded;
+        Unloaded += DockControl_Unloaded;
 
         // Start with edit mode disabled - normal click behavior
         UpdateEditMode(false);
+    }
+
+    private void DockControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+        WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
+        WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
+
+        ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
+        ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
+
+        UpdateEditModeTeachingTip();
+    }
+
+    private void DockControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+
+        ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
+
+        if (EditButtonsTeachingTip.IsOpen)
+        {
+            EditButtonsTeachingTip.IsOpen = false;
+        }
+
+        if (ContextMenuFlyout.IsOpen)
+        {
+            ContextMenuFlyout.Hide();
+        }
+
+        if (AddBandFlyout.IsOpen)
+        {
+            AddBandFlyout.Hide();
+        }
+
+        if (EditModeContextMenu.IsOpen)
+        {
+            EditModeContextMenu.Hide();
+        }
+    }
+
+    private void CenterItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        UpdateCenterVisibility();
+    }
+
+    private void UpdateCenterVisibility()
+    {
+        ContentGrid.IsCenterVisible = IsEditMode || ViewModel.CenterItems.Count > 0;
     }
 
     public void Receive(EnterDockEditModeMessage message)
@@ -84,6 +135,9 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void UpdateEditMode(bool isEditMode)
     {
+        // Update center visibility based on edit mode and center items
+        UpdateCenterVisibility();
+
         // Enable/disable drag-and-drop based on edit mode
         StartListView.CanDragItems = isEditMode;
         StartListView.CanReorderItems = isEditMode;
@@ -109,10 +163,38 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             };
         }
 
-        EditButtonsTeachingTip.IsOpen = isEditMode;
+        UpdateEditModeTeachingTip();
+    }
 
-        // Update visual state
-        VisualStateManager.GoToState(this, isEditMode ? "EditModeOn" : "EditModeOff", true);
+    private void UpdateEditModeTeachingTip()
+    {
+        if (XamlRoot is null || ContentGrid.XamlRoot is null || EditButtonsTeachingTip.Parent is null)
+        {
+            return;
+        }
+
+        if (!IsEditMode)
+        {
+            if (EditButtonsTeachingTip.IsOpen)
+            {
+                EditButtonsTeachingTip.IsOpen = false;
+            }
+
+            return;
+        }
+
+        if (!EditButtonsTeachingTip.IsOpen)
+        {
+            EditButtonsTeachingTip.IsOpen = true;
+        }
+    }
+
+    private static void PreparePopupForShow(FlyoutBase popup, FrameworkElement placementTarget)
+    {
+        if (placementTarget.XamlRoot is not null && popup.XamlRoot != placementTarget.XamlRoot)
+        {
+            popup.XamlRoot = placementTarget.XamlRoot;
+        }
     }
 
     internal void EnterEditMode()
@@ -183,6 +265,13 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         }
     }
 
+    private ContextMenuFilterLocation GetDockContextMenuFilterLocation()
+    {
+        return DockSide == DockSide.Bottom
+            ? ContextMenuFilterLocation.Bottom
+            : ContextMenuFilterLocation.Top;
+    }
+
     // Stores the band that was right-clicked for edit mode context menu
     private DockBandViewModel? _editModeContextBand;
 
@@ -201,6 +290,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
                     ShowTitlesMenuItem.IsChecked = _editModeContextBand.ShowTitles;
                     ShowSubtitlesMenuItem.IsChecked = _editModeContextBand.ShowSubtitles;
 
+                    PreparePopupForShow(EditModeContextMenu, dockItem);
                     EditModeContextMenu.ShowAt(
                         dockItem,
                         new FlyoutShowOptions()
@@ -215,9 +305,12 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             }
 
             // Normal mode - show the command context menu
-            if (item.HasMoreCommands)
+            if (item.CanOpenContextMenu)
             {
                 ContextControl.ViewModel.SelectedItem = item;
+                ContextControl.ShowFilterBox = true;
+                ContextControl.PrepareForOpen(GetDockContextMenuFilterLocation());
+                PreparePopupForShow(ContextMenuFlyout, dockItem);
                 ContextMenuFlyout.ShowAt(
                     dockItem,
                     new FlyoutShowOptions()
@@ -294,11 +387,20 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void RootGrid_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
     {
+        // Don't show the dock context menu while in edit mode
+        if (IsEditMode)
+        {
+            return;
+        }
+
         var pos = e.GetPosition(null);
         var item = this.ViewModel.GetContextMenuForDock();
         if (item.HasMoreCommands)
         {
             ContextControl.ViewModel.SelectedItem = item;
+            ContextControl.ShowFilterBox = false;
+            ContextControl.PrepareForOpen(GetDockContextMenuFilterLocation());
+            PreparePopupForShow(ContextMenuFlyout, RootGrid);
             ContextMenuFlyout.ShowAt(
             this.RootGrid,
             new FlyoutShowOptions()
@@ -369,16 +471,19 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     private void StartListView_Drop(object sender, DragEventArgs e)
     {
         HandleCrossListDrop(DockPinSide.Start, e);
+        ResetListViewState(sender);
     }
 
     private void CenterListView_Drop(object sender, DragEventArgs e)
     {
         HandleCrossListDrop(DockPinSide.Center, e);
+        ResetListViewState(sender);
     }
 
     private void EndListView_Drop(object sender, DragEventArgs e)
     {
         HandleCrossListDrop(DockPinSide.End, e);
+        ResetListViewState(sender);
     }
 
     private void HandleCrossListDrop(DockPinSide targetSide, DragEventArgs e)
@@ -492,6 +597,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             AddBandListView.Visibility = hasAvailableBands ? Visibility.Visible : Visibility.Collapsed;
 
             // Show the flyout
+            PreparePopupForShow(AddBandFlyout, button);
             AddBandFlyout.ShowAt(button);
         }
     }
@@ -505,6 +611,29 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
             // Close the flyout
             AddBandFlyout.Hide();
+        }
+    }
+
+    private void BandListView_DragEnter(object sender, DragEventArgs e)
+    {
+        if (sender is ListView view)
+        {
+            view.Background = Application.Current.Resources["ControlAltFillColorQuarternaryBrush"] as SolidColorBrush;
+            e.DragUIOverride.IsGlyphVisible = false;
+            e.DragUIOverride.IsCaptionVisible = false;
+        }
+    }
+
+    private void BandListView_DragLeave(object sender, DragEventArgs e)
+    {
+        ResetListViewState(sender);
+    }
+
+    private void ResetListViewState(object sender)
+    {
+        if (sender is ListView listView)
+        {
+            listView.Background = new SolidColorBrush(Colors.Transparent);
         }
     }
 }

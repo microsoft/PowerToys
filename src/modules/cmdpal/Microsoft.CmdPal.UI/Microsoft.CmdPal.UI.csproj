@@ -29,6 +29,15 @@
     <UseWinRT>true</UseWinRT>
   </PropertyGroup>
 
+  <!-- Defines: to quickly add project-wide define constants / feature flags -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'DEBUG' ">
+	  <DefineConstants>$(DefineConstants);CMDPAL_FF_EXAMPLE_FLAG</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'RELEASE' ">
+	  <DefineConstants>$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
 	<!-- <PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
@@ -75,9 +84,12 @@
     <None Remove="Controls\CommandPalettePreview.xaml" />
     <None Remove="Controls\DevRibbon.xaml" />
     <None Remove="Controls\FallbackRankerDialog.xaml" />
+    <None Remove="Controls\ImageViewer.xaml" />
     <None Remove="Controls\ScreenPreview.xaml" />
     <None Remove="Controls\ScrollContainer.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
+    <None Remove="ExtViews\Controls\ImageContentViewer.xaml" />
+    <None Remove="ExtViews\Controls\PlainTextContentViewer.xaml" />
     <None Remove="ListDetailPage.xaml" />
     <None Remove="LoadingPage.xaml" />
     <None Remove="MainPage.xaml" />
@@ -94,8 +106,10 @@
   </ItemGroup>
 
 
+
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
@@ -302,6 +316,11 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\Settings\GeneralPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ExtViews\Controls\PlainTextContentViewer.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

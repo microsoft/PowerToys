@@ -164,7 +164,7 @@
                                     </InfoBar.IconSource>
                                 </InfoBar>
                             </tkcontrols:SettingsExpander.ItemsHeader>
-                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
+                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
                                     <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
@@ -195,7 +195,7 @@
                             Name="PasteAsPlainTextShortcut"
                             x:Uid="PasteAsPlainText_Shortcut"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
-                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
+                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard
                             Name="PasteAsMarkdownShortcut"
