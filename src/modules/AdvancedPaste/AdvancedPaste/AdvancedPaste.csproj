@@ -115,6 +115,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <SDKReference Include="Microsoft.VCLibs.Desktop, Version=14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>AdvancedPaste.UnitTests</_Parameter1>
     </AssemblyAttribute>
