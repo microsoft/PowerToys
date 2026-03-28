@@ -339,6 +339,12 @@ namespace Awake.Core
                                 break;
                             }
 
+                        case (uint)TrayCommands.TC_LID_SETTING:
+                            {
+                                Manager.SetLidOverride();
+                                break;
+                            }
+
                         case (uint)TrayCommands.TC_MODE_INDEFINITE:
                             {
                                 AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
@@ -424,19 +430,21 @@ namespace Awake.Core
                 null);
         }
 
-        internal static void SetTray(AwakeSettings settings, bool startedFromPowerToys)
+        internal static void SetTray(AwakeSettings settings, bool startedFromPowerToys, bool lidPresent = false)
         {
             SetTray(
                 settings.Properties.KeepDisplayOn,
+                settings.Properties.KeepAwakeOnLidClose,
                 settings.Properties.Mode,
                 settings.Properties.CustomTrayTimes,
-                startedFromPowerToys);
+                startedFromPowerToys,
+                lidPresent);
         }
 
-        public static void SetTray(bool keepDisplayOn, AwakeMode mode, Dictionary<string, uint> trayTimeShortcuts, bool startedFromPowerToys)
+        public static void SetTray(bool keepDisplayOn, bool keepAwakeOnLidClose, AwakeMode mode, Dictionary<string, uint> trayTimeShortcuts, bool startedFromPowerToys, bool lidPresent = false)
         {
             ClearExistingTrayMenu();
-            CreateNewTrayMenu(startedFromPowerToys, keepDisplayOn, mode);
+            CreateNewTrayMenu(startedFromPowerToys, keepDisplayOn, keepAwakeOnLidClose, mode, lidPresent);
 
             InsertAwakeModeMenuItems(mode);
 
@@ -453,7 +461,7 @@ namespace Awake.Core
             }
         }
 
-        private static void CreateNewTrayMenu(bool startedFromPowerToys, bool keepDisplayOn, AwakeMode mode)
+        private static void CreateNewTrayMenu(bool startedFromPowerToys, bool keepDisplayOn, bool keepAwakeOnLidClose, AwakeMode mode, bool lidPresent)
         {
             TrayMenu = Bridge.CreatePopupMenu();
 
@@ -467,11 +475,17 @@ namespace Awake.Core
                 InsertMenuItem(0, TrayCommands.TC_EXIT, Resources.AWAKE_EXIT);
             }
 
+            // Add lid close option only if a lid is present
+            if (lidPresent)
+            {
+                InsertMenuItem(0, TrayCommands.TC_LID_SETTING, Resources.AWAKE_KEEP_AWAKE_LID_CLOSED, keepAwakeOnLidClose, mode == AwakeMode.PASSIVE);
+            }
+
             InsertMenuItem(0, TrayCommands.TC_DISPLAY_SETTING, Resources.AWAKE_KEEP_SCREEN_ON, keepDisplayOn, mode == AwakeMode.PASSIVE);
 
             if (!startedFromPowerToys)
             {
-                InsertSeparator(1);
+                InsertSeparator(lidPresent ? 2 : 1);
             }
         }
 

@@ -221,7 +221,16 @@ namespace Awake.Properties {
                 return ResourceManager.GetString("AWAKE_KEEP_SCREEN_ON", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Keep awake when lid closed.
+        /// </summary>
+        internal static string AWAKE_KEEP_AWAKE_LID_CLOSED {
+            get {
+                return ResourceManager.GetString("AWAKE_KEEP_AWAKE_LID_CLOSED", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Keep awake until expiration date and time.
         /// </summary>
