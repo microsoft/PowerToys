@@ -163,11 +163,13 @@
             </Grid.ColumnDefinitions>
             <controls:ClipboardHistoryItemPreviewControl Height="48" ClipboardItem="{x:Bind ViewModel.CurrentClipboardItem, Mode=OneWay}" />
             <Button
+                x:Name="ClipboardHistoryButton"
                 x:Uid="ClipboardHistoryButton"
                 Grid.Column="1"
                 Margin="0,0,4,0"
                 VerticalAlignment="Center"
                 IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}"
+                KeyDown="ClipboardHistoryButton_KeyDown"
                 Style="{StaticResource SubtleButtonStyle}"
                 Visibility="{x:Bind ViewModel.ShowClipboardHistoryButton, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                 <ToolTipService.ToolTip>
@@ -181,15 +183,19 @@
                     Glyph="&#xE81C;" />
                 <Button.Flyout>
                     <Flyout
+                        x:Name="ClipboardHistoryFlyout"
+                        Closed="ClipboardHistoryFlyout_Closed"
                         FlyoutPresenterStyle="{StaticResource PaddingLessFlyoutPresenterStyle}"
                         Placement="Right"
                         ShouldConstrainToRootBounds="False">
                         <ItemsView
+                            x:Name="ClipboardHistoryItemsView"
                             Width="320"
                             Margin="8,8,8,0"
                             IsItemInvokedEnabled="True"
                             ItemInvoked="ClipboardHistory_ItemInvoked"
                             ItemsSource="{x:Bind clipboardHistory, Mode=OneWay}"
+                            KeyDown="ClipboardHistoryItemsView_KeyDown"
                             SelectionMode="None">
                             <ItemsView.Layout>
                                 <StackLayout Orientation="Vertical" Spacing="8" />
@@ -317,10 +323,13 @@
                     ItemContainerTransitions="{x:Null}"
                     ItemTemplateSelector="{StaticResource PasteFormatTemplateSelector}"
                     ItemsSource="{x:Bind ViewModel.StandardPasteFormats, Mode=OneWay}"
+                    KeyDown="PasteOptionsListView_KeyDown"
                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
                     ScrollViewer.VerticalScrollMode="Disabled"
-                    SelectionMode="None"
-                    TabIndex="1" />
+                    SelectionMode="Single"
+                    SingleSelectionFollowsFocus="True"
+                    TabIndex="1"
+                    XYFocusKeyboardNavigation="Enabled" />
                 <Rectangle
                     Grid.Row="1"
                     Height="1"
@@ -337,10 +346,13 @@
                     ItemContainerTransitions="{x:Null}"
                     ItemTemplateSelector="{StaticResource PasteFormatTemplateSelector}"
                     ItemsSource="{x:Bind ViewModel.CustomActionPasteFormats, Mode=OneWay}"
+                    KeyDown="PasteOptionsListView_KeyDown"
                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
                     ScrollViewer.VerticalScrollMode="Disabled"
-                    SelectionMode="None"
-                    TabIndex="2" />
+                    SelectionMode="Single"
+                    SingleSelectionFollowsFocus="True"
+                    TabIndex="2"
+                    XYFocusKeyboardNavigation="Enabled" />
             </Grid>
         </ScrollViewer>
     </Grid>
