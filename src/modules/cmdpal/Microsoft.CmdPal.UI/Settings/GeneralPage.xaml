@@ -61,14 +61,14 @@
                             <controls:SettingsCard ContentAlignment="Left">
                                 <ptcontrols:CheckBoxWithDescriptionControl x:Uid="Settings_GeneralPage_AllowBreakthroughShortcut_SettingsCard" IsChecked="{x:Bind viewModel.AllowBreakthroughShortcut, Mode=TwoWay}" />
                             </controls:SettingsCard>
-                            <controls:SettingsCard ContentAlignment="Left">
-                                <InfoBar
-                                    IsClosable="False"
-                                    IsOpen="{x:Bind IsNotificationStateSuppressing, Mode=OneWay}"
-                                    Message="{x:Bind NotificationStateMessage, Mode=OneWay}"
-                                    Severity="Warning" />
-                            </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
+                        <controls:SettingsExpander.ItemsFooter>
+                            <InfoBar
+                                IsClosable="False"
+                                IsOpen="{x:Bind IsNotificationStateSuppressing, Mode=OneWay}"
+                                Message="{x:Bind NotificationStateMessage, Mode=OneWay}"
+                                Severity="Warning" />
+                        </controls:SettingsExpander.ItemsFooter>
                     </controls:SettingsExpander>
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_AutoGoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind viewModel.AutoGoBackIntervalIndex, Mode=TwoWay}">

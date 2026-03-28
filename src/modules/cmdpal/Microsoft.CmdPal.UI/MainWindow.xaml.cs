@@ -1214,6 +1214,13 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HandleSummon(string commandId)
     {
+        var isRootHotkey = string.IsNullOrEmpty(commandId);
+        if (isRootHotkey && IsPaletteVisibleToUser())
+        {
+            HandleSummonCore(commandId);
+            return;
+        }
+
         var shouldSuppress = false;
 
         if (_ignoreHotKeyWhenFullScreen && WindowHelper.IsWindowFullscreen())
@@ -1241,6 +1248,26 @@ public sealed partial class MainWindow : WindowEx,
         HandleSummonCore(commandId);
     }
 
+    private bool IsPaletteVisibleToUser()
+    {
+        var isVisible = Visible;
+
+        unsafe
+        {
+            // We need to check if our window is cloaked or not. A cloaked window is still
+            // technically visible, because SHOW/HIDE != iconic (minimized) != cloaked
+            // (these are all separate states)
+            long attr = 0;
+            PInvoke.DwmGetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAKED, &attr, sizeof(long));
+            if (attr == 1 /* DWM_CLOAKED_APP */)
+            {
+                isVisible = false;
+            }
+        }
+
+        return isVisible;
+    }
+
     private bool IsBreakthroughTriggered()
     {
         const int requiredPresses = 3;
@@ -1266,20 +1293,7 @@ public sealed partial class MainWindow : WindowEx,
         var isRootHotkey = string.IsNullOrEmpty(commandId);
         PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
 
-        var isVisible = this.Visible;
-
-        unsafe
-        {
-            // We need to check if our window is cloaked or not. A cloaked window is still
-            // technically visible, because SHOW/HIDE != iconic (minimized) != cloaked
-            // (these are all separate states)
-            long attr = 0;
-            PInvoke.DwmGetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAKED, &attr, sizeof(long));
-            if (attr == 1 /* DWM_CLOAKED_APP */)
-            {
-                isVisible = false;
-            }
-        }
+        var isVisible = IsPaletteVisibleToUser();
 
         // Note to future us: the wParam will have the index of the hotkey we registered.
         // We can use that in the future to differentiate the hotkeys we've pressed

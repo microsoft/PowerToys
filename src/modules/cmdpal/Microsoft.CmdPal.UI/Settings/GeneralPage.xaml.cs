@@ -21,6 +21,7 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
 
     private readonly SettingsViewModel? viewModel;
     private readonly IApplicationInfoService _appInfoService;
+    private readonly ISettingsService _settingsService;
     private readonly DispatcherTimer _notificationStateTimer;
 
     private bool _isNotificationStateSuppressing;
@@ -34,9 +35,9 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
 
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
-        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         _appInfoService = App.Current.Services.GetRequiredService<IApplicationInfoService>();
-        viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
+        viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, _settingsService);
 
         _notificationStateTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _notificationStateTimer.Tick += NotificationStateTimer_Tick;
@@ -83,6 +84,7 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
 
     private void GeneralPage_Loaded(object sender, RoutedEventArgs e)
     {
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
         UpdateNotificationState();
         _notificationStateTimer.Start();
     }
@@ -90,6 +92,7 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
     private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
     {
         _notificationStateTimer.Stop();
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 
     private void NotificationStateTimer_Tick(object? sender, object e)
@@ -97,13 +100,29 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         UpdateNotificationState();
     }
 
+    private void SettingsService_SettingsChanged(ISettingsService sender, SettingsModel settings)
+    {
+        if (DispatcherQueue.HasThreadAccess)
+        {
+            UpdateNotificationState();
+            return;
+        }
+
+        DispatcherQueue.TryEnqueue(UpdateNotificationState);
+    }
+
     private void UpdateNotificationState()
     {
         var state = WindowHelper.GetUserNotificationState();
+        var isFullscreenState = state is QUERY_USER_NOTIFICATION_STATE.QUNS_RUNNING_D3D_FULL_SCREEN or
+            QUERY_USER_NOTIFICATION_STATE.QUNS_PRESENTATION_MODE;
+        var isBusyState = state is QUERY_USER_NOTIFICATION_STATE.QUNS_BUSY;
 
-        if (state is QUERY_USER_NOTIFICATION_STATE.QUNS_RUNNING_D3D_FULL_SCREEN or
-            QUERY_USER_NOTIFICATION_STATE.QUNS_PRESENTATION_MODE or
-            QUERY_USER_NOTIFICATION_STATE.QUNS_BUSY)
+        if (IsActivationShortcutSuppressed(
+            isFullscreenState,
+            isBusyState,
+            viewModel?.IgnoreShortcutWhenFullscreen == true,
+            viewModel?.IgnoreShortcutWhenBusy == true))
         {
             var stateDescription = state switch
             {
@@ -131,7 +150,18 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
         }
         else
         {
+            NotificationStateMessage = string.Empty;
             IsNotificationStateSuppressing = false;
         }
+    }
+
+    private static bool IsActivationShortcutSuppressed(
+        bool isFullscreenState,
+        bool isBusyState,
+        bool ignoreShortcutWhenFullscreen,
+        bool ignoreShortcutWhenBusy)
+    {
+        return (ignoreShortcutWhenFullscreen && isFullscreenState) ||
+               (ignoreShortcutWhenBusy && isBusyState);
     }
 }
