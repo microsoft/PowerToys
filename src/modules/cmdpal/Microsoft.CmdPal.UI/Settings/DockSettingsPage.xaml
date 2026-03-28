@@ -213,7 +213,7 @@
                     </controls:SettingsExpander>
 
                     <!--  Bands Section  -->
-                    <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <!--  <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <ItemsRepeater ItemsSource="{x:Bind AllDockBandItems}">
                         <ItemsRepeater.Layout>
@@ -233,7 +233,7 @@
                                                     Height="20"
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                    SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
+                                                    SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                             </cpControls:ContentIcon.Content>
                                         </cpControls:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>
@@ -241,7 +241,7 @@
                                 </controls:SettingsCard>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
+                    </ItemsRepeater>-->
                 </StackPanel>
             </Grid>
         </ScrollViewer>

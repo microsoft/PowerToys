@@ -14,7 +14,6 @@ void MonitorTopology::Initialize(const std::vector<MonitorInfo>& monitors)
     Logger::info(L"======= TOPOLOGY INITIALIZATION START =======");
     Logger::info(L"Initializing edge-based topology for {} monitors", monitors.size());
 
-
     m_monitors = monitors;
     m_outerEdges.clear();
     m_edgeMap.clear();
@@ -691,7 +690,6 @@ int MonitorTopology::GetAbsolutePosition(const MonitorEdge& edge, double relativ
     int64_t result = static_cast<int64_t>(edge.start) + offset;
     return static_cast<int>(result);
 }
-
 
 std::vector<MonitorTopology::GapInfo> MonitorTopology::DetectMonitorGaps() const
 {

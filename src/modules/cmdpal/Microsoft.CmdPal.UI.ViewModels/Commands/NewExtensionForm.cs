@@ -30,7 +30,8 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
         {
             "type": "TextBlock",
             "text": {{FormatJsonString(Properties.Resources.builtin_create_extension_page_title)}},
-            "size": "large"
+            "size": "medium",
+            "weight": "bolder"
         },
         {
             "type": "Input.Text",
@@ -122,9 +123,8 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
         }
         catch (Exception e)
         {
-            BuiltinsExtensionHost.Instance.HideStatus(_creatingMessage);
-
             _creatingMessage.State = MessageState.Error;
+            _creatingMessage.Progress = null;
             _creatingMessage.Message = $"Error: {e.Message}";
         }
 

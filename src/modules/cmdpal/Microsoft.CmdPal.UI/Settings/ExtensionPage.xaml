@@ -61,7 +61,7 @@
                                         Height="20"
                                         AutomationProperties.AccessibilityView="Raw"
                                         SourceKey="{x:Bind ViewModel.Icon, Mode=OneWay}"
-                                        SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
+                                        SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                 </cpcontrols:ContentIcon.Content>
                             </cpcontrols:ContentIcon>
                         </controls:SettingsCard.HeaderIcon>
@@ -99,7 +99,7 @@
                                                                 Height="20"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
+                                                                SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                                         </cpcontrols:ContentIcon.Content>
                                                     </cpcontrols:ContentIcon>
                                                 </controls:SettingsExpander.HeaderIcon>
@@ -109,11 +109,12 @@
                                                     <controls:SettingsCard x:Uid="Settings_ExtensionPage_GlobalHotkey_SettingsCard">
                                                         <cpcontrols:ShortcutControl x:Name="GlobalHotkeyShortcutControl" HotkeySettings="{x:Bind Hotkey, Mode=TwoWay}" />
                                                     </controls:SettingsCard>
-                                                    <controls:SettingsCard x:Uid="Settings_ExtensionPage_Alias_SettingsCard">
+                                                    <controls:SettingsCard x:Name="AliasSettingsCard" x:Uid="Settings_ExtensionPage_Alias_SettingsCard">
                                                         <TextBox
                                                             x:Name="AliasTextBox"
                                                             x:Uid="Settings_ExtensionPage_Alias_PlaceholderText"
                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                            AutomationProperties.LabeledBy="{x:Bind AliasSettingsCard}"
                                                             Text="{x:Bind AliasText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                     </controls:SettingsCard>
                                                     <controls:SettingsCard x:Uid="Settings_ExtensionPage_AliasActivation_SettingsCard" IsEnabled="{x:Bind AliasText, Converter={StaticResource StringEmptyToBoolConverter}, Mode=OneWay}">
@@ -171,7 +172,7 @@
                                                                 Height="20"
                                                                 AutomationProperties.AccessibilityView="Raw"
                                                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
+                                                                SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                                         </cpcontrols:ContentIcon.Content>
                                                     </cpcontrols:ContentIcon>
                                                 </controls:SettingsExpander.HeaderIcon>

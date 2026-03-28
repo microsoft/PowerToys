@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.UI.Xaml;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -25,7 +26,7 @@ internal sealed partial class TrayIconService
     private const uint MY_NOTIFY_ID = 1000;
     private const uint WM_TRAY_ICON = PInvoke.WM_USER + 1;
 
-    private readonly SettingsModel _settingsModel;
+    private readonly ISettingsService _settingsService;
     private readonly uint WM_TASKBAR_RESTART;
 
     private Window? _window;
@@ -36,9 +37,9 @@ internal sealed partial class TrayIconService
     private DestroyIconSafeHandle? _largeIcon;
     private DestroyMenuSafeHandle? _popupMenu;
 
-    public TrayIconService(SettingsModel settingsModel)
+    public TrayIconService(ISettingsService settingsService)
     {
-        _settingsModel = settingsModel;
+        _settingsService = settingsService;
 
         // TaskbarCreated is the message that's broadcast when explorer.exe
         // restarts. We need to know when that happens to be able to bring our
@@ -48,7 +49,7 @@ internal sealed partial class TrayIconService
 
     public void SetupTrayIcon(bool? showSystemTrayIcon = null)
     {
-        if (showSystemTrayIcon ?? _settingsModel.ShowSystemTrayIcon)
+        if (showSystemTrayIcon ?? _settingsService.Settings.ShowSystemTrayIcon)
         {
             if (_window is null)
             {

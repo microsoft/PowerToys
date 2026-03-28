@@ -23,11 +23,11 @@ public sealed partial class GeneralPage : Page
     {
         this.InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
+        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         _appInfoService = App.Current.Services.GetRequiredService<IApplicationInfoService>();
-        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
     }
 
     public string ApplicationVersion
