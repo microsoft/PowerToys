@@ -29,13 +29,26 @@ public partial class SamplePagesCommandsProvider : CommandProvider
         return _commands;
     }
 
+    public override ICommandItem GetCommandItem(string id)
+    {
+        foreach (var command in _commands)
+        {
+            if (command.Command is { } topLevelCommand && topLevelCommand.Id == id)
+            {
+                return command;
+            }
+        }
+
+        return SampleNavigationCommandCatalog.GetCommandItem(id);
+    }
+
     public override ICommandItem[] GetDockBands()
     {
-        List<ICommandItem> bands = new()
-        {
+        List<ICommandItem> bands =
+        [
             new SampleDockBand(),
-            new SampleButtonsDockBand(),
-        };
+            new SampleButtonsDockBand()
+        ];
 
         return bands.ToArray();
     }
