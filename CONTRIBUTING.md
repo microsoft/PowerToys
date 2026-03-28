@@ -1,4 +1,4 @@
-# PowerToys Contributor's Guide
+# PowerToys contributor's guide
 
 Below is our guidance for reporting issues, proposing new features, and submitting contributions via Pull Requests (PRs). Our philosophy is to understand the problem and scenarios first, which is why we follow this pattern before work starts.
 
@@ -31,11 +31,11 @@ To let the team know which issues are important, upvote by clicking the [+😊] 
 
 ---
 
-## Contributing Fixes/Features
+## Contributing fixes/features
 
 Please comment on our [Would you like to contribute to PowerToys?](https://github.com/microsoft/PowerToys/issues/28769) thread to let us know you're interested in working on something before you start. This helps avoid multiple people unexpectedly working on the same thing and ensures everyone is clear on what should be done. It's less work for everyone to establish this up front.
 
-### Localization Issues
+### Localization issues
 
 For localization issues, please file an issue to notify our internal localization team, as community PRs for localization aren't accepted. Localization is handled exclusively by the internal Microsoft team.
 

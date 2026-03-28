@@ -1,4 +1,4 @@
-# PowerToys Data & Privacy
+# PowerToys data & privacy
 
 ## Overview
 

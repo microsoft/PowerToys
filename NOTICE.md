@@ -1,4 +1,4 @@
-# NOTICES AND INFORMATION
+# Notices and information
 
 This software incorporates material from third parties.
 
