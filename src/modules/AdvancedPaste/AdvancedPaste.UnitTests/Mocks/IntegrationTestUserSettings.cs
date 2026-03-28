@@ -47,6 +47,8 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public bool ShowCustomPreview => false;
 
+    public bool ShowAIPaste => true;
+
     public bool CloseAfterLosingFocus => false;
 
     public bool EnableClipboardPreview => true;
