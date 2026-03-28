@@ -56,28 +56,25 @@ internal sealed class ExtensionTemplateService : IExtensionTemplateService
         var newGuid = Guid.NewGuid().ToString();
 
         // Unzip `template.zip` to a temp dir:
-        var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        var tempDir = Directory.CreateTempSubdirectory("CmdPal_ExtTemplate");
 
         if (!Directory.Exists(outputPath))
         {
             Directory.CreateDirectory(outputPath);
         }
 
-        ZipFile.ExtractToDirectory(_templateZipPath, tempDir);
+        ZipFile.ExtractToDirectory(_templateZipPath, tempDir.FullName);
 
         try
         {
-            foreach (var file in Directory.GetFiles(tempDir, "*", SearchOption.AllDirectories))
+            foreach (var file in Directory.GetFiles(tempDir.FullName, "*", SearchOption.AllDirectories))
             {
-                CopyTemplateFile(tempDir, file, outputPath, extensionName, displayName, newGuid);
+                CopyTemplateFile(tempDir.FullName, file, outputPath, extensionName, displayName, newGuid);
             }
         }
         finally
         {
-            if (Directory.Exists(tempDir))
-            {
-                Directory.Delete(tempDir, recursive: true);
-            }
+            tempDir.Delete(recursive: true);
         }
     }
 

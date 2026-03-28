@@ -25,8 +25,10 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
     {
     }
 
-    internal NewExtensionForm(IExtensionTemplateService extensionTemplateService)
+    private NewExtensionForm(IExtensionTemplateService extensionTemplateService)
     {
+        ArgumentNullException.ThrowIfNull(extensionTemplateService);
+
         _extensionTemplateService = extensionTemplateService;
         TemplateJson = $$"""
 {
