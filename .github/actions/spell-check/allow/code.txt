@@ -334,6 +334,7 @@ SETAUTOHIDEBAR
 WINDOWPOS
 WINEVENTPROC
 WORKERW
+FULLSCREENAPP
 
 # PowerRename metadata pattern abbreviations (used in tests and regex patterns)
 DDDD
