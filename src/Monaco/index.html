@@ -6,14 +6,15 @@
 
         // Get URL parameters:
         // `code` contains the code of the file in base64 encoded
-        // `theme` can be "vs" for light theme or "vs-dark" for dark theme
+        // `theme` can be "vs" for light theme, "vs-dark" for dark theme,
+        //         "hc-black" for dark high contrast, or "hc-light" for light high contrast
         // `lang` is the language of the file
         // `wrap` if the editor is wrapping or not
         // `minimap` if the minimap is shown
         // `contextMenu` whether to use the Monaco context menu. The built-in context menu
         //               doesn't work in Peek, so we set this to false and create a custom one
 
-        var theme = ("[[PT_THEME]]" == "dark") ? "vs-dark" : "vs";
+        var theme = "[[PT_THEME]]";
         var wrap = [[PT_WRAP]];
         var minimap = [[PT_MINIMAP]];
         var stickyScroll = [[PT_STICKY_SCROLL]];
@@ -87,13 +88,20 @@
         require(['vs/editor/editor.main'], async function () {
             await registerAdditionalLanguages(monaco)
 
-            // Creates a theme to handle custom tokens
-            monaco.editor.defineTheme('theme', {
-                base: theme, // Sets the base theme to "vs" or "vs-dark" depending on the user's preference
-                inherit: true,
-                rules: customTokenThemeRules,
-                colors: {} // `colors` is a required attribute
-            });
+            // For high contrast themes, use Monaco's built-in themes directly
+            // For normal themes, create a custom theme to handle custom tokens
+            var editorTheme = theme;
+            if (theme === 'vs' || theme === 'vs-dark') {
+                // Creates a theme to handle custom tokens
+                monaco.editor.defineTheme('custom-theme', {
+                    base: theme, // Sets the base theme to "vs" or "vs-dark" depending on the user's preference
+                    inherit: true,
+                    rules: customTokenThemeRules,
+                    colors: {} // `colors` is a required attribute
+                });
+                editorTheme = 'custom-theme';
+            }
+            // For hc-black and hc-light, use the built-in Monaco themes which have proper contrast
 
             // Creates the editor
             // For all parameters: https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IStandaloneEditorConstructionOptions.html
@@ -101,7 +109,7 @@
                 value: code, // Sets content of the editor
                 language: lang, // Sets language of the code
                 readOnly: true, // Sets to readonly
-                theme: 'theme', // Sets editor theme
+                theme: editorTheme, // Sets editor theme
                 minimap: { enabled: minimap }, // Controls if minimap is shown
                 lineNumbersMinChars: 3, // Width of the line numbers
                 contextmenu: contextMenu,
