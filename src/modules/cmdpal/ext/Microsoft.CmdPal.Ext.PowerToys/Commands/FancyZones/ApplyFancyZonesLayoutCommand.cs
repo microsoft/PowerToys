@@ -16,6 +16,7 @@ internal sealed partial class ApplyFancyZonesLayoutCommand : InvokableCommand
     {
         _layout = layout;
         _targetMonitor = monitor;
+        Id = FancyZonesCommandIds.BuildApplyLayoutCommandId(layout, monitor);
 
         Name = monitor is null ? "Apply to all monitors" : $"Apply to Monitor {monitor.Value.Title}";
 

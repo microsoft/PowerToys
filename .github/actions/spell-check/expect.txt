@@ -528,6 +528,7 @@ GPOCA
 gpp
 gpu
 gradians
+GRGX
 GSM
 gtm
 guiddata
@@ -715,7 +716,6 @@ jpnime
 Jsons
 jsonval
 jxr
-kbmcontrols
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -862,7 +862,6 @@ Metacharacter
 metafile
 metapackage
 mfc
-mfalse
 Mgmt
 Microwaved
 midl
@@ -924,7 +923,6 @@ mstsc
 msvcp
 MT
 MTND
-mtrue
 MULTIPLEUSE
 multizone
 muxc
@@ -1048,6 +1046,8 @@ OEMCONVERT
 officehubintl
 OFN
 ofs
+OICI
+OICIIO
 oldcolor
 olditem
 oldpath
@@ -1081,6 +1081,7 @@ Packagemanager
 PACL
 padx
 pady
+PAI
 PAINTSTRUCT
 PALETTEWINDOW
 PARENTNOTIFY
@@ -1345,7 +1346,7 @@ SCREENFONTS
 screensaver
 screenshots
 scrollviewer
-SDDL
+sddl
 SDKDDK
 sdns
 searchterm

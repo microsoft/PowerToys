@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -314,6 +314,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionPage_Alias_SettingsCard.Description" xml:space="preserve">
     <value>A short keyword used to navigate to this command.</value>
   </data>
+  <data name="Settings_ExtensionPage_Alias_SettingsCard.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Alias</value>
+  </data>
   <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Header" xml:space="preserve">
     <value>Alias activation</value>
   </data>
@@ -399,7 +402,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Dock (Preview)</value>
   </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Open Command Palette settings</value>
+    <value>Open Command Palette settings, shortcut Control plus comma</value>
   </data>
   <data name="ActivationSettingsHeader.Text" xml:space="preserve">
     <value>Activation</value>
@@ -468,6 +471,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Settings_ExtensionPage_Alias_PlaceholderText.PlaceholderText" xml:space="preserve">
     <value>Enter alias</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_PlaceholderText.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Alias</value>
   </data>
   <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Show status messages</value>
@@ -958,13 +964,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Dock_AddBand_NoCommandsAvailable.Text" xml:space="preserve">
     <value>All available bands are already pinned.</value>
   </data>
-	<data name="Dock_Pin_Instruction.Text" xml:space="preserve">
+    <data name="Dock_Pin_Instruction.Text" xml:space="preserve">
     <value>To pin commands, extensions or apps, use the Pin to Dock command in Command Palette.</value>
   </data>
-	<data name="Dock_Bands_Header.Text" xml:space="preserve">
+    <data name="Dock_Bands_Header.Text" xml:space="preserve">
     <value>Bands</value>
-  </data>	
-	<data name="Dock_AddBand_StartTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+  </data>
+    <data name="Dock_AddBand_StartTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Add band to start</value>
   </data>
   <data name="Dock_AddBand_CenterTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
@@ -987,6 +993,142 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="SettingsPage_NewInfoBadge.Text" xml:space="preserve">
     <value>NEW</value>
-	<comment>Must be all caps</comment>  
+    <comment>Must be all caps</comment>
+  </data>
+  <data name="ImageContentViewer_ZoomAndScroll.Text" xml:space="preserve">
+    <value>Zoom &amp; Scroll</value>
+  </data>
+  <data name="ImageContentViewer_OpenZoomViewer.Text" xml:space="preserve">
+    <value>Open image viewer</value>
+  </data>
+  <data name="ImageContentViewer_CopyImage.Text" xml:space="preserve">
+    <value>Copy image</value>
+  </data>
+  <data name="ImageViewer_ZoomIn.Content" xml:space="preserve">
+    <value>Zoom in</value>
+  </data>
+  <data name="ImageViewer_ZoomOut.Content" xml:space="preserve">
+    <value>Zoom out</value>
+  </data>
+  <data name="ImageViewer_ZoomToFit.Content" xml:space="preserve">
+    <value>Zoom to fit</value>
+  </data>
+  <data name="PlainTextContentViewer_Copy.Text" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="PlainTextContentViewer_SelectAll.Text" xml:space="preserve">
+    <value>Select all</value>
+  </data>
+  <data name="PlainTextContentViewer_WordWrap.Text" xml:space="preserve">
+    <value>Word wrap</value>
+  </data>
+  <data name="PlainTextContentViewer_MonospaceFont.Text" xml:space="preserve">
+    <value>Monospace font</value>
+  </data>
+  <data name="PlainTextContentViewer_ZoomIn.Text" xml:space="preserve">
+    <value>Zoom in</value>
+  </data>
+  <data name="PlainTextContentViewer_ZoomOut.Text" xml:space="preserve">
+    <value>Zoom out</value>
+  </data>
+  <data name="PlainTextContentViewer_ResetZoom.Text" xml:space="preserve">
+    <value>Reset zoom</value>
+  </data>
+  <data name="ImageContentViewer_Toast_CopiedImage" xml:space="preserve">
+    <value>Copied image to clipboard</value>
+  </data>
+  <data name="ImageContentViewer_Toast_CopiedLink" xml:space="preserve">
+    <value>Copied link to clipboard</value>
+  </data>
+  <data name="ImageViewer_ZoomInButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Zoom in</value>
+  </data>
+  <data name="ImageViewer_ZoomInButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Zoom in (Ctrl+Plus key)</value>
+  </data>
+  <data name="ImageViewer_ZoomOutButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Zoom out</value>
+  </data>
+  <data name="ImageViewer_ZoomOutButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Zoom out (Ctrl+Minus key)</value>
+  </data>
+  <data name="ImageViewer_ZoomToFitButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Zoom to fit</value>
+  </data>
+  <data name="ImageViewer_ZoomToFitButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Zoom to fit (Ctrl+0)</value>
+  </data>
+  <data name="ImageContentViewer_OpenZoomOverlayButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Open image viewer</value>
+  </data>
+  <data name="ImageContentViewer_OpenZoomOverlayButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open image viewer</value>
+  </data>
+  <data name="ImageContentViewer_CopyImageUri.Text" xml:space="preserve">
+    <value>Copy image link</value>
+  </data>
+  <data name="PinToDock_DialogTitle" xml:space="preserve">
+    <value>Pin to Dock</value>
+    <comment>Title for the pin to dock configuration dialog</comment>
+  </data>
+  <data name="PinToDock_PreviewHeader.Text" xml:space="preserve">
+    <value>Preview</value>
+    <comment>Header for the preview section in the pin to dock dialog</comment>
+  </data>
+  <data name="PinToDock_SectionHeader.Text" xml:space="preserve">
+    <value>Choose where to pin this command</value>
+    <comment>Header for the dock section selector in the pin to dock dialog</comment>
+  </data>
+  <data name="PinToDock_Start.Content" xml:space="preserve">
+    <value>Start</value>
+    <comment>Start section option in pin to dock dialog</comment>
+  </data>
+  <data name="PinToDock_Center.Content" xml:space="preserve">
+    <value>Center</value>
+    <comment>Center section option in pin to dock dialog</comment>
+  </data>
+  <data name="PinToDock_End.Content" xml:space="preserve">
+    <value>End</value>
+    <comment>End section option in pin to dock dialog</comment>
+  </data>
+  <data name="PinToDock_ShowTitle.Content" xml:space="preserve">
+    <value>Show title</value>
+    <comment>Checkbox label to show the title of a pinned dock item</comment>
+  </data>
+  <data name="PinToDock_ShowSubtitle.Content" xml:space="preserve">
+    <value>Show subtitle</value>
+    <comment>Checkbox label to show the subtitle of a pinned dock item</comment>
+  </data>
+  <data name="PinToDock_PinButton" xml:space="preserve">
+    <value>Pin</value>
+    <comment>Button text to confirm pinning an item to the dock</comment>
+  </data>
+  <data name="PinToDock_CancelButton" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Button text to cancel pinning an item to the dock</comment>
+  </data>
+  <data name="PinToDock_Left" xml:space="preserve">
+    <value>Left</value>
+    <comment>Left section option in pin to dock dialog (horizontal dock)</comment>
+  </data>
+  <data name="PinToDock_Right" xml:space="preserve">
+    <value>Right</value>
+    <comment>Right section option in pin to dock dialog (horizontal dock)</comment>
+  </data>
+  <data name="PinToDock_Top" xml:space="preserve">
+    <value>Top</value>
+    <comment>Top section option in pin to dock dialog (vertical dock)</comment>
+  </data>
+  <data name="PinToDock_Bottom" xml:space="preserve">
+    <value>Bottom</value>
+    <comment>Bottom section option in pin to dock dialog (vertical dock)</comment>
+  </data>
+  <data name="PinToDock_CenterLabel" xml:space="preserve">
+    <value>Center</value>
+    <comment>Center section label in pin to dock dialog (code access)</comment>
+  </data>
+  <data name="PinToDock_RightLabel" xml:space="preserve">
+    <value>Right</value>
+    <comment>Right section label in pin to dock dialog (code access, horizontal end)</comment>
   </data>
 </root>

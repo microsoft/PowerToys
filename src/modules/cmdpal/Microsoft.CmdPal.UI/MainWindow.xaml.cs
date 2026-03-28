@@ -94,6 +94,7 @@ public sealed partial class MainWindow : WindowEx,
     private WindowPosition _currentWindowPosition = new();
 
     private bool _preventHideWhenDeactivated;
+    private bool _isLoadedFromDock;
 
     private DevRibbon? _devRibbon;
 
@@ -142,7 +143,7 @@ public sealed partial class MainWindow : WindowEx,
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
-        RestoreWindowPosition();
+        RestoreWindowPositionFromSavedSettings();
         UpdateWindowPositionInMemory();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
@@ -169,7 +170,7 @@ public sealed partial class MainWindow : WindowEx,
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
-        App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
+        App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
         RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateBackdrop);
@@ -210,7 +211,7 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    private void SettingsChangedHandler(ISettingsService sender, SettingsModel args)
     {
         DispatcherQueue.TryEnqueue(HotReloadSettings);
     }
@@ -245,10 +246,26 @@ public sealed partial class MainWindow : WindowEx,
 
     private void PositionCentered(DisplayArea displayArea)
     {
+        // Use the saved window size when available so that a dock-resized HWND
+        // (hidden but not destroyed) doesn't dictate the size on normal reopen.
+        SizeInt32 windowSize;
+        int windowDpi;
+
+        if (_currentWindowPosition.IsSizeValid)
+        {
+            windowSize = new SizeInt32(_currentWindowPosition.Width, _currentWindowPosition.Height);
+            windowDpi = _currentWindowPosition.Dpi;
+        }
+        else
+        {
+            windowSize = AppWindow.Size;
+            windowDpi = (int)this.GetDpiForWindow();
+        }
+
         var rect = WindowPositionHelper.CenterOnDisplay(
-            displayArea,
-            AppWindow.Size,
-            (int)this.GetDpiForWindow());
+           displayArea,
+           windowSize,
+           windowDpi);
 
         if (rect is not null)
         {
@@ -256,10 +273,9 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private void RestoreWindowPosition()
+    private void RestoreWindowPosition(WindowPosition? savedPosition)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>();
-        if (settings?.LastWindowPosition is not { Width: > 0, Height: > 0 } savedPosition)
+        if (savedPosition?.IsSizeValid != true)
         {
             // don't try to restore if the saved position is invalid, just recenter
             PositionCentered();
@@ -272,6 +288,17 @@ public sealed partial class MainWindow : WindowEx,
             savedPosition.Dpi);
 
         MoveAndResizeDpiAware(newRect);
+    }
+
+    private void RestoreWindowPositionFromSavedSettings()
+    {
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        RestoreWindowPosition(settings?.LastWindowPosition);
+    }
+
+    private void RestoreWindowPositionFromMemory()
+    {
+        RestoreWindowPosition(_currentWindowPosition);
     }
 
     /// <summary>
@@ -336,7 +363,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HotReloadSettings()
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
         SetupHotkey(settings);
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
@@ -678,7 +705,9 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(ShowWindowMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        _isLoadedFromDock = false;
+
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
         // Start session tracking
         _sessionStopwatch = Stopwatch.StartNew();
@@ -690,6 +719,13 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void Receive(ShowPaletteAtMessage message)
     {
+        _isLoadedFromDock = true;
+
+        // Reset the size in case users have resized a dock window.
+        // Ideally in the future, we'll have defined sizes that opening
+        // a dock window will adhere to, but alas, that's the future.
+        RestoreWindowPositionFromMemory();
+
         ShowHwnd(HWND.Null, message.PosPixels, message.Anchor);
     }
 
@@ -860,16 +896,21 @@ public sealed partial class MainWindow : WindowEx,
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
         var serviceProvider = App.Current.Services;
-        UpdateWindowPositionInMemory();
 
-        var settings = serviceProvider.GetService<SettingsModel>();
+        if (!_isLoadedFromDock)
+        {
+            UpdateWindowPositionInMemory();
+        }
+
+        var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
+        var settings = settingsService.Settings;
         if (settings is not null)
         {
-            // a quick sanity check, so we don't overwrite correct values
+            // If we were last shown from the dock, _currentWindowPosition still holds
+            // the last non-dock placement because dock sessions intentionally skip updates.
             if (_currentWindowPosition.IsSizeValid)
             {
-                settings.LastWindowPosition = _currentWindowPosition;
-                SettingsModel.SaveSettings(settings);
+                settingsService.UpdateSettings(s => s with { LastWindowPosition = _currentWindowPosition });
             }
         }
 
@@ -960,7 +1001,11 @@ public sealed partial class MainWindow : WindowEx,
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
             // Save the current window position before hiding the window
-            UpdateWindowPositionInMemory();
+            // but not when opened from dock — preserve the pre-dock size.
+            if (!_isLoadedFromDock)
+            {
+                UpdateWindowPositionInMemory();
+            }
 
             // If there's a debugger attached...
             if (System.Diagnostics.Debugger.IsAttached)
@@ -1035,7 +1080,7 @@ public sealed partial class MainWindow : WindowEx,
                         }
                         else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
                         {
-                            var settings = App.Current.Services.GetService<SettingsModel>();
+                            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                             if (settings?.AllowExternalReload == true)
                             {
                                 Logger.LogInfo("External Reload triggered");

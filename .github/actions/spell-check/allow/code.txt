@@ -1,6 +1,7 @@
 # COLORS
 
 argb
+Bgr
 bgra
 BLACKONWHITE
 BLUEGRAY
@@ -28,6 +29,7 @@ RUS
 
 AYUV
 bak
+HDP
 Bcl
 bgcode
 Deflatealgorithm
@@ -46,6 +48,7 @@ nupkg
 petabyte
 resw
 resx
+runtimeconfig
 srt
 Stereolithography
 terabyte
@@ -297,6 +300,8 @@ pwa
 
 AOT
 Aot
+ify
+TFM
 
 # YML
 onefuzz
