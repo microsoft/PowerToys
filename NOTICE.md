@@ -1,4 +1,4 @@
-# NOTICES AND INFORMATION
+# Notices and information
 
 This software incorporates material from third parties.
 
@@ -13,7 +13,7 @@ This software incorporates material from third parties.
 - PowerDisplay
 - Registry Preview
 
-## Utility: Color Picker
+## Utility: Color picker
 
 ### Martin Chrzan's Color Picker
 
@@ -106,7 +106,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## Utility: Command Palette Built-in Extensions
+## Utility: Command palette built-in extensions
 
 ### Calculator
 
@@ -143,7 +143,7 @@ TORT OR  OTHERWISE, ARISING  FROM, OUT  OF OR  IN CONNECTION  WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-## Utility: PowerToys Run Built-in Extensions
+## Utility: PowerToys run built-in extensions
 
 ### Calculator
 
@@ -177,7 +177,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## Utility: File Explorer Add-ins
+## Utility: File explorer add-ins
 
 ### Monaco Editor
 
@@ -207,7 +207,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-### The Quite OK Image Format reference decoder
+### The Quite OK image format reference decoder
 
 **Source**: <https://github.com/phoboslab/qoi>
 
@@ -715,7 +715,7 @@ EXHIBIT A -Mozilla Public License.
 
 ## Utility: ImageResizer
 
-### Brice Lams's Image Resizer License
+### Brice Lams's Image Resizer license
 
 **Source**: <https://github.com/bricelam/ImageResizer/>
 
@@ -743,7 +743,7 @@ THE SOFTWARE.
 
 ## Utility: PowerToys Run
 
-### Wox License
+### Wox license
 
 **Fork project source**: <https://github.com/jjw24/Wox/>
 **Base project source**: <https://github.com/Wox-launcher/Wox>
@@ -769,7 +769,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-### Beta Tadele's Window Walker License
+### Beta Tadele's Window Walker license
 
 **Source**: <https://github.com/betsegaw/windowwalker>
 
@@ -785,7 +785,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## Utility: PowerRename
 
-### Chris Davis's SmartRename License
+### Chris Davis's SmartRename license
 
 **Source**: <https://github.com/chrdavis/SmartRename>
 
@@ -950,7 +950,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-### The Quite OK Image Format reference decoder
+### The Quite OK image format reference decoder
 
 **Source**: <https://github.com/phoboslab/qoi>
 
@@ -978,7 +978,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-### UTF Unknown
+### UTF unknown
 
 We use the UTF.Unknown NuGet package for detecting encoding in text/code files.
 
@@ -1529,7 +1529,7 @@ PowerDisplay's DDC/CI implementation references techniques from Twinkle Tray.
 
 MIT License
 
-Copyright © 2020 Xander Frangos
+Copyright &copy; 2020 Xander Frangos
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

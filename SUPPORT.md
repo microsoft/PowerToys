@@ -10,7 +10,7 @@ This project uses [GitHub Issues][gh-issue] to [track bugs][gh-bug] and [feature
 
 For help and questions about using this project, please visit our documentation and [Contributor's Guide][contributor] if you want to contribute to PowerToys.
 
-## Microsoft Support Policy
+## Microsoft support policy
 
 Support for PowerToys is limited to the resources listed above.
 
