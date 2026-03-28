@@ -26,6 +26,7 @@ public partial class PowerAccent : IDisposable
     private string[] _characterDescriptions = Array.Empty<string>();
     private int _selectedIndex = -1;
     private bool _showUnicodeDescription;
+    private bool _initialShiftState; // Was shift held down when the toolbar was summoned?
 
     public LetterKey[] LetterKeysShowingDescription => _letterKeysShowingDescription;
 
@@ -94,6 +95,7 @@ public partial class PowerAccent : IDisposable
 
     private void ShowToolbar(LetterKey letterKey)
     {
+        _initialShiftState = WindowsFunctions.IsShiftState();
         _visible = true;
 
         _characters = GetCharacters(letterKey);
@@ -239,7 +241,12 @@ public partial class PowerAccent : IDisposable
 
     private void ProcessNextChar(TriggerKey triggerKey, bool shiftPressed)
     {
-        shiftPressed = shiftPressed || WindowsFunctions.IsShiftState();
+        // Use an async hardware check as a fallback in case the keyboard hook misses a
+        // quick Shift press. If the popup was opened while holding Shift (e.g., typing a
+        // capital letter), ignore the hardware check so we don't accidentally trigger a
+        // backwards navigation.
+        bool isHardwareShiftPressed = WindowsFunctions.IsShiftState() && !_initialShiftState;
+        shiftPressed = shiftPressed || isHardwareShiftPressed;
 
         if (_visible && _selectedIndex == -1)
         {

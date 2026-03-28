@@ -87,17 +87,20 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
 
         if (isActive)
         {
+            int offscreenX = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_XVIRTUALSCREEN) - 1000;
+            int offscreenY = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_YVIRTUALSCREEN) - 1000;
+
             var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
             if (hwnd != IntPtr.Zero)
             {
                 // Move off-screen to avoid flicker on previous monitor before Show() and
                 // UpdateLayout().
-                PInvoke.SetWindowPos((HWND)hwnd, (HWND)IntPtr.Zero, -10000, -10000, 0, 0, WindowPosFlags);
+                PInvoke.SetWindowPos((HWND)hwnd, (HWND)IntPtr.Zero, offscreenX, offscreenY, 0, 0, WindowPosFlags);
             }
             else
             {
-                this.Left = -10000;
-                this.Top = -10000;
+                this.Left = offscreenX;
+                this.Top = offscreenY;
             }
 
             Show();
