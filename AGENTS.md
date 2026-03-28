@@ -3,7 +3,7 @@ description: 'Top-level AI contributor guidance for developing PowerToys - a col
 applyTo: '**'
 ---
 
-# PowerToys – AI Contributor Guide
+# PowerToys – AI contributor guide
 
 This is the top-level guidance for AI contributions to PowerToys. Keep changes atomic, follow existing patterns, and cite exact paths in PRs.
 
@@ -31,7 +31,7 @@ For detailed coding conventions, see:
 - [Coding Style](doc/devdocs/development/style.md) – Formatting, C++/C#/XAML style rules
 - [Logging](doc/devdocs/development/logging.md) – C++ spdlog and C# Logger usage
 
-### Component-Specific Instructions
+### Component-specific instructions
 
 These instruction files are automatically applied when working in their respective areas:
 
@@ -46,7 +46,7 @@ These instruction files are automatically applied when working in their respecti
 - Windows 10 1803+ (April 2018 Update or newer)
 - Initialize submodules once: `git submodule update --init --recursive`
 
-### Build Commands
+### Build commands
 
 | Task | Command |
 |------|---------|
@@ -54,7 +54,7 @@ These instruction files are automatically applied when working in their respecti
 | Build current folder | `tools\build\build.cmd` |
 | Build with options | `build.ps1 -Platform x64 -Configuration Release` |
 
-### Build Discipline
+### Build discipline
 
 1. One terminal per operation (build → test). Do not switch or open new ones mid-flow
 2. After making changes, `cd` to the project folder that changed (`.csproj`/`.vcxproj`)
@@ -64,7 +64,7 @@ These instruction files are automatically applied when working in their respecti
 6. On failure, read the errors log: `build.<config>.<platform>.errors.log`
 7. Do not start tests or launch Runner until the build succeeds
 
-### Build Logs
+### Build logs
 
 Located next to the solution/project being built:
 
@@ -76,18 +76,18 @@ For complete details, see [Build Guidelines](tools/build/BUILD-GUIDELINES.md).
 
 ## Tests
 
-### Test Discovery
+### Test discovery
 
 - Find test projects by product code prefix (e.g., `FancyZones`, `AdvancedPaste`)
 - Look for sibling folders or 1-2 levels up named `<Product>*UnitTests` or `<Product>*UITests`
 
-### Running Tests
+### Running tests
 
 1. **Build the test project first**, wait for exit code 0
 2. Run via VS Test Explorer (`Ctrl+E, T`) or `vstest.console.exe` with filters
 3. **Avoid `dotnet test`** in this repo – use VS Test Explorer or vstest.console.exe
 
-### Test Types
+### Test types
 
 | Type | Requirements | Setup |
 |------|--------------|-------|
@@ -95,13 +95,13 @@ For complete details, see [Build Guidelines](tools/build/BUILD-GUIDELINES.md).
 | UI Tests | WinAppDriver v1.2.1, Developer Mode | Install from [WinAppDriver releases](https://github.com/microsoft/WinAppDriver/releases/tag/v1.2.1) |
 | Fuzz Tests | OneFuzz, .NET 8 | See [Fuzzing Tests](doc/devdocs/tools/fuzzingtesting.md) |
 
-### Test Discipline
+### Test discipline
 
 1. Add or adjust tests when changing behavior
 2. If tests skipped, state why (e.g., comment-only change, string rename)
 3. New modules handling file I/O or user input **must** implement fuzzing tests
 
-### Special Requirements
+### Special requirements
 
 - **Mouse Without Borders**: Requires 2+ physical computers (not VMs)
 - **Multi-monitor utilities**: Test with 2+ monitors, different DPI settings
@@ -110,14 +110,14 @@ For UI test setup details, see [UI Tests](doc/devdocs/development/ui-tests.md).
 
 ## Boundaries
 
-### Ask for Clarification When
+### Ask for clarification when
 
 - Ambiguous spec after scanning relevant docs
 - Cross-module impact (shared enum/struct) is unclear
 - Security, elevation, or installer changes involved
 - GPO or policy handling modifications needed
 
-### Areas Requiring Extra Care
+### Areas requiring extra care
 
 | Area | Concern | Reference |
 |------|---------|-----------|
@@ -126,7 +126,7 @@ For UI test setup details, see [UI Tests](doc/devdocs/development/ui-tests.md).
 | Installer files | Release impact | Careful review required |
 | Elevation/GPO logic | Security | Confirm no regression in policy handling |
 
-### What NOT to Do
+### What not to do
 
 - Don't merge incomplete features into main (use feature branches)
 - Don't break IPC/JSON contracts without updating both runner and settings-ui
@@ -146,7 +146,7 @@ Before finishing, verify:
 
 ## Documentation Index
 
-### Core Architecture
+### Core architecture
 
 - [Architecture Overview](doc/devdocs/core/architecture.md)
 - [Runner](doc/devdocs/core/runner.md)
@@ -161,12 +161,12 @@ Before finishing, verify:
 - [UI Tests](doc/devdocs/development/ui-tests.md)
 - [Fuzzing Tests](doc/devdocs/tools/fuzzingtesting.md)
 
-### Build & Tools
+### Build & tools
 
 - [Build Guidelines](tools/build/BUILD-GUIDELINES.md)
 - [Tools Overview](doc/devdocs/tools/readme.md)
 
-### Instructions (Auto-Applied)
+### Instructions (auto-applied)
 
 - [Runner & Settings UI](.github/instructions/runner-settings-ui.instructions.md)
 - [Common Libraries](.github/instructions/common-libraries.instructions.md)

@@ -1,4 +1,4 @@
-# PowerToys Data & Privacy
+# PowerToys data & privacy
 
 ## Overview
 
@@ -14,11 +14,11 @@ For more information, please read the [Microsoft privacy statement](https://priv
 2. **Stability**: Monitoring bugs and system crashes, as well as analyzing GitHub issue reports, assists us in prioritizing the most urgent issues.
 3. **Performance**: Assessing the performance of PowerToys features to load and execute gives us an understanding of what surfaces are causing slowdowns. This supports our commitment to providing you with tools that are both speedy and effective.
 
-### Success Story: Fixing FancyZones Bugs with Your Help
+### Success story: Fixing FancyZones bugs with your help
 
 FancyZones had numerous bug reports related to virtual desktop interactions. Initially, these were considered lower priority, since the assumption was that virtual desktops were not widely used, so we chose to focus on more urgent issues. However, the volume of bug reports suggested otherwise, prompting us to add additional diagnostics to see virtual desktop usage with FancyZones. We discovered that virtual desktop usage was much higher among FancyZones users. This new understanding led us to prioritize this class of bugs and get them fixed.
 
-## Transparency and Public Sharing
+## Transparency and public sharing
 
 As much as possible, we aim to share the results of diagnostic data publicly.
 
@@ -26,7 +26,7 @@ We hope this document provides clarity on why and how we collect diagnostic data
 
 Thank you for using PowerToys!
 
-## List of Diagnostic Data Events
+## List of diagnostic data events
 
 > [!NOTE]
 > We're in the process of updating this section with more events and their descriptions. We aim to keep this list current by adding any new diagnostic data events as they become available.
@@ -143,7 +143,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.CmdPal_ExtensionInvoked | Tracks extension usage including extension ID, command details, success status, and execution time. |
 | Microsoft.PowerToys.CmdPal_SessionDuration | Logs session metrics from launch to dismissal including duration, commands executed, pages visited, search queries, navigation depth, and errors. |
 
-### Crop And Lock
+### Crop and lock
 
 | Event Name | Description |
 | --- | --- |
