@@ -496,27 +496,109 @@ private:
 
         if (!GetGUIThreadInfo(0, &gui_info))
         {
+            Logger::warn(L"Auto-copy: GetGUIThreadInfo failed (error={})", GetLastError());
             return false;
         }
 
         HWND target = gui_info.hwndFocus ? gui_info.hwndFocus : gui_info.hwndActive;
         if (!target)
         {
+            Logger::warn(L"Auto-copy: No focused or active window found (hwndFocus={}, hwndActive={})",
+                         reinterpret_cast<uintptr_t>(gui_info.hwndFocus),
+                         reinterpret_cast<uintptr_t>(gui_info.hwndActive));
             return false;
         }
 
         DWORD_PTR result = 0;
-        return SendMessageTimeout(target,
-                                  WM_COPY,
-                                  0,
-                                  0,
-                                  SMTO_ABORTIFHUNG | SMTO_BLOCK,
-                                  50,
-                                  &result) != 0;
+        auto sendResult = SendMessageTimeout(target,
+                                             WM_COPY,
+                                             0,
+                                             0,
+                                             SMTO_ABORTIFHUNG | SMTO_BLOCK,
+                                             50,
+                                             &result);
+        if (sendResult == 0)
+        {
+            Logger::trace(L"Auto-copy: WM_COPY SendMessageTimeout failed for HWND {} (error={})", reinterpret_cast<uintptr_t>(target), GetLastError());
+        }
+
+        return sendResult != 0;
+    }
+
+    // Helper: poll clipboard sequence number for a change from initial_sequence.
+    // Returns true if the sequence number changed within the given number of polls.
+    bool poll_clipboard_sequence(DWORD initial_sequence, int poll_attempts, std::chrono::milliseconds poll_delay)
+    {
+        for (int poll = 0; poll < poll_attempts; ++poll)
+        {
+            if (GetClipboardSequenceNumber() != initial_sequence)
+            {
+                return true;
+            }
+            std::this_thread::sleep_for(poll_delay);
+        }
+        return false;
+    }
+
+    // Helper: send Ctrl+C via SendInput. Returns true if SendInput delivered all events.
+    bool send_ctrl_c_input()
+    {
+        std::vector<INPUT> inputs;
+
+        // Ctrl down
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = VK_CONTROL;
+            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+            inputs.push_back(input_event);
+        }
+
+        // C down
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = 0x43; // C
+            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+            inputs.push_back(input_event);
+        }
+
+        // C up
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = 0x43; // C
+            input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+            inputs.push_back(input_event);
+        }
+
+        // Ctrl up
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = VK_CONTROL;
+            input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+            inputs.push_back(input_event);
+        }
+
+        auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
+        if (uSent != inputs.size())
+        {
+            DWORD errorCode = GetLastError();
+            auto errorMessage = get_last_error_message(errorCode);
+            Logger::error(L"SendInput failed for Ctrl+C. Expected to send {} inputs and sent only {}. {}", inputs.size(), uSent, errorMessage.has_value() ? errorMessage.value() : L"");
+            Trace::AdvancedPaste_Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"input.SendInput");
+            return false;
+        }
+        return true;
     }
 
     bool send_copy_selection()
     {
+        Logger::trace(L"Auto-copy: send_copy_selection started");
+
         constexpr int copy_attempts = 2;
         constexpr auto copy_retry_delay = std::chrono::milliseconds(100);
         constexpr int clipboard_poll_attempts = 5;
@@ -526,89 +608,69 @@ private:
         for (int attempt = 0; attempt < copy_attempts; ++attempt)
         {
             const auto initial_sequence = GetClipboardSequenceNumber();
-            copy_succeeded = try_send_copy_message();
+            Logger::trace(L"Auto-copy: attempt {}/{}, clipboard sequence={}", attempt + 1, copy_attempts, initial_sequence);
 
-            if (!copy_succeeded)
+            // Strategy 1: Try WM_COPY message (works for standard Win32 controls)
+            bool wm_copy_sent = try_send_copy_message();
+
+            if (wm_copy_sent)
             {
-                std::vector<INPUT> inputs;
+                Logger::trace(L"Auto-copy: WM_COPY delivered on attempt {}, polling clipboard", attempt + 1);
 
-                // send Ctrl+C (key downs and key ups)
+                if (poll_clipboard_sequence(initial_sequence, clipboard_poll_attempts, clipboard_poll_delay))
                 {
-                    INPUT input_event = {};
-                    input_event.type = INPUT_KEYBOARD;
-                    input_event.ki.wVk = VK_CONTROL;
-                    input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-                    inputs.push_back(input_event);
-                }
-
-                {
-                    INPUT input_event = {};
-                    input_event.type = INPUT_KEYBOARD;
-                    input_event.ki.wVk = 0x43; // C
-                    // Avoid triggering detection by the centralized keyboard hook.
-                    input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-                    inputs.push_back(input_event);
-                }
-
-                {
-                    INPUT input_event = {};
-                    input_event.type = INPUT_KEYBOARD;
-                    input_event.ki.wVk = 0x43; // C
-                    input_event.ki.dwFlags = KEYEVENTF_KEYUP;
-                    // Avoid triggering detection by the centralized keyboard hook.
-                    input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-                    inputs.push_back(input_event);
-                }
-
-                {
-                    INPUT input_event = {};
-                    input_event.type = INPUT_KEYBOARD;
-                    input_event.ki.wVk = VK_CONTROL;
-                    input_event.ki.dwFlags = KEYEVENTF_KEYUP;
-                    input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-                    inputs.push_back(input_event);
-                }
-
-                auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
-                if (uSent != inputs.size())
-                {
-                    DWORD errorCode = GetLastError();
-                    auto errorMessage = get_last_error_message(errorCode);
-                    Logger::error(L"SendInput failed for Ctrl+C. Expected to send {} inputs and sent only {}. {}", inputs.size(), uSent, errorMessage.has_value() ? errorMessage.value() : L"");
-                    Trace::AdvancedPaste_Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"input.SendInput");
+                    Logger::trace(L"Auto-copy: WM_COPY caused clipboard change on attempt {}", attempt + 1);
+                    copy_succeeded = true;
                 }
                 else
                 {
-                    copy_succeeded = true;
+                    // WM_COPY was delivered but app didn't actually copy (e.g. Electron/Chromium apps
+                    // accept the message but don't handle it). Fall through to Ctrl+C.
+                    Logger::trace(L"Auto-copy: WM_COPY delivered but clipboard unchanged on attempt {}; falling back to Ctrl+C", attempt + 1);
                 }
             }
-
-            if (copy_succeeded)
+            else
             {
-                bool sequence_changed = false;
-                for (int poll_attempt = 0; poll_attempt < clipboard_poll_attempts; ++poll_attempt)
+                Logger::trace(L"Auto-copy: WM_COPY failed on attempt {}; falling back to Ctrl+C", attempt + 1);
+            }
+
+            // Strategy 2: If WM_COPY didn't work, try SendInput Ctrl+C (works for Electron, browsers, etc.)
+            if (!copy_succeeded)
+            {
+                // Re-read sequence in case something else touched the clipboard between strategies
+                const auto sequence_before_ctrl_c = GetClipboardSequenceNumber();
+
+                if (send_ctrl_c_input())
                 {
-                    if (GetClipboardSequenceNumber() != initial_sequence)
+                    if (poll_clipboard_sequence(sequence_before_ctrl_c, clipboard_poll_attempts, clipboard_poll_delay))
                     {
-                        sequence_changed = true;
-                        break;
+                        Logger::trace(L"Auto-copy: Ctrl+C caused clipboard change on attempt {}", attempt + 1);
+                        copy_succeeded = true;
                     }
-
-                    std::this_thread::sleep_for(clipboard_poll_delay);
+                    else
+                    {
+                        Logger::warn(L"Auto-copy: clipboard sequence unchanged after both WM_COPY and Ctrl+C on attempt {} (seq={})",
+                                     attempt + 1, sequence_before_ctrl_c);
+                    }
                 }
-
-                copy_succeeded = sequence_changed;
             }
 
             if (copy_succeeded)
             {
+                Logger::trace(L"Auto-copy: copy succeeded on attempt {}", attempt + 1);
                 break;
             }
 
             if (attempt + 1 < copy_attempts)
             {
+                Logger::trace(L"Auto-copy: retrying after {}ms delay", copy_retry_delay.count());
                 std::this_thread::sleep_for(copy_retry_delay);
             }
+        }
+
+        if (!copy_succeeded)
+        {
+            Logger::warn(L"Auto-copy: all {} copy attempts failed — clipboard content was not updated", copy_attempts);
         }
 
         return copy_succeeded;
@@ -975,10 +1037,15 @@ public:
 
             if (is_custom_action_hotkey && m_auto_copy_selection_custom_action)
             {
+                Logger::trace(L"Auto-copy: custom action hotkey triggered with auto-copy enabled (custom_action_index={})", custom_action_index);
+
                 if (!send_copy_selection())
                 {
+                    Logger::warn(L"Auto-copy: send_copy_selection failed for custom action index {} — aborting action", custom_action_index);
                     return false;
                 }
+
+                Logger::trace(L"Auto-copy: selection copied successfully, proceeding with custom action");
             }
 
             m_process_manager.start();
