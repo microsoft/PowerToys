@@ -11,13 +11,13 @@
   <span align="center">Microsoft PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks.</span>
 </p>
 <h3 align="center">
-  [Installation](#-installation)
+  <a href="#-installation">Installation</a>
   <span> · </span>
-  [Documentation](https://aka.ms/powertoys-docs)
+  <a href="https://aka.ms/powertoys-docs">Documentation</a>
   <span> · </span>
-  [Blog](https://aka.ms/powertoys-releaseblog)
+  <a href="https://aka.ms/powertoys-releaseblog">Blog</a>
   <span> · </span>
-  [Release notes](#-whats-new)
+  <a href="#-whats-new">Release notes</a>
 </h3>
 
 ## 🔨 Utilities
@@ -37,7 +37,7 @@ PowerToys includes over 25 utilities to help you customize and optimize your Win
 | [<img src="doc/images/icons/Shortcut%20Guide.png" alt="Shortcut Guide icon" height="16"> Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [<img src="doc/images/icons/PowerOCR.png" alt="Text Extractor icon" height="16"> Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [<img src="doc/images/icons/Workspaces.png" alt="Workspaces icon" height="16"> Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
 | [<img src="doc/images/icons/ZoomIt.png" alt="ZoomIt icon" height="16"> ZoomIt](https://aka.ms/PowerToysOverview_ZoomIt) |   |   |
 
-## 📦 Download & Installation
+## 📦 Installation
 
 For detailed installation instructions and system requirements, visit the [installation docs](https://learn.microsoft.com/windows/powertoys/install).
 
@@ -45,8 +45,9 @@ But to get started quickly, choose one of the installation methods below:
 
 <details open>
 <summary><strong>Download the .exe file from GitHub</strong></summary>
+<br/>
 
-Go to the [PowerToys GitHub releases](https://aka.ms/installPowerToys), click **Assets** to reveal the downloads, and choose the installer that matches your architecture and install scope. For most devices, that's the x64 per-user installer.
+Go to the [PowerToys GitHub releases](https://aka.ms/installPowerToys), select **Assets** to reveal the installation files, and choose the one that matches your architecture and install scope. For most devices, that would be _x64 per-user_.
 
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.99%22
@@ -66,15 +67,21 @@ Go to the [PowerToys GitHub releases](https://aka.ms/installPowerToys), click **
 
 <details>
 <summary><strong>Microsoft Store</strong></summary>
+<br/>
 
 You can easily install PowerToys from the Microsoft Store:
 <p>
-  [![Microsoft Store Badge](doc/images/readme/StoreBadge-light.png)](https://aka.ms/getPowertoys)
+  <a style="text-decoration:none" href="https://aka.ms/getPowertoys">
+    <picture>
+      <source media="(prefers-color-scheme: light)" srcset="doc/images/readme/StoreBadge-dark.png" width="148" />
+      <img src="doc/images/readme/StoreBadge-light.png" width="148" />
+  </picture></a>
 </p>
 </details>
 
 <details>
 <summary><strong>WinGet</strong></summary>
+<br/>
 
 Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). Updating PowerToys via winget will respect the current PowerToys installation scope. To install PowerToys, run the following command from the command line / PowerShell:
 
@@ -89,11 +96,11 @@ winget install Microsoft.PowerToys -s winget
 ```powershell
 winget install --scope machine Microsoft.PowerToys -s winget
 ```
-
 </details>
 
 <details>
 <summary><strong>Other methods</strong></summary>
+<br/>
 
 There are [community driven install methods](https://learn.microsoft.com/windows/powertoys/install#community-driven-install-tools) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
 </details>
