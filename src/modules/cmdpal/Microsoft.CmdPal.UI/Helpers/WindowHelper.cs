@@ -17,47 +17,28 @@ internal sealed partial class WindowHelper
     /// </summary>
     internal sealed record KnownTriggerApp(string ProcessName, string WindowClassName, string DisplayName);
 
-    internal static readonly KnownTriggerApp[] KnownTriggerApps =
+    internal static readonly KnownTriggerApp[] KnownTriggerWindowClasses =
     [
         new("NVIDIA overlay", "CEF-OSC-WIDGET", "NVIDIA Overlay"),
     ];
 
-    public static bool IsWindowFullscreen()
-    {
-        // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ne-shellapi-query_user_notification_state
-        if (PInvoke.SHQueryUserNotificationState(out var state).Succeeded)
-        {
-            if (state == QUERY_USER_NOTIFICATION_STATE.QUNS_RUNNING_D3D_FULL_SCREEN ||
-                state == QUERY_USER_NOTIFICATION_STATE.QUNS_PRESENTATION_MODE)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static bool IsAppBusy()
-    {
-        if (PInvoke.SHQueryUserNotificationState(out var state).Succeeded)
-        {
-            if (state == QUERY_USER_NOTIFICATION_STATE.QUNS_BUSY)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public static QUERY_USER_NOTIFICATION_STATE? GetUserNotificationState()
     {
-        if (PInvoke.SHQueryUserNotificationState(out var state).Succeeded)
-        {
-            return state;
-        }
+        // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ne-shellapi-query_user_notification_state
+        return PInvoke.SHQueryUserNotificationState(out var state).Succeeded ? state : null;
+    }
 
-        return null;
+    internal static UserNotificationFlags GetUserNotificationFlags()
+    {
+        return GetUserNotificationFlags(GetUserNotificationState());
+    }
+
+    internal static UserNotificationFlags GetUserNotificationFlags(QUERY_USER_NOTIFICATION_STATE? state)
+    {
+        return new UserNotificationFlags(
+            IsRunningD3DFullScreen: state is QUERY_USER_NOTIFICATION_STATE.QUNS_RUNNING_D3D_FULL_SCREEN,
+            IsPresentationMode: state is QUERY_USER_NOTIFICATION_STATE.QUNS_PRESENTATION_MODE,
+            IsBusy: state is QUERY_USER_NOTIFICATION_STATE.QUNS_BUSY);
     }
 
     /// <summary>
@@ -82,7 +63,7 @@ internal sealed partial class WindowHelper
                     return true;
                 }
 
-                foreach (var app in KnownTriggerApps)
+                foreach (var app in KnownTriggerWindowClasses)
                 {
                     if (!string.Equals(className, app.WindowClassName, StringComparison.OrdinalIgnoreCase))
                     {
@@ -125,5 +106,10 @@ internal sealed partial class WindowHelper
             var length = PInvoke.GetClassName(hWnd, buffer, maxLength);
             return length > 0 ? new string(buffer, 0, length) : null;
         }
+    }
+
+    internal readonly record struct UserNotificationFlags(bool IsRunningD3DFullScreen, bool IsPresentationMode, bool IsBusy)
+    {
+        public bool IsFullscreenState => IsRunningD3DFullScreen || IsPresentationMode;
     }
 }

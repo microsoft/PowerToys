@@ -114,13 +114,11 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
     private void UpdateNotificationState()
     {
         var state = WindowHelper.GetUserNotificationState();
-        var isFullscreenState = state is QUERY_USER_NOTIFICATION_STATE.QUNS_RUNNING_D3D_FULL_SCREEN or
-            QUERY_USER_NOTIFICATION_STATE.QUNS_PRESENTATION_MODE;
-        var isBusyState = state is QUERY_USER_NOTIFICATION_STATE.QUNS_BUSY;
+        var notificationFlags = WindowHelper.GetUserNotificationFlags(state);
 
         if (IsActivationShortcutSuppressed(
-            isFullscreenState,
-            isBusyState,
+            notificationFlags.IsFullscreenState,
+            notificationFlags.IsBusy,
             viewModel?.IgnoreShortcutWhenFullscreen == true,
             viewModel?.IgnoreShortcutWhenBusy == true))
         {

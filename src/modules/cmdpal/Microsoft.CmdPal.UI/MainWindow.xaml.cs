@@ -1221,17 +1221,10 @@ public sealed partial class MainWindow : WindowEx,
             return;
         }
 
-        var shouldSuppress = false;
-
-        if (_ignoreHotKeyWhenFullScreen && WindowHelper.IsWindowFullscreen())
-        {
-            shouldSuppress = true;
-        }
-
-        if (_ignoreHotKeyWhenBusy && WindowHelper.IsAppBusy())
-        {
-            shouldSuppress = true;
-        }
+        var notificationFlags = WindowHelper.GetUserNotificationFlags();
+        var shouldSuppress =
+            (_ignoreHotKeyWhenFullScreen && notificationFlags.IsFullscreenState) ||
+            (_ignoreHotKeyWhenBusy && notificationFlags.IsBusy);
 
         if (shouldSuppress)
         {

@@ -31,11 +31,11 @@ public record SettingsModel
 
     public bool ShowSystemTrayIcon { get; init; } = true;
 
-    public bool IgnoreShortcutWhenFullscreen { get; set; } = true;
+    public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
 
-    public bool IgnoreShortcutWhenBusy { get; set; }
+    public bool IgnoreShortcutWhenBusy { get; init; }
 
-    public bool AllowBreakthroughShortcut { get; set; }
+    public bool AllowBreakthroughShortcut { get; init; }
 
     public bool AllowExternalReload { get; init; }
 
