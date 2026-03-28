@@ -1429,7 +1429,7 @@ UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
     try
     {
         // Packages to unregister
-        const std::vector<std::wstring> packagesToRemoveDisplayName{{L"PowerRenameContextMenu"}, {L"ImageResizerContextMenu"}, {L"FileLocksmithContextMenu"}, {L"NewPlusContextMenu"}};
+        const std::vector<std::wstring> packagesToRemoveDisplayName{{L"PowerRenameContextMenu"}, {L"ImageResizerContextMenu"}, {L"FileLocksmithContextMenu"}, {L"NewPlusContextMenu"}, {L"CopyAsUNCContextMenu"}};
 
         for (auto const &package : packagesToRemoveDisplayName)
         {
