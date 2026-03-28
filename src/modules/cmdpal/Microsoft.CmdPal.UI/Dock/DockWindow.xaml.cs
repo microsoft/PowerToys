@@ -27,7 +27,6 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinRT.Interop;
 using WinUIEx;
-using WindowExtensions = Microsoft.CmdPal.UI.Helpers.WindowExtensions;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -39,8 +38,6 @@ public sealed partial class DockWindow : WindowEx,
     IRecipient<QuitMessage>,
     IDisposable
 {
-    private static readonly TimeSpan TopmostStateRefreshInterval = TimeSpan.FromSeconds(1);
-
 #pragma warning disable SA1306 // Field names should begin with lower-case letter
 #pragma warning disable SA1310 // Field names should not contain underscore
     private readonly uint WM_TASKBAR_RESTART;
@@ -51,13 +48,11 @@ public sealed partial class DockWindow : WindowEx,
     private readonly DockWindowViewModel _windowViewModel;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerWindowBehavior = new();
 
-    // SHQueryUserNotificationState does not raise change notifications, so we poll lightly.
-    private readonly DispatcherTimer _topmostStateTimer = new();
-
     private HWND _hwnd = HWND.Null;
     private APPBARDATA _appBarData;
     private uint _callbackMessageId;
     private bool _isWindowTopmost;
+    private bool _isFullScreenAppOpen;
 
     private DockSettings _settings;
     private DockViewModel viewModel;
@@ -97,8 +92,6 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         this.Activated += DockWindow_Activated;
-        _topmostStateTimer.Interval = TopmostStateRefreshInterval;
-        _topmostStateTimer.Tick += TopmostStateTimer_Tick;
 
         WeakReferenceMessenger.Default.Register<BringToTopMessage>(this);
         WeakReferenceMessenger.Default.Register<RequestShowPaletteAtMessage>(this);
@@ -133,6 +126,7 @@ public sealed partial class DockWindow : WindowEx,
         _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)style);
 
         ShowDesktop.AddHook(this);
+        _isFullScreenAppOpen = WindowHelper.IsWindowFullscreen();
         UpdateSettingsOnUiThread();
     }
 
@@ -155,11 +149,6 @@ public sealed partial class DockWindow : WindowEx,
         UpdateTopmostState();
     }
 
-    private void TopmostStateTimer_Tick(object? sender, object e)
-    {
-        UpdateTopmostState();
-    }
-
     private HWND GetWindowHandle(Window window)
     {
         var hwnd = WindowNative.GetWindowHandle(window);
@@ -179,17 +168,6 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         _dock.UpdateSettings(_settings);
-
-        // Only poll for fullscreen changes when AlwaysOnTop is active;
-        // when disabled the timer is unnecessary work.
-        if (_settings.AlwaysOnTop)
-        {
-            _topmostStateTimer.Start();
-        }
-        else
-        {
-            _topmostStateTimer.Stop();
-        }
 
         var side = DockSettingsToViews.GetAppBarEdge(_settings.Side);
 
@@ -309,7 +287,7 @@ public sealed partial class DockWindow : WindowEx,
 
     private void UpdateTopmostState(bool bringToFront = false)
     {
-        var shouldStayOnTop = _settings.AlwaysOnTop && !WindowHelper.IsWindowFullscreen();
+        var shouldStayOnTop = _settings.AlwaysOnTop && !_isFullScreenAppOpen;
         const SET_WINDOW_POS_FLAGS flags = SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE;
 
         if (shouldStayOnTop)
@@ -337,7 +315,8 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
-        PInvoke.SetWindowPos(_hwnd, HWND.HWND_NOTOPMOST, 0, 0, 0, 0, flags);
+        var zOrder = _isFullScreenAppOpen ? HWND.HWND_BOTTOM : HWND.HWND_NOTOPMOST;
+        PInvoke.SetWindowPos(_hwnd, zOrder, 0, 0, 0, 0, flags);
         _isWindowTopmost = false;
     }
 
@@ -566,6 +545,11 @@ public sealed partial class DockWindow : WindowEx,
             {
                 UpdateWindowPosition();
             }
+            else if (wParam.Value == PInvoke.ABN_FULLSCREENAPP)
+            {
+                _isFullScreenAppOpen = lParam != 0;
+                UpdateTopmostState();
+            }
         }
         else if (msg == WM_TASKBAR_RESTART)
         {
@@ -676,8 +660,6 @@ public sealed partial class DockWindow : WindowEx,
 
     public void Dispose()
     {
-        _topmostStateTimer.Stop();
-        _topmostStateTimer.Tick -= TopmostStateTimer_Tick;
         DisposeAcrylic();
         _windowViewModel.Dispose();
     }
@@ -688,8 +670,6 @@ public sealed partial class DockWindow : WindowEx,
         var settings = serviceProvider.GetService<SettingsModel>();
         settings?.SettingsChanged -= SettingsChangedHandler;
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
-        _topmostStateTimer.Stop();
-        _topmostStateTimer.Tick -= TopmostStateTimer_Tick;
         DisposeAcrylic();
 
         // Remove our app bar registration
