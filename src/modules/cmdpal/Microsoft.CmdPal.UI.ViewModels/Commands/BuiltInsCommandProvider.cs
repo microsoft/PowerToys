@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -18,10 +18,12 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
     private readonly FallbackLogItem _fallbackLogItem = new();
     private readonly NewExtensionPage _newExtension = new();
 
+    private readonly IRootPageService _rootPageService;
+
     public override ICommandItem[] TopLevelCommands() =>
         [
             new CommandItem(openSettings) { },
-            new CommandItem(_newExtension) { Title = _newExtension.Title, Subtitle = Properties.Resources.builtin_new_extension_subtitle },
+            new CommandItem(_newExtension) { Title = _newExtension.Title },
         ];
 
     public override IFallbackCommandItem[] FallbackCommands() =>
@@ -37,11 +39,22 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
             _fallbackLogItem,
         ];
 
-    public BuiltInsCommandProvider()
+    public BuiltInsCommandProvider(IRootPageService rootPageService)
     {
         Id = "com.microsoft.cmdpal.builtin.core";
         DisplayName = Properties.Resources.builtin_display_name;
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
+        Icon = IconHelpers.FromRelativePath("Assets\\Square44x44Logo.altform-unplated_targetsize-256.png");
+
+        _rootPageService = rootPageService;
+    }
+
+    public override ICommandItem[]? GetDockBands()
+    {
+        var rootPage = _rootPageService.GetRootPage();
+        List<ICommandItem> bandItems = new();
+        bandItems.Add(new WrappedDockItem(rootPage, Properties.Resources.builtin_command_palette_title));
+
+        return bandItems.ToArray();
     }
 
     public override void InitializeWithHost(IExtensionHost host) => BuiltinsExtensionHost.Instance.Initialize(host);

@@ -24,7 +24,7 @@ static LightSwitchStateManager* g_stateManagerPtr = nullptr;
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl);
 DWORD WINAPI ServiceWorkerThread(LPVOID lpParam);
-void ApplyTheme(bool shouldBeLight, bool changeWallpaper);
+void ApplyTheme(bool shouldBeLight);
 
 // Entry point for the executable
 int _tmain(int argc, TCHAR* argv[])
@@ -125,29 +125,9 @@ VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl)
     }
 }
 
-void SetWallpaper(bool shouldBeLight)
-{
-    const auto& settings = LightSwitchSettings::settings();
-
-    if (settings.wallpaperEnabled)
-    {
-        std::wstring const& wallpaperPath = shouldBeLight ? settings.wallpaperPathLight : settings.wallpaperPathDark;
-        auto style = shouldBeLight ? settings.wallpaperStyleLight : settings.wallpaperStyleDark;
-        if (auto e = SetDesktopWallpaper(wallpaperPath, style, settings.wallpaperVirtualDesktop) == 0)
-        {
-            Logger::info(L"[LightSwitchService] Wallpaper is changed to {}.", wallpaperPath);
-        }
-        else
-        {
-            Logger::error(L"[LightSwitchService] Failed to set wallpaper, error: {}.", e);
-        }
-    }
-};
-
-void ApplyTheme(bool shouldBeLight, bool changeWallpaper)
+void ApplyTheme(bool shouldBeLight)
 {
     const auto& s = LightSwitchSettings::settings();
-    bool somethingChanged = false;
 
     if (s.changeSystem)
     {
@@ -156,7 +136,6 @@ void ApplyTheme(bool shouldBeLight, bool changeWallpaper)
         {
             SetSystemTheme(shouldBeLight);
             Logger::info(L"[LightSwitchService] Changed system theme to {}.", shouldBeLight ? L"light" : L"dark");
-            somethingChanged = true;
         }
     }
 
@@ -167,15 +146,6 @@ void ApplyTheme(bool shouldBeLight, bool changeWallpaper)
         {
             SetAppsTheme(shouldBeLight);
             Logger::info(L"[LightSwitchService] Changed apps theme to {}.", shouldBeLight ? L"light" : L"dark");
-            somethingChanged = true;
-        }
-    }
-
-    if (somethingChanged)
-    {
-        if (changeWallpaper)
-        {
-            SetWallpaper(shouldBeLight);
         }
     }
 }
@@ -205,7 +175,7 @@ static void DetectAndHandleExternalThemeChange(LightSwitchStateManager& stateMan
     if (s.scheduleMode == ScheduleMode::FollowNightLight)
     {
         shouldBeLight = !IsNightLightEnabled();
-    }
+    } 
     else
     {
         shouldBeLight = ShouldBeLight(nowMinutes, effectiveLight, effectiveDark);
@@ -280,7 +250,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
     Logger::info(L"[LightSwitchService] Initialized at {:02d}:{:02d}.", st.wHour, st.wMinute);
     stateManager.SyncInitialThemeState();
-    stateManager.OnTick(nowMinutes);
 
     // ────────────────────────────────────────────────────────────────
     // Worker Loop
@@ -311,7 +280,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             GetLocalTime(&st);
             nowMinutes = st.wHour * 60 + st.wMinute;
             DetectAndHandleExternalThemeChange(stateManager);
-            stateManager.OnTick(nowMinutes);
+            stateManager.OnTick();
             continue;
         }
 

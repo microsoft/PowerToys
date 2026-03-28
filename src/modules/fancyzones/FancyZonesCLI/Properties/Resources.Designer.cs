@@ -349,5 +349,113 @@ namespace FancyZonesCLI.Properties {
                 return ResourceManager.GetString("editor_params_timeout", resourceCulture);
             }
         }
+        
+        internal static string error_powershell_scriptblock_title {
+            get {
+                return ResourceManager.GetString("error_powershell_scriptblock_title", resourceCulture);
+            }
+        }
+        
+        internal static string error_powershell_scriptblock_explanation {
+            get {
+                return ResourceManager.GetString("error_powershell_scriptblock_explanation", resourceCulture);
+            }
+        }
+        
+        internal static string error_powershell_scriptblock_hint {
+            get {
+                return ResourceManager.GetString("error_powershell_scriptblock_hint", resourceCulture);
+            }
+        }
+        
+        internal static string error_powershell_scriptblock_option1 {
+            get {
+                return ResourceManager.GetString("error_powershell_scriptblock_option1", resourceCulture);
+            }
+        }
+        
+        internal static string error_powershell_scriptblock_option1_example {
+            get {
+                return ResourceManager.GetString("error_powershell_scriptblock_option1_example", resourceCulture);
+            }
+        }
+        
+        internal static string error_powershell_scriptblock_option2 {
+            get {
+                return ResourceManager.GetString("error_powershell_scriptblock_option2", resourceCulture);
+            }
+        }
+        
+        internal static string error_powershell_scriptblock_option2_example {
+            get {
+                return ResourceManager.GetString("error_powershell_scriptblock_option2_example", resourceCulture);
+            }
+        }
+        
+        internal static string usage_title {
+            get {
+                return ResourceManager.GetString("usage_title", resourceCulture);
+            }
+        }
+        
+        internal static string usage_syntax {
+            get {
+                return ResourceManager.GetString("usage_syntax", resourceCulture);
+            }
+        }
+        
+        internal static string usage_options {
+            get {
+                return ResourceManager.GetString("usage_options", resourceCulture);
+            }
+        }
+        
+        internal static string usage_commands {
+            get {
+                return ResourceManager.GetString("usage_commands", resourceCulture);
+            }
+        }
+        
+        internal static string usage_examples {
+            get {
+                return ResourceManager.GetString("usage_examples", resourceCulture);
+            }
+        }
+        
+        internal static string usage_arguments {
+            get {
+                return ResourceManager.GetString("usage_arguments", resourceCulture);
+            }
+        }
+        
+        internal static string usage_aliases {
+            get {
+                return ResourceManager.GetString("usage_aliases", resourceCulture);
+            }
+        }
+        
+        internal static string usage_command {
+            get {
+                return ResourceManager.GetString("usage_command", resourceCulture);
+            }
+        }
+        
+        internal static string usage_optional {
+            get {
+                return ResourceManager.GetString("usage_optional", resourceCulture);
+            }
+        }
+        
+        internal static string usage_unknown_command {
+            get {
+                return ResourceManager.GetString("usage_unknown_command", resourceCulture);
+            }
+        }
+        
+        internal static string usage_run_help {
+            get {
+                return ResourceManager.GetString("usage_run_help", resourceCulture);
+            }
+        }
     }
 }

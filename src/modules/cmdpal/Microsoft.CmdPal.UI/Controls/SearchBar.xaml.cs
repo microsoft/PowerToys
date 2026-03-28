@@ -4,19 +4,18 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Commands;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using CoreVirtualKeyStates = Windows.UI.Core.CoreVirtualKeyStates;
 using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -51,7 +50,7 @@ public sealed partial class SearchBar : UserControl,
     // 0.6+ suggestions
     private string? _textToSuggest;
 
-    private SettingsModel Settings => App.Current.Services.GetRequiredService<SettingsModel>();
+    private SettingsModel Settings => App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -126,8 +125,7 @@ public sealed partial class SearchBar : UserControl,
             return;
         }
 
-        var ctrlPressed = (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down;
-        if (ctrlPressed && e.Key == VirtualKey.I)
+        if (KeyModifiers.GetCurrent().Ctrl && e.Key == VirtualKey.I)
         {
             // Today you learned that Ctrl+I in a TextBox will insert a tab
             // We don't want that, so we'll suppress it, this way it can be used for other purposes
@@ -354,17 +352,24 @@ public sealed partial class SearchBar : UserControl,
         }
 
         // TODO: We could encapsulate this in a Behavior if we wanted to bind to the Filter property.
-        _debounceTimer.Debounce(
-            () =>
-            {
-                DoFilterBoxUpdate();
-            },
-            //// Couldn't find a good recommendation/resource for value here. PT uses 50ms as default, so that is a reasonable default
-            //// This seems like a useful testing site for typing times: https://keyboardtester.info/keyboard-latency-test/
-            //// i.e. if another keyboard press comes in within 50ms of the last, we'll wait before we fire off the request
-            interval: TimeSpan.FromMilliseconds(50),
-            //// If we're not already waiting, and this is blanking out or the first character type, we'll start filtering immediately instead to appear more responsive and either clear the filter to get back home faster or at least chop to the first starting letter.
-            immediate: FilterBox.Text.Length <= 1);
+        var hasCustomDebounce = (CurrentPageViewModel as ListViewModel)?.HasCustomDebounceLogic == true;
+        if (hasCustomDebounce)
+        {
+            // Good, the page handles debouncing on its own
+            DoFilterBoxUpdate();
+        }
+        else
+        {
+            _debounceTimer.Debounce(
+                DoFilterBoxUpdate,
+                //// Couldn't find a good recommendation/resource for value here. PT uses 50ms as default, so that is a reasonable default
+                //// This seems like a useful testing site for typing times: https://keyboardtester.info/keyboard-latency-test/
+                //// i.e. if another keyboard press comes in within 50ms of the last, we'll wait before we fire off the request
+                interval: TimeSpan.FromMilliseconds(50),
+                //// If we're not already waiting, and this is blanking out or the first character type, we'll start filtering immediately
+                //// instead to appear more responsive and either clear the filter to get back home faster or at least chop to the first starting letter.
+                immediate: FilterBox.Text.Length <= 1);
+        }
     }
 
     private void DoFilterBoxUpdate()
@@ -421,7 +426,13 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    public void Receive(GoHomeMessage message) => ClearSearch();
+    public void Receive(GoHomeMessage message)
+    {
+        if (!Settings.KeepPreviousQuery)
+        {
+            ClearSearch();
+        }
+    }
 
     public void Receive(FocusSearchBoxMessage message) => FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 

@@ -862,6 +862,24 @@ namespace PowerToysExtension.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Keyboard Manager: Open Editor.
+        /// </summary>
+        internal static string KeyboardManager_OpenNewEditor_Title {
+            get {
+                return ResourceManager.GetString("KeyboardManager_OpenNewEditor_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open the Keyboard Manager remap editor.
+        /// </summary>
+        internal static string KeyboardManager_OpenNewEditor_Subtitle {
+            get {
+                return ResourceManager.GetString("KeyboardManager_OpenNewEditor_Subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open Light Switch settings.
         /// </summary>
         internal static string LightSwitch_Settings_Subtitle {
@@ -993,6 +1011,42 @@ namespace PowerToysExtension.Properties {
         internal static string MouseWithoutBorders_Settings_Subtitle {
             get {
                 return ResourceManager.GetString("MouseWithoutBorders_Settings_Subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Toggle Easy Mouse.
+        /// </summary>
+        internal static string MouseWithoutBorders_ToggleEasyMouse_Title {
+            get {
+                return ResourceManager.GetString("MouseWithoutBorders_ToggleEasyMouse_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Toggle easy mouse switching between machines.
+        /// </summary>
+        internal static string MouseWithoutBorders_ToggleEasyMouse_Subtitle {
+            get {
+                return ResourceManager.GetString("MouseWithoutBorders_ToggleEasyMouse_Subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reconnect.
+        /// </summary>
+        internal static string MouseWithoutBorders_Reconnect_Title {
+            get {
+                return ResourceManager.GetString("MouseWithoutBorders_Reconnect_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reconnect to other machines.
+        /// </summary>
+        internal static string MouseWithoutBorders_Reconnect_Subtitle {
+            get {
+                return ResourceManager.GetString("MouseWithoutBorders_Reconnect_Subtitle", resourceCulture);
             }
         }
         

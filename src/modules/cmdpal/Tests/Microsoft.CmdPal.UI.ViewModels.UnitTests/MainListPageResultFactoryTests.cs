@@ -1,10 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -16,6 +17,9 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public partial class MainListPageResultFactoryTests
 {
+    private static readonly Separator _resultsSeparator = new("Results");
+    private static readonly Separator _fallbacksSeparator = new("Fallbacks");
+
     private sealed partial class MockListItem : IListItem
     {
         public string Title { get; set; } = string.Empty;
@@ -43,38 +47,34 @@ public partial class MainListPageResultFactoryTests
         public override string ToString() => Title;
     }
 
-    private static Scored<IListItem> S(string title, int score)
+    private static RoScored<IListItem> S(string title, int score)
     {
-        return new Scored<IListItem>
-        {
-            Score = score,
-            Item = new MockListItem { Title = title },
-        };
+        return new RoScored<IListItem>(score: score, item: new MockListItem { Title = title });
     }
 
     [TestMethod]
     public void Merge_PrioritizesListsCorrectly()
     {
-        var filtered = new List<Scored<IListItem>>
+        var filtered = new List<RoScored<IListItem>>
         {
             S("F1", 100),
             S("F2", 50),
         };
 
-        var scoredFallback = new List<Scored<IListItem>>
+        var scoredFallback = new List<RoScored<IListItem>>
         {
             S("SF1", 100),
             S("SF2", 60),
         };
 
-        var apps = new List<Scored<IListItem>>
+        var apps = new List<RoScored<IListItem>>
         {
             S("A1", 100),
             S("A2", 55),
         };
 
         // Fallbacks are not scored.
-        var fallbacks = new List<Scored<IListItem>>
+        var fallbacks = new List<RoScored<IListItem>>
         {
             S("FB1", 0),
             S("FB2", 0),
@@ -85,18 +85,22 @@ public partial class MainListPageResultFactoryTests
             scoredFallback,
             apps,
             fallbacks,
+            _resultsSeparator,
+            _fallbacksSeparator,
             appResultLimit: 10);
 
         // Expected order:
+        // "Results" section header
         // 100: F1, SF1, A1
         // 60: SF2
         // 55: A2
         // 50: F2
+        // "Fallbacks" section header
         // Then fallbacks in original order: FB1, FB2
         var titles = result.Select(r => r.Title).ToArray();
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
         CollectionAssert.AreEqual(
-            new[] { "F1", "SF1", "A1", "SF2", "A2", "F2", "Fallbacks", "FB1", "FB2" },
+            new[] { "Results", "F1", "SF1", "A1", "SF2", "A2", "F2", "Fallbacks", "FB1", "FB2" },
             titles);
 #pragma warning restore CA1861 // Avoid constant arrays as arguments
     }
@@ -104,7 +108,7 @@ public partial class MainListPageResultFactoryTests
     [TestMethod]
     public void Merge_AppliesAppLimit()
     {
-        var apps = new List<Scored<IListItem>>
+        var apps = new List<RoScored<IListItem>>
         {
             S("A1", 100),
             S("A2", 90),
@@ -116,17 +120,97 @@ public partial class MainListPageResultFactoryTests
             null,
             apps,
             null,
+            _resultsSeparator,
+            _fallbacksSeparator,
             2);
 
+        Assert.AreEqual(3, result.Length);
+        Assert.AreEqual("Results", result[0].Title);
+        Assert.AreEqual("A1", result[1].Title);
+        Assert.AreEqual("A2", result[2].Title);
+    }
+
+    [TestMethod]
+    public void Merge_AppLimitOfOne_ReturnsOnlyTopApp()
+    {
+        var apps = new List<RoScored<IListItem>>
+        {
+            S("A1", 100),
+            S("A2", 90),
+            S("A3", 80),
+        };
+
+        var result = MainListPageResultFactory.Create(
+            null,
+            null,
+            apps,
+            null,
+            _resultsSeparator,
+            _fallbacksSeparator,
+            appResultLimit: 1);
+
         Assert.AreEqual(2, result.Length);
-        Assert.AreEqual("A1", result[0].Title);
-        Assert.AreEqual("A2", result[1].Title);
+        Assert.AreEqual("Results", result[0].Title);
+        Assert.AreEqual("A1", result[1].Title);
+    }
+
+    [TestMethod]
+    public void Merge_AppLimitOfZero_ReturnsNoApps()
+    {
+        var apps = new List<RoScored<IListItem>>
+        {
+            S("A1", 100),
+            S("A2", 90),
+        };
+
+        var result = MainListPageResultFactory.Create(
+            null,
+            null,
+            apps,
+            null,
+            _resultsSeparator,
+            _fallbacksSeparator,
+            appResultLimit: 0);
+
+        Assert.AreEqual(0, result.Length);
+    }
+
+    [TestMethod]
+    public void Merge_AppLimitOfOne_WithOtherResults_AppsAreLimited()
+    {
+        var filtered = new List<RoScored<IListItem>>
+        {
+            S("F1", 100),
+            S("F2", 50),
+        };
+
+        var apps = new List<RoScored<IListItem>>
+        {
+            S("A1", 90),
+            S("A2", 80),
+            S("A3", 70),
+        };
+
+        var result = MainListPageResultFactory.Create(
+            filtered,
+            null,
+            apps,
+            null,
+            _resultsSeparator,
+            _fallbacksSeparator,
+            appResultLimit: 1);
+
+        Assert.AreEqual(4, result.Length);
+        Assert.AreEqual("Results", result[0].Title);
+        Assert.AreEqual("F1", result[1].Title);
+        Assert.AreEqual("A1", result[2].Title);
+        Assert.AreEqual("F2", result[3].Title);
     }
 
     [TestMethod]
     public void Merge_FiltersEmptyFallbacks()
     {
-        var fallbacks = new List<Scored<IListItem>>
+        var fallbacks = new List<RoScored<IListItem>>
         {
             S("FB1", 0),
             S("FB3", 0),
@@ -137,6 +221,8 @@ public partial class MainListPageResultFactoryTests
             null,
             null,
             fallbacks,
+            _resultsSeparator,
+            _fallbacksSeparator,
             appResultLimit: 10);
 
         Assert.AreEqual(3, result.Length);
@@ -153,6 +239,8 @@ public partial class MainListPageResultFactoryTests
             null,
             null,
             null,
+            _resultsSeparator,
+            _fallbacksSeparator,
             appResultLimit: 10);
 
         Assert.IsNotNull(result);

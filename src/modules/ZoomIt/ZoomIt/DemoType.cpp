@@ -846,7 +846,6 @@ LRESULT CALLBACK DemoTypeHookProc( int nCode, WPARAM wParam, LPARAM lParam )
                 if( g_UserDriven )
                 {
                     // Set baseline indentation to a blocking flag
-                    // Otherwise indentation seeking will trigger user-driven injection events
                     g_BaselineIndentation = INDENT_SEEK_FLAG;
 
                     // Initialize the injection handler

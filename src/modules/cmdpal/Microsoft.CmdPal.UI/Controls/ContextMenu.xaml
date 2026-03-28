@@ -6,7 +6,6 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
@@ -29,7 +28,7 @@
                 Separator="{StaticResource SeparatorContextMenuViewModelTemplate}" />
 
             <!--  Template for context items in the context item menu  -->
-            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="coreViewModels:CommandContextItemViewModel">
+            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="viewModels:CommandContextItemViewModel">
                 <Grid Padding="{StaticResource DefaultContextMenuItemPadding}" AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
@@ -42,7 +41,7 @@
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
                         SourceKey="{x:Bind Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                     <TextBlock
                         x:Name="TitleTextBlock"
                         Grid.Column="1"
@@ -54,7 +53,15 @@
                         TextTrimming="WordEllipsis"
                         TextWrapping="NoWrap">
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind Title, Mode=OneWay}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <ToolTip x:DataType="TextBlock" Content="{x:Bind Title, Mode=OneWay}">
+                                <ToolTip.Visibility>
+                                    <Binding
+                                        Converter="{StaticResource BoolToVisibilityConverter}"
+                                        ElementName="TitleTextBlock"
+                                        Mode="OneWay"
+                                        Path="IsTextTrimmed" />
+                                </ToolTip.Visibility>
+                            </ToolTip>
                         </ToolTipService.ToolTip>
                     </TextBlock>
                     <TextBlock
@@ -69,7 +76,7 @@
             </DataTemplate>
 
             <!--  Template for context items flagged as critical  -->
-            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="coreViewModels:CommandContextItemViewModel">
+            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="viewModels:CommandContextItemViewModel">
                 <Grid Padding="{StaticResource DefaultContextMenuItemPadding}" AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
@@ -83,7 +90,7 @@
                         HorizontalAlignment="Left"
                         Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                         SourceKey="{x:Bind Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                     <TextBlock
                         x:Name="TitleTextBlock"
                         Grid.Column="1"
@@ -96,7 +103,15 @@
                         TextTrimming="WordEllipsis"
                         TextWrapping="NoWrap">
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind Title, Mode=OneWay}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <ToolTip Content="{x:Bind Title, Mode=OneWay}">
+                                <ToolTip.Visibility>
+                                    <Binding
+                                        Converter="{StaticResource BoolToVisibilityConverter}"
+                                        ElementName="TitleTextBlock"
+                                        Mode="OneWay"
+                                        Path="IsTextTrimmed" />
+                                </ToolTip.Visibility>
+                            </ToolTip>
                         </ToolTipService.ToolTip>
                     </TextBlock>
                     <TextBlock
@@ -110,7 +125,7 @@
             </DataTemplate>
 
             <!--  Template for context item separators  -->
-            <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="coreViewModels:SeparatorViewModel">
+            <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="viewModels:SeparatorViewModel">
                 <Rectangle
                     Height="1"
                     Margin="0,2,0,2"
@@ -134,6 +149,9 @@
             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
             PreviewKeyDown="CommandsDropdown_PreviewKeyDown"
             SelectionMode="Single">
+            <ListView.Resources>
+                <x:Boolean x:Key="ListViewItemSelectionIndicatorVisualEnabled">False</x:Boolean>
+            </ListView.Resources>
             <ListView.ItemContainerStyle>
                 <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                     <Setter Property="MinHeight" Value="0" />
@@ -159,6 +177,17 @@
             Style="{StaticResource SearchTextBoxStyle}"
             TextChanged="ContextFilterBox_TextChanged" />
         <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="FilterBoxVisibility">
+                <VisualState x:Name="FilterBoxVisible" />
+                <VisualState x:Name="FilterBoxCollapsed">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind ShowFilterBox, Mode=OneWay}" To="False" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ContextFilterBox.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
             <VisualStateGroup x:Name="ContextMenuOrder">
                 <VisualState x:Name="FilterOnTop">
                     <VisualState.StateTriggers>

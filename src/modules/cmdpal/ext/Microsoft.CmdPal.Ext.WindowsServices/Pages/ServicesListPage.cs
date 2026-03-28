@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.CmdPal.Ext.WindowsServices.Helpers;
+using Microsoft.CmdPal.Ext.WindowsServices.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -15,7 +15,7 @@ internal sealed partial class ServicesListPage : DynamicListPage
     public ServicesListPage()
     {
         Icon = Icons.ServicesIcon;
-        Name = "Windows Services";
+        Name = Resources.ServicesListPage_Name;
 
         var filters = new ServiceFilters();
         filters.PropChanged += Filters_PropChanged;

@@ -4,6 +4,7 @@
 #include <cinttypes>
 #include <string>
 #include <optional>
+#include <cwctype>
 
 #include <winrt/base.h>
 
@@ -27,6 +28,17 @@ namespace timeutil
     {
         try
         {
+            if (s.empty())
+            {
+                return std::nullopt;
+            }
+            for (wchar_t ch : s)
+            {
+                if (!iswdigit(ch))
+                {
+                    return std::nullopt;
+                }
+            }
             uint64_t i = std::stoull(s);
             return static_cast<std::time_t>(i);
         }

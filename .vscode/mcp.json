@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "github-artifacts": {
+      "command": "node",
+      "args": [
+        "tools/mcp/github-artifacts/launch.js"
+      ],
+      "env": {
+        "GITHUB_TOKEN": "${env:GITHUB_TOKEN}"
+      }
+    }
+  }
+}

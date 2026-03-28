@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.UnitTestBase;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CommandPalette.Extensions;
@@ -25,7 +26,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         {
             foreach (var item in commandIds)
             {
-                history.AddHistoryItem(item);
+                history = history.WithHistoryItem(item);
             }
         }
 
@@ -53,7 +54,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var history = CreateHistory();
 
         // Act
-        history.AddHistoryItem("com.microsoft.cmdpal.shell");
+        history = history.WithHistoryItem("com.microsoft.cmdpal.shell");
 
         // Assert
         Assert.IsTrue(history.GetCommandHistoryWeight("com.microsoft.cmdpal.shell") > 0);
@@ -120,7 +121,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var history = new RecentCommandsManager();
         foreach (var item in items)
         {
-            history.AddHistoryItem(item.Id);
+            history = history.WithHistoryItem(item.Id);
         }
 
         return history;
@@ -263,10 +264,12 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         };
 
         var history = CreateHistory(items.Reverse<ListItemMock>().ToList());
+        var fuzzyMatcher = CreateMatcher();
+        var q = fuzzyMatcher.PrecomputeQuery("C");
 
-        var scoreA = MainListPage.ScoreTopLevelItem("C", items[0], history);
-        var scoreB = MainListPage.ScoreTopLevelItem("C", items[1], history);
-        var scoreC = MainListPage.ScoreTopLevelItem("C", items[2], history);
+        var scoreA = MainListPage.ScoreTopLevelItem(q, items[0], history, fuzzyMatcher);
+        var scoreB = MainListPage.ScoreTopLevelItem(q, items[1], history, fuzzyMatcher);
+        var scoreC = MainListPage.ScoreTopLevelItem(q, items[2], history, fuzzyMatcher);
 
         // Assert
         // All of these equally match the query, and they're all in the same bucket,
@@ -294,6 +297,11 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
     {
         var history = CreateHistory((items ?? CreateMockHistoryItems()).Reverse<ListItemMock>().ToList());
         return history;
+    }
+
+    private static IPrecomputedFuzzyMatcher CreateMatcher()
+    {
+        return new PrecomputedFuzzyMatcher(new PrecomputedFuzzyMatcherOptions());
     }
 
     private sealed record ScoredItem(ListItemMock Item, int Score)
@@ -337,9 +345,11 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var items = CreateMockHistoryItems();
         var emptyHistory = CreateMockHistoryService(new());
         var history = CreateMockHistoryService(items);
+        var fuzzyMatcher = CreateMatcher();
 
-        var unweightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("C", item, emptyHistory)).ToList();
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("C", item, history)).ToList();
+        var q = fuzzyMatcher.PrecomputeQuery("C");
+        var unweightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, emptyHistory, fuzzyMatcher)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
         Assert.AreEqual(unweightedScores.Count, weightedScores.Count, "Both score lists should have the same number of items");
         for (var i = 0; i < unweightedScores.Count; i++)
         {
@@ -380,7 +390,10 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var items = CreateMockHistoryItems();
         var emptyHistory = CreateMockHistoryService(new());
         var history = CreateMockHistoryService(items);
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("te", item, history)).ToList();
+        var fuzzyMatcher = CreateMatcher();
+        var q = fuzzyMatcher.PrecomputeQuery("te");
+
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
         var weightedMatches = GetMatches(items, weightedScores).ToList();
 
         Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
@@ -398,14 +411,16 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var items = CreateMockHistoryItems();
         var emptyHistory = CreateMockHistoryService(new());
         var history = CreateMockHistoryService(items);
+        var fuzzyMatcher = CreateMatcher();
+        var q = fuzzyMatcher.PrecomputeQuery("te");
 
         // Add extra uses of VS Code to try and push it above Terminal
         for (var i = 0; i < 10; i++)
         {
-            history.AddHistoryItem(items[1].Id);
+            history = history.WithHistoryItem(items[1].Id);
         }
 
-        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("te", item, history)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
         var weightedMatches = GetMatches(items, weightedScores).ToList();
 
         Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
@@ -423,15 +438,17 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var items = CreateMockHistoryItems();
         var emptyHistory = CreateMockHistoryService(new());
         var history = CreateMockHistoryService(items);
+        var fuzzyMatcher = CreateMatcher();
+        var q = fuzzyMatcher.PrecomputeQuery("C");
 
         // We're gonna run this test and keep adding more uses of VS Code till
         // it breaks past Command Prompt
         var vsCodeId = items[1].Id;
         for (var i = 0; i < 10; i++)
         {
-            history.AddHistoryItem(vsCodeId);
+            history = history.WithHistoryItem(vsCodeId);
 
-            var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("C", item, history)).ToList();
+            var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
             var weightedMatches = GetMatches(items, weightedScores).ToList();
             Assert.AreEqual(4, weightedMatches.Count);
 

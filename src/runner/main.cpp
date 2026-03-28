@@ -189,13 +189,18 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
 //init_global_error_handlers();
 #endif
     Trace::RegisterProvider();
-    start_tray_icon(isProcessElevated);
-    if (get_general_settings().enableQuickAccess)
+
+    // Load settings from file before reading them
+    load_general_settings();
+    auto const settings = get_general_settings();
+    start_tray_icon(isProcessElevated, settings.showThemeAdaptiveTrayIcon);
+
+    if (settings.enableQuickAccess)
     {
         QuickAccessHost::start();
     }
-    update_quick_access_hotkey(get_general_settings().enableQuickAccess, get_general_settings().quickAccessShortcut);
-    set_tray_icon_visible(get_general_settings().showSystemTrayIcon);
+    update_quick_access_hotkey(settings.enableQuickAccess, settings.quickAccessShortcut);
+    set_tray_icon_visible(settings.showSystemTrayIcon);
     CentralizedKeyboardHook::Start();
 
     int result = -1;
@@ -281,6 +286,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.CmdPalModuleInterface.dll",
             L"PowerToys.ZoomItModuleInterface.dll",
             L"PowerToys.LightSwitchModuleInterface.dll",
+            // L"PowerToys.PowerDisplayModuleInterface.dll", // TEMPORARILY_DISABLED: PowerDisplay
         };
 
         for (auto moduleSubdir : knownModules)

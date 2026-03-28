@@ -31,6 +31,10 @@ public:
 
     HRESULT __stdcall CreateInstance(IUnknown* punkOuter, const IID& riid, void** ppv)
     {
+        if (!ppv)
+        {
+            return E_POINTER;
+        }
         *ppv = nullptr;
                 
         if (punkOuter)

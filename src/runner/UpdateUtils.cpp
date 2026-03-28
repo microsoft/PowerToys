@@ -4,6 +4,7 @@
 
 #include "ActionRunnerUtils.h"
 #include "general_settings.h"
+#include "trace.h"
 #include "UpdateUtils.h"
 
 #include <common/utils/gpo.h>
@@ -172,10 +173,12 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
         // Cleanup old updates before downloading the latest
         updating::cleanup_updates();
 
-        if (download_new_version(new_version_info).get())
+        auto downloaded_installer = std::move(download_new_version_async(new_version_info)).get();
+        if (downloaded_installer)
         {
             state.state = UpdateState::readyToInstall;
             state.downloadedInstallerFilename = new_version_info.installer_filename;
+            Trace::UpdateDownloadCompleted(true, new_version_info.version.toWstring());
             if (show_notifications)
             {
                 ShowNewVersionAvailable(new_version_info);
@@ -185,6 +188,7 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
         {
             state.state = UpdateState::errorDownloading;
             state.downloadedInstallerFilename = {};
+            Trace::UpdateDownloadCompleted(false, new_version_info.version.toWstring());
             Logger::error("Couldn't download new installer");
         }
     }
@@ -229,14 +233,19 @@ void PeriodicUpdateWorker()
         bool version_info_obtained = false;
         try
         {
-            const auto new_version_info = get_github_version_info_async().get();
+            const auto new_version_info = std::move(get_github_version_info_async()).get();
             if (new_version_info.has_value())
             {
                 version_info_obtained = true;
+                bool updateAvailable = std::holds_alternative<new_version_download_info>(*new_version_info);
+                std::wstring fromVersion = get_product_version();
+                std::wstring toVersion = updateAvailable ? std::get<new_version_download_info>(*new_version_info).version.toWstring() : L"";
+                Trace::UpdateCheckCompleted(true, updateAvailable, fromVersion, toVersion);
                 ProcessNewVersionInfo(*new_version_info, state, download_update, true);
             }
             else
             {
+                Trace::UpdateCheckCompleted(false, false, get_product_version(), L"");
                 Logger::error(L"Couldn't obtain version info from github: {}", new_version_info.error());
             }
         }
@@ -264,11 +273,12 @@ void CheckForUpdatesCallback()
     auto state = UpdateState::read();
     try
     {
-        auto new_version_info = get_github_version_info_async().get();
+        auto new_version_info = std::move(get_github_version_info_async()).get();
         if (!new_version_info)
         {
             // We couldn't get a new version from github for some reason, log error
             state.state = UpdateState::networkError;
+            Trace::UpdateCheckCompleted(false, false, get_product_version(), L"");
             Logger::error(L"Couldn't obtain version info from github: {}", new_version_info.error());
         }
         else
@@ -281,6 +291,10 @@ void CheckForUpdatesCallback()
                 download_update = false;
             }
 
+            bool updateAvailable = std::holds_alternative<new_version_download_info>(*new_version_info);
+            std::wstring fromVersion = get_product_version();
+            std::wstring toVersion = updateAvailable ? std::get<new_version_download_info>(*new_version_info).version.toWstring() : L"";
+            Trace::UpdateCheckCompleted(true, updateAvailable, fromVersion, toVersion);
             ProcessNewVersionInfo(*new_version_info, state, download_update, false);
         }
 

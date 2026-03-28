@@ -18,6 +18,9 @@ internal static class BindTransformers
     public static Visibility EmptyOrWhitespaceToCollapsed(string? input)
         => string.IsNullOrWhiteSpace(input) ? Visibility.Collapsed : Visibility.Visible;
 
+    public static Visibility EmptyOrWhitespaceToVisible(string? input)
+        => string.IsNullOrWhiteSpace(input) ? Visibility.Visible : Visibility.Collapsed;
+
     public static Visibility VisibleWhenAny(bool value1, bool value2)
         => (value1 || value2) ? Visibility.Visible : Visibility.Collapsed;
 }

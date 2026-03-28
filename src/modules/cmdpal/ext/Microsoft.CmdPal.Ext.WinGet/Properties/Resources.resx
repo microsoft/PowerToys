@@ -127,11 +127,11 @@
   <comment></comment>
 </data>
 <data name="winget_install_extensions_title" xml:space="preserve">
-  <value>Add Command Palette extensions from WinGet</value>
+  <value>Find Command Palette extensions from WinGet</value>
   <comment></comment>
 </data>
 <data name="winget_search_store_title" xml:space="preserve">
-  <value>Add Command Palette extensions from the Microsoft Store</value>
+  <value>Find Command Palette extensions from the Microsoft Store</value>
   <comment></comment>
 </data>
 <data name="winget_page_name" xml:space="preserve">

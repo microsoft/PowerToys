@@ -10,9 +10,6 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class OobeNewPlus : Page
     {
         public OobePowerToysModule ViewModel { get; set; }
@@ -20,15 +17,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeNewPlus()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.NewPlus]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.NewPlus);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(NewPlusPage));
+                OobeWindow.OpenMainWindowCallback(typeof(NewPlusPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

@@ -22,21 +22,6 @@ public sealed class FlyoutMenuItem : ModuleListItem
         set => base.Tag = value;
     }
 
-    public override bool IsEnabled
-    {
-        get => base.IsEnabled;
-        set
-        {
-            if (base.IsEnabled != value)
-            {
-                base.IsEnabled = value;
-                EnabledChangedCallback?.Invoke(this);
-            }
-        }
-    }
-
-    public Action<FlyoutMenuItem>? EnabledChangedCallback { get; set; }
-
     public bool Visible
     {
         get => _visible;

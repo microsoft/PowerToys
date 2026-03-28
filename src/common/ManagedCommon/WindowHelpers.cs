@@ -41,6 +41,7 @@ namespace ManagedCommon
         /// black. Calls <c>DwmExtendFrameIntoClientArea()</c> with a <c>cyTopHeight</c> of 2 to force
         /// the window's top border to be visible.<br/><br/>
         /// Is a no-op on versions other than Windows 10.
+        /// WinUI issue: https://github.com/microsoft/microsoft-ui-xaml/issues/6901
         /// </summary>
         public static void ForceTopBorder1PixelInsetOnWindows10(IntPtr handle)
         {

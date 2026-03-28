@@ -4,9 +4,11 @@
 #include <common/SettingsAPI/settings_objects.h>
 
 // Start the Tray Icon
-void start_tray_icon(bool isProcessElevated);
+void start_tray_icon(bool isProcessElevated, bool theme_adaptive);
 // Change the Tray Icon visibility
 void set_tray_icon_visible(bool shouldIconBeVisible);
+// Enable or disable theme adaptive tray icon at runtime
+void set_tray_icon_theme_adaptive(bool theme_adaptive);
 // Stop the Tray Icon
 void stop_tray_icon();
 // Open the Settings Window

@@ -12,7 +12,7 @@
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
 #include <common/interop/shared_constants.h>
 
-const std::wstring instanceMutexName = L"Local\\PowerToys_KBMEngine_InstanceMutex";
+const std::wstring instanceMutexName = CommonSharedConstants::KEYBOARD_MANAGER_ENGINE_INSTANCE_MUTEX;
 
 int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
                     _In_opt_ HINSTANCE /*hPrevInstance*/,
@@ -90,3 +90,4 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
 
     return 0;
 }
+

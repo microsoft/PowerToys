@@ -17,10 +17,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const string DefaultLatitude = "0.0";
         public const string DefaultLongitude = "0.0";
         public const string DefaultScheduleMode = "Off";
-        public const bool DefaultWallpaperEnabled = false;
-        public const bool DefaultWallpaperVirtualDesktopEnabled = false;
-        public const int DefaultWallpaperStyle = 0;
-        public const string DefaultWallpaperPath = "";
+        public const bool DefaultEnableDarkModeProfile = false;
+        public const bool DefaultEnableLightModeProfile = false;
+        public const string DefaultDarkModeProfile = "";
+        public const string DefaultLightModeProfile = "";
         public static readonly HotkeySettings DefaultToggleThemeHotkey = new HotkeySettings(true, true, false, true, 0x44); // Ctrl+Win+Shift+D
 
         public LightSwitchProperties()
@@ -34,13 +34,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SunriseOffset = new IntProperty(DefaultSunriseOffset);
             SunsetOffset = new IntProperty(DefaultSunsetOffset);
             ScheduleMode = new StringProperty(DefaultScheduleMode);
-            WallpaperEnabled = new BoolProperty(DefaultWallpaperEnabled);
-            WallpaperVirtualDesktopEnabled = new BoolProperty(DefaultWallpaperVirtualDesktopEnabled);
-            WallpaperStyleLight = new IntProperty(DefaultWallpaperStyle);
-            WallpaperStyleDark = new IntProperty(DefaultWallpaperStyle);
-            WallpaperPathLight = new StringProperty(DefaultWallpaperPath);
-            WallpaperPathDark = new StringProperty(DefaultWallpaperPath);
             ToggleThemeHotkey = new KeyboardKeysProperty(DefaultToggleThemeHotkey);
+            EnableDarkModeProfile = new BoolProperty(DefaultEnableDarkModeProfile);
+            EnableLightModeProfile = new BoolProperty(DefaultEnableLightModeProfile);
+            DarkModeProfile = new StringProperty(DefaultDarkModeProfile);
+            LightModeProfile = new StringProperty(DefaultLightModeProfile);
         }
 
         [JsonPropertyName("changeSystem")]
@@ -73,22 +71,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("toggle-theme-hotkey")]
         public KeyboardKeysProperty ToggleThemeHotkey { get; set; }
 
-        [JsonPropertyName("wallpaperEnabled")]
-        public BoolProperty WallpaperEnabled { get; set; }
+        [JsonPropertyName("enableDarkModeProfile")]
+        public BoolProperty EnableDarkModeProfile { get; set; }
 
-        [JsonPropertyName("wallpaperVirtualDesktopEnabled")]
-        public BoolProperty WallpaperVirtualDesktopEnabled { get; set; }
+        [JsonPropertyName("enableLightModeProfile")]
+        public BoolProperty EnableLightModeProfile { get; set; }
 
-        [JsonPropertyName("wallpaperStyleLight")]
-        public IntProperty WallpaperStyleLight { get; set; }
+        [JsonPropertyName("darkModeProfile")]
+        public StringProperty DarkModeProfile { get; set; }
 
-        [JsonPropertyName("wallpaperStyleDark")]
-        public IntProperty WallpaperStyleDark { get; set; }
-
-        [JsonPropertyName("wallpaperPathLight")]
-        public StringProperty WallpaperPathLight { get; set; }
-
-        [JsonPropertyName("wallpaperPathDark")]
-        public StringProperty WallpaperPathDark { get; set; }
+        [JsonPropertyName("lightModeProfile")]
+        public StringProperty LightModeProfile { get; set; }
     }
 }

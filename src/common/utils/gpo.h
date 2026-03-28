@@ -32,6 +32,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_COLOR_PICKER = L"ConfigureEnabledUtilityColorPicker";
     const std::wstring POLICY_CONFIGURE_ENABLED_CROP_AND_LOCK = L"ConfigureEnabledUtilityCropAndLock";
     const std::wstring POLICY_CONFIGURE_ENABLED_LIGHT_SWITCH = L"ConfigureEnabledUtilityLightSwitch";
+    const std::wstring POLICY_CONFIGURE_ENABLED_POWER_DISPLAY = L"ConfigureEnabledUtilityPowerDisplay";
     const std::wstring POLICY_CONFIGURE_ENABLED_FANCYZONES = L"ConfigureEnabledUtilityFancyZones";
     const std::wstring POLICY_CONFIGURE_ENABLED_FILE_LOCKSMITH = L"ConfigureEnabledUtilityFileLocksmith";
     const std::wstring POLICY_CONFIGURE_ENABLED_SVG_PREVIEW = L"ConfigureEnabledUtilityFileExplorerSVGPreview";
@@ -102,6 +103,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES = L"MwbPolicyDefinedIpMappingRules";
     const std::wstring POLICY_NEW_PLUS_HIDE_TEMPLATE_FILENAME_EXTENSION = L"NewPlusHideTemplateFilenameExtension";
     const std::wstring POLICY_NEW_PLUS_REPLACE_VARIABLES = L"NewPlusReplaceVariablesInTemplateFilenames";
+    const std::wstring POLICY_NEW_PLUS_HIDE_BUILT_IN_NEW_CONTEXT_MENU = L"NewPlusHideBuiltInNewContextMenu";
 
     // Methods used for reading the registry
 #pragma region ReadRegistryMethods
@@ -308,6 +310,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredLightSwitchEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_LIGHT_SWITCH);
+    }
+
+    inline gpo_rule_configured_t getConfiguredPowerDisplayEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_POWER_DISPLAY);
     }
 
     inline gpo_rule_configured_t getConfiguredFancyZonesEnabledValue()
@@ -694,5 +701,10 @@ namespace powertoys_gpo
         return getConfiguredValue(POLICY_NEW_PLUS_REPLACE_VARIABLES);
     }
     
+    inline gpo_rule_configured_t getConfiguredNewPlusHideBuiltInNewContextMenuValue()
+    {
+        return getConfiguredValue(POLICY_NEW_PLUS_HIDE_BUILT_IN_NEW_CONTEXT_MENU);
+    }
+
 #pragma endregion IndividualModuleSettingPolicies
 }

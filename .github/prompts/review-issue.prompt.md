@@ -1,20 +1,27 @@
 ---
-mode: 'agent'
-model: Claude Sonnet 4.5
-description: "You are github issue review and planning expertise, Score (0–100) and write one Implementation Plan. Outputs: overview.md, implementation-plan.md."
+agent: 'agent'
+description: 'Review a GitHub issue, score it (0-100), and generate an implementation plan'
 ---
 
-# GOAL
+# Review GitHub Issue
+
+## Goal
 For **#{{issue_number}}** produce:
 1) `Generated Files/issueReview/{{issue_number}}/overview.md`
 2) `Generated Files/issueReview/{{issue_number}}/implementation-plan.md`
 
 ## Inputs
-  figure out from the prompt on the 
+Figure out required inputs {{issue_number}} from the invocation context; if anything is missing, ask for the value or note it as a gap.
 
 # CONTEXT (brief)
-Ground evidence using `gh issue view {{issue_number}} --json number,title,body,author,createdAt,updatedAt,state,labels,milestone,reactions,comments,linkedPullRequests`, and download the image for understand the context of the issue more.
-Locate source code in current workspace, but also free feel to use via `rg`/`git grep`. Link related issues/PRs.
+Ground evidence using `gh issue view {{issue_number}} --json number,title,body,author,createdAt,updatedAt,state,labels,milestone,reactions,comments,linkedPullRequests`, download images via MCP `github_issue_images` to better understand the issue context. Finally, use MCP `github_issue_attachments` to download logs with parameter `extractFolder` as `Generated Files/issueReview/{{issue_number}}/logs`, and analyze the downloaded logs if available to identify relevant issues. Locate the source code in the current workspace (use `rg`/`git grep` as needed). Link related issues and PRs.
+
+## When to call MCP tools
+If the following MCP "github-artifacts" tools are available in the environment, use them:
+- `github_issue_images`: use when the issue/PR likely contains screenshots or other visual evidence (UI bugs, glitches, design problems).
+- `github_issue_attachments`: use when the issue/PR mentions attached ZIPs (PowerToysReport_*.zip, logs.zip, debug.zip) or asks to analyze logs/diagnostics. Always provide `extractFolder` as `Generated Files/issueReview/{{issue_number}}/logs`
+
+If these tools are not available (not listed by the runtime), start the MCP server "github-artifacts" first.
 
 # OVERVIEW.MD
 ## Summary

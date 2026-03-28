@@ -347,14 +347,19 @@ bool isMetadataUsed(_In_ PCWSTR source, PowerRenameLib::MetadataType metadataTyp
 
         // According to the metadata support table, only these formats support metadata extraction:
         // - JPEG (IFD, Exif, XMP, GPS, IPTC) - supports fast metadata encoding
-        // - TIFF (IFD, Exif, XMP, GPS, IPTC) - supports fast metadata encoding  
+        // - TIFF (IFD, Exif, XMP, GPS, IPTC) - supports fast metadata encoding
         // - PNG (text chunks)
+        // - HEIF/HEIC (IFD, Exif, XMP, GPS) - requires HEIF Image Extensions from Microsoft Store
+        // - AVIF (IFD, Exif, XMP, GPS) - requires AV1 Video Extension from Microsoft Store
         static const std::unordered_set<std::wstring> supportedExtensions = {
             L".jpg",
             L".jpeg",
             L".png",
             L".tif",
-            L".tiff"
+            L".tiff",
+            L".heic",
+            L".heif",
+            L".avif"
         };
 
         // If file type doesn't support metadata, no need to check patterns

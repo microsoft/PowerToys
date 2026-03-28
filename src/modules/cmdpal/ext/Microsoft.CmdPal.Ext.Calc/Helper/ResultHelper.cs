@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using ManagedCommon;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
@@ -13,7 +14,14 @@ namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
 public static class ResultHelper
 {
-    public static ListItem CreateResult(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture, string query, ISettingsInterface settings, TypedEventHandler<object, object> handleSave)
+    public static ListItem CreateResult(
+        decimal? roundedResult,
+        CultureInfo inputCulture,
+        CultureInfo outputCulture,
+        string query,
+        ISettingsInterface settings,
+        TypedEventHandler<object, object> handleSave,
+        TypedEventHandler<object, object> handleReplace)
     {
         // Return null when the expression is not a valid calculator query.
         if (roundedResult is null)
@@ -28,6 +36,9 @@ public static class ResultHelper
         var saveCommand = new SaveCommand(result);
         saveCommand.SaveRequested += handleSave;
 
+        var replaceCommand = new ReplaceQueryCommand();
+        replaceCommand.ReplaceRequested += handleReplace;
+
         var copyCommandItem = CreateResult(roundedResult, inputCulture, outputCulture, query);
 
         // No TextToSuggest on the main save command item. We don't want to keep suggesting what the result is,
@@ -40,6 +51,7 @@ public static class ResultHelper
             Subtitle = query,
             MoreCommands = [
                 new CommandContextItem(settings.CloseOnEnter ? saveCommand : copyCommandItem.Command),
+                new CommandContextItem(replaceCommand) { RequestedShortcut = KeyChords.CopyResultToSearchBox, },
                 ..copyCommandItem.MoreCommands,
             ],
         };
@@ -55,11 +67,15 @@ public static class ResultHelper
 
         var decimalResult = roundedResult?.ToString(outputCulture);
 
-        List<CommandContextItem> context = [];
+        List<IContextItem> context = [];
 
         if (decimal.IsInteger((decimal)roundedResult))
         {
+            context.Add(new Separator());
+
             var i = decimal.ToInt64((decimal)roundedResult);
+
+            // hexadecimal
             try
             {
                 var hexResult = "0x" + i.ToString("X", outputCulture);
@@ -70,9 +86,10 @@ public static class ResultHelper
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error parsing hex format", ex);
+                Logger.LogError("Error converting to hex format", ex);
             }
 
+            // binary
             try
             {
                 var binaryResult = "0b" + i.ToString("B", outputCulture);
@@ -83,7 +100,21 @@ public static class ResultHelper
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error parsing binary format", ex);
+                Logger.LogError("Error converting to binary format", ex);
+            }
+
+            // octal
+            try
+            {
+                var octalResult = "0o" + Convert.ToString(i, 8);
+                context.Add(new CommandContextItem(new CopyTextCommand(octalResult) { Name = Properties.Resources.calculator_copy_octal })
+                {
+                    Title = octalResult,
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error converting to octal format", ex);
             }
         }
 

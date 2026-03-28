@@ -230,4 +230,62 @@ Tip: For templates, use the type name (e.g., 'focus', 'columns', 'rows', 'grid',
   <data name="editor_params_timeout" xml:space="preserve">
     <value>Could not get current monitor information (timed out after {0}ms waiting for '{1}').</value>
   </data>
+
+  <!-- PowerShell Script Block Detection -->
+  <data name="error_powershell_scriptblock_title" xml:space="preserve">
+    <value>Error: Invalid GUID format detected.</value>
+  </data>
+  <data name="error_powershell_scriptblock_explanation" xml:space="preserve">
+    <value>PowerShell interprets curly braces {} as script blocks.</value>
+  </data>
+  <data name="error_powershell_scriptblock_hint" xml:space="preserve">
+    <value>Please quote your GUID or use it without braces:</value>
+  </data>
+  <data name="error_powershell_scriptblock_option1" xml:space="preserve">
+    <value>Option 1 - Quote the GUID:</value>
+  </data>
+  <data name="error_powershell_scriptblock_option1_example" xml:space="preserve">
+    <value>FancyZonesCLI shk 1 '{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}'</value>
+  </data>
+  <data name="error_powershell_scriptblock_option2" xml:space="preserve">
+    <value>Option 2 - Omit the braces (recommended):</value>
+  </data>
+  <data name="error_powershell_scriptblock_option2_example" xml:space="preserve">
+    <value>FancyZonesCLI shk 1 xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</value>
+  </data>
+
+  <!-- CLI Usage -->
+  <data name="usage_title" xml:space="preserve">
+    <value>FancyZones CLI - Command line interface for FancyZones</value>
+  </data>
+  <data name="usage_syntax" xml:space="preserve">
+    <value>Usage: FancyZonesCLI [command] [options]</value>
+  </data>
+  <data name="usage_options" xml:space="preserve">
+    <value>Options:</value>
+  </data>
+  <data name="usage_commands" xml:space="preserve">
+    <value>Commands:</value>
+  </data>
+  <data name="usage_examples" xml:space="preserve">
+    <value>Examples:</value>
+  </data>
+  <data name="usage_arguments" xml:space="preserve">
+    <value>Arguments:</value>
+  </data>
+  <data name="usage_aliases" xml:space="preserve">
+    <value>Aliases:</value>
+  </data>
+  <data name="usage_command" xml:space="preserve">
+    <value>Command:</value>
+  </data>
+  <data name="usage_optional" xml:space="preserve">
+    <value>(optional)</value>
+  </data>
+  <data name="usage_unknown_command" xml:space="preserve">
+    <value>Unknown command: {0}</value>
+  </data>
+  <data name="usage_run_help" xml:space="preserve">
+    <value>Run 'FancyZonesCLI --help' to see available commands.</value>
+  </data>
 </root>

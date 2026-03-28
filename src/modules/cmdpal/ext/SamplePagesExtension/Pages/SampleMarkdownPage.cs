@@ -81,7 +81,7 @@ Result:
 
 Result:
 
-![painting](https://i.imgur.com/93XJSNh.png)
+![painting](https://raw.githubusercontent.com/microsoft/PowerToys/refs/heads/main/doc/images/overview/Original/AdvancedPaste.png)
 
 ### Links
 

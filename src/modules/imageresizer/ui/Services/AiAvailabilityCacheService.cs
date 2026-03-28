@@ -39,29 +39,8 @@ namespace ImageResizer.Services
         /// </summary>
         public static AiAvailabilityState? LoadCache()
         {
-            try
-            {
-                if (!File.Exists(CachePath))
-                {
-                    return null;
-                }
-
-                var json = File.ReadAllText(CachePath);
-                var cache = JsonSerializer.Deserialize<AiCapabilityCache>(json);
-
-                if (!IsCacheValid(cache))
-                {
-                    return null;
-                }
-
-                return (AiAvailabilityState)cache.State;
-            }
-            catch (Exception ex)
-            {
-                // Read failure (file locked, corrupted JSON, etc.) - return null and use fallback
-                Logger.LogError($"Failed to load AI cache: {ex.Message}");
-                return null;
-            }
+            // Cache disabled - always return null to use default value
+            return null;
         }
 
         /// <summary>
@@ -70,32 +49,8 @@ namespace ImageResizer.Services
         /// </summary>
         public static void SaveCache(AiAvailabilityState state)
         {
-            try
-            {
-                var cache = new AiCapabilityCache
-                {
-                    Version = CacheVersion,
-                    State = (int)state,
-                    WindowsBuild = Environment.OSVersion.Version.ToString(),
-                    Architecture = RuntimeInformation.ProcessArchitecture.ToString(),
-                    Timestamp = DateTime.UtcNow.ToString("o"),
-                };
-
-                var dir = Path.GetDirectoryName(CachePath);
-                if (!Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-
-                var json = JsonSerializer.Serialize(cache, SerializerOptions);
-                File.WriteAllText(CachePath, json);
-
-                Logger.LogInfo($"AI cache saved: {state}");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to save AI cache: {ex.Message}");
-            }
+            // Cache disabled - do not save anything
+            return;
         }
 
         /// <summary>

@@ -18,6 +18,7 @@ extern void receive_json_send_to_main_thread(const std::wstring& msg);
 namespace
 {
     wil::unique_handle quick_access_process;
+    wil::unique_handle quick_access_job;
     wil::unique_handle show_event;
     wil::unique_handle exit_event;
     std::wstring show_event_name;
@@ -53,6 +54,7 @@ namespace
         }
 
         quick_access_process.reset();
+        quick_access_job.reset();
         show_event.reset();
         exit_event.reset();
         show_event_name.clear();
@@ -206,7 +208,7 @@ namespace QuickAccessHost
         startup_info.cb = sizeof(startup_info);
         PROCESS_INFORMATION process_info{};
 
-        BOOL created = CreateProcessW(exe_path.c_str(), command_line_buffer.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startup_info, &process_info);
+        BOOL created = CreateProcessW(exe_path.c_str(), command_line_buffer.data(), nullptr, nullptr, FALSE, CREATE_SUSPENDED, nullptr, nullptr, &startup_info, &process_info);
         if (!created)
         {
             Logger::error(L"QuickAccessHost: failed to launch Quick Access host. error={}.", GetLastError());
@@ -215,6 +217,31 @@ namespace QuickAccessHost
         }
 
         quick_access_process.reset(process_info.hProcess);
+
+        // Assign to job object to ensure the process is killed if the runner exits unexpectedly (e.g. debugging stop)
+        quick_access_job.reset(CreateJobObjectW(nullptr, nullptr));
+        if (quick_access_job)
+        {
+            JOBOBJECT_EXTENDED_LIMIT_INFORMATION jeli = { 0 };
+            jeli.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+            if (!SetInformationJobObject(quick_access_job.get(), JobObjectExtendedLimitInformation, &jeli, sizeof(jeli)))
+            {
+                Logger::warn(L"QuickAccessHost: failed to set job object information. error={}", GetLastError());
+            }
+            else
+            {
+                if (!AssignProcessToJobObject(quick_access_job.get(), quick_access_process.get()))
+                {
+                    Logger::warn(L"QuickAccessHost: failed to assign process to job object. error={}", GetLastError());
+                }
+            }
+        }
+        else
+        {
+            Logger::warn(L"QuickAccessHost: failed to create job object. error={}", GetLastError());
+        }
+
+        ResumeThread(process_info.hThread);
         CloseHandle(process_info.hThread);
     }
 

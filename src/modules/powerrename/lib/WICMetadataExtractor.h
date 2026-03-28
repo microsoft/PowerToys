@@ -9,14 +9,32 @@
 #include <wincodec.h>
 #include <atlbase.h>
 
+// Forward declarations for unit test friend classes
+namespace WICMetadataExtractorTests
+{
+    class ExtractAVIFMetadataTests;
+}
+
 namespace PowerRenameLib
 {
+    /// <summary>
+    /// Metadata path format based on container type
+    /// </summary>
+    enum class MetadataPathFormat
+    {
+        JPEG,  // Uses /app1/ifd/... paths (JPEG)
+        IFD    // Uses /ifd/... paths (HEIF, TIFF, etc.)
+    };
+
     /// <summary>
     /// Windows Imaging Component (WIC) implementation for metadata extraction
     /// Provides efficient batch extraction of all metadata types with built-in caching
     /// </summary>
     class WICMetadataExtractor
     {
+        // Friend declarations for unit testing
+        friend class WICMetadataExtractorTests::ExtractAVIFMetadataTests;
+
     public:
         WICMetadataExtractor();
         ~WICMetadataExtractor();
@@ -45,9 +63,12 @@ namespace PowerRenameLib
         bool LoadXMPMetadata(const std::wstring& filePath, XMPMetadata& outMetadata);
 
         // Batch extraction methods
-        void ExtractAllEXIFFields(IWICMetadataQueryReader* reader, EXIFMetadata& metadata);
-        void ExtractGPSData(IWICMetadataQueryReader* reader, EXIFMetadata& metadata);
+        void ExtractAllEXIFFields(IWICMetadataQueryReader* reader, EXIFMetadata& metadata, MetadataPathFormat pathFormat);
+        void ExtractGPSData(IWICMetadataQueryReader* reader, EXIFMetadata& metadata, MetadataPathFormat pathFormat);
         void ExtractAllXMPFields(IWICMetadataQueryReader* reader, XMPMetadata& metadata);
+
+        // Internal container format detection
+        MetadataPathFormat GetMetadataPathFormatFromDecoder(IWICBitmapDecoder* decoder);
 
         // Field reading helpers
         std::optional<SYSTEMTIME> ReadDateTime(IWICMetadataQueryReader* reader, const std::wstring& path);

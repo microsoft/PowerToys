@@ -2,34 +2,39 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public class ProviderSettings
+public record ProviderSettings
 {
     // List of built-in fallbacks that should not have global results enabled by default
-    private readonly string[] _excludedBuiltInFallbacks = [
+    private static readonly string[] _excludedBuiltInFallbacks = [
         "com.microsoft.cmdpal.builtin.indexer.fallback",
         "com.microsoft.cmdpal.builtin.calculator.fallback",
+        "com.microsoft.cmdpal.builtin.remotedesktop.fallback",
         ];
 
-    public bool IsEnabled { get; set; } = true;
+    public bool IsEnabled { get; init; } = true;
 
-    public Dictionary<string, FallbackSettings> FallbackCommands { get; set; } = new();
+    public ImmutableDictionary<string, FallbackSettings> FallbackCommands { get; init; }
+        = ImmutableDictionary<string, FallbackSettings>.Empty;
 
-    [JsonIgnore]
-    public string ProviderDisplayName { get; set; } = string.Empty;
-
-    [JsonIgnore]
-    public string ProviderId { get; private set; } = string.Empty;
+    public ImmutableList<string> PinnedCommandIds { get; init; }
+        = ImmutableList<string>.Empty;
 
     [JsonIgnore]
-    public bool IsBuiltin { get; private set; }
+    public string ProviderId { get; init; } = string.Empty;
 
-    public ProviderSettings(CommandProviderWrapper wrapper)
+    [JsonIgnore]
+    public bool IsBuiltin { get; init; }
+
+    [JsonIgnore]
+    public string ProviderDisplayName { get; init; } = string.Empty;
+
+    public ProviderSettings()
     {
-        Connect(wrapper);
     }
 
     [JsonConstructor]
@@ -38,28 +43,51 @@ public class ProviderSettings
         IsEnabled = isEnabled;
     }
 
-    public void Connect(CommandProviderWrapper wrapper)
+    /// <summary>
+    /// Returns a new ProviderSettings connected to the given wrapper.
+    /// Returns <see langword="this"/> when the connection produces no changes.
+    /// Pure function — does not mutate this instance.
+    /// </summary>
+    public ProviderSettings WithConnection(CommandProviderWrapper wrapper)
     {
-        ProviderId = wrapper.ProviderId;
-        IsBuiltin = wrapper.Extension is null;
+        if (string.IsNullOrWhiteSpace(wrapper.ProviderId))
+        {
+            throw new ArgumentException("ProviderId must not be null, empty, or whitespace.", nameof(wrapper));
+        }
 
-        ProviderDisplayName = wrapper.DisplayName;
-
+        var changed = false;
+        var builder = FallbackCommands.ToBuilder();
         if (wrapper.FallbackItems.Length > 0)
         {
             foreach (var fallback in wrapper.FallbackItems)
             {
-                if (!FallbackCommands.ContainsKey(fallback.Id))
+                if (!string.IsNullOrEmpty(fallback.Id) && !builder.ContainsKey(fallback.Id))
                 {
-                    var enableGlobalResults = IsBuiltin && !_excludedBuiltInFallbacks.Contains(fallback.Id);
-                    FallbackCommands[fallback.Id] = new FallbackSettings(enableGlobalResults);
+                    var enableGlobalResults = (wrapper.Extension is null)
+                        && !_excludedBuiltInFallbacks.Contains(fallback.Id);
+                    builder[fallback.Id] = new FallbackSettings(enableGlobalResults);
+                    changed = true;
                 }
             }
         }
 
-        if (string.IsNullOrEmpty(ProviderId))
+        var isBuiltin = wrapper.Extension is null;
+
+        // If nothing changed, return the same instance to avoid unnecessary allocations and saves
+        if (!changed
+            && ProviderId == wrapper.ProviderId
+            && IsBuiltin == isBuiltin
+            && ProviderDisplayName == wrapper.DisplayName)
         {
-            throw new InvalidDataException("Did you add a built-in command and forget to set the Id? Make sure you do that!");
+            return this;
         }
+
+        return this with
+        {
+            ProviderId = wrapper.ProviderId,
+            IsBuiltin = isBuiltin,
+            ProviderDisplayName = wrapper.DisplayName,
+            FallbackCommands = changed ? builder.ToImmutable() : FallbackCommands,
+        };
     }
 }

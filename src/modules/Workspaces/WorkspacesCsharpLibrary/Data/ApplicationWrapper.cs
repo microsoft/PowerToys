@@ -10,10 +10,10 @@ public struct ApplicationWrapper
 {
     public struct WindowPositionWrapper
     {
-        [JsonPropertyName("x")]
+        [JsonPropertyName("X")]
         public int X { get; set; }
 
-        [JsonPropertyName("y")]
+        [JsonPropertyName("Y")]
         public int Y { get; set; }
 
         [JsonPropertyName("width")]

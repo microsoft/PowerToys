@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -93,6 +93,15 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         public static string calculator_copy_hex {
             get {
                 return ResourceManager.GetString("calculator_copy_hex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy octal.
+        /// </summary>
+        public static string calculator_copy_octal {
+            get {
+                return ResourceManager.GetString("calculator_copy_octal", resourceCulture);
             }
         }
         
@@ -187,6 +196,24 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fix incomplete calculations automatically.
+        /// </summary>
+        public static string calculator_settings_auto_fix_query {
+            get {
+                return ResourceManager.GetString("calculator_settings_auto_fix_query", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempt to evaluate incomplete calculations by ignoring extra operators or symbols.
+        /// </summary>
+        public static string calculator_settings_auto_fix_query_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_auto_fix_query_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Close on Enter.
         /// </summary>
         public static string calculator_settings_close_on_enter {
@@ -205,6 +232,24 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Replace query with result on equals.
+        /// </summary>
+        public static string calculator_settings_copy_result_to_search_bar {
+            get {
+                return ResourceManager.GetString("calculator_settings_copy_result_to_search_bar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updates the query to the result when (=) is entered.
+        /// </summary>
+        public static string calculator_settings_copy_result_to_search_bar_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_copy_result_to_search_bar_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use English (United States) number format for input.
         /// </summary>
         public static string calculator_settings_in_en_format {
@@ -219,6 +264,24 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         public static string calculator_settings_in_en_format_description {
             get {
                 return ResourceManager.GetString("calculator_settings_in_en_format_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Handle extra operators and symbols.
+        /// </summary>
+        public static string calculator_settings_input_normalization {
+            get {
+                return ResourceManager.GetString("calculator_settings_input_normalization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable advanced input normalization and extra symbols (e.g. ÷, ×, π).
+        /// </summary>
+        public static string calculator_settings_input_normalization_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_input_normalization_description", resourceCulture);
             }
         }
         

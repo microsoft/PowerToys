@@ -10,6 +10,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library;
 
 public sealed class AdvancedPasteAdditionalActions
 {
+    private AdvancedPasteAdditionalAction _imageToText = new();
+    private AdvancedPastePasteAsFileAction _pasteAsFile = new();
+    private AdvancedPasteTranscodeAction _transcode = new();
+
     public static class PropertyNames
     {
         public const string ImageToText = "image-to-text";
@@ -18,13 +22,25 @@ public sealed class AdvancedPasteAdditionalActions
     }
 
     [JsonPropertyName(PropertyNames.ImageToText)]
-    public AdvancedPasteAdditionalAction ImageToText { get; init; } = new();
+    public AdvancedPasteAdditionalAction ImageToText
+    {
+        get => _imageToText;
+        init => _imageToText = value ?? new();
+    }
 
     [JsonPropertyName(PropertyNames.PasteAsFile)]
-    public AdvancedPastePasteAsFileAction PasteAsFile { get; init; } = new();
+    public AdvancedPastePasteAsFileAction PasteAsFile
+    {
+        get => _pasteAsFile;
+        init => _pasteAsFile = value ?? new();
+    }
 
     [JsonPropertyName(PropertyNames.Transcode)]
-    public AdvancedPasteTranscodeAction Transcode { get; init; } = new();
+    public AdvancedPasteTranscodeAction Transcode
+    {
+        get => _transcode;
+        init => _transcode = value ?? new();
+    }
 
     public IEnumerable<IAdvancedPasteAction> GetAllActions()
     {

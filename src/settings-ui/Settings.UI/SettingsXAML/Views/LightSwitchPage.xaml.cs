@@ -7,7 +7,9 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -16,18 +18,16 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
-using Microsoft.Windows.Storage.Pickers;
 using PowerToys.GPOWrapper;
 using Settings.UI.Library;
 using Windows.Devices.Geolocation;
-using Windows.Storage;
-using Windows.Storage.Streams;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class LightSwitchPage : NavigablePage, IRefreshablePage
     {
+        private static readonly TimeSpan GeoLocationTimeout = TimeSpan.FromSeconds(10);
+
         private readonly string appName = "LightSwitch";
         private readonly SettingsUtils settingsUtils;
         private readonly Func<string, int> sendConfigMsg = ShellPage.SendDefaultIPCMessage;
@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var darkSettings = this.moduleSettingsRepository.SettingsConfig;
 
             // Pass them into the ViewModel
-            this.ViewModel = new LightSwitchViewModel(darkSettings, this.sendConfigMsg);
+            this.ViewModel = new LightSwitchViewModel(this.generalSettingsRepository, darkSettings, ShellPage.SendDefaultIPCMessage);
             this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             this.LoadSettings(this.generalSettingsRepository, this.moduleSettingsRepository);
@@ -104,6 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.SyncLoader.IsActive = true;
             this.SyncLoader.Visibility = Visibility.Visible;
             this.LocationResultPanel.Visibility = Visibility.Collapsed;
+            this.LocationErrorText.Visibility = Visibility.Collapsed;
 
             try
             {
@@ -111,13 +112,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 var accessStatus = await Geolocator.RequestAccessAsync();
                 if (accessStatus != GeolocationAccessStatus.Allowed)
                 {
-                    // User denied location or it's not available
+                    ShowLocationError(ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Unavailable"));
                     return;
                 }
 
                 var geolocator = new Geolocator { DesiredAccuracy = PositionAccuracy.Default };
 
-                Geoposition pos = await geolocator.GetGeopositionAsync();
+                using var cts = new CancellationTokenSource(GeoLocationTimeout);
+                var positionTask = geolocator.GetGeopositionAsync().AsTask(cts.Token);
+                Geoposition pos = await positionTask;
 
                 double latitude = Math.Round(pos.Coordinate.Point.Position.Latitude);
                 double longitude = Math.Round(pos.Coordinate.Point.Position.Longitude);
@@ -133,7 +136,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // Since we use this mode, we can remove the selected city data.
                 this.ViewModel.SelectedCity = null;
 
-                // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
                 this.SyncButton.IsEnabled = true;
                 this.SyncLoader.IsActive = false;
                 this.SyncLoader.Visibility = Visibility.Collapsed;
@@ -142,16 +144,27 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 this.LongitudeBox.IsEnabled = true;
                 this.LocationResultPanel.Visibility = Visibility.Visible;
             }
+            catch (OperationCanceledException)
+            {
+                ShowLocationError(ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Timeout"));
+            }
             catch (Exception ex)
             {
-                this.SyncButton.IsEnabled = true;
-                this.SyncLoader.IsActive = false;
-                this.SyncLoader.Visibility = Visibility.Collapsed;
-                this.LocationResultPanel.Visibility = Visibility.Collapsed;
-                this.LatitudeBox.IsEnabled = true;
-                this.LongitudeBox.IsEnabled = true;
+                ShowLocationError(ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Timeout"));
                 Logger.LogInfo($"Location error: " + ex.Message);
             }
+        }
+
+        private void ShowLocationError(string message)
+        {
+            this.SyncButton.IsEnabled = true;
+            this.SyncLoader.IsActive = false;
+            this.SyncLoader.Visibility = Visibility.Collapsed;
+            this.LocationResultPanel.Visibility = Visibility.Collapsed;
+            this.LatitudeBox.IsEnabled = true;
+            this.LongitudeBox.IsEnabled = true;
+            this.LocationErrorText.Text = message;
+            this.LocationErrorText.Visibility = Visibility.Visible;
         }
 
         private void LatLonBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
@@ -189,7 +202,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // need to save the values
             this.ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
             this.ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
-            this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}�, {this.ViewModel.Longitude}�";
+            this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}°, {this.ViewModel.Longitude}°";
 
             var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
 
@@ -297,24 +310,28 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void UpdateEnabledState(bool recommendedState)
         {
-            var enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredLightSwitchEnabledValue();
-
-            if (enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                this.ViewModel.IsEnabledGpoConfigured = true;
-                this.ViewModel.EnabledGPOConfiguration = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                this.ViewModel.IsEnabled = recommendedState;
-            }
+            ViewModel.RefreshEnabledState();
         }
 
         private async void SyncLocationButton_Click(object sender, RoutedEventArgs e)
         {
             this.LocationDialog.IsPrimaryButtonEnabled = false;
             this.LocationResultPanel.Visibility = Visibility.Collapsed;
+            this.LocationErrorText.Visibility = Visibility.Collapsed;
+
+            // Pre-check location services availability
+            var accessStatus = await Geolocator.RequestAccessAsync();
+            if (accessStatus != GeolocationAccessStatus.Allowed)
+            {
+                this.SyncButton.IsEnabled = false;
+                this.LocationErrorText.Text = ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Unavailable");
+                this.LocationErrorText.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                this.SyncButton.IsEnabled = true;
+            }
+
             await this.LocationDialog.ShowAsync();
         }
 
@@ -396,49 +413,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private async void PickWallpaper_Click(object sender, RoutedEventArgs e)
+        private void NavigatePowerDisplaySettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var tag = (sender as Button).Tag as string;
-
-            var fileOpenPicker = new FileOpenPicker((sender as Button).XamlRoot.ContentIslandEnvironment.AppWindowId);
-            string[] extensions = { ".jpg", ".jpeg", ".bmp", ".dib", ".png", ".jfif", ".jpe", ".gif", ".tif", ".tiff", ".wdp", ".heic", ".heif", ".heics", ".heifs", ".hif", ".avci", ".avcs", ".avif", ".avifs", ".jxr", ".jxl", ".webp" };
-            foreach (var ext in extensions)
-            {
-                fileOpenPicker.FileTypeFilter.Add(ext);
-            }
-
-            fileOpenPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
-            var selectedFile = await fileOpenPicker.PickSingleFileAsync();
-
-            if (selectedFile == null)
-            {
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(ViewModel.WallpaperPathLight) && tag == "Light")
-            {
-                LightSwitchViewModel.DeleteFile(ViewModel.WallpaperPathLight);
-                ViewModel.WallpaperPathLight = string.Empty;
-            }
-            else if (!string.IsNullOrEmpty(ViewModel.WallpaperPathDark) && tag == "Dark")
-            {
-                LightSwitchViewModel.DeleteFile(ViewModel.WallpaperPathDark);
-                ViewModel.WallpaperPathDark = string.Empty;
-            }
-
-            var srcFile = await StorageFile.GetFileFromPathAsync(selectedFile.Path);
-            var settingsFolder = await StorageFolder.GetFolderFromPathAsync(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Microsoft\\PowerToys\\LightSwitch");
-            var dstFile = await settingsFolder.CreateFileAsync($"{tag}{DateTime.Now.ToFileTime()}{srcFile.FileType}", CreationCollisionOption.ReplaceExisting);
-            await FileIO.WriteBufferAsync(dstFile, await FileIO.ReadBufferAsync(srcFile));
-
-            if (tag == "Light")
-            {
-                ViewModel.WallpaperPathLight = dstFile.Path;
-            }
-            else if (tag == "Dark")
-            {
-                ViewModel.WallpaperPathDark = dstFile.Path;
-            }
+            ShellPage.Navigate(typeof(PowerDisplayPage));
         }
     }
 }

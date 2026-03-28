@@ -93,7 +93,7 @@
                                 x:Uid="Settings_ExtensionsPage_Banner_Hyperlink"
                                 Padding="0"
                                 Content="Learn how to create your own extensions"
-                                NavigateUri="https://learn.microsoft.com/windows/powertoys/command-palette/overview" />
+                                NavigateUri="https://aka.ms/building-cmdpal-extensions" />
                         </StackPanel>
                         <StackPanel
                             x:Name="ButtonPanel"
@@ -216,6 +216,7 @@
                     <ItemsRepeater
                         x:Name="ProvidersRepeater"
                         x:Load="{x:Bind viewModel.Extensions.HasResults, Mode=OneWay}"
+                        GettingFocus="ProvidersRepeater_GettingFocus"
                         ItemsSource="{x:Bind viewModel.Extensions.FilteredProviders, Mode=OneWay}"
                         Layout="{StaticResource VerticalStackLayout}">
                         <ItemsRepeater.ItemTemplate>
@@ -224,17 +225,32 @@
                                     Click="SettingsCard_Click"
                                     DataContext="{x:Bind}"
                                     Description="{x:Bind ExtensionSubtext, Mode=OneWay}"
+                                    GotFocus="SettingsCard_GotFocus"
                                     Header="{x:Bind DisplayName, Mode=OneWay}"
                                     IsClickEnabled="True">
                                     <controls:SettingsCard.HeaderIcon>
                                         <cpcontrols:ContentIcon>
                                             <cpcontrols:ContentIcon.Content>
-                                                <cpcontrols:IconBox
-                                                    Width="20"
-                                                    Height="20"
+                                                <controls:SwitchPresenter
                                                     AutomationProperties.AccessibilityView="Raw"
-                                                    SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                    SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                    TargetType="x:Boolean"
+                                                    Value="{x:Bind Icon.IsSet, FallbackValue=x:False, Mode=OneWay}">
+                                                    <controls:Case Value="True">
+                                                        <cpcontrols:IconBox
+                                                            Width="20"
+                                                            Height="20"
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                                            SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
+                                                    </controls:Case>
+                                                    <controls:Case Value="False">
+                                                        <Image
+                                                            Width="20"
+                                                            Height="20"
+                                                            AutomationProperties.AccessibilityView="Raw"
+                                                            Source="ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png" />
+                                                    </controls:Case>
+                                                </controls:SwitchPresenter>
                                             </cpcontrols:ContentIcon.Content>
                                         </cpcontrols:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>

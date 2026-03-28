@@ -19,8 +19,12 @@ internal readonly record struct FancyZonesMonitorDescriptor(
     {
         get
         {
-            var size = $"{Data.MonitorWidth}×{Data.MonitorHeight}";
-            var scaling = Data.Dpi > 0 ? string.Format(CultureInfo.InvariantCulture, "{0}%", (int)Math.Round(Data.Dpi * 100 / 96.0)) : "n/a";
+            // MonitorWidth/Height are logical (DPI-scaled) pixels, calculate physical resolution
+            var scaleFactor = Data.Dpi > 0 ? Data.Dpi / 96.0 : 1.0;
+            var physicalWidth = (int)Math.Round(Data.MonitorWidth * scaleFactor);
+            var physicalHeight = (int)Math.Round(Data.MonitorHeight * scaleFactor);
+            var size = $"{physicalWidth}×{physicalHeight}";
+            var scaling = Data.Dpi > 0 ? string.Format(CultureInfo.InvariantCulture, "{0}%", (int)Math.Round(scaleFactor * 100)) : "n/a";
             return $"{size} \u2022 {scaling}";
         }
     }

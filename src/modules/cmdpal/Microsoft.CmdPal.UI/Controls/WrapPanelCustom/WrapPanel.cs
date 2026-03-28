@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.WinUI.Controls;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
@@ -98,8 +98,6 @@ public sealed partial class WrapPanel : Panel
         get { return (double)GetValue(HorizontalSpacingProperty); }
         set { SetValue(HorizontalSpacingProperty, value); }
     }
-
-    private bool IsSectionItem(UIElement element) => element is FrameworkElement fe && fe.DataContext is ListItemViewModel item && item.IsSectionOrSeparator;
 
     /// <summary>
     /// Identifies the <see cref="HorizontalSpacing"/> dependency property.
@@ -350,7 +348,7 @@ public sealed partial class WrapPanel : Panel
                 return;
             }
 
-            var isFullLine = IsSectionItem(child);
+            var isFullLine = GetIsFullLine(child);
             var desiredMeasure = new UvMeasure(Orientation, child.DesiredSize);
 
             if (isFullLine)
