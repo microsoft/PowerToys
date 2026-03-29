@@ -48,6 +48,13 @@ namespace Peek.FilePreviewer
                 typeof(FilePreview),
                 new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnScalingFactorPropertyChanged()));
 
+        public static readonly DependencyProperty ShowFilePreviewTooltipProperty =
+            DependencyProperty.Register(
+                nameof(ShowFilePreviewTooltip),
+                typeof(bool),
+                typeof(FilePreview),
+                new PropertyMetadata(true, (d, e) => ((FilePreview)d).OnShowFilePreviewTooltipChanged()));
+
         [ObservableProperty]
         private int numberOfFiles;
 
@@ -64,7 +71,7 @@ namespace Peek.FilePreviewer
         private IPreviewer? previewer;
 
         [ObservableProperty]
-        private string infoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
+        private string? infoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
 
         [ObservableProperty]
         private string noMoreFilesText = ResourceLoaderInstance.ResourceLoader.GetString("NoMoreFiles");
@@ -136,6 +143,24 @@ namespace Peek.FilePreviewer
                 {
                     imagePreviewer.ScalingFactor = ScalingFactor;
                 }
+            }
+        }
+
+        public bool ShowFilePreviewTooltip
+        {
+            get => (bool)GetValue(ShowFilePreviewTooltipProperty);
+            set => SetValue(ShowFilePreviewTooltipProperty, value);
+        }
+
+        private void OnShowFilePreviewTooltipChanged()
+        {
+            if (!ShowFilePreviewTooltip)
+            {
+                InfoTooltip = null;
+            }
+            else if (Item != null)
+            {
+                _ = UpdateTooltipAsync(_cancellationTokenSource.Token);
             }
         }
 
@@ -366,6 +391,12 @@ namespace Peek.FilePreviewer
 
         private async Task UpdateTooltipAsync(CancellationToken cancellationToken)
         {
+            if (!ShowFilePreviewTooltip)
+            {
+                InfoTooltip = null;
+                return;
+            }
+
             if (Item == null)
             {
                 return;

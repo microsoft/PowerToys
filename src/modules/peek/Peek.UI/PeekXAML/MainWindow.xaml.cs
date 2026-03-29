@@ -195,6 +195,8 @@ namespace Peek.UI
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
+            FilePreviewer.ShowFilePreviewTooltip = Application.Current.GetService<IUserSettings>().ShowFilePreviewTooltip;
+
             ViewModel.Initialize(selectedItem);
 
             // If no files were found (e.g., user is typing in rename/search box, or in virtual folders),
