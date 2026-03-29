@@ -216,6 +216,7 @@
                     <ItemsRepeater
                         x:Name="ProvidersRepeater"
                         x:Load="{x:Bind viewModel.Extensions.HasResults, Mode=OneWay}"
+                        GettingFocus="ProvidersRepeater_GettingFocus"
                         ItemsSource="{x:Bind viewModel.Extensions.FilteredProviders, Mode=OneWay}"
                         Layout="{StaticResource VerticalStackLayout}">
                         <ItemsRepeater.ItemTemplate>
@@ -224,6 +225,7 @@
                                     Click="SettingsCard_Click"
                                     DataContext="{x:Bind}"
                                     Description="{x:Bind ExtensionSubtext, Mode=OneWay}"
+                                    GotFocus="SettingsCard_GotFocus"
                                     Header="{x:Bind DisplayName, Mode=OneWay}"
                                     IsClickEnabled="True">
                                     <controls:SettingsCard.HeaderIcon>
@@ -239,7 +241,7 @@
                                                             Height="20"
                                                             AutomationProperties.AccessibilityView="Raw"
                                                             SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                            SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
+                                                            SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                                     </controls:Case>
                                                     <controls:Case Value="False">
                                                         <Image

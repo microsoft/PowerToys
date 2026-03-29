@@ -170,7 +170,7 @@ public sealed partial class MainWindow : WindowEx,
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
-        App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
+        App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
         RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateBackdrop);
@@ -211,7 +211,7 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    private void SettingsChangedHandler(ISettingsService sender, SettingsModel args)
     {
         DispatcherQueue.TryEnqueue(HotReloadSettings);
     }
@@ -292,7 +292,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void RestoreWindowPositionFromSavedSettings()
     {
-        var settings = App.Current.Services.GetService<SettingsModel>();
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
         RestoreWindowPosition(settings?.LastWindowPosition);
     }
 
@@ -363,7 +363,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HotReloadSettings()
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
         SetupHotkey(settings);
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
@@ -707,7 +707,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         _isLoadedFromDock = false;
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
         // Start session tracking
         _sessionStopwatch = Stopwatch.StartNew();
@@ -902,15 +902,15 @@ public sealed partial class MainWindow : WindowEx,
             UpdateWindowPositionInMemory();
         }
 
-        var settings = serviceProvider.GetService<SettingsModel>();
+        var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
+        var settings = settingsService.Settings;
         if (settings is not null)
         {
             // If we were last shown from the dock, _currentWindowPosition still holds
             // the last non-dock placement because dock sessions intentionally skip updates.
             if (_currentWindowPosition.IsSizeValid)
             {
-                settings.LastWindowPosition = _currentWindowPosition;
-                SettingsModel.SaveSettings(settings);
+                settingsService.UpdateSettings(s => s with { LastWindowPosition = _currentWindowPosition });
             }
         }
 
@@ -1080,7 +1080,7 @@ public sealed partial class MainWindow : WindowEx,
                         }
                         else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
                         {
-                            var settings = App.Current.Services.GetService<SettingsModel>();
+                            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                             if (settings?.AllowExternalReload == true)
                             {
                                 Logger.LogInfo("External Reload triggered");
