@@ -25,6 +25,9 @@ else
     $initResourceID = 101
 }
 
+Import-Module Microsoft.PowerShell.Management -ErrorAction Stop
+Import-Module Microsoft.PowerShell.Utility -ErrorAction Stop
+
 # Flags to check if the first updated has occurred
 $headerFileUpdated = $false
 $rcFileUpdated = $false
