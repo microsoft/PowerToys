@@ -36,7 +36,6 @@
                 TextAlignment="Center" />
         </DataTemplate>
 
-
     </Window.Resources>
     <Border
         Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
@@ -80,7 +79,6 @@
                                             StrokeThickness="1"
                                             Visibility="Collapsed" />
                                         <ContentPresenter Margin="12" />
-
                                     </Grid>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsSelected" Value="true">

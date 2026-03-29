@@ -3,5 +3,4 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     StartupUri="Selector.xaml"
-    ThemeMode="System">
-</Application>
+    ThemeMode="System" />
