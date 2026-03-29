@@ -83,6 +83,6 @@
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(RepoRoot)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h KeyboardManager.base.rc KeyboardManager.rc" />
+    <Exec Command="powershell -NoProfile -NonInteractive -executionpolicy Unrestricted -Command &quot;$WarningPreference='SilentlyContinue'; &amp; '$(RepoRoot)tools\build\convert-resx-to-rc.ps1' $(MSBuildThisFileDirectory) resource.base.h resource.h KeyboardManager.base.rc KeyboardManager.rc&quot;" />
   </Target>
 </Project>

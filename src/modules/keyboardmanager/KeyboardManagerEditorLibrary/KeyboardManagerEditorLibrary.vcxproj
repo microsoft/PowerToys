@@ -117,6 +117,6 @@
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets'))" />
   </Target>
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory)\..\KeyboardManagerEditor\ resource.base.h resource.h KeyboardManagerEditor.base.rc KeyboardManagerEditor.rc" />
+    <Exec Command="powershell -NoProfile -NonInteractive -executionpolicy Unrestricted -Command &quot;$WarningPreference='SilentlyContinue'; &amp; '$(SolutionDir)tools\build\convert-resx-to-rc.ps1' $(MSBuildThisFileDirectory)\..\KeyboardManagerEditor\ resource.base.h resource.h KeyboardManagerEditor.base.rc KeyboardManagerEditor.rc&quot;" />
   </Target>
 </Project>
