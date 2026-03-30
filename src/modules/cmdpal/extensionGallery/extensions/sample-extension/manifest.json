@@ -1,0 +1,24 @@
+{
+  "$schema": "../../schema.json",
+  "id": "sample-extension",
+  "title": "Sample Extension",
+  "description": "A sample extension demonstrating the gallery manifest format.",
+  "author": {
+    "name": "Microsoft",
+    "url": "https://github.com/microsoft/PowerToys"
+  },
+  "homepage": "https://github.com/microsoft/PowerToys",
+  "readme": "README.md",
+  "icon": "icon.png",
+  "tags": [
+    "sample",
+    "reference",
+    "template"
+  ],
+  "installSources": [
+    {
+      "type": "url",
+      "uri": "https://github.com/microsoft/PowerToys/releases"
+    }
+  ]
+}

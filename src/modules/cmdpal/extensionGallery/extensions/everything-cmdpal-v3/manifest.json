@@ -1,0 +1,21 @@
+{
+  "$schema": "../../schema.json",
+  "id": "everything-cmdpal-v3",
+  "title": "Everything for Command Palette (SDK3)",
+  "description": "Everything extension using SDK3 with instancing support for faster file search.",
+  "author": {
+    "name": "Yu Chieh (Victor) Lin",
+    "url": "https://github.com/lin-ycv"
+  },
+  "homepage": "https://github.com/lin-ycv/EverythingCommandPalette",
+  "installSources": [
+    {
+      "type": "msstore",
+      "id": "9NCFD86NZVS8"
+    },
+    {
+      "type": "winget",
+      "id": "lin-ycv.EverythingCmdPal3"
+    }
+  ]
+}

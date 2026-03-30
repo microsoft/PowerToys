@@ -21,7 +21,7 @@
 
     <!-- For MVVM Toolkit Partial Properties/AOT support -->
     <LangVersion>preview</LangVersion>
-    
+
     <!-- OutputPath is set in CmdPal.Branding.props  -->
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -39,7 +39,7 @@
   </PropertyGroup>
 
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
-	<!-- <PropertyGroup>
+  <!-- <PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
     <GeneratePackageLocally>true</GeneratePackageLocally>
   </PropertyGroup> -->
@@ -88,6 +88,7 @@
     <None Remove="Controls\ScreenPreview.xaml" />
     <None Remove="Controls\ScrollContainer.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
+    <None Remove="Controls\WinGetOperationsButton.xaml" />
     <None Remove="ExtViews\Controls\ImageContentViewer.xaml" />
     <None Remove="ExtViews\Controls\PlainTextContentViewer.xaml" />
     <None Remove="ListDetailPage.xaml" />
@@ -198,6 +199,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\SearchBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\WinGetOperationsButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\DevRibbon.xaml">

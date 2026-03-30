@@ -8,6 +8,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Gallery;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
@@ -123,6 +124,9 @@ public sealed partial class SettingsWindow : WindowEx,
                 break;
             case "Extensions":
                 pageType = typeof(ExtensionsPage);
+                break;
+            case "Gallery":
+                pageType = typeof(ExtensionGalleryPage);
                 break;
             case "Dock":
                 pageType = typeof(DockSettingsPage);
@@ -280,6 +284,7 @@ public sealed partial class SettingsWindow : WindowEx,
 
     public void Dispose()
     {
+        WinGetOperationsButtonControl?.Dispose();
         _localKeyboardListener?.Dispose();
     }
 
@@ -304,6 +309,19 @@ public sealed partial class SettingsWindow : WindowEx,
             NavView.SelectedItem = ExtensionPageNavItem;
             var pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
             BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(ExtensionGalleryPage))
+        {
+            NavView.SelectedItem = GalleryPageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_GalleryPage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(ExtensionGalleryDetailPage) && e.Parameter is GalleryExtensionViewModel galleryExtension)
+        {
+            NavView.SelectedItem = GalleryPageNavItem;
+            var galleryPageType = RS_.GetString("Settings_PageTitles_GalleryPage");
+            BreadCrumbs.Add(new(galleryPageType, "Gallery"));
+            BreadCrumbs.Add(new(galleryExtension.Title, galleryExtension));
         }
         else if (e.SourcePageType == typeof(DockSettingsPage))
         {

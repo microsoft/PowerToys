@@ -1,0 +1,184 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Command Palette Extension Gallery Manifest",
+  "description": "Localized manifests are stored as full document copies such as manifest.cs-cz.json next to manifest.json.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "description",
+    "author",
+    "installSources"
+  ],
+  "definitions": {
+    "localizedString": {
+      "description": "Backward-compatible localization object. New feeds should prefer localized manifest files instead.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "localizedStringOrString": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/definitions/localizedString"
+        }
+      ]
+    },
+    "wingetInstallSource": {
+      "type": "object",
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "const": "winget"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    },
+    "storeInstallSource": {
+      "type": "object",
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "const": "msstore"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    },
+    "urlInstallSource": {
+      "type": "object",
+      "required": [
+        "type",
+        "uri"
+      ],
+      "properties": {
+        "type": {
+          "const": "url"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "description": "Unique extension identifier. Should match the extension folder name."
+    },
+    "title": {
+      "$ref": "#/definitions/localizedStringOrString"
+    },
+    "description": {
+      "$ref": "#/definitions/localizedStringOrString"
+    },
+    "author": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri"
+    },
+    "readme": {
+      "$ref": "#/definitions/localizedStringOrString"
+    },
+    "icon": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Relative filename of the icon asset."
+    },
+    "iconDark": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional relative filename of the dark-theme icon asset."
+    },
+    "installSources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/definitions/wingetInstallSource"
+          },
+          {
+            "$ref": "#/definitions/storeInstallSource"
+          },
+          {
+            "$ref": "#/definitions/urlInstallSource"
+          }
+        ]
+      }
+    },
+    "detection": {
+      "type": "object",
+      "properties": {
+        "packageFamilyName": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "tags": {
+      "type": "array",
+      "description": "Optional discoverability tags merged with index tags.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false
+}

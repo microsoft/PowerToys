@@ -16,7 +16,7 @@ internal static class ClassesDefinition
         [typeof(PackageManager)] = new()
         {
             ProjectedClassType = typeof(PackageManager),
-            InterfaceType = typeof(IPackageManager),
+            InterfaceId = new Guid("B375E3B9-F2E0-5C93-87A7-B67497F7E593"),
             Clsids = new Dictionary<ClsidContext, Guid>()
             {
                 [ClsidContext.Prod] = new Guid("C53A4F16-787E-42A4-B304-29EFFB4BF597"),
@@ -27,7 +27,7 @@ internal static class ClassesDefinition
         [typeof(FindPackagesOptions)] = new()
         {
             ProjectedClassType = typeof(FindPackagesOptions),
-            InterfaceType = typeof(IFindPackagesOptions),
+            InterfaceId = new Guid("A5270EDD-7DA7-57A3-BACE-F2593553561F"),
             Clsids = new Dictionary<ClsidContext, Guid>()
             {
                 [ClsidContext.Prod] = new Guid("572DED96-9C60-4526-8F92-EE7D91D38C1A"),
@@ -38,7 +38,7 @@ internal static class ClassesDefinition
         [typeof(CreateCompositePackageCatalogOptions)] = new()
         {
             ProjectedClassType = typeof(CreateCompositePackageCatalogOptions),
-            InterfaceType = typeof(ICreateCompositePackageCatalogOptions),
+            InterfaceId = new Guid("21ABAA76-089D-51C5-A745-C85EEFE70116"),
             Clsids = new Dictionary<ClsidContext, Guid>()
             {
                 [ClsidContext.Prod] = new Guid("526534B8-7E46-47C8-8416-B1685C327D37"),
@@ -49,7 +49,7 @@ internal static class ClassesDefinition
         [typeof(InstallOptions)] = new()
         {
             ProjectedClassType = typeof(InstallOptions),
-            InterfaceType = typeof(IInstallOptions),
+            InterfaceId = new Guid("6EE9DB69-AB48-5E72-A474-33A924CD23B3"),
             Clsids = new Dictionary<ClsidContext, Guid>()
             {
                 [ClsidContext.Prod] = new Guid("1095F097-EB96-453B-B4E6-1613637F3B14"),
@@ -60,7 +60,7 @@ internal static class ClassesDefinition
         [typeof(UninstallOptions)] = new()
         {
             ProjectedClassType = typeof(UninstallOptions),
-            InterfaceType = typeof(IUninstallOptions),
+            InterfaceId = new Guid("3EBC67F0-8339-594B-8A42-F90B69D02BBE"),
             Clsids = new Dictionary<ClsidContext, Guid>()
             {
                 [ClsidContext.Prod] = new Guid("E1D9A11E-9F85-4D87-9C17-2B93143ADB8D"),
@@ -71,7 +71,7 @@ internal static class ClassesDefinition
         [typeof(PackageMatchFilter)] = new()
         {
             ProjectedClassType = typeof(PackageMatchFilter),
-            InterfaceType = typeof(IPackageMatchFilter),
+            InterfaceId = new Guid("D981ECA3-4DE5-5AD7-967A-698C7D60FC3B"),
             Clsids = new Dictionary<ClsidContext, Guid>()
             {
                 [ClsidContext.Prod] = new Guid("D02C9DAF-99DC-429C-B503-4E504E4AB000"),

@@ -1,0 +1,18 @@
+{
+    "$schema": "../../schema.json",
+    "id": "colors-extension",
+    "title": "Colors for Command Palette",
+    "description": "Instant color visualization, conversion, and manipulation directly within Command Palette.",
+    "author": {
+        "name": "Jiri Polasek",
+        "url": "https://jiripolasek.com"
+    },
+    "icon": "icon.png",
+    "homepage": "https://github.com/jiripolasek/ColorsExtension",
+    "installSources": [
+        {
+            "type": "winget",
+            "id": "JiriPolasek.ColorsforCommandPalette"
+        }
+    ]
+}

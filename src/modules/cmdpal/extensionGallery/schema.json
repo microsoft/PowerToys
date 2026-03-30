@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Command Palette Extension Gallery Manifest",
+  "description": "Localized manifests are stored as full document copies (for example manifest.cs-cz.json) next to manifest.json.",
+  "type": "object",
+  "required": ["id", "title", "description", "author", "installSources"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique extension identifier (lowercase, alphanumeric, hyphens)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Extension display name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short description"
+    },
+    "author": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "url": { "type": "string", "format": "uri" }
+      },
+      "additionalProperties": false
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri"
+    },
+    "readme": {
+      "type": "string",
+      "description": "Readme filename"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Icon filename (PNG, max 64x64)"
+    },
+    "iconDark": {
+      "type": "string",
+      "description": "Dark theme icon filename (PNG, max 64x64)"
+    },
+    "tags": {
+      "type": "array",
+      "description": "Optional discoverability tags for search and grouping",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "installSources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["winget", "msstore", "url"]
+          },
+          "id": { "type": "string" },
+          "uri": { "type": "string", "format": "uri" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "detection": {
+      "type": "object",
+      "properties": {
+        "packageFamilyName": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

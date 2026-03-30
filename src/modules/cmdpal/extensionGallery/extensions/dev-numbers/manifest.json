@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schema.json",
+  "id": "dev-numbers",
+  "title": "Dev Numbers for Command Palette",
+  "description": "Display and calculate various numerical values including hex, binary, and octal conversions.",
+  "author": {
+    "name": "Jiri Polasek",
+    "url": "https://jiripolasek.com"
+  },
+  "homepage": "https://github.com/jiripolasek/DevNumbersExtension",
+  "installSources": [
+    {
+      "type": "winget",
+      "id": "JiriPolasek.DevNumbersforCommandPalette"
+    }
+  ]
+}

@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.CmdPal.UI.Settings.ExtensionGalleryDetailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:galleryModels="using:Microsoft.CmdPal.Common.ExtensionGallery.Models"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels.Gallery"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <Grid Padding="16">
+            <StackPanel
+                MaxWidth="1000"
+                HorizontalAlignment="Stretch"
+                Spacing="{StaticResource SettingsCardSpacing}">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border
+                        Width="48"
+                        Height="48"
+                        Padding="6"
+                        VerticalAlignment="Top">
+                        <Image
+                            Width="32"
+                            Height="32"
+                            Source="{x:Bind ViewModel.IconSource, Mode=OneWay}"
+                            Stretch="Uniform" />
+                    </Border>
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Orientation="Vertical"
+                        Spacing="2">
+                        <TextBlock
+                            Style="{StaticResource TitleTextBlockStyle}"
+                            Text="{x:Bind ViewModel.DisplayTitle, Mode=OneWay}"
+                            Visibility="Collapsed" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="{x:Bind ViewModel.DisplayAuthorName, Mode=OneWay}" />
+                        </StackPanel>
+                        <TextBlock
+                            Style="{StaticResource BodyTextBlockStyle}"
+                            Text="{x:Bind ViewModel.DisplayDescription, Mode=OneWay}"
+                            TextWrapping="WrapWholeWords" />
+                    </StackPanel>
+                </Grid>
+
+                <controls:SettingsCard Header="Install status">
+                    <StackPanel Spacing="4">
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind ViewModel.InstallStatusText, Mode=OneWay}" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind ViewModel.WinGetStatusText, Mode=OneWay}"
+                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowWinGetStatusDetails), Mode=OneWay, FallbackValue=Collapsed}" />
+                    </StackPanel>
+                </controls:SettingsCard>
+
+                <!--  section  -->
+
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Specification" />
+
+                <controls:SettingsCard Header="Homepage" Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasHomepage), Mode=OneWay, FallbackValue=Collapsed}">
+                    <HyperlinkButton
+                        HorizontalAlignment="Left"
+                        Command="{x:Bind ViewModel.OpenHomepageCommand, Mode=OneWay}"
+                        Content="{x:Bind ViewModel.Homepage, Mode=OneWay}" />
+                </controls:SettingsCard>
+
+                <controls:SettingsCard Header="Author Name">
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.DisplayAuthorName, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                </controls:SettingsCard>
+
+                <controls:SettingsCard Header="Author Website" Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasAuthorUrl), Mode=OneWay, FallbackValue=Collapsed}">
+                    <HyperlinkButton
+                        HorizontalAlignment="Left"
+                        Command="{x:Bind ViewModel.OpenAuthorPageCommand, Mode=OneWay}"
+                        Content="{x:Bind ViewModel.AuthorUrl, Mode=OneWay}" />
+                </controls:SettingsCard>
+
+
+                <!--  Installation info sections  -->
+
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Installation information" />
+
+                <controls:SettingsCard
+                    Description="{x:Bind ViewModel.StoreId, Mode=OneWay}"
+                    Header="Microsoft Store"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasStoreSource), Mode=OneWay, FallbackValue=Collapsed}">
+                    <Button
+                        HorizontalAlignment="Left"
+                        Command="{x:Bind ViewModel.InstallViaStoreCommand, Mode=OneWay}"
+                        Content="Open in Microsoft Store" />
+                </controls:SettingsCard>
+
+                <controls:SettingsCard
+                    Description="{x:Bind ViewModel.InstallUrl, Mode=OneWay}"
+                    Header="Website / download"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasUrlSource), Mode=OneWay, FallbackValue=Collapsed}">
+                    <Button
+                        HorizontalAlignment="Left"
+                        Command="{x:Bind ViewModel.OpenInstallUrlCommand, Mode=OneWay}"
+                        Content="Open website" />
+                </controls:SettingsCard>
+
+                <controls:SettingsCard
+                    Description="{x:Bind ViewModel.WinGetId, Mode=OneWay}"
+                    Header="WinGet"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasWinGetSource), Mode=OneWay, FallbackValue=Collapsed}">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnSpacing="8" Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowWinGetActionControls), Mode=OneWay, FallbackValue=Collapsed}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button
+                                Command="{x:Bind ViewModel.InstallViaWinGetCommand, Mode=OneWay}"
+                                Content="{x:Bind ViewModel.InstallViaWinGetText, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.CanInstallViaWinGet, Mode=OneWay}"
+                                Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowInstallViaWinGetButton), Mode=OneWay, FallbackValue=Collapsed}" />
+                            <ProgressRing
+                                Grid.Column="1"
+                                Width="20"
+                                Height="20"
+                                IsActive="{x:Bind ViewModel.IsWinGetActionInProgress, Mode=OneWay}"
+                                Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.IsWinGetActionInProgress), Mode=OneWay, FallbackValue=Collapsed}" />
+                            <Button
+                                Grid.Column="2"
+                                Width="32"
+                                Height="32"
+                                Padding="0"
+                                Command="{x:Bind ViewModel.CancelWinGetActionCommand, Mode=OneWay}"
+                                Style="{StaticResource SubtleButtonStyle}"
+                                ToolTipService.ToolTip="Cancel WinGet operation"
+                                Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowCancelWinGetActionButton), Mode=OneWay, FallbackValue=Collapsed}">
+                                <FontIcon FontSize="12" Glyph="&#xE711;" />
+                            </Button>
+                        </Grid>
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="{x:Bind ViewModel.WinGetInstallCommand, Mode=OneWay}"
+                                TextWrapping="WrapWholeWords" />
+                            <Button
+                                Grid.Column="1"
+                                Width="28"
+                                Height="28"
+                                Padding="0"
+                                VerticalAlignment="Center"
+                                Command="{x:Bind ViewModel.CopyWinGetInstallCommand, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.CanCopyWinGetInstallCommand, Mode=OneWay}"
+                                ToolTipService.ToolTip="Copy install command">
+                                <FontIcon FontSize="12" Glyph="&#xE8C8;" />
+                            </Button>
+                        </Grid>
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind ViewModel.WinGetStatusText, Mode=OneWay}" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind ViewModel.WinGetUnavailableMessage, Mode=OneWay}"
+                            TextWrapping="WrapWholeWords"
+                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowWinGetUnavailableMessage), Mode=OneWay, FallbackValue=Collapsed}" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind ViewModel.WinGetActionMessage, Mode=OneWay}"
+                            TextWrapping="WrapWholeWords"
+                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasWinGetActionMessage), Mode=OneWay, FallbackValue=Collapsed}" />
+                        <ProgressBar
+                            Height="4"
+                            IsIndeterminate="{x:Bind ViewModel.IsWinGetActionIndeterminate, Mode=OneWay}"
+                            Maximum="100"
+                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.IsWinGetActionInProgress), Mode=OneWay, FallbackValue=Collapsed}"
+                            Value="{x:Bind ViewModel.WinGetActionProgressValue, Mode=OneWay}" />
+                    </StackPanel>
+                </controls:SettingsCard>
+
+
+                <!--  Source specific sections  -->
+
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Source information" />
+
+                <ItemsControl ItemsSource="{x:Bind ViewModel.SourcesWithDetails, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="galleryModels:GallerySourceInfo">
+                            <controls:SettingsExpander
+                                Header="{x:Bind DisplayName}"
+                                IsExpanded="True"
+                                ItemsSource="{x:Bind Details.FlattenedItems}">
+                                <controls:SettingsExpander.ItemTemplate>
+                                    <DataTemplate x:DataType="galleryModels:GallerySourceDetailItem">
+                                        <controls:SettingsCard Header="{x:Bind Label}">
+                                            <Grid>
+                                                <TextBlock
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind Value}"
+                                                    TextWrapping="WrapWholeWords"
+                                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasNoLink), FallbackValue=Collapsed}" />
+                                                <HyperlinkButton
+                                                    MinWidth="0"
+                                                    MinHeight="0"
+                                                    Margin="0"
+                                                    Padding="0"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    Content="{x:Bind Value}"
+                                                    NavigateUri="{x:Bind LinkUri}"
+                                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasLink), FallbackValue=Collapsed}" />
+                                            </Grid>
+                                        </controls:SettingsCard>
+                                    </DataTemplate>
+                                </controls:SettingsExpander.ItemTemplate>
+                            </controls:SettingsExpander>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <controls:SettingsCard Header="Sources" Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowNoSourceDetails), Mode=OneWay, FallbackValue=Collapsed}">
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.NoSourceDetailsText, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                </controls:SettingsCard>
+
+                <Border
+                    Padding="12"
+                    Background="{ThemeResource SystemControlBackgroundBaseLowBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="Extensions listed here are created and maintained by third parties under their own terms. Review each extension's source and terms before installing or using it. Microsoft does not control third-party extension behavior and is not responsible for their content or actions."
+                        TextWrapping="WrapWholeWords" />
+                </Border>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

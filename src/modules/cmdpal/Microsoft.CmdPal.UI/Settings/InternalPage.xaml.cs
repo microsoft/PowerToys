@@ -6,9 +6,11 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Windows.System;
 using Page = Microsoft.UI.Xaml.Controls.Page;
 
@@ -20,12 +22,28 @@ namespace Microsoft.CmdPal.UI.Settings;
 public sealed partial class InternalPage : Page
 {
     private readonly IApplicationInfoService _appInfoService;
+    private readonly ISettingsService _settingsService;
+
+    public string GalleryFeedUrl => _settingsService.Settings.GalleryFeedUrl ?? string.Empty;
 
     public InternalPage()
     {
         InitializeComponent();
 
         _appInfoService = App.Current.Services.GetRequiredService<IApplicationInfoService>();
+        _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+    }
+
+    private void GalleryFeedUrlTextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (sender is TextBox textBox)
+        {
+            var newUrl = string.IsNullOrWhiteSpace(textBox.Text) ? null : textBox.Text.Trim();
+            if (newUrl != _settingsService.Settings.GalleryFeedUrl)
+            {
+                _settingsService.UpdateSettings(s => s with { GalleryFeedUrl = newUrl });
+            }
+        }
     }
 
     private void ThrowPlainMainThreadException_Click(object sender, RoutedEventArgs e)
