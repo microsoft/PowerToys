@@ -106,9 +106,9 @@ HRESULT AdvancedPasteProcessManager::start_process(const std::wstring& pipe_name
     // Ensure the AdvancedPaste MSIX package is registered
     static const std::wstring packageName =
 #ifdef _DEBUG
-        L"Microsoft.PowerToys.AdvancedPaste.Dev";
+        L"PowerToys.AdvancedPaste.Dev";
 #else
-        L"Microsoft.PowerToys.AdvancedPaste";
+        L"PowerToys.AdvancedPaste";
 #endif
 
     if (!package::GetRegisteredPackage(packageName, false).has_value())

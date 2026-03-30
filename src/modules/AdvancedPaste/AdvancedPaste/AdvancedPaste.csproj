@@ -23,7 +23,7 @@
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
     <Version>$(AdvancedPasteVersion)</Version>
     <!-- Prevent WindowsDesktop framework (WPF/WinForms) from propagating transitively via Settings.UI.Library → MouseJump.Common.
-         WinUI3 MSIX apps must not bundle WindowsDesktop alongside WinUI as it causes XAML init crashes. -->
+         AdvancedPaste is a WinUI3 MSIX app and does not use WPF/WinForms. -->
     <DisableTransitiveFrameworkReferences>true</DisableTransitiveFrameworkReferences>
   </PropertyGroup>
 
