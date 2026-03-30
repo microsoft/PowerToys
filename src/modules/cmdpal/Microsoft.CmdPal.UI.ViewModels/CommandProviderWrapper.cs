@@ -499,17 +499,6 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
     public void PinDockBand(string commandId, IServiceProvider serviceProvider, Dock.DockPinSide side = Dock.DockPinSide.Start, bool? showTitles = null, bool? showSubtitles = null)
     {
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
-        var settings = settingsService.Settings;
-        var dockSettings = settings.DockSettings;
-
-        // Prevent duplicate pins — check all sections
-        if (dockSettings.StartBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
-            dockSettings.CenterBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
-            dockSettings.EndBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId))
-        {
-            Logger.LogDebug($"Dock band '{commandId}' from provider '{this.ProviderId}' is already pinned; skipping.");
-            return;
-        }
 
         var bandSettings = new DockBandSettings
         {
@@ -523,6 +512,18 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             s =>
             {
                 var dockSettings = s.DockSettings;
+
+                // Prevent duplicate pins — check inside the CAS lambda so
+                // the guard is re-evaluated on every retry against the
+                // latest snapshot.
+                if (dockSettings.StartBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
+                    dockSettings.CenterBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
+                    dockSettings.EndBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId))
+                {
+                    Logger.LogDebug($"Dock band '{commandId}' from provider '{this.ProviderId}' is already pinned; skipping.");
+                    return s;
+                }
+
                 return s with
                 {
                     DockSettings = side switch
@@ -583,6 +584,14 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         Logger.LogDebug($"CommandProviderWrapper.PinDockBand: {ProviderId} - {bandVm.Id}");
 
         var bands = this.DockBandItems.ToList();
+
+        // Prevent duplicate entries in the in-memory band list
+        if (bands.Any(b => b.Id == bandVm.Id))
+        {
+            Logger.LogDebug($"Dock band '{bandVm.Id}' already exists in DockBandItems; skipping.");
+            return;
+        }
+
         bands.Add(bandVm);
         this.DockBandItems = bands.ToArray();
         this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs());
