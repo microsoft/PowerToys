@@ -137,6 +137,24 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool IgnoreShortcutWhenBusy
+    {
+        get => _settingsService.Settings.IgnoreShortcutWhenBusy;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { IgnoreShortcutWhenBusy = value });
+        }
+    }
+
+    public bool AllowBreakthroughShortcut
+    {
+        get => _settingsService.Settings.AllowBreakthroughShortcut;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { AllowBreakthroughShortcut = value });
+        }
+    }
+
     public bool DisableAnimations
     {
         get => _settingsService.Settings.DisableAnimations;

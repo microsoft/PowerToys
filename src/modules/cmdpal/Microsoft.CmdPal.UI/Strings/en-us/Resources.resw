@@ -347,6 +347,33 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Description" xml:space="preserve">
     <value>Preventing disruption of the program running in fullscreen by unintentional activation of shortcut</value>
   </data>
+  <data name="Settings_GeneralPage_IgnoreShortcutWhenBusy_SettingsCard.Header" xml:space="preserve">
+    <value>Ignore shortcut when the system heuristically detects fullscreen</value>
+  </data>
+  <data name="Settings_GeneralPage_IgnoreShortcutWhenBusy_SettingsCard.Description" xml:space="preserve">
+    <value>Windows may detect that a fullscreen application is running or Presentation Settings are applied. Some applications (such as NVIDIA overlay) can trigger this incorrectly, preventing the shortcut from working</value>
+  </data>
+  <data name="Settings_GeneralPage_AllowBreakthroughShortcut_SettingsCard.Header" xml:space="preserve">
+    <value>Allow breakthrough with rapid shortcut presses</value>
+  </data>
+  <data name="Settings_GeneralPage_AllowBreakthroughShortcut_SettingsCard.Description" xml:space="preserve">
+    <value>Press the activation shortcut 3 times within 2 seconds to bypass the fullscreen or busy state guard</value>
+  </data>
+  <data name="Settings_GeneralPage_NotificationState_InfoBar" xml:space="preserve">
+    <value>Your activation shortcut might not work right now because {0}.</value>
+  </data>
+  <data name="NotificationState_D3DFullScreen" xml:space="preserve">
+    <value>a full-screen app is running</value>
+  </data>
+  <data name="NotificationState_PresentationMode" xml:space="preserve">
+    <value>presentation mode is on</value>
+  </data>
+  <data name="NotificationState_Busy" xml:space="preserve">
+    <value>Windows thinks a full-screen app or presentation is active</value>
+  </data>
+  <data name="NotificationState_TriggerApps" xml:space="preserve">
+    <value>Likely caused by: {0}.</value>
+  </data>
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
     <value>Highlight search on activate</value>
   </data>
