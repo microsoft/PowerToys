@@ -23,4 +23,10 @@
     <ProjectReference Include="..\..\Microsoft.CmdPal.UI.ViewModels\Microsoft.CmdPal.UI.ViewModels.csproj" />
     <ProjectReference Include="..\Microsoft.CmdPal.Ext.UnitTestsBase\Microsoft.CmdPal.Ext.UnitTestBase.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip" Link="Assets\template.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -51,6 +52,8 @@ public sealed partial class DockWindow : WindowEx,
     private HWND _hwnd = HWND.Null;
     private APPBARDATA _appBarData;
     private uint _callbackMessageId;
+    private bool _isWindowTopmost;
+    private bool _isFullScreenAppOpen;
 
     private DockSettings _settings;
     private DockViewModel viewModel;
@@ -129,6 +132,7 @@ public sealed partial class DockWindow : WindowEx,
         _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)style);
 
         ShowDesktop.AddHook(this);
+        _isFullScreenAppOpen = WindowHelper.IsWindowFullscreen();
         UpdateSettingsOnUiThread();
     }
 
@@ -147,6 +151,8 @@ public sealed partial class DockWindow : WindowEx,
             BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &value, (uint)sizeof(BOOL));
         }
+
+        UpdateTopmostState();
     }
 
     private HWND GetWindowHandle(Window window)
@@ -161,6 +167,7 @@ public sealed partial class DockWindow : WindowEx,
         UpdateBackdrop();
 
         _dock.UpdateSettings(_settings);
+
         var side = DockSettingsToViews.GetAppBarEdge(_settings.Side);
 
         if (_appBarData.hWnd != IntPtr.Zero)
@@ -169,6 +176,7 @@ public sealed partial class DockWindow : WindowEx,
             var sameSize = _lastSize == _settings.DockSize;
             if (sameEdge && sameSize)
             {
+                UpdateTopmostState();
                 return;
             }
 
@@ -176,6 +184,7 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         CreateAppBar(_hwnd);
+        UpdateTopmostState();
     }
 
     private void InitializeBackdropSupport()
@@ -331,6 +340,41 @@ public sealed partial class DockWindow : WindowEx,
     {
         PInvoke.SHAppBarMessage(PInvoke.ABM_REMOVE, ref _appBarData);
         _appBarData = default;
+    }
+
+    private void UpdateTopmostState(bool bringToFront = false)
+    {
+        var shouldStayOnTop = _settings.AlwaysOnTop && !_isFullScreenAppOpen;
+        const SET_WINDOW_POS_FLAGS flags = SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE;
+
+        if (shouldStayOnTop)
+        {
+            if (_isWindowTopmost && !bringToFront)
+            {
+                return;
+            }
+
+            PInvoke.SetWindowPos(_hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, flags);
+            _isWindowTopmost = true;
+            return;
+        }
+
+        if (bringToFront)
+        {
+            // Win32 trick: briefly set HWND_TOPMOST then immediately clear it
+            // with HWND_NOTOPMOST. This brings the window to the foreground
+            // without permanently pinning it as topmost.
+            PInvoke.SetWindowPos(_hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, flags);
+        }
+
+        if (!_isWindowTopmost && !bringToFront)
+        {
+            return;
+        }
+
+        var zOrder = _isFullScreenAppOpen ? HWND.HWND_BOTTOM : HWND.HWND_NOTOPMOST;
+        PInvoke.SetWindowPos(_hwnd, zOrder, 0, 0, 0, 0, flags);
+        _isWindowTopmost = false;
     }
 
     private void UpdateWindowPosition()
@@ -558,6 +602,11 @@ public sealed partial class DockWindow : WindowEx,
             {
                 UpdateWindowPosition();
             }
+            else if (wParam.Value == PInvoke.ABN_FULLSCREENAPP)
+            {
+                _isFullScreenAppOpen = lParam != 0;
+                UpdateTopmostState();
+            }
         }
         else if (msg == WM_TASKBAR_RESTART)
         {
@@ -576,9 +625,7 @@ public sealed partial class DockWindow : WindowEx,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            var onTop = message.OnTop ? HWND.HWND_TOPMOST : HWND.HWND_NOTOPMOST;
-            PInvoke.SetWindowPos(_hwnd, onTop, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
-            PInvoke.SetWindowPos(_hwnd, HWND.HWND_NOTOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+            UpdateTopmostState(message.BringToFront);
         });
     }
 
@@ -770,18 +817,20 @@ internal static class ShowDesktop
         if (eventType == PInvoke.EVENT_SYSTEM_FOREGROUND)
         {
             var @class = GetWindowClass(hwnd);
-            if (string.Equals(@class, WORKERW, StringComparison.Ordinal) || string.Equals(@class, PROGMAN, StringComparison.Ordinal))
+            var bringToFront = string.Equals(@class, WORKERW, StringComparison.Ordinal) || string.Equals(@class, PROGMAN, StringComparison.Ordinal);
+            if (bringToFront)
             {
                 Logger.LogDebug("ShowDesktop invoked. Bring us back");
-                WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(true));
             }
+
+            WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(bringToFront));
         }
     }
 
     public static bool IsHooked { get; private set; }
 }
 
-internal sealed record BringToTopMessage(bool OnTop);
+internal sealed record BringToTopMessage(bool BringToFront);
 
 internal sealed record RequestShowPaletteAtMessage(Point PosDips);
 
