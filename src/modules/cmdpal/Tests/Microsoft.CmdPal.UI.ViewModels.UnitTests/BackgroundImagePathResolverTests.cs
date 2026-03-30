@@ -218,6 +218,18 @@ public class BackgroundImagePathResolverTests
         }
     }
 
+    [TestMethod]
+    [DataRow("C:\\invalid<>path")]
+    [DataRow("C:\\path\0with_null")]
+    [DataRow(":::")]
+    public void TryGetLocalFolderPath_WithMalformedPath_ReturnsFalse(string malformedPath)
+    {
+        var ok = BackgroundImagePathResolver.TryGetLocalFolderPath(malformedPath, out var resolved);
+
+        Assert.IsFalse(ok);
+        Assert.AreEqual(string.Empty, resolved);
+    }
+
     private static string CreateTempDirectory()
     {
         var directory = Path.Combine(Path.GetTempPath(), $"CmdPalBackgroundResolverTests_{Guid.NewGuid():N}");

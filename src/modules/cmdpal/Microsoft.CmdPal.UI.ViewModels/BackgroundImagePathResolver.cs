@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Frozen;
+
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 /// <summary>
@@ -9,19 +11,21 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 /// </summary>
 public static class BackgroundImagePathResolver
 {
-    public static readonly HashSet<string> SupportedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".png",
-        ".bmp",
-        ".jpg",
-        ".jpeg",
-        ".jfif",
-        ".gif",
-        ".tiff",
-        ".tif",
-        ".webp",
-        ".jxr",
-    };
+    public static readonly FrozenSet<string> SupportedImageExtensions = FrozenSet.ToFrozenSet(
+        new[]
+        {
+            ".png",
+            ".bmp",
+            ".jpg",
+            ".jpeg",
+            ".jfif",
+            ".gif",
+            ".tiff",
+            ".tif",
+            ".webp",
+            ".jxr",
+        },
+        StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Returns true when <paramref name="configuredPath"/> points to an existing local directory.
@@ -58,14 +62,21 @@ public static class BackgroundImagePathResolver
             return false;
         }
 
-        var localCandidate = Path.GetFullPath(candidate);
-        if (!Directory.Exists(localCandidate))
+        try
+        {
+            var localCandidate = Path.GetFullPath(candidate);
+            if (!Directory.Exists(localCandidate))
+            {
+                return false;
+            }
+
+            folderPath = localCandidate;
+            return true;
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException)
         {
             return false;
         }
-
-        folderPath = localCandidate;
-        return true;
     }
 
     /// <summary>
