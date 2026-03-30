@@ -248,8 +248,16 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
         ItemsOrientation = isHorizontal ? Orientation.Horizontal : Orientation.Vertical;
 
-        var margin = settings.DockSize == DockSize.Compact ? 2 : 4;
-        ContentGrid.Margin = new Thickness(margin);
+        // Swap the band template to use the appropriate DockItemControl style
+        var templateKey = settings.DockSize == DockSize.Compact
+            ? "CompactDockBandTemplate"
+            : "DockBandTemplate";
+        if (Resources.TryGetValue(templateKey, out var resource) && resource is DataTemplate template)
+        {
+            StartListView.ItemTemplate = template;
+            CenterListView.ItemTemplate = template;
+            EndListView.ItemTemplate = template;
+        }
 
         if (settings.Backdrop == DockBackdrop.Transparent)
         {
@@ -302,6 +310,11 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
                     // Update toggle menu item checked state based on current settings
                     ShowTitlesMenuItem.IsChecked = _editModeContextBand.ShowTitles;
                     ShowSubtitlesMenuItem.IsChecked = _editModeContextBand.ShowSubtitles;
+
+                    // Hide subtitle toggle in compact mode — no subtitle in the template
+                    ShowSubtitlesMenuItem.Visibility = DockSize == DockSize.Compact
+                        ? Visibility.Collapsed
+                        : Visibility.Visible;
 
                     PreparePopupForShow(EditModeContextMenu, dockItem);
                     EditModeContextMenu.ShowAt(

@@ -24,7 +24,7 @@ internal static class DockSettingsToViews
         return size switch
         {
             DockSize.Default => 38,
-            DockSize.Compact => 26,
+            DockSize.Compact => 24,
             _ => throw new NotImplementedException(),
         };
     }

@@ -90,7 +90,6 @@ public sealed partial class DockItemControl : Control
     private DockControl? _parentDock;
     private ToolTip? _toolTip;
     private long _dockSideCallbackToken = -1;
-    private long _dockSizeCallbackToken = -1;
 
     private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -249,15 +248,11 @@ public sealed partial class DockItemControl : Control
         if (parent is DockControl dock)
         {
             _parentDock = dock;
-            UpdateInnerMarginForDockSide(dock.DockSide, dock.DockSize);
-            UpdateMinHeightForSize(dock.DockSize);
+            UpdateInnerMarginForDockSide(dock.DockSide);
             UpdateAllVisibility();
             _dockSideCallbackToken = dock.RegisterPropertyChangedCallback(
                 DockControl.DockSideProperty,
                 OnParentDockSideChanged);
-            _dockSizeCallbackToken = dock.RegisterPropertyChangedCallback(
-                DockControl.DockSizeProperty,
-                OnParentDockSizeChanged);
         }
 
         UpdateToolTip();
@@ -271,24 +266,12 @@ public sealed partial class DockItemControl : Control
 
     private void DockItemControl_Unloaded(object sender, RoutedEventArgs e)
     {
-        if (_parentDock is not null)
+        if (_parentDock is not null && _dockSideCallbackToken >= 0)
         {
-            if (_dockSideCallbackToken >= 0)
-            {
-                _parentDock.UnregisterPropertyChangedCallback(
-                    DockControl.DockSideProperty,
-                    _dockSideCallbackToken);
-                _dockSideCallbackToken = -1;
-            }
-
-            if (_dockSizeCallbackToken >= 0)
-            {
-                _parentDock.UnregisterPropertyChangedCallback(
-                    DockControl.DockSizeProperty,
-                    _dockSizeCallbackToken);
-                _dockSizeCallbackToken = -1;
-            }
-
+            _parentDock.UnregisterPropertyChangedCallback(
+                DockControl.DockSideProperty,
+                _dockSideCallbackToken);
+            _dockSideCallbackToken = -1;
             _parentDock = null;
         }
 
@@ -300,44 +283,25 @@ public sealed partial class DockItemControl : Control
     {
         if (sender is DockControl dock)
         {
-            UpdateInnerMarginForDockSide(dock.DockSide, dock.DockSize);
+            // UpdateInnerMarginForDockSide(dock.DockSide);
             UpdateAlignment();
         }
     }
 
-    private void OnParentDockSizeChanged(DependencyObject sender, DependencyProperty dp)
-    {
-        if (sender is DockControl dock)
-        {
-            UpdateInnerMarginForDockSide(dock.DockSide, dock.DockSize);
-            UpdateMinHeightForSize(dock.DockSize);
-        }
-    }
-
-    private void UpdateInnerMarginForDockSide(DockSide side, DockSize size)
+    private void UpdateInnerMarginForDockSide(DockSide side)
     {
         // Push the visual (PART_RootGrid) inward on the screen-edge side so
         // the transparent hit-test area extends all the way to the edge.
         // The values here compensate for the margin/padding removed from the
         // DockControl's ContentGrid on the screen-edge side.
-        var compact = size == DockSize.Compact;
         InnerMargin = side switch
         {
-            DockSide.Top => new Thickness(0, compact ? 2 : 4, 0, 0),
-            DockSide.Bottom => new Thickness(0, 0, 0, compact ? 2 : 4),
-            DockSide.Left => new Thickness(compact ? 4 : 8, 0, 0, 0),
-            DockSide.Right => new Thickness(0, 0, compact ? 4 : 8, 0),
+            DockSide.Top => new Thickness(0, 0, 0, 0),
+            DockSide.Bottom => new Thickness(0, 0, 0, 4),
+            DockSide.Left => new Thickness(8, 0, 0, 0),
+            DockSide.Right => new Thickness(0, 0, 8, 0),
             _ => new Thickness(0),
         };
-    }
-
-    private void UpdateMinHeightForSize(DockSize size)
-    {
-        var rootGrid = GetTemplateChild("PART_RootGrid") as FrameworkElement;
-        if (rootGrid is not null)
-        {
-            rootGrid.MinHeight = size == DockSize.Compact ? 22 : 30;
-        }
     }
 
     private void Control_PointerEntered(object sender, PointerRoutedEventArgs e)

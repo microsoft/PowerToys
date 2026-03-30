@@ -44,6 +44,6 @@
             IsHoldingEnabled="False"
             TintColor="{x:Bind WindowViewModel.BackgroundImageTint, Mode=OneWay}"
             TintIntensity="{x:Bind WindowViewModel.BackgroundImageTintIntensity, Mode=OneWay}"
-            Visibility="{x:Bind WindowViewModel.ShowBackgroundImage, Mode=OneWay}" />
+            Visibility="{x:Bind WindowViewModel.ShowBackgroundImage, Mode=OneWay}" />       
     </Grid>
 </winuiex:WindowEx>
