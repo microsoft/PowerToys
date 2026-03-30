@@ -22,9 +22,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
     <Version>$(AdvancedPasteVersion)</Version>
-    <!-- Prevent WindowsDesktop framework (WPF/WinForms) from propagating transitively via Settings.UI.Library → MouseJump.Common.
-         AdvancedPaste is a WinUI3 MSIX app and does not use WPF/WinForms. -->
-    <DisableTransitiveFrameworkReferences>true</DisableTransitiveFrameworkReferences>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(CIBuild)'=='true' or '$(GeneratePackageLocally)'=='true'">
