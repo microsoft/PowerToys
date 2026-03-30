@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common;
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
@@ -13,33 +12,48 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
 {
     private readonly ExtensionObject<ICommandSettings> _model = new(_unsafeSettings);
     private readonly Lock _settingsPageCommandLock = new();
-    private IContentPage? _settingsPageCommand;
+    private SettingsPageMetadata? _settingsPageMetadata;
 
-    public IContentPage? SettingsPageCommand
+    public IContentPage? SettingsPageCommand => CachedSettingsPageMetadata?.SettingsPageCommand;
+
+    public SettingsPageMetadata? CachedSettingsPageMetadata
     {
         get
         {
-            if (_settingsPageCommand is not null)
-            {
-                return _settingsPageCommand;
-            }
-
             lock (_settingsPageCommandLock)
             {
-                if (_settingsPageCommand is not null)
+                if (_settingsPageMetadata is not null)
                 {
-                    return _settingsPageCommand;
+                    return _settingsPageMetadata;
                 }
 
                 try
                 {
+                    // RPC: fetch the provider's current SettingsPage snapshot.
                     var settingsPageCommand = _model.Unsafe?.SettingsPage;
-                    if (settingsPageCommand is not null)
+                    if (settingsPageCommand is null)
                     {
-                        _settingsPageCommand = settingsPageCommand;
+                        return null;
                     }
 
-                    return settingsPageCommand;
+                    // Cache a signature snapshot instead of trusting object identity.
+                    // Toolkit Settings.SettingsPage currently constructs a fresh page
+                    // object on each access, and those pages usually have empty Ids.
+                    // We intentionally do not observe later page updates here: this
+                    // metadata only supports the top-level menu replacement heuristic.
+                    //
+                    // Existing behavior is already rebuild-driven here: if an extension
+                    // changes its settings page/menu shape at runtime, the host menu
+                    // will not reflect that until the command/menu gets rebuilt.
+                    //
+                    // RPC: snapshot Id/Name/type once so later menu matching can stay local.
+                    _settingsPageMetadata = new(
+                        settingsPageCommand,
+                        settingsPageCommand.GetType(),
+                        settingsPageCommand.Id ?? string.Empty,
+                        settingsPageCommand.Name ?? string.Empty);
+
+                    return _settingsPageMetadata;
                 }
                 catch (Exception ex)
                 {
@@ -54,15 +68,25 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
 
     public bool Initialized { get; private set; }
 
-    public bool HasSettings =>
-        _model.Unsafe is not null && // We have a settings model AND
-        (!Initialized || SettingsPage is not null); // we weren't initialized, OR we were, and we do have a settings page
+    public bool HasSettings
+    {
+        get
+        {
+            lock (_settingsPageCommandLock)
+            {
+                return Initialized ? SettingsPage is not null : _settingsPageMetadata is not null || SettingsPage is not null;
+            }
+        }
+    }
+
+    public bool HasOrMayHaveSettings => HasSettings || (!Initialized && _model.Unsafe is not null);
 
     private void UnsafeInitializeProperties()
     {
-        if (SettingsPageCommand is not null)
+        var settingsPageCommand = SettingsPageCommand;
+        if (settingsPageCommand is not null)
         {
-            SettingsPage = new CommandPaletteContentPageViewModel(SettingsPageCommand, mainThread, provider.ExtensionHost, provider.GetProviderContext());
+            SettingsPage = new CommandPaletteContentPageViewModel(settingsPageCommand, mainThread, provider.ExtensionHost, provider.GetProviderContext());
             SettingsPage.InitializeProperties();
         }
     }
@@ -75,10 +99,13 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
         }
         catch (Exception ex)
         {
-            CoreLogger.LogError($"Failed to load settings page", ex: ex);
+            InvalidateSettingsPage();
+            CoreLogger.LogError("Failed to load settings page", ex);
         }
-
-        Initialized = true;
+        finally
+        {
+            Initialized = true;
+        }
     }
 
     public void DoOnUiThread(Action action)
@@ -88,5 +115,23 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
             CancellationToken.None,
             TaskCreationOptions.None,
             mainThread);
+    }
+
+    private void InvalidateSettingsPage()
+    {
+        lock (_settingsPageCommandLock)
+        {
+            _settingsPageMetadata = null;
+            SettingsPage = null;
+            Initialized = false;
+        }
+    }
+
+    internal void Cleanup()
+    {
+        lock (_settingsPageCommandLock)
+        {
+            _settingsPageMetadata = null;
+        }
     }
 }

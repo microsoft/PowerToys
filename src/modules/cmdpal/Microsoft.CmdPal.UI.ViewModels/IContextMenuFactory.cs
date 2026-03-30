@@ -13,5 +13,5 @@ public interface IContextMenuFactory
     void AddMoreCommandsToTopLevel(
         TopLevelViewModel topLevelItem,
         ICommandProviderContext providerContext,
-        List<IContextItem?> contextItems);
+        List<IContextItemViewModel> contextItems);
 }

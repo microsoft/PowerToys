@@ -4,6 +4,7 @@
 
 using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Controls;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -18,6 +19,11 @@ public sealed partial class ExtensionPage : Page
     private const int FocusRetryDelayMs = 50;
     private const int MaxFocusAttempts = 10;
     private const int MaxSettingsFocusAttempts = 40;
+    private static readonly BringIntoViewOptions BringIntoViewTopOptions = new()
+    {
+        AnimationDesired = false,
+        VerticalAlignmentRatio = 0.0,
+    };
 
     private ExtensionSettingsNavigationRequest? _extensionSettingsRequest;
 
@@ -50,70 +56,88 @@ public sealed partial class ExtensionPage : Page
 
     private async Task TryFocusRequestedContextAsync()
     {
-        if (_extensionSettingsRequest is null ||
-            ViewModel is null ||
-            _extensionSettingsRequest.FocusTarget == ExtensionSettingsFocusTarget.None ||
-            !ViewModel.IsEnabled)
+        try
         {
-            return;
-        }
-
-        if (_extensionSettingsRequest.FocusTarget == ExtensionSettingsFocusTarget.SettingsPage)
-        {
-            await TryFocusSettingsPageAsync();
-            return;
-        }
-
-        if (string.IsNullOrEmpty(_extensionSettingsRequest.CommandId))
-        {
-            return;
-        }
-
-        var commandIndex = ViewModel.TopLevelCommands.FindIndex(command => command.Id == _extensionSettingsRequest.CommandId);
-        if (commandIndex < 0)
-        {
-            return;
-        }
-
-        for (var attempt = 0; attempt < MaxFocusAttempts; attempt++)
-        {
-            UpdateLayout();
-            RootScrollViewer.UpdateLayout();
-            TopLevelCommandsRepeater.UpdateLayout();
-
-            if (TopLevelCommandsRepeater.TryGetElement(commandIndex) is not FrameworkElement commandElement)
+            if (_extensionSettingsRequest is null ||
+                ViewModel is null ||
+                _extensionSettingsRequest.FocusTarget == ExtensionSettingsFocusTarget.None ||
+                !ViewModel.IsEnabled)
             {
-                await Task.Delay(FocusRetryDelayMs);
-                continue;
-            }
-
-            if (commandElement is SettingsExpander expander)
-            {
-                expander.IsExpanded = true;
-                expander.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = false });
-                commandElement.UpdateLayout();
-            }
-
-            var focusTarget = FindFocusTarget(commandElement, _extensionSettingsRequest.FocusTarget);
-            if (focusTarget is null)
-            {
-                await Task.Delay(FocusRetryDelayMs);
-                continue;
-            }
-
-            focusTarget.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = false });
-            if (focusTarget.Focus(FocusState.Programmatic))
-            {
-                if (focusTarget is TextBox textBox)
-                {
-                    textBox.SelectAll();
-                }
-
-                ClearPendingFocusRequest();
                 return;
             }
 
-            await Task.Delay(FocusRetryDelayMs);
+            if (_extensionSettingsRequest.FocusTarget == ExtensionSettingsFocusTarget.SettingsPage)
+            {
+                await TryFocusSettingsPageAsync();
+                return;
+            }
+
+            if (string.IsNullOrEmpty(_extensionSettingsRequest.CommandId))
+            {
+                return;
+            }
+
+            var commandIndex = ViewModel.TopLevelCommands.FindIndex(command => command.Id == _extensionSettingsRequest.CommandId);
+            if (commandIndex < 0)
+            {
+                return;
+            }
+
+            var requestedCommand = ViewModel.TopLevelCommands[commandIndex];
+
+            for (var attempt = 0; attempt < MaxFocusAttempts; attempt++)
+            {
+                UpdateLayout();
+                RootScrollViewer.UpdateLayout();
+                TopLevelCommandsRepeater.UpdateLayout();
+
+                if (TopLevelCommandsRepeater.GetOrCreateElement(commandIndex) is not FrameworkElement commandElement)
+                {
+                    await Task.Delay(FocusRetryDelayMs);
+                    continue;
+                }
+
+                if (!IsRequestedCommandElement(commandElement, requestedCommand))
+                {
+                    await Task.Delay(FocusRetryDelayMs);
+                    continue;
+                }
+
+                var scrollTarget = commandElement;
+                if (commandElement is SettingsExpander expander)
+                {
+                    expander.IsExpanded = true;
+                    scrollTarget = expander;
+                    BringElementIntoViewAtTop(expander);
+                    commandElement.UpdateLayout();
+                }
+
+                var focusTarget = FindFocusTarget(commandElement, _extensionSettingsRequest.FocusTarget);
+                if (focusTarget is null)
+                {
+                    await Task.Delay(FocusRetryDelayMs);
+                    continue;
+                }
+
+                if (focusTarget.Focus(FocusState.Programmatic))
+                {
+                    BringElementIntoViewAtTop(scrollTarget);
+
+                    if (focusTarget is TextBox textBox)
+                    {
+                        textBox.SelectAll();
+                    }
+
+                    ClearPendingFocusRequest();
+                    return;
+                }
+
+                await Task.Delay(FocusRetryDelayMs);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to focus the requested extension settings context", ex);
         }
     }
 
@@ -145,7 +169,7 @@ public sealed partial class ExtensionPage : Page
                 continue;
             }
 
-            focusTarget.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = false });
+            BringElementIntoViewAtTop(focusTarget);
             if (focusTarget.Focus(FocusState.Programmatic))
             {
                 ClearPendingFocusRequest();
@@ -172,15 +196,31 @@ public sealed partial class ExtensionPage : Page
         };
     }
 
+    private static bool IsRequestedCommandElement(FrameworkElement commandElement, TopLevelViewModel requestedCommand)
+    {
+        if (ReferenceEquals(commandElement.DataContext, requestedCommand))
+        {
+            return true;
+        }
+
+        return commandElement.DataContext is TopLevelViewModel realizedCommand &&
+               realizedCommand.Id == requestedCommand.Id;
+    }
+
     private FrameworkElement? FindSettingsFocusTarget()
     {
-        ExtensionSettingsHeaderTextBlock.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = false });
-        SettingsFrame.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = false });
+        BringElementIntoViewAtTop(ExtensionSettingsHeaderTextBlock);
+        BringElementIntoViewAtTop(SettingsFrame);
 
         return SettingsFrame.FindDescendant<Control>(control =>
             control.Visibility == Visibility.Visible &&
             control.IsEnabled &&
             control.IsTabStop);
+    }
+
+    private static void BringElementIntoViewAtTop(FrameworkElement element)
+    {
+        element.StartBringIntoView(BringIntoViewTopOptions);
     }
 
     private void ClearPendingFocusRequest()

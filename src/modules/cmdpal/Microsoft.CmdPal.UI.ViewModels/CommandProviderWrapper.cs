@@ -228,6 +228,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
             // Note: explicitly not InitializeProperties()ing the settings here. If
             // we do that, then we'd regress GH #38321
+            Settings?.Cleanup();
             Settings = new(model.Settings, this, _taskScheduler);
 
             // We do need to explicitly initialize commands though
