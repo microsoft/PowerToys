@@ -22,9 +22,7 @@
                 </Grid.RowDefinitions>
                 <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
                 <StackPanel Grid.Row="1" Orientation="Horizontal">
-                    <TextBlock
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="{x:Bind Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
                     <TextBlock
                         Margin="4,0,0,0"
                         Style="{StaticResource BodyStrongTextBlockStyle}"
@@ -53,7 +51,10 @@
 
         <!--  Template for AiSize - shows name and description  -->
         <DataTemplate x:Key="AiSizeTemplate" x:DataType="m:AiSize">
-            <StackPanel VerticalAlignment="Center" AutomationProperties.Name="{x:Bind Name}" Orientation="Vertical">
+            <StackPanel
+                VerticalAlignment="Center"
+                AutomationProperties.Name="{x:Bind Name}"
+                Orientation="Vertical">
                 <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
                 <TextBlock x:Uid="Input_AiSuperResolutionDescription" />
             </StackPanel>
