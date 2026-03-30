@@ -376,6 +376,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_A => new[] { "á", "æ" },
                 LetterKey.VK_D => new[] { "ð" },
                 LetterKey.VK_E => new[] { "é" },
+                LetterKey.VK_I => new[] { "í" },
                 LetterKey.VK_O => new[] { "ó", "ö" },
                 LetterKey.VK_U => new[] { "ú" },
                 LetterKey.VK_Y => new[] { "ý" },

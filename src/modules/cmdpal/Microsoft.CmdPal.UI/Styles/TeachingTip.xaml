@@ -257,13 +257,29 @@
                                 <VisualState x:Name="HeroContentTop">
                                     <VisualState.Setters>
                                         <Setter Target="HeroContentBorder.(Grid.Row)" Value="0" />
-                                        <Setter Target="HeroContentBorder.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}, FallbackValue=0}" />
+                                        <Setter Target="HeroContentBorder.CornerRadius">
+                                            <Setter.Value>
+                                                <Binding
+                                                    Converter="{StaticResource TopCornerRadiusFilterConverter}"
+                                                    FallbackValue="0"
+                                                    Path="CornerRadius"
+                                                    RelativeSource="{RelativeSource TemplatedParent}" />
+                                            </Setter.Value>
+                                        </Setter>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="HeroContentBottom">
                                     <VisualState.Setters>
                                         <Setter Target="HeroContentBorder.(Grid.Row)" Value="2" />
-                                        <Setter Target="HeroContentBorder.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}, FallbackValue=0}" />
+                                        <Setter Target="HeroContentBorder.CornerRadius">
+                                            <Setter.Value>
+                                                <Binding
+                                                    Converter="{StaticResource BottomCornerRadiusFilterConverter}"
+                                                    FallbackValue="0"
+                                                    Path="CornerRadius"
+                                                    RelativeSource="{RelativeSource TemplatedParent}" />
+                                            </Setter.Value>
+                                        </Setter>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

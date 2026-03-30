@@ -21,7 +21,7 @@ internal sealed class TextExtractorModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new ToggleTextExtractorCommand())
+            yield return new ListItem(new ToggleTextExtractorCommand() { Id = "com.microsoft.powertoys.textExtractor.toggle" })
             {
                 Title = Resources.TextExtractor_Toggle_Title,
                 Subtitle = Resources.TextExtractor_Toggle_Subtitle,
@@ -29,7 +29,7 @@ internal sealed class TextExtractorModuleCommandProvider : ModuleCommandProvider
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.textExtractor.openSettings" })
         {
             Title = title,
             Subtitle = Resources.TextExtractor_Settings_Subtitle,

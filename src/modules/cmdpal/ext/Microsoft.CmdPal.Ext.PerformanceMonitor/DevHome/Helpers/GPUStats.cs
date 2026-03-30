@@ -6,16 +6,43 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
+using System.Text;
 
 namespace CoreWidgetProvider.Helpers;
 
-internal sealed partial class GPUStats : IDisposable
+internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposable
 {
-    // GPU counters
-    private readonly Dictionary<int, List<PerformanceCounter>> _gpuCounters = new();
+    // Performance counter category & counter names
+    private const string GpuEngineCategoryName = "GPU Engine";
+    private const string UtilizationPercentageCounter = "Utilization Percentage";
 
-    private readonly List<Data> _stats = new();
+    private static readonly CompositeFormat TemperatureFormat = CompositeFormat.Parse("{0:0.} \u00B0C");
+
+    // Instance-name key tokens
+    private const string KeyPid = "pid";
+    private const string KeyLuid = "luid";
+    private const string KeyPhys = "phys";
+    private const string KeyEngineType = "engtype";
+
+    // Engine type filter
+    private const string EngineType3D = "3D";
+
+    // Display strings
+    private const string GpuNamePrefix = "GPU ";
+    private const string TemperatureUnavailable = "--";
+
+    // Batch read via category - single kernel transition per tick
+    private readonly PerformanceCounterCategory? _gpuEngineCategory;
+
+    // Discovered physical GPU IDs
+    private readonly HashSet<int> _knownPhysIds = [];
+
+    private readonly List<Data> _stats = [];
+
+    // Previous raw samples for computing cooked (delta-based) values
+    private Dictionary<string, CounterSample> _previousSamples = [];
+    private bool _gpuEnumerationFailureLogged;
+    private bool _gpuReadFailureLogged;
 
     public sealed class Data
     {
@@ -27,73 +54,65 @@ internal sealed partial class GPUStats : IDisposable
 
         public float Temperature { get; set; }
 
-        public List<float> GpuChartValues { get; set; } = new();
+        public List<float> GpuChartValues { get; set; } = [];
     }
 
     public GPUStats()
     {
+        _gpuEngineCategory = CreatePerformanceCounterCategory(GpuEngineCategoryName);
+
         GetGPUPerfCounters();
         LoadGPUsFromCounters();
     }
 
     public void GetGPUPerfCounters()
     {
-        // There are really 4 different things we should be tracking the usage
-        // of. Similar to how the instance name ends with `3D`, the following
-        // suffixes are important.
-        //
-        // * `3D`
-        // * `VideoEncode`
-        // * `VideoDecode`
-        // * `VideoProcessing`
-        //
-        // We could totally put each of those sets of counters into their own
-        // set. That's what we should do, so that we can report the sum of those
-        // numbers as the total utilization, and then have them broken out in
-        // the card template and in the details metadata.
-        _gpuCounters.Clear();
-
-        var perfCounterCategory = new PerformanceCounterCategory("GPU Engine");
-        var instanceNames = perfCounterCategory.GetInstanceNames();
-
-        foreach (var instanceName in instanceNames)
+        if (_gpuEngineCategory is null)
         {
-            if (!instanceName.EndsWith("3D", StringComparison.InvariantCulture))
-            {
-                continue;
-            }
+            return;
+        }
 
-            var utilizationCounters = perfCounterCategory.GetCounters(instanceName)
-                .Where(x => x.CounterName.StartsWith("Utilization Percentage", StringComparison.InvariantCulture));
+        try
+        {
+            // There are really 4 different things we should be tracking the usage
+            // of. Similar to how the instance name ends with `3D`, the following
+            // suffixes are important.
+            //
+            // * `3D`
+            // * `VideoEncode`
+            // * `VideoDecode`
+            // * `VideoProcessing`
+            //
+            // We could totally put each of those sets of counters into their own
+            // set. That's what we should do, so that we can report the sum of those
+            // numbers as the total utilization, and then have them broken out in
+            // the card template and in the details metadata.
+            _knownPhysIds.Clear();
 
-            foreach (var counter in utilizationCounters)
+            var instanceNames = _gpuEngineCategory.GetInstanceNames();
+
+            foreach (var instanceName in instanceNames)
             {
-                var counterKey = counter.InstanceName;
+                if (!instanceName.EndsWith(EngineType3D, StringComparison.InvariantCulture))
+                {
+                    continue;
+                }
+
+                var counterKey = instanceName;
 
                 // skip these values
-                GetKeyValueFromCounterKey("pid", ref counterKey);
-                GetKeyValueFromCounterKey("luid", ref counterKey);
+                GetKeyValueFromCounterKey(KeyPid, ref counterKey);
+                GetKeyValueFromCounterKey(KeyLuid, ref counterKey);
 
-                int phys;
-                var success = int.TryParse(GetKeyValueFromCounterKey("phys", ref counterKey), out phys);
-                if (success)
+                if (int.TryParse(GetKeyValueFromCounterKey(KeyPhys, ref counterKey), out var phys))
                 {
-                    GetKeyValueFromCounterKey("eng", ref counterKey);
-                    var engtype = GetKeyValueFromCounterKey("engtype", ref counterKey);
-                    if (engtype != "3D")
-                    {
-                        continue;
-                    }
-
-                    if (!_gpuCounters.TryGetValue(phys, out var value))
-                    {
-                        value = new();
-                        _gpuCounters.Add(phys, value);
-                    }
-
-                    value.Add(counter);
+                    _knownPhysIds.Add(phys);
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            LogFailureOnce(ref _gpuEnumerationFailureLogged, "Failed while enumerating GPU performance counters.", ex);
         }
     }
 
@@ -108,70 +127,92 @@ internal sealed partial class GPUStats : IDisposable
         //
         // For now, we'll just use the indices as the GPU names.
         _stats.Clear();
-        foreach (var (k, v) in _gpuCounters)
+        foreach (var id in _knownPhysIds)
         {
-            var id = k;
-            var counters = v;
-            _stats.Add(new Data() { PhysId = id, Name = "GPU " + id });
+            _stats.Add(new Data() { PhysId = id, Name = GpuNamePrefix + id });
         }
     }
 
     public void GetData()
     {
-        foreach (var gpu in _stats)
+        if (_gpuEngineCategory is null)
         {
-            List<PerformanceCounter>? counters;
-            var success = _gpuCounters.TryGetValue(gpu.PhysId, out counters);
+            return;
+        }
 
-            if (success && counters != null)
+        try
+        {
+            // Single batch read - one kernel transition for ALL GPU Engine instances
+            var categoryData = _gpuEngineCategory.ReadCategory();
+
+            if (!categoryData.Contains(UtilizationPercentageCounter))
             {
-                // TODO: This outer try/catch should be replaced with more secure locking around shared resources.
-                try
+                return;
+            }
+
+            var utilizationData = categoryData[UtilizationPercentageCounter];
+
+            // Accumulate usage per physical GPU
+            var gpuUsage = new Dictionary<int, float>();
+            var currentSamples = new Dictionary<string, CounterSample>();
+
+            foreach (InstanceData instance in utilizationData.Values)
+            {
+                var instanceName = instance.InstanceName;
+                if (!instanceName.EndsWith(EngineType3D, StringComparison.InvariantCulture))
                 {
-                    var sum = 0.0f;
-                    var countersToRemove = new List<PerformanceCounter>();
-                    foreach (var counter in counters)
-                    {
-                        try
-                        {
-                            // NextValue() can throw an InvalidOperationException if the counter is no longer there.
-                            sum += counter.NextValue();
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            // We can't modify the list during the loop, so save it to remove at the end.
-                            // _log.Information(ex, "Failed to get next value, remove");
-                            countersToRemove.Add(counter);
-                        }
-                        catch (Exception)
-                        {
-                            // _log.Error(ex, "Error going through process counters.");
-                        }
-                    }
-
-                    foreach (var counter in countersToRemove)
-                    {
-                        counters.Remove(counter);
-                        counter.Dispose();
-                    }
-
-                    gpu.Usage = sum / 100;
-                    lock (gpu.GpuChartValues)
-                    {
-                        ChartHelper.AddNextChartValue(sum, gpu.GpuChartValues);
-                    }
+                    continue;
                 }
-                catch (Exception)
+
+                var counterKey = instanceName;
+                GetKeyValueFromCounterKey(KeyPid, ref counterKey);
+                GetKeyValueFromCounterKey(KeyLuid, ref counterKey);
+
+                if (!int.TryParse(GetKeyValueFromCounterKey(KeyPhys, ref counterKey), out var phys))
                 {
-                    // _log.Error(ex, "Error summing process counters.");
+                    continue;
+                }
+
+                var sample = instance.Sample;
+                currentSamples[instanceName] = sample;
+
+                if (_previousSamples.TryGetValue(instanceName, out var prevSample))
+                {
+                    try
+                    {
+                        var cookedValue = CounterSampleCalculator.ComputeCounterValue(prevSample, sample);
+                        gpuUsage[phys] = gpuUsage.GetValueOrDefault(phys) + cookedValue;
+                    }
+                    catch (Exception)
+                    {
+                        // Skip this instance on calculation error.
+                    }
                 }
             }
+
+            // Swap samples - stale entries are automatically cleaned up
+            _previousSamples = currentSamples;
+
+            // Update stats
+            foreach (var gpu in _stats)
+            {
+                var sum = gpuUsage.TryGetValue(gpu.PhysId, out var usage) ? usage : 0f;
+                gpu.Usage = sum / 100;
+                lock (gpu.GpuChartValues)
+                {
+                    ChartHelper.AddNextChartValue(sum, gpu.GpuChartValues);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LogFailureOnce(ref _gpuReadFailureLogged, "Failed while reading GPU performance counters.", ex);
         }
     }
 
     internal string CreateGPUImageUrl(int gpuChartIndex)
     {
-        return ChartHelper.CreateImageUrl(_stats.ElementAt(gpuChartIndex).GpuChartValues, ChartHelper.ChartType.GPU);
+        return ChartHelper.CreateImageUrl(_stats[gpuChartIndex].GpuChartValues, ChartHelper.ChartType.GPU);
     }
 
     internal string GetGPUName(int gpuActiveIndex)
@@ -234,16 +275,16 @@ internal sealed partial class GPUStats : IDisposable
         // removed.
         if (_stats.Count <= gpuActiveIndex)
         {
-            return "--";
+            return TemperatureUnavailable;
         }
 
         var temperature = _stats[gpuActiveIndex].Temperature;
         if (temperature == 0)
         {
-            return "--";
+            return TemperatureUnavailable;
         }
 
-        return temperature.ToString("0.", CultureInfo.InvariantCulture) + " \x00B0C";
+        return string.Format(CultureInfo.InvariantCulture, TemperatureFormat.Format, temperature);
     }
 
     private string GetKeyValueFromCounterKey(string key, ref string counterKey)
@@ -254,13 +295,13 @@ internal sealed partial class GPUStats : IDisposable
         }
 
         counterKey = counterKey.Substring(key.Length + 1);
-        if (key.Equals("engtype", StringComparison.Ordinal))
+        if (key.Equals(KeyEngineType, StringComparison.Ordinal))
         {
             return counterKey;
         }
 
         var pos = counterKey.IndexOf('_');
-        if (key.Equals("luid", StringComparison.Ordinal))
+        if (key.Equals(KeyLuid, StringComparison.Ordinal))
         {
             pos = counterKey.IndexOf('_', pos + 1);
         }
@@ -272,12 +313,6 @@ internal sealed partial class GPUStats : IDisposable
 
     public void Dispose()
     {
-        foreach (var counterPair in _gpuCounters)
-        {
-            foreach (var counter in counterPair.Value)
-            {
-                counter.Dispose();
-            }
-        }
+        _previousSamples.Clear();
     }
 }

@@ -10,13 +10,14 @@ using Windows.Win32;
 
 namespace CoreWidgetProvider.Helpers;
 
-internal sealed partial class MemoryStats : IDisposable
+internal sealed partial class MemoryStats : PerformanceCounterSourceBase, IDisposable
 {
-    private readonly PerformanceCounter _memCommitted = new("Memory", "Committed Bytes", string.Empty);
-    private readonly PerformanceCounter _memCached = new("Memory", "Cache Bytes", string.Empty);
-    private readonly PerformanceCounter _memCommittedLimit = new("Memory", "Commit Limit", string.Empty);
-    private readonly PerformanceCounter _memPoolPaged = new("Memory", "Pool Paged Bytes", string.Empty);
-    private readonly PerformanceCounter _memPoolNonPaged = new("Memory", "Pool Nonpaged Bytes", string.Empty);
+    private readonly PerformanceCounter? _memCommitted;
+    private readonly PerformanceCounter? _memCached;
+    private readonly PerformanceCounter? _memCommittedLimit;
+    private readonly PerformanceCounter? _memPoolPaged;
+    private readonly PerformanceCounter? _memPoolNonPaged;
+    private bool _memoryCounterReadFailureLogged;
 
     public float MemUsage
     {
@@ -60,6 +61,15 @@ internal sealed partial class MemoryStats : IDisposable
 
     public List<float> MemChartValues { get; set; } = new();
 
+    public MemoryStats()
+    {
+        _memCommitted = CreatePerformanceCounter("Memory", "Committed Bytes");
+        _memCached = CreatePerformanceCounter("Memory", "Cache Bytes");
+        _memCommittedLimit = CreatePerformanceCounter("Memory", "Commit Limit");
+        _memPoolPaged = CreatePerformanceCounter("Memory", "Pool Paged Bytes");
+        _memPoolNonPaged = CreatePerformanceCounter("Memory", "Pool Nonpaged Bytes");
+    }
+
     public void GetData()
     {
         Windows.Win32.System.SystemInformation.MEMORYSTATUSEX memStatus = default;
@@ -77,11 +87,18 @@ internal sealed partial class MemoryStats : IDisposable
             }
         }
 
-        MemCached = (ulong)_memCached.NextValue();
-        MemCommitted = (ulong)_memCommitted.NextValue();
-        MemCommitLimit = (ulong)_memCommittedLimit.NextValue();
-        MemPagedPool = (ulong)_memPoolPaged.NextValue();
-        MemNonPagedPool = (ulong)_memPoolNonPaged.NextValue();
+        try
+        {
+            MemCached = (ulong)(_memCached?.NextValue() ?? 0);
+            MemCommitted = (ulong)(_memCommitted?.NextValue() ?? 0);
+            MemCommitLimit = (ulong)(_memCommittedLimit?.NextValue() ?? 0);
+            MemPagedPool = (ulong)(_memPoolPaged?.NextValue() ?? 0);
+            MemNonPagedPool = (ulong)(_memPoolNonPaged?.NextValue() ?? 0);
+        }
+        catch (Exception ex)
+        {
+            LogFailureOnce(ref _memoryCounterReadFailureLogged, "Failed while reading memory performance counters.", ex);
+        }
     }
 
     public string CreateMemImageUrl()
@@ -91,10 +108,10 @@ internal sealed partial class MemoryStats : IDisposable
 
     public void Dispose()
     {
-        _memCommitted.Dispose();
-        _memCached.Dispose();
-        _memCommittedLimit.Dispose();
-        _memPoolPaged.Dispose();
-        _memPoolNonPaged.Dispose();
+        _memCommitted?.Dispose();
+        _memCached?.Dispose();
+        _memCommittedLimit?.Dispose();
+        _memPoolPaged?.Dispose();
+        _memPoolNonPaged?.Dispose();
     }
 }

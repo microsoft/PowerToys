@@ -5,10 +5,12 @@
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -21,12 +23,20 @@ public sealed partial class DockItemControl : Control
     }
 
     public static readonly DependencyProperty ToolTipProperty =
-        DependencyProperty.Register(nameof(ToolTip), typeof(string), typeof(DockItemControl), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(ToolTip), typeof(string), typeof(DockItemControl), new PropertyMetadata(null, OnToolTipPropertyChanged));
 
     public string ToolTip
     {
         get => (string)GetValue(ToolTipProperty);
         set => SetValue(ToolTipProperty, value);
+    }
+
+    private static void OnToolTipPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateToolTip();
+        }
     }
 
     public static readonly DependencyProperty TitleProperty =
@@ -56,6 +66,15 @@ public sealed partial class DockItemControl : Control
         set => SetValue(IconProperty, value);
     }
 
+    public static readonly DependencyProperty InnerMarginProperty =
+        DependencyProperty.Register(nameof(InnerMargin), typeof(Thickness), typeof(DockItemControl), new PropertyMetadata(new Thickness(0)));
+
+    public Thickness InnerMargin
+    {
+        get => (Thickness)GetValue(InnerMarginProperty);
+        set => SetValue(InnerMarginProperty, value);
+    }
+
     public static readonly DependencyProperty TextVisibilityProperty =
         DependencyProperty.Register(nameof(TextVisibility), typeof(Visibility), typeof(DockItemControl), new PropertyMetadata(null, OnTextPropertyChanged));
 
@@ -68,6 +87,9 @@ public sealed partial class DockItemControl : Control
     private const string IconPresenterName = "IconPresenter";
 
     private FrameworkElement? _iconPresenter;
+    private DockControl? _parentDock;
+    private ToolTip? _toolTip;
+    private long _dockSideCallbackToken = -1;
 
     private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -114,69 +136,95 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateIconVisibility()
     {
-        if (Icon is IconBox icon)
+        var shouldShowIcon = ShouldShowIcon();
+        if (_iconPresenter is not null)
         {
-            var dt = icon.DataContext;
-            var src = icon.Source;
-
-            if (_iconPresenter is not null)
-            {
-                // n.b. this might be wrong - I think we always have an Icon (an IconBox),
-                // we need to check if the box has an icon
-                _iconPresenter.Visibility = Icon is null ? Visibility.Collapsed : Visibility.Visible;
-            }
-
-            UpdateIconVisibilityState();
+            _iconPresenter.Visibility = shouldShowIcon ? Visibility.Visible : Visibility.Collapsed;
         }
+
+        UpdateIconVisibilityState();
     }
 
     private void UpdateIconVisibilityState()
     {
-        var hasIcon = Icon is not null;
-        VisualStateManager.GoToState(this, hasIcon ? "IconVisible" : "IconHidden", true);
+        VisualStateManager.GoToState(this, ShouldShowIcon() ? "IconVisible" : "IconHidden", true);
     }
 
     private void UpdateAlignment()
     {
-        // If this item has both an icon and a label, left align so that the
-        // icons don't wobble if the text changes.
-        //
-        // Otherwise, center align.
-        var requestedTheme = ActualTheme;
-        var isLight = requestedTheme == ElementTheme.Light;
-        var showText = HasText;
-        if (Icon is IconBox icoBox &&
-            icoBox.DataContext is DockItemViewModel item &&
-            item.Icon is IconInfoViewModel icon)
+        HorizontalAlignment = HorizontalAlignment.Stretch;
+        UpdateTextAlignmentState();
+    }
+
+    private bool ShouldShowIcon()
+    {
+        if (Icon is IconBox icoBox)
         {
-            var showIcon = icon is not null && icon.HasIcon(isLight);
-            if (showText && showIcon)
+            if (icoBox.SourceKey is IconInfoViewModel icon)
             {
-                HorizontalAlignment = HorizontalAlignment.Left;
-                return;
+                return icon.HasIcon(ActualTheme == ElementTheme.Light);
             }
+
+            return icoBox.Source is not null;
         }
 
-        HorizontalAlignment = HorizontalAlignment.Center;
+        return Icon is not null;
+    }
+
+    private void UpdateTextAlignmentState()
+    {
+        var verticalDock = _parentDock?.DockSide is DockSide.Left or DockSide.Right;
+        var shouldCenterText = verticalDock && !ShouldShowIcon();
+        VisualStateManager.GoToState(this, shouldCenterText ? "TextCentered" : "TextLeftAligned", true);
     }
 
     private void UpdateAllVisibility()
     {
         UpdateTextVisibility();
         UpdateIconVisibility();
+        UpdateToolTip();
         UpdateAlignment();
+    }
+
+    private void UpdateToolTip()
+    {
+        var text = ToolTip;
+        if (string.IsNullOrEmpty(text))
+        {
+            ToolTipService.SetToolTip(this, null);
+            _toolTip = null;
+            return;
+        }
+
+        // Wait until the control is connected to a XamlRoot before creating
+        // the tooltip popup; dock items are materialized very early in startup.
+        if (XamlRoot is null)
+        {
+            return;
+        }
+
+        _toolTip ??= new ToolTip();
+        _toolTip.Content = text;
+        _toolTip.XamlRoot = XamlRoot;
+        ToolTipService.SetToolTip(this, _toolTip);
     }
 
     protected override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
         IsEnabledChanged -= OnIsEnabledChanged;
+        ActualThemeChanged -= DockItemControl_ActualThemeChanged;
 
         PointerEntered -= Control_PointerEntered;
         PointerExited -= Control_PointerExited;
+        Loaded -= DockItemControl_Loaded;
+        Unloaded -= DockItemControl_Unloaded;
 
+        ActualThemeChanged += DockItemControl_ActualThemeChanged;
         PointerEntered += Control_PointerEntered;
         PointerExited += Control_PointerExited;
+        Loaded += DockItemControl_Loaded;
+        Unloaded += DockItemControl_Unloaded;
 
         IsEnabledChanged += OnIsEnabledChanged;
 
@@ -185,6 +233,75 @@ public sealed partial class DockItemControl : Control
 
         // Set initial visibility
         UpdateAllVisibility();
+    }
+
+    private void DockItemControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        // Walk the visual tree to find our parent DockControl and watch its DockSide.
+        // This lets us extend the hit-test area toward the screen edge.
+        DependencyObject? parent = VisualTreeHelper.GetParent(this);
+        while (parent is not null and not DockControl)
+        {
+            parent = VisualTreeHelper.GetParent(parent);
+        }
+
+        if (parent is DockControl dock)
+        {
+            _parentDock = dock;
+            UpdateInnerMarginForDockSide(dock.DockSide);
+            UpdateAllVisibility();
+            _dockSideCallbackToken = dock.RegisterPropertyChangedCallback(
+                DockControl.DockSideProperty,
+                OnParentDockSideChanged);
+        }
+
+        UpdateToolTip();
+    }
+
+    private void DockItemControl_ActualThemeChanged(FrameworkElement sender, object args)
+    {
+        UpdateIconVisibility();
+        UpdateAlignment();
+    }
+
+    private void DockItemControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (_parentDock is not null && _dockSideCallbackToken >= 0)
+        {
+            _parentDock.UnregisterPropertyChangedCallback(
+                DockControl.DockSideProperty,
+                _dockSideCallbackToken);
+            _dockSideCallbackToken = -1;
+            _parentDock = null;
+        }
+
+        ToolTipService.SetToolTip(this, null);
+        _toolTip = null;
+    }
+
+    private void OnParentDockSideChanged(DependencyObject sender, DependencyProperty dp)
+    {
+        if (sender is DockControl dock)
+        {
+            UpdateInnerMarginForDockSide(dock.DockSide);
+            UpdateAlignment();
+        }
+    }
+
+    private void UpdateInnerMarginForDockSide(DockSide side)
+    {
+        // Push the visual (PART_RootGrid) inward on the screen-edge side so
+        // the transparent hit-test area extends all the way to the edge.
+        // The values here compensate for the margin/padding removed from the
+        // DockControl's ContentGrid on the screen-edge side.
+        InnerMargin = side switch
+        {
+            DockSide.Top => new Thickness(0, 4, 0, 0),
+            DockSide.Bottom => new Thickness(0, 0, 0, 4),
+            DockSide.Left => new Thickness(8, 0, 0, 0),
+            DockSide.Right => new Thickness(0, 0, 8, 0),
+            _ => new Thickness(0),
+        };
     }
 
     private void Control_PointerEntered(object sender, PointerRoutedEventArgs e)

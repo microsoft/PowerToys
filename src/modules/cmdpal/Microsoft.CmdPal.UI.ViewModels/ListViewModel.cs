@@ -18,6 +18,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ListViewModel : PageViewModel, IDisposable
 {
+    public const int IncrementalRefresh = -2;
+
     private readonly TaskFactory filterTaskFactory = new(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
 
     private readonly Dictionary<IListItem, ListItemViewModel> _vmCache = new(new ProxyReferenceEqualityComparer());
@@ -68,6 +70,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public bool IsMainPage { get; init; }
 
+    public bool HasCustomDebounceLogic => IsMainPage;
+
     private bool _isDynamic;
 
     private Task? _initializeItemsTask;
@@ -82,6 +86,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private CancellationTokenSource? filterCancellationTokenSource;
 
     private ListItemViewModel? _lastSelectedItem;
+
+    // Persists across cancelled FetchItems calls so a forceFirstItem=true
+    // intent is never lost when FetchItems(false) is cancelled by a
+    // subsequent FetchItems(true).
+    private volatile bool _forceFirstItemPending;
 
     // For cancelling a deferred SafeSlowInit when the user navigates rapidly
     private CancellationTokenSource? _selectedItemCts;
@@ -115,7 +124,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
-    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems();
+    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems(args.TotalItems == IncrementalRefresh);
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
@@ -191,8 +200,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
-    private void FetchItems()
+    private void FetchItems(bool keepSelection)
     {
+        // If this fetch should reset selection, remember that intent even if
+        // a later incremental fetch cancels us.
+        if (!keepSelection)
+        {
+            _forceFirstItemPending = true;
+        }
+
         // Cancel any previous FetchItems operation
         _fetchItemsCancellationTokenSource?.Cancel();
         _fetchItemsCancellationTokenSource?.Dispose();
@@ -382,7 +398,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     UpdateEmptyContent();
                 }
 
-                ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(IsRootPage));
+                // Consume the pending flag on the UI thread so a
+                // forceFirstItem=true intent survives cancellation.
+                var forceFirst = _forceFirstItemPending;
+                _forceFirstItemPending = false;
+
+                ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirstItem: IsRootPage && forceFirst));
                 _isLoading.Clear();
             });
     }
@@ -567,8 +588,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
                 }
 
-                TextToSuggest = item.TextToSuggest;
-                WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(item.TextToSuggest));
+                var suggestion = item.TextToSuggest;
+                DoOnUiThread(() =>
+                {
+                    TextToSuggest = suggestion;
+                    WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(suggestion));
+                });
             },
             ct);
     }
@@ -657,7 +682,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         Filters?.InitializeProperties();
         UpdateProperty(nameof(Filters));
 
-        FetchItems();
+        FetchItems(true);
         model.ItemsChanged += Model_ItemsChanged;
     }
 

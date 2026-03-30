@@ -13,6 +13,8 @@ namespace NonLocalizable
     const static wchar_t* SettingsFileName = L"settings.json";
 
     const static wchar_t* HotkeyID = L"hotkey";
+    const static wchar_t* IncreaseOpacityHotkeyID = L"increase-opacity-hotkey";
+    const static wchar_t* DecreaseOpacityHotkeyID = L"decrease-opacity-hotkey";
     const static wchar_t* SoundEnabledID = L"sound-enabled";
     const static wchar_t* ShowInSystemMenuID = L"show-in-system-menu";
     const static wchar_t* FrameEnabledID = L"frame-enabled";
@@ -44,12 +46,14 @@ inline COLORREF HexToRGB(std::wstring_view hex, const COLORREF fallbackColor = R
     }
 }
 
-AlwaysOnTopSettings::AlwaysOnTopSettings()
+AlwaysOnTopSettings::AlwaysOnTopSettings() :
+    m_settings(std::make_shared<Settings>())
 {
     m_uiSettings.ColorValuesChanged([&](winrt::Windows::UI::ViewManagement::UISettings const& settings,
                                         winrt::Windows::Foundation::IInspectable const& args)
     {
-        if (m_settings.frameAccentColor)
+        const auto currentSettings = AlwaysOnTopSettings::settings();
+        if (currentSettings->frameAccentColor)
         {
             NotifyObservers(SettingId::FrameAccentColor);
         }
@@ -95,94 +99,102 @@ void AlwaysOnTopSettings::LoadSettings()
     try
     {
         PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::load_from_settings_file(NonLocalizable::ModuleKey);
-
-        if (const auto jsonVal = values.get_json(NonLocalizable::HotkeyID))
-        {
-            auto val = PowerToysSettings::HotkeyObject::from_json(*jsonVal);
-            if (m_settings.hotkey.get_modifiers() != val.get_modifiers() || m_settings.hotkey.get_key() != val.get_key() || m_settings.hotkey.get_code() != val.get_code())
+        const auto currentSettings = AlwaysOnTopSettings::settings();
+        auto updatedSettings = std::make_shared<Settings>(*currentSettings);
+        std::vector<SettingId> changedSettings;
+        const auto updateHotkeySetting = [&](const wchar_t* hotkeyName, auto& currentHotkey, SettingId settingId) {
+            if (const auto jsonVal = values.get_json(hotkeyName))
             {
-                m_settings.hotkey = val;
-                NotifyObservers(SettingId::Hotkey);
+                auto val = PowerToysSettings::HotkeyObject::from_json(*jsonVal);
+                if (currentHotkey.get_modifiers() != val.get_modifiers() || currentHotkey.get_key() != val.get_key() || currentHotkey.get_code() != val.get_code())
+                {
+                    currentHotkey = val;
+                    changedSettings.push_back(settingId);
+                }
             }
-        }
+        };
+
+        updateHotkeySetting(NonLocalizable::HotkeyID, updatedSettings->hotkey, SettingId::Hotkey);
+        updateHotkeySetting(NonLocalizable::IncreaseOpacityHotkeyID, updatedSettings->increaseOpacityHotkey, SettingId::IncreaseOpacityHotkey);
+        updateHotkeySetting(NonLocalizable::DecreaseOpacityHotkeyID, updatedSettings->decreaseOpacityHotkey, SettingId::DecreaseOpacityHotkey);
         
         if (const auto jsonVal = values.get_bool_value(NonLocalizable::SoundEnabledID))
         {
             auto val = *jsonVal;
-            if (m_settings.enableSound != val)
+            if (updatedSettings->enableSound != val)
             {
-                m_settings.enableSound = val;
-                NotifyObservers(SettingId::SoundEnabled);
+                updatedSettings->enableSound = val;
+                changedSettings.push_back(SettingId::SoundEnabled);
             }
         }
 
         if (const auto jsonVal = values.get_bool_value(NonLocalizable::ShowInSystemMenuID))
         {
             auto val = *jsonVal;
-            if (m_settings.showInSystemMenu != val)
+            if (updatedSettings->showInSystemMenu != val)
             {
-                m_settings.showInSystemMenu = val;
-                NotifyObservers(SettingId::ShowInSystemMenu);
+                updatedSettings->showInSystemMenu = val;
+                changedSettings.push_back(SettingId::ShowInSystemMenu);
             }
         }
 
         if (const auto jsonVal = values.get_int_value(NonLocalizable::FrameThicknessID))
         {
             auto val = *jsonVal;
-            if (m_settings.frameThickness != val)
+            if (updatedSettings->frameThickness != val)
             {
-                m_settings.frameThickness = val;
-                NotifyObservers(SettingId::FrameThickness);
+                updatedSettings->frameThickness = val;
+                changedSettings.push_back(SettingId::FrameThickness);
             }
         }
 
         if (const auto jsonVal = values.get_string_value(NonLocalizable::FrameColorID))
         {
             auto val = HexToRGB(*jsonVal);
-            if (m_settings.frameColor != val)
+            if (updatedSettings->frameColor != val)
             {
-                m_settings.frameColor = val;
-                NotifyObservers(SettingId::FrameColor);
+                updatedSettings->frameColor = val;
+                changedSettings.push_back(SettingId::FrameColor);
             }
         }
 
         if (const auto jsonVal = values.get_int_value(NonLocalizable::FrameOpacityID))
         {
             auto val = *jsonVal;
-            if (m_settings.frameOpacity != val)
+            if (updatedSettings->frameOpacity != val)
             {
-                m_settings.frameOpacity = val;
-                NotifyObservers(SettingId::FrameOpacity);
+                updatedSettings->frameOpacity = val;
+                changedSettings.push_back(SettingId::FrameOpacity);
             }
         }
 
         if (const auto jsonVal = values.get_bool_value(NonLocalizable::FrameEnabledID))
         {
             auto val = *jsonVal;
-            if (m_settings.enableFrame != val)
+            if (updatedSettings->enableFrame != val)
             {
-                m_settings.enableFrame = val;
-                NotifyObservers(SettingId::FrameEnabled);
+                updatedSettings->enableFrame = val;
+                changedSettings.push_back(SettingId::FrameEnabled);
             }            
         }
 
         if (const auto jsonVal = values.get_bool_value(NonLocalizable::BlockInGameModeID))
         {
             auto val = *jsonVal;
-            if (m_settings.blockInGameMode != val)
+            if (updatedSettings->blockInGameMode != val)
             {
-                m_settings.blockInGameMode = val;
-                NotifyObservers(SettingId::BlockInGameMode);
+                updatedSettings->blockInGameMode = val;
+                changedSettings.push_back(SettingId::BlockInGameMode);
             }
         }
 
         if (const auto jsonVal = values.get_bool_value(NonLocalizable::RoundCornersEnabledID))
         {
             auto val = *jsonVal;
-            if (m_settings.roundCornersEnabled != val)
+            if (updatedSettings->roundCornersEnabled != val)
             {
-                m_settings.roundCornersEnabled = val;
-                NotifyObservers(SettingId::RoundCornersEnabled);
+                updatedSettings->roundCornersEnabled = val;
+                changedSettings.push_back(SettingId::RoundCornersEnabled);
             }
         }
 
@@ -203,20 +215,29 @@ void AlwaysOnTopSettings::LoadSettings()
                 view = left_trim<wchar_t>(trim<wchar_t>(view));
             }
 
-            if (m_settings.excludedApps != excludedApps)
+            if (updatedSettings->excludedApps != excludedApps)
             {
-                m_settings.excludedApps = excludedApps;
-                NotifyObservers(SettingId::ExcludeApps);
+                updatedSettings->excludedApps = excludedApps;
+                changedSettings.push_back(SettingId::ExcludeApps);
             }
         }
 
         if (const auto jsonVal = values.get_bool_value(NonLocalizable::FrameAccentColor))
         {
             auto val = *jsonVal;
-            if (m_settings.frameAccentColor != val)
+            if (updatedSettings->frameAccentColor != val)
             {
-                m_settings.frameAccentColor = val;
-                NotifyObservers(SettingId::FrameAccentColor);
+                updatedSettings->frameAccentColor = val;
+                changedSettings.push_back(SettingId::FrameAccentColor);
+            }
+        }
+
+        if (!changedSettings.empty())
+        {
+            m_settings.store(std::shared_ptr<const Settings>(updatedSettings), std::memory_order_release);
+            for (const auto changedSetting : changedSettings)
+            {
+                NotifyObservers(changedSetting);
             }
         }
     }

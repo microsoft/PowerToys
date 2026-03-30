@@ -484,7 +484,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Edit dock.
+        ///   Looks up a localized string similar to Edit Dock.
         /// </summary>
         public static string dock_edit_dock_name {
             get {
@@ -511,7 +511,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dock settings.
+        ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string dock_settings_name {
             get {
@@ -525,6 +525,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string fallbacks {
             get {
                 return ResourceManager.GetString("fallbacks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Commands.
+        /// </summary>
+        public static string home_sections_commands_title {
+            get {
+                return ResourceManager.GetString("home_sections_commands_title", resourceCulture);
             }
         }
         

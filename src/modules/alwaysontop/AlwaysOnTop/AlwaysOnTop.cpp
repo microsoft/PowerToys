@@ -22,6 +22,7 @@ namespace NonLocalizable
     const static wchar_t* TOOL_WINDOW_CLASS_NAME = L"AlwaysOnTopWindow";
     const static wchar_t* WINDOW_IS_PINNED_PROP = L"AlwaysOnTop_Pinned";
     constexpr UINT SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND = 0xEFE0;
+    constexpr ULONG_PTR SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG = 0x414F5450;
     constexpr DWORD SYSTEM_EVENT_MENU_POPUP_START = 0x0006;
     constexpr DWORD SYSTEM_EVENT_MENU_POPUP_END = 0x0007;
 }
@@ -40,6 +41,29 @@ namespace
 
         hooks.clear();
     }
+
+    bool HasMenuCommand(HMENU menu, UINT commandId) noexcept
+    {
+        return menu && GetMenuState(menu, commandId, MF_BYCOMMAND) != static_cast<UINT>(-1);
+    }
+
+    bool IsAlwaysOnTopMenuCommand(HMENU menu) noexcept
+    {
+        if (!HasMenuCommand(menu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND))
+        {
+            return false;
+        }
+
+        MENUITEMINFOW menuItemInfo{};
+        menuItemInfo.cbSize = sizeof(menuItemInfo);
+        menuItemInfo.fMask = MIIM_DATA;
+
+        return GetMenuItemInfoW(menu,
+                                NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND,
+                                FALSE,
+                                &menuItemInfo) &&
+               menuItemInfo.dwItemData == NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG;
+    }
 }
 
 bool isExcluded(HWND window)
@@ -47,11 +71,12 @@ bool isExcluded(HWND window)
     auto processPath = get_process_path(window);
     CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
 
-    return check_excluded_app(window, processPath, AlwaysOnTopSettings::settings().excludedApps);
+    const auto settings = AlwaysOnTopSettings::settings();
+    return check_excluded_app(window, processPath, settings->excludedApps);
 }
 
 AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
-    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps, SettingId::ShowInSystemMenu}),
+    SettingsObserver({ SettingId::FrameEnabled, SettingId::Hotkey, SettingId::IncreaseOpacityHotkey, SettingId::DecreaseOpacityHotkey, SettingId::ExcludeApps, SettingId::ShowInSystemMenu }),
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
     m_useCentralizedLLKH(useLLKH),
     m_mainThreadId(mainThreadId),
@@ -125,13 +150,16 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
     switch (id)
     {
     case SettingId::Hotkey:
+    case SettingId::IncreaseOpacityHotkey:
+    case SettingId::DecreaseOpacityHotkey:
     {
         RegisterHotkey();
     }
     break;
     case SettingId::FrameEnabled:
     {
-        if (AlwaysOnTopSettings::settings().enableFrame)
+        const auto settings = AlwaysOnTopSettings::settings();
+        if (settings->enableFrame)
         {
             for (auto& iter : m_topmostWindows)
             {
@@ -170,7 +198,8 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
     break;
     case SettingId::ShowInSystemMenu:
     {
-        UpdateSystemMenuEventHooks(AlwaysOnTopSettings::settings().showInSystemMenu);
+        const auto settings = AlwaysOnTopSettings::settings();
+        UpdateSystemMenuEventHooks(settings->showInSystemMenu);
         m_lastSystemMenuWindow = nullptr;
         UpdateSystemMenuItem(GetForegroundWindow());
     }
@@ -212,7 +241,7 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
 void AlwaysOnTop::ProcessCommand(HWND window)
 {
     bool gameMode = detect_game_mode();
-    if (AlwaysOnTopSettings::settings().blockInGameMode && gameMode)
+    if (AlwaysOnTopSettings::settings()->blockInGameMode && gameMode)
     {
         return;
     }
@@ -252,7 +281,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         }
     }
 
-    if (AlwaysOnTopSettings::settings().enableSound)
+    if (AlwaysOnTopSettings::settings()->enableSound)
     {
         m_sound.Play(soundType);    
     }
@@ -299,7 +328,7 @@ void AlwaysOnTop::StartTrackingTopmostWindows()
 
 bool AlwaysOnTop::AssignBorder(HWND window)
 {
-    if (m_virtualDesktopUtils.IsWindowOnCurrentDesktop(window) && AlwaysOnTopSettings::settings().enableFrame)
+    if (m_virtualDesktopUtils.IsWindowOnCurrentDesktop(window) && AlwaysOnTopSettings::settings()->enableFrame)
     {
         auto border = WindowBorder::Create(window, m_hinstance);
         if (border)
@@ -328,13 +357,13 @@ void AlwaysOnTop::RegisterHotkey() const
     UnregisterHotKey(m_window, static_cast<int>(HotkeyId::IncreaseOpacity));
     UnregisterHotKey(m_window, static_cast<int>(HotkeyId::DecreaseOpacity));
 
-    // Register pin hotkey
-    RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), AlwaysOnTopSettings::settings().hotkey.get_modifiers(), AlwaysOnTopSettings::settings().hotkey.get_code());
+    const auto settings = AlwaysOnTopSettings::settings();
 
-    // Register transparency hotkeys using the same modifiers as the pin hotkey
-    UINT modifiers = AlwaysOnTopSettings::settings().hotkey.get_modifiers();
-    RegisterHotKey(m_window, static_cast<int>(HotkeyId::IncreaseOpacity), modifiers, VK_OEM_PLUS);
-    RegisterHotKey(m_window, static_cast<int>(HotkeyId::DecreaseOpacity), modifiers, VK_OEM_MINUS);
+    // Register pin hotkey
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), settings->hotkey.get_modifiers(), settings->hotkey.get_code());
+
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::IncreaseOpacity), settings->increaseOpacityHotkey.get_modifiers(), settings->increaseOpacityHotkey.get_code());
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::DecreaseOpacity), settings->decreaseOpacityHotkey.get_modifiers(), settings->decreaseOpacityHotkey.get_code());
 }
 
 void AlwaysOnTop::RegisterLLKH()
@@ -448,7 +477,7 @@ void AlwaysOnTop::SubscribeToEvents()
         }
     }
 
-    UpdateSystemMenuEventHooks(AlwaysOnTopSettings::settings().showInSystemMenu);
+    UpdateSystemMenuEventHooks(AlwaysOnTopSettings::settings()->showInSystemMenu);
 }
 
 void AlwaysOnTop::UpdateSystemMenuEventHooks(bool enable)
@@ -501,9 +530,10 @@ void AlwaysOnTop::UpdateSystemMenuItem(HWND window) const noexcept
         return;
     }
 
-    if (!AlwaysOnTopSettings::settings().showInSystemMenu)
+    const auto settings = AlwaysOnTopSettings::settings();
+    if (!settings->showInSystemMenu)
     {
-        if (GetMenuState(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND) != static_cast<UINT>(-1))
+        if (IsAlwaysOnTopMenuCommand(systemMenu))
         {
             RemoveMenu(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND);
         }
@@ -513,19 +543,25 @@ void AlwaysOnTop::UpdateSystemMenuItem(HWND window) const noexcept
     auto text = GET_RESOURCE_STRING(IDS_SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP);
     MENUITEMINFOW menuItemInfo{};
     menuItemInfo.cbSize = sizeof(menuItemInfo);
-    menuItemInfo.fMask = MIIM_ID | MIIM_STATE | MIIM_STRING;
+    menuItemInfo.fMask = MIIM_ID | MIIM_STATE | MIIM_STRING | MIIM_DATA;
     menuItemInfo.wID = NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND;
     menuItemInfo.fState = IsPinned(window) ? MFS_CHECKED : MFS_UNCHECKED;
     menuItemInfo.dwTypeData = text.data();
+    menuItemInfo.dwItemData = NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG;
 
-    if (GetMenuState(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND) == static_cast<UINT>(-1))
+    if (!HasMenuCommand(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND))
     {
         InsertMenuItemW(systemMenu, SC_CLOSE, FALSE, &menuItemInfo);
     }
-    else
+    else if (IsAlwaysOnTopMenuCommand(systemMenu))
     {
         menuItemInfo.fMask = MIIM_STATE | MIIM_STRING;
         SetMenuItemInfoW(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, FALSE, &menuItemInfo);
+    }
+    else
+    {
+        Logger::warn(L"Skipping Always On Top system menu command registration because ID 0x{:X} is already in use by another item.",
+                     NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND);
     }
 }
 
@@ -614,7 +650,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     {
         if (data->idObject == OBJID_SYSMENU && data->hwnd)
         {
-            m_lastSystemMenuWindow = AlwaysOnTopSettings::settings().showInSystemMenu ? data->hwnd : nullptr;
+            m_lastSystemMenuWindow = AlwaysOnTopSettings::settings()->showInSystemMenu ? data->hwnd : nullptr;
             UpdateSystemMenuItem(data->hwnd);
         }
     }
@@ -629,7 +665,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     return;
     case EVENT_OBJECT_INVOKED:
     {
-        if (!AlwaysOnTopSettings::settings().showInSystemMenu)
+        if (!AlwaysOnTopSettings::settings()->showInSystemMenu)
         {
             return;
         }
@@ -652,8 +688,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
             }
 
             const auto systemMenu = GetSystemMenu(window, false);
-            return systemMenu &&
-                   GetMenuState(systemMenu, NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND, MF_BYCOMMAND) != static_cast<UINT>(-1);
+            return systemMenu && IsAlwaysOnTopMenuCommand(systemMenu);
         };
 
         HWND commandWindow = nullptr;
@@ -681,7 +716,7 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
         break;
     }
 
-    if (!AlwaysOnTopSettings::settings().enableFrame || !data->hwnd)
+    if (!AlwaysOnTopSettings::settings()->enableFrame || !data->hwnd)
     {
         return;
     }
@@ -850,7 +885,7 @@ void AlwaysOnTop::StepWindowTransparency(HWND window, int delta)
     {
         ApplyWindowAlpha(targetWindow, newTransparency);
 
-        if (AlwaysOnTopSettings::settings().enableSound)
+        if (AlwaysOnTopSettings::settings()->enableSound)
         {
             m_sound.Play(delta > 0 ? Sound::Type::IncreaseOpacity : Sound::Type::DecreaseOpacity);
         }

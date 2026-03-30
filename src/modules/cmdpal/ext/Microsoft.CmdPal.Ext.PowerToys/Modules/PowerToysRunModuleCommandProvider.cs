@@ -18,7 +18,7 @@ internal sealed class PowerToysRunModuleCommandProvider : ModuleCommandProvider
         var title = SettingsWindow.PowerLauncher.ModuleDisplayName();
         var icon = SettingsWindow.PowerLauncher.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.PowerLauncher, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.PowerLauncher, title) { Id = "com.microsoft.powertoys.powerToysRun.openSettings" })
         {
             Title = title,
             Subtitle = Resources.PowerToysRun_Settings_Subtitle,

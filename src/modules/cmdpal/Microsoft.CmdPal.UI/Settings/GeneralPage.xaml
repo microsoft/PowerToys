@@ -19,7 +19,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <ScrollViewer Grid.Row="1">
-            <Grid Padding="16">
+            <Grid Padding="16,0,16,16">
                 <StackPanel
                     MaxWidth="1000"
                     HorizontalAlignment="Stretch"
@@ -36,6 +36,11 @@
               </StackPanel.ChildrenTransitions>-->
 
                     <!--  'Activation' section  -->
+                    <HyperlinkButton
+                        x:Uid="CmdPal_LearnMore"
+                        Padding="0"
+                        FontWeight="SemiBold"
+                        NavigateUri="https://aka.ms/cmdpal" />
 
                     <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                     <controls:SettingsExpander
@@ -50,7 +55,20 @@
                             <controls:SettingsCard ContentAlignment="Left">
                                 <ptcontrols:CheckBoxWithDescriptionControl x:Uid="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard" IsChecked="{x:Bind viewModel.IgnoreShortcutWhenFullscreen, Mode=TwoWay}" />
                             </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="Settings_GeneralPage_IgnoreShortcutWhenBusy_SettingsCard" IsChecked="{x:Bind viewModel.IgnoreShortcutWhenBusy, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="Settings_GeneralPage_AllowBreakthroughShortcut_SettingsCard" IsChecked="{x:Bind viewModel.AllowBreakthroughShortcut, Mode=TwoWay}" />
+                            </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
+                        <controls:SettingsExpander.ItemsFooter>
+                            <InfoBar
+                                IsClosable="False"
+                                IsOpen="{x:Bind IsNotificationStateSuppressing, Mode=OneWay}"
+                                Message="{x:Bind NotificationStateMessage, Mode=OneWay}"
+                                Severity="Warning" />
+                        </controls:SettingsExpander.ItemsFooter>
                     </controls:SettingsExpander>
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_AutoGoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind viewModel.AutoGoBackIntervalIndex, Mode=TwoWay}">
