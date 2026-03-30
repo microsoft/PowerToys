@@ -180,23 +180,9 @@ function Ensure-VsDevEnvironment {
     $OriginalLocationForVsInit = Get-Location
     try {
 
-    if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR -or $env:DevEnvDir -or $env:VCToolsInstallDir) {
-        # BuildTools editions may lack full C++ support (e.g. empty PlatformToolsetVersion,
-        # missing ATL headers). When a full Visual Studio installation is available, prefer it.
-        $currentVsDir = if ($env:VSINSTALLDIR) { $env:VSINSTALLDIR } else { $env:VCINSTALLDIR }
-        if ($currentVsDir -and $currentVsDir -match 'BuildTools') {
-            Write-Host "[VS] Existing environment points to BuildTools; clearing for clean VS initialization..."
-            # Clear VS environment so Enter-VsDevShell / VsDevCmd.bat can initialize cleanly
-            foreach ($v in @('VSINSTALLDIR','VCINSTALLDIR','DevEnvDir','VCToolsInstallDir',
-                             'VCToolsVersion','VisualStudioVersion','VSCMD_ARG_HOST_ARCH',
-                             'VSCMD_ARG_TGT_ARCH','VSCMD_VER','__VSCMD_PREINIT_PATH',
-                             'INCLUDE','LIB','LIBPATH')) {
-                [Environment]::SetEnvironmentVariable($v, $null, 'Process')
-            }
-        } else {
-            Write-Host "[VS] VS developer environment already present"
-            return $true
-        }
+    if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR) {
+        Write-Host "[VS] VS developer environment already present"
+        return $true
     }
 
     # Locate vswhere if available
@@ -207,21 +193,19 @@ function Ensure-VsDevEnvironment {
     $vswhere = $vswhereCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
     if ($vswhere) { Write-Host "[VS] vswhere found: $vswhere" } else { Write-Host "[VS] vswhere not found" }
 
+    # Exclude BuildTools — they may lack ATL headers and have empty PlatformToolsetVersion.
+    # -prerelease includes stable releases, so a single call covers both GA and Preview/Insiders.
+    $vsProducts = @('Microsoft.VisualStudio.Product.Community',
+                     'Microsoft.VisualStudio.Product.Professional',
+                     'Microsoft.VisualStudio.Product.Enterprise')
+
     $instPaths = @()
     if ($vswhere) {
-        # First try with the VC tools requirement, including prerelease/Insiders builds (preferred)
-        try { $p = & $vswhere -latest -prerelease -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null; if ($p) { $instPaths += $p } } catch {}
-        # Fallback: any prerelease installation
+        # Prefer the newest full VS with the C++ VC tools workload (stable + prerelease)
+        try { $p = & $vswhere -latest -prerelease -products $vsProducts -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null; if ($p) { $instPaths += $p } } catch {}
+        # Fallback: newest full VS without requiring VC tools (user may need to install the workload)
         if (-not $instPaths) {
-            try { $p2 = & $vswhere -latest -prerelease -products * -property installationPath 2>$null; if ($p2) { $instPaths += $p2 } } catch {}
-        }
-        # Fallback: stable releases with VC tools
-        if (-not $instPaths) {
-            try { $p3 = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null; if ($p3) { $instPaths += $p3 } } catch {}
-        }
-        # Fallback: any stable installation
-        if (-not $instPaths) {
-            try { $p4 = & $vswhere -latest -products * -property installationPath 2>$null; if ($p4) { $instPaths += $p4 } } catch {}
+            try { $p2 = & $vswhere -latest -prerelease -products $vsProducts -property installationPath 2>$null; if ($p2) { $instPaths += $p2 } } catch {}
         }
     }
 
@@ -238,9 +222,11 @@ function Ensure-VsDevEnvironment {
             "$env:ProgramFiles\Microsoft Visual Studio\18\Community",
             "$env:ProgramFiles\Microsoft Visual Studio\18\Professional",
             "$env:ProgramFiles\Microsoft Visual Studio\18\Enterprise",
+            "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Preview",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Community",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Professional",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Enterprise",
+            "$env:ProgramFiles\Microsoft Visual Studio\2022\Preview",
             "$env:ProgramFiles\Microsoft Visual Studio\2022\Community",
             "$env:ProgramFiles\Microsoft Visual Studio\2022\Professional",
             "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise"
@@ -281,6 +267,10 @@ function Ensure-VsDevEnvironment {
             Write-Host "[VS] Running VsDevCmd.bat and importing environment from $vsDevCmd"
             try {
                 $cmdOut = cmd.exe /c "`"$vsDevCmd`" && set"
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Warning "[VS] VsDevCmd.bat exited with code $LASTEXITCODE at $inst"
+                    continue
+                }
                 foreach ($line in $cmdOut) {
                     $parts = $line -split('=',2)
                     if ($parts.Length -eq 2) {
