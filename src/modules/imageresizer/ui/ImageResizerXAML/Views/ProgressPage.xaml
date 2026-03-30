@@ -12,15 +12,15 @@
     <StackPanel>
         <TextBlock
             x:Uid="Progress_MainInstruction"
-            Margin="12,12,12,0"
-            FontSize="16" />
+            Margin="{StaticResource PageSectionMargin}"
+            Style="{StaticResource SubtitleTextBlockStyle}" />
         <TextBlock
-            Margin="12,12,12,0"
+            Margin="{StaticResource PageSectionMargin}"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             Text="{x:Bind ViewModel.TimeRemainingDisplay, Mode=OneWay}" />
         <ProgressBar
             Height="16"
-            Margin="12,12,12,0"
+            Margin="{StaticResource PageSectionMargin}"
             Maximum="1"
             Value="{x:Bind ViewModel.Progress, Mode=OneWay}" />
         <Border
@@ -30,7 +30,10 @@
             BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0">
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                <Button MinWidth="76" Command="{x:Bind ViewModel.StopCommand}">
+                <Button MinWidth="{StaticResource ButtonMinWidth}" Command="{x:Bind ViewModel.StopCommand}">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Escape" />
+                    </Button.KeyboardAccelerators>
                     <TextBlock x:Uid="Progress_Stop" />
                 </Button>
             </StackPanel>

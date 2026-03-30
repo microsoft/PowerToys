@@ -20,6 +20,14 @@ namespace ImageResizer.Views
             InitializeComponent();
         }
 
+        private void ResizeAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            if (FocusManager.GetFocusedElement(XamlRoot) is NumberBox)
+            {
+                args.Handled = true;
+            }
+        }
+
         private void NumberBox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter

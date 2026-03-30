@@ -12,10 +12,10 @@
     <StackPanel>
         <TextBlock
             x:Uid="Results_MainInstruction"
-            Margin="12,12,12,0"
-            FontSize="16" />
+            Margin="{StaticResource PageSectionMargin}"
+            Style="{StaticResource SubtitleTextBlockStyle}" />
         <ScrollViewer
-            MaxHeight="300"
+            MaxHeight="{StaticResource ResultsMaxHeight}"
             HorizontalAlignment="Stretch"
             VerticalScrollBarVisibility="Auto">
             <ItemsControl Margin="12,4,12,0" ItemsSource="{x:Bind ViewModel.Errors, Mode=OneWay}">
@@ -40,7 +40,10 @@
             BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0">
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                <Button MinWidth="76" Command="{x:Bind ViewModel.CloseCommand}">
+                <Button MinWidth="{StaticResource ButtonMinWidth}" Command="{x:Bind ViewModel.CloseCommand}">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Escape" />
+                    </Button.KeyboardAccelerators>
                     <TextBlock x:Uid="Results_Close" />
                 </Button>
             </StackPanel>

@@ -22,7 +22,7 @@ namespace ImageResizer
 {
     public sealed partial class MainWindow : WindowEx, IMainView
     {
-        private const int MinWindowWidth = 400;
+        private const int MinWindowWidth = 460;
         private const int InitialWindowHeight = 1;
 
         private bool _isFirstShow = true;

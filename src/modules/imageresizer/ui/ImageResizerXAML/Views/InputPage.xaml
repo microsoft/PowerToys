@@ -15,14 +15,16 @@
     <Page.Resources>
         <!--  Template for normal ResizeSize presets (Small, Medium, Large, Phone)  -->
         <DataTemplate x:Key="ResizeSizeTemplate" x:DataType="m:ResizeSize">
-            <Grid VerticalAlignment="Center">
+            <Grid VerticalAlignment="Center" AutomationProperties.Name="{x:Bind Name}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
                 <StackPanel Grid.Row="1" Orientation="Horizontal">
-                    <TextBlock Text="{x:Bind Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
                     <TextBlock
                         Margin="4,0,0,0"
                         Style="{StaticResource BodyStrongTextBlockStyle}"
@@ -44,14 +46,14 @@
 
         <!--  Template for CustomSize - shows only name  -->
         <DataTemplate x:Key="CustomSizeTemplate" x:DataType="m:CustomSize">
-            <Grid VerticalAlignment="Center">
+            <Grid VerticalAlignment="Center" AutomationProperties.Name="{x:Bind Name}">
                 <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
             </Grid>
         </DataTemplate>
 
         <!--  Template for AiSize - shows name and description  -->
         <DataTemplate x:Key="AiSizeTemplate" x:DataType="m:AiSize">
-            <StackPanel VerticalAlignment="Center" Orientation="Vertical">
+            <StackPanel VerticalAlignment="Center" AutomationProperties.Name="{x:Bind Name}" Orientation="Vertical">
                 <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
                 <TextBlock x:Uid="Input_AiSuperResolutionDescription" />
             </StackPanel>
@@ -182,7 +184,7 @@
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
                     AutomationProperties.Name="Width"
-                    FontSize="16"
+                    FontSize="20"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE799;" />
                 <NumberBox
@@ -200,7 +202,7 @@
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
                     AutomationProperties.Name="Height"
-                    FontSize="16"
+                    FontSize="20"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE799;"
                     RenderTransformOrigin="0.5,0.5"
@@ -223,7 +225,7 @@
                     Grid.Row="1"
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
-                    FontSize="16"
+                    FontSize="20"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE7A8;" />
                 <ComboBox
@@ -245,7 +247,7 @@
                     Grid.Column="3"
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
-                    FontSize="16"
+                    FontSize="20"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xECC6;" />
                 <ComboBox
@@ -298,7 +300,7 @@
             Visibility="{x:Bind ViewModel.HasGifFiles, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
         <!--  Buttons (outside gray area)  -->
-        <Grid Grid.Row="3" Margin="10,16,16,16">
+        <Grid Grid.Row="3" Margin="8,16,16,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
@@ -310,7 +312,7 @@
                 Padding="8"
                 Command="{x:Bind ViewModel.OpenSettingsCommand}"
                 Style="{StaticResource SubtleButtonStyle}">
-                <FontIcon FontSize="16" Glyph="&#xE713;" />
+                <FontIcon FontSize="20" Glyph="&#xE713;" />
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="Open_settings" />
                 </ToolTipService.ToolTip>
@@ -318,20 +320,26 @@
 
             <Button
                 Grid.Column="1"
-                MinWidth="76"
+                MinWidth="{StaticResource ButtonMinWidth}"
                 Command="{x:Bind ViewModel.ResizeCommand}"
                 Style="{StaticResource AccentButtonStyle}">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Enter" Invoked="ResizeAccelerator_Invoked" />
+                </Button.KeyboardAccelerators>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon FontSize="14" Glyph="&#xE740;" />
+                    <FontIcon FontSize="16" Glyph="&#xE740;" />
                     <TextBlock x:Uid="Input_Resize" />
                 </StackPanel>
             </Button>
 
             <Button
                 Grid.Column="2"
-                MinWidth="76"
+                MinWidth="{StaticResource ButtonMinWidth}"
                 Margin="8,0,0,0"
                 Command="{x:Bind ViewModel.CancelCommand}">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Escape" />
+                </Button.KeyboardAccelerators>
                 <TextBlock x:Uid="Cancel" />
             </Button>
         </Grid>
