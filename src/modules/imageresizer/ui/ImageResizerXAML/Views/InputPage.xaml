@@ -166,13 +166,13 @@
             <Grid
                 Grid.Row="0"
                 Margin="16,16,16,8"
+                ColumnSpacing="8"
                 RowSpacing="8"
                 Visibility="{x:Bind ViewModel.IsCustomSizeSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="24" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="24" />
-                    <ColumnDefinition Width="24" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
@@ -190,7 +190,6 @@
                 <NumberBox
                     x:Name="WidthNumberBox"
                     Grid.Column="1"
-                    Margin="8,0,0,0"
                     HorizontalAlignment="Stretch"
                     KeyDown="NumberBox_KeyDown"
                     Minimum="0"
@@ -198,7 +197,8 @@
                     Value="{x:Bind ViewModel.Settings.CustomSize.Width, Mode=TwoWay}" />
 
                 <FontIcon
-                    Grid.Column="3"
+                    Grid.Column="2"
+                    Margin="8,0,0,0"
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
                     AutomationProperties.Name="Height"
@@ -213,8 +213,7 @@
                 </FontIcon>
                 <NumberBox
                     x:Name="HeightNumberBox"
-                    Grid.Column="4"
-                    Margin="8,0,0,0"
+                    Grid.Column="3"
                     HorizontalAlignment="Stretch"
                     KeyDown="NumberBox_KeyDown"
                     Minimum="0"
@@ -231,7 +230,6 @@
                 <ComboBox
                     Grid.Row="1"
                     Grid.Column="1"
-                    Margin="8,0,0,0"
                     HorizontalAlignment="Stretch"
                     ItemsSource="{x:Bind ViewModel.ResizeFitValues, Mode=OneWay}"
                     SelectedIndex="{x:Bind ViewModel.Settings.CustomSize.Fit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
@@ -244,7 +242,8 @@
 
                 <FontIcon
                     Grid.Row="1"
-                    Grid.Column="3"
+                    Grid.Column="2"
+                    Margin="8,0,0,0"
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
                     FontSize="20"
@@ -252,8 +251,7 @@
                     Glyph="&#xECC6;" />
                 <ComboBox
                     Grid.Row="1"
-                    Grid.Column="4"
-                    Margin="8,0,0,0"
+                    Grid.Column="3"
                     HorizontalAlignment="Stretch"
                     ItemsSource="{x:Bind ViewModel.ResizeUnitValues, Mode=OneWay}"
                     SelectedIndex="{x:Bind ViewModel.Settings.CustomSize.Unit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
@@ -327,7 +325,7 @@
                     <KeyboardAccelerator Key="Enter" Invoked="ResizeAccelerator_Invoked" />
                 </Button.KeyboardAccelerators>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon FontSize="16" Glyph="&#xE740;" />
+                    <FontIcon Glyph="&#xE740;" />
                     <TextBlock x:Uid="Input_Resize" />
                 </StackPanel>
             </Button>

@@ -13,7 +13,6 @@
 
             <!--  Layout tokens  -->
             <x:Double x:Key="ButtonMinWidth">76</x:Double>
-            <x:Double x:Key="ResultsMaxHeight">300</x:Double>
             <Thickness x:Key="PageSectionMargin">12,12,12,0</Thickness>
 
             <!--  Converters  -->

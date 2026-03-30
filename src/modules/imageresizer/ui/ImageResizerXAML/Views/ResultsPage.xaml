@@ -9,13 +9,20 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
         <TextBlock
             x:Uid="Results_MainInstruction"
             Margin="{StaticResource PageSectionMargin}"
             Style="{StaticResource SubtitleTextBlockStyle}" />
+
         <ScrollViewer
-            MaxHeight="{StaticResource ResultsMaxHeight}"
+            Grid.Row="1"
             HorizontalAlignment="Stretch"
             VerticalScrollBarVisibility="Auto">
             <ItemsControl Margin="12,4,12,0" ItemsSource="{x:Bind ViewModel.Errors, Mode=OneWay}">
@@ -34,6 +41,7 @@
         </ScrollViewer>
 
         <Border
+            Grid.Row="2"
             Margin="0,12,0,0"
             Padding="12"
             Background="{ThemeResource LayerFillColorDefaultBrush}"
@@ -48,5 +56,5 @@
                 </Button>
             </StackPanel>
         </Border>
-    </StackPanel>
+    </Grid>
 </Page>

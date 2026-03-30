@@ -24,6 +24,7 @@ namespace ImageResizer
     {
         private const int MinWindowWidth = 460;
         private const int InitialWindowHeight = 1;
+        private const double MaxWindowHeightScreenFraction = 0.85;
 
         private bool _isFirstShow = true;
 
@@ -255,6 +256,10 @@ namespace ImageResizer
             var scale = this.GetDpiForWindow() / 96.0;
             var frameHeight = Math.Max(0, AppWindow.Size.Height - AppWindow.ClientSize.Height) / scale;
             var outerHeight = desiredClientHeight + frameHeight;
+
+            var displayArea = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(AppWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Nearest);
+            var maxScreenHeight = displayArea.WorkArea.Height / scale * MaxWindowHeightScreenFraction;
+            outerHeight = Math.Min(outerHeight, maxScreenHeight);
 
             this.SetWindowSize(MinWindowWidth, outerHeight);
         }
