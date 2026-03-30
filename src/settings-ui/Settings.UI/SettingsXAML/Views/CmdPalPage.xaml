@@ -13,6 +13,7 @@
     mc:Ignorable="d">
     <Grid>
         <ScrollViewer AutomationProperties.AutomationId="PageScrollViewer">
+            <!-- Wrapper Grid required to work around WinUI ScrollViewer + MaxWidth layout offset issue. Do not remove. -->
             <Grid>
                 <Grid
                     MaxWidth="{StaticResource PageMaxWidth}"
