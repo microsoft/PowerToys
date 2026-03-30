@@ -18,7 +18,6 @@ using AdvancedPaste.Models;
 using AdvancedPaste.Services;
 using AdvancedPaste.Services.CustomActions;
 using AdvancedPaste.Settings;
-using Common.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
@@ -681,7 +680,27 @@ namespace AdvancedPaste.ViewModels
         [RelayCommand]
         public void OpenSettings()
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.AdvancedPaste);
+            try
+            {
+                var exePath = System.IO.Path.Combine(
+                    ManagedCommon.PowerToysPathResolver.GetPowerToysInstallPath(),
+                    "PowerToys.exe");
+
+                if (exePath != null && System.IO.File.Exists(exePath))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = exePath,
+                        Arguments = "--open-settings=AdvancedPaste",
+                        UseShellExecute = false,
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to open settings", ex);
+            }
+
             GetMainWindow()?.Close();
         }
 
