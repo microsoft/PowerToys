@@ -67,6 +67,17 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
+                    <!--  Dock Size  -->
+                    <controls:SettingsCard x:Uid="DockAppearance_DockSize_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE799;}">
+                        <ComboBox
+                            x:Name="DockSizeComboBox"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind SelectedDockSizeIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="DockAppearance_DockSize_Default" />
+                            <ComboBoxItem x:Uid="DockAppearance_DockSize_Compact" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
                     <controls:SettingsCard x:Uid="DockAppearance_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.DockAppearance.ThemeIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_System_Automation" Tag="Default">

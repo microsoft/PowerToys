@@ -18,9 +18,7 @@ public record DockSettings
 {
     public DockSide Side { get; init; } = DockSide.Top;
 
-    public DockSize DockSize { get; init; } = DockSize.Small;
-
-    public DockSize DockIconsSize { get; init; } = DockSize.Small;
+    public DockSize DockSize { get; init; } = DockSize.Default;
 
     // <Theme settings>
     public DockBackdrop Backdrop { get; init; } = DockBackdrop.Acrylic;
@@ -137,9 +135,8 @@ public enum DockSide
 
 public enum DockSize
 {
-    Small,
-    Medium,
-    Large,
+    Default,
+    Compact,
 }
 
 public enum DockBackdrop

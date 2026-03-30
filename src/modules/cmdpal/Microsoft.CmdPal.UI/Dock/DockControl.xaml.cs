@@ -47,6 +47,15 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         set => SetValue(DockSideProperty, value);
     }
 
+    public static readonly DependencyProperty DockSizeProperty =
+        DependencyProperty.Register(nameof(DockSize), typeof(DockSize), typeof(DockControl), new PropertyMetadata(DockSize.Default));
+
+    public DockSize DockSize
+    {
+        get => (DockSize)GetValue(DockSizeProperty);
+        set => SetValue(DockSizeProperty, value);
+    }
+
     public static readonly DependencyProperty IsEditModeProperty =
         DependencyProperty.Register(nameof(IsEditMode), typeof(bool), typeof(DockControl), new PropertyMetadata(false, OnIsEditModeChanged));
 
@@ -233,10 +242,14 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     internal void UpdateSettings(DockSettings settings)
     {
         DockSide = settings.Side;
+        DockSize = settings.DockSize;
 
         var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
 
         ItemsOrientation = isHorizontal ? Orientation.Horizontal : Orientation.Vertical;
+
+        var margin = settings.DockSize == DockSize.Compact ? 2 : 4;
+        ContentGrid.Margin = new Thickness(margin);
 
         if (settings.Backdrop == DockBackdrop.Transparent)
         {
