@@ -6,6 +6,7 @@ using System;
 using System.Drawing;
 using System.Globalization;
 
+using ColorPicker.Helpers;
 using ManagedCommon;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

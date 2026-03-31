@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Linq;
+
+using HostsUILib;
 using HostsUILib.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -128,16 +131,16 @@ namespace Hosts.Tests
         [TestMethod]
         public void ValidHosts_WithLengthValidation_ExceedsMaxCount_ReturnsFalse()
         {
-            // Consts.MaxHostsCount is 9, create 10 hosts
-            string hosts = "h1 h2 h3 h4 h5 h6 h7 h8 h9 h10";
+            // Create a host string with one more than MaxHostsCount hosts
+            var hosts = string.Join(" ", Enumerable.Range(1, Consts.MaxHostsCount + 1).Select(i => $"h{i}"));
             Assert.IsFalse(ValidationHelper.ValidHosts(hosts, validateHostsLength: true));
         }
 
         [TestMethod]
         public void ValidHosts_WithLengthValidation_AtMaxCount_ReturnsTrue()
         {
-            // Consts.MaxHostsCount is 9, create exactly 9 hosts
-            string hosts = "h1 h2 h3 h4 h5 h6 h7 h8 h9";
+            // Create a host string with exactly MaxHostsCount hosts
+            var hosts = string.Join(" ", Enumerable.Range(1, Consts.MaxHostsCount).Select(i => $"h{i}"));
             Assert.IsTrue(ValidationHelper.ValidHosts(hosts, validateHostsLength: true));
         }
 
@@ -162,14 +165,9 @@ namespace Hosts.Tests
             Assert.IsTrue(ValidationHelper.ValidHosts("localhost", validateHostsLength: true));
         }
 
-        [DataTestMethod]
-        [DataRow("host with spaces")]
-        public void ValidHosts_InvalidHostname_ReturnsFalse(string hosts)
+        [TestMethod]
+        public void ValidHosts_InvalidHostname_ReturnsFalse()
         {
-            // "with" and "spaces" are valid individually, but a single entry "host with spaces"
-            // when split by space gives "host", "with", "spaces" - all valid hostnames.
-            // This actually returns true since each part is valid.
-            // Test a truly invalid hostname instead:
             Assert.IsFalse(ValidationHelper.ValidHosts("host_with!invalid@chars", validateHostsLength: false));
         }
 
