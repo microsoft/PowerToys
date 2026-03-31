@@ -22,19 +22,6 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
         var title = module.ModuleDisplayName();
         var icon = module.ModuleIcon();
 
-        if (ModuleEnablementService.IsModuleEnabled(module))
-        {
-            var isListening = KeyboardManagerStateService.IsListening();
-            yield return new ListItem(new ToggleKeyboardManagerListeningCommand() { Id = "com.microsoft.powertoys.keyboardManager.toggleListening" })
-            {
-                Title = GetResourceString("KeyboardManager_ToggleListening_Title", "Keyboard Manager: Toggle active state"),
-                Subtitle = isListening
-                    ? GetResourceString("KeyboardManager_ToggleListening_On_Subtitle", "Keyboard Manager is active. Invoke to stop listening.")
-                    : GetResourceString("KeyboardManager_ToggleListening_Off_Subtitle", "Keyboard Manager is paused. Invoke to start listening."),
-                Icon = PowerToysResourcesHelper.KeyboardManagerListeningIcon(isListening),
-            };
-        }
-
         if (IsUseNewEditorEnabled())
         {
             yield return new ListItem(new OpenNewKeyboardManagerEditorCommand() { Id = "com.microsoft.powertoys.keyboardManager.openNewEditor" })

@@ -78,7 +78,6 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring MWBToggleEasyMouseEvent();
         static hstring MWBReconnectEvent();
         static hstring OpenNewKeyboardManagerEvent();
-        static hstring ToggleKeyboardManagerActiveEvent();
         static hstring KeyboardManagerEngineInstanceMutex();
     };
 }

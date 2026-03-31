@@ -71,6 +71,19 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         var supportsPinning = providerContext.SupportsPinning;
 
+        // Also bail early for ListItemViewModels that wrap a TopLevelViewModel.
+        // For those items, TopLevelViewModel.BuildContextMenu() already includes
+        // the correct pin commands by calling AddMoreCommandsToTopLevel with the
+        // item's own provider context. Adding them again here (using the page's
+        // potentially incorrect provider context) would produce duplicate pin
+        // entries such as two "Pin to Dock" buttons.
+        // Check SupportsPinning first to avoid the .Unsafe type-check in the
+        // common non-pinning case.
+        if (supportsPinning && commandItem.Model.Unsafe is TopLevelViewModel)
+        {
+            return results;
+        }
+
         if (supportsPinning &&
             !string.IsNullOrEmpty(itemId))
         {
@@ -79,7 +92,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             var providerId = providerContext.ProviderId;
             if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
             {
-                var providerSettings = _settingsService.Settings.GetProviderSettings(provider);
+                var (_, providerSettings) = _settingsService.Settings.GetProviderSettings(provider);
 
                 var alreadyPinnedToTopLevel = providerSettings.PinnedCommandIds.Contains(itemId);
 
@@ -146,7 +159,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         var providerId = providerContext.ProviderId;
         if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
         {
-            var providerSettings = _settingsService.Settings.GetProviderSettings(provider);
+            var (_, providerSettings) = _settingsService.Settings.GetProviderSettings(provider);
 
             var isPinnedSubCommand = providerSettings.PinnedCommandIds.Contains(itemId);
             if (isPinnedSubCommand)

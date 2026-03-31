@@ -2,81 +2,88 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsModel : ObservableObject
+public record SettingsModel
 {
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
-    public HotkeySettings? Hotkey { get; set; } = DefaultActivationShortcut;
+    public HotkeySettings? Hotkey { get; init; } = DefaultActivationShortcut;
 
-    public bool UseLowLevelGlobalHotkey { get; set; }
+    public bool UseLowLevelGlobalHotkey { get; init; }
 
-    public bool ShowAppDetails { get; set; }
+    public bool ShowAppDetails { get; init; }
 
-    public bool BackspaceGoesBack { get; set; }
+    public bool BackspaceGoesBack { get; init; }
 
-    public bool SingleClickActivates { get; set; }
+    public bool SingleClickActivates { get; init; }
 
-    public bool HighlightSearchOnActivate { get; set; } = true;
+    public bool HighlightSearchOnActivate { get; init; } = true;
 
-    public bool KeepPreviousQuery { get; set; }
+    public bool KeepPreviousQuery { get; init; }
 
-    public bool ShowSystemTrayIcon { get; set; } = true;
+    public bool ShowSystemTrayIcon { get; init; } = true;
 
-    public bool IgnoreShortcutWhenFullscreen { get; set; }
+    public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
 
-    public bool AllowExternalReload { get; set; }
+    public bool IgnoreShortcutWhenBusy { get; init; }
 
-    public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
+    public bool AllowBreakthroughShortcut { get; init; }
 
-    public string[] FallbackRanks { get; set; } = [];
+    public bool AllowExternalReload { get; init; }
 
-    public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
+    public ImmutableDictionary<string, ProviderSettings> ProviderSettings { get; init; }
+        = ImmutableDictionary<string, ProviderSettings>.Empty;
 
-    public List<TopLevelHotkey> CommandHotkeys { get; set; } = [];
+    public string[] FallbackRanks { get; init; } = [];
 
-    public MonitorBehavior SummonOn { get; set; } = MonitorBehavior.ToMouse;
+    public ImmutableDictionary<string, CommandAlias> Aliases { get; init; }
+        = ImmutableDictionary<string, CommandAlias>.Empty;
 
-    public bool DisableAnimations { get; set; } = true;
+    public ImmutableList<TopLevelHotkey> CommandHotkeys { get; init; }
+        = ImmutableList<TopLevelHotkey>.Empty;
 
-    public WindowPosition? LastWindowPosition { get; set; }
+    public MonitorBehavior SummonOn { get; init; } = MonitorBehavior.ToMouse;
 
-    public TimeSpan AutoGoHomeInterval { get; set; } = Timeout.InfiniteTimeSpan;
+    public bool DisableAnimations { get; init; } = true;
 
-    public EscapeKeyBehavior EscapeKeyBehaviorSetting { get; set; } = EscapeKeyBehavior.ClearSearchFirstThenGoBack;
+    public WindowPosition? LastWindowPosition { get; init; }
 
-    public bool EnableDock { get; set; }
+    public TimeSpan AutoGoHomeInterval { get; init; } = Timeout.InfiniteTimeSpan;
 
-    public DockSettings DockSettings { get; set; } = new();
+    public EscapeKeyBehavior EscapeKeyBehaviorSetting { get; init; } = EscapeKeyBehavior.ClearSearchFirstThenGoBack;
+
+    public bool EnableDock { get; init; }
+
+    public DockSettings DockSettings { get; init; } = new();
 
     // Theme settings
-    public UserTheme Theme { get; set; } = UserTheme.Default;
+    public UserTheme Theme { get; init; } = UserTheme.Default;
 
-    public ColorizationMode ColorizationMode { get; set; }
+    public ColorizationMode ColorizationMode { get; init; }
 
-    public Color CustomThemeColor { get; set; } = new() { A = 0, R = 255, G = 255, B = 255 }; // Transparent — avoids WinUI3 COM dependency on Colors.Transparent
+    public Color CustomThemeColor { get; init; } = new() { A = 0, R = 255, G = 255, B = 255 }; // Transparent — avoids WinUI3 COM dependency on Colors.Transparent
 
-    public int CustomThemeColorIntensity { get; set; } = 100;
+    public int CustomThemeColorIntensity { get; init; } = 100;
 
-    public int BackgroundImageTintIntensity { get; set; }
+    public int BackgroundImageTintIntensity { get; init; }
 
-    public int BackgroundImageOpacity { get; set; } = 20;
+    public int BackgroundImageOpacity { get; init; } = 20;
 
-    public int BackgroundImageBlurAmount { get; set; }
+    public int BackgroundImageBlurAmount { get; init; }
 
-    public int BackgroundImageBrightness { get; set; }
+    public int BackgroundImageBrightness { get; init; }
 
-    public BackgroundImageFit BackgroundImageFit { get; set; }
+    public BackgroundImageFit BackgroundImageFit { get; init; }
 
-    public string? BackgroundImagePath { get; set; }
+    public string? BackgroundImagePath { get; init; }
 
     public string? BackgroundImageSlideshowFolderPath { get; set; }
 
@@ -84,30 +91,35 @@ public partial class SettingsModel : ObservableObject
 
     public bool BackgroundImageShuffle { get; set; } = true;
 
-    public BackdropStyle BackdropStyle { get; set; }
+    public BackdropStyle BackdropStyle { get; init; }
 
-    public int BackdropOpacity { get; set; } = 100;
+    public int BackdropOpacity { get; init; } = 100;
 
     // </Theme settings>
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 
-    public ProviderSettings GetProviderSettings(CommandProviderWrapper provider)
+    public (SettingsModel Model, ProviderSettings Settings) GetProviderSettings(CommandProviderWrapper provider)
     {
-        ProviderSettings? settings;
-        if (!ProviderSettings.TryGetValue(provider.ProviderId, out settings))
+        if (!ProviderSettings.TryGetValue(provider.ProviderId, out var settings))
         {
-            settings = new ProviderSettings(provider);
-            settings.Connect(provider);
-            ProviderSettings[provider.ProviderId] = settings;
-        }
-        else
-        {
-            settings.Connect(provider);
+            settings = new ProviderSettings();
         }
 
-        return settings;
+        var connected = settings.WithConnection(provider);
+
+        // If WithConnection returned the same instance, nothing changed — skip SetItem
+        if (ReferenceEquals(connected, settings))
+        {
+            return (this, connected);
+        }
+
+        var newModel = this with
+        {
+            ProviderSettings = ProviderSettings.SetItem(provider.ProviderId, connected),
+        };
+        return (newModel, connected);
     }
 
     public string[] GetGlobalFallbacks()
@@ -156,6 +168,13 @@ public partial class SettingsModel : ObservableObject
 [JsonSerializable(typeof(RecentCommandsManager))]
 [JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
 [JsonSerializable(typeof(List<HistoryItem>), TypeInfoPropertyName = "HistoryList")]
+[JsonSerializable(typeof(ImmutableList<HistoryItem>), TypeInfoPropertyName = "ImmutableHistoryList")]
+[JsonSerializable(typeof(ImmutableDictionary<string, FallbackSettings>), TypeInfoPropertyName = "ImmutableFallbackDictionary")]
+[JsonSerializable(typeof(ImmutableList<string>), TypeInfoPropertyName = "ImmutableStringList")]
+[JsonSerializable(typeof(ImmutableList<DockBandSettings>), TypeInfoPropertyName = "ImmutableDockBandSettingsList")]
+[JsonSerializable(typeof(ImmutableDictionary<string, ProviderSettings>), TypeInfoPropertyName = "ImmutableProviderSettingsDictionary")]
+[JsonSerializable(typeof(ImmutableDictionary<string, CommandAlias>), TypeInfoPropertyName = "ImmutableAliasDictionary")]
+[JsonSerializable(typeof(ImmutableList<TopLevelHotkey>), TypeInfoPropertyName = "ImmutableTopLevelHotkeyList")]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Just used here")]
