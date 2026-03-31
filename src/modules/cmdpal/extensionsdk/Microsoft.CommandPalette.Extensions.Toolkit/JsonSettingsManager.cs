@@ -66,7 +66,7 @@ public abstract class JsonSettingsManager
         }
         catch (Exception ex)
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"Settings migration failed: {ex.Message}" });
+            ExtensionHost.LogMessage(new LogMessage() { Message = $"Settings migration failed from '{legacyFilePath}' to '{FilePath}': {ex}" });
         }
     }
 
