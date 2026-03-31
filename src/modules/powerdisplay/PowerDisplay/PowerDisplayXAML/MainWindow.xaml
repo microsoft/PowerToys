@@ -24,13 +24,39 @@
         IsTabStop="True"
         TabFocusNavigation="Local">
         <Grid.Resources>
+            <GridLength x:Key="FlyoutStatusBarHeight">48</GridLength>
+            <x:Double x:Key="FlyoutSeparatorHeight">1</x:Double>
+            <GridLength x:Key="FlyoutSliderIconColumnWidth">20</GridLength>
+            <x:Double x:Key="FlyoutActionGlyphFontSize">16</x:Double>
+            <x:Double x:Key="FlyoutSecondaryTextFontSize">12</x:Double>
+            <x:Double x:Key="FlyoutRotationGlyphFontSize">14</x:Double>
+            <x:Double x:Key="FlyoutButtonSize">32</x:Double>
+            <x:Double x:Key="FlyoutCompactSpacing">4</x:Double>
+            <x:Double x:Key="FlyoutStandardSpacing">8</x:Double>
+            <x:Double x:Key="FlyoutMonitorSectionSpacing">32</x:Double>
+            <x:Double x:Key="FlyoutScanningIndicatorSize">24</x:Double>
+            <x:Double x:Key="FlyoutScanningSpacing">16</x:Double>
+            <Thickness x:Key="FlyoutButtonPadding">6</Thickness>
+            <Thickness x:Key="FlyoutScanningMargin">0,16,0,16</Thickness>
+            <Thickness x:Key="FlyoutContentPadding">16</Thickness>
+            <Thickness x:Key="FlyoutListHeaderMargin">16,0,8,0</Thickness>
+            <Thickness x:Key="FlyoutListItemPadding">0,4</Thickness>
+            <Thickness x:Key="FlyoutSelectionGlyphMargin">8,0,0,0</Thickness>
+            <Thickness x:Key="FlyoutSectionTopMargin">0,8,0,0</Thickness>
+            <Thickness x:Key="FlyoutSectionContainerPadding">8,0,16,8</Thickness>
+            <Thickness x:Key="FlyoutSeparatorMargin">8,8</Thickness>
+            <Thickness x:Key="FlyoutStatusBarMargin">0,0,8,8</Thickness>
+            <Thickness x:Key="MonitorHeaderOffsetMargin">2,0,0,0</Thickness>
+            <Thickness x:Key="MonitorNameBaselineMargin">0,0,0,2</Thickness>
+            <x:Double x:Key="FlyoutContextMenuMinWidth">240</x:Double>
+            <x:Double x:Key="FlyoutContextMenuMaxWidth">320</x:Double>
             <Style
                 x:Key="FlyoutButtonStyle"
                 BasedOn="{StaticResource SubtleButtonStyle}"
                 TargetType="Button">
-                <Setter Property="Padding" Value="6" />
-                <Setter Property="Width" Value="32" />
-                <Setter Property="Height" Value="32" />
+                <Setter Property="Padding" Value="{StaticResource FlyoutButtonPadding}" />
+                <Setter Property="Width" Value="{StaticResource FlyoutButtonSize}" />
+                <Setter Property="Height" Value="{StaticResource FlyoutButtonSize}" />
                 <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
             </Style>
         </Grid.Resources>
@@ -38,7 +64,7 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="48" />
+                    <RowDefinition Height="{StaticResource FlyoutStatusBarHeight}" />
                 </Grid.RowDefinitions>
 
                 <!--  Main Content Area with modern design  -->
@@ -49,21 +75,21 @@
                     BorderThickness="0,0,0,1">
                     <Grid>
                         <StackPanel
-                            Margin="0,16,0,16"
+                            Margin="{StaticResource FlyoutScanningMargin}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Spacing="16"
+                            Spacing="{StaticResource FlyoutScanningSpacing}"
                             Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.IsScanning), Mode=OneWay}">
                             <ProgressRing
-                                Width="24"
-                                Height="24"
+                                Width="{StaticResource FlyoutScanningIndicatorSize}"
+                                Height="{StaticResource FlyoutScanningIndicatorSize}"
                                 Foreground="{ThemeResource AccentFillColorDefaultBrush}"
                                 IsActive="True" />
                             <TextBlock
                                 x:Name="ScanningMonitorsTextBlock"
                                 x:Uid="ScanningMonitorsText"
                                 HorizontalAlignment="Center"
-                                FontSize="12"
+                                FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextAlignment="Center" />
                         </StackPanel>
@@ -80,7 +106,7 @@
                         <!--  Content Area  -->
                         <ScrollViewer
                             x:Name="MainScrollViewer"
-                            Padding="16"
+                            Padding="{StaticResource FlyoutContentPadding}"
                             HorizontalScrollBarVisibility="Disabled"
                             HorizontalScrollMode="Disabled"
                             IsTabStop="False"
@@ -92,18 +118,18 @@
                                 TabFocusNavigation="Local"
                                 Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.HasMonitors), Mode=OneWay}">
                                 <ItemsRepeater.Layout>
-                                    <StackLayout Orientation="Vertical" Spacing="32" />
+                                    <StackLayout Orientation="Vertical" Spacing="{StaticResource FlyoutMonitorSectionSpacing}" />
                                 </ItemsRepeater.Layout>
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:MonitorViewModel">
                                         <StackPanel
-                                            Spacing="4"
+                                            Spacing="{StaticResource FlyoutCompactSpacing}"
                                             TabFocusNavigation="Local">
                                             <!--  Monitor Name with Icon  -->
                                             <Grid
-                                                Margin="2,0,0,0"
+                                                Margin="{StaticResource MonitorHeaderOffsetMargin}"
                                                 HorizontalAlignment="Stretch"
-                                                ColumnSpacing="8">
+                                                ColumnSpacing="{StaticResource FlyoutStandardSpacing}">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="*" />
@@ -114,7 +140,7 @@
                                                     MonitorNumber="{x:Bind MonitorNumber, Mode=OneWay}" />
                                                 <TextBlock
                                                     Grid.Column="1"
-                                                    Margin="0,0,0,2"
+                                                    Margin="{StaticResource MonitorNameBaselineMargin}"
                                                     VerticalAlignment="Center"
                                                     Text="{x:Bind DisplayName, Mode=OneWay}" />
                                                 <!--  Icon buttons for InputSource and ColorTemperature  -->
@@ -122,12 +148,12 @@
                                                     Grid.Column="1"
                                                     HorizontalAlignment="Right"
                                                     Orientation="Horizontal"
-                                                    Spacing="4">
+                                                    Spacing="{StaticResource FlyoutCompactSpacing}">
                                                     <!--  Color Temperature Button  -->
                                                     <Button
                                                         x:Uid="ColorTemperatureTooltip"
                                                         Content="{ui:FontIcon Glyph=&#xE790;,
-                                                                              FontSize=16}"
+                                                                              FontSize={StaticResource FlyoutActionGlyphFontSize}}"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         Style="{StaticResource SubtleButtonStyle}"
                                                         Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowColorTemperature), Mode=OneWay}">
@@ -140,13 +166,13 @@
                                                                         <ListView.Header>
                                                                             <TextBlock
                                                                                 x:Uid="ColorTemperatureHeader"
-                                                                                Margin="16,0,8,0"
-                                                                                FontSize="12"
+                                                                                Margin="{StaticResource FlyoutListHeaderMargin}"
+                                                                                FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
                                                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                         </ListView.Header>
                                                                         <ListView.ItemTemplate>
                                                                             <DataTemplate x:DataType="vm:ColorTemperatureItem">
-                                                                                <Grid Padding="0,4">
+                                                                                <Grid Padding="{StaticResource FlyoutListItemPadding}">
                                                                                     <Grid.ColumnDefinitions>
                                                                                         <ColumnDefinition Width="*" />
                                                                                         <ColumnDefinition Width="Auto" />
@@ -154,8 +180,8 @@
                                                                                     <TextBlock VerticalAlignment="Center" Text="{x:Bind DisplayName}" />
                                                                                     <FontIcon
                                                                                         Grid.Column="1"
-                                                                                        Margin="8,0,0,0"
-                                                                                        FontSize="12"
+                                                                                        Margin="{StaticResource FlyoutSelectionGlyphMargin}"
+                                                                                        FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
                                                                                         Glyph="&#xE73E;"
                                                                                         Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(IsSelected)}" />
                                                                                 </Grid>
@@ -169,7 +195,7 @@
                                                     <Button
                                                         x:Uid="MoreOptionsTooltip"
                                                         Content="{ui:FontIcon Glyph=&#xE712;,
-                                                                              FontSize=16}"
+                                                                              FontSize={StaticResource FlyoutActionGlyphFontSize}}"
                                                         Style="{StaticResource SubtleButtonStyle}"
                                                         Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowMoreButton), Mode=OneWay}">
                                                         <Button.Flyout>
@@ -178,8 +204,8 @@
                                                                 Placement="BottomEdgeAlignedRight"
                                                                 ShouldConstrainToRootBounds="False">
                                                                 <StackPanel
-                                                                    MinWidth="240"
-                                                                    MaxWidth="320">
+                                                                    MinWidth="{StaticResource FlyoutContextMenuMinWidth}"
+                                                                    MaxWidth="{StaticResource FlyoutContextMenuMaxWidth}">
                                                                     <!--  Input Source Section  -->
                                                                     <ListView
                                                                         ItemsSource="{x:Bind AvailableInputSources, Mode=OneWay}"
@@ -189,13 +215,13 @@
                                                                         <ListView.Header>
                                                                             <TextBlock
                                                                                 x:Uid="InputSourceHeader"
-                                                                                Margin="16,0,8,0"
-                                                                                FontSize="12"
+                                                                                Margin="{StaticResource FlyoutListHeaderMargin}"
+                                                                                FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
                                                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                         </ListView.Header>
                                                                         <ListView.ItemTemplate>
                                                                             <DataTemplate x:DataType="vm:InputSourceItem">
-                                                                                <Grid Padding="0,4">
+                                                                                <Grid Padding="{StaticResource FlyoutListItemPadding}">
                                                                                     <Grid.ColumnDefinitions>
                                                                                         <ColumnDefinition Width="*" />
                                                                                         <ColumnDefinition Width="Auto" />
@@ -203,8 +229,8 @@
                                                                                     <TextBlock VerticalAlignment="Center" Text="{x:Bind Name}" />
                                                                                     <FontIcon
                                                                                         Grid.Column="1"
-                                                                                        Margin="8,0,0,0"
-                                                                                        FontSize="12"
+                                                                                        Margin="{StaticResource FlyoutSelectionGlyphMargin}"
+                                                                                        FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
                                                                                         Glyph="&#xE73E;"
                                                                                         Visibility="{x:Bind SelectionVisibility}" />
                                                                                 </Grid>
@@ -213,8 +239,8 @@
                                                                     </ListView>
                                                                     <!--  Separator between Input Source and Power State  -->
                                                                     <Border
-                                                                        Height="1"
-                                                                        Margin="8,8"
+                                                                        Height="{StaticResource FlyoutSeparatorHeight}"
+                                                                        Margin="{StaticResource FlyoutSeparatorMargin}"
                                                                         Background="{ThemeResource DividerStrokeColorDefaultBrush}"
                                                                         Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowSeparatorAfterInputSource), Mode=OneWay}" />
                                                                     <!--  Power State Section  -->
@@ -226,13 +252,13 @@
                                                                         <ListView.Header>
                                                                             <TextBlock
                                                                                 x:Uid="PowerStateHeader"
-                                                                                Margin="16,0,8,0"
-                                                                                FontSize="12"
+                                                                                Margin="{StaticResource FlyoutListHeaderMargin}"
+                                                                                FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
                                                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                         </ListView.Header>
                                                                         <ListView.ItemTemplate>
                                                                             <DataTemplate x:DataType="vm:PowerStateItem">
-                                                                                <Grid Padding="0,4">
+                                                                                <Grid Padding="{StaticResource FlyoutListItemPadding}">
                                                                                     <Grid.ColumnDefinitions>
                                                                                         <ColumnDefinition Width="*" />
                                                                                         <ColumnDefinition Width="Auto" />
@@ -240,8 +266,8 @@
                                                                                     <TextBlock VerticalAlignment="Center" Text="{x:Bind Name}" />
                                                                                     <FontIcon
                                                                                         Grid.Column="1"
-                                                                                        Margin="8,0,0,0"
-                                                                                        FontSize="12"
+                                                                                        Margin="{StaticResource FlyoutSelectionGlyphMargin}"
+                                                                                        FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
                                                                                         Glyph="&#xE73E;"
                                                                                         Visibility="{x:Bind SelectionVisibility}" />
                                                                                 </Grid>
@@ -255,8 +281,8 @@
                                                 </StackPanel>
                                             </Grid>
                                             <StackPanel
-                                                Margin="0,8,0,0"
-                                                Padding="8,0,16,8"
+                                                Margin="{StaticResource FlyoutSectionTopMargin}"
+                                                Padding="{StaticResource FlyoutSectionContainerPadding}"
                                                 Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
                                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                                 BorderThickness="1"
@@ -265,10 +291,10 @@
                                                 XYFocusKeyboardNavigation="Enabled">
                                                 <!--  Brightness Control  -->
                                                 <Grid
-                                                    Margin="0,8,0,0"
-                                                    ColumnSpacing="8">
+                                                    Margin="{StaticResource FlyoutSectionTopMargin}"
+                                                    ColumnSpacing="{StaticResource FlyoutStandardSpacing}">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="20" />
+                                                        <ColumnDefinition Width="{StaticResource FlyoutSliderIconColumnWidth}" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
                                                     <FontIcon
@@ -276,7 +302,7 @@
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
                                                         AutomationProperties.AccessibilityView="Raw"
-                                                        FontSize="16"
+                                                        FontSize="{StaticResource FlyoutActionGlyphFontSize}"
                                                         Glyph="&#xEC8A;" />
                                                     <Slider
                                                         x:Uid="BrightnessAutomation"
@@ -293,11 +319,11 @@
 
                                                 <!--  Contrast Control  -->
                                                 <Grid
-                                                    Margin="0,8,0,0"
-                                                    ColumnSpacing="8"
+                                                    Margin="{StaticResource FlyoutSectionTopMargin}"
+                                                    ColumnSpacing="{StaticResource FlyoutStandardSpacing}"
                                                     Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowContrast), Mode=OneWay}">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="20" />
+                                                        <ColumnDefinition Width="{StaticResource FlyoutSliderIconColumnWidth}" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
 
@@ -306,7 +332,7 @@
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
                                                         AutomationProperties.AccessibilityView="Raw"
-                                                        FontSize="16"
+                                                        FontSize="{StaticResource FlyoutActionGlyphFontSize}"
                                                         Glyph="&#xE7A1;" />
 
                                                     <Slider
@@ -323,11 +349,11 @@
 
                                                 <!--  Volume Control  -->
                                                 <Grid
-                                                    Margin="0,8,0,0"
-                                                    ColumnSpacing="8"
+                                                    Margin="{StaticResource FlyoutSectionTopMargin}"
+                                                    ColumnSpacing="{StaticResource FlyoutStandardSpacing}"
                                                     Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowVolume), Mode=OneWay}">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="20" />
+                                                        <ColumnDefinition Width="{StaticResource FlyoutSliderIconColumnWidth}" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
 
@@ -336,7 +362,7 @@
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
                                                         AutomationProperties.AccessibilityView="Raw"
-                                                        FontSize="16"
+                                                        FontSize="{StaticResource FlyoutActionGlyphFontSize}"
                                                         Glyph="&#xE993;" />
                                                     <Slider
                                                         x:Uid="VolumeAutomation"
@@ -353,11 +379,11 @@
 
                                                 <!--  Rotation Controls  -->
                                                 <Grid
-                                                    Margin="0,8,0,0"
-                                                    ColumnSpacing="8"
+                                                    Margin="{StaticResource FlyoutSectionTopMargin}"
+                                                    ColumnSpacing="{StaticResource FlyoutStandardSpacing}"
                                                     Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowRotation), Mode=OneWay}">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="20" />
+                                                        <ColumnDefinition Width="{StaticResource FlyoutSliderIconColumnWidth}" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
 
@@ -366,12 +392,12 @@
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
                                                         AutomationProperties.AccessibilityView="Raw"
-                                                        FontSize="16"
+                                                        FontSize="{StaticResource FlyoutActionGlyphFontSize}"
                                                         Glyph="&#xE7AD;" />
 
                                                     <Grid
                                                         Grid.Column="1"
-                                                        ColumnSpacing="4"
+                                                        ColumnSpacing="{StaticResource FlyoutCompactSpacing}"
                                                         TabFocusNavigation="Local"
                                                         XYFocusKeyboardNavigation="Enabled">
                                                         <Grid.ColumnDefinitions>
@@ -388,7 +414,7 @@
                                                             IsChecked="{x:Bind IsRotation0, Mode=OneWay}"
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                             IsTabStop="True">
-                                                            <FontIcon FontSize="14" Glyph="&#xE74A;" />
+                                                            <FontIcon FontSize="{StaticResource FlyoutRotationGlyphFontSize}" Glyph="&#xE74A;" />
                                                         </ToggleButton>
                                                         <!--  Left (270°)  -->
                                                         <ToggleButton
@@ -399,7 +425,7 @@
                                                             IsChecked="{x:Bind IsRotation3, Mode=OneWay}"
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                             IsTabStop="True">
-                                                            <FontIcon FontSize="14" Glyph="&#xE76B;" />
+                                                            <FontIcon FontSize="{StaticResource FlyoutRotationGlyphFontSize}" Glyph="&#xE76B;" />
                                                         </ToggleButton>
                                                         <!--  Right (90°)  -->
                                                         <ToggleButton
@@ -410,7 +436,7 @@
                                                             IsChecked="{x:Bind IsRotation1, Mode=OneWay}"
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                             IsTabStop="True">
-                                                            <FontIcon FontSize="14" Glyph="&#xE76C;" />
+                                                            <FontIcon FontSize="{StaticResource FlyoutRotationGlyphFontSize}" Glyph="&#xE76C;" />
                                                         </ToggleButton>
                                                         <!--  Inverted (180°)  -->
                                                         <ToggleButton
@@ -421,7 +447,7 @@
                                                             IsChecked="{x:Bind IsRotation2, Mode=OneWay}"
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                             IsTabStop="True">
-                                                            <FontIcon FontSize="14" Glyph="&#xE74B;" />
+                                                            <FontIcon FontSize="{StaticResource FlyoutRotationGlyphFontSize}" Glyph="&#xE74B;" />
                                                         </ToggleButton>
                                                     </Grid>
                                                 </Grid>
@@ -437,16 +463,16 @@
                 <Grid x:Name="StatusBar" Grid.Row="1">
                     <!--  Action Buttons  -->
                     <StackPanel
-                        Margin="0,0,8,8"
+                        Margin="{StaticResource FlyoutStatusBarMargin}"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Orientation="Horizontal"
-                        Spacing="8">
+                        Spacing="{StaticResource FlyoutStandardSpacing}">
                         <Button
                             x:Name="ProfilesButton"
                             x:Uid="ProfilesTooltip"
                             Content="{ui:FontIcon Glyph=&#xE748;,
-                                                  FontSize=16}"
+                                                  FontSize={StaticResource FlyoutActionGlyphFontSize}}"
                             Style="{StaticResource SubtleButtonStyle}"
                             Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowProfileSwitcherButton), Mode=OneWay}">
                             <Button.Flyout>
@@ -462,13 +488,13 @@
                                         <ListView.Header>
                                             <TextBlock
                                                 x:Uid="ProfilesHeader"
-                                                Margin="16,0,8,0"
-                                                FontSize="12"
+                                                Margin="{StaticResource FlyoutListHeaderMargin}"
+                                                FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         </ListView.Header>
                                         <ListView.ItemTemplate>
                                             <DataTemplate x:DataType="models:PowerDisplayProfile">
-                                                <TextBlock Padding="0,4" Text="{x:Bind Name}" />
+                                                <TextBlock Padding="{StaticResource FlyoutListItemPadding}" Text="{x:Bind Name}" />
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
                                     </ListView>
@@ -480,20 +506,19 @@
                             x:Uid="RefreshTooltip"
                             Click="OnRefreshClick"
                             Content="{ui:FontIcon Glyph=&#xE72C;,
-                                                  FontSize=16}"
+                                                  FontSize={StaticResource FlyoutActionGlyphFontSize}}"
                             Style="{StaticResource SubtleButtonStyle}" />
                         <Button
                             x:Name="IdentifyButton"
                             x:Uid="IdentifyTooltip"
                             Command="{x:Bind ViewModel.IdentifyMonitorsCommand}"
                             Content="{ui:FontIcon Glyph=&#xE9D9;,
-                                                  FontSize=16}"
+                                                  FontSize={StaticResource FlyoutActionGlyphFontSize}}"
                             Style="{StaticResource SubtleButtonStyle}"
                             Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowIdentifyMonitorsButton), Mode=OneWay}" />
                         <Button
                             x:Name="SettingsBtn"
                             x:Uid="SettingsTooltip"
-                            Padding="6"
                             Click="OnSettingsClick"
                             Style="{StaticResource FlyoutButtonStyle}">
                             <AnimatedIcon x:Name="SettingsAnimatedIcon">

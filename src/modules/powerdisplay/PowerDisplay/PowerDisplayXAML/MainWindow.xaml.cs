@@ -321,9 +321,9 @@ namespace PowerDisplay
                 // Window properties (IsResizable, IsMaximizable, IsMinimizable,
                 // IsTitleBarVisible, IsShownInSwitchers) are set in XAML
 
-                // Set a minimal initial window size in DIU - it will be adjusted before showing.
+                // Set a minimal initial window size in DIP - it will be adjusted before showing.
                 // Using minimal height prevents the "large window shrinking" flicker.
-                this.SetWindowSize(AppConstants.UI.WindowWidth, AppConstants.UI.MinWindowHeight);
+                this.SetWindowSize(AppConstants.UI.WindowWidthDip, AppConstants.UI.WindowMinHeightDip);
 
                 // Position window at bottom right corner
                 PositionWindowAtBottomRight();
@@ -377,14 +377,14 @@ namespace PowerDisplay
 
                 // Force layout update and measure content height
                 RootGrid.UpdateLayout();
-                MainContainer?.Measure(new Windows.Foundation.Size(AppConstants.UI.WindowWidth, double.PositiveInfinity));
+                MainContainer?.Measure(new Windows.Foundation.Size(AppConstants.UI.WindowWidthDip, double.PositiveInfinity));
                 var contentHeight = (int)Math.Ceiling(MainContainer?.DesiredSize.Height ?? 0);
 
-                // Apply min/max height limits and reposition using DIU values.
+                // Apply min/max height limits and reposition using DIP values.
                 // Min height ensures window is visible even if content hasn't loaded yet
-                var finalHeight = Math.Max(AppConstants.UI.MinWindowHeight, Math.Min(contentHeight, AppConstants.UI.MaxWindowHeight));
-                Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, finalHeight={finalHeight}");
-                WindowHelper.PositionWindowBottomRight(this, AppConstants.UI.WindowWidth, finalHeight, AppConstants.UI.WindowRightMargin);
+                var finalHeightDip = Math.Max(AppConstants.UI.WindowMinHeightDip, Math.Min(contentHeight, AppConstants.UI.WindowMaxHeightDip));
+                Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, finalHeightDip={finalHeightDip}");
+                WindowHelper.PositionWindowBottomRight(this, AppConstants.UI.WindowWidthDip, finalHeightDip, AppConstants.UI.WindowRightMarginDip);
             }
             catch (Exception ex)
             {
@@ -396,15 +396,15 @@ namespace PowerDisplay
         {
             try
             {
-                var windowHeight = this.Height > 0
+                var windowHeightDip = this.Height > 0
                     ? (int)Math.Ceiling(this.Height)
-                    : AppConstants.UI.MinWindowHeight;
+                    : AppConstants.UI.WindowMinHeightDip;
 
                 WindowHelper.PositionWindowBottomRight(
                     this,  // MainWindow inherits from WindowEx
-                    AppConstants.UI.WindowWidth,
-                    windowHeight,
-                    AppConstants.UI.WindowRightMargin);
+                    AppConstants.UI.WindowWidthDip,
+                    windowHeightDip,
+                    AppConstants.UI.WindowRightMarginDip);
             }
             catch (Exception)
             {

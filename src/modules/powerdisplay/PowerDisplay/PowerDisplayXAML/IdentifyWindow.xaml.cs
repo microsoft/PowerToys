@@ -5,8 +5,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.UI.Windowing;
+using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
-using Windows.Graphics;
 using WinUIEx;
 
 namespace PowerDisplay.PowerDisplayXAML
@@ -16,10 +16,6 @@ namespace PowerDisplay.PowerDisplayXAML
     /// </summary>
     public sealed partial class IdentifyWindow : WindowEx
     {
-        // Window size in device-independent units (DIU)
-        private const int WindowWidthDiu = 300;
-        private const int WindowHeightDiu = 280;
-
         public IdentifyWindow(string displayText)
         {
             InitializeComponent();
@@ -48,8 +44,8 @@ namespace PowerDisplay.PowerDisplayXAML
 
         private void ConfigureWindow()
         {
-            // Set an initial size in DIU. PositionOnDisplay will rescale for the target monitor.
-            this.SetWindowSize(WindowWidthDiu, WindowHeightDiu);
+            // Set a preferred size in DIP. PositionOnDisplay will clamp it for the target monitor.
+            this.SetWindowSize(AppConstants.UI.IdentifyWindowPreferredWidthDip, AppConstants.UI.IdentifyWindowPreferredHeightDip);
             this.IsAlwaysOnTop = true;
         }
 
@@ -58,17 +54,31 @@ namespace PowerDisplay.PowerDisplayXAML
         /// </summary>
         public void PositionOnDisplay(DisplayArea displayArea)
         {
+            var (windowWidthDip, windowHeightDip) = GetAdaptiveWindowSizeDip(displayArea);
+
+            WindowHelper.CenterWindowOnDisplay(this, displayArea, windowWidthDip, windowHeightDip);
+        }
+
+        private static (int WidthDip, int HeightDip) GetAdaptiveWindowSizeDip(DisplayArea displayArea)
+        {
             var workArea = displayArea.WorkArea;
-
             double dpiScale = WindowHelper.GetDpiScale(displayArea);
-            int physicalWidth = WindowHelper.ScaleToPhysicalPixels(WindowWidthDiu, dpiScale);
-            int physicalHeight = WindowHelper.ScaleToPhysicalPixels(WindowHeightDiu, dpiScale);
 
-            // WorkArea coordinates are relative to the target display area.
-            int x = workArea.X + ((workArea.Width - physicalWidth) / 2);
-            int y = workArea.Y + ((workArea.Height - physicalHeight) / 2);
+            int maxWidthDip = Math.Max(
+                AppConstants.UI.IdentifyWindowMinWidthDip,
+                WindowHelper.ScaleToDip((int)Math.Floor(workArea.Width * AppConstants.UI.IdentifyWindowMaxWorkAreaRatio), dpiScale));
+            int maxHeightDip = Math.Max(
+                AppConstants.UI.IdentifyWindowMinHeightDip,
+                WindowHelper.ScaleToDip((int)Math.Floor(workArea.Height * AppConstants.UI.IdentifyWindowMaxWorkAreaRatio), dpiScale));
 
-            this.AppWindow.MoveAndResize(new RectInt32(x, y, physicalWidth, physicalHeight), displayArea);
+            int widthDip = Math.Max(
+                AppConstants.UI.IdentifyWindowMinWidthDip,
+                Math.Min(AppConstants.UI.IdentifyWindowPreferredWidthDip, maxWidthDip));
+            int heightDip = Math.Max(
+                AppConstants.UI.IdentifyWindowMinHeightDip,
+                Math.Min(AppConstants.UI.IdentifyWindowPreferredHeightDip, maxHeightDip));
+
+            return (widthDip, heightDip);
         }
     }
 }

@@ -123,14 +123,25 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Convert device-independent units (DIU) to physical pixels
+        /// Convert device-independent pixels (DIP) to physical pixels.
         /// </summary>
-        /// <param name="diu">Device-independent unit value</param>
+        /// <param name="dip">Device-independent pixel value</param>
         /// <param name="dpiScale">DPI scale factor</param>
         /// <returns>Physical pixel value</returns>
-        public static int ScaleToPhysicalPixels(int diu, double dpiScale)
+        public static int ScaleToPhysicalPixels(int dip, double dpiScale)
         {
-            return (int)Math.Ceiling(diu * dpiScale);
+            return (int)Math.Ceiling(dip * dpiScale);
+        }
+
+        /// <summary>
+        /// Convert physical pixels to device-independent pixels (DIP).
+        /// </summary>
+        /// <param name="physicalPixels">Physical pixel value</param>
+        /// <param name="dpiScale">DPI scale factor</param>
+        /// <returns>Device-independent pixel value</returns>
+        public static int ScaleToDip(int physicalPixels, double dpiScale)
+        {
+            return (int)Math.Floor(physicalPixels / dpiScale);
         }
 
         /// <summary>
@@ -141,14 +152,14 @@ namespace PowerDisplay.Helpers
         /// - Different DPI settings
         /// </summary>
         /// <param name="window">WinUIEx window to position</param>
-        /// <param name="width">Window width in device-independent units (DIU)</param>
-        /// <param name="height">Window height in device-independent units (DIU)</param>
-        /// <param name="rightMargin">Right margin in device-independent units (DIU)</param>
+        /// <param name="widthDip">Window width in device-independent pixels (DIP)</param>
+        /// <param name="heightDip">Window height in device-independent pixels (DIP)</param>
+        /// <param name="rightMarginDip">Right margin in device-independent pixels (DIP)</param>
         public static void PositionWindowBottomRight(
             WindowEx window,
-            int width,
-            int height,
-            int rightMargin = 0)
+            int widthDip,
+            int heightDip,
+            int rightMarginDip = 0)
         {
             if (!TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
             {
@@ -156,24 +167,56 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            MoveWindowBottomRight(window, displayArea, width, height, rightMargin);
+            MoveWindowBottomRight(window, displayArea, widthDip, heightDip, rightMarginDip);
+        }
+
+        /// <summary>
+        /// Center a window within the specified display area's work area.
+        /// </summary>
+        /// <param name="window">WinUIEx window to position</param>
+        /// <param name="displayArea">Target display area</param>
+        /// <param name="widthDip">Window width in device-independent pixels (DIP)</param>
+        /// <param name="heightDip">Window height in device-independent pixels (DIP)</param>
+        public static void CenterWindowOnDisplay(
+            WindowEx window,
+            DisplayArea displayArea,
+            int widthDip,
+            int heightDip)
+        {
+            double dpiScale = GetDpiScale(displayArea);
+            int physicalWidth = ScaleToPhysicalPixels(widthDip, dpiScale);
+            int physicalHeight = ScaleToPhysicalPixels(heightDip, dpiScale);
+
+            window.AppWindow.MoveAndResize(CreateCenteredRect(displayArea, physicalWidth, physicalHeight), displayArea);
         }
 
         private static void MoveWindowBottomRight(
             WindowEx window,
             DisplayArea displayArea,
-            int width,
-            int height,
-            int rightMargin)
+            int widthDip,
+            int heightDip,
+            int rightMarginDip)
         {
             var workArea = displayArea.WorkArea;
             double dpiScale = GetDpiScale(displayArea);
-            int physicalWidth = ScaleToPhysicalPixels(width, dpiScale);
-            int physicalHeight = ScaleToPhysicalPixels(height, dpiScale);
-            int physicalX = (workArea.X + workArea.Width) - ScaleToPhysicalPixels(width + rightMargin, dpiScale);
+            int physicalWidth = ScaleToPhysicalPixels(widthDip, dpiScale);
+            int physicalHeight = ScaleToPhysicalPixels(heightDip, dpiScale);
+            int physicalX = (workArea.X + workArea.Width) - ScaleToPhysicalPixels(widthDip + rightMarginDip, dpiScale);
             int physicalY = (workArea.Y + workArea.Height) - physicalHeight;
 
             window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight), displayArea);
+        }
+
+        private static Windows.Graphics.RectInt32 CreateCenteredRect(
+            DisplayArea displayArea,
+            int physicalWidth,
+            int physicalHeight)
+        {
+            var workArea = displayArea.WorkArea;
+            int physicalX = workArea.X + ((workArea.Width - physicalWidth) / 2);
+            int physicalY = workArea.Y + ((workArea.Height - physicalHeight) / 2);
+
+            return new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight);
         }
 
         private static bool TryGetDisplayAreaAtCursor(out DisplayArea? displayArea)

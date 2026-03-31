@@ -11,13 +11,19 @@
     IsTitleBarVisible="False"
     mc:Ignorable="d">
     <Grid Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
-        <TextBlock
-            x:Name="NumberText"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            FontSize="200"
-            FontWeight="Bold"
-            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-            Text="1" />
+        <Grid.Resources>
+            <Thickness x:Key="IdentifyWindowContentMargin">24</Thickness>
+        </Grid.Resources>
+
+        <Viewbox Margin="{StaticResource IdentifyWindowContentMargin}" Stretch="Uniform">
+            <TextBlock
+                x:Name="NumberText"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontWeight="Bold"
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                Text="1"
+                TextAlignment="Center" />
+        </Viewbox>
     </Grid>
 </winuiex:WindowEx>
