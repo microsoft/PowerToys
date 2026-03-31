@@ -33,6 +33,12 @@
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
+  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
   <ItemGroup>
     <!-- Hide build log files from Solution Explorer -->
     <None Remove="*.log" />
@@ -81,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Removed Common.UI dependency - SettingsDeepLink is now implemented locally -->
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <!-- Removed ManagedCsWin32 - using CsWin32 directly for TrayIcon APIs -->
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
