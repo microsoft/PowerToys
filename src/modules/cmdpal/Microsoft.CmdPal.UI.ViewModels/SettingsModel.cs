@@ -89,6 +89,8 @@ public record SettingsModel
 
     public int BackdropOpacity { get; init; } = 100;
 
+    public AmbientEffectType AmbientEffect { get; init; }
+
     // </Theme settings>
 
     // END SETTINGS

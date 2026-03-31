@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:ambienteffects="using:Microsoft.CmdPal.UI.Controls.AmbientEffects"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI.Dock"
@@ -45,5 +46,13 @@
             TintColor="{x:Bind WindowViewModel.BackgroundImageTint, Mode=OneWay}"
             TintIntensity="{x:Bind WindowViewModel.BackgroundImageTintIntensity, Mode=OneWay}"
             Visibility="{x:Bind WindowViewModel.ShowBackgroundImage, Mode=OneWay}" />
+
+        <ambienteffects:AmbientEffectControl
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            DockSide="{x:Bind WindowViewModel.DockSide, Mode=OneWay}"
+            EffectType="{x:Bind WindowViewModel.DockAmbientEffect, Mode=OneWay}"
+            IsDockMode="True"
+            IsHitTestVisible="False" />
     </Grid>
 </winuiex:WindowEx>

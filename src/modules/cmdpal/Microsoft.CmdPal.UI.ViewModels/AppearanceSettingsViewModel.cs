@@ -346,6 +346,20 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     public bool IsBackdropOpacityVisible =>
         BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsOpacity;
 
+    public int AmbientEffectIndex
+    {
+        get => (int)_settingsService.Settings.AmbientEffect;
+        set
+        {
+            var newEffect = (AmbientEffectType)value;
+            if (_settingsService.Settings.AmbientEffect != newEffect)
+            {
+                _settingsService.UpdateSettings(s => s with { AmbientEffect = newEffect });
+                OnPropertyChanged();
+            }
+        }
+    }
+
     /// <summary>
     /// Gets whether the backdrop description (for styles without options) should be visible.
     /// </summary>

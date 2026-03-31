@@ -14,6 +14,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 public partial class DockWindowViewModel : ObservableObject, IDisposable
 {
     private readonly IThemeService _themeService;
+    private readonly ISettingsService _settingsService;
     private readonly DispatcherQueue _uiDispatcherQueue = DispatcherQueue.GetForCurrentThread()!;
 
     [ObservableProperty]
@@ -49,11 +50,31 @@ public partial class DockWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial double ColorizationOpacity { get; private set; }
 
-    public DockWindowViewModel(IThemeService themeService)
+    [ObservableProperty]
+    public partial AmbientEffectType DockAmbientEffect { get; private set; }
+
+    [ObservableProperty]
+    public partial DockSide DockSide { get; private set; } = DockSide.Top;
+
+    public DockWindowViewModel(IThemeService themeService, ISettingsService settingsService)
     {
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeService_ThemeChanged;
+        _settingsService = settingsService;
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
         UpdateFromThemeSnapshot();
+        UpdateFromSettings(_settingsService.Settings);
+    }
+
+    private void SettingsService_SettingsChanged(ISettingsService sender, SettingsModel args)
+    {
+        _uiDispatcherQueue.TryEnqueue(() => UpdateFromSettings(args));
+    }
+
+    private void UpdateFromSettings(SettingsModel settings)
+    {
+        DockAmbientEffect = settings.DockSettings.AmbientEffect;
+        DockSide = settings.DockSettings.Side;
     }
 
     private void ThemeService_ThemeChanged(object? sender, ThemeChangedEventArgs e)
@@ -85,6 +106,7 @@ public partial class DockWindowViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
         GC.SuppressFinalize(this);
     }
 }

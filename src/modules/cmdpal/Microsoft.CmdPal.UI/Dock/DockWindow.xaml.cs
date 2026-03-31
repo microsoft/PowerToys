@@ -83,7 +83,7 @@ public sealed partial class DockWindow : WindowEx,
         _themeService = serviceProvider.GetRequiredService<IThemeService>();
         _themeService.ThemeChanged += ThemeService_ThemeChanged;
         InitializeBackdropSupport();
-        _windowViewModel = new DockWindowViewModel(_themeService);
+        _windowViewModel = new DockWindowViewModel(_themeService, _settingsService);
         _dock = new DockControl(viewModel);
 
         InitializeComponent();

@@ -76,6 +76,20 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         }
     }
 
+    public int AmbientEffectIndex
+    {
+        get => (int)_settingsService.Settings.DockSettings.AmbientEffect;
+        set
+        {
+            var newEffect = (AmbientEffectType)value;
+            if (_settingsService.Settings.DockSettings.AmbientEffect != newEffect)
+            {
+                _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { AmbientEffect = newEffect } });
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public ColorizationMode ColorizationMode
     {
         get => _settingsService.Settings.DockSettings.ColorizationMode;

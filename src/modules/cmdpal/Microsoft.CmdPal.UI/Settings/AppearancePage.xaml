@@ -134,6 +134,26 @@
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
 
+                    <controls:SettingsCard
+                        x:Uid="Settings_Appearance_AmbientEffect_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.Appearance.AmbientEffectIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="AmbientEffect_Off" />
+                            <ComboBoxItem x:Uid="AmbientEffect_LavaLamp" />
+                            <ComboBoxItem x:Uid="AmbientEffect_KittScanner" />
+                            <ComboBoxItem x:Uid="AmbientEffect_Aurora" />
+                            <ComboBoxItem x:Uid="AmbientEffect_PulseGlow" />
+                            <ComboBoxItem x:Uid="AmbientEffect_Spotlight" />
+                            <ComboBoxItem x:Uid="AmbientEffect_Bars" />
+                            <ComboBoxItem x:Uid="AmbientEffect_Alchemy" />
+                            <ComboBoxItem x:Uid="AmbientEffect_Plasma" />
+                            <ComboBoxItem x:Uid="AmbientEffect_RetroGrid" />
+                            <ComboBoxItem x:Uid="AmbientEffect_BarsLive" />
+                            <ComboBoxItem x:Uid="AmbientEffect_AudioGlow" />
+                            <ComboBoxItem x:Uid="AmbientEffect_Ambience" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
                     <controls:SettingsExpander
                         x:Uid="Settings_GeneralPage_Background_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"

@@ -1158,4 +1158,49 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Right</value>
     <comment>Right section label in pin to dock dialog (code access, horizontal end)</comment>
   </data>
+  <data name="Settings_Appearance_AmbientEffect_SettingsCard.Header" xml:space="preserve">
+    <value>Ambient effect</value>
+  </data>
+  <data name="Settings_Appearance_AmbientEffect_SettingsCard.Description" xml:space="preserve">
+    <value>Add an animated background visual effect</value>
+  </data>
+  <data name="AmbientEffect_Off.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="AmbientEffect_LavaLamp.Content" xml:space="preserve">
+    <value>Lava Lamp</value>
+  </data>
+  <data name="AmbientEffect_KittScanner.Content" xml:space="preserve">
+    <value>KITT Scanner</value>
+  </data>
+  <data name="AmbientEffect_Aurora.Content" xml:space="preserve">
+    <value>Aurora</value>
+  </data>
+  <data name="AmbientEffect_PulseGlow.Content" xml:space="preserve">
+    <value>Pulse Glow</value>
+  </data>
+  <data name="AmbientEffect_Spotlight.Content" xml:space="preserve">
+    <value>Spotlight</value>
+  </data>
+  <data name="AmbientEffect_Bars.Content" xml:space="preserve">
+    <value>Bars &amp; Waves</value>
+  </data>
+  <data name="AmbientEffect_Alchemy.Content" xml:space="preserve">
+    <value>Alchemy</value>
+  </data>
+  <data name="AmbientEffect_Plasma.Content" xml:space="preserve">
+    <value>Plasma</value>
+  </data>
+  <data name="AmbientEffect_RetroGrid.Content" xml:space="preserve">
+    <value>Retro Grid</value>
+  </data>
+  <data name="AmbientEffect_BarsLive.Content" xml:space="preserve">
+    <value>Bars &amp; Waves (Live Audio)</value>
+  </data>
+  <data name="AmbientEffect_AudioGlow.Content" xml:space="preserve">
+    <value>Audio Glow</value>
+  </data>
+  <data name="AmbientEffect_Ambience.Content" xml:space="preserve">
+    <value>Ambience</value>
+  </data>
 </root>

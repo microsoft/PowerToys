@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:ambienteffects="using:Microsoft.CmdPal.UI.Controls.AmbientEffects"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="using:Microsoft.CmdPal.UI.Pages"
@@ -30,6 +31,12 @@
             TintColor="{x:Bind ViewModel.BackgroundImageTint, Mode=OneWay}"
             TintIntensity="{x:Bind ViewModel.BackgroundImageTintIntensity, Mode=OneWay}"
             Visibility="{x:Bind ViewModel.ShowBackgroundImage, Mode=OneWay}" />
+
+        <ambienteffects:AmbientEffectControl
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            EffectType="{x:Bind ViewModel.AmbientEffect, Mode=OneWay}"
+            IsHitTestVisible="False" />
 
         <pages:ShellPage HostWindow="{x:Bind}" />
     </Grid>

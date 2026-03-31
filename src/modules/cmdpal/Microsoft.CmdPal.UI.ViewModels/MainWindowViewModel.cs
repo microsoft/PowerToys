@@ -13,6 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class MainWindowViewModel : ObservableObject, IDisposable
 {
     private readonly IThemeService _themeService;
+    private readonly ISettingsService _settingsService;
     private readonly DispatcherQueue _uiDispatcherQueue = DispatcherQueue.GetForCurrentThread()!;
 
     [ObservableProperty]
@@ -50,6 +51,9 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(EffectiveImageOpacity))]
     public partial float BackdropOpacity { get; private set; } = 1.0f;
 
+    [ObservableProperty]
+    public partial AmbientEffectType AmbientEffect { get; private set; }
+
     // Returns null when no transparency needed (BlurImageControl uses this to decide source type)
     public BackdropStyle? EffectiveBackdropStyle =>
         BackdropStyle == BackdropStyle.Clear ||
@@ -64,10 +68,21 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             ? BackgroundImageOpacity * Math.Sqrt(BackdropOpacity)
             : BackgroundImageOpacity;
 
-    public MainWindowViewModel(IThemeService themeService)
+    public MainWindowViewModel(IThemeService themeService, ISettingsService settingsService)
     {
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeService_ThemeChanged;
+        _settingsService = settingsService;
+        _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+        AmbientEffect = _settingsService.Settings.AmbientEffect;
+    }
+
+    private void SettingsService_SettingsChanged(ISettingsService sender, SettingsModel args)
+    {
+        _uiDispatcherQueue.TryEnqueue(() =>
+        {
+            AmbientEffect = args.AmbientEffect;
+        });
     }
 
     private void ThemeService_ThemeChanged(object? sender, ThemeChangedEventArgs e)
@@ -93,6 +108,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
+        _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
         GC.SuppressFinalize(this);
     }
 }
