@@ -33,7 +33,6 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
         // Add settings here when needed
         // Settings.Add(setting);
-
         MigrateFromLegacyFile(LegacySettingsJsonPath());
         LoadSettings();
 
