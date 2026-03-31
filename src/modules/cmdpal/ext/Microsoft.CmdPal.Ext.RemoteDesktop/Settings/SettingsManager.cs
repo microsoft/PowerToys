@@ -36,6 +36,12 @@ internal class SettingsManager : JsonSettingsManager, ISettingsInterface
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
+        return Path.Combine(directory, $"{_namespace}.settings.json");
+    }
+
+    private static string LegacySettingsJsonPath()
+    {
+        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         return Path.Combine(directory, "settings.json");
     }
 
@@ -45,7 +51,7 @@ internal class SettingsManager : JsonSettingsManager, ISettingsInterface
 
         Settings.Add(_predefinedConnections);
 
-        // Load settings from file upon initialization
+        MigrateFromLegacyFile(LegacySettingsJsonPath());
         LoadSettings();
 
         Settings.SettingsChanged += (s, a) => this.SaveSettings();

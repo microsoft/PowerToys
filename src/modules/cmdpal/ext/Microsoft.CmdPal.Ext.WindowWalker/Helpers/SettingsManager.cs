@@ -99,7 +99,12 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
-        // now, the state is just next to the exe
+        return Path.Combine(directory, $"{Namespace}.settings.json");
+    }
+
+    private static string LegacySettingsJsonPath()
+    {
+        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         return Path.Combine(directory, "settings.json");
     }
 
@@ -118,7 +123,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_inMruOrder);
         Settings.Add(_useWindowIcon);
 
-        // Load settings from file upon initialization
+        MigrateFromLegacyFile(LegacySettingsJsonPath());
         LoadSettings();
 
         Settings.SettingsChanged += (_, _) => SaveSettings();

@@ -72,6 +72,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_historyItemCount);
         Settings.Add(_customSearchUri);
 
+        MigrateFromLegacyFile(LegacySettingsJsonPath());
         LoadSettings();
 
         // Initialize history store after loading settings to get the correct capacity
@@ -85,7 +86,12 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
-        // now, the state is just next to the exe
+        return Path.Combine(directory, $"{_namespace}.settings.json");
+    }
+
+    private static string LegacySettingsJsonPath()
+    {
+        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         return Path.Combine(directory, "settings.json");
     }
 
