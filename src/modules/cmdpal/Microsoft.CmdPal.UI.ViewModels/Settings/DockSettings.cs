@@ -41,6 +41,10 @@ public record DockSettings
             CommandId = "com.microsoft.cmdpal.timedate.dockBand",
         });
 
+    private static readonly Color DefaultCustomThemeColor = new() { A = 0, R = 255, G = 255, B = 255 }; // Transparent — avoids WinUI3 COM dependency on Colors.Transparent and COM in class init
+
+    private readonly Color? _customThemeColor;
+
     public DockSide Side { get; init; } = DockSide.Top;
 
     public DockSize DockSize { get; init; } = DockSize.Small;
@@ -56,7 +60,20 @@ public record DockSettings
 
     public ColorizationMode ColorizationMode { get; init; }
 
-    public Color CustomThemeColor { get; init; } = new() { A = 0, R = 255, G = 255, B = 255 }; // Transparent — avoids WinUI3 COM dependency on Colors.Transparent and COM in class init
+    [JsonPropertyName("CustomThemeColor")]
+    [JsonInclude]
+    internal Color? CustomThemeColorFallback
+    {
+        get => _customThemeColor;
+        init => _customThemeColor = value;
+    }
+
+    [JsonIgnore]
+    public Color CustomThemeColor
+    {
+        get => _customThemeColor ?? DefaultCustomThemeColor;
+        init => _customThemeColor = value;
+    }
 
     public int CustomThemeColorIntensity { get; init; } = 100;
 
@@ -91,13 +108,25 @@ public record DockSettings
 
     [JsonConstructor]
     public DockSettings(
-        ImmutableList<DockBandSettings>? startBands,
-        ImmutableList<DockBandSettings>? centerBands,
-        ImmutableList<DockBandSettings>? endBands)
+        ImmutableList<DockBandSettings> startBands,
+        ImmutableList<DockBandSettings> centerBands,
+        ImmutableList<DockBandSettings> endBands,
+        DockSide side = DockSide.Top,
+        bool alwaysOnTop = true,
+        DockBackdrop backdrop = DockBackdrop.Acrylic,
+        int customThemeColorIntensity = 100,
+        int backgroundImageOpacity = 20,
+        bool showLabels = true)
     {
         StartBands = startBands ?? DefaultStartBands;
         CenterBands = centerBands ?? ImmutableList<DockBandSettings>.Empty;
         EndBands = endBands ?? DefaultEndBands;
+        Side = side;
+        AlwaysOnTop = alwaysOnTop;
+        Backdrop = backdrop;
+        CustomThemeColorIntensity = customThemeColorIntensity;
+        BackgroundImageOpacity = backgroundImageOpacity;
+        ShowLabels = showLabels;
     }
 }
 

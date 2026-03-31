@@ -17,7 +17,7 @@ public record RecentCommandsManager : IRecentCommandsManager
     }
 
     [JsonConstructor]
-    internal RecentCommandsManager(ImmutableList<HistoryItem>? history)
+    internal RecentCommandsManager(ImmutableList<HistoryItem> history)
     {
         History = history ?? ImmutableList<HistoryItem>.Empty;
     }

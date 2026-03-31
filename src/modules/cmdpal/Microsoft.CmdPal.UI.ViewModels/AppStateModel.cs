@@ -25,8 +25,8 @@ public record AppStateModel
 
     [JsonConstructor]
     public AppStateModel(
-        RecentCommandsManager? recentCommands,
-        ImmutableList<string>? runHistory)
+        RecentCommandsManager recentCommands,
+        ImmutableList<string> runHistory)
     {
         RecentCommands = recentCommands ?? new();
         RunHistory = runHistory ?? ImmutableList<string>.Empty;

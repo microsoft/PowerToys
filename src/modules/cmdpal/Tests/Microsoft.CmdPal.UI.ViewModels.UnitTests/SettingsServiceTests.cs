@@ -250,9 +250,12 @@ public class SettingsServiceTests
 
     /// <summary>
     /// Deserializes "{}" into <typeparamref name="T"/> and compares every
-    /// readable instance property against a <c>new()</c> instance. For
-    /// reference-type properties, asserts non-null when the constructor
-    /// default is non-null. For all properties, asserts structural equality.
+    /// readable instance property against a <c>new()</c> instance. Asserts
+    /// that every non-nullable property has the same value after deserialization
+    /// as it does from the parameterless constructor. This catches the
+    /// System.Text.Json source-gen issue where property initializers are not
+    /// honored — both for reference types (which end up null) and value types
+    /// (which end up as default(T) instead of the intended default).
     /// </summary>
     private static void AssertDeserializedMatchesConstructor<T>(T constructed, JsonTypeInfo<T> typeInfo)
         where T : class
@@ -260,6 +263,7 @@ public class SettingsServiceTests
         var deserialized = JsonSerializer.Deserialize("{}", typeInfo);
         Assert.IsNotNull(deserialized, $"Deserialize<{typeof(T).Name}>(\"{{}}\") returned null");
 
+        var nullabilityContext = new NullabilityInfoContext();
         var typeName = typeof(T).Name;
         foreach (var prop in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
         {
@@ -268,15 +272,17 @@ public class SettingsServiceTests
                 continue;
             }
 
-            // Skip [JsonIgnore] properties — they won't be set by the deserializer
-            if (prop.GetCustomAttribute<JsonIgnoreAttribute>() is not null)
+            // Skip computed [JsonIgnore] properties (no setter) - they aren't
+            // deserialized and comparing complex return types is unreliable.
+            // Writable [JsonIgnore] properties (e.g. fallback-backed properties)
+            // are still checked since they should match constructor defaults.
+            if (prop.GetCustomAttribute<JsonIgnoreAttribute>() is not null && !prop.CanWrite)
             {
                 continue;
             }
 
             // Skip nullable properties — null is a valid value for them,
             // so a mismatch with the constructor default is expected.
-            var nullabilityContext = new NullabilityInfoContext();
             var nullabilityInfo = nullabilityContext.Create(prop);
             if (nullabilityInfo.WriteState is NullabilityState.Nullable)
             {
@@ -292,7 +298,7 @@ public class SettingsServiceTests
                 Assert.IsNotNull(actual, $"{label} is null after deserialization but non-null from constructor");
             }
 
-            Assert.AreEqual(expected?.GetType(), actual?.GetType(), $"{label} type mismatch");
+            Assert.AreEqual(expected, actual, $"{label} value mismatch - deserialized default differs from constructor default");
         }
     }
 }
