@@ -307,6 +307,10 @@ namespace KeyboardEventHandlers
             {
                 isAltRightKeyInvoked = true;
             }
+            else if (data->lParam->vkCode == VK_RMENU && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+            {
+                isAltRightKeyInvoked = false;
+            }
 
             // If the shortcut has been pressed down
             if (!it->second.isShortcutInvoked && it->first.CheckModifiersKeyboardState(ii))
