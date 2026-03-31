@@ -321,9 +321,9 @@ namespace PowerDisplay
                 // Window properties (IsResizable, IsMaximizable, IsMinimizable,
                 // IsTitleBarVisible, IsShownInSwitchers) are set in XAML
 
-                // Set minimal initial window size - will be adjusted before showing
-                // Using minimal height to prevent "large window shrinking" flicker
-                this.AppWindow.Resize(new SizeInt32 { Width = AppConstants.UI.WindowWidth, Height = 100 });
+                // Set a minimal initial window size in DIU - it will be adjusted before showing.
+                // Using minimal height prevents the "large window shrinking" flicker.
+                this.SetWindowSize(AppConstants.UI.WindowWidth, AppConstants.UI.MinWindowHeight);
 
                 // Position window at bottom right corner
                 PositionWindowAtBottomRight();
@@ -380,7 +380,7 @@ namespace PowerDisplay
                 MainContainer?.Measure(new Windows.Foundation.Size(AppConstants.UI.WindowWidth, double.PositiveInfinity));
                 var contentHeight = (int)Math.Ceiling(MainContainer?.DesiredSize.Height ?? 0);
 
-                // Apply min/max height limits and reposition (WindowEx handles DPI automatically)
+                // Apply min/max height limits and reposition using DIU values.
                 // Min height ensures window is visible even if content hasn't loaded yet
                 var finalHeight = Math.Max(AppConstants.UI.MinWindowHeight, Math.Min(contentHeight, AppConstants.UI.MaxWindowHeight));
                 Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, finalHeight={finalHeight}");
@@ -396,11 +396,14 @@ namespace PowerDisplay
         {
             try
             {
-                var windowSize = this.AppWindow.Size;
+                var windowHeight = this.Height > 0
+                    ? (int)Math.Ceiling(this.Height)
+                    : AppConstants.UI.MinWindowHeight;
+
                 WindowHelper.PositionWindowBottomRight(
                     this,  // MainWindow inherits from WindowEx
                     AppConstants.UI.WindowWidth,
-                    windowSize.Height,
+                    windowHeight,
                     AppConstants.UI.WindowRightMargin);
             }
             catch (Exception)

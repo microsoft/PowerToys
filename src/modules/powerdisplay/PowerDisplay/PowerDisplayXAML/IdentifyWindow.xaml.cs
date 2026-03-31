@@ -5,6 +5,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.UI.Windowing;
+using PowerDisplay.Helpers;
 using Windows.Graphics;
 using WinUIEx;
 
@@ -18,8 +19,6 @@ namespace PowerDisplay.PowerDisplayXAML
         // Window size in device-independent units (DIU)
         private const int WindowWidthDiu = 300;
         private const int WindowHeightDiu = 280;
-
-        private double _dpiScale = 1.0;
 
         public IdentifyWindow(string displayText)
         {
@@ -49,13 +48,8 @@ namespace PowerDisplay.PowerDisplayXAML
 
         private void ConfigureWindow()
         {
-            _dpiScale = this.GetDpiForWindow() / 96.0;
-
-            // Set window size scaled for DPI
-            // AppWindow.Resize expects physical pixels
-            int physicalWidth = (int)(WindowWidthDiu * _dpiScale);
-            int physicalHeight = (int)(WindowHeightDiu * _dpiScale);
-            this.AppWindow.Resize(new SizeInt32 { Width = physicalWidth, Height = physicalHeight });
+            // Set an initial size in DIU. PositionOnDisplay will rescale for the target monitor.
+            this.SetWindowSize(WindowWidthDiu, WindowHeightDiu);
             this.IsAlwaysOnTop = true;
         }
 
@@ -66,16 +60,15 @@ namespace PowerDisplay.PowerDisplayXAML
         {
             var workArea = displayArea.WorkArea;
 
-            // Window size in physical pixels (already scaled for DPI)
-            int physicalWidth = (int)(WindowWidthDiu * _dpiScale);
-            int physicalHeight = (int)(WindowHeightDiu * _dpiScale);
+            double dpiScale = WindowHelper.GetDpiScale(displayArea);
+            int physicalWidth = WindowHelper.ScaleToPhysicalPixels(WindowWidthDiu, dpiScale);
+            int physicalHeight = WindowHelper.ScaleToPhysicalPixels(WindowHeightDiu, dpiScale);
 
-            // Calculate center position (WorkArea coordinates are in physical pixels)
+            // WorkArea coordinates are in physical pixels (RectInt32 from WinUI DisplayArea)
             int x = workArea.X + ((workArea.Width - physicalWidth) / 2);
             int y = workArea.Y + ((workArea.Height - physicalHeight) / 2);
 
-            // Use WindowEx's AppWindow property
-            this.AppWindow.Move(new PointInt32(x, y));
+            this.AppWindow.MoveAndResize(new RectInt32(x, y, physicalWidth, physicalHeight));
         }
     }
 }

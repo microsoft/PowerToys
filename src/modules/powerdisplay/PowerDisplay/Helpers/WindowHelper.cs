@@ -3,10 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Microsoft.UI;
 using Microsoft.UI.Windowing;
+using PowerDisplay.Common.Drivers;
 using WinUIEx;
 
 namespace PowerDisplay.Helpers
@@ -26,6 +25,16 @@ namespace PowerDisplay.Helpers
         [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool GetCursorPos(out POINT lpPoint);
 
+        [LibraryImport("user32.dll")]
+        private static partial nint MonitorFromPoint(POINT pt, uint dwFlags);
+
+        [LibraryImport("shcore.dll")]
+        private static partial int GetDpiForMonitor(nint hMonitor, uint dpiType, out uint dpiX, out uint dpiY);
+
+        [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW", StringMarshalling = StringMarshalling.Utf16)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static partial bool GetMonitorInfo(nint hMonitor, ref MonitorInfoEx lpmi);
+
         // Window Styles
         private const int GwlStyle = -16;
         private const int WsCaption = 0x00C00000;
@@ -43,6 +52,9 @@ namespace PowerDisplay.Helpers
         private const uint SwpNosize = 0x0001;
         private const uint SwpNomove = 0x0002;
         private const uint SwpFramechanged = 0x0020;
+        private const uint MonitorDefaultToNearest = 2;
+        private const uint MdtEffectiveDpi = 0;
+        private const int DefaultDpi = 96;
 
         // P/Invoke declarations (64-bit only - PowerToys only builds for x64/ARM64)
         [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
@@ -106,7 +118,17 @@ namespace PowerDisplay.Helpers
         /// <returns>DPI scale factor (1.0 = 100%, 1.25 = 125%, 1.5 = 150%, 2.0 = 200%)</returns>
         public static double GetDpiScale(WindowEx window)
         {
-            return (float)window.GetDpiForWindow() / 96.0;
+            return (double)window.GetDpiForWindow() / DefaultDpi;
+        }
+
+        /// <summary>
+        /// Get the DPI scale factor for a display area (relative to standard 96 DPI)
+        /// </summary>
+        /// <param name="displayArea">Target display area</param>
+        /// <returns>DPI scale factor (1.0 = 100%, 1.25 = 125%, 1.5 = 150%, 2.0 = 200%)</returns>
+        public static double GetDpiScale(DisplayArea displayArea)
+        {
+            return (double)GetEffectiveDpi(global::Microsoft.UI.Win32Interop.GetMonitorFromDisplayId(displayArea.DisplayId)) / DefaultDpi;
         }
 
         /// <summary>
@@ -137,53 +159,80 @@ namespace PowerDisplay.Helpers
             int height,
             int rightMargin = 0)
         {
-            // RectWork already includes correct offsets for taskbar position
-            var monitors = MonitorInfo.GetDisplayMonitors();
-            if (monitors == null || monitors.Count == 0)
+            if (TryGetMonitorAtCursor(out var monitorInfo, out var dpi))
             {
-                ManagedCommon.Logger.LogWarning("PositionWindowBottomRight: No monitors found, skipping positioning");
+                MoveWindowBottomRight(window, monitorInfo.RcWork, dpi, width, height, rightMargin);
                 return;
             }
 
-            // Find the monitor where the mouse cursor is located
-            var targetMonitor = GetMonitorAtCursor(monitors);
-            var workArea = targetMonitor.RectWork;
-            double dpiScale = GetDpiScale(window);
-
-            // Calculate bottom-right position
-            // RectWork.Right/Bottom already account for taskbar position
-            double x = workArea.Right - (dpiScale * (width + rightMargin));
-            double y = workArea.Bottom - (dpiScale * height);
-
-            window.MoveAndResize(x, y, width, height);
-        }
-
-        /// <summary>
-        /// Get the monitor where the mouse cursor is currently located.
-        /// Falls back to primary monitor if cursor position cannot be determined.
-        /// </summary>
-        /// <param name="monitors">List of available monitors</param>
-        /// <returns>MonitorInfo of the monitor containing the cursor</returns>
-        private static MonitorInfo GetMonitorAtCursor(IList<MonitorInfo> monitors)
-        {
-            // Try to get cursor position using Win32 API
-            if (GetCursorPos(out var cursorPos))
+            var displayArea = DisplayArea.GetFromWindowId(window.AppWindow.Id, DisplayAreaFallback.Primary);
+            if (displayArea is null)
             {
-                // Find the monitor that contains the cursor point
-                foreach (var monitor in monitors)
-                {
-                    if (cursorPos.X >= monitor.RectMonitor.Left &&
-                        cursorPos.X < monitor.RectMonitor.Right &&
-                        cursorPos.Y >= monitor.RectMonitor.Top &&
-                        cursorPos.Y < monitor.RectMonitor.Bottom)
-                    {
-                        return monitor;
-                    }
-                }
+                ManagedCommon.Logger.LogWarning("PositionWindowBottomRight: Unable to determine target display, skipping positioning");
+                return;
             }
 
-            // Fallback to first monitor (typically primary)
-            return monitors[0];
+            var workArea = displayArea.WorkArea;
+            var fallbackRect = new Rect(workArea.X, workArea.Y, workArea.X + workArea.Width, workArea.Y + workArea.Height);
+            MoveWindowBottomRight(window, fallbackRect, GetEffectiveDpi(global::Microsoft.UI.Win32Interop.GetMonitorFromDisplayId(displayArea.DisplayId)), width, height, rightMargin);
+        }
+
+        private static void MoveWindowBottomRight(
+            WindowEx window,
+            Rect workArea,
+            int dpi,
+            int width,
+            int height,
+            int rightMargin)
+        {
+            double dpiScale = (double)dpi / DefaultDpi;
+            int physicalWidth = ScaleToPhysicalPixels(width, dpiScale);
+            int physicalHeight = ScaleToPhysicalPixels(height, dpiScale);
+            int physicalX = workArea.Right - ScaleToPhysicalPixels(width + rightMargin, dpiScale);
+            int physicalY = workArea.Bottom - physicalHeight;
+
+            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight));
+        }
+
+        private static unsafe bool TryGetMonitorAtCursor(out MonitorInfoEx monitorInfo, out int dpi)
+        {
+            monitorInfo = default;
+            dpi = DefaultDpi;
+
+            if (!GetCursorPos(out var cursorPos))
+            {
+                return false;
+            }
+
+            var hMonitor = MonitorFromPoint(cursorPos, MonitorDefaultToNearest);
+            if (hMonitor == 0)
+            {
+                return false;
+            }
+
+            monitorInfo = new MonitorInfoEx
+            {
+                CbSize = (uint)sizeof(MonitorInfoEx),
+            };
+
+            if (!GetMonitorInfo(hMonitor, ref monitorInfo))
+            {
+                return false;
+            }
+
+            dpi = GetEffectiveDpi(hMonitor);
+            return true;
+        }
+
+        private static int GetEffectiveDpi(nint hMonitor)
+        {
+            if (hMonitor == 0)
+            {
+                return DefaultDpi;
+            }
+
+            var hr = GetDpiForMonitor(hMonitor, MdtEffectiveDpi, out var dpiX, out _);
+            return hr >= 0 && dpiX > 0 ? (int)dpiX : DefaultDpi;
         }
     }
 }
