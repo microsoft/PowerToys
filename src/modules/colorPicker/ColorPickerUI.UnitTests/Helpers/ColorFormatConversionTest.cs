@@ -20,8 +20,6 @@ namespace ColorPicker.UnitTests.Helpers
     [TestClass]
     public class ColorFormatConversionTest
     {
-        // ========== ConvertToCMYKColor Tests ==========
-
         [TestMethod]
         public void ConvertToCMYK_Black_Returns0_0_0_1()
         {
@@ -83,8 +81,6 @@ namespace ColorPicker.UnitTests.Helpers
             Assert.AreEqual(128d / 255d, result.BlackKey, 0.01);
         }
 
-        // ========== ConvertToHSBColor Tests (delegates to HSV) ==========
-
         [TestMethod]
         public void ConvertToHSB_Black_Returns0_0_0()
         {
@@ -111,8 +107,6 @@ namespace ColorPicker.UnitTests.Helpers
             Assert.AreEqual(1d, result.Saturation, 0.01);
             Assert.AreEqual(1d, result.Brightness, 0.01);
         }
-
-        // ========== ConvertToHSIColor Tests ==========
 
         [TestMethod]
         public void ConvertToHSI_Black_Returns0_0_0()
@@ -141,8 +135,6 @@ namespace ColorPicker.UnitTests.Helpers
             Assert.AreEqual(1d, result.Saturation, 0.01);
             Assert.AreEqual(1d / 3d, result.Intensity, 0.01);
         }
-
-        // ========== ConvertToHWBColor Tests ==========
 
         [TestMethod]
         public void ConvertToHWB_Black_Returns0_0_1()
@@ -180,8 +172,6 @@ namespace ColorPicker.UnitTests.Helpers
             Assert.AreEqual(1d - (128d / 255d), result.Blackness, 0.01);
         }
 
-        // ========== ConvertToCIEXYZColor Tests ==========
-
         [TestMethod]
         public void ConvertToCIEXYZ_Black_Returns0_0_0()
         {
@@ -210,8 +200,6 @@ namespace ColorPicker.UnitTests.Helpers
             Assert.AreEqual(0.2126d, result.Y, 0.02);
             Assert.AreEqual(0.0193d, result.Z, 0.02);
         }
-
-        // ========== ConvertToCIELABColor Tests ==========
 
         [TestMethod]
         public void ConvertToCIELAB_Black_Returns0_0_0()
@@ -247,8 +235,6 @@ namespace ColorPicker.UnitTests.Helpers
             Assert.IsTrue(result.ChromaticityB < 0, "Blue should have negative b* in CIE LAB");
         }
 
-        // ========== ConvertToOklabColor Tests ==========
-
         [TestMethod]
         public void ConvertToOklab_Black_Returns0_0_0()
         {
@@ -266,8 +252,6 @@ namespace ColorPicker.UnitTests.Helpers
             Assert.AreEqual(0d, result.ChromaticityA, 0.02);
             Assert.AreEqual(0d, result.ChromaticityB, 0.02);
         }
-
-        // ========== ConvertToOklchColor Tests ==========
 
         [TestMethod]
         public void ConvertToOklch_Black_Returns0_0_0()
@@ -297,8 +281,6 @@ namespace ColorPicker.UnitTests.Helpers
                 Assert.IsTrue(result.Chroma >= 0, $"Chroma should be non-negative for {color.Name}");
             }
         }
-
-        // ========== ConvertSRGBToLinearRGB Tests ==========
 
         [TestMethod]
         public void ConvertSRGBToLinear_Zero_ReturnsZero()
@@ -335,8 +317,6 @@ namespace ColorPicker.UnitTests.Helpers
             Assert.AreEqual(0.214, result.R, 0.01);
         }
 
-        // ========== ConvertToNaturalColor Tests ==========
-
         [TestMethod]
         public void ConvertToNaturalColor_Red_ReturnsR0()
         {
@@ -350,14 +330,14 @@ namespace ColorPicker.UnitTests.Helpers
         public void ConvertToNaturalColor_Green_ReturnsG0()
         {
             var result = ColorFormatHelper.ConvertToNaturalColor(Color.FromArgb(255, 0, 128, 0));
-            Assert.IsTrue(result.Hue.StartsWith("G"), $"Green should start with G, got {result.Hue}");
+            Assert.IsTrue(result.Hue.StartsWith('G'), $"Green should start with G, got {result.Hue}");
         }
 
         [TestMethod]
         public void ConvertToNaturalColor_Blue_ReturnsB0()
         {
             var result = ColorFormatHelper.ConvertToNaturalColor(Color.FromArgb(255, 0, 0, 255));
-            Assert.IsTrue(result.Hue.StartsWith("B"), $"Blue should start with B, got {result.Hue}");
+            Assert.IsTrue(result.Hue.StartsWith('B'), $"Blue should start with B, got {result.Hue}");
         }
 
         [TestMethod]
@@ -375,8 +355,6 @@ namespace ColorPicker.UnitTests.Helpers
             Assert.AreEqual(1d, result.Whiteness, 0.01);
             Assert.AreEqual(0d, result.Blackness, 0.01);
         }
-
-        // ========== GetStringRepresentation Tests for Various Colors ==========
 
         [TestMethod]
         [DataRow("CMYK", "cmyk(0%, 100%, 100%, 0%)")]
@@ -439,8 +417,6 @@ namespace ColorPicker.UnitTests.Helpers
             Assert.AreEqual(expected, result);
         }
 
-        // ========== GetStringRepresentation Edge Cases ==========
-
         [TestMethod]
         public void GetStringRepresentation_EmptyFormat_ReturnsHex()
         {
@@ -455,8 +431,6 @@ namespace ColorPicker.UnitTests.Helpers
             var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 255, 0, 0), "RGB", null);
             Assert.AreEqual("ff0000", result);
         }
-
-        // ========== GetDefaultFormat Tests ==========
 
         [TestMethod]
         [DataRow("RGB")]

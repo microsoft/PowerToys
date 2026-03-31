@@ -13,8 +13,6 @@ namespace Hosts.Tests
     [TestClass]
     public class ValidationHelperTest
     {
-        // ========== ValidIPv4 Tests ==========
-
         [DataTestMethod]
         [DataRow("0.0.0.0")]
         [DataRow("127.0.0.1")]
@@ -62,8 +60,6 @@ namespace Hosts.Tests
             Assert.IsFalse(ValidationHelper.ValidIPv4(address));
         }
 
-        // ========== ValidIPv6 Tests ==========
-
         [DataTestMethod]
         [DataRow("::1")]
         [DataRow("::")]
@@ -102,8 +98,6 @@ namespace Hosts.Tests
         {
             Assert.IsFalse(ValidationHelper.ValidIPv6(address));
         }
-
-        // ========== ValidHosts Tests ==========
 
         [DataTestMethod]
         [DataRow("localhost")]
