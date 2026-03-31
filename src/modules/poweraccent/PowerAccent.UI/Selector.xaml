@@ -14,6 +14,7 @@
     ResizeMode="NoResize"
     ShowInTaskbar="False"
     SizeToContent="WidthAndHeight"
+    SizeChanged="Window_SizeChanged"
     Visibility="Collapsed"
     WindowBackdropType="None"
     WindowStyle="None"
@@ -51,16 +52,19 @@
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch"
             Background="Transparent"
+            ScrollViewer.HorizontalScrollBarVisibility="Auto"
+            Focusable="False"
             IsHitTestVisible="False">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
+                    <Setter Property="Focusable" Value="False" />
                     <Setter Property="ContentTemplate" Value="{StaticResource DefaultKeyTemplate}" />
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type ListBoxItem}">
                                 <Grid
-                                    Width="48"
                                     Height="48"
+                                    MinWidth="48"
                                     Margin="0"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -95,7 +99,7 @@
             </ListBox.ItemContainerStyle>
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <VirtualizingStackPanel IsItemsHost="False" Orientation="Horizontal" />
+                    <StackPanel Orientation="Horizontal" />
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
         </ListBox>
@@ -103,15 +107,19 @@
         <Grid
             Grid.Row="1"
             MinWidth="600"
+            MaxWidth="{Binding ActualWidth, ElementName=characters}"
             Background="{DynamicResource LayerOnAcrylicFillColorDefaultBrush}"
             Visibility="{Binding CharacterNameVisibility, UpdateSourceTrigger=PropertyChanged}">
             <TextBlock
                 x:Name="characterName"
+                MaxHeight="36"
                 Margin="8"
                 FontSize="12"
                 Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                 Text="(U+0000) A COOL LETTER NAME COMES HERE"
-                TextAlignment="Center" />
+                TextAlignment="Center"
+                TextTrimming="CharacterEllipsis"
+                TextWrapping="Wrap" />
             <Rectangle
                 Height="1"
                 HorizontalAlignment="Stretch"
