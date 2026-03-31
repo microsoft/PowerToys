@@ -22,6 +22,8 @@ public record DockSettings
 
     public DockSize DockIconsSize { get; init; } = DockSize.Small;
 
+    public bool AlwaysOnTop { get; set; } = true;
+
     // <Theme settings>
     public DockBackdrop Backdrop { get; init; } = DockBackdrop.Acrylic;
 
