@@ -44,7 +44,7 @@ public abstract class JsonSettingsManager
         try
         {
             var legacyContent = File.ReadAllText(legacyFilePath);
-            if (JsonNode.Parse(legacyContent) is not JsonObject legacyRoot)
+            if (JsonNode.Parse(legacyContent) is not JsonObject)
             {
                 return;
             }
