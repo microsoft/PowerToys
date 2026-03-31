@@ -99,7 +99,7 @@
                 Grid.RowSpan="2"
                 Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="0,1,0,0" />
+                BorderThickness="0,1,0,1" />
 
             <!--  AI Configuration Panel  -->
             <Grid
@@ -185,7 +185,7 @@
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
                     AutomationProperties.Name="Width"
-                    FontSize="20"
+                    FontSize="16"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE799;" />
                 <NumberBox
@@ -203,7 +203,7 @@
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
                     AutomationProperties.Name="Height"
-                    FontSize="20"
+                    FontSize="16"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE799;"
                     RenderTransformOrigin="0.5,0.5"
@@ -225,7 +225,7 @@
                     Grid.Row="1"
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
-                    FontSize="20"
+                    FontSize="16"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE7A8;" />
                 <ComboBox
@@ -247,7 +247,7 @@
                     Margin="8,0,0,0"
                     VerticalAlignment="Center"
                     AutomationProperties.AccessibilityView="Raw"
-                    FontSize="20"
+                    FontSize="16"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xECC6;" />
                 <ComboBox
@@ -311,7 +311,7 @@
                 Padding="8"
                 Command="{x:Bind ViewModel.OpenSettingsCommand}"
                 Style="{StaticResource SubtleButtonStyle}">
-                <FontIcon FontSize="20" Glyph="&#xE713;" />
+                <FontIcon FontSize="16" Glyph="&#xE713;" />
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="Open_settings" />
                 </ToolTipService.ToolTip>
@@ -326,7 +326,7 @@
                     <KeyboardAccelerator Key="Enter" Invoked="ResizeAccelerator_Invoked" />
                 </Button.KeyboardAccelerators>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon Glyph="&#xE740;" />
+                    <FontIcon Glyph="&#xE740;" FontSize="14" />
                     <TextBlock x:Uid="Input_Resize" />
                 </StackPanel>
             </Button>
