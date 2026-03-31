@@ -155,11 +155,13 @@ namespace PowerDisplay.Helpers
         /// <param name="widthDip">Window width in device-independent pixels (DIP)</param>
         /// <param name="heightDip">Window height in device-independent pixels (DIP)</param>
         /// <param name="rightMarginDip">Right margin in device-independent pixels (DIP)</param>
+        /// <param name="bottomMarginDip">Bottom margin in device-independent pixels (DIP)</param>
         public static void PositionWindowBottomRight(
             WindowEx window,
             int widthDip,
             int heightDip,
-            int rightMarginDip = 0)
+            int rightMarginDip = 0,
+            int bottomMarginDip = 0)
         {
             if (!TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
             {
@@ -167,7 +169,7 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            MoveWindowBottomRight(window, displayArea, widthDip, heightDip, rightMarginDip);
+            MoveWindowBottomRight(window, displayArea, widthDip, heightDip, rightMarginDip, bottomMarginDip);
         }
 
         /// <summary>
@@ -195,14 +197,15 @@ namespace PowerDisplay.Helpers
             DisplayArea displayArea,
             int widthDip,
             int heightDip,
-            int rightMarginDip)
+            int rightMarginDip,
+            int bottomMarginDip)
         {
             var workArea = displayArea.WorkArea;
             double dpiScale = GetDpiScale(displayArea);
             int physicalWidth = ScaleToPhysicalPixels(widthDip, dpiScale);
             int physicalHeight = ScaleToPhysicalPixels(heightDip, dpiScale);
             int physicalX = (workArea.X + workArea.Width) - ScaleToPhysicalPixels(widthDip + rightMarginDip, dpiScale);
-            int physicalY = (workArea.Y + workArea.Height) - physicalHeight;
+            int physicalY = (workArea.Y + workArea.Height) - ScaleToPhysicalPixels(heightDip + bottomMarginDip, dpiScale);
 
             window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight), displayArea);
         }

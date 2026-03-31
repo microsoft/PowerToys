@@ -19,6 +19,7 @@ namespace PowerDisplay.Configuration
             public const int WindowMinHeightDip = 100;
             public const int WindowMaxHeightDip = 650;
             public const int WindowRightMarginDip = 12;
+            public const int WindowBottomMarginDip = WindowRightMarginDip;
             public const double WindowMaxWorkAreaHeightRatio = 0.75;
 
             // Adaptive flyout bounds in device-independent pixels (DIP)

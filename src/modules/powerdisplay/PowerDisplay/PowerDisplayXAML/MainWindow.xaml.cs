@@ -385,7 +385,12 @@ namespace PowerDisplay
                 // Min height ensures window is visible even if content hasn't loaded yet
                 var finalHeightDip = Math.Max(AppConstants.UI.WindowMinHeightDip, Math.Min(contentHeight, maxHeightDip));
                 Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, maxHeightDip={maxHeightDip}, finalHeightDip={finalHeightDip}");
-                WindowHelper.PositionWindowBottomRight(this, AppConstants.UI.WindowWidthDip, finalHeightDip, AppConstants.UI.WindowRightMarginDip);
+                WindowHelper.PositionWindowBottomRight(
+                    this,
+                    AppConstants.UI.WindowWidthDip,
+                    finalHeightDip,
+                    AppConstants.UI.WindowRightMarginDip,
+                    AppConstants.UI.WindowBottomMarginDip);
             }
             catch (Exception ex)
             {
@@ -437,7 +442,8 @@ namespace PowerDisplay
                     this,  // MainWindow inherits from WindowEx
                     AppConstants.UI.WindowWidthDip,
                     windowHeightDip,
-                    AppConstants.UI.WindowRightMarginDip);
+                    AppConstants.UI.WindowRightMarginDip,
+                    AppConstants.UI.WindowBottomMarginDip);
             }
             catch (Exception)
             {
