@@ -274,6 +274,10 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.AwakeTimedKeepAwakeEvent</td>
     <td>Triggered when the system is kept awake for a specified time duration.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.Awake_CLICommand</td>
+    <td>Triggered when an Awake CLI command is executed, logging the command name and success status.</td>
   </tr>  
 </table>
 
@@ -592,6 +596,10 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.FileLocksmith_QueryContextMenuError</td>
     <td>Occurs when there is an error querying the context menu for File Locksmith.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FileLocksmith_CLICommand</td>
+    <td>Triggered when a File Locksmith CLI command is executed, logging the command name and success status.</td>
+  </tr>
 </table>
 
 ### FileExplorerAddOns
@@ -775,6 +783,10 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.ImageResizer_QueryContextMenuError</td>
     <td>Triggered when there is an error querying the context menu for Image Resizer.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ImageResizer_CLICommand</td>
+    <td>Triggered when an Image Resizer CLI command is executed, logging the command name and success status.</td>
   </tr>
 </table>
 

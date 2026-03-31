@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "CLILogic.h"
 #include "FileLocksmithLib/FileLocksmith.h"
+#include "FileLocksmithLib/Trace.h"
 #include <iostream>
 #include "resource.h"
 #include <common/logger/logger.h>
@@ -47,6 +48,7 @@ struct RealStringProvider : IStringProvider
 int wmain(int argc, wchar_t* argv[])
 {
     winrt::init_apartment();
+    Trace::RegisterProvider();
     LoggerHelpers::init_logger(L"FileLocksmithCLI", L"", LogSettings::fileLocksmithLoggerName);
     Logger::info("FileLocksmithCLI started");
 
@@ -65,7 +67,10 @@ int wmain(int argc, wchar_t* argv[])
         Logger::info("Command succeeded");
     }
 
+    Trace::CLICommand(L"filelocksmith", result.exit_code == 0);
+
     std::wcout << result.output;
+    Trace::UnregisterProvider();
     return result.exit_code;
 }
 #endif

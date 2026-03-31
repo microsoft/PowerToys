@@ -7,7 +7,9 @@ using System.Globalization;
 using System.Text;
 
 using ImageResizer.Cli;
+using ImageResizer.Cli.Telemetry;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 
 namespace ImageResizerCLI;
 
@@ -37,14 +39,33 @@ internal static class Program
         try
         {
             var executor = new ImageResizerCliExecutor();
-            return executor.Run(args);
+            int result = executor.Run(args);
+            LogCLITelemetry(result == 0);
+            return result;
         }
         catch (Exception ex)
         {
             CliLogger.Error($"Unhandled exception: {ex.Message}");
             CliLogger.Error($"Stack trace: {ex.StackTrace}");
             Console.Error.WriteLine($"Fatal error: {ex.Message}");
+            LogCLITelemetry(successful: false);
             return 1;
+        }
+    }
+
+    private static void LogCLITelemetry(bool successful)
+    {
+        try
+        {
+            PowerToysTelemetry.Log.WriteEvent(new ImageResizerCLICommandEvent
+            {
+                CommandName = "resize",
+                Successful = successful,
+            });
+        }
+        catch (Exception ex)
+        {
+            CliLogger.Error($"Failed to log CLI telemetry: {ex.Message}");
         }
     }
 }
