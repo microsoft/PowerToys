@@ -51,6 +51,17 @@
     <Message Importance="High" Text="Updated final manifest path to $(OriginalApplicationManifest)" />
   </Target>
 
+  <!-- Generate PhiSilicaLafCredentials from MSBuild properties (PhiSilicaLaf.props / CI overrides). -->
+  <Target Name="GeneratePhiSilicaLafCredentials" BeforeTargets="BeforeCompile;CoreCompile;XamlPreCompile">
+    <PropertyGroup>
+      <PhiSilicaLafCredentialsFile>$(IntermediateOutputPath)PhiSilicaLafCredentials.g.cs</PhiSilicaLafCredentialsFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(PhiSilicaLafCredentialsFile)" Overwrite="true" Lines="// &lt;auto-generated/&gt;;namespace AdvancedPaste%3B;;internal static class PhiSilicaLafCredentials;{;    internal const string Token = &quot;$(PhiSilicaLafToken)&quot;%3B;    internal const string Attestation = &quot;$(PhiSilicaLafAttestation)&quot;%3B;}" />
+    <ItemGroup>
+      <Compile Include="$(PhiSilicaLafCredentialsFile)" Condition="!@(Compile->AnyHaveMetadataValue('Identity', '$(PhiSilicaLafCredentialsFile)'))" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <None Remove="AdvancedPasteXAML\Controls\ClipboardHistoryItemPreviewControl.xaml" />
     <None Remove="AdvancedPasteXAML\Controls\PromptBox.xaml" />

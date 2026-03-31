@@ -3,7 +3,7 @@
   <PropertyGroup>
     <!-- Phi Silica Limited Access Feature credentials.
          Local dev defaults below; overridden by /p: in release pipelines. -->
-    <PhiSilicaLafToken Condition="'$(PhiSilicaLafToken)'==''">euLexRe13HDm5WnCzE+6Ug==</PhiSilicaLafToken>
-    <PhiSilicaLafAttestation Condition="'$(PhiSilicaLafAttestation)'==''">8wekyb3d8bbwe has registered their use of com.microsoft.windows.ai.languagemodel with Microsoft and agrees to the terms of use.</PhiSilicaLafAttestation>
+    <PhiSilicaLafToken Condition="'$(PhiSilicaLafToken)'==''">kPf8VtQv3QpNDz5RXJnnow==</PhiSilicaLafToken>
+    <PhiSilicaLafAttestation Condition="'$(PhiSilicaLafAttestation)'==''">czf344y6137np</PhiSilicaLafAttestation>
   </PropertyGroup>
 </Project>
