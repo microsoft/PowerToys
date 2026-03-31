@@ -33,9 +33,6 @@ namespace PowerDisplay.PowerDisplayXAML
             {
                 // WinUI will throw if explorer is not running, safely ignore
             }
-            catch (Exception)
-            {
-            }
 
             // Configure window style
             ConfigureWindow();

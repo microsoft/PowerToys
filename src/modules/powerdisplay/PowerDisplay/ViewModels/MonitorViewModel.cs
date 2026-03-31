@@ -6,17 +6,20 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using Microsoft.UI.Xaml;
-
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
 using PowerDisplay.Models;
+using Windows.System;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.ViewModels;
@@ -24,7 +27,7 @@ namespace PowerDisplay.ViewModels;
 /// <summary>
 /// ViewModel for individual monitor
 /// </summary>
-public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
+public partial class MonitorViewModel : ObservableObject, IDisposable
 {
     private readonly Monitor _monitor;
     private readonly MonitorManager _monitorManager;
@@ -33,13 +36,27 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     private int _brightness;
     private int _contrast;
     private int _volume;
+
+    [ObservableProperty]
     private bool _isAvailable;
 
     // Visibility settings (controlled by Settings UI)
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAdvancedControls))]
     private bool _showContrast;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAdvancedControls))]
     private bool _showVolume;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowMoreButton))]
+    [NotifyPropertyChangedFor(nameof(ShowSeparatorAfterInputSource))]
     private bool _showInputSource;
+
+    [ObservableProperty]
     private bool _showRotation;
+
     private bool _showPowerState;
 
     /// <summary>
@@ -290,48 +307,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     /// </summary>
     public bool SupportsVolume => _monitor.SupportsVolume;
 
-    public bool ShowContrast
-    {
-        get => _showContrast;
-        set
-        {
-            if (_showContrast != value)
-            {
-                _showContrast = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(HasAdvancedControls));
-            }
-        }
-    }
-
-    public bool ShowVolume
-    {
-        get => _showVolume;
-        set
-        {
-            if (_showVolume != value)
-            {
-                _showVolume = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(HasAdvancedControls));
-            }
-        }
-    }
-
-    public bool ShowInputSource
-    {
-        get => _showInputSource;
-        set
-        {
-            if (_showInputSource != value)
-            {
-                _showInputSource = value;
-                OnPropertyChanged();
-                OnMoreButtonPropertiesChanged();
-            }
-        }
-    }
-
     /// <summary>
     /// Gets or sets a value indicating whether to show power state control in the More Button flyout.
     /// </summary>
@@ -368,22 +343,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
     {
         OnPropertyChanged(nameof(ShowMoreButton));
         OnPropertyChanged(nameof(ShowSeparatorAfterInputSource));
-    }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether to show rotation controls (controlled by Settings UI, default false).
-    /// </summary>
-    public bool ShowRotation
-    {
-        get => _showRotation;
-        set
-        {
-            if (_showRotation != value)
-            {
-                _showRotation = value;
-                OnPropertyChanged();
-            }
-        }
     }
 
     /// <summary>
@@ -788,16 +747,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    public bool IsAvailable
-    {
-        get => _isAvailable;
-        set
-        {
-            _isAvailable = value;
-            OnPropertyChanged();
-        }
-    }
-
     [RelayCommand]
     private void SetBrightness(int? brightness)
     {
@@ -857,13 +806,6 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
         return min + (int)Math.Round(percent * (max - min) / 100.0);
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
     private void OnMainViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(MainViewModel.IsInteractionEnabled))
@@ -890,6 +832,121 @@ public partial class MonitorViewModel : INotifyPropertyChanged, IDisposable
             OnPropertyChanged(nameof(IsRotation2));
             OnPropertyChanged(nameof(IsRotation3));
         }
+    }
+
+    // Slider commit handlers — fire hardware update only on pointer release or arrow key up
+    public void HandleBrightnessPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is Slider slider)
+        {
+            Brightness = (int)slider.Value;
+        }
+    }
+
+    public void HandleBrightnessKeyUp(object sender, KeyRoutedEventArgs e)
+    {
+        if (IsArrowKey(e.Key) && sender is Slider slider)
+        {
+            Brightness = (int)slider.Value;
+        }
+    }
+
+    public void HandleContrastPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is Slider slider)
+        {
+            ContrastPercent = (int)slider.Value;
+        }
+    }
+
+    public void HandleContrastKeyUp(object sender, KeyRoutedEventArgs e)
+    {
+        if (IsArrowKey(e.Key) && sender is Slider slider)
+        {
+            ContrastPercent = (int)slider.Value;
+        }
+    }
+
+    public void HandleVolumePointerCaptureLost(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is Slider slider)
+        {
+            Volume = (int)slider.Value;
+        }
+    }
+
+    public void HandleVolumeKeyUp(object sender, KeyRoutedEventArgs e)
+    {
+        if (IsArrowKey(e.Key) && sender is Slider slider)
+        {
+            Volume = (int)slider.Value;
+        }
+    }
+
+    private static bool IsArrowKey(VirtualKey key) =>
+        key == VirtualKey.Left || key == VirtualKey.Right ||
+        key == VirtualKey.Up || key == VirtualKey.Down;
+
+    // Rotation button handlers — one per orientation to avoid Tag string parsing
+    public async void HandleRotation0Click(object sender, RoutedEventArgs e) => await CommitRotationClickAsync(0);
+
+    public async void HandleRotation1Click(object sender, RoutedEventArgs e) => await CommitRotationClickAsync(1);
+
+    public async void HandleRotation2Click(object sender, RoutedEventArgs e) => await CommitRotationClickAsync(2);
+
+    public async void HandleRotation3Click(object sender, RoutedEventArgs e) => await CommitRotationClickAsync(3);
+
+    private async Task CommitRotationClickAsync(int orientation)
+    {
+        if (CurrentRotation == orientation)
+        {
+            // Force-notify to restore the ToggleButton checked state
+            // (ToggleButton auto-unchecks on click; OneWay binding only re-pushes on change)
+            OnPropertyChanged(nameof(IsRotation0));
+            OnPropertyChanged(nameof(IsRotation1));
+            OnPropertyChanged(nameof(IsRotation2));
+            OnPropertyChanged(nameof(IsRotation3));
+            return;
+        }
+
+        await SetRotationAsync(orientation);
+    }
+
+    // ListView selection handlers
+    public async void HandleColorTemperatureSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ListView listView || listView.SelectedItem is not ColorTemperatureItem item)
+        {
+            return;
+        }
+
+        await SetColorTemperatureAsync(item.VcpValue);
+        listView.SelectedItem = null;
+    }
+
+    public async void HandleInputSourceSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ListView listView || listView.SelectedItem is not InputSourceItem item)
+        {
+            return;
+        }
+
+        await SetInputSourceAsync(item.Value);
+    }
+
+    public async void HandlePowerStateSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ListView listView || listView.SelectedItem is not PowerStateItem item)
+        {
+            return;
+        }
+
+        if (item.Value == PowerStateItem.PowerStateOn)
+        {
+            return;
+        }
+
+        await SetPowerStateAsync(item.Value);
     }
 
     public void Dispose()

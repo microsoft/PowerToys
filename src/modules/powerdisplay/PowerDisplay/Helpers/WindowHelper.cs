@@ -40,17 +40,9 @@ namespace PowerDisplay.Helpers
         private const int WsExWindowedge = 0x00000100;
         private const int WsExClientedge = 0x00000200;
         private const int WsExStaticedge = 0x00020000;
-        private const int WsExToolwindow = 0x00000080;
-
         private const uint SwpNosize = 0x0001;
         private const uint SwpNomove = 0x0002;
         private const uint SwpFramechanged = 0x0020;
-        private const nint HwndTopmost = -1;
-        private const nint HwndNotopmost = -2;
-
-        // ShowWindow commands
-        private const int SwHide = 0;
-        private const int SwShow = 5;
 
         // P/Invoke declarations (64-bit only - PowerToys only builds for x64/ARM64)
         [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
@@ -69,22 +61,6 @@ namespace PowerDisplay.Helpers
             int cx,
             int cy,
             uint uFlags);
-
-        [LibraryImport("user32.dll", EntryPoint = "ShowWindow")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool ShowWindowNative(nint hWnd, int nCmdShow);
-
-        [LibraryImport("user32.dll", EntryPoint = "IsWindowVisible")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool IsWindowVisibleNative(nint hWnd);
-
-        /// <summary>
-        /// Check if window is visible
-        /// </summary>
-        public static bool IsWindowVisible(nint hWnd)
-        {
-            return IsWindowVisibleNative(hWnd);
-        }
 
         /// <summary>
         /// Disable window moving and resizing functionality
@@ -110,54 +86,6 @@ namespace PowerDisplay.Helpers
             exStyle &= ~WsExWindowedge;
             exStyle &= ~WsExClientedge;
             exStyle &= ~WsExStaticedge;
-            _ = SetWindowLong(hWnd, GwlExstyle, exStyle);
-
-            // Refresh window frame
-            SetWindowPos(
-                hWnd,
-                0,
-                0,
-                0,
-                0,
-                0,
-                SwpNomove | SwpNosize | SwpFramechanged);
-        }
-
-        /// <summary>
-        /// Set whether window is topmost
-        /// </summary>
-        public static void SetWindowTopmost(nint hWnd, bool topmost)
-        {
-            SetWindowPos(
-                hWnd,
-                topmost ? HwndTopmost : HwndNotopmost,
-                0,
-                0,
-                0,
-                0,
-                SwpNomove | SwpNosize);
-        }
-
-        /// <summary>
-        /// Show or hide window
-        /// </summary>
-        public static void ShowWindow(nint hWnd, bool show)
-        {
-            ShowWindowNative(hWnd, show ? SwShow : SwHide);
-        }
-
-        /// <summary>
-        /// Hide window from taskbar
-        /// </summary>
-        public static void HideFromTaskbar(nint hWnd)
-        {
-            // Get current extended style
-            nint exStyle = GetWindowLongPtr(hWnd, GwlExstyle);
-
-            // Add WS_EX_TOOLWINDOW style to hide window from taskbar
-            exStyle |= WsExToolwindow;
-
-            // Set new extended style
             _ = SetWindowLong(hWnd, GwlExstyle, exStyle);
 
             // Refresh window frame

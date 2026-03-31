@@ -10,15 +10,14 @@
     IsResizable="False"
     IsTitleBarVisible="False"
     mc:Ignorable="d">
-    <Grid Background="#1A000000">
+    <Grid Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
         <TextBlock
             x:Name="NumberText"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            FontFamily="Segoe UI"
             FontSize="200"
             FontWeight="Bold"
-            Foreground="White"
+            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
             Text="1" />
     </Grid>
 </winuiex:WindowEx>

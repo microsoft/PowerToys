@@ -5616,6 +5616,12 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_AddCustomMappingButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Add custom mapping</value>
   </data>
+  <data name="PowerDisplay_EditCustomMapping_Button.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PowerDisplay_DeleteCustomMapping_Button.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
   <data name="PowerDisplay_AddCustomMapping_Text.Text" xml:space="preserve">
     <value>Add mapping</value>
   </data>
