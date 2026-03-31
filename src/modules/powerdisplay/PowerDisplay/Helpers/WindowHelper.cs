@@ -5,7 +5,6 @@
 using System;
 using System.Runtime.InteropServices;
 using Microsoft.UI.Windowing;
-using PowerDisplay.Common.Drivers;
 using WinUIEx;
 
 namespace PowerDisplay.Helpers
@@ -25,15 +24,8 @@ namespace PowerDisplay.Helpers
         [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool GetCursorPos(out POINT lpPoint);
 
-        [LibraryImport("user32.dll")]
-        private static partial nint MonitorFromPoint(POINT pt, uint dwFlags);
-
         [LibraryImport("shcore.dll")]
         private static partial int GetDpiForMonitor(nint hMonitor, uint dpiType, out uint dpiX, out uint dpiY);
-
-        [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW", StringMarshalling = StringMarshalling.Utf16)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool GetMonitorInfo(nint hMonitor, ref MonitorInfoEx lpmi);
 
         // Window Styles
         private const int GwlStyle = -16;
@@ -52,7 +44,6 @@ namespace PowerDisplay.Helpers
         private const uint SwpNosize = 0x0001;
         private const uint SwpNomove = 0x0002;
         private const uint SwpFramechanged = 0x0020;
-        private const uint MonitorDefaultToNearest = 2;
         private const uint MdtEffectiveDpi = 0;
         private const int DefaultDpi = 96;
 
@@ -159,69 +150,43 @@ namespace PowerDisplay.Helpers
             int height,
             int rightMargin = 0)
         {
-            if (TryGetMonitorAtCursor(out var monitorInfo, out var dpi))
+            if (!TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
             {
-                MoveWindowBottomRight(window, monitorInfo.RcWork, dpi, width, height, rightMargin);
+                ManagedCommon.Logger.LogWarning("PositionWindowBottomRight: Unable to determine target display from cursor, skipping positioning");
                 return;
             }
 
-            var displayArea = DisplayArea.GetFromWindowId(window.AppWindow.Id, DisplayAreaFallback.Primary);
-            if (displayArea is null)
-            {
-                ManagedCommon.Logger.LogWarning("PositionWindowBottomRight: Unable to determine target display, skipping positioning");
-                return;
-            }
-
-            var workArea = displayArea.WorkArea;
-            var fallbackRect = new Rect(workArea.X, workArea.Y, workArea.X + workArea.Width, workArea.Y + workArea.Height);
-            MoveWindowBottomRight(window, fallbackRect, GetEffectiveDpi(global::Microsoft.UI.Win32Interop.GetMonitorFromDisplayId(displayArea.DisplayId)), width, height, rightMargin);
+            MoveWindowBottomRight(window, displayArea, width, height, rightMargin);
         }
 
         private static void MoveWindowBottomRight(
             WindowEx window,
-            Rect workArea,
-            int dpi,
+            DisplayArea displayArea,
             int width,
             int height,
             int rightMargin)
         {
-            double dpiScale = (double)dpi / DefaultDpi;
+            var workArea = displayArea.WorkArea;
+            double dpiScale = GetDpiScale(displayArea);
             int physicalWidth = ScaleToPhysicalPixels(width, dpiScale);
             int physicalHeight = ScaleToPhysicalPixels(height, dpiScale);
-            int physicalX = workArea.Right - ScaleToPhysicalPixels(width + rightMargin, dpiScale);
-            int physicalY = workArea.Bottom - physicalHeight;
+            int physicalX = (workArea.X + workArea.Width) - ScaleToPhysicalPixels(width + rightMargin, dpiScale);
+            int physicalY = (workArea.Y + workArea.Height) - physicalHeight;
 
-            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight));
+            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight), displayArea);
         }
 
-        private static unsafe bool TryGetMonitorAtCursor(out MonitorInfoEx monitorInfo, out int dpi)
+        private static bool TryGetDisplayAreaAtCursor(out DisplayArea? displayArea)
         {
-            monitorInfo = default;
-            dpi = DefaultDpi;
+            displayArea = null;
 
             if (!GetCursorPos(out var cursorPos))
             {
                 return false;
             }
 
-            var hMonitor = MonitorFromPoint(cursorPos, MonitorDefaultToNearest);
-            if (hMonitor == 0)
-            {
-                return false;
-            }
-
-            monitorInfo = new MonitorInfoEx
-            {
-                CbSize = (uint)sizeof(MonitorInfoEx),
-            };
-
-            if (!GetMonitorInfo(hMonitor, ref monitorInfo))
-            {
-                return false;
-            }
-
-            dpi = GetEffectiveDpi(hMonitor);
-            return true;
+            displayArea = DisplayArea.GetFromPoint(new Windows.Graphics.PointInt32(cursorPos.X, cursorPos.Y), DisplayAreaFallback.None);
+            return displayArea is not null;
         }
 
         private static int GetEffectiveDpi(nint hMonitor)

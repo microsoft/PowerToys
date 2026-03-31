@@ -64,11 +64,11 @@ namespace PowerDisplay.PowerDisplayXAML
             int physicalWidth = WindowHelper.ScaleToPhysicalPixels(WindowWidthDiu, dpiScale);
             int physicalHeight = WindowHelper.ScaleToPhysicalPixels(WindowHeightDiu, dpiScale);
 
-            // WorkArea coordinates are in physical pixels (RectInt32 from WinUI DisplayArea)
+            // WorkArea coordinates are relative to the target display area.
             int x = workArea.X + ((workArea.Width - physicalWidth) / 2);
             int y = workArea.Y + ((workArea.Height - physicalHeight) / 2);
 
-            this.AppWindow.MoveAndResize(new RectInt32(x, y, physicalWidth, physicalHeight));
+            this.AppWindow.MoveAndResize(new RectInt32(x, y, physicalWidth, physicalHeight), displayArea);
         }
     }
 }
