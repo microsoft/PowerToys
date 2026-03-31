@@ -274,7 +274,7 @@
     <value>Disable key or shortcut</value>
   </data>
   <data name="DisableDescription.Text" xml:space="preserve">
-    <value>This shortcut will be disabled.</value>
+    <value>This key or shortcut will be disabled.</value>
   </data>
   <data name="DisabledHeader.Text" xml:space="preserve">
     <value>Disabled</value>
