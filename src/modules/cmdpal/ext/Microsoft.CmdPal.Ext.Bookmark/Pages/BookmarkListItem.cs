@@ -124,20 +124,20 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
                 var browseCommand = firstContextCommand.Command;
                 if (browseCommand != null)
                 {
-                    // Mildly gross hack:
-                    //
-                    // The LaunchBookmarkCommand will update its icon async, when it resolves the bookmark's icon. If we flip that command into the context menu, however, our icon in the dock will just remain the icon of the DirectoryPage - the "file explorer" icon. Instead, let's
-                    if (browseCommand is Command c)
-                    {
-                        command.PropChanged += (s, e) =>
-                        {
-                            if (e.PropertyName == nameof(ICommand.Icon) &&
-                                (s as ICommand)?.Icon is IconInfo i)
-                            {
-                                c.Icon = i;
-                            }
-                        };
-                    }
+                    // // Mildly gross hack:
+                    // //
+                    // // The LaunchBookmarkCommand will update its icon async, when it resolves the bookmark's icon. If we flip that command into the context menu, however, our icon in the dock will just remain the icon of the DirectoryPage - the "file explorer" icon. Instead, let's
+                    // if (browseCommand is Command c)
+                    // {
+                    //     command.PropChanged += (s, e) =>
+                    //     {
+                    //         if (e.PropertyName == nameof(ICommand.Icon) &&
+                    //             (s as ICommand)?.Icon is IconInfo i)
+                    //         {
+                    //             c.Icon = i;
+                    //         }
+                    //     };
+                    // }
 
                     // (browseCommand as Command)?.Icon = command.Icon;
                     contextMenu.RemoveAt(0);

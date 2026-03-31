@@ -647,11 +647,8 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         Logger.LogDebug($"Attempting to pin '{name}': '{bookmarkValue}' to the dock");
         var bookmark = bookmarksManager.Add(name, bookmarkValue);
 
-        // CommandId format is specific to dock bands, because it's real weird
-        // TODO! replace hardcoded string interpolation with public static function in bookmarks codebase
-        // TODO! MORE TODO! - we actually do need to make the command id
-        // exactly the same as the ID it would have in the top-level list, so that pinning to the dock from the top-level is seamless.
-        // var commandId = $"Bookmarks.Docked.{bookmark.Id}";
+        // Make the command ID exactly the same as the ID it would have in the
+        // top-level list, so that pinning to the dock from the top-level is seamless.
         var commandId = Ext.Bookmarks.Helpers.CommandIds.GetLaunchBookmarkItemId(bookmark.Id);
         WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true, WithReload: false));
     }
