@@ -194,6 +194,10 @@ Generate-FileComponents -fileListName "PeekAssetsFiles" -wxsFilePath $PSScriptRo
 Generate-FileList -fileDepsJson "" -fileListName PowerRenameAssetsFiles -wxsFilePath $PSScriptRoot\PowerRename.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\PowerRename\"
 Generate-FileComponents -fileListName "PowerRenameAssetsFiles" -wxsFilePath $PSScriptRoot\PowerRename.wxs
 
+#PowerDisplay
+Generate-FileList -fileDepsJson "" -fileListName PowerDisplayAssetsFiles -wxsFilePath $PSScriptRoot\PowerDisplay.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\PowerDisplay\"
+Generate-FileComponents -fileListName "PowerDisplayAssetsFiles" -wxsFilePath $PSScriptRoot\PowerDisplay.wxs
+
 #RegistryPreview
 Generate-FileList -fileDepsJson "" -fileListName RegistryPreviewAssetsFiles -wxsFilePath $PSScriptRoot\RegistryPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\RegistryPreview\"
 Generate-FileComponents -fileListName "RegistryPreviewAssetsFiles" -wxsFilePath $PSScriptRoot\RegistryPreview.wxs
