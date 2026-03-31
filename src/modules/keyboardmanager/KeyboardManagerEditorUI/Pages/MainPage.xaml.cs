@@ -15,6 +15,7 @@ using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
 using KeyboardManagerEditorUI.Settings;
 using ManagedCommon;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static KeyboardManagerEditorUI.Interop.ShortcutKeyMapping;
@@ -27,11 +28,13 @@ namespace KeyboardManagerEditorUI.Pages
 #pragma warning disable SA1124 // Do not use regions
     public sealed partial class MainPage : Page, IDisposable, INotifyPropertyChanged
     {
+        private DispatcherTimer? _serviceCheckTimer;
         private KeyboardMappingService? _mappingService;
         private bool _disposed;
         private bool _isEditMode;
         private EditingItem? _editingItem;
         private string _mappingState = "Empty";
+        private bool _isServiceRunning = true;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -44,6 +47,20 @@ namespace KeyboardManagerEditorUI.Pages
                 {
                     _mappingState = value;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MappingState)));
+                }
+            }
+        }
+
+        public bool IsServiceRunning
+        {
+            get => _isServiceRunning;
+            private set
+            {
+                if (_isServiceRunning != value)
+                {
+                    _isServiceRunning = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsServiceRunning)));
+                    UpdateServiceBannerVisibility();
                 }
             }
         }
@@ -85,21 +102,43 @@ namespace KeyboardManagerEditorUI.Pages
         public MainPage()
         {
             this.InitializeComponent();
-
             try
             {
                 _mappingService = new KeyboardMappingService();
             }
             catch (Exception ex)
             {
-                Logger.LogError("Failed to initialize KeyboardMappingService in MainPage page: " + ex.Message);
+                Logger.LogError("Failed to initialize mapping service: " + ex.Message);
+                IsServiceRunning = false;
+                return;
             }
 
             LoadAllMappings();
             Unloaded += All_Unloaded;
+
+            CheckServiceStatus();
+
+            // Set up periodic checks every 3 seconds
+            _serviceCheckTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(3),
+            };
+            _serviceCheckTimer.Tick += (s, e) => CheckServiceStatus();
+            _serviceCheckTimer.Start();
         }
 
         private void All_Unloaded(object sender, RoutedEventArgs e) => Dispose();
+
+        private void CheckServiceStatus()
+        {
+            IsServiceRunning = ServiceStatusHelper.IsKeyboardManagerServiceRunning();
+        }
+
+        private void UpdateServiceBannerVisibility()
+        {
+            ServiceDownBanner.Visibility = IsServiceRunning ? Visibility.Collapsed : Visibility.Visible;
+            MainContentControl.IsEnabled = IsServiceRunning;
+        }
 
         #region Dialog Show Methods
 
@@ -1003,6 +1042,8 @@ namespace KeyboardManagerEditorUI.Pages
 
             if (disposing)
             {
+                _serviceCheckTimer?.Stop();
+                _serviceCheckTimer = null;
                 _mappingService?.Dispose();
                 _mappingService = null;
             }
@@ -1011,6 +1052,29 @@ namespace KeyboardManagerEditorUI.Pages
         }
 
         #endregion
+
+        private void CheckServiceBtn_Click(object sender, RoutedEventArgs e)
+        {
+            bool isServiceRunning = true;
+            if (_mappingService == null)
+            {
+                try
+                {
+                    _mappingService = new KeyboardMappingService();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Error initializing mapping service: " + ex.Message);
+                    isServiceRunning = false;
+                }
+            }
+
+            if (isServiceRunning)
+            {
+                ServiceDownBanner.Visibility = Visibility.Collapsed;
+                MainContentControl.IsEnabled = true;
+            }
+        }
     }
 }
 #pragma warning restore SA1124 // Do not use regions
