@@ -80,7 +80,8 @@ public abstract class JsonSettingsManager
         var filePath = FilePath;
         if (!File.Exists(filePath))
         {
-            ExtensionHost.LogMessage(new LogMessage() { Message = "The provided settings file does not exist" });
+            // First run — persist defaults so subsequent loads find the file.
+            SaveSettings();
             return;
         }
 
