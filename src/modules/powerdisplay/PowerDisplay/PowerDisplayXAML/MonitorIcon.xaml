@@ -23,6 +23,7 @@
                         VerticalAlignment="Center"
                         FontSize="10"
                         FontWeight="SemiBold"
+                        IsTextScaleFactorEnabled="False"
                         Text="{x:Bind MonitorNumber, Mode=OneWay}" />
                 </Grid>
 
@@ -41,6 +42,7 @@
                         VerticalAlignment="Center"
                         FontSize="10"
                         FontWeight="SemiBold"
+                        IsTextScaleFactorEnabled="False"
                         Text="{x:Bind MonitorNumber, Mode=OneWay}" />
                 </Grid>
             </Grid>

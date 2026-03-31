@@ -268,11 +268,12 @@
                                                     Margin="0,8,0,0"
                                                     ColumnSpacing="8">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="20" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
                                                     <FontIcon
                                                         x:Uid="BrightnessTooltip"
+                                                        HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
                                                         AutomationProperties.AccessibilityView="Raw"
                                                         FontSize="16"
@@ -296,12 +297,13 @@
                                                     ColumnSpacing="8"
                                                     Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowContrast), Mode=OneWay}">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="20" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
 
                                                     <FontIcon
                                                         x:Uid="ContrastTooltip"
+                                                        HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
                                                         AutomationProperties.AccessibilityView="Raw"
                                                         FontSize="16"
@@ -325,12 +327,13 @@
                                                     ColumnSpacing="8"
                                                     Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowVolume), Mode=OneWay}">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="20" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
 
                                                     <FontIcon
                                                         x:Uid="VolumeTooltip"
+                                                        HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
                                                         AutomationProperties.AccessibilityView="Raw"
                                                         FontSize="16"
@@ -354,12 +357,13 @@
                                                     ColumnSpacing="8"
                                                     Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowRotation), Mode=OneWay}">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="20" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
 
                                                     <FontIcon
                                                         x:Uid="RotationTooltip"
+                                                        HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
                                                         AutomationProperties.AccessibilityView="Raw"
                                                         FontSize="16"
