@@ -42,7 +42,7 @@
                 AutomationProperties.HelpText="{Binding Settings.SelectedSize, Converter={StaticResource SizeTypeToHelpTextConverter}}"
                 AutomationProperties.Name="{x:Static p:Resources.Image_Sizes}"
                 ItemsSource="{Binding Settings.AllSizes}"
-                SelectedItem="{Binding Settings.SelectedSize, Mode=TwoWay}">
+                SelectedIndex="{Binding Settings.SelectedSizeIndex, Mode=TwoWay}">
                 <ComboBox.ItemContainerStyle>
                     <Style BasedOn="{StaticResource {x:Type ComboBoxItem}}" TargetType="ComboBoxItem">
                         <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
