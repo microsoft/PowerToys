@@ -16,6 +16,12 @@ public record RecentCommandsManager : IRecentCommandsManager
     {
     }
 
+    [JsonConstructor]
+    internal RecentCommandsManager(ImmutableList<HistoryItem>? history)
+    {
+        History = history ?? ImmutableList<HistoryItem>.Empty;
+    }
+
     public int GetCommandHistoryWeight(string commandId)
     {
         var entry = History

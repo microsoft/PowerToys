@@ -4,8 +4,13 @@
 
 using System;
 using System.IO;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -223,5 +228,71 @@ public class SettingsServiceTests
         // Assert — both properties must be true; neither should have been overwritten
         Assert.IsTrue(service.Settings.ShowAppDetails, "ShowAppDetails lost — a stale snapshot overwrote it");
         Assert.IsTrue(service.Settings.SingleClickActivates, "SingleClickActivates lost — a stale snapshot overwrote it");
+    }
+
+    /// <summary>
+    /// Verifies that deserializing empty JSON "{}" produces the same non-null
+    /// property values as calling <c>new()</c>. This catches the System.Text.Json
+    /// source-gen issue where property initializers are not honored and reference-type
+    /// properties silently end up null. The test is future-proof: adding a new
+    /// property with a default value to any of these models will automatically be
+    /// covered without touching this test.
+    /// </summary>
+    [TestMethod]
+    public void Deserialize_EmptyJson_MatchesConstructorDefaults()
+    {
+        AssertDeserializedMatchesConstructor(new SettingsModel(), JsonSerializationContext.Default.SettingsModel);
+        AssertDeserializedMatchesConstructor(new AppStateModel(), JsonSerializationContext.Default.AppStateModel);
+        AssertDeserializedMatchesConstructor(new RecentCommandsManager(), JsonSerializationContext.Default.RecentCommandsManager);
+        AssertDeserializedMatchesConstructor(new DockSettings(), JsonSerializationContext.Default.DockSettings);
+        AssertDeserializedMatchesConstructor(new ProviderSettings(), JsonSerializationContext.Default.ProviderSettings);
+    }
+
+    /// <summary>
+    /// Deserializes "{}" into <typeparamref name="T"/> and compares every
+    /// readable instance property against a <c>new()</c> instance. For
+    /// reference-type properties, asserts non-null when the constructor
+    /// default is non-null. For all properties, asserts structural equality.
+    /// </summary>
+    private static void AssertDeserializedMatchesConstructor<T>(T constructed, JsonTypeInfo<T> typeInfo)
+        where T : class
+    {
+        var deserialized = JsonSerializer.Deserialize("{}", typeInfo);
+        Assert.IsNotNull(deserialized, $"Deserialize<{typeof(T).Name}>(\"{{}}\") returned null");
+
+        var typeName = typeof(T).Name;
+        foreach (var prop in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+        {
+            if (!prop.CanRead || prop.GetIndexParameters().Length > 0)
+            {
+                continue;
+            }
+
+            // Skip [JsonIgnore] properties — they won't be set by the deserializer
+            if (prop.GetCustomAttribute<JsonIgnoreAttribute>() is not null)
+            {
+                continue;
+            }
+
+            // Skip nullable properties — null is a valid value for them,
+            // so a mismatch with the constructor default is expected.
+            var nullabilityContext = new NullabilityInfoContext();
+            var nullabilityInfo = nullabilityContext.Create(prop);
+            if (nullabilityInfo.WriteState is NullabilityState.Nullable)
+            {
+                continue;
+            }
+
+            var expected = prop.GetValue(constructed);
+            var actual = prop.GetValue(deserialized);
+            var label = $"{typeName}.{prop.Name}";
+
+            if (expected is not null)
+            {
+                Assert.IsNotNull(actual, $"{label} is null after deserialization but non-null from constructor");
+            }
+
+            Assert.AreEqual(expected?.GetType(), actual?.GetType(), $"{label} type mismatch");
+        }
     }
 }

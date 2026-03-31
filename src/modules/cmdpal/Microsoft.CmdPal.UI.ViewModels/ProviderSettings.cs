@@ -38,9 +38,14 @@ public record ProviderSettings
     }
 
     [JsonConstructor]
-    public ProviderSettings(bool isEnabled)
+    public ProviderSettings(
+        bool isEnabled,
+        ImmutableDictionary<string, FallbackSettings>? fallbackCommands = null,
+        ImmutableList<string>? pinnedCommandIds = null)
     {
         IsEnabled = isEnabled;
+        FallbackCommands = fallbackCommands ?? ImmutableDictionary<string, FallbackSettings>.Empty;
+        PinnedCommandIds = pinnedCommandIds ?? ImmutableList<string>.Empty;
     }
 
     /// <summary>

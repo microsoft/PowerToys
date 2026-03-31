@@ -16,6 +16,31 @@ namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 /// </summary>
 public record DockSettings
 {
+    private static readonly ImmutableList<DockBandSettings> DefaultStartBands = ImmutableList.Create(
+        new DockBandSettings
+        {
+            ProviderId = "com.microsoft.cmdpal.builtin.core",
+            CommandId = "com.microsoft.cmdpal.home",
+        },
+        new DockBandSettings
+        {
+            ProviderId = "WinGet",
+            CommandId = "com.microsoft.cmdpal.winget",
+            ShowLabels = false,
+        });
+
+    private static readonly ImmutableList<DockBandSettings> DefaultEndBands = ImmutableList.Create(
+        new DockBandSettings
+        {
+            ProviderId = "PerformanceMonitor",
+            CommandId = "com.microsoft.cmdpal.performanceWidget",
+        },
+        new DockBandSettings
+        {
+            ProviderId = "com.microsoft.cmdpal.builtin.datetime",
+            CommandId = "com.microsoft.cmdpal.timedate.dockBand",
+        });
+
     public DockSide Side { get; init; } = DockSide.Top;
 
     public DockSize DockSize { get; init; } = DockSize.Small;
@@ -46,32 +71,11 @@ public record DockSettings
     public string? BackgroundImagePath { get; init; }
 
     // </Theme settings>
-    public ImmutableList<DockBandSettings> StartBands { get; init; } = ImmutableList.Create(
-        new DockBandSettings
-        {
-            ProviderId = "com.microsoft.cmdpal.builtin.core",
-            CommandId = "com.microsoft.cmdpal.home",
-        },
-        new DockBandSettings
-        {
-            ProviderId = "WinGet",
-            CommandId = "com.microsoft.cmdpal.winget",
-            ShowLabels = false,
-        });
+    public ImmutableList<DockBandSettings> StartBands { get; init; } = DefaultStartBands;
 
     public ImmutableList<DockBandSettings> CenterBands { get; init; } = ImmutableList<DockBandSettings>.Empty;
 
-    public ImmutableList<DockBandSettings> EndBands { get; init; } = ImmutableList.Create(
-        new DockBandSettings
-        {
-            ProviderId = "PerformanceMonitor",
-            CommandId = "com.microsoft.cmdpal.performanceWidget",
-        },
-        new DockBandSettings
-        {
-            ProviderId = "com.microsoft.cmdpal.builtin.datetime",
-            CommandId = "com.microsoft.cmdpal.timedate.dockBand",
-        });
+    public ImmutableList<DockBandSettings> EndBands { get; init; } = DefaultEndBands;
 
     public bool ShowLabels { get; init; } = true;
 
@@ -80,6 +84,21 @@ public record DockSettings
         StartBands.Select(b => (b.ProviderId, b.CommandId))
         .Concat(CenterBands.Select(b => (b.ProviderId, b.CommandId)))
         .Concat(EndBands.Select(b => (b.ProviderId, b.CommandId)));
+
+    public DockSettings()
+    {
+    }
+
+    [JsonConstructor]
+    public DockSettings(
+        ImmutableList<DockBandSettings>? startBands,
+        ImmutableList<DockBandSettings>? centerBands,
+        ImmutableList<DockBandSettings>? endBands)
+    {
+        StartBands = startBands ?? DefaultStartBands;
+        CenterBands = centerBands ?? ImmutableList<DockBandSettings>.Empty;
+        EndBands = endBands ?? DefaultEndBands;
+    }
 }
 
 /// <summary>

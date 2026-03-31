@@ -94,6 +94,25 @@ public record SettingsModel
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 
+    public SettingsModel()
+    {
+    }
+
+    [JsonConstructor]
+    public SettingsModel(
+        ImmutableDictionary<string, ProviderSettings>? providerSettings,
+        string[]? fallbackRanks,
+        ImmutableDictionary<string, CommandAlias>? aliases,
+        ImmutableList<TopLevelHotkey>? commandHotkeys,
+        DockSettings? dockSettings)
+    {
+        ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
+        FallbackRanks = fallbackRanks ?? [];
+        Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
+        CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
+        DockSettings = dockSettings ?? new();
+    }
+
     public (SettingsModel Model, ProviderSettings Settings) GetProviderSettings(CommandProviderWrapper provider)
     {
         if (!ProviderSettings.TryGetValue(provider.ProviderId, out var settings))
