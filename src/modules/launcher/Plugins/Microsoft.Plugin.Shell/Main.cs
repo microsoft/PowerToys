@@ -188,13 +188,48 @@ namespace Microsoft.Plugin.Shell
             return history.ToList();
         }
 
+        private static string EscapeWindowsCommandLineArgument(string arg)
+        {
+            if (string.IsNullOrEmpty(arg))
+            {
+                return string.Empty;
+            }
+
+            var escaped = new StringBuilder();
+            for (int i = 0; i < arg.Length; i++)
+            {
+                char c = arg[i];
+                if (c == '"')
+                {
+                    int backslashes = 0;
+                    int j = i - 1;
+                    while (j >= 0 && arg[j] == '\\')
+                    {
+                        backslashes++;
+                        j--;
+                    }
+
+                    for (int k = 0; k < backslashes; k++)
+                    {
+                        escaped.Append('\\');
+                    }
+
+                    escaped.Append('\\');
+                }
+
+                escaped.Append(c);
+            }
+
+            return escaped.ToString();
+        }
+
         private ProcessStartInfo PrepareProcessStartInfo(string command, RunAsType runAs = RunAsType.None)
         {
             string trimmedCommand = command.Trim();
             command = Environment.ExpandEnvironmentVariables(trimmedCommand);
 
             // Sanitize command to prevent quote breakout
-            string escapedCommand = command.Replace("\"", "\\\"");
+            string escapedCommand = EscapeWindowsCommandLineArgument(command);
 
             var workingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
@@ -225,7 +260,7 @@ namespace Microsoft.Plugin.Shell
                 }
                 else
                 {
-                    arguments = $"\"{command} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
+                    arguments = $"\"{escapedCommand} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
                 }
 
                 info = ShellCommand.SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsVerbArg);
@@ -239,7 +274,7 @@ namespace Microsoft.Plugin.Shell
                 }
                 else
                 {
-                    arguments = $"-C \"{command} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
+                    arguments = $"-C \"{escapedCommand} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
                 }
 
                 info = ShellCommand.SetProcessStartInfo("pwsh.exe", workingDirectory, arguments, runAsVerbArg);
