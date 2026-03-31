@@ -219,7 +219,7 @@ namespace PowerDisplay.Helpers
             return new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight);
         }
 
-        private static bool TryGetDisplayAreaAtCursor(out DisplayArea? displayArea)
+        internal static bool TryGetDisplayAreaAtCursor(out DisplayArea? displayArea)
         {
             displayArea = null;
 

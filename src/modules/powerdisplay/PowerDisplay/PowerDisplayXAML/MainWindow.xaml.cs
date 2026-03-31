@@ -379,17 +379,50 @@ namespace PowerDisplay
                 RootGrid.UpdateLayout();
                 MainContainer?.Measure(new Windows.Foundation.Size(AppConstants.UI.WindowWidthDip, double.PositiveInfinity));
                 var contentHeight = (int)Math.Ceiling(MainContainer?.DesiredSize.Height ?? 0);
+                var maxHeightDip = GetAdaptiveWindowMaxHeightDip();
 
                 // Apply min/max height limits and reposition using DIP values.
                 // Min height ensures window is visible even if content hasn't loaded yet
-                var finalHeightDip = Math.Max(AppConstants.UI.WindowMinHeightDip, Math.Min(contentHeight, AppConstants.UI.WindowMaxHeightDip));
-                Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, finalHeightDip={finalHeightDip}");
+                var finalHeightDip = Math.Max(AppConstants.UI.WindowMinHeightDip, Math.Min(contentHeight, maxHeightDip));
+                Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, maxHeightDip={maxHeightDip}, finalHeightDip={finalHeightDip}");
                 WindowHelper.PositionWindowBottomRight(this, AppConstants.UI.WindowWidthDip, finalHeightDip, AppConstants.UI.WindowRightMarginDip);
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Error adjusting window size: {ex.Message}");
             }
+        }
+
+        private static int GetAdaptiveWindowMaxHeightDip()
+        {
+            if (!WindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
+            {
+                return AppConstants.UI.WindowMaxHeightDip;
+            }
+
+            double dpiScale = WindowHelper.GetDpiScale(displayArea);
+            int workAreaHeightDip = WindowHelper.ScaleToDip(displayArea.WorkArea.Height, dpiScale);
+            int adaptiveMaxHeightDip = (int)Math.Floor(workAreaHeightDip * AppConstants.UI.WindowMaxWorkAreaHeightRatio);
+
+            return Math.Max(
+                AppConstants.UI.WindowMinHeightDip,
+                Math.Min(AppConstants.UI.WindowMaxHeightDip, adaptiveMaxHeightDip));
+        }
+
+        private static double GetAdaptiveFlyoutMaxWidthDip()
+        {
+            if (!WindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
+            {
+                return AppConstants.UI.FlyoutContextMenuMaxWidthDip;
+            }
+
+            double dpiScale = WindowHelper.GetDpiScale(displayArea);
+            int workAreaWidthDip = WindowHelper.ScaleToDip(displayArea.WorkArea.Width, dpiScale);
+            double adaptiveMaxWidthDip = Math.Floor(workAreaWidthDip * AppConstants.UI.FlyoutContextMenuMaxWorkAreaWidthRatio);
+
+            return Math.Max(
+                AppConstants.UI.FlyoutContextMenuMaxWidthDip,
+                Math.Min(AppConstants.UI.FlyoutContextMenuAdaptiveMaxWidthDip, adaptiveMaxWidthDip));
         }
 
         private void PositionWindowAtBottomRight()
@@ -451,6 +484,8 @@ namespace PowerDisplay
         {
             if (sender is Flyout flyout && flyout.Content is FrameworkElement content)
             {
+                content.MaxWidth = GetAdaptiveFlyoutMaxWidthDip();
+
                 // Use DispatcherQueue to ensure the flyout content is fully rendered before setting focus
                 DispatcherQueue.TryEnqueue(() =>
                 {

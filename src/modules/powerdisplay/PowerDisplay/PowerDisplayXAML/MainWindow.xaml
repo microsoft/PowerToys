@@ -133,6 +133,7 @@
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <local:MonitorIcon
                                                     VerticalAlignment="Center"
@@ -141,12 +142,16 @@
                                                 <TextBlock
                                                     Grid.Column="1"
                                                     Margin="{StaticResource MonitorNameBaselineMargin}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    TextWrapping="NoWrap"
+                                                    ToolTipService.ToolTip="{x:Bind DisplayName, Mode=OneWay}"
                                                     VerticalAlignment="Center"
                                                     Text="{x:Bind DisplayName, Mode=OneWay}" />
                                                 <!--  Icon buttons for InputSource and ColorTemperature  -->
                                                 <StackPanel
-                                                    Grid.Column="1"
+                                                    Grid.Column="2"
                                                     HorizontalAlignment="Right"
+                                                    VerticalAlignment="Center"
                                                     Orientation="Horizontal"
                                                     Spacing="{StaticResource FlyoutCompactSpacing}">
                                                     <!--  Color Temperature Button  -->
@@ -177,7 +182,11 @@
                                                                                         <ColumnDefinition Width="*" />
                                                                                         <ColumnDefinition Width="Auto" />
                                                                                     </Grid.ColumnDefinitions>
-                                                                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind DisplayName}" />
+                                                                                    <TextBlock
+                                                                                        VerticalAlignment="Center"
+                                                                                        Text="{x:Bind DisplayName}"
+                                                                                        TextTrimming="CharacterEllipsis"
+                                                                                        TextWrapping="NoWrap" />
                                                                                     <FontIcon
                                                                                         Grid.Column="1"
                                                                                         Margin="{StaticResource FlyoutSelectionGlyphMargin}"
@@ -226,7 +235,11 @@
                                                                                         <ColumnDefinition Width="*" />
                                                                                         <ColumnDefinition Width="Auto" />
                                                                                     </Grid.ColumnDefinitions>
-                                                                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind Name}" />
+                                                                                    <TextBlock
+                                                                                        VerticalAlignment="Center"
+                                                                                        Text="{x:Bind Name}"
+                                                                                        TextTrimming="CharacterEllipsis"
+                                                                                        TextWrapping="NoWrap" />
                                                                                     <FontIcon
                                                                                         Grid.Column="1"
                                                                                         Margin="{StaticResource FlyoutSelectionGlyphMargin}"
@@ -263,7 +276,11 @@
                                                                                         <ColumnDefinition Width="*" />
                                                                                         <ColumnDefinition Width="Auto" />
                                                                                     </Grid.ColumnDefinitions>
-                                                                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind Name}" />
+                                                                                    <TextBlock
+                                                                                        VerticalAlignment="Center"
+                                                                                        Text="{x:Bind Name}"
+                                                                                        TextTrimming="CharacterEllipsis"
+                                                                                        TextWrapping="NoWrap" />
                                                                                     <FontIcon
                                                                                         Grid.Column="1"
                                                                                         Margin="{StaticResource FlyoutSelectionGlyphMargin}"
@@ -494,7 +511,11 @@
                                         </ListView.Header>
                                         <ListView.ItemTemplate>
                                             <DataTemplate x:DataType="models:PowerDisplayProfile">
-                                                <TextBlock Padding="{StaticResource FlyoutListItemPadding}" Text="{x:Bind Name}" />
+                                                <TextBlock
+                                                    Padding="{StaticResource FlyoutListItemPadding}"
+                                                    Text="{x:Bind Name}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    TextWrapping="NoWrap" />
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
                                     </ListView>
