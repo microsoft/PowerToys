@@ -585,9 +585,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Creating profile: {profile.Name}");
 
-                var profilesData = ProfileHelper.LoadProfiles();
-                profilesData.SetProfile(profile);
-                ProfileHelper.SaveProfiles(profilesData);
+                ProfileHelper.AddOrUpdateProfile(profile);
 
                 // Reload profile list
                 LoadProfiles();
@@ -618,12 +616,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Updating profile: {oldName} -> {newProfile.Name}");
 
-                var profilesData = ProfileHelper.LoadProfiles();
-
-                // Remove old profile and add updated one
-                profilesData.RemoveProfile(oldName);
-                profilesData.SetProfile(newProfile);
-                ProfileHelper.SaveProfiles(profilesData);
+                ProfileHelper.RenameAndUpdateProfile(oldName, newProfile);
 
                 // Reload profile list
                 LoadProfiles();
@@ -653,9 +646,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Deleting profile: {profileName}");
 
-                var profilesData = ProfileHelper.LoadProfiles();
-                profilesData.RemoveProfile(profileName);
-                ProfileHelper.SaveProfiles(profilesData);
+                ProfileHelper.RemoveProfile(profileName);
 
                 // Reload profile list
                 LoadProfiles();
