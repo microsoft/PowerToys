@@ -4,13 +4,14 @@
 
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Models;
+using ModelsProfileHelper = PowerDisplay.Models.ProfileHelper;
 
 namespace PowerDisplay.Common.Services
 {
     /// <summary>
     /// Thin facade over <see cref="ProfileHelper"/> that satisfies <see cref="IProfileService"/>
     /// and provides named static entry points for PowerDisplay.exe callers.
-    /// All locking and compound-operation atomicity is handled by ProfileHelper.
+    /// All locking and compound-operation atomicity is handled by <see cref="PowerDisplay.Models.ProfileHelper"/>.
     /// </summary>
     public class ProfileService : IProfileService
     {
@@ -23,30 +24,30 @@ namespace PowerDisplay.Common.Services
         {
         }
 
-        /// <inheritdoc cref="ProfileHelper.LoadProfiles"/>
-        public static PowerDisplayProfiles LoadProfiles() => ProfileHelper.LoadProfiles();
+        /// <inheritdoc cref="ModelsProfileHelper.LoadProfiles"/>
+        public static PowerDisplayProfiles LoadProfiles() => ModelsProfileHelper.LoadProfiles();
 
-        /// <inheritdoc cref="ProfileHelper.SaveProfiles"/>
-        public static bool SaveProfiles(PowerDisplayProfiles profiles) => ProfileHelper.SaveProfiles(profiles);
+        /// <inheritdoc cref="ModelsProfileHelper.SaveProfiles"/>
+        public static bool SaveProfiles(PowerDisplayProfiles profiles) => ModelsProfileHelper.SaveProfiles(profiles);
 
-        /// <inheritdoc cref="ProfileHelper.AddOrUpdateProfile"/>
-        public static bool AddOrUpdateProfile(PowerDisplayProfile profile) => ProfileHelper.AddOrUpdateProfile(profile);
+        /// <inheritdoc cref="ModelsProfileHelper.AddOrUpdateProfile"/>
+        public static bool AddOrUpdateProfile(PowerDisplayProfile profile) => ModelsProfileHelper.AddOrUpdateProfile(profile);
 
-        /// <inheritdoc cref="ProfileHelper.RenameAndUpdateProfile"/>
-        public static bool RenameAndUpdateProfile(string oldName, PowerDisplayProfile newProfile) => ProfileHelper.RenameAndUpdateProfile(oldName, newProfile);
+        /// <inheritdoc cref="ModelsProfileHelper.RenameAndUpdateProfile"/>
+        public static bool RenameAndUpdateProfile(string oldName, PowerDisplayProfile newProfile) => ModelsProfileHelper.RenameAndUpdateProfile(oldName, newProfile);
 
-        /// <inheritdoc cref="ProfileHelper.RemoveProfile"/>
-        public static bool RemoveProfile(string profileName) => ProfileHelper.RemoveProfile(profileName);
+        /// <inheritdoc cref="ModelsProfileHelper.RemoveProfile"/>
+        public static bool RemoveProfile(string profileName) => ModelsProfileHelper.RemoveProfile(profileName);
 
-        /// <inheritdoc cref="ProfileHelper.GetProfile"/>
-        public static PowerDisplayProfile? GetProfile(string profileName) => ProfileHelper.GetProfile(profileName);
+        /// <inheritdoc cref="ModelsProfileHelper.GetProfile"/>
+        public static PowerDisplayProfile? GetProfile(string profileName) => ModelsProfileHelper.GetProfile(profileName);
 
         // IProfileService explicit implementation
 
         /// <inheritdoc/>
-        PowerDisplayProfiles IProfileService.LoadProfiles() => ProfileHelper.LoadProfiles();
+        PowerDisplayProfiles IProfileService.LoadProfiles() => ModelsProfileHelper.LoadProfiles();
 
         /// <inheritdoc/>
-        bool IProfileService.SaveProfiles(PowerDisplayProfiles profiles) => ProfileHelper.SaveProfiles(profiles);
+        bool IProfileService.SaveProfiles(PowerDisplayProfiles profiles) => ModelsProfileHelper.SaveProfiles(profiles);
     }
 }

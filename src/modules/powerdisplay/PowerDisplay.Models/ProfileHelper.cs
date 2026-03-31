@@ -135,7 +135,6 @@ namespace PowerDisplay.Models
         }
 
         // Lock-free core methods — only call from within a lock (_lock) block.
-
         private static PowerDisplayProfiles LoadProfilesCore()
         {
             try
