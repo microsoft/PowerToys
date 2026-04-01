@@ -103,9 +103,11 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
 
         public IContextItem[] MoreCommands => throw new System.NotImplementedException();
 
+#pragma warning disable CA1067 // Override Object.Equals - record type already provides value equality
 #pragma warning disable CS0067
         public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
 #pragma warning restore CS0067
+#pragma warning restore CA1067
 
         private string GenerateId()
         {
