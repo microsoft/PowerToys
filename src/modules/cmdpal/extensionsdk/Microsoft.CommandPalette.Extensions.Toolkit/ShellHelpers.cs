@@ -248,7 +248,7 @@ public static class ShellHelpers
     /// </summary>
     /// <param name="name"></param>
     /// <param name="fullPath"></param>
-    /// <returns></returns>
+    /// <returns><see langword="true"/> if the executable was resolved to a full path; otherwise, <see langword="false"/>.</returns>
     public static bool TryResolveExecutableAsShell(string name, out string fullPath)
     {
         // First check if we can find the file in the registry
