@@ -319,7 +319,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
                     BackgroundImageOpacity = 100;
                 }
 
-                Save();
+                _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
             }
         }
     }
@@ -335,7 +335,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
                 _settingsService.Settings.BackgroundImageChangeIntervalMinutes = normalized;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(BackgroundImageChangeIntervalIndex));
-                Save();
+                _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
             }
         }
     }
@@ -369,7 +369,7 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
             {
                 _settingsService.Settings.BackgroundImageShuffle = value;
                 OnPropertyChanged();
-                Save();
+                _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
             }
         }
     }
