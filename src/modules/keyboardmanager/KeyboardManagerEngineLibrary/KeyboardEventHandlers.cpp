@@ -303,7 +303,7 @@ namespace KeyboardEventHandlers
             static bool isAltRightKeyInvoked = false;
 
             // Check if the right Alt key (AltGr) is pressed.
-            if (data->lParam->vkCode == VK_RMENU && ii.GetVirtualKeyState(VK_LCONTROL))
+            if (data->lParam->vkCode == VK_RMENU && ii.GetVirtualKeyState(VK_LCONTROL) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
             {
                 isAltRightKeyInvoked = true;
             }
