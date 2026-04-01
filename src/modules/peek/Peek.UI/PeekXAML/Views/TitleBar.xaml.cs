@@ -58,22 +58,22 @@ namespace Peek.UI.Views
                new PropertyMetadata(null, (d, e) => ((TitleBar)d).OnNumberOfFilesPropertyChanged()));
 
         [ObservableProperty]
-        private string openWithAppText = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_Text");
+        public partial string OpenWithAppText { get; set; } = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_Text");
 
         [ObservableProperty]
-        private string openWithAppToolTip = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_ToolTip");
+        public partial string OpenWithAppToolTip { get; set; } = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_ToolTip");
 
         [ObservableProperty]
-        private string? fileCountText;
+        public partial string? FileCountText { get; set; }
 
         [ObservableProperty]
-        private string fileName = string.Empty;
+        public partial string FileName { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string defaultAppName = string.Empty;
+        public partial string DefaultAppName { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private bool pinned = false;
+        public partial bool Pinned { get; set; } = false;
 
         public TitleBar()
         {

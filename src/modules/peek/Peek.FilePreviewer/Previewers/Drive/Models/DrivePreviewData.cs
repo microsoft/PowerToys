@@ -10,31 +10,31 @@ namespace Peek.FilePreviewer.Previewers.Drive.Models
     public partial class DrivePreviewData : ObservableObject
     {
         [ObservableProperty]
-        private ImageSource? iconPreview;
+        public partial ImageSource? IconPreview { get; set; }
 
         [ObservableProperty]
-        private string _name;
+        public partial string Name { get; set; }
 
         [ObservableProperty]
-        private string _type;
+        public partial string Type { get; set; }
 
         [ObservableProperty]
-        private string _fileSystem;
+        public partial string FileSystem { get; set; }
 
         [ObservableProperty]
-        private ulong _capacity;
+        public partial ulong Capacity { get; set; }
 
         [ObservableProperty]
-        private ulong _usedSpace;
+        public partial ulong UsedSpace { get; set; }
 
         [ObservableProperty]
-        private ulong _freeSpace;
+        public partial ulong FreeSpace { get; set; }
 
         /// <summary>
         /// Represents the usage percentage of the drive, ranging from 0 to 1
         /// </summary>
         [ObservableProperty]
-        private double _percentageUsage;
+        public partial double PercentageUsage { get; set; }
 
         public DrivePreviewData()
         {

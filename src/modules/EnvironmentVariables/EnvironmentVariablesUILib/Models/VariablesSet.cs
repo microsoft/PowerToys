@@ -25,7 +25,7 @@ namespace EnvironmentVariablesUILib.Models
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
-        private string _name;
+        public partial string Name { get; set; }
 
         [JsonIgnore]
         public VariablesSetType Type { get; set; }
@@ -34,7 +34,7 @@ namespace EnvironmentVariablesUILib.Models
         public string IconPath { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<Variable> _variables;
+        public partial ObservableCollection<Variable> Variables { get; set; }
 
         public bool Valid => Validate();
 

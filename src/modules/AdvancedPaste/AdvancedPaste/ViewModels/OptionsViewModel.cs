@@ -53,7 +53,7 @@ namespace AdvancedPaste.ViewModels
         public DataPackageView ClipboardData { get; set; }
 
         [ObservableProperty]
-        private ClipboardItem _currentClipboardItem;
+        public partial ClipboardItem CurrentClipboardItem { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsCustomAIAvailable))]
@@ -61,11 +61,11 @@ namespace AdvancedPaste.ViewModels
         [NotifyPropertyChangedFor(nameof(ClipboardHasDataForCustomAI))]
         [NotifyPropertyChangedFor(nameof(InputTxtBoxPlaceholderText))]
         [NotifyPropertyChangedFor(nameof(CustomAIUnavailableErrorText))]
-        private ClipboardFormat _availableClipboardFormats;
+        public partial ClipboardFormat AvailableClipboardFormats { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ShowClipboardHistoryButton))]
-        private bool _clipboardHistoryEnabled;
+        public partial bool ClipboardHistoryEnabled { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(CustomAIUnavailableErrorText))]
@@ -79,22 +79,22 @@ namespace AdvancedPaste.ViewModels
         [NotifyPropertyChangedFor(nameof(HasTermsLink))]
         [NotifyPropertyChangedFor(nameof(HasPrivacyLink))]
         [NotifyPropertyChangedFor(nameof(HasLegalLinks))]
-        private bool _isAllowedByGPO;
+        public partial bool IsAllowedByGPO { get; set; }
 
         [ObservableProperty]
-        private PasteActionError _pasteActionError = PasteActionError.None;
+        public partial PasteActionError PasteActionError { get; set; } = PasteActionError.None;
 
         [ObservableProperty]
-        private string _query = string.Empty;
+        public partial string Query { get; set; } = string.Empty;
 
         private bool _pasteFormatsDirty;
 
         [ObservableProperty]
-        private bool _isBusy;
+        public partial bool IsBusy { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasIndeterminateTransformProgress))]
-        private double _transformProgress = double.NaN;
+        public partial double TransformProgress { get; set; } = double.NaN;
 
         public ObservableCollection<PasteFormat> StandardPasteFormats { get; } = [];
 
@@ -614,7 +614,7 @@ namespace AdvancedPaste.ViewModels
         }
 
         [ObservableProperty]
-        private string _customFormatResult;
+        public partial string CustomFormatResult { get; set; }
 
         [RelayCommand]
         public async Task PasteCustomAsync()

@@ -11,7 +11,7 @@ namespace Peek.UI
     public partial class NeighboringItemsQuery : ObservableObject
     {
         [ObservableProperty]
-        private bool isMultipleFilesActivation;
+        public partial bool IsMultipleFilesActivation { get; set; }
 
         public NeighboringItems? GetNeighboringItems(Windows.Win32.Foundation.HWND foregroundWindowHandle)
         {

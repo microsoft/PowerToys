@@ -40,16 +40,16 @@ namespace Peek.FilePreviewer.Previewers
         };
 
         [ObservableProperty]
-        private Uri? preview;
+        public partial Uri? Preview { get; set; }
 
         [ObservableProperty]
-        private PreviewState state;
+        public partial PreviewState State { get; set; }
 
         [ObservableProperty]
-        private bool isDevFilePreview;
+        public partial bool IsDevFilePreview { get; set; }
 
         [ObservableProperty]
-        private bool customContextMenu;
+        public partial bool CustomContextMenu { get; set; }
 
         private bool disposed;
 

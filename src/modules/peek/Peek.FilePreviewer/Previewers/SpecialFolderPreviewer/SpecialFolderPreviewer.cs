@@ -31,10 +31,10 @@ public partial class SpecialFolderPreviewer : ObservableObject, ISpecialFolderPr
     private DateTime? _dateModified;
 
     [ObservableProperty]
-    private SpecialFolderPreviewData preview = new();
+    public partial SpecialFolderPreviewData Preview { get; set; } = new();
 
     [ObservableProperty]
-    private PreviewState state;
+    public partial PreviewState State { get; set; }
 
     public SpecialFolderPreviewer(IFileSystemItem file)
     {

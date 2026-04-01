@@ -28,7 +28,7 @@ namespace RegistryPreviewUILib
         public string Text { get; private set; }
 
         [ObservableProperty]
-        private bool _isLoading;
+        public partial bool IsLoading { get; set; }
 
         public event EventHandler TextChanged;
 

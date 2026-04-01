@@ -12,19 +12,19 @@ namespace Peek.FilePreviewer.Previewers.Archives.Models
     public partial class ArchiveItem : ObservableObject
     {
         [ObservableProperty]
-        private string _name;
+        public partial string Name { get; set; }
 
         [ObservableProperty]
-        private ArchiveItemType _type;
+        public partial ArchiveItemType Type { get; set; }
 
         [ObservableProperty]
-        private ImageSource? _icon;
+        public partial ImageSource? Icon { get; set; }
 
         [ObservableProperty]
-        private ulong _size;
+        public partial ulong Size { get; set; }
 
         [ObservableProperty]
-        private bool _isExpanded;
+        public partial bool IsExpanded { get; set; }
 
         public ObservableCollection<ArchiveItem> Children { get; }
 

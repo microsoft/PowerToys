@@ -29,10 +29,10 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
         private MediaSource? _mediaSource;
 
         [ObservableProperty]
-        private PreviewState _state;
+        public partial PreviewState State { get; set; }
 
         [ObservableProperty]
-        private AudioPreviewData? _preview;
+        public partial AudioPreviewData? Preview { get; set; }
 
         private IFileSystemItem Item { get; }
 

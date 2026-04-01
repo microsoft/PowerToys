@@ -45,10 +45,10 @@ namespace Peek.FilePreviewer.Previewers
         private static readonly EnumerationOptions FolderEnumerationOptions;
 
         [ObservableProperty]
-        private UnsupportedFilePreviewData preview = new();
+        public partial UnsupportedFilePreviewData Preview { get; set; } = new();
 
         [ObservableProperty]
-        private PreviewState state;
+        public partial PreviewState State { get; set; }
 
         static UnsupportedFilePreviewer()
         {

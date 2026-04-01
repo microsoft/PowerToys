@@ -34,43 +34,43 @@ namespace HostsUILib.ViewModels
         private bool _readingHosts;
 
         [ObservableProperty]
-        private Entry _selected;
+        public partial Entry Selected { get; set; }
 
         [ObservableProperty]
-        private bool _error;
+        public partial bool Error { get; set; }
 
         [ObservableProperty]
-        private string _errorMessage;
+        public partial string ErrorMessage { get; set; }
 
         [ObservableProperty]
-        private bool _isReadOnly;
+        public partial bool IsReadOnly { get; set; }
 
         [ObservableProperty]
-        private bool _fileChanged;
+        public partial bool FileChanged { get; set; }
 
         [ObservableProperty]
-        private string _addressFilter;
+        public partial string AddressFilter { get; set; }
 
         [ObservableProperty]
-        private string _hostsFilter;
+        public partial string HostsFilter { get; set; }
 
         [ObservableProperty]
-        private string _commentFilter;
+        public partial string CommentFilter { get; set; }
 
         [ObservableProperty]
-        private string _additionalLines;
+        public partial string AdditionalLines { get; set; }
 
         [ObservableProperty]
-        private bool _isLoading;
+        public partial bool IsLoading { get; set; }
 
         [ObservableProperty]
-        private bool _filtered;
+        public partial bool Filtered { get; set; }
 
         [ObservableProperty]
-        private bool _showOnlyDuplicates;
+        public partial bool ShowOnlyDuplicates { get; set; }
 
         [ObservableProperty]
-        private bool _showSplittedEntriesTooltip;
+        public partial bool ShowSplittedEntriesTooltip { get; set; }
 
         partial void OnShowOnlyDuplicatesChanged(bool value)
         {

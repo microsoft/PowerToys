@@ -10,17 +10,17 @@ namespace Peek.FilePreviewer.Models;
 public partial class SpecialFolderPreviewData : ObservableObject
 {
     [ObservableProperty]
-    private ImageSource? iconPreview;
+    public partial ImageSource? IconPreview { get; set; }
 
     [ObservableProperty]
-    private string? fileName;
+    public partial string? FileName { get; set; }
 
     [ObservableProperty]
-    private string? fileType;
+    public partial string? FileType { get; set; }
 
     [ObservableProperty]
-    private string? fileSize;
+    public partial string? FileSize { get; set; }
 
     [ObservableProperty]
-    private string? dateModified;
+    public partial string? DateModified { get; set; }
 }

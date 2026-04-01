@@ -49,7 +49,7 @@ namespace Peek.FilePreviewer
                 new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnScalingFactorPropertyChanged()));
 
         [ObservableProperty]
-        private int numberOfFiles;
+        public partial int NumberOfFiles { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ImagePreviewer))]
@@ -61,13 +61,13 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(DrivePreviewer))]
         [NotifyPropertyChangedFor(nameof(SpecialFolderPreviewer))]
         [NotifyPropertyChangedFor(nameof(UnsupportedFilePreviewer))]
-        private IPreviewer? previewer;
+        public partial IPreviewer? Previewer { get; set; }
 
         [ObservableProperty]
-        private string infoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
+        public partial string InfoTooltip { get; set; } = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
 
         [ObservableProperty]
-        private string noMoreFilesText = ResourceLoaderInstance.ResourceLoader.GetString("NoMoreFiles");
+        public partial string NoMoreFilesText { get; set; } = ResourceLoaderInstance.ResourceLoader.GetString("NoMoreFiles");
 
         private CancellationTokenSource _cancellationTokenSource = new();
 

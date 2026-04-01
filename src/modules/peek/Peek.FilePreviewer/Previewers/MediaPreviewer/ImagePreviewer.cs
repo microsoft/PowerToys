@@ -30,19 +30,19 @@ namespace Peek.FilePreviewer.Previewers
     public partial class ImagePreviewer : ObservableObject, IImagePreviewer
     {
         [ObservableProperty]
-        private ImageSource? preview;
+        public partial ImageSource? Preview { get; set; }
 
         [ObservableProperty]
-        private PreviewState state;
+        public partial PreviewState State { get; set; }
 
         [ObservableProperty]
-        private Size? imageSize;
+        public partial Size? ImageSize { get; set; }
 
         [ObservableProperty]
-        private Size maxImageSize;
+        public partial Size MaxImageSize { get; set; }
 
         [ObservableProperty]
-        private double scalingFactor;
+        public partial double ScalingFactor { get; set; }
 
         public ImagePreviewer(IFileSystemItem file)
         {

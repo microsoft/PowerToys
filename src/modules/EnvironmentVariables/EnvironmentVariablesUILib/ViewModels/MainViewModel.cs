@@ -31,17 +31,17 @@ namespace EnvironmentVariablesUILib.ViewModels
         public VariablesSet DefaultVariables { get; private set; } = new DefaultVariablesSet(Guid.NewGuid(), "DefaultVariables", VariablesSetType.User);
 
         [ObservableProperty]
-        private ObservableCollection<ProfileVariablesSet> _profiles;
+        public partial ObservableCollection<ProfileVariablesSet> Profiles { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<Variable> _appliedVariables = new ObservableCollection<Variable>();
+        public partial ObservableCollection<Variable> AppliedVariables { get; set; } = new ObservableCollection<Variable>();
 
         [ObservableProperty]
-        private bool _isElevated;
+        public partial bool IsElevated { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsInfoBarButtonVisible))]
-        private EnvironmentState _environmentState;
+        public partial EnvironmentState EnvironmentState { get; set; }
 
         public bool IsInfoBarButtonVisible => EnvironmentState == EnvironmentState.EnvironmentMessageReceived;
 

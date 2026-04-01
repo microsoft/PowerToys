@@ -28,16 +28,16 @@ namespace Peek.FilePreviewer.Previewers
         private MediaSource? _mediaSource;
 
         [ObservableProperty]
-        private MediaSource? preview;
+        public partial MediaSource? Preview { get; set; }
 
         [ObservableProperty]
-        private PreviewState state;
+        public partial PreviewState State { get; set; }
 
         [ObservableProperty]
-        private Size videoSize;
+        public partial Size VideoSize { get; set; }
 
         [ObservableProperty]
-        private string? missingCodecName;
+        public partial string? MissingCodecName { get; set; }
 
         public VideoPreviewer(IFileSystemItem file)
         {

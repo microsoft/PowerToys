@@ -20,18 +20,18 @@ namespace EnvironmentVariablesUILib.Models
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
         [NotifyPropertyChangedFor(nameof(ShowAsList))]
-        private string _name;
+        public partial string Name { get; set; }
 
         [ObservableProperty]
-        private string _values;
+        public partial string Values { get; set; }
 
         [ObservableProperty]
-        private bool _applyToSystem;
+        public partial bool ApplyToSystem { get; set; }
 
         [JsonIgnore]
         [property: JsonIgnore]
         [ObservableProperty]
-        private bool _isAppliedFromProfile; // Used to mark that a variable in a default set is applied by a profile. Used to disable editing / mark it in the UI.
+        public partial bool IsAppliedFromProfile { get; set; } // Used to mark that a variable in a default set is applied by a profile. Used to disable editing / mark it in the UI.
 
         [JsonIgnore]
         public bool IsEditable
@@ -52,9 +52,9 @@ namespace EnvironmentVariablesUILib.Models
         }
 
         [ObservableProperty]
-        [property: JsonIgnore]
         [JsonIgnore]
-        private ObservableCollection<ValuesListItem> _valuesList;
+        [JsonIgnore]
+        public partial ObservableCollection<ValuesListItem> ValuesList { get; set; }
 
         [JsonIgnore]
         public bool Valid => Validate();

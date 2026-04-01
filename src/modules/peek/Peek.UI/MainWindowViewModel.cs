@@ -45,7 +45,7 @@ namespace Peek.UI
 
         /// <summary>
         /// The actual index of the current item in the items array. Does not necessarily
-        /// correspond to <see cref="_displayIndex"/> if one or more files have been deleted.
+        /// correspond to <see cref="DisplayIndex"/> if one or more files have been deleted.
         /// </summary>
         private int _currentIndex;
 
@@ -53,14 +53,14 @@ namespace Peek.UI
         /// The item index to display in the titlebar.
         /// </summary>
         [ObservableProperty]
-        private int _displayIndex;
+        public partial int DisplayIndex { get; set; }
 
         /// <summary>
         /// The item to be displayed by a matching previewer. May be null if the user has deleted
         /// all items.
         /// </summary>
         [ObservableProperty]
-        private IFileSystemItem? _currentItem;
+        public partial IFileSystemItem? CurrentItem { get; set; }
 
         /// <summary>
         /// Work around missing navigation when peeking from CLI.
@@ -76,11 +76,11 @@ namespace Peek.UI
         }
 
         [ObservableProperty]
-        private string _windowTitle;
+        public partial string WindowTitle { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DisplayItemCount))]
-        private NeighboringItems? _items;
+        public partial NeighboringItems? Items { get; set; }
 
         /// <summary>
         /// The number of items selected and available to preview. Decreases as the user deletes
@@ -102,13 +102,13 @@ namespace Peek.UI
         }
 
         [ObservableProperty]
-        private double _scalingFactor = 1.0;
+        public partial double ScalingFactor { get; set; } = 1.0;
 
         [ObservableProperty]
-        private string _errorMessage = string.Empty;
+        public partial string ErrorMessage { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private bool _isErrorVisible = false;
+        public partial bool IsErrorVisible { get; set; } = false;
 
         private enum NavigationDirection
         {

@@ -11,22 +11,22 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer.Models
     public partial class AudioPreviewData : ObservableObject
     {
         [ObservableProperty]
-        private MediaSource? _mediaSource;
+        public partial MediaSource? MediaSource { get; set; }
 
         [ObservableProperty]
-        private ImageSource? _thumbnail;
+        public partial ImageSource? Thumbnail { get; set; }
 
         [ObservableProperty]
-        private string _title;
+        public partial string Title { get; set; }
 
         [ObservableProperty]
-        private string _artist;
+        public partial string Artist { get; set; }
 
         [ObservableProperty]
-        private string _album;
+        public partial string Album { get; set; }
 
         [ObservableProperty]
-        private string _length;
+        public partial string Length { get; set; }
 
         public AudioPreviewData()
         {

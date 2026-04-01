@@ -32,10 +32,10 @@ namespace Peek.FilePreviewer.Previewers
         private static readonly ConcurrentDictionary<Guid, IClassFactory> HandlerFactories = new();
 
         [ObservableProperty]
-        private IPreviewHandler? preview;
+        public partial IPreviewHandler? Preview { get; set; }
 
         [ObservableProperty]
-        private PreviewState state;
+        public partial PreviewState State { get; set; }
 
         private Stream? fileStream;
 

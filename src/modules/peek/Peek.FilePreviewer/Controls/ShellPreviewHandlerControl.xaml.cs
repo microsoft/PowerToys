@@ -27,7 +27,7 @@ namespace Peek.FilePreviewer.Controls
         private static readonly HBRUSH DarkThemeBgBrush = PInvoke_FilePreviewer.CreateSolidBrush(DarkThemeBgColor);
 
         [ObservableProperty]
-        private IPreviewHandler? source;
+        public partial IPreviewHandler? Source { get; set; }
 
         private HWND containerHwnd;
         private WNDPROC containerWndProc;

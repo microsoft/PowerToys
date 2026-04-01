@@ -21,7 +21,7 @@ namespace HostsUILib.Models
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
         [NotifyPropertyChangedFor(nameof(IsAddressValid))]
-        private string _address;
+        public partial string Address { get; set; }
 
         partial void OnAddressChanged(string value)
         {
@@ -42,7 +42,7 @@ namespace HostsUILib.Models
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
         [NotifyPropertyChangedFor(nameof(IsHostsValid))]
-        private string _hosts;
+        public partial string Hosts { get; set; }
 
         partial void OnHostsChanged(string value)
         {
@@ -51,19 +51,19 @@ namespace HostsUILib.Models
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
-        private string _comment;
+        public partial string Comment { get; set; }
 
         [ObservableProperty]
-        private bool _active;
+        public partial bool Active { get; set; }
 
         [ObservableProperty]
-        private bool? _ping;
+        public partial bool? Ping { get; set; }
 
         [ObservableProperty]
-        private bool _pinging;
+        public partial bool Pinging { get; set; }
 
         [ObservableProperty]
-        private bool _duplicate;
+        public partial bool Duplicate { get; set; }
 
         public bool Valid => Validate(true);
 

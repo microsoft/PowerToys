@@ -23,10 +23,10 @@ namespace Peek.FilePreviewer.Previewers.Drive
     public partial class DrivePreviewer : ObservableObject, IDrivePreviewer
     {
         [ObservableProperty]
-        private PreviewState _state;
+        public partial PreviewState State { get; set; }
 
         [ObservableProperty]
-        private DrivePreviewData? _preview;
+        public partial DrivePreviewData? Preview { get; set; }
 
         private IFileSystemItem Item { get; }
 

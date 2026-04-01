@@ -37,16 +37,16 @@ namespace Peek.FilePreviewer.Previewers.Archives
         private ulong _extractedSize;
 
         [ObservableProperty]
-        private PreviewState state;
+        public partial PreviewState State { get; set; }
 
         [ObservableProperty]
-        private string? _directoryCountText;
+        public partial string? DirectoryCountText { get; set; }
 
         [ObservableProperty]
-        private string? _fileCountText;
+        public partial string? FileCountText { get; set; }
 
         [ObservableProperty]
-        private string? _sizeText;
+        public partial string? SizeText { get; set; }
 
         private IFileSystemItem Item { get; }
 

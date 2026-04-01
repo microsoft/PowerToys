@@ -17,7 +17,7 @@ namespace Peek.FilePreviewer.Controls
     public sealed partial class DriveControl : UserControl
     {
         [ObservableProperty]
-        private Rect _spaceBarClip;
+        public partial Rect SpaceBarClip { get; set; }
 
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
             nameof(Source),
