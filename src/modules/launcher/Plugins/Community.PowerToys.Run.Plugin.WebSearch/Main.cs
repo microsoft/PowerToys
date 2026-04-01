@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Controls;
 
-using System.Text.RegularExpressions;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Infrastructure;
@@ -142,7 +142,8 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                     && !input.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                     && !input.Contains('/', StringComparison.OrdinalIgnoreCase)
                     && !input.All(char.IsDigit)
-                    && UriSchemeRegex().IsMatch(input))                {
+                    && UriSchemeRegex().IsMatch(input))
+                {
                     return true;
                 }
 
