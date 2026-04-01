@@ -76,7 +76,7 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
     };
 
     /// <summary>
-    /// Parsed search result limit. Returns <see langword="null"/> when the caller should
+    /// Gets the parsed search result limit. Returns <see langword="null"/> when the caller should
     /// use its own default (unrecognized value, empty, or old stored "0").
     /// </summary>
     public int? SearchResultLimit
