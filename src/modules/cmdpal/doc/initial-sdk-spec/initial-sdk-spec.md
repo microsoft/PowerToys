@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2025-08-08
+last updated: 2026-02-05
 issue id: n/a
 ---
 
@@ -75,6 +75,9 @@ functionality.
   - [Advanced scenarios](#advanced-scenarios)
     - [Status messages](#status-messages)
     - [Rendering of ICommandItems in Lists and Menus](#rendering-of-icommanditems-in-lists-and-menus)
+  - [Addenda I: API additions (ICommandProvider2)](#addenda-i-api-additions-icommandprovider2)
+  - [Addenda IV: Dock bands](#addenda-iv-dock-bands)
+    - [Pinning nested commands to the dock (and top level)](#pinning-nested-commands-to-the-dock-and-top-level)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -2044,6 +2047,117 @@ Fortunately, we can put all of that (`GetApiExtensionStubs`,
 `SupportCommandsWithProperties`) directly in `Toolkit.CommandProvider`, so
 developers won't have to do anything. The toolkit will just do the right thing
 for them.
+
+## Addenda IV: Dock bands
+
+The "dock" is another way to surface commands to the user. This is a
+toolbar-like window that can be docked to the side of the screen, or floated as
+its own window. It enables another surface for extensions to display real-time
+information and shortcuts to users.
+
+Bands are powered by the same interfaces as DevPal itself. Extensions can provide
+bands via the new `DockBand` property on `ICommandProvider3`.
+
+```csharp
+interface ICommandProvider3 requires ICommandProvider2
+{
+    ICommandItem[] GetDockBands();
+};
+```
+
+A **Dock Band** is one "strip of items" in the dock. Each band can have multiple
+items. This allows an extension to create a strip of buttons that should all be
+treated as a single unit. For example, a media player band will want probably
+four items:
+* one for the previous track
+* one for play/pause
+* one for next track
+* and one to display the album art and track title
+
+`GetDockBands` returns an array of `ICommandItem`s. Each `ICommandItem`
+represents one band in the dock. These represent all of the bands that an
+extension would allow the user to add to their dock. 
+
+All of the `ICommandItem`s returned from `GetDockBands` **must** have a
+`Command` with a non-empty `Id` set. If the `Id` is null or empty, DevPal will
+ignore that band.
+
+Bands are not automatically added to the dock. Instead, the user must choose
+which bands they want to add. This is done via the DevPal settings page.
+Furthermore, bands are not displayed in the list of commands in DevPal itself.
+This allows extension authors to create objects that are only intended for the
+dock, without cluttering up the main DevPal UI, and vice versa.
+
+DevPal will then create UI in the dock for each band the user has chosen to add.
+What that looks like will depend on the `Command` in the `ICommandItem`:
+* A `IInvokableCommand` will be rendered as a single button. Think "the
+  time/date" button on the taskbar, that opens the notification center.
+* A `IListPage` will be rendered as a strip of buttons, one for each `IListItem`
+  in the list. Think "media controls" for a music player. 
+* A `IContentPage` will be rendered as a single button. Clicking that button
+  will open a flyout with that content rendered in it. Think "weather" or "news"
+  flyouts.
+
+If the `Command` in the `IListItem`s of a band are pages, then clicking those
+buttons will open DevPal to that page, as if it were a flyout from the dock.
+
+The `.Title` property of the top-level `ICommandItem` representing the band will
+be used as the name of the band in the settings. So a media player band might
+want to set the `Title` to "Contoso Music Player", even if the individual
+buttons in the band don't show that title.
+
+Users may also "pin" a top-level command from DevPal into the dock. DevPal will
+take care of creating a new band (owned by devpal) with that command in it. This
+allows users to add quick shortcuts to their favorite commands in the dock.
+Think: pinning an app, or pinning a particular GitHub query. 
+
+Bands are added via ID. An extension may choose to have a TopLevelCommand and a
+DockBand with the same `Id`. In this case, if the user pins the TopLevelCommand
+to the dock, DevPal will pin the band from `GetDockBands`, rather than creating
+a simple pinned command. This allows extension authors to seamlessly have a
+top-level command present a palette-specific experience, while also having a
+dock-specific experience. In our ongoing media player example, the top-level
+command might open DevPal to a full-featured music control page, while the dock
+band has simpler buttons on it (without a title/subtitle).
+
+Users may choose to have:
+* the orientation of the dock: vertical or horizontal
+* the size of the dock
+* which bands are shown in the dock
+* whether the "labels" (read: `Title` & `Subtitle`) of individual bands are
+  shown or hidden.
+  - Dock bands will still display the `Title` & `Subtitle` of each item in the
+    band as the tooltip on those items, even when the "labels" are hidden. 
+
+### Pinning nested commands to the dock (and top level)
+
+We'll use another command provider method to allow the host to ask extensions
+for items based on their ID.
+
+```csharp
+interface ICommandProvider4 requires ICommandProvider3
+{
+    ICommandItem GetCommandItem(String id);
+};
+```
+
+This will allow users to pin not just top-level commands, but also nested
+commands which have an ID. The host can store that ID away, and then later ask
+the extension for the `ICommandItem` with that ID, to get the full details of
+the command to pin.
+
+This is needed separate from the `GetCommand` method on `ICommandProvider`,
+because that method is was designed for two main purposes:
+
+* Short-circuiting the loading of top-level commands for frozen extensions. In
+  that case, DevPal would only need to look up the actual `ICommand` to perform
+  it. It wouldn't need the full `ICommandItem` with all the details.
+* Allowing invokable commands to navigate using the GoToPageArgs. In that case,
+  DevPal would only need the `ICommand` to perform the navigation.
+
+In neither of those scenarios was the full "display" of the item needed. In
+pinning scenarios, however, we need everything that the user would see in the UI
+for that item, which is all in the `ICommandItem`.
 
 ## Class diagram
 

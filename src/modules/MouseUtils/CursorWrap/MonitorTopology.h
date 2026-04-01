@@ -7,6 +7,9 @@
 #include <vector>
 #include <map>
 
+// Forward declaration
+struct CursorDirection;
+
 // Monitor information structure
 struct MonitorInfo
 {
@@ -44,6 +47,15 @@ struct MonitorEdge
     bool isOuter;   // True if no adjacent monitor touches this edge
 };
 
+// Result of finding an opposite edge, including projection info for non-overlapping regions
+struct OppositeEdgeResult
+{
+    MonitorEdge edge;
+    bool found;                 // True if an opposite edge was found
+    bool requiresProjection;    // True if cursor position needs to be projected (non-overlapping region)
+    int projectedCoordinate;    // The calculated coordinate on the target edge
+};
+
 // Monitor topology helper - manages edge-based monitor layout
 struct MonitorTopology
 {
@@ -51,7 +63,9 @@ struct MonitorTopology
 
     // Check if cursor is on an outer edge of the given monitor
     // wrapMode filters which edges are considered (Both, VerticalOnly, HorizontalOnly)
-    bool IsOnOuterEdge(HMONITOR monitor, const POINT& cursorPos, EdgeType& outEdgeType, WrapMode wrapMode) const;
+    // direction is used to prioritize edges at corners based on cursor movement
+    bool IsOnOuterEdge(HMONITOR monitor, const POINT& cursorPos, EdgeType& outEdgeType, 
+                       WrapMode wrapMode, const CursorDirection* direction = nullptr) const;
 
     // Get the wrap destination point for a cursor on an outer edge
     POINT GetWrapDestination(HMONITOR fromMonitor, const POINT& cursorPos, EdgeType edgeType) const;
@@ -95,12 +109,26 @@ private:
     // Check if two edges are adjacent (within tolerance)
     bool EdgesAreAdjacent(const MonitorEdge& edge1, const MonitorEdge& edge2, int tolerance = 50) const;
 
-    // Find the opposite outer edge for wrapping
+    // Find the opposite outer edge for wrapping (original method - for overlapping regions)
     MonitorEdge FindOppositeOuterEdge(EdgeType fromEdge, int relativePosition) const;
+    
+    // Find the nearest opposite outer edge, including projection for non-overlapping regions
+    // This implements Windows-like behavior for cursor transitions
+    OppositeEdgeResult FindNearestOppositeEdge(EdgeType fromEdge, int cursorCoordinate, 
+                                                const MonitorEdge& sourceEdge) const;
+    
+    // Calculate projected position for cursor in non-overlapping region
+    // Returns the coordinate on the destination edge using offset-from-boundary approach
+    int CalculateProjectedPosition(int cursorCoordinate, const MonitorEdge& sourceEdge, 
+                                   const MonitorEdge& targetEdge) const;
 
     // Calculate relative position along an edge (0.0 to 1.0)
     double GetRelativePosition(const MonitorEdge& edge, int coordinate) const;
 
     // Convert relative position to absolute coordinate on target edge
     int GetAbsolutePosition(const MonitorEdge& edge, double relativePosition) const;
+    
+    // Prioritize edge candidates based on cursor movement direction
+    EdgeType PrioritizeEdgeByDirection(const std::vector<EdgeType>& candidates, 
+                                       const CursorDirection* direction) const;
 };

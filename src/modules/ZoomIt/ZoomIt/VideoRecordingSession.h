@@ -28,6 +28,7 @@ public:
         uint32_t frameRate,
         bool captureAudio,
         bool captureSystemAudio,
+        bool micMonoMix,
         winrt::Streams::IRandomAccessStream const& stream);
     ~VideoRecordingSession();
 
@@ -131,6 +132,7 @@ public:
         bool isDragging{ false };
         int lastPlayheadX{ -1 }; // Track last playhead pixel position for efficient invalidation
         MMRESULT mmTimerId{ 0 }; // Multimedia timer for smooth MP4 playback
+        bool standaloneMode{ false }; // When true, OK becomes "Save As" and handles file saving directly
 
         // Helper to convert time to pixel position
         int TimeToPixel(winrt::Windows::Foundation::TimeSpan time, int timelineWidth) const
@@ -161,7 +163,8 @@ public:
         HWND hParent,
         const std::wstring& videoPath,
         winrt::Windows::Foundation::TimeSpan& trimStart,
-        winrt::Windows::Foundation::TimeSpan& trimEnd);
+        winrt::Windows::Foundation::TimeSpan& trimEnd,
+        bool standaloneMode = false);
 
 private:
     static INT_PTR CALLBACK TrimDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
@@ -178,7 +181,8 @@ private:
         HWND hParent,
         const std::wstring& videoPath,
         winrt::Windows::Foundation::TimeSpan& trimStart,
-        winrt::Windows::Foundation::TimeSpan& trimEnd);
+        winrt::Windows::Foundation::TimeSpan& trimEnd,
+        bool standaloneMode = false);
 
 private:
     VideoRecordingSession(
@@ -188,6 +192,7 @@ private:
         uint32_t frameRate,
         bool captureAudio,
         bool captureSystemAudio,
+        bool micMonoMix,
         winrt::Streams::IRandomAccessStream const& stream);
     void CloseInternal();
 

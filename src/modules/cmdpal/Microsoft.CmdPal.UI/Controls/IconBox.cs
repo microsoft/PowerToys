@@ -16,11 +16,11 @@ namespace Microsoft.CmdPal.UI.Controls;
 /// </summary>
 public partial class IconBox : ContentControl
 {
+    private const double DefaultIconFontSize = 16.0;
+
     private double _lastScale;
     private ElementTheme _lastTheme;
     private double _lastFontSize;
-
-    private const double DefaultIconFontSize = 16.0;
 
     /// <summary>
     /// Gets or sets the <see cref="IconSource"/> to display within the <see cref="IconBox"/>. Overwritten, if <see cref="SourceKey"/> is used instead.
@@ -62,6 +62,12 @@ public partial class IconBox : ContentControl
             {
                 Refresh();
             }
+#if DEBUG
+            if (_sourceRequested?.GetInvocationList().Length > 1)
+            {
+                Logger.LogWarning("There shouldn't be more than one handler for IconBox.SourceRequested");
+            }
+#endif
         }
         remove => _sourceRequested -= value;
     }
@@ -102,8 +108,11 @@ public partial class IconBox : ContentControl
         if (Source is FontIconSource fontIcon)
         {
             fontIcon.FontSize = _lastFontSize;
+            UpdatePaddingForFontIcon();
         }
     }
+
+    private void UpdatePaddingForFontIcon() => Padding = new Thickness(Math.Round(_lastFontSize * -0.2));
 
     private void OnActualThemeChanged(FrameworkElement sender, object args)
     {
@@ -126,6 +135,8 @@ public partial class IconBox : ContentControl
             _lastScale = XamlRoot.RasterizationScale;
             XamlRoot.Changed += OnXamlRootChanged;
         }
+
+        Refresh();
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -140,20 +151,20 @@ public partial class IconBox : ContentControl
     {
         var newScale = sender.RasterizationScale;
         var changedLastTheme = _lastTheme != ActualTheme;
+        var changedScale = Math.Abs(newScale - _lastScale) > 0.01;
+
+        _lastScale = newScale;
         _lastTheme = ActualTheme;
-        if ((changedLastTheme || Math.Abs(newScale - _lastScale) > 0.01) && SourceKey is not null)
+
+        if ((changedLastTheme || changedScale) && SourceKey is not null)
         {
-            _lastScale = newScale;
             UpdateSourceKey(this, SourceKey);
         }
     }
 
     private void Refresh()
     {
-        if (SourceKey is not null)
-        {
-            UpdateSourceKey(this, SourceKey);
-        }
+        UpdateSourceKey(this, SourceKey);
     }
 
     private static void OnSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -170,27 +181,18 @@ public partial class IconBox : ContentControl
                 self.Padding = default;
                 break;
             case FontIconSource fontIcon:
+                self.UpdateLastFontSize();
+                fontIcon.FontSize = self._lastFontSize;
                 if (self.Content is IconSourceElement iconSourceElement)
                 {
                     iconSourceElement.IconSource = fontIcon;
                 }
                 else
                 {
-                    fontIcon.FontSize = self._lastFontSize;
-
-                    // For inexplicable reasons, FontIconSource.CreateIconElement
-                    // doesn't work, so do it ourselves
-                    // TODO: File platform bug?
-                    IconSourceElement elem = new()
-                    {
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        IconSource = fontIcon,
-                    };
-                    self.Content = elem;
+                    self.Content = fontIcon.CreateIconElement();
                 }
 
-                self.Padding = new Thickness(Math.Round(self._lastFontSize * -0.2));
+                self.UpdatePaddingForFontIcon();
 
                 break;
             case BitmapIconSource bitmapIcon:
@@ -206,10 +208,12 @@ public partial class IconBox : ContentControl
                 self.Padding = default;
 
                 break;
+
             case IconSource source:
                 self.Content = source.CreateIconElement();
                 self.Padding = default;
                 break;
+
             default:
                 throw new InvalidOperationException($"New value of {e.NewValue} is not of type IconSource.");
         }
@@ -233,10 +237,10 @@ public partial class IconBox : ContentControl
             return;
         }
 
-        Callback(iconBox, sourceKey);
+        RequestIconFromSource(iconBox, sourceKey);
     }
 
-    private static async void Callback(IconBox iconBox, object? sourceKey)
+    private static async void RequestIconFromSource(IconBox iconBox, object? sourceKey)
     {
         try
         {
@@ -247,7 +251,11 @@ public partial class IconBox : ContentControl
                 return;
             }
 
-            var eventArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, iconBox._lastScale);
+            var scale = iconBox._lastScale > 0
+                ? iconBox._lastScale
+                : (iconBox.XamlRoot?.RasterizationScale > 0 ? iconBox.XamlRoot.RasterizationScale : 1.0);
+
+            var eventArgs = new SourceRequestedEventArgs(sourceKey, iconBox._lastTheme, scale);
             await iconBoxSourceRequestedHandler.InvokeAsync(iconBox, eventArgs);
 
             // After the await:
@@ -256,14 +264,9 @@ public partial class IconBox : ContentControl
             // list virtualization situation, it's very possible we
             // may have already been set to a new icon before we
             // even got back from the await.
-            if (eventArgs.Key != sourceKey)
+            if (!ReferenceEquals(sourceKey, iconBox.SourceKey))
             {
                 // If the requested icon has changed, then just bail
-                return;
-            }
-
-            if (eventArgs.Value == iconBox.Source)
-            {
                 return;
             }
 

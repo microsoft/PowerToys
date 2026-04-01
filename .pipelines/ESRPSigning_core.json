@@ -18,6 +18,7 @@
             "StylesReportTool\\PowerToys.StylesReportTool.exe",
 
             "CalculatorEngineCommon.dll",
+            "PowerToys.Common.UI.Controls.dll",
             "PowerToys.ManagedTelemetry.dll",
             "PowerToys.ManagedCommon.dll",
             "PowerToys.ManagedCsWin32.dll",
@@ -105,7 +106,13 @@
             "PowerToys.SvgThumbnailProvider.dll",
             "PowerToys.SvgThumbnailProvider.exe",
             "PowerToys.SvgThumbnailProviderCpp.dll",
+            "PowerToys.KeyboardManager.dll",
 
+            "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
+            "WinUI3Apps\\PowerToys.KeyboardManagerEditorUI.exe",
+            "WinUI3Apps\\PowerToys.KeyboardManagerEditorUI.dll",
+            "KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe",
+            "PowerToys.KeyboardManagerEditorLibraryWrapper.dll",
             "WinUI3Apps\\PowerToys.HostsModuleInterface.dll",
             "WinUI3Apps\\PowerToys.HostsUILib.dll",
             "WinUI3Apps\\PowerToys.Hosts.dll",
@@ -134,13 +141,13 @@
             "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",
             "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
 
-            "PowerToys.ImageResizer.exe",
-            "PowerToys.ImageResizer.dll",
+            "WinUI3Apps\\PowerToys.ImageResizer.exe",
+            "WinUI3Apps\\PowerToys.ImageResizer.dll",
             "WinUI3Apps\\PowerToys.ImageResizerCLI.exe",
             "WinUI3Apps\\PowerToys.ImageResizerCLI.dll",
-            "PowerToys.ImageResizerExt.dll",
-            "PowerToys.ImageResizerContextMenu.dll",
-            "ImageResizerContextMenuPackage.msix",
+            "WinUI3Apps\\PowerToys.ImageResizerExt.dll",
+            "WinUI3Apps\\PowerToys.ImageResizerContextMenu.dll",
+            "WinUI3Apps\\ImageResizerContextMenuPackage.msix",
 
             "PowerToys.LightSwitchModuleInterface.dll",
             "LightSwitchService\\PowerToys.LightSwitchService.exe",
@@ -210,9 +217,6 @@
             "PowerToys.PowerAccentModuleInterface.dll",
             "PowerToys.PowerAccentKeyboardService.dll",
 
-            "PowerToys.PowerDisplayModuleInterface.dll",
-            "WinUI3Apps\\PowerToys.PowerDisplay.dll",
-            "WinUI3Apps\\PowerToys.PowerDisplay.exe",
             "PowerDisplay.Lib.dll",
 
             "WinUI3Apps\\PowerToys.PowerRenameExt.dll",

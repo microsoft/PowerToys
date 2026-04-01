@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -74,10 +75,10 @@
                                 ContentAlignment="Left"
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsAutoDownloadUpdatesCardEnabled}"
                                 Visibility="{x:Bind ViewModel.IsAdmin, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_AutoDownloadAndInstallUpdates" IsChecked="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralPage_AutoDownloadAndInstallUpdates" IsChecked="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowNewUpdatesToastNotificationCardEnabled}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowNewUpdatesToast" IsChecked="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowNewUpdatesToast" IsChecked="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowWhatsNewAfterUpdatesCardEnabled}">
                                 <CheckBox x:Uid="GeneralPage_ShowWhatsNewAfterUpdates" IsChecked="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
@@ -223,7 +224,7 @@
                             IsEnabled="{Binding IsAdminButtonEnabled}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsElevated, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsChecked="{x:Bind ViewModel.RunElevated, Mode=TwoWay}" />
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsChecked="{x:Bind ViewModel.RunElevated, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="GeneralPage_WarningsElevatedApps" IsChecked="{Binding Mode=TwoWay, Path=EnableWarningsElevatedApps}" />
@@ -483,9 +484,9 @@
                                             Style="{StaticResource SecondaryTextStyle}"
                                             TextWrapping="WrapWholeWords" />
                                         <HyperlinkButton
+                                            x:Uid="GeneralPage_ViewDiagnosticDataButton"
                                             Margin="0,2,0,0"
                                             Click="ViewDiagnosticData_Click"
-                                            Content="View diagnostic data"
                                             FontWeight="SemiBold" />
                                     </StackPanel>
                                 </tkcontrols:SettingsCard.Description>
@@ -506,22 +507,30 @@
                             </InfoBar>
                         </tkcontrols:SettingsExpander.ItemsFooter>
                     </tkcontrols:SettingsExpander>
-                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}">
-                        <tkcontrols:SettingsCard x:Uid="GeneralPage_ReportBugPackage" HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}">
-                            <StackPanel Orientation="Horizontal">
-                                <Button
-                                    x:Uid="GeneralPageReportBugPackage"
-                                    Click="BugReportToolClicked"
-                                    Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
-                                <ProgressRing
-                                    Width="24"
-                                    Height="24"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Center"
-                                    Visibility="{x:Bind ViewModel.IsBugReportRunning, Mode=OneWay}" />
-                            </StackPanel>
-                        </tkcontrols:SettingsCard>
-                    </controls:GPOInfoControl>
+                    <InfoBar
+                        x:Uid="GPO_SettingIsManaged"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
+                    <tkcontrols:SettingsCard x:Uid="GeneralPage_ReportBugPackage" HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}">
+                        <StackPanel Orientation="Horizontal">
+                            <Button
+                                x:Uid="GeneralPageReportBugPackage"
+                                Click="BugReportToolClicked"
+                                Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
+                            <ProgressRing
+                                Width="24"
+                                Height="24"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Visibility="{x:Bind ViewModel.IsBugReportRunning, Mode=OneWay}" />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
 

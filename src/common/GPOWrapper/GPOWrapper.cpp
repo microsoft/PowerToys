@@ -296,4 +296,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredRunAtStartupValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusHideBuiltInNewContextMenuValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusHideBuiltInNewContextMenuValue());
+    }
 }

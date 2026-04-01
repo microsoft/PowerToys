@@ -18,7 +18,7 @@ internal sealed class ImageResizerModuleCommandProvider : ModuleCommandProvider
         var title = SettingsWindow.ImageResizer.ModuleDisplayName();
         var icon = SettingsWindow.ImageResizer.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.ImageResizer, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.ImageResizer, title) { Id = "com.microsoft.powertoys.imageResizer.openSettings" })
         {
             Title = title,
             Subtitle = Resources.ImageResizer_Settings_Subtitle,

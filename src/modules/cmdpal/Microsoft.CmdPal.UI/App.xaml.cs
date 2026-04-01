@@ -3,15 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
+using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.RemoteDesktop;
 using Microsoft.CmdPal.Ext.Shell;
@@ -27,6 +28,7 @@ using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -67,13 +69,15 @@ public partial class App : Application, IDisposable
     /// </summary>
     public App()
     {
+        var appInfoService = new ApplicationInfoService();
+
 #if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
-        _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default);
+        _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default, appInfoService);
 #endif
 
-        Services = ConfigureServices();
+        Services = ConfigureServices(appInfoService);
 
-        IconCacheProvider.Initialize(Services);
+        IconProvider.Initialize(Services);
 
         this.InitializeComponent();
 
@@ -92,6 +96,9 @@ public partial class App : Application, IDisposable
         // This way, log statements from the core project will be captured by the PT logs
         var logWrapper = new LogWrapper();
         CoreLogger.InitializeLogger(logWrapper);
+
+        // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
+        appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
     }
 
     /// <summary>
@@ -109,7 +116,7 @@ public partial class App : Application, IDisposable
     /// <summary>
     /// Configures the services for the application
     /// </summary>
-    private static ServiceProvider ConfigureServices()
+    private static ServiceProvider ConfigureServices(IApplicationInfoService appInfoService)
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
@@ -118,17 +125,19 @@ public partial class App : Application, IDisposable
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-        AddBuiltInCommands(services);
+        AddBuiltInCommands(services, appInfoService.ConfigDirectory);
 
-        AddCoreServices(services);
+        AddCoreServices(services, appInfoService);
 
         AddUIServices(services, dispatcherQueue);
 
         return services.BuildServiceProvider();
     }
 
-    private static void AddBuiltInCommands(ServiceCollection services)
+    private static void AddBuiltInCommands(ServiceCollection services, string configDirectory)
     {
+        var providerLoadGuard = new ProviderLoadGuard(configDirectory);
+
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
         var files = new IndexerCommandsProvider();
@@ -159,8 +168,7 @@ public partial class App : Application, IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError("Couldn't load winget");
-            Logger.LogError(ex.ToString());
+            Logger.LogError("Couldn't load winget", ex);
         }
 
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
@@ -171,15 +179,45 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
+
+        var performanceMonitorSoftDisabled = providerLoadGuard.IsProviderDisabled(PerformanceMonitorCommandsProvider.ProviderIdValue);
+        if (performanceMonitorSoftDisabled)
+        {
+            Logger.LogWarning("Performance monitor is temporarily disabled after repeated crashes. Loading placeholder pages instead of activating performance counters.");
+        }
+
+        if (!performanceMonitorSoftDisabled)
+        {
+            providerLoadGuard.Enter(PerformanceMonitorCommandsProvider.ProviderLoadGuardBlockId, PerformanceMonitorCommandsProvider.ProviderIdValue);
+        }
+
+        try
+        {
+            var performanceMonitor = new PerformanceMonitorCommandsProvider(performanceMonitorSoftDisabled);
+            services.AddSingleton<ICommandProvider>(performanceMonitor);
+
+            if (!performanceMonitorSoftDisabled)
+            {
+                providerLoadGuard.Exit(PerformanceMonitorCommandsProvider.ProviderLoadGuardBlockId);
+            }
+        }
+        catch (Exception ex)
+        {
+            if (!performanceMonitorSoftDisabled)
+            {
+                providerLoadGuard.Exit(PerformanceMonitorCommandsProvider.ProviderLoadGuardBlockId);
+            }
+
+            Logger.LogError("Couldn't load performance monitor", ex);
+        }
     }
 
     private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
     {
-        // Models
-        var sm = SettingsModel.LoadSettings();
-        services.AddSingleton(sm);
-        var state = AppStateModel.LoadState();
-        services.AddSingleton(state);
+        // Models & persistence services
+        services.AddSingleton<IPersistenceService, PersistenceService>();
+        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<IAppStateService, AppStateService>();
 
         // Services
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
@@ -196,9 +234,11 @@ public partial class App : Application, IDisposable
         services.AddIconServices(dispatcherQueue);
     }
 
-    private static void AddCoreServices(ServiceCollection services)
+    private static void AddCoreServices(ServiceCollection services, IApplicationInfoService appInfoService)
     {
         // Core services
+        services.AddSingleton(appInfoService);
+
         services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
@@ -206,8 +246,13 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
 
+        services.AddSingleton<IFuzzyMatcherProvider, FuzzyMatcherProvider>(
+            _ => new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions(), new PinyinFuzzyMatcherOptions()));
+
         // ViewModels
         services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<DockViewModel>();
+        services.AddSingleton<IContextMenuFactory, CommandPaletteContextMenuFactory>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
     }
 

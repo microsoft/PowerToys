@@ -2,49 +2,56 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.Common.Services;
+using System.Collections.Immutable;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 
 namespace Microsoft.CmdPal.UI;
 
 internal sealed class RunHistoryService : IRunHistoryService
 {
-    private readonly AppStateModel _appStateModel;
+    private readonly IAppStateService _appStateService;
 
-    public RunHistoryService(AppStateModel appStateModel)
+    public RunHistoryService(IAppStateService appStateService)
     {
-        _appStateModel = appStateModel;
+        _appStateService = appStateService;
     }
 
     public IReadOnlyList<string> GetRunHistory()
     {
-        if (_appStateModel.RunHistory.Count == 0)
+        if (_appStateService.State.RunHistory.IsEmpty)
         {
             var history = Microsoft.Terminal.UI.RunHistory.CreateRunHistory();
-            _appStateModel.RunHistory.AddRange(history);
+            _appStateService.UpdateState(state => state with
+            {
+                RunHistory = history.ToImmutableList(),
+            });
         }
 
-        return _appStateModel.RunHistory;
+        return _appStateService.State.RunHistory;
     }
 
     public void ClearRunHistory()
     {
-        _appStateModel.RunHistory.Clear();
+        _appStateService.UpdateState(state => state with
+        {
+            RunHistory = ImmutableList<string>.Empty,
+        });
     }
 
     public void AddRunHistoryItem(string item)
     {
-        // insert at the beginning of the list
         if (string.IsNullOrWhiteSpace(item))
         {
-            return; // Do not add empty or whitespace items
+            return;
         }
 
-        _appStateModel.RunHistory.Remove(item);
-
-        // Add the item to the front of the history
-        _appStateModel.RunHistory.Insert(0, item);
-
-        AppStateModel.SaveState(_appStateModel);
+        _appStateService.UpdateState(state => state with
+        {
+            RunHistory = state.RunHistory
+                .Remove(item)
+                .Insert(0, item),
+        });
     }
 }

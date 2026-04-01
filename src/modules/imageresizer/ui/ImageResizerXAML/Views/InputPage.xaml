@@ -1,0 +1,346 @@
+﻿<!--  Copyright (c) Microsoft Corporation. All rights reserved.  -->
+<!--  Licensed under the MIT License.  -->
+<Page
+    x:Class="ImageResizer.Views.InputPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:ImageResizer.Views"
+    xmlns:m="using:ImageResizer.Models"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Top"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <!--  Template for normal ResizeSize presets (Small, Medium, Large, Phone)  -->
+        <DataTemplate x:Key="ResizeSizeTemplate" x:DataType="m:ResizeSize">
+            <Grid VerticalAlignment="Center" AutomationProperties.Name="{x:Bind Name}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind Width, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="&#xD7;"
+                        Visibility="{x:Bind ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock
+                        Margin="4,0,0,0"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
+                        Visibility="{x:Bind ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock Margin="4,0,0,0" Text="{x:Bind Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <!--  Template for CustomSize - shows only name  -->
+        <DataTemplate x:Key="CustomSizeTemplate" x:DataType="m:CustomSize">
+            <Grid VerticalAlignment="Center" AutomationProperties.Name="{x:Bind Name}">
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
+            </Grid>
+        </DataTemplate>
+
+        <!--  Template for AiSize - shows name and description  -->
+        <DataTemplate x:Key="AiSizeTemplate" x:DataType="m:AiSize">
+            <StackPanel
+                VerticalAlignment="Center"
+                AutomationProperties.Name="{x:Bind Name}"
+                Orientation="Vertical">
+                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
+                <TextBlock x:Uid="Input_AiSuperResolutionDescription" />
+            </StackPanel>
+        </DataTemplate>
+
+        <!--  DataTemplateSelector to choose the right template based on item type  -->
+        <local:SizeDataTemplateSelector
+            x:Key="SizeTemplateSelector"
+            AiSizeTemplate="{StaticResource AiSizeTemplate}"
+            CustomSizeTemplate="{StaticResource CustomSizeTemplate}"
+            ResizeSizeTemplate="{StaticResource ResizeSizeTemplate}" />
+    </Page.Resources>
+
+    <Grid VerticalAlignment="Top">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="16">
+            <ComboBox
+                x:Name="SizeComboBox"
+                MinHeight="64"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                ItemTemplateSelector="{StaticResource SizeTemplateSelector}"
+                ItemsSource="{x:Bind ViewModel.Settings.AllSizes, Mode=OneWay}"
+                SelectedIndex="{x:Bind ViewModel.Settings.SelectedSizeIndex, Mode=TwoWay}" />
+        </StackPanel>
+
+        <!--  Content area with gray background (AI/Custom panels + checkboxes)  -->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border
+                Grid.RowSpan="2"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,1" />
+
+            <!--  AI Configuration Panel  -->
+            <Grid
+                Grid.Row="0"
+                Margin="16,16,16,8"
+                Visibility="{x:Bind ViewModel.ShowAiConfigurationSection, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <!--  AI Model Download Prompt  -->
+                <StackPanel Visibility="{x:Bind ViewModel.ShowModelDownloadPrompt, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <InfoBar
+                        IsClosable="False"
+                        IsOpen="True"
+                        Message="{x:Bind ViewModel.ModelStatusMessage, Mode=OneWay}"
+                        Severity="Informational" />
+
+                    <Button
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Stretch"
+                        Command="{x:Bind ViewModel.DownloadModelCommand}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Visibility="{x:Bind ViewModel.IsDownloadingModel, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
+                        <TextBlock x:Uid="Input_AiModelDownloadButton" />
+                    </Button>
+
+                    <StackPanel Margin="0,8,0,0" Visibility="{x:Bind ViewModel.IsDownloadingModel, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ProgressBar IsIndeterminate="True" />
+                        <TextBlock
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Center"
+                            Text="{x:Bind ViewModel.ModelStatusMessage, Mode=OneWay}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!--  AI Scale Controls  -->
+                <StackPanel Visibility="{x:Bind ViewModel.ShowAiControls, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid>
+                        <TextBlock x:Uid="Input_AiCurrentLabel" />
+                        <TextBlock HorizontalAlignment="Right" Text="{x:Bind ViewModel.AiScaleDisplay, Mode=OneWay}" />
+                    </Grid>
+
+                    <Slider
+                        Margin="0,8,0,0"
+                        Maximum="8"
+                        Minimum="1"
+                        TickFrequency="1"
+                        TickPlacement="BottomRight"
+                        Value="{x:Bind ViewModel.AiSuperResolutionScale, Mode=TwoWay}" />
+
+                    <StackPanel Margin="0,16,0,0" Visibility="{x:Bind ViewModel.ShowAiSizeDescriptions, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid>
+                            <TextBlock x:Uid="Input_AiCurrentLabel" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{x:Bind ViewModel.CurrentResolutionDescription, Mode=OneWay}" />
+                        </Grid>
+                        <Grid Margin="0,8,0,0">
+                            <TextBlock x:Uid="Input_AiNewLabel" />
+                            <TextBlock HorizontalAlignment="Right" Text="{x:Bind ViewModel.NewResolutionDescription, Mode=OneWay}" />
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!--  Custom input matrix  -->
+            <Grid
+                Grid.Row="0"
+                Margin="16,16,16,8"
+                ColumnSpacing="8"
+                RowSpacing="8"
+                Visibility="{x:Bind ViewModel.IsCustomSizeSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <FontIcon
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    AutomationProperties.Name="Width"
+                    FontSize="16"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xE799;" />
+                <NumberBox
+                    x:Name="WidthNumberBox"
+                    Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    KeyDown="NumberBox_KeyDown"
+                    Minimum="0"
+                    SpinButtonPlacementMode="Inline"
+                    Value="{x:Bind ViewModel.Settings.CustomSize.Width, Mode=TwoWay}" />
+
+                <FontIcon
+                    Grid.Column="2"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    AutomationProperties.Name="Height"
+                    FontSize="16"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xE799;"
+                    RenderTransformOrigin="0.5,0.5"
+                    Visibility="{x:Bind ViewModel.Settings.CustomSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <FontIcon.RenderTransform>
+                        <RotateTransform Angle="90" />
+                    </FontIcon.RenderTransform>
+                </FontIcon>
+                <NumberBox
+                    x:Name="HeightNumberBox"
+                    Grid.Column="3"
+                    HorizontalAlignment="Stretch"
+                    KeyDown="NumberBox_KeyDown"
+                    Minimum="0"
+                    SpinButtonPlacementMode="Inline"
+                    Visibility="{x:Bind ViewModel.Settings.CustomSize.ShowHeight, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Value="{x:Bind ViewModel.Settings.CustomSize.Height, Mode=TwoWay}" />
+                <FontIcon
+                    Grid.Row="1"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    FontSize="16"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xE7A8;" />
+                <ComboBox
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    ItemsSource="{x:Bind ViewModel.ResizeFitValues, Mode=OneWay}"
+                    SelectedIndex="{x:Bind ViewModel.Settings.CustomSize.Fit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="m:ResizeFit">
+                            <TextBlock Padding="2,0" Text="{x:Bind Converter={StaticResource EnumValueConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <FontIcon
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    FontSize="16"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xECC6;" />
+                <ComboBox
+                    Grid.Row="1"
+                    Grid.Column="3"
+                    HorizontalAlignment="Stretch"
+                    ItemsSource="{x:Bind ViewModel.ResizeUnitValues, Mode=OneWay}"
+                    SelectedIndex="{x:Bind ViewModel.Settings.CustomSize.Unit, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="m:ResizeUnit">
+                            <TextBlock Padding="2,0" Text="{x:Bind Converter={StaticResource EnumValueConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+
+            <!--  CheckBoxes  -->
+            <StackPanel
+                Grid.Row="1"
+                Margin="16,8,16,16"
+                Orientation="Vertical">
+                <CheckBox IsChecked="{x:Bind ViewModel.Settings.ShrinkOnly, Mode=TwoWay}">
+                    <TextBlock x:Uid="Input_ShrinkOnly" TextWrapping="Wrap" />
+                </CheckBox>
+
+                <CheckBox IsChecked="{x:Bind ViewModel.Settings.IgnoreOrientation, Mode=TwoWay}">
+                    <TextBlock x:Uid="Input_IgnoreOrientation" TextWrapping="Wrap" />
+                </CheckBox>
+
+                <CheckBox IsChecked="{x:Bind ViewModel.Settings.Replace, Mode=TwoWay}">
+                    <TextBlock x:Uid="Input_Replace" TextWrapping="Wrap" />
+                </CheckBox>
+
+                <CheckBox IsChecked="{x:Bind ViewModel.Settings.RemoveMetadata, Mode=TwoWay}">
+                    <TextBlock x:Uid="Input_RemoveMetadata" TextWrapping="Wrap" />
+                </CheckBox>
+            </StackPanel>
+
+        </Grid>
+
+        <!--  GIF warning (outside gray area)  -->
+        <InfoBar
+            x:Uid="Input_GifWarning"
+            Grid.Row="2"
+            Margin="16,8,16,0"
+            IsClosable="False"
+            IsOpen="True"
+            Severity="Warning"
+            Visibility="{x:Bind ViewModel.HasGifFiles, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+        <!--  Buttons (outside gray area)  -->
+        <Grid Grid.Row="3" Margin="8,16,16,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Button
+                x:Uid="Open_settings_button"
+                Padding="8"
+                Command="{x:Bind ViewModel.OpenSettingsCommand}"
+                Style="{StaticResource SubtleButtonStyle}">
+                <FontIcon FontSize="16" Glyph="&#xE713;" />
+                <ToolTipService.ToolTip>
+                    <TextBlock x:Uid="Open_settings" />
+                </ToolTipService.ToolTip>
+            </Button>
+
+            <Button
+                Grid.Column="1"
+                MinWidth="{StaticResource ButtonMinWidth}"
+                Command="{x:Bind ViewModel.ResizeCommand}"
+                Style="{StaticResource AccentButtonStyle}">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Enter" Invoked="ResizeAccelerator_Invoked" />
+                </Button.KeyboardAccelerators>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon FontSize="14" Glyph="&#xE740;" />
+                    <TextBlock x:Uid="Input_Resize" />
+                </StackPanel>
+            </Button>
+
+            <Button
+                Grid.Column="2"
+                MinWidth="{StaticResource ButtonMinWidth}"
+                Margin="8,0,0,0"
+                Command="{x:Bind ViewModel.CancelCommand}">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Escape" />
+                </Button.KeyboardAccelerators>
+                <TextBlock x:Uid="Cancel" />
+            </Button>
+        </Grid>
+    </Grid>
+</Page>

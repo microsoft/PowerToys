@@ -4,16 +4,16 @@
     <Platform Name="x64" />
   </Configurations>
   <Folder Name="/common/">
-    <Project Path="src/common/AllExperiments/AllExperiments.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
     <Project Path="src/common/CalculatorEngineCommon/CalculatorEngineCommon.vcxproj" Id="2cf78cf7-8feb-4be1-9591-55fa25b48fc6" />
     <Project Path="src/common/Common.Search/Common.Search.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/common/Common.UI/Common.UI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/common/Common.UI.Controls/Common.UI.Controls.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -196,6 +196,10 @@
   <Folder Name="/modules/CommandPalette/">
     <Project Path="src/modules/cmdpal/CmdPalKeyboardService/CmdPalKeyboardService.vcxproj" Id="5f63c743-f6ce-4dba-a200-2b3f8a14e8c2" />
     <Project Path="src/modules/cmdpal/CmdPalModuleInterface/CmdPalModuleInterface.vcxproj" Id="0adeb797-c8c7-4ffa-acd5-2af6cad7ecd8" />
+    <Project Path="src/modules/cmdpal/Microsoft.CmdPal.Common/Microsoft.CmdPal.Common.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/modules/CommandPalette/Built-in Extensions/">
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Apps/Microsoft.CmdPal.Ext.Apps.csproj">
@@ -218,6 +222,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
+    </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PerformanceMonitor/Microsoft.CmdPal.Ext.PerformanceMonitor.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerToys/Microsoft.CmdPal.Ext.PowerToys.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -271,16 +279,6 @@
       <Deploy />
     </Project>
   </Folder>
-  <Folder Name="/modules/CommandPalette/Core/">
-    <Project Path="src/modules/cmdpal/Core/Microsoft.CmdPal.Core.Common/Microsoft.CmdPal.Core.Common.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/cmdpal/Core/Microsoft.CmdPal.Core.ViewModels/Microsoft.CmdPal.Core.ViewModels.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-  </Folder>
   <Folder Name="/modules/CommandPalette/Extension SDK/">
     <Project Path="src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions.Toolkit/Microsoft.CommandPalette.Extensions.Toolkit.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -301,7 +299,7 @@
     </Project>
   </Folder>
   <Folder Name="/modules/CommandPalette/Tests/">
-    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Core.Common.UnitTests/Microsoft.CmdPal.Core.Common.UnitTests.csproj">
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Common.UnitTests/Microsoft.CmdPal.Common.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -499,6 +497,31 @@
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEngine/KeyboardManagerEngine.vcxproj" Id="ba661f5b-1d5a-4ffc-9bf1-fc39df280bdd" />
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManagerEngineLibrary.vcxproj" Id="e496b7fc-1e99-4bab-849b-0e8367040b02" />
   </Folder>
+  <Folder Name="/modules/MouseUtils/">
+    <Project Path="src/modules/MouseUtils/CursorWrap/CursorWrap.vcxproj" Id="48a1db8c-5df8-4fb3-9e14-2b67f3f2d8b5" />
+    <Project Path="src/modules/MouseUtils/FindMyMouse/FindMyMouse.vcxproj" Id="e94fd11c-0591-456f-899f-efc0ca548336" />
+    <Project Path="src/modules/MouseUtils/MouseHighlighter/MouseHighlighter.vcxproj" Id="782a61be-9d85-4081-b35c-1ccc9dcc1e88" />
+    <Project Path="src/modules/MouseUtils/MouseJump.Common/MouseJump.Common.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseUtils/MouseJump/MouseJump.vcxproj" Id="8a08d663-4995-40e3-b42c-3f910625f284" />
+    <Project Path="src/modules/MouseUtils/MouseJumpUI/MouseJumpUI.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/MousePointerCrosshairs.vcxproj" Id="eae14c0e-7a6b-45da-9080-a7d8c077ba6e" />
+  </Folder>
+  <Folder Name="/modules/MouseUtils/Tests/">
+    <Project Path="src/modules/MouseUtils/MouseJump.Common.UnitTests/MouseJump.Common.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/modules/keyboardmanager/Tests/">
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorTest/KeyboardManagerEditorTest.vcxproj" Id="62173d9a-6724-4c00-a1c8-fb646480a9ec" />
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEngineTest/KeyboardManagerEngineTest.vcxproj" Id="7f4b3a60-bc27-45a7-8000-68b0b6ea7466" />
@@ -690,11 +713,13 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <!-- TEMPORARILY_DISABLED: PowerDisplay
     <Project Path="src/modules/powerdisplay/PowerDisplay/PowerDisplay.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/powerdisplay/PowerDisplayModuleInterface/PowerDisplayModuleInterface.vcxproj" Id="d1234567-8901-2345-6789-abcdef012345" />
+    -->
   </Folder>
   <Folder Name="/modules/PowerDisplay/Tests/">
     <Project Path="src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/PowerDisplay.Lib.UnitTests.csproj">
@@ -1028,7 +1053,10 @@
     <File Path="src/modules/Workspaces/workspaces-common/WindowUtils.h" />
   </Folder>
   <Folder Name="/modules/ZoomIt/">
-    <Project Path="src/modules/ZoomIt/ZoomIt/ZoomIt.vcxproj" Id="0a84f764-3a88-44cd-aa96-41bdbd48627b" />
+    <Project Path="src/modules/ZoomIt/ZoomIt/ZoomIt.vcxproj" Id="0a84f764-3a88-44cd-aa96-41bdbd48627b">
+      <BuildDependency Project="src/modules/ZoomIt/ZoomItBreak/ZoomItBreak.vcxproj" />
+    </Project>
+    <Project Path="src/modules/ZoomIt/ZoomItBreak/ZoomItBreak.vcxproj" Id="94ba3051-c8d7-454a-9d46-1a7c78e228a3" />
     <Project Path="src/modules/ZoomIt/ZoomItModuleInterface/ZoomItModuleInterface.vcxproj" Id="e4585179-2ac1-4d5f-a3ff-cfc5392f694c" />
     <Project Path="src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettingsInterop.vcxproj" Id="ca7d8106-30b9-4aec-9d05-b69b31b8c461" />
   </Folder>

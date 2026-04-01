@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using PowerDisplay.Common.Models;
 using SettingsUILibrary = Settings.UI.Library;
 using SettingsUILibraryHelpers = Settings.UI.Library.Helpers;
 
@@ -159,13 +158,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(PasteAIConfiguration))]
     [JsonSerializable(typeof(PasteAIProviderDefinition))]
     [JsonSerializable(typeof(System.Collections.ObjectModel.ObservableCollection<PasteAIProviderDefinition>))]
-
-    // PowerDisplay Profile Types (for AOT compatibility)
-    [JsonSerializable(typeof(PowerDisplayProfile))]
-    [JsonSerializable(typeof(List<PowerDisplayProfile>))]
-    [JsonSerializable(typeof(PowerDisplayProfiles))]
-    [JsonSerializable(typeof(ProfileMonitorSetting))]
-    [JsonSerializable(typeof(List<ProfileMonitorSetting>))]
 
     // IPC Send Message Wrapper Classes (Snd*)
     [JsonSerializable(typeof(SndAwakeSettings))]

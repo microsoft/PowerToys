@@ -291,4 +291,22 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::POWER_DISPLAY_TERMINATE_APP_MESSAGE;
     }
+    hstring Constants::MWBToggleEasyMouseEvent()
+    {
+        return CommonSharedConstants::MWB_TOGGLE_EASY_MOUSE_EVENT;
+    }
+    hstring Constants::MWBReconnectEvent()
+    {
+        return CommonSharedConstants::MWB_RECONNECT_EVENT;
+    }
+
+    hstring Constants::OpenNewKeyboardManagerEvent()
+    {
+        return CommonSharedConstants::OPEN_NEW_KEYBOARD_MANAGER_EVENT;
+    }
+    hstring Constants::KeyboardManagerEngineInstanceMutex()
+    {
+        return CommonSharedConstants::KEYBOARD_MANAGER_ENGINE_INSTANCE_MUTEX;
+    }
 }
+

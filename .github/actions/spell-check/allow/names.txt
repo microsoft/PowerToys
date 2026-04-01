@@ -192,6 +192,7 @@ ycv
 yeelam
 Yuniardi
 yuyoyuppe
+zadjii
 Zeol
 Zhao
 Zhaopeng
@@ -206,6 +207,7 @@ Bilibili
 BVID
 capturevideosample
 cmdow
+Contoso
 Controlz
 cortana
 devhints
@@ -221,6 +223,7 @@ Moq
 mozilla
 mspaint
 Newtonsoft
+NVIDIA
 onenote
 openai
 Quickime
@@ -228,6 +231,7 @@ regedit
 roslyn
 Skia
 Spotify
+taskmgr
 tldr
 Vanara
 wangyi
@@ -243,4 +247,3 @@ xamlstyler
 Xavalon
 Xbox
 Youdao
-zadjii
