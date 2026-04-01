@@ -267,6 +267,7 @@ namespace ColorPicker.UnitTests.Helpers
             var result = ColorFormatHelper.ConvertToOklchColor(Color.FromArgb(255, 255, 255, 255));
             Assert.AreEqual(1d, result.Lightness, 0.02);
             Assert.AreEqual(0d, result.Chroma, 0.02);
+
             // Hue is undefined for achromatic colors, so we don't assert it
         }
 
