@@ -238,6 +238,8 @@ configuration:
       - commentContains:
           pattern: '\/need-monitor-info'
           isRegex: True
+      - hasLabel:
+          label: Product-Cursor Wrap
       - or:
         - activitySenderHasAssociation:
             association: Owner
