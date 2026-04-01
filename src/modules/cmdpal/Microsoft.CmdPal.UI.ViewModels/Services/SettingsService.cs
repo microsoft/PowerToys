@@ -29,27 +29,38 @@ public sealed class SettingsService : ISettingsService
         _persistence = persistence;
         _appInfoService = appInfoService;
         _filePath = SettingsJsonPath();
-        Settings = _persistence.Load(_filePath, JsonSerializationContext.Default.SettingsModel);
+        _settings = _persistence.Load(_filePath, JsonSerializationContext.Default.SettingsModel);
         ApplyMigrations();
     }
 
+    private SettingsModel _settings;
+
     /// <inheritdoc/>
-    public SettingsModel Settings { get; private set; }
+    public SettingsModel Settings => Volatile.Read(ref _settings);
 
     /// <inheritdoc/>
     public event TypedEventHandler<ISettingsService, SettingsModel>? SettingsChanged;
 
     /// <inheritdoc/>
-    public void Save(bool hotReload = true)
-    {
-        _persistence.Save(
-            Settings,
-            _filePath,
-            JsonSerializationContext.Default.SettingsModel);
+    public void Save(bool hotReload = true) => UpdateSettings(s => s, hotReload);
 
+    /// <inheritdoc/>
+    public void UpdateSettings(Func<SettingsModel, SettingsModel> transform, bool hotReload = true)
+    {
+        SettingsModel snapshot;
+        SettingsModel updated;
+        do
+        {
+            snapshot = Volatile.Read(ref _settings);
+            updated = transform(snapshot);
+        }
+        while (Interlocked.CompareExchange(ref _settings, updated, snapshot) != snapshot);
+
+        var newSettings = Volatile.Read(ref _settings);
+        _persistence.Save(newSettings, _filePath, JsonSerializationContext.Default.SettingsModel);
         if (hotReload)
         {
-            SettingsChanged?.Invoke(this, Settings);
+            SettingsChanged?.Invoke(this, newSettings);
         }
     }
 
@@ -71,10 +82,10 @@ public sealed class SettingsService : ISettingsService
                 migratedAny |= TryMigrate(
                     "Migration #1: HotkeyGoesHome (bool) -> AutoGoHomeInterval (TimeSpan)",
                     root,
-                    Settings,
+                    ref _settings,
                     nameof(SettingsModel.AutoGoHomeInterval),
                     DeprecatedHotkeyGoesHomeKey,
-                    (model, goesHome) => model.AutoGoHomeInterval = goesHome ? TimeSpan.Zero : Timeout.InfiniteTimeSpan,
+                    (ref SettingsModel model, bool goesHome) => model = model with { AutoGoHomeInterval = goesHome ? TimeSpan.Zero : Timeout.InfiniteTimeSpan },
                     JsonSerializationContext.Default.Boolean);
             }
         }
@@ -89,13 +100,15 @@ public sealed class SettingsService : ISettingsService
         }
     }
 
+    private delegate void MigrationApply<T>(ref SettingsModel model, T value);
+
     private static bool TryMigrate<T>(
         string migrationName,
         JsonObject root,
-        SettingsModel model,
+        ref SettingsModel model,
         string newKey,
         string oldKey,
-        Action<SettingsModel, T> apply,
+        MigrationApply<T> apply,
         JsonTypeInfo<T> jsonTypeInfo)
     {
         try
@@ -108,7 +121,7 @@ public sealed class SettingsService : ISettingsService
             if (root.TryGetPropertyValue(oldKey, out var oldNode) && oldNode is not null)
             {
                 var value = oldNode.Deserialize(jsonTypeInfo);
-                apply(model, value!);
+                apply(ref model, value!);
                 return true;
             }
         }
