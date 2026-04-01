@@ -5,6 +5,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
+    <LangVersion>preview</LangVersion>
     <AssemblyName>PowerToys.Peek.UI</AssemblyName>
     <AssemblyTitle>PowerToys.Peek.UI</AssemblyTitle>
     <AssemblyDescription>PowerToys Peek UI</AssemblyDescription>

@@ -3,6 +3,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <LangVersion>preview</LangVersion>
     <OutputType>Library</OutputType>
     <RootNamespace>EnvironmentVariablesUILib</RootNamespace>
     <UseWinUI>true</UseWinUI>

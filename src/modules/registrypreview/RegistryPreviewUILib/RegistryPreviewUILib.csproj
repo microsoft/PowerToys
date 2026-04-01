@@ -4,6 +4,7 @@
   <Import Project="$(RepoRoot)src\Monaco.props" />
 
   <PropertyGroup>
+    <LangVersion>preview</LangVersion>
     <OutputType>Library</OutputType>
     <RootNamespace>RegistryPreviewUILib</RootNamespace>
     <UseWinUI>true</UseWinUI>

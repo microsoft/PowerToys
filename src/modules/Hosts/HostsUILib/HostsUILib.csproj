@@ -4,6 +4,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
+    <LangVersion>preview</LangVersion>
     <OutputType>Library</OutputType>
     <RootNamespace>HostsUILib</RootNamespace>
     <UseWinUI>true</UseWinUI>

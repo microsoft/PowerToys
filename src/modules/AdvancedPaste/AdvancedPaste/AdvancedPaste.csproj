@@ -4,6 +4,7 @@
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
   <PropertyGroup>
+    <LangVersion>preview</LangVersion>
     <OutputType>WinExe</OutputType>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <UseWinUI>true</UseWinUI>

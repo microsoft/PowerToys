@@ -3,6 +3,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <LangVersion>preview</LangVersion>
     <RootNamespace>Peek.FilePreviewer</RootNamespace>
     <UseWinUI>true</UseWinUI>
     <Nullable>enable</Nullable>
