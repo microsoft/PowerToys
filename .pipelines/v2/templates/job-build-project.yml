@@ -210,6 +210,9 @@ jobs:
       & '.pipelines/applyXamlStyling.ps1' -Passive
     displayName: Verify XAML formatting
 
+  - task: NuGetAuthenticate@1
+    displayName: Authenticate NuGet feeds for verification
+
   - pwsh: |-
       & '.pipelines/verifyNugetPackages.ps1' -solution '$(build.sourcesdirectory)\PowerToys.slnx'
     displayName: Verify Nuget package versions for PowerToys.slnx

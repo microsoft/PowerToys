@@ -16,6 +16,8 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 internal sealed partial class IconLoaderService : IIconLoaderService
 {
+    public static readonly Size NoResize = Size.Empty;
+
     private const DispatcherQueuePriority LoadingPriorityOnDispatcher = DispatcherQueuePriority.Low;
     private const int DefaultIconSize = 256;
     private const int MaxWorkerCount = 4;
@@ -214,11 +216,6 @@ internal sealed partial class IconLoaderService : IIconLoaderService
     private static IconSource? GetStringIconSource(string iconString, string? fontFamily, Size size)
     {
         var iconSize = (int)Math.Max(size.Width, size.Height);
-        if (iconSize == 0)
-        {
-            iconSize = DefaultIconSize;
-        }
-
         return IconPathConverter.IconSourceMUX(iconString, fontFamily, iconSize);
     }
 }

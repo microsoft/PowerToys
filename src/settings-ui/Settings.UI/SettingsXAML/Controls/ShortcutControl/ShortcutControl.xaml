@@ -9,6 +9,7 @@
     xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     x:Name="LayoutRoot"
+    MinWidth="{StaticResource SettingActionControlMinWidth}"
     d:DesignHeight="300"
     d:DesignWidth="400"
     mc:Ignorable="d">
@@ -45,6 +46,7 @@
                                 Content="{Binding}"
                                 CornerRadius="{StaticResource ControlCornerRadius}"
                                 IsTabStop="False"
+                                RenderKeyAsGlyph="True"
                                 State="{Binding ElementName=LayoutRoot, Path=KeyVisualShouldShowConflict, Mode=OneWay, Converter={StaticResource BoolToKeyVisualStateConverter}, ConverterParameter=Warning}"
                                 Style="{StaticResource AccentKeyVisualStyle}" />
                         </DataTemplate>

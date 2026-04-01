@@ -498,6 +498,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
                 ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
                 ModuleType.Hosts => GetModuleItemsHosts(),
+                ModuleType.KeyboardManager => GetModuleItemsKeyboardManager(),
                 ModuleType.LightSwitch => GetModuleItemsLightSwitch(),
                 ModuleType.MouseHighlighter => GetModuleItemsMouseHighlighter(),
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
@@ -520,7 +521,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<AlwaysOnTopSettings> moduleSettingsRepository = SettingsRepository<AlwaysOnTopSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_ActivationShortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_IncreaseOpacityShortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.IncreaseOpacityHotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_DecreaseOpacityShortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.DecreaseOpacityHotkey.Value.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -631,6 +634,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("Hosts_LaunchButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("Hosts_LaunchButtonControl/Description"), ButtonGlyph = "ms-appx:///Assets/Settings/Icons/Hosts.png", ButtonClickHandler = HostLaunchClicked },
             };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsKeyboardManager()
+        {
+            ISettingsRepository<KeyboardManagerSettings> moduleSettingsRepository = SettingsRepository<KeyboardManagerSettings>.GetInstance(SettingsUtils.Default);
+            var settings = moduleSettingsRepository.SettingsConfig;
+            var list = new List<DashboardModuleItem>();
+
+            if (settings.Properties.UseNewEditor)
+            {
+                list.Add(new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Dashboard_KeyboardManager_OpenEditor"), Shortcut = settings.Properties.EditorShortcut.GetKeysList() });
+            }
+
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 

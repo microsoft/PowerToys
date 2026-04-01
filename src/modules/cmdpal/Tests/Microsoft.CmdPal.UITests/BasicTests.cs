@@ -124,6 +124,6 @@ public class BasicTests : CommandPaletteTestBase
 
         SetSearchBox("Sleep");
 
-        Assert.IsNotNull(this.Find<NavigationViewItem>("Sleep"));
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Put computer to sleep"));
     }
 }

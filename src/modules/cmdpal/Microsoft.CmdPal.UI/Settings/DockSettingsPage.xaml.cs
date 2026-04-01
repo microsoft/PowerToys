@@ -28,11 +28,11 @@ public sealed partial class DockSettingsPage : Page
     {
         this.InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
 
-        ViewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
 
         // Initialize UI state
         InitializeSettings();
@@ -178,7 +178,7 @@ public sealed partial class DockSettingsPage : Page
 
         var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
 
-        foreach (var item in tlcManager.DockBands)
+        foreach (var item in tlcManager.GetDockBandsSnapshot())
         {
             if (item.IsDockBand)
             {
@@ -195,9 +195,10 @@ public sealed partial class DockSettingsPage : Page
 
         // var allBands = GetAllBands();
         var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-        var settingsModel = App.Current.Services.GetService<SettingsModel>()!;
+        var settingsModel = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         var dockViewModel = App.Current.Services.GetService<DockViewModel>()!;
-        var allBands = tlcManager.DockBands;
+        var allBands = tlcManager.GetDockBandsSnapshot();
         foreach (var band in allBands)
         {
             var setting = band.DockBandSettings;
@@ -208,7 +209,7 @@ public sealed partial class DockSettingsPage : Page
                     dockSettingsModel: setting,
                     topLevelAdapter: band,
                     bandViewModel: bandVm,
-                    settingsModel: settingsModel
+                    settingsService: settingsService
                 ));
             }
         }

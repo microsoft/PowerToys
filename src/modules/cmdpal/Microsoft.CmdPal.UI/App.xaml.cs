@@ -77,7 +77,7 @@ public partial class App : Application, IDisposable
 
         Services = ConfigureServices(appInfoService);
 
-        IconCacheProvider.Initialize(Services);
+        IconProvider.Initialize(Services);
 
         this.InitializeComponent();
 
@@ -125,7 +125,7 @@ public partial class App : Application, IDisposable
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-        AddBuiltInCommands(services);
+        AddBuiltInCommands(services, appInfoService.ConfigDirectory);
 
         AddCoreServices(services, appInfoService);
 
@@ -134,8 +134,10 @@ public partial class App : Application, IDisposable
         return services.BuildServiceProvider();
     }
 
-    private static void AddBuiltInCommands(ServiceCollection services)
+    private static void AddBuiltInCommands(ServiceCollection services, string configDirectory)
     {
+        var providerLoadGuard = new ProviderLoadGuard(configDirectory);
+
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
         var files = new IndexerCommandsProvider();
@@ -166,8 +168,7 @@ public partial class App : Application, IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError("Couldn't load winget");
-            Logger.LogError(ex.ToString());
+            Logger.LogError("Couldn't load winget", ex);
         }
 
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
@@ -178,16 +179,45 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
-        services.AddSingleton<ICommandProvider, PerformanceMonitorCommandsProvider>();
+
+        var performanceMonitorSoftDisabled = providerLoadGuard.IsProviderDisabled(PerformanceMonitorCommandsProvider.ProviderIdValue);
+        if (performanceMonitorSoftDisabled)
+        {
+            Logger.LogWarning("Performance monitor is temporarily disabled after repeated crashes. Loading placeholder pages instead of activating performance counters.");
+        }
+
+        if (!performanceMonitorSoftDisabled)
+        {
+            providerLoadGuard.Enter(PerformanceMonitorCommandsProvider.ProviderLoadGuardBlockId, PerformanceMonitorCommandsProvider.ProviderIdValue);
+        }
+
+        try
+        {
+            var performanceMonitor = new PerformanceMonitorCommandsProvider(performanceMonitorSoftDisabled);
+            services.AddSingleton<ICommandProvider>(performanceMonitor);
+
+            if (!performanceMonitorSoftDisabled)
+            {
+                providerLoadGuard.Exit(PerformanceMonitorCommandsProvider.ProviderLoadGuardBlockId);
+            }
+        }
+        catch (Exception ex)
+        {
+            if (!performanceMonitorSoftDisabled)
+            {
+                providerLoadGuard.Exit(PerformanceMonitorCommandsProvider.ProviderLoadGuardBlockId);
+            }
+
+            Logger.LogError("Couldn't load performance monitor", ex);
+        }
     }
 
     private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
     {
-        // Models
-        var sm = SettingsModel.LoadSettings();
-        services.AddSingleton(sm);
-        var state = AppStateModel.LoadState();
-        services.AddSingleton(state);
+        // Models & persistence services
+        services.AddSingleton<IPersistenceService, PersistenceService>();
+        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<IAppStateService, AppStateService>();
 
         // Services
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
