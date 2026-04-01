@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -52,6 +52,8 @@ public sealed partial class CommandBar : UserControl,
                 return;
             }
 
+            ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
+
             _ = DispatcherQueue.TryEnqueue(
                 () =>
                 {
@@ -67,6 +69,13 @@ public sealed partial class CommandBar : UserControl,
         else
         {
             // This is invoked from a specific element
+            if (!(ContextControl.ViewModel.SelectedItem?.CanOpenContextMenu ?? false))
+            {
+                return;
+            }
+
+            ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
+
             _ = DispatcherQueue.TryEnqueue(
             () =>
             {

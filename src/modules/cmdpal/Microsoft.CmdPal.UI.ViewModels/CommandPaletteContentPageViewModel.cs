@@ -2,15 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class CommandPaletteContentPageViewModel : ContentPageViewModel
 {
-    public CommandPaletteContentPageViewModel(IContentPage model, TaskScheduler scheduler, AppExtensionHost host)
-        : base(model, scheduler, host)
+    public CommandPaletteContentPageViewModel(IContentPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext)
+        : base(model, scheduler, host, providerContext)
     {
     }
 
@@ -21,6 +20,8 @@ public partial class CommandPaletteContentPageViewModel : ContentPageViewModel
             IFormContent form => new ContentFormViewModel(form, context),
             IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
             ITreeContent tree => new ContentTreeViewModel(tree, context),
+            IPlainTextContent plainText => new ContentPlainTextViewModel(plainText, context),
+            IImageContent image => new ContentImageViewModel(image, context),
             _ => null,
         };
         return viewModel;

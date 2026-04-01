@@ -546,6 +546,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool powerDisplay;
+
+        [JsonPropertyName("PowerDisplay")]
+        public bool PowerDisplay
+        {
+            get => powerDisplay;
+            set
+            {
+                if (powerDisplay != value)
+                {
+                    LogTelemetryEvent(value);
+                    powerDisplay = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

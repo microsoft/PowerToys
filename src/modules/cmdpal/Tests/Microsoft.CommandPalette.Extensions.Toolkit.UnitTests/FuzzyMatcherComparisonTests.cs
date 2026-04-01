@@ -117,7 +117,11 @@ public class FuzzyMatcherComparisonTests
             ["_a", "_a"],
             ["a_", "a_"],
             ["-a", "-a"],
-            ["a-", "a-"]
+            ["a-", "a-"],
+            ["🐿️", "🐿️"], // Squirrel emoji
+            ["\U0001F44D", "\U0001F44D\U0001F3FB"], // Base thumbs-up vs thumbs-up with LIGHT skin tone modifier
+            ["\U0001F44D\U0001F3FB", "\U0001F44D\U0001F3FB"], // Thumbs-up with LIGHT skin tone vs itself (exact same sequence)
+            ["\U0001F44D\U0001F3FB", "\U0001F44D\U0001F3FF"], // Thumbs-up with LIGHT skin tone vs thumbs-up with DARK skin tone
         ];
 
     [TestMethod]

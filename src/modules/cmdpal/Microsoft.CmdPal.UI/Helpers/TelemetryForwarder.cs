@@ -3,10 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Events;
-using Microsoft.CommandPalette.Extensions;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.CmdPal.UI;
@@ -21,13 +20,15 @@ internal sealed class TelemetryForwarder :
     ITelemetryService,
     IRecipient<TelemetryBeginInvokeMessage>,
     IRecipient<TelemetryInvokeResultMessage>,
-    IRecipient<TelemetryExtensionInvokedMessage>
+    IRecipient<TelemetryExtensionInvokedMessage>,
+    IRecipient<TelemetryDockConfigurationMessage>
 {
     public TelemetryForwarder()
     {
         WeakReferenceMessenger.Default.Register<TelemetryBeginInvokeMessage>(this);
         WeakReferenceMessenger.Default.Register<TelemetryInvokeResultMessage>(this);
         WeakReferenceMessenger.Default.Register<TelemetryExtensionInvokedMessage>(this);
+        WeakReferenceMessenger.Default.Register<TelemetryDockConfigurationMessage>(this);
     }
 
     // Message handlers for telemetry events from core layer
@@ -55,6 +56,16 @@ internal sealed class TelemetryForwarder :
         {
             mainWindow.IncrementCommandsExecuted();
         }
+    }
+
+    public void Receive(TelemetryDockConfigurationMessage message)
+    {
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalDockConfiguration(
+            message.IsDockEnabled,
+            message.DockSide,
+            message.StartBands,
+            message.CenterBands,
+            message.EndBands));
     }
 
     // Static method for logging session duration from UI layer

@@ -126,6 +126,21 @@
   <data name="builtin_display_name" xml:space="preserve">
     <value>Built-in commands</value>
   </data>
+  <data name="builtin_extension_name" xml:space="preserve">
+    <value>Built-in</value>
+  </data>
+  <data name="builtin_extension_subtext" xml:space="preserve">
+    <value>{0}, {1} commands</value>
+    <comment>{0}=extension name, {1}=number of commands</comment>
+  </data>
+  <data name="builtin_extension_subtext_with_fallback" xml:space="preserve">
+    <value>{0}, {1} commands, {2} fallback commands</value>
+    <comment>{0}=extension name, {1}=number of commands, {2} number of fallback commands</comment>
+  </data>
+  <data name="builtin_extension_subtext_disabled" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>{0}=extension name, {1}=message</comment>
+  </data>
   <data name="builtin_log_subtitle" xml:space="preserve">
     <value>View log messages</value>
   </data>
@@ -239,10 +254,49 @@
   <data name="builtin_settings_extension_n_extensions_installed" xml:space="preserve">
     <value>{0} extensions installed</value>
   </data>
+  <data name="builtin_extension_name_fallback" xml:space="preserve">
+    <value>Built-in</value>
+    <comment>Fallback name for built-in extensions</comment>
+  </data>
+  <data name="dock_item_count_singular" xml:space="preserve">
+    <value>1 item</value>
+    <comment>Singular form for item count in dock band</comment>
+  </data>
+  <data name="dock_item_count_plural" xml:space="preserve">
+    <value>{0} items</value>
+    <comment>Plural form for item count in dock band</comment>
+  </data>
+  <data name="builtin_command_palette_title" xml:space="preserve">
+    <value>Open Command Palette</value>
+    <comment>Title for the command to open the command palette</comment>
+  </data>
   <data name="builtin_settings_appearance_pick_background_image_title" xml:space="preserve">
     <value>Pick background image</value>
   </data>
   <data name="fallbacks" xml:space="preserve">
     <value>Fallbacks</value>
+  </data>
+  <data name="dock_edit_dock_name" xml:space="preserve">
+    <value>Edit Dock</value>
+    <comment>Command name for editing the dock</comment>
+  </data>
+  <data name="dock_settings_name" xml:space="preserve">
+    <value>Settings</value>
+    <comment>Command name for opening dock settings</comment>
+  </data>
+  <data name="ShowDetailsCommand" xml:space="preserve">
+    <value>Show details</value>
+    <comment>Name for the command that shows details of an item</comment>
+  </data>
+  <data name="PinnedItemSuffix" xml:space="preserve">
+    <value>Pinned</value>
+    <comment>Suffix shown for pinned items in the dock</comment>
+  </data>
+  <data name="results" xml:space="preserve">
+    <value>Results</value>
+    <comment>Section title for list of all search results that doesn't fall into any other category</comment>
+  </data>
+  <data name="home_sections_commands_title" xml:space="preserve">
+    <value>Commands</value>
   </data>
 </root>

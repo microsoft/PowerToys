@@ -1,15 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
 
-    <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UnitTest-FancyZonesEditor\</OutputPath>
+    <OutputType>Library</OutputType>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\UnitTest-FancyZonesEditor\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

@@ -18,3 +18,9 @@ ShellLink
 IPersistFile
 CoTaskMemFree
 IUnknown
+IShellItemImageFactory
+DeleteObject
+GetDIBits
+GetDC
+ReleaseDC
+SIIGBF
