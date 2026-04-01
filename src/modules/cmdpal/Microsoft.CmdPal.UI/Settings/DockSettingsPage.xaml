@@ -223,6 +223,13 @@
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
 
+                    <!--  Behavior Section  -->
+                    <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsCard x:Uid="DockBehavior_AlwaysOnTop_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE840;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.Dock_AlwaysOnTop, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  Bands Section  -->
                     <!--  <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 

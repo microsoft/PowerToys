@@ -43,7 +43,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private readonly SystemMemoryUsageWidgetPage _memoryPage = new();
     private readonly ListItem _memoryItem;
 
-    private readonly SystemNetworkUsageWidgetPage _networkPage = new();
+    private readonly SystemNetworkUsageWidgetPage _networkPage;
     private readonly ListItem _networkItem;
 
     private readonly SystemGPUUsageWidgetPage _gpuPage = new();
@@ -55,9 +55,10 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private string _networkUpSpeed = string.Empty;
     private string _networkDownSpeed = string.Empty;
 
-    public PerformanceWidgetsPage(bool isBandPage = false)
+    public PerformanceWidgetsPage(SettingsManager settingsManager, bool isBandPage = false)
     {
         _isBandPage = isBandPage;
+        _networkPage = new SystemNetworkUsageWidgetPage(settingsManager);
         _cpuItem = new ListItem(_cpuPage)
         {
             Title = _cpuPage.GetItemTitle(isBandPage),
@@ -532,10 +533,12 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     public override IconInfo Icon => Icons.NetworkIcon;
 
     private readonly DataManager _dataManager;
+    private readonly SettingsManager _settingsManager;
     private int _networkIndex;
 
-    public SystemNetworkUsageWidgetPage()
+    public SystemNetworkUsageWidgetPage(SettingsManager settingsManager)
     {
+        _settingsManager = settingsManager;
         _dataManager = new(DataType.Network, () => UpdateWidget());
         Commands = [
             new CommandContextItem(new PrevNetworkCommand(this) { Name = Resources.GetResource("Previous_Network_Title") }),
@@ -561,8 +564,8 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             var networkStats = currentData.GetNetworkUsage(_networkIndex);
 
             ContentData["networkUsage"] = FloatToPercentString(networkStats.Usage);
-            ContentData["netSent"] = BytesToBitsPerSecString(networkStats.Sent);
-            ContentData["netReceived"] = BytesToBitsPerSecString(networkStats.Received);
+            ContentData["netSent"] = SpeedToString(networkStats.Sent);
+            ContentData["netReceived"] = SpeedToString(networkStats.Received);
             ContentData["networkName"] = netName;
             ContentData["netGraphUrl"] = currentData.CreateNetImageUrl(_networkIndex);
             ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
@@ -627,7 +630,17 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
     }
 
-    private string BytesToBitsPerSecString(float value)
+    private string SpeedToString(float bytesPerSec)
+    {
+        return _settingsManager.NetworkSpeedUnit switch
+        {
+            NetworkSpeedUnit.BytesPerSecond => FormatAsBytesPerSecString(bytesPerSec),
+            NetworkSpeedUnit.BinaryBytesPerSecond => FormatAsBinaryBytesPerSecString(bytesPerSec),
+            _ => FormatAsBitsPerSecString(bytesPerSec),
+        };
+    }
+
+    private static string FormatAsBitsPerSecString(float value)
     {
         // Bytes to bits
         value *= 8;
@@ -664,6 +677,78 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
 
         return string.Format(CultureInfo.InvariantCulture, "{0:0} Gbps", value);
+    }
+
+    private static string FormatAsBytesPerSecString(float value)
+    {
+        // Bytes to KB
+        value /= 1024;
+        if (value < 1024)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} KB/s", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} KB/s", value);
+        }
+
+        // KB to MB
+        value /= 1024;
+        if (value < 1024)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} MB/s", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} MB/s", value);
+        }
+
+        // MB to GB
+        value /= 1024;
+        if (value < 100)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} GB/s", value);
+        }
+
+        return string.Format(CultureInfo.InvariantCulture, "{0:0} GB/s", value);
+    }
+
+    private static string FormatAsBinaryBytesPerSecString(float value)
+    {
+        // Bytes to KiB
+        value /= 1024;
+        if (value < 1024)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} KiB/s", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} KiB/s", value);
+        }
+
+        // KiB to MiB
+        value /= 1024;
+        if (value < 1024)
+        {
+            if (value < 100)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} MiB/s", value);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0:0} MiB/s", value);
+        }
+
+        // MiB to GiB
+        value /= 1024;
+        if (value < 100)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} GiB/s", value);
+        }
+
+        return string.Format(CultureInfo.InvariantCulture, "{0:0} GiB/s", value);
     }
 
     internal override void PushActivate()

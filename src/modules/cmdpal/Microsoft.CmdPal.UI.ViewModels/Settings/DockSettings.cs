@@ -20,6 +20,8 @@ public record DockSettings
 
     public DockSize DockSize { get; init; } = DockSize.Default;
 
+    public bool AlwaysOnTop { get; set; } = true;
+
     // <Theme settings>
     public DockBackdrop Backdrop { get; init; } = DockBackdrop.Acrylic;
 
