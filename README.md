@@ -22,7 +22,7 @@
 
 ## 🔨 Utilities
 
-PowerToys includes over 25 utilities to help you customize and optimize your Windows experience:
+PowerToys includes over 30 utilities to help you customize and optimize your Windows experience:
 
 |   |   |   |
 | --- | --- | --- |
@@ -42,7 +42,7 @@ PowerToys includes over 25 utilities to help you customize and optimize your Win
 For detailed installation instructions and system requirements, visit the [installation docs](https://learn.microsoft.com/windows/powertoys/install).
 
 But to get started quickly, choose one of the installation methods below:
-
+<br/><br/>
 <details open>
 <summary><strong>Download the .exe file from GitHub</strong></summary>
 <br/>
@@ -68,7 +68,6 @@ Go to the [PowerToys GitHub releases](https://aka.ms/installPowerToys), select *
 <details>
 <summary><strong>Microsoft Store</strong></summary>
 <br/>
-
 You can easily install PowerToys from the Microsoft Store:
 <p>
   <a style="text-decoration:none" href="https://aka.ms/getPowertoys">
@@ -82,7 +81,6 @@ You can easily install PowerToys from the Microsoft Store:
 <details>
 <summary><strong>WinGet</strong></summary>
 <br/>
-
 Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). Updating PowerToys via winget will respect the current PowerToys installation scope. To install PowerToys, run the following command from the command line / PowerShell:
 
 - User scope installer (default)
@@ -101,7 +99,6 @@ winget install --scope machine Microsoft.PowerToys -s winget
 <details>
 <summary><strong>Other methods</strong></summary>
 <br/>
-
 There are [community driven install methods](https://learn.microsoft.com/windows/powertoys/install#community-driven-install-tools) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
 </details>
 
