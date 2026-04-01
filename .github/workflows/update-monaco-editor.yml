@@ -1,0 +1,135 @@
+# Update Monaco Editor
+#
+# Automates the Monaco Editor update process described in
+# doc/devdocs/common/FilePreviewCommon.md:
+#   1. Downloads the latest (or specified) Monaco Editor from npm
+#   2. Replaces src/Monaco/monacoSRC/min with the new version
+#   3. Regenerates monaco_languages.json via Puppeteer (headless browser)
+#   4. Runs validation tests
+#   5. Creates a pull request with the changes
+#
+# Trigger manually via workflow_dispatch.
+# Uncomment the schedule block below to enable weekly automatic checks.
+
+name: Update Monaco Editor
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Monaco Editor version (e.g. "0.55.1"). Leave empty for latest.'
+        required: false
+        default: ''
+        type: string
+
+  # Uncomment the following to enable weekly automatic update checks:
+  # schedule:
+  #   - cron: '0 9 * * 1'  # Every Monday at 9:00 UTC
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-monaco:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Get current Monaco version
+        id: current_version
+        shell: bash
+        run: |
+          CURRENT=$(grep -oP 'Version:\s*\K[\d.]+' src/Monaco/monacoSRC/min/vs/loader.js || echo "unknown")
+          echo "version=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "Current Monaco version: $CURRENT"
+
+      - name: Run Monaco update script
+        id: update
+        shell: pwsh
+        run: |
+          $version = '${{ inputs.version }}'
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            $version = 'latest'
+          }
+          $output = & ./.github/scripts/update-monaco-editor.ps1 -Version $version -RepoRoot $env:GITHUB_WORKSPACE
+          # Extract version from script output
+          $versionLine = $output | Select-String -Pattern '^MONACO_VERSION=' | Select-Object -First 1
+          if ($versionLine) {
+            $newVersion = $versionLine.ToString().Split('=')[1]
+            echo "new_version=$newVersion" >> $env:GITHUB_OUTPUT
+            Write-Host "New Monaco version: $newVersion"
+          }
+
+      - name: Run validation tests
+        shell: pwsh
+        run: |
+          ./.github/scripts/tests/validate-monaco-update.tests.ps1 -RepoRoot $env:GITHUB_WORKSPACE
+
+      - name: Check for changes
+        id: changes
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "No changes detected - Monaco may already be up to date."
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            CHANGED_FILES=$(git diff --stat | tail -1)
+            echo "changed_files=$CHANGED_FILES" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create pull request
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update Monaco Editor to ${{ steps.update.outputs.new_version }}"
+          title: "Update Monaco Editor from ${{ steps.current_version.outputs.version }} to ${{ steps.update.outputs.new_version }}"
+          body: |
+            ## Summary
+
+            Automated update of the Monaco Editor dependency.
+
+            **Previous version:** ${{ steps.current_version.outputs.version }}
+            **New version:** ${{ steps.update.outputs.new_version }}
+
+            ## Changes
+
+            - Updated `src/Monaco/monacoSRC/min/` with the new Monaco Editor release
+            - Regenerated `src/Monaco/monaco_languages.json`
+
+            ## Validation
+
+            The following automated checks passed:
+            - ✅ `loader.js` contains valid version header
+            - ✅ Directory structure intact (`vs/editor/`, `vs/basic-languages/`, `vs/base/`, `vs/language/`)
+            - ✅ `monaco_languages.json` is valid JSON with expected structure
+            - ✅ All expected built-in languages are present (32+ core languages verified)
+            - ✅ All PowerToys custom languages registered (`reg`, `gitignore`, `srt`)
+            - ✅ All custom extension mappings present (`cppExt`, `xmlExt`, `txtExt`, etc.)
+            - ✅ No duplicate language IDs
+            - ✅ Version consistency across Monaco files
+            - ✅ Extension-to-language mappings verified (`.js`→javascript, `.py`→python, etc.)
+
+            ## Manual Verification
+
+            Before merging, please verify:
+            - [ ] File Explorer Dev File Preview works correctly
+            - [ ] Peek module previews code files properly
+            - [ ] Registry Preview module functions normally
+
+            ## Reference
+
+            - [Monaco Editor update docs](doc/devdocs/common/FilePreviewCommon.md#update-monaco-editor)
+            - [Monaco Editor releases](https://github.com/microsoft/monaco-editor/releases)
+          branch: automated/update-monaco-editor
+          delete-branch: true
+          labels: |
+            dependencies
