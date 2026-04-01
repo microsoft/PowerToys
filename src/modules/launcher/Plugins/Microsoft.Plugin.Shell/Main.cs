@@ -188,39 +188,29 @@ namespace Microsoft.Plugin.Shell
             return history.ToList();
         }
 
-        private static string EscapeWindowsCommandLineArgument(string arg)
+        /// <summary>
+        /// Escapes embedded double-quotes in a string so that the result can be safely
+        /// wrapped in a double-quoted command-line argument for cmd.exe or PowerShell.
+        /// </summary>
+        /// <remarks>
+        /// This specifically implements shell-style escaping (doubling double-quotes)
+        /// rather than C-runtime/backslash-style escaping, which many shells do not
+        /// honor for quote-termination.
+        ///
+        /// It is NOT a general-purpose sanitizer for arbitrary shell syntax.
+        /// </remarks>
+        private static string EscapeShellArgument(string arg)
         {
             if (string.IsNullOrEmpty(arg))
             {
                 return string.Empty;
             }
 
-            var escaped = new StringBuilder();
-            for (int i = 0; i < arg.Length; i++)
-            {
-                char c = arg[i];
-                if (c == '"')
-                {
-                    int backslashes = 0;
-                    int j = i - 1;
-                    while (j >= 0 && arg[j] == '\\')
-                    {
-                        backslashes++;
-                        j--;
-                    }
-
-                    for (int k = 0; k < backslashes; k++)
-                    {
-                        escaped.Append('\\');
-                    }
-
-                    escaped.Append('\\');
-                }
-
-                escaped.Append(c);
-            }
-
-            return escaped.ToString();
+            // For cmd.exe and PowerShell, embedded double-quotes inside a double-quoted
+            // string must be represented by a doubled double-quote (\"\").
+            // This avoids relying on C-runtime-style backslash escaping, which those
+            // shells do not honor for terminating quotes.
+            return arg.Replace(\"\\\"\", \"\\\"\\\"\");
         }
 
         private ProcessStartInfo PrepareProcessStartInfo(string command, RunAsType runAs = RunAsType.None)
@@ -228,8 +218,10 @@ namespace Microsoft.Plugin.Shell
             string trimmedCommand = command.Trim();
             command = Environment.ExpandEnvironmentVariables(trimmedCommand);
 
-            // Sanitize command to prevent quote breakout
-            string escapedCommand = EscapeWindowsCommandLineArgument(command);
+            // Escape the full command so it can be safely embedded between double quotes
+            // as a single Windows command-line argument (cmd.exe/PowerShell parsing).
+            // This is NOT a general-purpose sanitizer for shell syntax.
+            string escapedCommand = EscapeShellArgument(command);
 
             var workingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
@@ -247,86 +239,86 @@ namespace Microsoft.Plugin.Shell
             ProcessStartInfo info;
             if (_settings.Shell == ExecutionShell.Cmd)
             {
-                var arguments = _settings.LeaveShellOpen ? $"/k \"{escapedCommand}\"" : $"/c \"{escapedCommand}\" & pause";
+                var arguments = _settings.LeaveShellOpen ? $\"/k \\\"{escapedCommand}\\\"\" : $\"/c \\\"{escapedCommand}\\\" \u0026 pause\";
 
-                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, arguments, runAsVerbArg);
+                info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.Powershell)
             {
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"-NoExit \"{escapedCommand}\"";
+                    arguments = $\"-NoExit \\\"{escapedCommand}\\\"\";
                 }
                 else
                 {
-                    arguments = $"\"{escapedCommand} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
+                    arguments = $\"\\\"{escapedCommand} ; Read-Host -Prompt \\\\\\\"{Resources.run_plugin_cmd_wait_message}\\\\\\\"\\\"\";
                 }
 
-                info = ShellCommand.SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsVerbArg);
+                info = ShellCommand.SetProcessStartInfo(\"powershell.exe\", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.PowerShellSeven)
             {
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"-NoExit -C \"{escapedCommand}\"";
+                    arguments = $\"-NoExit -C \\\"{escapedCommand}\\\"\";
                 }
                 else
                 {
-                    arguments = $"-C \"{escapedCommand} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
+                    arguments = $\"-C \\\"{escapedCommand} ; Read-Host -Prompt \\\\\\\"{Resources.run_plugin_cmd_wait_message}\\\\\\\"\\\"\";
                 }
 
-                info = ShellCommand.SetProcessStartInfo("pwsh.exe", workingDirectory, arguments, runAsVerbArg);
+                info = ShellCommand.SetProcessStartInfo(\"pwsh.exe\", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalCmd)
             {
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"cmd.exe /k \"{escapedCommand}\"";
+                    arguments = $\"cmd.exe /k \\\"{escapedCommand}\\\"\";
                 }
                 else
                 {
-                    arguments = $"cmd.exe /c \"{escapedCommand}\" & pause";
+                    arguments = $\"cmd.exe /c \\\"{escapedCommand}\\\" \u0026 pause\";
                 }
 
-                info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
+                info = ShellCommand.SetProcessStartInfo(\"wt.exe\", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalPowerShell)
             {
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"powershell -NoExit -C \"{escapedCommand}\"";
+                    arguments = $\"powershell -NoExit -C \\\"{escapedCommand}\\\"\";
                 }
                 else
                 {
-                    arguments = $"powershell -C \"{escapedCommand}\"";
+                    arguments = $\"powershell -C \\\"{escapedCommand}\\\"\";
                 }
 
-                info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
+                info = ShellCommand.SetProcessStartInfo(\"wt.exe\", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalPowerShellSeven)
             {
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"pwsh.exe -NoExit -C \"{escapedCommand}\"";
+                    arguments = $\"pwsh.exe -NoExit -C \\\"{escapedCommand}\\\"\";
                 }
                 else
                 {
-                    arguments = $"pwsh.exe -C \"{escapedCommand}\"";
+                    arguments = $\"pwsh.exe -C \\\"{escapedCommand}\\\"\";
                 }
 
-                info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
+                info = ShellCommand.SetProcessStartInfo(\"wt.exe\", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.RunCommand)
             {
                 // Open explorer if the path is a file or directory
                 if (Directory.Exists(command) || File.Exists(command))
                 {
-                    info = ShellCommand.SetProcessStartInfo("explorer.exe", arguments: command, verb: runAsVerbArg);
+                    info = ShellCommand.SetProcessStartInfo(\"explorer.exe\", arguments: command, verb: runAsVerbArg);
                 }
                 else
                 {
@@ -340,7 +332,7 @@ namespace Microsoft.Plugin.Shell
                             if (_settings.LeaveShellOpen)
                             {
                                 // Wrap the command in a cmd.exe process
-                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{filename} {arguments}\"", runAsVerbArg);
+                                info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, $\"/k \\\"{filename} {arguments}\\\"\", runAsVerbArg);
                             }
                             else
                             {
@@ -352,7 +344,7 @@ namespace Microsoft.Plugin.Shell
                             if (_settings.LeaveShellOpen)
                             {
                                 // Wrap the command in a cmd.exe process
-                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{escapedCommand}\"", runAsVerbArg);
+                                info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, $\"/k \\\"{escapedCommand}\\\"\", runAsVerbArg);
                             }
                             else
                             {
@@ -365,7 +357,7 @@ namespace Microsoft.Plugin.Shell
                         if (_settings.LeaveShellOpen)
                         {
                             // Wrap the command in a cmd.exe process
-                            info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{escapedCommand}\"", runAsVerbArg);
+                            info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, $\"/k \\\"{escapedCommand}\\\"\", runAsVerbArg);
                         }
                         else
                         {
@@ -401,14 +393,14 @@ namespace Microsoft.Plugin.Shell
             }
             catch (FileNotFoundException e)
             {
-                var name = "Plugin: " + Properties.Resources.wox_plugin_cmd_plugin_name;
-                var message = $"{Properties.Resources.wox_plugin_cmd_command_not_found}: {e.Message}";
+                var name = \"Plugin: \" + Properties.Resources.wox_plugin_cmd_plugin_name;
+                var message = $\"{Properties.Resources.wox_plugin_cmd_command_not_found}: {e.Message}\";
                 _context.API.ShowMsg(name, message);
             }
             catch (Win32Exception e)
             {
-                var name = "Plugin: " + Properties.Resources.wox_plugin_cmd_plugin_name;
-                var message = $"{Properties.Resources.wox_plugin_cmd_command_failed}: {e.Message}";
+                var name = \"Plugin: \" + Properties.Resources.wox_plugin_cmd_plugin_name;
+                var message = $\"{Properties.Resources.wox_plugin_cmd_command_failed}: {e.Message}\";
                 _context.API.ShowMsg(name, message);
             }
         }
@@ -421,13 +413,13 @@ namespace Microsoft.Plugin.Shell
             }
             else
             {
-                var values = Environment.GetEnvironmentVariable("PATH");
+                var values = Environment.GetEnvironmentVariable(\"PATH\");
                 if (values != null)
                 {
                     foreach (var path in values.Split(';'))
                     {
                         var path1 = Path.Combine(path, filename);
-                        var path2 = Path.Combine(path, filename + ".exe");
+                        var path2 = Path.Combine(path, filename + \".exe\");
                         if (File.Exists(path1) || File.Exists(path2))
                         {
                             return true;
@@ -455,11 +447,11 @@ namespace Microsoft.Plugin.Shell
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                IconPath = "Images/shell.light.png";
+                IconPath = \"Images/shell.light.png\";
             }
             else
             {
-                IconPath = "Images/shell.dark.png";
+                IconPath = \"Images/shell.dark.png\";
             }
         }
 
@@ -491,8 +483,8 @@ namespace Microsoft.Plugin.Shell
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Properties.Resources.wox_plugin_cmd_run_as_administrator,
-                    Glyph = "\xE7EF",
-                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
+                    Glyph = \"\\xE7EF\",
+                    FontFamily = \"Segoe Fluent Icons,Segoe MDL2 Assets\",
                     AcceleratorKey = Key.Enter,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = c =>
@@ -505,11 +497,11 @@ namespace Microsoft.Plugin.Shell
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Properties.Resources.wox_plugin_cmd_run_as_user,
-                    Glyph = "\xE7EE",
-                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
+                    Glyph = \"\\xE7EE\",
+                    FontFamily = \"Segoe Fluent Icons,Segoe MDL2 Assets\",
                     AcceleratorKey = Key.U,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ =>
+                    Action = _ =\u003e
                     {
                         Execute(Process.Start, PrepareProcessStartInfo(selectedResult.Title, RunAsType.OtherUser));
                         return true;
@@ -525,13 +517,13 @@ namespace Microsoft.Plugin.Shell
             var leaveShellOpen = false;
             var shellOption = 2;
 
-            if (settings != null && settings.AdditionalOptions != null)
+            if (settings != null \u0026\u0026 settings.AdditionalOptions != null)
             {
-                var optionLeaveShellOpen = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "LeaveShellOpen");
+                var optionLeaveShellOpen = settings.AdditionalOptions.FirstOrDefault(x =\u003e x.Key == \"LeaveShellOpen\");
                 leaveShellOpen = optionLeaveShellOpen?.Value ?? leaveShellOpen;
                 _settings.LeaveShellOpen = leaveShellOpen;
 
-                var optionShell = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ShellCommandExecution");
+                var optionShell = settings.AdditionalOptions.FirstOrDefault(x =\u003e x.Key == \"ShellCommandExecution\");
                 shellOption = optionShell?.ComboBoxValue ?? shellOption;
                 _settings.Shell = (ExecutionShell)shellOption;
             }
