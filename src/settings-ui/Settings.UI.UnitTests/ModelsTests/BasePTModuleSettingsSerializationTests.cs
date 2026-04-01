@@ -67,7 +67,6 @@ namespace CommonLibTest
         /// with a helpful error message.
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void ToJsonString_UnregisteredType_ShouldThrowInvalidOperationException()
         {
             // Arrange
@@ -77,11 +76,8 @@ namespace CommonLibTest
                 Version = "1.0.0",
             };
 
-            // Act - This should throw InvalidOperationException
-            var jsonString = unregisteredSettings.ToJsonString();
-
-            // Assert - Exception should be thrown, so this line should never be reached
-            Assert.Fail("Expected InvalidOperationException was not thrown.");
+            // Act & Assert
+            Assert.ThrowsExactly<InvalidOperationException>(() => unregisteredSettings.ToJsonString());
         }
 
         /// <summary>

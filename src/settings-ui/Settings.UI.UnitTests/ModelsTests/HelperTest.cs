@@ -47,31 +47,27 @@ namespace CommonLibTest
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FormatException))]
         public void HelperCompareVersionsShouldThrowBadFormatWhenNoVersionString()
         {
-            Helper.CompareVersions("v0.0.1", string.Empty);
+            Assert.ThrowsExactly<FormatException>(() => Helper.CompareVersions("v0.0.1", string.Empty));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FormatException))]
         public void HelperCompareVersionsShouldThrowBadFormatWhenShortVersionString()
         {
-            Helper.CompareVersions("v0.0.1", "v0.1");
+            Assert.ThrowsExactly<FormatException>(() => Helper.CompareVersions("v0.0.1", "v0.1"));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FormatException))]
         public void HelperCompareVersionsShouldThrowBadFormatWhenLongVersionString()
         {
-            Helper.CompareVersions("v0.0.1", "v0.0.0.1");
+            Assert.ThrowsExactly<FormatException>(() => Helper.CompareVersions("v0.0.1", "v0.0.0.1"));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FormatException))]
         public void HelperCompareVersionsShouldThrowBadFormatWhenItIsNotAVersionString()
         {
-            Helper.CompareVersions("v0.0.1", "HelloWorld");
+            Assert.ThrowsExactly<FormatException>(() => Helper.CompareVersions("v0.0.1", "HelloWorld"));
         }
     }
 }
