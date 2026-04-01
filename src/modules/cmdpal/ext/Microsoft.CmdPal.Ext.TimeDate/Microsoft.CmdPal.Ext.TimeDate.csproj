@@ -5,7 +5,7 @@
 
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.TimeDate</RootNamespace>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\CmdPal</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->

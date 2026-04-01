@@ -12,7 +12,7 @@
     <Platforms>x64;ARM64</Platforms>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\</OutputPath>
     <AssemblyName>PowerToys.ImageResizerCLI</AssemblyName>
     <NoWarn>$(NoWarn);SA1500;SA1402;CA1852</NoWarn>
   </PropertyGroup>

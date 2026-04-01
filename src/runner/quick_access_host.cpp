@@ -193,7 +193,7 @@ namespace QuickAccessHost
             return;
         }
 
-        const std::wstring exe_path = get_module_folderpath() + L"\\WinUI3Apps\\PowerToys.QuickAccess.exe";
+        const std::wstring exe_path = get_module_folderpath() + L"\\PowerToys.QuickAccess.exe";
         if (GetFileAttributesW(exe_path.c_str()) == INVALID_FILE_ATTRIBUTES)
         {
             Logger::warn(L"QuickAccessHost: missing Quick Access executable at {}", exe_path);

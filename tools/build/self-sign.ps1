@@ -139,8 +139,8 @@ Write-Host "Using certificate with thumbprint: $($cert.Thumbprint)"
 $rootDirectory = (Split-Path -Parent(Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)))
 
 # Dynamically build the directory path based on architecture and build configuration
-# $directoryPath = Join-Path $rootDirectory "$architecture\$buildConfiguration\WinUI3Apps\CmdPal\"
-$directoryPath = Join-Path $rootDirectory "$architecture\$buildConfiguration\WinUI3Apps\CmdPal\"
+# $directoryPath = Join-Path $rootDirectory "$architecture\$buildConfiguration\CmdPal\"
+$directoryPath = Join-Path $rootDirectory "$architecture\$buildConfiguration\CmdPal\"
 
 if (-not (Test-Path $directoryPath)) {
     Write-Error "Path to search for msix files does not exist: $directoryPath"

@@ -230,7 +230,7 @@ public:
             // Process running - launch to trigger single instance redirect, OnActivated will toggle
             SHELLEXECUTEINFOW sei{ sizeof(sei) };
             sei.fMask = SEE_MASK_FLAG_NO_UI;
-            sei.lpFile = L"WinUI3Apps\\PowerToys.PowerDisplay.exe";
+            sei.lpFile = L"PowerToys.PowerDisplay.exe";
             sei.nShow = SW_SHOWNORMAL;
             ShellExecuteExW(&sei);
         }

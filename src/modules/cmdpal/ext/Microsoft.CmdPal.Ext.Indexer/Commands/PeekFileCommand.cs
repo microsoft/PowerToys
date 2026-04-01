@@ -16,7 +16,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 /// </summary>
 public sealed partial class PeekFileCommand : InvokableCommand
 {
-    private const string PeekExecutable = @"WinUI3Apps\PowerToys.Peek.UI.exe";
+    private const string PeekExecutable = @"PowerToys.Peek.UI.exe";
 
     private static readonly Lazy<string> _peekPath = new(GetPeekExecutablePath);
 

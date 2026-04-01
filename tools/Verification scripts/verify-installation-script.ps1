@@ -464,7 +464,7 @@ function Test-CoreFiles {
         'CmdPalKeyboardService.dll'
     )
     
-    # WinUI3Apps signed files (in WinUI3Apps subdirectory)
+    # Signed files (in  subdirectory)
     $winUI3SignedFiles = @(
         'PowerToys.Settings.dll',
         'PowerToys.Settings.exe',
@@ -556,13 +556,13 @@ function Test-CoreFiles {
         Add-CheckResult -Category "Signed Files" -CheckName "$file ($Scope)" -Status $status -Message "Signed file: $filePath"
     }
     
-    # Check WinUI3Apps signed files
-    Write-StatusMessage "Checking WinUI3Apps signed files..." -Level Info
+    # Check Signed files
+    Write-StatusMessage "Checking Signed files..." -Level Info
     foreach ($file in $winUI3SignedFiles) {
-        $filePath = Join-Path $InstallPath "WinUI3Apps\$file"
+        $filePath = Join-Path $InstallPath "$file"
         $exists = Test-Path $filePath
         $status = if ($exists) { 'Pass' } else { 'Warning' }
-        Add-CheckResult -Category "Signed Files" -CheckName "WinUI3Apps\$file ($Scope)" -Status $status -Message "WinUI3 signed file: $filePath"
+        Add-CheckResult -Category "Signed Files" -CheckName "$file ($Scope)" -Status $status -Message "Signed file: $filePath"
     }
     
     # Check Tools signed files
@@ -708,7 +708,7 @@ function Test-CommandPalettePackages {
         [string]$InstallPath
     )
     
-    $cmdPalPath = Join-Path $InstallPath "WinUI3Apps\CmdPal"
+    $cmdPalPath = Join-Path $InstallPath "CmdPal"
     if (Test-Path $cmdPalPath) {
         # Check for MSIX package file (the actual Command Palette installation)
         $msixFiles = Get-ChildItem $cmdPalPath -Filter "*.msix" -ErrorAction SilentlyContinue
@@ -733,9 +733,9 @@ function Test-ContextMenuPackages {
     # These MSIX packages should be present in the installation
     $contextMenuPackages = @{
         "ImageResizerContextMenuPackage.msix" = @{ Name = "Image Resizer context menu package"; Location = "Root" }
-        "FileLocksmithContextMenuPackage.msix" = @{ Name = "File Locksmith context menu package"; Location = "WinUI3Apps" }
-        "PowerRenameContextMenuPackage.msix" = @{ Name = "PowerRename context menu package"; Location = "WinUI3Apps" }
-        "NewPlusPackage.msix" = @{ Name = "New+ context menu package"; Location = "WinUI3Apps" }
+        "FileLocksmithContextMenuPackage.msix" = @{ Name = "File Locksmith context menu package"; Location = "" }
+        "PowerRenameContextMenuPackage.msix" = @{ Name = "PowerRename context menu package"; Location = "" }
+        "NewPlusPackage.msix" = @{ Name = "New+ context menu package"; Location = "" }
     }
     
     # Check for packages based on their expected location
@@ -746,7 +746,7 @@ function Test-ContextMenuPackages {
             $packagePath = Join-Path $InstallPath $packageFile
         }
         else {
-            $packagePath = Join-Path $InstallPath "WinUI3Apps\$packageFile"
+            $packagePath = Join-Path $InstallPath "$packageFile"
         }
         
         if (Test-Path $packagePath) {

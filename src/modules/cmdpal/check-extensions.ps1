@@ -2,7 +2,7 @@
 
 $gitRoot = git rev-parse --show-toplevel
 Write-output "Checking repo root at $gitroot"
-$extensionsRoot = "$gitroot\x64\Debug\WinUI3Apps\CmdPalExtensions"
+$extensionsRoot = "$gitroot\x64\Debug\CmdPalExtensions"
 Get-ChildItem -Path $extensionsRoot | ForEach-Object {
     $extensionName = $_.Name
     Write-Host "`e[1m$extensionName`e[m"
@@ -26,9 +26,9 @@ Get-ChildItem -Path $extensionsRoot | ForEach-Object {
 }
 
 Write-Host "`e[1mChecking host apps:`e[m"
-$hostAppxRoot = "$gitroot/x64/Debug/WinUI3Apps/CmdPal"
+$hostAppxRoot = "$gitroot/x64/Debug/CmdPal"
 $hostAppxWinmd = $hostAppxRoot + "/Microsoft.CommandPalette.Extensions.winmd"
-$prototypeAppxRoot = "$gitroot/x64/Debug/WinUI3Apps/CmdPal.Poc"
+$prototypeAppxRoot = "$gitroot/x64/Debug/CmdPal.Poc"
 $prototypeAppxWinmd = $hostAppxRoot + "/Microsoft.CommandPalette.Extensions.winmd"
 if ((Test-Path $hostAppxWinmd)) {
     Write-Host "  Found Microsoft.CommandPalette.Extensions.winmd in The Real App's Appx/"

@@ -7,7 +7,7 @@
     <AssemblyTitle>PowerToys.ImageResizer</AssemblyTitle>
     <AssemblyDescription>PowerToys Image Resizer</AssemblyDescription>
     <OutputType>WinExe</OutputType>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <RootNamespace>ImageResizer</RootNamespace>
     <AssemblyName>PowerToys.ImageResizer</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>

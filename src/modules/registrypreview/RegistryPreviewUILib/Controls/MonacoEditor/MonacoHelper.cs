@@ -29,8 +29,8 @@ namespace RegistryPreviewUILib
             }
             else
             {
-                // We're likely in WinUI3Apps directory and need to go back to the base directory.
-                return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase) ?? string.Empty, "..", "Assets", "Monaco"));
+                // Fall back to relative path from the code base directory.
+                return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase) ?? string.Empty, "Assets", "Monaco"));
             }
         }
 

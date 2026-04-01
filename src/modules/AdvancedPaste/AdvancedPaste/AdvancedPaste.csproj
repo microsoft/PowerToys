@@ -5,7 +5,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
     <UseWinUI>true</UseWinUI>
     <ApplicationIcon>Assets\AdvancedPaste\AdvancedPaste.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>

@@ -52,7 +52,7 @@ private:
 
         std::string command = "pwsh.exe";
         command += " ";
-        command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(module_path) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\EnableModule.ps1" + "\"" + " -scriptPath \"" + winrt::to_string(module_path) + "\"";
+        command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(module_path) + "\\Assets\\Settings\\Scripts\\EnableModule.ps1" + "\"" + " -scriptPath \"" + winrt::to_string(module_path) + "\"";
 
         int ret = system(command.c_str());
 
@@ -73,7 +73,7 @@ private:
 
         std::string command = "pwsh.exe";
         command += " ";
-        command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(module_path) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\DisableModule.ps1" + "\"";
+        command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(module_path) + "\\Assets\\Settings\\Scripts\\DisableModule.ps1" + "\"";
 
         int ret = system(command.c_str());
 

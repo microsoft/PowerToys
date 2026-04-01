@@ -18,7 +18,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\</OutDir>
     <DepsPath>$(RepoRoot)deps</DepsPath>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">

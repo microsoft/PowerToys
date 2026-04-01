@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // Default editor path. Can be removed once the new WinUI3 editor is released.
         private const string KeyboardManagerEditorPath = "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe";
 
-        private const string KeyboardManagerEditorUIPath = "WinUI3Apps\\PowerToys.KeyboardManagerEditorUI.exe";
+        private const string KeyboardManagerEditorUIPath = "PowerToys.KeyboardManagerEditorUI.exe";
 
         private Process editor;
 

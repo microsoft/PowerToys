@@ -133,7 +133,7 @@ HRESULT PowerDisplayProcessManager::start_process(const std::wstring& pipe_name)
 
     SHELLEXECUTEINFOW sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-    sei.lpFile = L"WinUI3Apps\\PowerToys.PowerDisplay.exe";
+    sei.lpFile = L"PowerToys.PowerDisplay.exe";
     sei.nShow = SW_SHOWNORMAL;
     sei.lpParameters = executable_args.data();
     if (ShellExecuteExW(&sei))

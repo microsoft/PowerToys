@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -324,8 +324,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (Directory.GetFiles(templateLocation).Length == 0 && Directory.GetDirectories(templateLocation).Length == 0)
             {
                 // No files in templateLocation directory
-                // Copy over examples files from <Program Files>\PowerToys\WinUI3Apps\Assets\NewPlus\Templates
-                var example_templates = Path.Combine(Helper.GetPowerToysInstallationWinUI3AppsAssetsFolder(), "NewPlus", "Templates");
+                // Copy over examples files from <Program Files>\PowerToys\Assets\NewPlus\Templates
+                var example_templates = Path.Combine(Helper.GetPowerToysInstallationAssetsFolder(), "NewPlus", "Templates");
                 Helper.CopyDirectory(example_templates, templateLocation, true);
             }
         }

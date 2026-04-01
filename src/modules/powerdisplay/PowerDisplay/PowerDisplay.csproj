@@ -16,7 +16,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
     <AssemblyName>PowerToys.PowerDisplay</AssemblyName>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.PowerDisplay.pri</ProjectPriFileName>
@@ -48,7 +48,7 @@
   <ItemGroup>
     <!-- Add WindowsDesktop.App framework reference to align Microsoft.VisualBasic.dll version
          with other projects that use UseWPF/UseWindowsForms. This does NOT enable WPF/WinForms,
-         it only ensures consistent runtime DLL versions across all WinUI3Apps. -->
+         it only ensures consistent runtime DLL versions across all apps. -->
     <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
   </ItemGroup>
   <ItemGroup>

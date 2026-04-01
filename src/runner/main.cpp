@@ -107,9 +107,9 @@ void DetectAiCapabilitiesAsync(bool skipSettingsCheck)
                 }
             }
 
-            // Get ImageResizer.exe path (located in WinUI3Apps folder)
+            // Get ImageResizer.exe path
             std::wstring imageResizerPath = get_module_folderpath();
-            imageResizerPath += L"\\WinUI3Apps\\PowerToys.ImageResizer.exe";
+            imageResizerPath += L"\\PowerToys.ImageResizer.exe";
 
             if (!std::filesystem::exists(imageResizerPath))
             {
@@ -256,10 +256,10 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         std::vector<std::wstring_view> knownModules = {
             L"PowerToys.FancyZonesModuleInterface.dll",
             L"PowerToys.powerpreview.dll",
-            L"WinUI3Apps/PowerToys.ImageResizerExt.dll",
+            L"PowerToys.ImageResizerExt.dll",
             L"PowerToys.KeyboardManager.dll",
             L"PowerToys.Launcher.dll",
-            L"WinUI3Apps/PowerToys.PowerRenameExt.dll",
+            L"PowerToys.PowerRenameExt.dll",
             L"PowerToys.ShortcutGuideModuleInterface.dll",
             L"PowerToys.ColorPicker.dll",
             L"PowerToys.AwakeModuleInterface.dll",
@@ -272,13 +272,13 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.PowerAccentModuleInterface.dll",
             L"PowerToys.PowerOCRModuleInterface.dll",
             L"PowerToys.AdvancedPasteModuleInterface.dll",
-            L"WinUI3Apps/PowerToys.FileLocksmithExt.dll",
-            L"WinUI3Apps/PowerToys.RegistryPreviewExt.dll",
-            L"WinUI3Apps/PowerToys.MeasureToolModuleInterface.dll",
-            L"WinUI3Apps/PowerToys.NewPlus.ShellExtension.dll",
-            L"WinUI3Apps/PowerToys.HostsModuleInterface.dll",
-            L"WinUI3Apps/PowerToys.Peek.dll",
-            L"WinUI3Apps/PowerToys.EnvironmentVariablesModuleInterface.dll",
+            L"PowerToys.FileLocksmithExt.dll",
+            L"PowerToys.RegistryPreviewExt.dll",
+            L"PowerToys.MeasureToolModuleInterface.dll",
+            L"PowerToys.NewPlus.ShellExtension.dll",
+            L"PowerToys.HostsModuleInterface.dll",
+            L"PowerToys.Peek.dll",
+            L"PowerToys.EnvironmentVariablesModuleInterface.dll",
             L"PowerToys.MouseWithoutBordersModuleInterface.dll",
             L"PowerToys.CropAndLockModuleInterface.dll",
             L"PowerToys.CmdNotFoundModuleInterface.dll",

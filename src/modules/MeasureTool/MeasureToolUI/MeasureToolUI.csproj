@@ -7,7 +7,7 @@
     <AssemblyTitle>PowerToys.MeasureTool</AssemblyTitle>
     <AssemblyDescription>PowerToys MeasureTool</AssemblyDescription>
     <OutputType>WinExe</OutputType>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
     <RootNamespace>PowerToys.MeasureToolUI</RootNamespace>
     <AssemblyName>PowerToys.MeasureToolUI</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>

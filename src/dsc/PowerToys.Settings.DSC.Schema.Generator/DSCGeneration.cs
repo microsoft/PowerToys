@@ -262,7 +262,7 @@ class {{module.Name}} {
                     }
                 
                     if ($installation) {
-                        $SettingsExePath = Join-Path (Join-Path $installation.InstallLocation WinUI3Apps) PowerToys.Settings.exe
+                        $SettingsExePath = Join-Path $installation.InstallLocation PowerToys.Settings.exe
                         $SettingsExePath = "`"$SettingsExePath`""
                     } else {
                         throw "PowerToys installation wasn't found."
@@ -284,7 +284,7 @@ class {{module.Name}} {
                 }
 
                 if ($installation) {
-                    $SettingsExePath = Join-Path (Join-Path $installation.InstallLocation WinUI3Apps) PowerToys.Settings.exe
+                    $SettingsExePath = Join-Path $installation.InstallLocation PowerToys.Settings.exe
                     $SettingsExePath = "`"$SettingsExePath`""
                 } else {
                     throw "PowerToys installation wasn't found."

@@ -6,7 +6,7 @@
   <PropertyGroup>
     <Nullable>enable</Nullable>
     <RootNamespace>Microsoft.CmdPal.Ext.WindowWalker</RootNamespace>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\CmdPal</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>

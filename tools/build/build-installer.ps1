@@ -169,7 +169,7 @@ if (-not $Force) {
     }
 }
 
-$cmdpalOutputPath = Join-Path $repoRoot "$Platform\$Configuration\WinUI3Apps\CmdPal"
+$cmdpalOutputPath = Join-Path $repoRoot "$Platform\$Configuration\CmdPal"
 $buildOutputPath = Join-Path $repoRoot "$Platform\$Configuration"
 
 # Clean should be done first before any other steps
@@ -301,7 +301,7 @@ try {
             }
         }
 
-        $settingsLibDll = Join-Path $repoRoot "$Platform\$Configuration\WinUI3Apps\PowerToys.Settings.UI.Lib.dll"
+        $settingsLibDll = Join-Path $repoRoot "$Platform\$Configuration\PowerToys.Settings.UI.Lib.dll"
         
         $dscGenDir = Join-Path $repoRoot "src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$ptVersionFull"
         if (-not (Test-Path $dscGenDir)) {
@@ -316,20 +316,20 @@ try {
             Write-Host "[DSC] Executing: $generatorExe"
             
             $generatorDir = Split-Path -Parent $generatorExe
-            $winUI3AppsDir = Join-Path $repoRoot "$Platform\$Configuration\WinUI3Apps"
+            $buildOutDir = Join-Path $repoRoot "$Platform\$Configuration"
             
-            # Copy dependencies from WinUI3Apps to Generator directory to satisfy WinRT/WinUI3 dependencies
-            # This avoids "Class not registered" errors without polluting the WinUI3Apps directory which is used for packaging.
-            if (Test-Path $winUI3AppsDir) {
-                Write-Host "[DSC] Copying dependencies from $winUI3AppsDir to $generatorDir"
-                Get-ChildItem -Path $winUI3AppsDir -Filter "*.dll" | ForEach-Object {
+            # Copy dependencies from build output to Generator directory to satisfy WinRT/WinUI3 dependencies
+            # This avoids "Class not registered" errors without polluting the build output directory which is used for packaging.
+            if (Test-Path $buildOutDir) {
+                Write-Host "[DSC] Copying dependencies from $buildOutDir to $generatorDir"
+                Get-ChildItem -Path $buildOutDir -Filter "*.dll" | ForEach-Object {
                     $destPath = Join-Path $generatorDir $_.Name
                     if (-not (Test-Path $destPath)) {
                         Copy-Item -Path $_.FullName -Destination $destPath -Force
                     }
                 }
                 # Also copy resources.pri if it exists, as it might be needed for resource lookup
-                $priFile = Join-Path $winUI3AppsDir "resources.pri"
+                $priFile = Join-Path $buildOutDir "resources.pri"
                 if (Test-Path $priFile) {
                     Copy-Item -Path $priFile -Destination $generatorDir -Force
                 }

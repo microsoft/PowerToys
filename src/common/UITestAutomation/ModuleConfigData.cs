@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -99,14 +99,14 @@ namespace Microsoft.PowerToys.UITest
             // Module information including executable name, window name, and optional subdirectory
             ModuleInfo = new Dictionary<PowerToysModule, ModuleInfo>
             {
-                [PowerToysModule.PowerToysSettings] = new ModuleInfo("PowerToys.Settings.exe", "PowerToys Settings", "WinUI3Apps"),
+                [PowerToysModule.PowerToysSettings] = new ModuleInfo("PowerToys.Settings.exe", "PowerToys Settings"),
                 [PowerToysModule.FancyZone] = new ModuleInfo("PowerToys.FancyZonesEditor.exe", "FancyZones Layout"),
-                [PowerToysModule.Hosts] = new ModuleInfo("PowerToys.Hosts.exe", "Hosts File Editor", "WinUI3Apps"),
+                [PowerToysModule.Hosts] = new ModuleInfo("PowerToys.Hosts.exe", "Hosts File Editor"),
                 [PowerToysModule.Runner] = new ModuleInfo("PowerToys.exe", "PowerToys"),
                 [PowerToysModule.Workspaces] = new ModuleInfo("PowerToys.WorkspacesEditor.exe", "Workspaces Editor"),
-                [PowerToysModule.PowerRename] = new ModuleInfo("PowerToys.PowerRename.exe", "PowerRename", "WinUI3Apps"),
-                [PowerToysModule.CommandPalette] = new ModuleInfo("Microsoft.CmdPal.UI.exe", "PowerToys Command Palette", "WinUI3Apps\\CmdPal"),
-                [PowerToysModule.ScreenRuler] = new ModuleInfo("PowerToys.MeasureToolUI.exe", "PowerToys.ScreenRuler", "WinUI3Apps"),
+                [PowerToysModule.PowerRename] = new ModuleInfo("PowerToys.PowerRename.exe", "PowerRename"),
+                [PowerToysModule.CommandPalette] = new ModuleInfo("Microsoft.CmdPal.UI.exe", "PowerToys Command Palette", "CmdPal"),
+                [PowerToysModule.ScreenRuler] = new ModuleInfo("PowerToys.MeasureToolUI.exe", "PowerToys.ScreenRuler"),
                 [PowerToysModule.LightSwitch] = new ModuleInfo("PowerToys.LightSwitch.exe", "PowerToys.LightSwitch", "LightSwitchService"),
             };
         }

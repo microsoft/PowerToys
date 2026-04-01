@@ -5,7 +5,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.Apps</RootNamespace>
     <Nullable>enable</Nullable>
-    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\CmdPal</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>

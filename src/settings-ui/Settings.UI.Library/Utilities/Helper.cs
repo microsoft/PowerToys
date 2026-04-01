@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -119,10 +119,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             return Directory.GetParent(settingsPath).FullName;
         }
 
-        public static string GetPowerToysInstallationWinUI3AppsAssetsFolder()
+        public static string GetPowerToysInstallationAssetsFolder()
         {
-            // return .\PowerToys\WinUI3Apps\Assets
-            return Path.Combine(GetPowerToysInstallationFolder(), "WinUI3Apps", "Assets");
+            // return .\PowerToys\Assets
+            return Path.Combine(GetPowerToysInstallationFolder(), "Assets");
         }
 
         private static readonly global::PowerToys.Interop.LayoutMapManaged LayoutMap = new global::PowerToys.Interop.LayoutMapManaged();

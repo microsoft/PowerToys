@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
 
@@ -8,7 +8,7 @@
     <!-- For MVVM Toolkit Partial Properties/AOT support -->
     <LangVersion>preview</LangVersion>
 
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\</OutputPath>
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\CmdPal\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->

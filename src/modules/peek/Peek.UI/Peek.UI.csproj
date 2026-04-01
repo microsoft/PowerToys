@@ -10,7 +10,7 @@
     <AssemblyDescription>PowerToys Peek UI</AssemblyDescription>
     <RootNamespace>Peek.UI</RootNamespace>
     <OutputType>WinExe</OutputType>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <UseWinUI>true</UseWinUI>
     <Platforms>x64;ARM64</Platforms>
