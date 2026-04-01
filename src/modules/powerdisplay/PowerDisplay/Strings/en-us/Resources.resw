@@ -24,8 +24,11 @@
 	<data name="SettingsTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings</value>
   </data>
-	<data name="MonitorTooltip.ToolTipService.ToolTip" xml:space="preserve">
+	<data name="ExternalMonitorTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Monitor</value>
+  </data>
+	<data name="BuiltInMonitorTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Built-in display</value>
   </data>
 	<data name="BrightnessTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Brightness</value>

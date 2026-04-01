@@ -7,15 +7,31 @@
     xmlns:library="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:pdmodels="using:PowerDisplay.Common.Models"
+    xmlns:pdmodels="using:PowerDisplay.Models"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
+    <local:NavigablePage.Resources>
+        <x:Double x:Key="PowerDisplayCompactActionControlMinWidth">120</x:Double>
+        <x:Double x:Key="PowerDisplayVcpDetailsFlyoutWidth">420</x:Double>
+        <x:Double x:Key="PowerDisplayVcpDetailsFlyoutMaxHeight">480</x:Double>
+        <x:Double x:Key="PowerDisplayActionButtonSpacing">8</x:Double>
+        <x:Double x:Key="PowerDisplayCompactSpacing">4</x:Double>
+        <x:Double x:Key="PowerDisplayInlineIconSpacing">6</x:Double>
+        <x:Double x:Key="PowerDisplayPrimaryGlyphFontSize">14</x:Double>
+        <x:Double x:Key="PowerDisplaySecondaryGlyphFontSize">12</x:Double>
+        <x:Double x:Key="PowerDisplayMoreButtonGlyphFontSize">16</x:Double>
+        <Thickness x:Key="PowerDisplayMonitorExpanderMargin">0,0,0,2</Thickness>
+        <Thickness x:Key="PowerDisplayVcpDetailsHeaderMargin">0,0,0,12</Thickness>
+        <Thickness x:Key="PowerDisplayVcpCopyButtonPadding">8,4</Thickness>
+        <Thickness x:Key="PowerDisplayVcpValueMargin">0,0,0,8</Thickness>
+    </local:NavigablePage.Resources>
+
     <controls:SettingsPageControl x:Uid="PowerDisplay" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerDisplay.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="PowerDisplay_Enable_PowerDisplay"
@@ -47,7 +63,7 @@
 
                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_MonitorRefreshDelay" HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
                         <ComboBox
-                            MinWidth="120"
+                            MinWidth="{StaticResource PowerDisplayCompactActionControlMinWidth}"
                             ItemsSource="{x:Bind ViewModel.MonitorRefreshDelayOptions}"
                             SelectedItem="{x:Bind ViewModel.MonitorRefreshDelay, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
@@ -71,23 +87,23 @@
                         IsExpanded="{x:Bind ViewModel.HasCustomVcpMappings, Mode=OneWay}"
                         ItemsSource="{x:Bind ViewModel.CustomVcpMappings, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.ItemTemplate>
-                            <DataTemplate x:DataType="library:CustomVcpValueMapping">
+                            <DataTemplate x:DataType="pdmodels:CustomVcpValueMapping">
                                 <tkcontrols:SettingsCard Description="{x:Bind VcpCodeDisplayName}" Header="{x:Bind DisplaySummary}">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayActionButtonSpacing}">
                                         <Button
+                                            x:Uid="PowerDisplay_EditCustomMapping_Button"
                                             Click="EditCustomMapping_Click"
                                             Content="{ui:FontIcon Glyph=&#xE70F;,
-                                                                  FontSize=14}"
+                                                                  FontSize={StaticResource PowerDisplayPrimaryGlyphFontSize}}"
                                             Style="{StaticResource SubtleButtonStyle}"
-                                            Tag="{x:Bind}"
-                                            ToolTipService.ToolTip="Edit" />
+                                            Tag="{x:Bind}" />
                                         <Button
+                                            x:Uid="PowerDisplay_DeleteCustomMapping_Button"
                                             Click="DeleteCustomMapping_Click"
                                             Content="{ui:FontIcon Glyph=&#xE74D;,
-                                                                  FontSize=14}"
+                                                                  FontSize={StaticResource PowerDisplayPrimaryGlyphFontSize}}"
                                             Style="{StaticResource SubtleButtonStyle}"
-                                            Tag="{x:Bind}"
-                                            ToolTipService.ToolTip="Delete" />
+                                            Tag="{x:Bind}" />
                                     </StackPanel>
                                 </tkcontrols:SettingsCard>
                             </DataTemplate>
@@ -95,8 +111,8 @@
 
                         <!--  Add mapping button  -->
                         <Button x:Uid="PowerDisplay_AddCustomMappingButton" Click="AddCustomMapping_Click">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <FontIcon FontSize="14" Glyph="&#xE710;" />
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayInlineIconSpacing}">
+                                <FontIcon FontSize="{StaticResource PowerDisplayPrimaryGlyphFontSize}" Glyph="&#xE710;" />
                                 <TextBlock x:Uid="PowerDisplay_AddCustomMapping_Text" />
                             </StackPanel>
                         </Button>
@@ -112,7 +128,7 @@
                         <tkcontrols:SettingsExpander.ItemTemplate>
                             <DataTemplate x:DataType="pdmodels:PowerDisplayProfile">
                                 <tkcontrols:SettingsCard Header="{x:Bind Name}">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayActionButtonSpacing}">
                                         <Button
                                             x:Uid="PowerDisplay_Profile_ApplyButton"
                                             Click="ProfileButton_Click"
@@ -120,7 +136,7 @@
                                         <Button
                                             x:Uid="PowerDisplay_Profile_MoreButton"
                                             Content="{ui:FontIcon Glyph=&#xE712;,
-                                                                  FontSize=16}"
+                                                                  FontSize={StaticResource PowerDisplayMoreButtonGlyphFontSize}}"
                                             Style="{StaticResource SubtleButtonStyle}"
                                             Tag="{x:Bind}">
                                             <Button.Flyout>
@@ -146,8 +162,8 @@
 
                         <!--  Add profile button  -->
                         <Button x:Uid="PowerDisplay_AddProfileButton" Click="AddProfileButton_Click">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <FontIcon FontSize="14" Glyph="&#xE710;" />
+                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayInlineIconSpacing}">
+                                <FontIcon FontSize="{StaticResource PowerDisplayPrimaryGlyphFontSize}" Glyph="&#xE710;" />
                                 <TextBlock x:Uid="PowerDisplay_AddProfile_Text" />
                             </StackPanel>
                         </Button>
@@ -164,16 +180,14 @@
                     <!--  Monitor list  -->
                     <ItemsControl
                         x:Name="MonitorsList"
-                        HorizontalAlignment="Stretch"
                         ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}"
                         Visibility="{x:Bind ViewModel.HasMonitors, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="library:MonitorInfo">
                                 <tkcontrols:SettingsExpander
-                                    Margin="0,0,0,2"
+                                    Margin="{StaticResource PowerDisplayMonitorExpanderMargin}"
                                     Description="{x:Bind Id, Mode=OneWay}"
-                                    Header="{x:Bind DisplayName, Mode=OneWay}"
-                                    IsExpanded="False">
+                                    Header="{x:Bind DisplayName, Mode=OneWay}">
                                     <tkcontrols:SettingsExpander.HeaderIcon>
                                         <FontIcon Glyph="{x:Bind MonitorIconGlyph, Mode=OneWay}" />
                                     </tkcontrols:SettingsExpander.HeaderIcon>
@@ -185,9 +199,8 @@
                                             BorderThickness="0"
                                             CornerRadius="0"
                                             IsClosable="False"
-                                            IsOpen="True"
-                                            Severity="Warning"
-                                            Visibility="{x:Bind ShowCapabilitiesWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            IsOpen="{x:Bind ShowCapabilitiesWarning, Mode=OneWay}"
+                                            Severity="Warning" />
                                     </tkcontrols:SettingsExpander.ItemsHeader>
                                     <tkcontrols:SettingsExpander.Items>
                                         <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsContrast, Mode=OneWay}">
@@ -220,38 +233,36 @@
                                         <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_VcpCapabilities" Visibility="{x:Bind HasCapabilities, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <Button
                                                 x:Uid="PowerDisplay_Monitor_VcpDetails_Button"
-                                                Content="&#xE946;"
-                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Content="{ui:FontIcon Glyph=&#xE946;}"
                                                 Style="{StaticResource SubtleButtonStyle}">
                                                 <Button.Flyout>
                                                     <Flyout ShouldConstrainToRootBounds="False">
-                                                        <Grid Width="420">
+                                                        <Grid Width="{StaticResource PowerDisplayVcpDetailsFlyoutWidth}">
                                                             <Grid.RowDefinitions>
                                                                 <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="*" />
+                                                                <RowDefinition />
                                                             </Grid.RowDefinitions>
                                                             <!--  Header with Copy Button  -->
-                                                            <Grid Margin="0,0,0,12">
+                                                            <Grid Margin="{StaticResource PowerDisplayVcpDetailsHeaderMargin}">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="*" />
                                                                     <ColumnDefinition Width="Auto" />
                                                                 </Grid.ColumnDefinitions>
                                                                 <TextBlock
                                                                     x:Uid="PowerDisplay_Monitor_VcpCodes_Header"
-                                                                    Grid.Column="0"
                                                                     VerticalAlignment="Center"
-                                                                    FontSize="13"
+                                                                    FontSize="{StaticResource PowerDisplayPrimaryGlyphFontSize}"
                                                                     FontWeight="SemiBold" />
                                                                 <Button
                                                                     x:Uid="PowerDisplay_Monitor_VcpCodes_CopyButton"
                                                                     Grid.Column="1"
-                                                                    Padding="8,4"
+                                                                    Padding="{StaticResource PowerDisplayVcpCopyButtonPadding}"
                                                                     VerticalAlignment="Center"
                                                                     Click="CopyVcpCodes_Click"
                                                                     Tag="{x:Bind}">
-                                                                    <StackPanel Orientation="Horizontal" Spacing="4">
-                                                                        <FontIcon FontSize="12" Glyph="&#xE8C8;" />
-                                                                        <TextBlock x:Uid="PowerDisplay_Monitor_VcpCodes_CopyText" FontSize="12" />
+                                                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayCompactSpacing}">
+                                                                        <FontIcon FontSize="{StaticResource PowerDisplaySecondaryGlyphFontSize}" Glyph="&#xE8C8;" />
+                                                                        <TextBlock x:Uid="PowerDisplay_Monitor_VcpCodes_CopyText" FontSize="{StaticResource PowerDisplaySecondaryGlyphFontSize}" />
                                                                     </StackPanel>
                                                                 </Button>
                                                             </Grid>
@@ -259,25 +270,25 @@
                                                             <!--  VCP Codes List  -->
                                                             <ScrollViewer
                                                                 Grid.Row="1"
-                                                                MaxHeight="480"
+                                                                MaxHeight="{StaticResource PowerDisplayVcpDetailsFlyoutMaxHeight}"
                                                                 HorizontalScrollBarVisibility="Disabled"
                                                                 HorizontalScrollMode="Disabled"
                                                                 VerticalScrollBarVisibility="Auto">
-                                                                <ItemsControl HorizontalAlignment="Stretch" ItemsSource="{x:Bind VcpCodesFormatted, Mode=OneWay}">
+                                                                <ItemsControl ItemsSource="{x:Bind VcpCodesFormatted, Mode=OneWay}">
                                                                     <ItemsControl.ItemTemplate>
                                                                         <DataTemplate x:DataType="library:VcpCodeDisplayInfo">
-                                                                            <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
+                                                                            <StackPanel>
                                                                                 <TextBlock
-                                                                                    FontSize="12"
+                                                                                    FontSize="{StaticResource PowerDisplaySecondaryGlyphFontSize}"
                                                                                     Text="{x:Bind Title}"
                                                                                     TextWrapping="Wrap" />
                                                                                 <TextBlock
-                                                                                    Margin="0,0,0,8"
-                                                                                    FontSize="12"
+                                                                                    Margin="{StaticResource PowerDisplayVcpValueMargin}"
+                                                                                    FontSize="{StaticResource PowerDisplaySecondaryGlyphFontSize}"
                                                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                                                     Text="{x:Bind Values}"
                                                                                     TextWrapping="Wrap"
-                                                                                    Visibility="{x:Bind HasValues}" />
+                                                                                    Visibility="{x:Bind HasValues, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                                             </StackPanel>
                                                                         </DataTemplate>
                                                                     </ItemsControl.ItemTemplate>

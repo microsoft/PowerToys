@@ -34,6 +34,13 @@ namespace PowerDisplay
             // Initialize COM wrappers first (needed for AppInstance)
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
+            // Exit before instance registration so a blocked launch cannot redirect
+            // activation to an already-running instance.
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPowerDisplayEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                return 0;
+            }
+
             // Single instance check BEFORE logger initialization to avoid creating extra log files
             // Command Palette pattern: check for existing instance first
             var activationArgs = AppInstance.GetCurrent().GetActivatedEventArgs();

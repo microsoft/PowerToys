@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
-namespace PowerDisplay.Common.Models
+namespace PowerDisplay.Models
 {
     /// <summary>
     /// Represents a color temperature preset item for VCP code 0x14.

@@ -1,49 +1,55 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="PowerDisplay.MonitorIcon"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:PowerDisplay"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    AutomationProperties.AccessibilityView="Raw"
+    IsTabStop="False"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <x:Double x:Key="MonitorGlyphFontSize">22</x:Double>
+        <x:Double x:Key="MonitorNumberFontSize">10</x:Double>
+        <Thickness x:Key="ExternalMonitorNumberMargin">0,0,0,4</Thickness>
+        <Thickness x:Key="BuiltInMonitorNumberMargin">0,0,0,6</Thickness>
+    </UserControl.Resources>
+
     <Grid>
+        <!--  Decorative badge: keep fixed text scaling for the glyph overlay and rely on adjacent DisplayName text for accessible monitor numbering.  -->
         <Viewbox>
             <Grid>
-                <Grid x:Name="MonitorGrid">
+                <Grid x:Name="MonitorGrid" x:Uid="ExternalMonitorTooltip">
                     <FontIcon
-                        x:Uid="MonitorTooltip"
                         VerticalAlignment="Center"
-                        AutomationProperties.AccessibilityView="Raw"
-                        FontSize="22"
+                        FontSize="{StaticResource MonitorGlyphFontSize}"
                         Glyph="&#xE7F4;" />
                     <TextBlock
-                        Margin="0,0,0,4"
+                        Margin="{StaticResource ExternalMonitorNumberMargin}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        FontSize="10"
+                        FontSize="{StaticResource MonitorNumberFontSize}"
                         FontWeight="SemiBold"
+                        IsTextScaleFactorEnabled="False"
                         Text="{x:Bind MonitorNumber, Mode=OneWay}" />
                 </Grid>
 
                 <Grid
                     x:Name="BuiltInDisplayGrid"
-                    Padding="0,0,0,-4"
+                    x:Uid="BuiltInMonitorTooltip"
                     Visibility="Collapsed">
                     <FontIcon
-                        x:Uid="MonitorTooltip"
-                        Margin="0,0,0,0"
                         VerticalAlignment="Center"
-                        AutomationProperties.AccessibilityView="Raw"
-                        FontSize="22"
+                        FontSize="{StaticResource MonitorGlyphFontSize}"
                         Glyph="&#xE7FB;" />
                     <TextBlock
-                        Margin="0,0,0,6"
+                        Margin="{StaticResource BuiltInMonitorNumberMargin}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        FontSize="10"
+                        FontSize="{StaticResource MonitorNumberFontSize}"
                         FontWeight="SemiBold"
+                        IsTextScaleFactorEnabled="False"
                         Text="{x:Bind MonitorNumber, Mode=OneWay}" />
                 </Grid>
             </Grid>

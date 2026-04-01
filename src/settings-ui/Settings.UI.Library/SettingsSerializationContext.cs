@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using PowerDisplay.Models;
 using SettingsUILibrary = Settings.UI.Library;
 using SettingsUILibraryHelpers = Settings.UI.Library.Helpers;
 

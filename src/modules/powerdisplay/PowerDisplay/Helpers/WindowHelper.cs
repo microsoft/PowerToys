@@ -3,9 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using WinUIEx;
 
@@ -26,6 +24,9 @@ namespace PowerDisplay.Helpers
         [return: MarshalAs(UnmanagedType.Bool)]
         private static partial bool GetCursorPos(out POINT lpPoint);
 
+        [LibraryImport("shcore.dll")]
+        private static partial int GetDpiForMonitor(nint hMonitor, uint dpiType, out uint dpiX, out uint dpiY);
+
         // Window Styles
         private const int GwlStyle = -16;
         private const int WsCaption = 0x00C00000;
@@ -40,17 +41,11 @@ namespace PowerDisplay.Helpers
         private const int WsExWindowedge = 0x00000100;
         private const int WsExClientedge = 0x00000200;
         private const int WsExStaticedge = 0x00020000;
-        private const int WsExToolwindow = 0x00000080;
-
         private const uint SwpNosize = 0x0001;
         private const uint SwpNomove = 0x0002;
         private const uint SwpFramechanged = 0x0020;
-        private const nint HwndTopmost = -1;
-        private const nint HwndNotopmost = -2;
-
-        // ShowWindow commands
-        private const int SwHide = 0;
-        private const int SwShow = 5;
+        private const uint MdtEffectiveDpi = 0;
+        private const int DefaultDpi = 96;
 
         // P/Invoke declarations (64-bit only - PowerToys only builds for x64/ARM64)
         [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
@@ -69,22 +64,6 @@ namespace PowerDisplay.Helpers
             int cx,
             int cy,
             uint uFlags);
-
-        [LibraryImport("user32.dll", EntryPoint = "ShowWindow")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool ShowWindowNative(nint hWnd, int nCmdShow);
-
-        [LibraryImport("user32.dll", EntryPoint = "IsWindowVisible")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool IsWindowVisibleNative(nint hWnd);
-
-        /// <summary>
-        /// Check if window is visible
-        /// </summary>
-        public static bool IsWindowVisible(nint hWnd)
-        {
-            return IsWindowVisibleNative(hWnd);
-        }
 
         /// <summary>
         /// Disable window moving and resizing functionality
@@ -124,72 +103,45 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Set whether window is topmost
-        /// </summary>
-        public static void SetWindowTopmost(nint hWnd, bool topmost)
-        {
-            SetWindowPos(
-                hWnd,
-                topmost ? HwndTopmost : HwndNotopmost,
-                0,
-                0,
-                0,
-                0,
-                SwpNomove | SwpNosize);
-        }
-
-        /// <summary>
-        /// Show or hide window
-        /// </summary>
-        public static void ShowWindow(nint hWnd, bool show)
-        {
-            ShowWindowNative(hWnd, show ? SwShow : SwHide);
-        }
-
-        /// <summary>
-        /// Hide window from taskbar
-        /// </summary>
-        public static void HideFromTaskbar(nint hWnd)
-        {
-            // Get current extended style
-            nint exStyle = GetWindowLongPtr(hWnd, GwlExstyle);
-
-            // Add WS_EX_TOOLWINDOW style to hide window from taskbar
-            exStyle |= WsExToolwindow;
-
-            // Set new extended style
-            _ = SetWindowLong(hWnd, GwlExstyle, exStyle);
-
-            // Refresh window frame
-            SetWindowPos(
-                hWnd,
-                0,
-                0,
-                0,
-                0,
-                0,
-                SwpNomove | SwpNosize | SwpFramechanged);
-        }
-
-        /// <summary>
         /// Get the DPI scale factor for a window (relative to standard 96 DPI)
         /// </summary>
         /// <param name="window">WinUIEx window</param>
         /// <returns>DPI scale factor (1.0 = 100%, 1.25 = 125%, 1.5 = 150%, 2.0 = 200%)</returns>
         public static double GetDpiScale(WindowEx window)
         {
-            return (float)window.GetDpiForWindow() / 96.0;
+            return (double)window.GetDpiForWindow() / DefaultDpi;
         }
 
         /// <summary>
-        /// Convert device-independent units (DIU) to physical pixels
+        /// Get the DPI scale factor for a display area (relative to standard 96 DPI)
         /// </summary>
-        /// <param name="diu">Device-independent unit value</param>
+        /// <param name="displayArea">Target display area</param>
+        /// <returns>DPI scale factor (1.0 = 100%, 1.25 = 125%, 1.5 = 150%, 2.0 = 200%)</returns>
+        public static double GetDpiScale(DisplayArea displayArea)
+        {
+            return (double)GetEffectiveDpi(global::Microsoft.UI.Win32Interop.GetMonitorFromDisplayId(displayArea.DisplayId)) / DefaultDpi;
+        }
+
+        /// <summary>
+        /// Convert device-independent pixels (DIP) to physical pixels.
+        /// </summary>
+        /// <param name="dip">Device-independent pixel value</param>
         /// <param name="dpiScale">DPI scale factor</param>
         /// <returns>Physical pixel value</returns>
-        public static int ScaleToPhysicalPixels(int diu, double dpiScale)
+        public static int ScaleToPhysicalPixels(int dip, double dpiScale)
         {
-            return (int)Math.Ceiling(diu * dpiScale);
+            return (int)Math.Ceiling(dip * dpiScale);
+        }
+
+        /// <summary>
+        /// Convert physical pixels to device-independent pixels (DIP).
+        /// </summary>
+        /// <param name="physicalPixels">Physical pixel value</param>
+        /// <param name="dpiScale">DPI scale factor</param>
+        /// <returns>Device-independent pixel value</returns>
+        public static int ScaleToDip(int physicalPixels, double dpiScale)
+        {
+            return (int)Math.Floor(physicalPixels / dpiScale);
         }
 
         /// <summary>
@@ -200,62 +152,98 @@ namespace PowerDisplay.Helpers
         /// - Different DPI settings
         /// </summary>
         /// <param name="window">WinUIEx window to position</param>
-        /// <param name="width">Window width in device-independent units (DIU)</param>
-        /// <param name="height">Window height in device-independent units (DIU)</param>
-        /// <param name="rightMargin">Right margin in device-independent units (DIU)</param>
+        /// <param name="widthDip">Window width in device-independent pixels (DIP)</param>
+        /// <param name="heightDip">Window height in device-independent pixels (DIP)</param>
+        /// <param name="rightMarginDip">Right margin in device-independent pixels (DIP)</param>
+        /// <param name="bottomMarginDip">Bottom margin in device-independent pixels (DIP)</param>
         public static void PositionWindowBottomRight(
             WindowEx window,
-            int width,
-            int height,
-            int rightMargin = 0)
+            int widthDip,
+            int heightDip,
+            int rightMarginDip = 0,
+            int bottomMarginDip = 0)
         {
-            // RectWork already includes correct offsets for taskbar position
-            var monitors = MonitorInfo.GetDisplayMonitors();
-            if (monitors == null || monitors.Count == 0)
+            if (!TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
             {
-                ManagedCommon.Logger.LogWarning("PositionWindowBottomRight: No monitors found, skipping positioning");
+                ManagedCommon.Logger.LogWarning("PositionWindowBottomRight: Unable to determine target display from cursor, skipping positioning");
                 return;
             }
 
-            // Find the monitor where the mouse cursor is located
-            var targetMonitor = GetMonitorAtCursor(monitors);
-            var workArea = targetMonitor.RectWork;
-            double dpiScale = GetDpiScale(window);
-
-            // Calculate bottom-right position
-            // RectWork.Right/Bottom already account for taskbar position
-            double x = workArea.Right - (dpiScale * (width + rightMargin));
-            double y = workArea.Bottom - (dpiScale * height);
-
-            window.MoveAndResize(x, y, width, height);
+            MoveWindowBottomRight(window, displayArea, widthDip, heightDip, rightMarginDip, bottomMarginDip);
         }
 
         /// <summary>
-        /// Get the monitor where the mouse cursor is currently located.
-        /// Falls back to primary monitor if cursor position cannot be determined.
+        /// Center a window within the specified display area's work area.
         /// </summary>
-        /// <param name="monitors">List of available monitors</param>
-        /// <returns>MonitorInfo of the monitor containing the cursor</returns>
-        private static MonitorInfo GetMonitorAtCursor(IList<MonitorInfo> monitors)
+        /// <param name="window">WinUIEx window to position</param>
+        /// <param name="displayArea">Target display area</param>
+        /// <param name="widthDip">Window width in device-independent pixels (DIP)</param>
+        /// <param name="heightDip">Window height in device-independent pixels (DIP)</param>
+        public static void CenterWindowOnDisplay(
+            WindowEx window,
+            DisplayArea displayArea,
+            int widthDip,
+            int heightDip)
         {
-            // Try to get cursor position using Win32 API
-            if (GetCursorPos(out var cursorPos))
+            double dpiScale = GetDpiScale(displayArea);
+            int physicalWidth = ScaleToPhysicalPixels(widthDip, dpiScale);
+            int physicalHeight = ScaleToPhysicalPixels(heightDip, dpiScale);
+
+            window.AppWindow.MoveAndResize(CreateCenteredRect(displayArea, physicalWidth, physicalHeight), displayArea);
+        }
+
+        private static void MoveWindowBottomRight(
+            WindowEx window,
+            DisplayArea displayArea,
+            int widthDip,
+            int heightDip,
+            int rightMarginDip,
+            int bottomMarginDip)
+        {
+            var workArea = displayArea.WorkArea;
+            double dpiScale = GetDpiScale(displayArea);
+            int physicalWidth = ScaleToPhysicalPixels(widthDip, dpiScale);
+            int physicalHeight = ScaleToPhysicalPixels(heightDip, dpiScale);
+            int physicalX = (workArea.X + workArea.Width) - ScaleToPhysicalPixels(widthDip + rightMarginDip, dpiScale);
+            int physicalY = (workArea.Y + workArea.Height) - ScaleToPhysicalPixels(heightDip + bottomMarginDip, dpiScale);
+
+            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight), displayArea);
+        }
+
+        private static Windows.Graphics.RectInt32 CreateCenteredRect(
+            DisplayArea displayArea,
+            int physicalWidth,
+            int physicalHeight)
+        {
+            var workArea = displayArea.WorkArea;
+            int physicalX = workArea.X + ((workArea.Width - physicalWidth) / 2);
+            int physicalY = workArea.Y + ((workArea.Height - physicalHeight) / 2);
+
+            return new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight);
+        }
+
+        internal static bool TryGetDisplayAreaAtCursor(out DisplayArea? displayArea)
+        {
+            displayArea = null;
+
+            if (!GetCursorPos(out var cursorPos))
             {
-                // Find the monitor that contains the cursor point
-                foreach (var monitor in monitors)
-                {
-                    if (cursorPos.X >= monitor.RectMonitor.Left &&
-                        cursorPos.X < monitor.RectMonitor.Right &&
-                        cursorPos.Y >= monitor.RectMonitor.Top &&
-                        cursorPos.Y < monitor.RectMonitor.Bottom)
-                    {
-                        return monitor;
-                    }
-                }
+                return false;
             }
 
-            // Fallback to first monitor (typically primary)
-            return monitors[0];
+            displayArea = DisplayArea.GetFromPoint(new Windows.Graphics.PointInt32(cursorPos.X, cursorPos.Y), DisplayAreaFallback.None);
+            return displayArea is not null;
+        }
+
+        private static int GetEffectiveDpi(nint hMonitor)
+        {
+            if (hMonitor == 0)
+            {
+                return DefaultDpi;
+            }
+
+            var hr = GetDpiForMonitor(hMonitor, MdtEffectiveDpi, out var dpiX, out _);
+            return hr >= 0 && dpiX > 0 ? (int)dpiX : DefaultDpi;
         }
     }
 }

@@ -213,12 +213,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     continue;
                 }
 
-                // TEMPORARILY_DISABLED: PowerDisplay
-                if (moduleType == ModuleType.PowerDisplay)
-                {
-                    continue;
-                }
-
                 GpoRuleConfigured gpo = ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
                 var newItem = new DashboardListItem()
                 {

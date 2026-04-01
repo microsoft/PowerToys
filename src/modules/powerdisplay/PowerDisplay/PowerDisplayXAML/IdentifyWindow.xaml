@@ -10,15 +10,20 @@
     IsResizable="False"
     IsTitleBarVisible="False"
     mc:Ignorable="d">
-    <Grid Background="#1A000000">
-        <TextBlock
-            x:Name="NumberText"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            FontFamily="Segoe UI"
-            FontSize="200"
-            FontWeight="Bold"
-            Foreground="White"
-            Text="1" />
+    <Grid Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
+        <Grid.Resources>
+            <Thickness x:Key="IdentifyWindowContentMargin">24</Thickness>
+        </Grid.Resources>
+
+        <Viewbox Margin="{StaticResource IdentifyWindowContentMargin}" Stretch="Uniform">
+            <TextBlock
+                x:Name="NumberText"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontWeight="Bold"
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                Text="1"
+                TextAlignment="Center" />
+        </Viewbox>
     </Grid>
 </winuiex:WindowEx>

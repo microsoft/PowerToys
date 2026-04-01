@@ -4,18 +4,16 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
+using PowerDisplay.Models;
 using PowerDisplay.ViewModels;
 using Windows.Graphics;
 using WinUIEx;
@@ -323,9 +321,9 @@ namespace PowerDisplay
                 // Window properties (IsResizable, IsMaximizable, IsMinimizable,
                 // IsTitleBarVisible, IsShownInSwitchers) are set in XAML
 
-                // Set minimal initial window size - will be adjusted before showing
-                // Using minimal height to prevent "large window shrinking" flicker
-                this.AppWindow.Resize(new SizeInt32 { Width = AppConstants.UI.WindowWidth, Height = 100 });
+                // Set a minimal initial window size in DIP - it will be adjusted before showing.
+                // Using minimal height prevents the "large window shrinking" flicker.
+                this.SetWindowSize(AppConstants.UI.WindowWidthDip, AppConstants.UI.WindowMinHeightDip);
 
                 // Position window at bottom right corner
                 PositionWindowAtBottomRight();
@@ -379,14 +377,20 @@ namespace PowerDisplay
 
                 // Force layout update and measure content height
                 RootGrid.UpdateLayout();
-                MainContainer?.Measure(new Windows.Foundation.Size(AppConstants.UI.WindowWidth, double.PositiveInfinity));
+                MainContainer?.Measure(new Windows.Foundation.Size(AppConstants.UI.WindowWidthDip, double.PositiveInfinity));
                 var contentHeight = (int)Math.Ceiling(MainContainer?.DesiredSize.Height ?? 0);
+                var maxHeightDip = GetAdaptiveWindowMaxHeightDip();
 
-                // Apply min/max height limits and reposition (WindowEx handles DPI automatically)
+                // Apply min/max height limits and reposition using DIP values.
                 // Min height ensures window is visible even if content hasn't loaded yet
-                var finalHeight = Math.Max(AppConstants.UI.MinWindowHeight, Math.Min(contentHeight, AppConstants.UI.MaxWindowHeight));
-                Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, finalHeight={finalHeight}");
-                WindowHelper.PositionWindowBottomRight(this, AppConstants.UI.WindowWidth, finalHeight, AppConstants.UI.WindowRightMargin);
+                var finalHeightDip = Math.Max(AppConstants.UI.WindowMinHeightDip, Math.Min(contentHeight, maxHeightDip));
+                Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, maxHeightDip={maxHeightDip}, finalHeightDip={finalHeightDip}");
+                WindowHelper.PositionWindowBottomRight(
+                    this,
+                    AppConstants.UI.WindowWidthDip,
+                    finalHeightDip,
+                    AppConstants.UI.WindowRightMarginDip,
+                    AppConstants.UI.WindowBottomMarginDip);
             }
             catch (Exception ex)
             {
@@ -394,222 +398,57 @@ namespace PowerDisplay
             }
         }
 
+        private static int GetAdaptiveWindowMaxHeightDip()
+        {
+            if (!WindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
+            {
+                return AppConstants.UI.WindowMaxHeightDip;
+            }
+
+            double dpiScale = WindowHelper.GetDpiScale(displayArea);
+            int workAreaHeightDip = WindowHelper.ScaleToDip(displayArea.WorkArea.Height, dpiScale);
+            int adaptiveMaxHeightDip = (int)Math.Floor(workAreaHeightDip * AppConstants.UI.WindowMaxWorkAreaHeightRatio);
+
+            return Math.Max(
+                AppConstants.UI.WindowMinHeightDip,
+                Math.Min(AppConstants.UI.WindowMaxHeightDip, adaptiveMaxHeightDip));
+        }
+
+        private static double GetAdaptiveFlyoutMaxWidthDip()
+        {
+            if (!WindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
+            {
+                return AppConstants.UI.FlyoutContextMenuMaxWidthDip;
+            }
+
+            double dpiScale = WindowHelper.GetDpiScale(displayArea);
+            int workAreaWidthDip = WindowHelper.ScaleToDip(displayArea.WorkArea.Width, dpiScale);
+            double adaptiveMaxWidthDip = Math.Floor(workAreaWidthDip * AppConstants.UI.FlyoutContextMenuMaxWorkAreaWidthRatio);
+
+            return Math.Max(
+                AppConstants.UI.FlyoutContextMenuMaxWidthDip,
+                Math.Min(AppConstants.UI.FlyoutContextMenuAdaptiveMaxWidthDip, adaptiveMaxWidthDip));
+        }
+
         private void PositionWindowAtBottomRight()
         {
             try
             {
-                var windowSize = this.AppWindow.Size;
+                var windowHeightDip = this.Height > 0
+                    ? (int)Math.Ceiling(this.Height)
+                    : AppConstants.UI.WindowMinHeightDip;
+
                 WindowHelper.PositionWindowBottomRight(
                     this,  // MainWindow inherits from WindowEx
-                    AppConstants.UI.WindowWidth,
-                    windowSize.Height,
-                    AppConstants.UI.WindowRightMargin);
+                    AppConstants.UI.WindowWidthDip,
+                    windowHeightDip,
+                    AppConstants.UI.WindowRightMarginDip,
+                    AppConstants.UI.WindowBottomMarginDip);
             }
             catch (Exception)
             {
                 // Window positioning failures are non-critical, silently ignore
             }
-        }
-
-        /// <summary>
-        /// Slider PointerCaptureLost event handler - updates ViewModel when drag completes
-        /// This is the WinUI3 recommended way to detect drag completion
-        /// </summary>
-        private void Slider_PointerCaptureLost(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            var slider = sender as Slider;
-            if (slider == null)
-            {
-                return;
-            }
-
-            var propertyName = slider.Tag as string;
-            var monitorVm = slider.DataContext as MonitorViewModel;
-
-            if (monitorVm == null || propertyName == null)
-            {
-                return;
-            }
-
-            // Get final value after drag completes
-            int finalValue = (int)slider.Value;
-
-            // Now update the ViewModel, which will trigger hardware operation
-            switch (propertyName)
-            {
-                case "Brightness":
-                    monitorVm.Brightness = finalValue;
-                    break;
-                case "Contrast":
-                    monitorVm.ContrastPercent = finalValue;
-                    break;
-                case "Volume":
-                    monitorVm.Volume = finalValue;
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Slider KeyUp event handler - updates ViewModel when arrow keys are released
-        /// This handles keyboard navigation for accessibility
-        /// </summary>
-        private void Slider_KeyUp(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
-        {
-            // Only handle arrow keys (Left, Right, Up, Down)
-            if (e.Key != Windows.System.VirtualKey.Left &&
-                e.Key != Windows.System.VirtualKey.Right &&
-                e.Key != Windows.System.VirtualKey.Up &&
-                e.Key != Windows.System.VirtualKey.Down)
-            {
-                return;
-            }
-
-            var slider = sender as Slider;
-            if (slider == null)
-            {
-                return;
-            }
-
-            var propertyName = slider.Tag as string;
-            var monitorVm = slider.DataContext as MonitorViewModel;
-
-            if (monitorVm == null || propertyName == null)
-            {
-                return;
-            }
-
-            // Get the current value after key press
-            int finalValue = (int)slider.Value;
-
-            // Update the ViewModel, which will trigger hardware operation
-            switch (propertyName)
-            {
-                case "Brightness":
-                    monitorVm.Brightness = finalValue;
-                    break;
-                case "Contrast":
-                    monitorVm.ContrastPercent = finalValue;
-                    break;
-                case "Volume":
-                    monitorVm.Volume = finalValue;
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Input source ListView selection changed handler - switches the monitor input source
-        /// </summary>
-        private async void InputSourceListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is not ListView listView)
-            {
-                return;
-            }
-
-            // Get the selected input source item
-            var selectedItem = listView.SelectedItem as InputSourceItem;
-            if (selectedItem == null)
-            {
-                return;
-            }
-
-            Logger.LogInfo($"[UI] InputSourceListView_SelectionChanged: Selected {selectedItem.Name} (0x{selectedItem.Value:X2}) for monitor {selectedItem.MonitorId}");
-
-            // Find the monitor by ID
-            MonitorViewModel? monitorVm = null;
-            if (!string.IsNullOrEmpty(selectedItem.MonitorId) && _viewModel != null)
-            {
-                monitorVm = _viewModel.Monitors.FirstOrDefault(m => m.Id == selectedItem.MonitorId);
-            }
-
-            if (monitorVm == null)
-            {
-                Logger.LogWarning("[UI] InputSourceListView_SelectionChanged: Could not find MonitorViewModel");
-                return;
-            }
-
-            // Set the input source
-            await monitorVm.SetInputSourceAsync(selectedItem.Value);
-        }
-
-        /// <summary>
-        /// Power state ListView selection changed handler - switches the monitor power state.
-        /// Note: Selecting any state other than "On" will turn off the display.
-        /// </summary>
-        private async void PowerStateListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is not ListView listView)
-            {
-                return;
-            }
-
-            // Get the selected power state item
-            var selectedItem = listView.SelectedItem as PowerStateItem;
-            if (selectedItem == null)
-            {
-                return;
-            }
-
-            // Skip if "On" is selected - the monitor is already on
-            if (selectedItem.Value == PowerStateItem.PowerStateOn)
-            {
-                return;
-            }
-
-            Logger.LogInfo($"[UI] PowerStateListView_SelectionChanged: Selected {selectedItem.Name} (0x{selectedItem.Value:X2}) for monitor {selectedItem.MonitorId}");
-
-            // Find the monitor by ID
-            MonitorViewModel? monitorVm = null;
-            if (!string.IsNullOrEmpty(selectedItem.MonitorId) && _viewModel != null)
-            {
-                monitorVm = _viewModel.Monitors.FirstOrDefault(m => m.Id == selectedItem.MonitorId);
-            }
-
-            if (monitorVm == null)
-            {
-                Logger.LogWarning("[UI] PowerStateListView_SelectionChanged: Could not find MonitorViewModel");
-                return;
-            }
-
-            // Set the power state - this will turn off the display
-            await monitorVm.SetPowerStateAsync(selectedItem.Value);
-        }
-
-        /// <summary>
-        /// Rotation button click handler - changes monitor orientation
-        /// </summary>
-        private async void RotationButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Microsoft.UI.Xaml.Controls.Primitives.ToggleButton toggleButton)
-            {
-                return;
-            }
-
-            // Get the orientation from the Tag
-            if (toggleButton.Tag is not string tagStr || !int.TryParse(tagStr, out int orientation))
-            {
-                Logger.LogWarning("[UI] RotationButton_Click: Invalid Tag");
-                return;
-            }
-
-            var monitorVm = toggleButton.DataContext as MonitorViewModel;
-            if (monitorVm == null)
-            {
-                Logger.LogWarning("[UI] RotationButton_Click: Could not find MonitorViewModel");
-                return;
-            }
-
-            // If clicking the current orientation, restore the checked state and do nothing
-            if (monitorVm.CurrentRotation == orientation)
-            {
-                toggleButton.IsChecked = true;
-                return;
-            }
-
-            Logger.LogInfo($"[UI] RotationButton_Click: Setting rotation for {monitorVm.Name} to {orientation}");
-
-            // Set the rotation
-            await monitorVm.SetRotationAsync(orientation);
         }
 
         /// <summary>
@@ -644,44 +483,6 @@ namespace PowerDisplay
         }
 
         /// <summary>
-        /// Color temperature selection changed handler - applies the selected color temperature preset
-        /// </summary>
-        private async void ColorTemperatureListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is not ListView listView)
-            {
-                return;
-            }
-
-            var selectedItem = listView.SelectedItem as ColorTemperatureItem;
-            if (selectedItem == null)
-            {
-                return;
-            }
-
-            Logger.LogInfo($"[UI] ColorTemperatureListView_SelectionChanged: Selected {selectedItem.DisplayName} (0x{selectedItem.VcpValue:X2}) for monitor {selectedItem.MonitorId}");
-
-            // Find the monitor by ID
-            MonitorViewModel? monitorVm = null;
-            if (!string.IsNullOrEmpty(selectedItem.MonitorId) && _viewModel != null)
-            {
-                monitorVm = _viewModel.Monitors.FirstOrDefault(m => m.Id == selectedItem.MonitorId);
-            }
-
-            if (monitorVm == null)
-            {
-                Logger.LogWarning("[UI] ColorTemperatureListView_SelectionChanged: Could not find MonitorViewModel");
-                return;
-            }
-
-            // Apply the color temperature
-            await monitorVm.SetColorTemperatureAsync(selectedItem.VcpValue);
-
-            // Clear selection to allow reselecting the same preset
-            listView.SelectedItem = null;
-        }
-
-        /// <summary>
         /// Flyout opened event handler - sets focus to the first focusable element inside the flyout.
         /// This enables keyboard navigation when the flyout opens.
         /// </summary>
@@ -689,6 +490,8 @@ namespace PowerDisplay
         {
             if (sender is Flyout flyout && flyout.Content is FrameworkElement content)
             {
+                content.MaxWidth = GetAdaptiveFlyoutMaxWidthDip();
+
                 // Use DispatcherQueue to ensure the flyout content is fully rendered before setting focus
                 DispatcherQueue.TryEnqueue(() =>
                 {

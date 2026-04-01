@@ -4,7 +4,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace PowerDisplay.Common.Models
+namespace PowerDisplay.Models
 {
     /// <summary>
     /// Monitor settings for a specific profile

@@ -1655,6 +1655,7 @@ UOI
 UPDATENOW
 updown
 UPGRADINGPRODUCTCODE
+upserts
 Uptool
 urld
 Usb
@@ -2135,7 +2136,7 @@ nodiscard
 nologo
 nomove
 nosize
-notopmost
+NOTOPMOST
 Notupdated
 notwindows
 nowarn
