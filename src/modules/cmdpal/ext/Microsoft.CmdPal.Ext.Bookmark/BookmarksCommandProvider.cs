@@ -137,6 +137,13 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
         lock (_bookmarksLock)
         {
+            // Here we're creating an entirely different set of items to return
+            // as bands.
+            //
+            // These items will have the same ID, but bookmarks to directories
+            // will have their default command be the "DirectoryPage", so that
+            // clicking it will automatically open the palette with the files in
+            // that dir.
             bookmarks = [.. _bookmarksManager.Bookmarks
                 .Select(bookmark => new BookmarkListItem(
                     bookmark,
@@ -148,16 +155,14 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         }
 
         var bands = new List<ICommandItem>();
+
+        // Now take all those commands, and stick them into individual bands. We
+        // don't want one band with all bookmarks, we want one band per
+        // bookmark.
         foreach (var b in bookmarks)
         {
-            // TODO! replace this string interpolation with some static public function
             var id = CommandIds.GetLaunchBookmarkItemId(b.BookmarkId);
-            var wrapped = new WrappedDockItem(items: [b], id: id, displayTitle: b.Title)
-            {
-                // TODO! I don't think this icon is right at this time, so I think we can just remove it.
-                // We resolve the icon for this command much later
-                // Icon = b.Icon,
-            };
+            var wrapped = new WrappedDockItem(items: [b], id: id, displayTitle: b.Title);
             bands.Add(wrapped);
         }
 
