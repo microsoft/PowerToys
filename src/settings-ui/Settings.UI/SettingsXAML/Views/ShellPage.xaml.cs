@@ -599,27 +599,34 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            // If a suggestion is selected, navigate directly
-            if (args.ChosenSuggestion is SuggestionItem chosen)
+            try
             {
-                NavigateFromSuggestion(chosen);
-                return;
-            }
+                // If a suggestion is selected, navigate directly
+                if (args.ChosenSuggestion is SuggestionItem chosen)
+                {
+                    NavigateFromSuggestion(chosen);
+                    return;
+                }
 
-            var queryText = (args.QueryText ?? _lastQueryText)?.Trim();
-            if (string.IsNullOrWhiteSpace(queryText))
+                var queryText = (args.QueryText ?? _lastQueryText)?.Trim();
+                if (string.IsNullOrWhiteSpace(queryText))
+                {
+                    NavigationService.Navigate<DashboardPage>();
+                    return;
+                }
+
+                // Prefer cached results (from live search); if empty, perform a fresh search
+                var matched = _lastSearchResults?.Count > 0 && string.Equals(_lastQueryText, queryText, StringComparison.Ordinal)
+                    ? _lastSearchResults
+                    : await Task.Run(() => SearchIndexService.Search(queryText));
+
+                var searchParams = new SearchResultsNavigationParams(queryText, matched);
+                NavigationService.Navigate<SearchResultsPage>(searchParams);
+            }
+            catch (Exception ex)
             {
-                NavigationService.Navigate<DashboardPage>();
-                return;
+                Logger.LogError("Search query submission failed", ex);
             }
-
-            // Prefer cached results (from live search); if empty, perform a fresh search
-            var matched = _lastSearchResults?.Count > 0 && string.Equals(_lastQueryText, queryText, StringComparison.Ordinal)
-                ? _lastSearchResults
-                : await Task.Run(() => SearchIndexService.Search(queryText));
-
-            var searchParams = new SearchResultsNavigationParams(queryText, matched);
-            NavigationService.Navigate<SearchResultsPage>(searchParams);
         }
 
         public void Dispose()
