@@ -599,8 +599,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
 
             // Assert
             // Using Ordinal since this is used internally
-            Assert.IsTrue(result.Title.Equals(_chrome.Name, StringComparison.Ordinal));
-            Assert.IsFalse(result.Title.Equals(_chrome.Description, StringComparison.Ordinal));
+            Assert.AreEqual(_chrome.Name, result.Title);
+            Assert.AreNotEqual(_chrome.Description, result.Title);
         }
 
         [TestMethod]
@@ -614,8 +614,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
 
             // Assert
             // Using Ordinal since this is used internally
-            Assert.IsTrue(result.Title.Equals(_cmderRunCommand.ExecutableName, StringComparison.Ordinal));
-            Assert.IsFalse(result.Title.Equals(_cmderRunCommand.Description, StringComparison.Ordinal));
+            Assert.AreEqual(_cmderRunCommand.ExecutableName, result.Title);
+            Assert.AreNotEqual(_cmderRunCommand.Description, result.Title);
         }
 
         [DataTestMethod]

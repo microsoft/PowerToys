@@ -75,10 +75,10 @@ namespace Wox.Test
 
             results = results.Where(x => x.Score > 0).OrderByDescending(x => x.Score).ToList();
 
-            Assert.IsTrue(results.Count == 3);
-            Assert.IsTrue(results[0].Title == "Inste");
-            Assert.IsTrue(results[1].Title == "Install Package");
-            Assert.IsTrue(results[2].Title == "file open in browser-test");
+            Assert.AreEqual(3, results.Count);
+            Assert.AreEqual("Inste", results[0].Title);
+            Assert.AreEqual("Install Package", results[1].Title);
+            Assert.AreEqual("file open in browser-test", results[2].Title);
         }
 
         [DataTestMethod]
@@ -89,7 +89,7 @@ namespace Wox.Test
             var matcher = new StringMatcher();
             var scoreResult = matcher.FuzzyMatch(searchString, compareString).RawScore;
 
-            Assert.IsTrue(scoreResult == 0);
+            Assert.AreEqual(0, scoreResult);
         }
 
         [DataTestMethod]

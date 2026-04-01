@@ -24,7 +24,7 @@ public class RegistryHelperTest
     {
         var (baseKeyList, _) = RegistryHelper.GetRegistryBaseKey(query);
         Assert.IsNotNull(baseKeyList);
-        Assert.IsTrue(baseKeyList.Count() == 1);
+        Assert.AreEqual(1, baseKeyList.Count());
         Assert.AreEqual(expectedBaseKey, baseKeyList.First().Name);
     }
 

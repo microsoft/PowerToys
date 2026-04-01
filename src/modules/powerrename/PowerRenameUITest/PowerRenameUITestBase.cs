@@ -170,31 +170,31 @@ public class PowerRenameUITestBase : UITestBase
 
     protected void SetSearchBoxText(string text)
     {
-        Assert.IsTrue(this.Find<TextBox>("Search for").SetText(text, true).Text == text);
+        Assert.AreEqual(text, this.Find<TextBox>("Search for").SetText(text, true).Text);
     }
 
     protected void SetReplaceBoxText(string text)
     {
-        Assert.IsTrue(this.Find<TextBox>("Replace with").SetText(text, true).Text == text);
+        Assert.AreEqual(text, this.Find<TextBox>("Replace with").SetText(text, true).Text);
     }
 
     protected void SetRegularExpressionCheckbox(bool flag)
     {
-        Assert.IsTrue(this.Find<CheckBox>("Use regular expressions").SetCheck(flag).IsChecked == flag);
+        Assert.AreEqual(flag, this.Find<CheckBox>("Use regular expressions").SetCheck(flag).IsChecked);
     }
 
     protected void SetMatchAllOccurrencesCheckbox(bool flag)
     {
-        Assert.IsTrue(this.Find<CheckBox>("Match all occurrences").SetCheck(flag).IsChecked == flag);
+        Assert.AreEqual(flag, this.Find<CheckBox>("Match all occurrences").SetCheck(flag).IsChecked);
     }
 
     protected void SetCaseSensitiveCheckbox(bool flag)
     {
-        Assert.IsTrue(this.Find<CheckBox>("Case sensitive").SetCheck(flag).IsChecked == flag);
+        Assert.AreEqual(flag, this.Find<CheckBox>("Case sensitive").SetCheck(flag).IsChecked);
     }
 
     protected void CheckOriginalOrRenamedCount(int count)
     {
-        Assert.IsTrue(this.Find<TextBlock>($"({count})").Text == $"({count})");
+        Assert.AreEqual($"({count})", this.Find<TextBlock>($"({count})").Text);
     }
 }

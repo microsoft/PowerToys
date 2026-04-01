@@ -87,8 +87,8 @@ namespace Wox.Test
 
             // Assert
             // Using Ordinal since this is used internally
-            Assert.IsTrue(firstQuery.Search.Equals(secondQuery.Search, StringComparison.Ordinal));
-            Assert.IsTrue(firstQuery.ActionKeyword.Equals(secondQuery.ActionKeyword, StringComparison.Ordinal));
+            Assert.AreEqual(secondQuery.Search, firstQuery.Search);
+            Assert.AreEqual(secondQuery.ActionKeyword, firstQuery.ActionKeyword);
         }
 
         [TestMethod]
@@ -139,10 +139,10 @@ namespace Wox.Test
 
             // Assert
             // Using Ordinal since this is used internally
-            Assert.IsTrue(builtQuery.Terms.Count == 3
-                && builtQuery.Terms[0].Equals("Test", StringComparison.Ordinal)
-                && builtQuery.Terms[1].Equals("search", StringComparison.Ordinal)
-                && builtQuery.Terms[2].Equals("term", StringComparison.Ordinal));
+            Assert.AreEqual(3, builtQuery.Terms.Count);
+            Assert.AreEqual("Test", builtQuery.Terms[0]);
+            Assert.AreEqual("search", builtQuery.Terms[1]);
+            Assert.AreEqual("term", builtQuery.Terms[2]);
         }
 
         [TestMethod]

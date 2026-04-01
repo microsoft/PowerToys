@@ -42,7 +42,7 @@ public class BasicRenameTests : PowerRenameUITestBase
         this.SetSearchBoxText("testCase1");
         this.SetReplaceBoxText("replaced");
 
-        Assert.IsTrue(this.Find<TextBlock>("replaced.txt").Text == "replaced.txt");
+        Assert.AreEqual("replaced.txt", this.Find<TextBlock>("replaced.txt").Text);
     }
 
     [TestMethod]
@@ -57,7 +57,7 @@ public class BasicRenameTests : PowerRenameUITestBase
 
         CheckOriginalOrRenamedCount(2);
 
-        Assert.IsTrue(this.Find<TextBlock>("matched.txt").Text == "matched.txt");
+        Assert.AreEqual("matched.txt", this.Find<TextBlock>("matched.txt").Text);
     }
 
     [TestMethod]
@@ -68,8 +68,8 @@ public class BasicRenameTests : PowerRenameUITestBase
 
         this.SetMatchAllOccurrencesCheckbox(true);
 
-        Assert.IsTrue(this.Find<TextBlock>("fesfCase2.fxf").Text == "fesfCase2.fxf");
-        Assert.IsTrue(this.Find<TextBlock>("fesfCase1.fxf").Text == "fesfCase1.fxf");
+        Assert.AreEqual("fesfCase2.fxf", this.Find<TextBlock>("fesfCase2.fxf").Text);
+        Assert.AreEqual("fesfCase1.fxf", this.Find<TextBlock>("fesfCase1.fxf").Text);
     }
 
     [TestMethod]
@@ -79,7 +79,7 @@ public class BasicRenameTests : PowerRenameUITestBase
         this.SetReplaceBoxText("match1");
 
         CheckOriginalOrRenamedCount(1);
-        Assert.IsTrue(this.Find<TextBlock>("match1.txt").Text == "match1.txt");
+        Assert.AreEqual("match1.txt", this.Find<TextBlock>("match1.txt").Text);
 
         this.SetCaseSensitiveCheckbox(true);
         CheckOriginalOrRenamedCount(0);

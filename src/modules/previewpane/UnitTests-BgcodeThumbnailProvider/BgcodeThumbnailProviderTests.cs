@@ -22,7 +22,7 @@ namespace BgcodeThumbnailProviderUnitTests
 
             Bitmap bitmap = provider.GetThumbnail(256);
 
-            Assert.IsTrue(bitmap != null);
+            Assert.IsNotNull(bitmap);
         }
 
         [TestMethod]
@@ -35,7 +35,7 @@ namespace BgcodeThumbnailProviderUnitTests
 
             Bitmap bitmap = provider.GetThumbnail(0);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
 
         [TestMethod]
@@ -48,7 +48,7 @@ namespace BgcodeThumbnailProviderUnitTests
 
             Bitmap bitmap = provider.GetThumbnail(10001);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
 
         [TestMethod]
@@ -57,7 +57,7 @@ namespace BgcodeThumbnailProviderUnitTests
             using (var reader = new BinaryReader(new MemoryStream()))
             {
                 Bitmap thumbnail = BgcodeThumbnailProvider.GetThumbnail(reader, 256);
-                Assert.IsTrue(thumbnail == null);
+                Assert.IsNull(thumbnail);
             }
         }
 
@@ -65,7 +65,7 @@ namespace BgcodeThumbnailProviderUnitTests
         public void CheckNoBgcodeNullStringShouldReturnNullBitmap()
         {
             Bitmap thumbnail = BgcodeThumbnailProvider.GetThumbnail(null, 256);
-            Assert.IsTrue(thumbnail == null);
+            Assert.IsNull(thumbnail);
         }
     }
 }

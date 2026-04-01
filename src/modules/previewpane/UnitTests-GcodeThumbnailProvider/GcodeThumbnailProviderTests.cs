@@ -24,7 +24,7 @@ namespace GcodeThumbnailProviderUnitTests
 
             Bitmap bitmap = provider.GetThumbnail(256);
 
-            Assert.IsTrue(bitmap != null);
+            Assert.IsNotNull(bitmap);
         }
 
         [TestMethod]
@@ -37,7 +37,7 @@ namespace GcodeThumbnailProviderUnitTests
 
             Bitmap bitmap = provider.GetThumbnail(0);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
 
         [TestMethod]
@@ -50,7 +50,7 @@ namespace GcodeThumbnailProviderUnitTests
 
             Bitmap bitmap = provider.GetThumbnail(10001);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
 
         [TestMethod]
@@ -59,7 +59,7 @@ namespace GcodeThumbnailProviderUnitTests
             using (var reader = new StringReader(string.Empty))
             {
                 Bitmap thumbnail = GcodeThumbnailProvider.GetThumbnail(reader, 256);
-                Assert.IsTrue(thumbnail == null);
+                Assert.IsNull(thumbnail);
             }
         }
 
@@ -67,7 +67,7 @@ namespace GcodeThumbnailProviderUnitTests
         public void CheckNoGcodeNullStringShouldReturnNullBitmap()
         {
             Bitmap thumbnail = GcodeThumbnailProvider.GetThumbnail(null, 256);
-            Assert.IsTrue(thumbnail == null);
+            Assert.IsNull(thumbnail);
         }
     }
 }

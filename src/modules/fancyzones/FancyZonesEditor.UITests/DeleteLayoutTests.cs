@@ -226,7 +226,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the layout is removed
-            Assert.IsTrue(Session.FindAll<Element>(deletedLayout).Count == 0);
+            Assert.AreEqual(0, Session.FindAll<Element>(deletedLayout).Count);
 
             // check the file
             var customLayouts = new CustomLayouts();
@@ -246,7 +246,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the layout is removed
-            Assert.IsTrue(Session.FindAll<Element>(deletedLayout).Count == 0);
+            Assert.AreEqual(0, Session.FindAll<Element>(deletedLayout).Count);
 
             // verify the empty layout is selected
             Assert.IsTrue(Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.Blank])!.Selected);
@@ -290,7 +290,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the layout is removed
-            Assert.IsTrue(Session.FindAll<Element>(deletedLayout).Count == 0);
+            Assert.AreEqual(0, Session.FindAll<Element>(deletedLayout).Count);
 
             // check the file
             var customLayouts = new CustomLayouts();

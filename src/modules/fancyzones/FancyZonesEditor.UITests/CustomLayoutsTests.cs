@@ -258,8 +258,8 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // verify new name
             Session.Find<Button>(ElementName.Cancel).Click();
-            Assert.IsTrue(Session.FindAll<Element>(oldName).Count == 0);
-            Assert.IsTrue(Session.FindAll<Element>(newName).Count != 0);
+            Assert.AreEqual(0, Session.FindAll<Element>(oldName).Count);
+            Assert.AreNotEqual(0, Session.FindAll<Element>(newName).Count);
         }
 
         [TestMethod]

@@ -29,7 +29,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         page.UpdateSearchText(string.Empty, input);
         var result = page.GetItems();
 
-        Assert.IsTrue(result.Length == 1, "Valid input should always return result");
+        Assert.AreEqual(1, result.Length, "Valid input should always return result");
 
         var firstResult = result.FirstOrDefault();
 

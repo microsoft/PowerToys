@@ -29,7 +29,7 @@ public class SettingsManagerTests
 
         // Assert
         Assert.IsNotNull(settings);
-        Assert.IsTrue(settings.TrigUnit == CalculateEngine.TrigMode.Radians);
+        Assert.AreEqual(CalculateEngine.TrigMode.Radians, settings.TrigUnit);
         Assert.IsFalse(settings.InputUseEnglishFormat);
         Assert.IsFalse(settings.OutputUseEnglishFormat);
         Assert.IsTrue(settings.CloseOnEnter);

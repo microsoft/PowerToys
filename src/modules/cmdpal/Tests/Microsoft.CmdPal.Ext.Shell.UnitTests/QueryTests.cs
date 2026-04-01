@@ -173,7 +173,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         var commandList = page.GetItems();
 
         // Should find only items for what's in c:\
-        Assert.IsTrue(commandList.Length == filesInC.Count());
+        Assert.AreEqual(filesInC.Count(), commandList.Length);
 
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Win"; });
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Windows"; });
@@ -182,7 +182,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         commandList = page.GetItems();
 
         // Should still find everything
-        Assert.IsTrue(commandList.Length == filesInC.Count());
+        Assert.AreEqual(filesInC.Count(), commandList.Length);
 
         await TypeStringIntoPage(page, "c:\\Windows\\Pro");
         await BackspaceSearchText(page, "c:\\Windows\\Pro", 3); // 3 characters for c:\
@@ -190,7 +190,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         commandList = page.GetItems();
 
         // Should still find everything
-        Assert.IsTrue(commandList.Length == filesInC.Count());
+        Assert.AreEqual(filesInC.Count(), commandList.Length);
     }
 
     private async Task TypeStringIntoPage(IDynamicListPage page, string searchText)
@@ -228,7 +228,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\"; });
 
         var commandList = page.GetItems();
-        Assert.IsTrue(commandList.Length == filesInC.Count());
+        Assert.AreEqual(filesInC.Count(), commandList.Length);
 
         // First navigate to c:\Windows. This should match everything that matches "windows" inside of C:\
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Windows"; });
@@ -237,12 +237,12 @@ public class QueryTests : CommandPaletteUnitTestBase
         // Then go into c:\windows\. This will only have the results in c:\windows\
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Windows\\"; });
         var windowsCommands = page.GetItems();
-        Assert.IsTrue(windowsCommands.Length != cWindowsCommandsPre.Length);
+        Assert.AreNotEqual(cWindowsCommandsPre.Length, windowsCommands.Length);
 
         // now go back to c:\windows. This should match the results from the last time we entered this string
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Windows"; });
         var cWindowsCommandsPost = page.GetItems();
-        Assert.IsTrue(cWindowsCommandsPre.Length == cWindowsCommandsPost.Length);
+        Assert.AreEqual(cWindowsCommandsPost.Length, cWindowsCommandsPre.Length);
     }
 
     [TestMethod]
@@ -260,7 +260,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Program Files\\"; });
 
         var commandList = page.GetItems();
-        Assert.IsTrue(commandList.Length == filesInProgramFiles.Count());
+        Assert.AreEqual(filesInProgramFiles.Count(), commandList.Length);
     }
 
     [TestMethod]

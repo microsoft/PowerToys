@@ -80,7 +80,7 @@ namespace Hosts.UITests
             this.LaunchFromSetting(showWarning: false);
 
             // Should NOT show warning dialog
-            Assert.IsTrue(this.FindAll("Warning").Count == 0, "Should NOT show warning dialog");
+            Assert.AreEqual(0, this.FindAll("Warning").Count, "Should NOT show warning dialog");
 
             // Host Editor Window should not be closed
             Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed");

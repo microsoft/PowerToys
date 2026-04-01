@@ -187,7 +187,7 @@ namespace Wox.Test.Plugins
             var windowsSearchAPIResults = api.Search("FilePath", mockSearchManager);
 
             // Assert
-            Assert.IsTrue(windowsSearchAPIResults.Count() == 2);
+            Assert.AreEqual(2, windowsSearchAPIResults.Count());
             Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file1.txt"));
             Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
         }
@@ -208,7 +208,7 @@ namespace Wox.Test.Plugins
             var windowsSearchAPIResults = api.Search("FilePath", mockSearchManager);
 
             // Assert
-            Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
+            Assert.AreEqual(1, windowsSearchAPIResults.Count());
             Assert.IsFalse(windowsSearchAPIResults.Any(x => x.Title == "file1.txt"));
             Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
         }

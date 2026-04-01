@@ -126,8 +126,8 @@ namespace ViewModelTests
             viewModel.SearchTypePreference = "SearchOptionsAreNotValidated";
 
             Assert.AreEqual(sendCallbackMock.TimesSent, 2);
-            Assert.IsTrue(mockSettings.Properties.SearchResultPreference == "SearchOptionsAreNotValidated");
-            Assert.IsTrue(mockSettings.Properties.SearchTypePreference == "SearchOptionsAreNotValidated");
+            Assert.AreEqual("SearchOptionsAreNotValidated", mockSettings.Properties.SearchResultPreference);
+            Assert.AreEqual("SearchOptionsAreNotValidated", mockSettings.Properties.SearchTypePreference);
         }
 
         public static void AssertHotkeySettings(HotkeySettings setting, bool win, bool ctrl, bool alt, bool shift, int code)

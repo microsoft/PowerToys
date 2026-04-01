@@ -21,7 +21,7 @@ namespace CommonLibTest
         public static void TestStringsAreEqual(string v1, string v2)
         {
             var res = Helper.CompareVersions(v1, v2);
-            Assert.IsTrue(res == 0);
+            Assert.AreEqual(0, res);
         }
 
         [TestMethod]

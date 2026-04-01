@@ -28,7 +28,7 @@ namespace PdfThumbnailProviderUnitTests
 
             Bitmap bitmap = provider.GetThumbnail(256);
 
-            Assert.IsTrue(bitmap != null);
+            Assert.IsNotNull(bitmap);
         }
 
         [TestMethod]
@@ -41,7 +41,7 @@ namespace PdfThumbnailProviderUnitTests
 
             Bitmap bitmap = provider.GetThumbnail(0);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
 
         [TestMethod]
@@ -54,7 +54,7 @@ namespace PdfThumbnailProviderUnitTests
 
             Bitmap bitmap = provider.GetThumbnail(10001);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
     }
 }

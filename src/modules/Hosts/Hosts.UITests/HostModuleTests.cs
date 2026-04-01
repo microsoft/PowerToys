@@ -137,9 +137,7 @@ namespace Hosts.UITests
                 // Add new URL override and a warning tip should be shown
                 this.AddEntry("192.168.0.1", "localhost", true);
 
-                Assert.IsTrue(
-                    this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count == 1,
-                    "Should display host-file saving error if not run as administrator");
+                Assert.AreEqual(1, this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count, "Should display host-file saving error if not run as administrator");
             }
         }
 
@@ -197,7 +195,7 @@ namespace Hosts.UITests
 
             // Open-filter-panel
             this.Find<Button>("Filters").Click();
-            Assert.IsTrue(this.FindAll<Button>("Clear filters").Count == 1, "Filter panel should be opened afer click Filter Button");
+            Assert.AreEqual(1, this.FindAll<Button>("Clear filters").Count, "Filter panel should be opened afer click Filter Button");
 
             var addressFilterCases = new KeyValuePair<string, int>[]
             {
@@ -223,7 +221,7 @@ namespace Hosts.UITests
             foreach (var (addressFilter, expectedCount) in addressFilterCases)
             {
                 this.Find<TextBox>("Address").SetText(addressFilter);
-                Assert.IsTrue(this.Find("Entries").FindAll<Button>("Delete").Count == expectedCount);
+                Assert.AreEqual(expectedCount, this.Find("Entries").FindAll<Button>("Delete").Count);
             }
 
             var hostFilterCases = new KeyValuePair<string, int>[]
@@ -247,12 +245,12 @@ namespace Hosts.UITests
             foreach (var (hostFilterCase, expectedCount) in hostFilterCases)
             {
                 this.Find<TextBox>("Hosts").SetText(hostFilterCase);
-                Assert.IsTrue(this.Find("Entries").FindAll<Button>("Delete").Count == expectedCount);
+                Assert.AreEqual(expectedCount, this.Find("Entries").FindAll<Button>("Delete").Count);
             }
 
             // Close-filter-panel
             this.Find<Button>("Filters").Click();
-            Assert.IsFalse(this.FindAll<Button>("Clear filters").Count == 1, "Filter panel should be closed after clicking Filter Button");
+            Assert.AreNotEqual(1, this.FindAll<Button>("Clear filters").Count, "Filter panel should be closed after clicking Filter Button");
         }
 
         private void AddEntry(string ip, string host, bool active = true, bool clickAddEntryButton = true)
@@ -266,8 +264,8 @@ namespace Hosts.UITests
             // Adding a new host override localhost -> 192.168.0.1
             Assert.IsFalse(this.Find<Button>("Add").Enabled, "Add button should be Disabled by default");
 
-            Assert.IsTrue(this.Find<TextBox>("Address").SetText(ip).Text == ip);
-            Assert.IsTrue(this.Find<TextBox>("Hosts").SetText(host).Text == host);
+            Assert.AreEqual(ip, this.Find<TextBox>("Address").SetText(ip).Text);
+            Assert.AreEqual(host, this.Find<TextBox>("Hosts").SetText(host).Text);
 
             this.Find<ToggleSwitch>("Active").Toggle(active);
 
@@ -301,7 +299,7 @@ namespace Hosts.UITests
             }
 
             // Should have no row left, and no more delete button
-            Assert.IsTrue(this.FindAll<Button>("Delete", 1000).Count == 0);
+            Assert.AreEqual(0, this.FindAll<Button>("Delete", 1000).Count);
         }
     }
 }
