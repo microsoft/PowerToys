@@ -132,7 +132,8 @@ public sealed partial class DockWindow : WindowEx,
         _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)style);
 
         ShowDesktop.AddHook(this);
-        _isFullScreenAppOpen = WindowHelper.IsWindowFullscreen();
+        var userNotificationFlags = WindowHelper.GetUserNotificationFlags();
+        _isFullScreenAppOpen = userNotificationFlags.IsFullscreenState || userNotificationFlags.IsBusy;
         UpdateSettingsOnUiThread();
     }
 
