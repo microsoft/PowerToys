@@ -11,7 +11,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PowerRename.UITests;
 
-[TestClass]
 public class PowerRenameUITestBase : UITestBase
 {
     private static readonly string[] OriginalTestFilePaths = new string[]

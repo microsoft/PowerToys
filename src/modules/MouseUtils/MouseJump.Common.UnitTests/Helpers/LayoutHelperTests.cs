@@ -12,7 +12,6 @@ using MouseJump.Common.Models.Styles;
 
 namespace MouseJump.Common.UnitTests.Helpers;
 
-[TestClass]
 public static class LayoutHelperTests
 {
     /*

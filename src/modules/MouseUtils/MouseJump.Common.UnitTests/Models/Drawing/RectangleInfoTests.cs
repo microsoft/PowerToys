@@ -7,7 +7,6 @@ using MouseJump.Common.Models.Drawing;
 
 namespace MouseJump.Common.UnitTests.Models.Drawing;
 
-[TestClass]
 public static class RectangleInfoTests
 {
     [TestClass]

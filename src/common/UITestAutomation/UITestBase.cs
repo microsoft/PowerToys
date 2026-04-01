@@ -15,7 +15,6 @@ namespace Microsoft.PowerToys.UITest
     /// <summary>
     /// Base class that should be inherited by all Test Classes.
     /// </summary>
-    [TestClass]
     public class UITestBase : IDisposable
     {
         public required TestContext TestContext { get; set; }

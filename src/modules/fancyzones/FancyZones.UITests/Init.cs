@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.FancyZonesEditor.UITests
 {
     [TestClass]
-    public class Init
+    public static class Init
     {
         private static Process? appDriver;
 

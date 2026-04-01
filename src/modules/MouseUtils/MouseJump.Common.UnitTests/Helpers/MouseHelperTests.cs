@@ -8,7 +8,6 @@ using MouseJump.Common.Models.Drawing;
 
 namespace MouseJump.Common.UnitTests.Helpers;
 
-[TestClass]
 public static class MouseHelperTests
 {
     [TestClass]
