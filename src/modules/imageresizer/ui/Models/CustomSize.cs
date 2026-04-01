@@ -9,7 +9,7 @@ using ImageResizer.Helpers;
 
 namespace ImageResizer.Models
 {
-    public class CustomSize : ResizeSize
+    public partial class CustomSize : ResizeSize
     {
         [JsonIgnore]
         public override string Name

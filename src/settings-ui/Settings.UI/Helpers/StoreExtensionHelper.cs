@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     /// <summary>
     /// Helper class to manage installation status and installation command for a Microsoft Store extension.
     /// </summary>
-    public class StoreExtensionHelper : INotifyPropertyChanged
+    public partial class StoreExtensionHelper : INotifyPropertyChanged
     {
         private readonly string _packageFamilyName;
         private readonly string _storeUri;

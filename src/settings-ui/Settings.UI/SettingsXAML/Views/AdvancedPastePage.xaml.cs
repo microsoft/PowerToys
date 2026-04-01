@@ -681,7 +681,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             await LoadFoundryLocalModelsAsync();
         }
 
-        private sealed class FoundryDownloadableModel : INotifyPropertyChanged
+        private sealed partial class FoundryDownloadableModel : INotifyPropertyChanged
         {
             private readonly List<string> _deviceTags;
             private double _progress;

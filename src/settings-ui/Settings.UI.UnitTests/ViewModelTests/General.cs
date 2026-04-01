@@ -16,7 +16,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 namespace ViewModelTests
 {
     [TestClass]
-    public class General
+    public partial class General
     {
         public const string GeneralSettingsFileName = "Test\\GeneralSettings";
 
@@ -28,7 +28,7 @@ namespace ViewModelTests
             mockGeneralSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>();
         }
 
-        private sealed class TestGeneralViewModel : GeneralViewModel
+        private sealed partial class TestGeneralViewModel : GeneralViewModel
         {
             public TestGeneralViewModel(
                 Microsoft.PowerToys.Settings.UI.Library.Interfaces.ISettingsRepository<GeneralSettings> settingsRepository,

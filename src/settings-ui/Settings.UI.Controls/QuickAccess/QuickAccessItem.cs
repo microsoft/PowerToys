@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public sealed class QuickAccessItem : Observable
+    public sealed partial class QuickAccessItem : Observable
     {
         private string _title = string.Empty;
 

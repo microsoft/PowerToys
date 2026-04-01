@@ -6,7 +6,7 @@ using Windows.Graphics.Imaging;
 
 namespace ImageResizer.Services
 {
-    public sealed class NoOpAiSuperResolutionService : IAISuperResolutionService
+    public sealed partial class NoOpAiSuperResolutionService : IAISuperResolutionService
     {
         public static NoOpAiSuperResolutionService Instance { get; } = new NoOpAiSuperResolutionService();
 

@@ -20,7 +20,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.QuickAccess.ViewModels;
 
-public sealed class AllAppsViewModel : Observable
+public sealed partial class AllAppsViewModel : Observable
 {
     private readonly object _sortLock = new object();
     private readonly IQuickAccessCoordinator _coordinator;

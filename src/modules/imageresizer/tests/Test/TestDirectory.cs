@@ -15,7 +15,7 @@ using IOPath = System.IO.Path;
 
 namespace ImageResizer
 {
-    public class TestDirectory : IDisposable
+    public partial class TestDirectory : IDisposable
     {
         private readonly string _path;
         private bool disposedValue;

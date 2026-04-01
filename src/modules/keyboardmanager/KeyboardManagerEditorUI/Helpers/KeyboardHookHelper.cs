@@ -13,7 +13,7 @@ using Windows.System;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
-    public class KeyboardHookHelper : IDisposable
+    public partial class KeyboardHookHelper : IDisposable
     {
         private static KeyboardHookHelper? _instance;
 

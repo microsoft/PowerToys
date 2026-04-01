@@ -15,7 +15,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.QuickAccess.ViewModels;
 
-public sealed class LauncherViewModel : Observable
+public sealed partial class LauncherViewModel : Observable
 {
     private readonly IQuickAccessCoordinator _coordinator;
     private readonly ISettingsRepository<GeneralSettings> _settingsRepository;

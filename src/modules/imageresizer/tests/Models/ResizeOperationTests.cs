@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ImageResizer.Models
 {
     [TestClass]
-    public class ResizeOperationTests : IDisposable
+    public partial class ResizeOperationTests : IDisposable
     {
         // Known legacy container format GUID for PNG, used as FallbackEncoder value in settings JSON
         private static readonly Guid PngContainerFormatGuid = new Guid("1b7cfaf4-713f-473c-bbcd-6137425faeaf");

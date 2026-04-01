@@ -22,7 +22,7 @@ using Windows.Devices.Enumeration;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class ZoomItViewModel : Observable
+    public partial class ZoomItViewModel : Observable
     {
         private const string FormatGif = "GIF";
         private const string FormatMp4 = "MP4";

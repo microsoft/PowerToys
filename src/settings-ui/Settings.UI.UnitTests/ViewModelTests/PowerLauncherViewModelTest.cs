@@ -13,7 +13,7 @@ using Moq;
 namespace ViewModelTests
 {
     [TestClass]
-    public class PowerLauncherViewModelTest : IDisposable
+    public partial class PowerLauncherViewModelTest : IDisposable
     {
         private sealed class SendCallbackMock
         {

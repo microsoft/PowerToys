@@ -9,7 +9,7 @@ using System.Windows.Input;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public class ModuleListItem : INotifyPropertyChanged
+    public partial class ModuleListItem : INotifyPropertyChanged
     {
         private bool _isEnabled;
         private string _label = string.Empty;

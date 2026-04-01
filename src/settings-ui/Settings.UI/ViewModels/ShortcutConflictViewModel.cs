@@ -25,7 +25,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class ShortcutConflictViewModel : PageViewModelBase
+    public partial class ShortcutConflictViewModel : PageViewModelBase
     {
         private readonly SettingsFactory _settingsFactory;
         private readonly Func<string, int> _ipcMSGCallBackFunc;

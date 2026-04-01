@@ -10,7 +10,7 @@ using Peek.Common.Models;
 
 namespace Peek.Common.Extensions
 {
-    public sealed class DisposablePropertyStore : IDisposable
+    public sealed partial class DisposablePropertyStore : IDisposable
     {
         private readonly IPropertyStore _propertyStore;
 

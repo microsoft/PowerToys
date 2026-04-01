@@ -13,7 +13,7 @@ using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.QuickAccess.Services;
 
-internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposable
+internal sealed partial class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposable
 {
     private readonly MainWindow _window;
     private readonly QuickAccessLaunchContext _launchContext;

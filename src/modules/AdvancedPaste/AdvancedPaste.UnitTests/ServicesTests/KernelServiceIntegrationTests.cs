@@ -26,7 +26,7 @@ namespace AdvancedPaste.UnitTests.ServicesTests;
 [TestClass]
 
 /// <summary>Integration tests for the Kernel service; connects to OpenAI and uses full AdvancedPaste action catalog.</summary>
-public sealed class KernelServiceIntegrationTests : IDisposable
+public sealed partial class KernelServiceIntegrationTests : IDisposable
 {
     private const string StandardImageFile = "image_with_text_example.png";
     private IKernelService _kernelService;

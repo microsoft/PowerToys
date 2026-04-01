@@ -184,7 +184,7 @@ namespace ImageResizer.Properties
             }
         }
 
-        private class AllSizesCollection : IEnumerable<ResizeSize>, INotifyCollectionChanged, INotifyPropertyChanged
+        private partial class AllSizesCollection : IEnumerable<ResizeSize>, INotifyCollectionChanged, INotifyPropertyChanged
         {
             private readonly Settings _settings;
             private ObservableCollection<ResizeSize> _sizes;
@@ -270,7 +270,7 @@ namespace ImageResizer.Properties
             IEnumerator IEnumerable.GetEnumerator()
                 => GetEnumerator();
 
-            private class AllSizesEnumerator : IEnumerator<ResizeSize>
+            private partial class AllSizesEnumerator : IEnumerator<ResizeSize>
             {
                 private readonly AllSizesCollection _list;
                 private int _index = -1;

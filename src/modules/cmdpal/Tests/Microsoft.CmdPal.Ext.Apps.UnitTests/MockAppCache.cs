@@ -12,7 +12,7 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 /// <summary>
 /// Mock implementation of IAppCache for unit testing.
 /// </summary>
-public class MockAppCache : IAppCache
+public partial class MockAppCache : IAppCache
 {
     private readonly List<Win32Program> _win32s = new();
     private readonly List<IUWPApplication> _uwps = new();

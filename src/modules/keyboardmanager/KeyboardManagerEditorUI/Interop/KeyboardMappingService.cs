@@ -12,7 +12,7 @@ using ManagedCommon;
 
 namespace KeyboardManagerEditorUI.Interop
 {
-    public class KeyboardMappingService : IDisposable
+    public partial class KeyboardMappingService : IDisposable
     {
         private IntPtr _configHandle;
         private bool _disposed;

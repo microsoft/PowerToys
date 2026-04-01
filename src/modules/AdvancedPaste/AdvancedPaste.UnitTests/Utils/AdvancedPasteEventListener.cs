@@ -12,7 +12,7 @@ using Microsoft.PowerToys.Telemetry;
 
 namespace AdvancedPaste.UnitTests.Utils;
 
-internal sealed class AdvancedPasteEventListener : EventListener
+internal sealed partial class AdvancedPasteEventListener : EventListener
 {
     private readonly List<AdvancedPasteGenerateCustomFormatEvent> _customFormatEvents = [];
     private readonly List<AdvancedPasteSemanticKernelFormatEvent> _semanticKernelEvents = [];

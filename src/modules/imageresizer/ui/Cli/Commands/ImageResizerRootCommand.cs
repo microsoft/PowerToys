@@ -11,7 +11,7 @@ namespace ImageResizer.Cli.Commands
     /// <summary>
     /// Root command for the ImageResizer CLI.
     /// </summary>
-    public sealed class ImageResizerRootCommand : RootCommand
+    public sealed partial class ImageResizerRootCommand : RootCommand
     {
         public ImageResizerRootCommand()
             : base("PowerToys Image Resizer - Resize images from command line")

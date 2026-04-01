@@ -11,7 +11,7 @@ using Windows.Graphics.Imaging;
 
 namespace ImageResizer.Services
 {
-    public sealed class WinAiSuperResolutionService : IAISuperResolutionService
+    public sealed partial class WinAiSuperResolutionService : IAISuperResolutionService
     {
         private readonly ImageScaler _imageScaler;
         private readonly object _usageLock = new object();

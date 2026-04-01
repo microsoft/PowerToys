@@ -10,7 +10,7 @@ using Microsoft.PowerToys.Settings.UI.Controls;
 
 namespace Microsoft.PowerToys.QuickAccess.ViewModels;
 
-public sealed class FlyoutMenuItem : ModuleListItem
+public sealed partial class FlyoutMenuItem : ModuleListItem
 {
     private bool _visible;
 
