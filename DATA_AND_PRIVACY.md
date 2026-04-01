@@ -43,12 +43,13 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.DebugEvent | Logs debugging information for diagnostics and troubleshooting. |
 | Microsoft.PowerToys.GeneralSettingsChanged | Logs changes made to general settings within PowerToys. |
 | Microsoft.PowerToys.Install_Fail | Triggered when the PowerToys installation process encounters an error and fails to complete. |
+| Microsoft.PowerToys.PowerToys_ModuleLaunchedFromSettings | Logs when a module editor is launched from the Settings UI or Quick Access panel, including which module was launched. |
 | Microsoft.PowerToys.Repair_Cancel | Triggered when a PowerToys repair operation is cancelled by the user before completion. |
 | Microsoft.PowerToys.Repair_Fail | Triggered when the PowerToys repair operation fails to complete successfully due to an error. |
 | Microsoft.PowerToys.Runner_Launch | Indicates when the PowerToys Runner is launched. |
+| Microsoft.PowerToys.ScoobeStartedEvent | Triggered when SCOOBE (Secondary Out-of-box experience) starts. |
 | Microsoft.PowerToys.SettingsBootEvent | Triggered when PowerToys settings are initialized at startup. |
 | Microsoft.PowerToys.SettingsEnabledEvent | Indicates that the PowerToys settings have been enabled. |
-| Microsoft.PowerToys.ScoobeStartedEvent | Triggered when SCOOBE (Secondary Out-of-box experience) starts. |
 | Microsoft.PowerToys.ShortcutConflictControlClickedEvent | Triggered when a user clicks on the Shortcut Conflict Control button in the PowerToys Settings UI Dashboard. |
 | Microsoft.PowerToys.ShortcutConflictDetectedEvent | Triggered when keyboard shortcut conflicts are detected in the PowerToys Settings UI Dashboard. |
 | Microsoft.PowerToys.ShortcutConflictResolvedEvent | Triggered when a keyboard shortcut conflict is resolved in the PowerToys Settings UI. |
@@ -80,15 +81,15 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.AdvancedPaste_Settings | Triggered when settings for Advanced Paste are accessed or modified. |
 | Microsoft.PowerToys.AdvancedPasteClipboardItemClicked | Occurs when a clipboard item is selected from the Advanced Paste menu. |
 | Microsoft.PowerToys.AdvancedPasteClipboardItemDeletedEvent | Triggered when an item is removed from the Advanced Paste clipboard history. |
+| Microsoft.PowerToys.AdvancedPasteCustomActionErrorEvent | Records provider, model, and status details when a custom action fails. |
 | Microsoft.PowerToys.AdvancedPasteCustomFormatOutputThumbUpDownEvent | Triggered when a user gives feedback on a custom format output (thumb up/down). |
+| Microsoft.PowerToys.AdvancedPasteEndpointUsageEvent | Logs the AI provider, model, and processing duration for each endpoint call. |
 | Microsoft.PowerToys.AdvancedPasteFormatClickedEvent | Occurs when a specific paste format is clicked in the Advanced Paste menu. |
 | Microsoft.PowerToys.AdvancedPasteGenerateCustomErrorEvent | Triggered when an error occurs while generating a custom paste format. |
 | Microsoft.PowerToys.AdvancedPasteGenerateCustomFormatEvent | Occurs when a custom paste format is successfully generated. |
 | Microsoft.PowerToys.AdvancedPasteInAppKeyboardShortcutEvent | Triggered when a keyboard shortcut is used within the Advanced Paste interface. |
-| Microsoft.PowerToys.AdvancedPasteSemanticKernelFormatEvent | Triggered when Advanced Paste leverages the Semantic Kernel. |
 | Microsoft.PowerToys.AdvancedPasteSemanticKernelErrorEvent | Occurs when the Semantic Kernel workflow encounters an error. |
-| Microsoft.PowerToys.AdvancedPasteEndpointUsageEvent | Logs the AI provider, model, and processing duration for each endpoint call. |
-| Microsoft.PowerToys.AdvancedPasteCustomActionErrorEvent | Records provider, model, and status details when a custom action fails. |
+| Microsoft.PowerToys.AdvancedPasteSemanticKernelFormatEvent | Triggered when Advanced Paste leverages the Semantic Kernel. |
 
 ### Always on Top
 
@@ -130,18 +131,19 @@ Thank you for using PowerToys!
 | --- | --- |
 | Microsoft.PowerToys.CmdPal_BeginInvoke | Triggered when the Command Palette is launched by the user. |
 | Microsoft.PowerToys.CmdPal_ColdLaunch | Occurs when Command Palette starts for the first time (cold start). |
+| Microsoft.PowerToys.CmdPal_DockConfiguration | Tracks dock configuration at startup including whether the dock is enabled, dock side (top, bottom, left, or right), and the list of extension commands pinned to the start, center, and end sections of the dock. |
+| Microsoft.PowerToys.CmdPal_ExtensionInvoked | Tracks extension usage including extension ID, command details, success status, and execution time. |
 | Microsoft.PowerToys.CmdPal_OpenPage | Triggered when a page is opened within the Command Palette, tracking navigation depth. |
 | Microsoft.PowerToys.CmdPal_OpenUri | Occurs when a URI is opened through the Command Palette, including whether it's a web URL. |
 | Microsoft.PowerToys.CmdPal_ReactivateInstance | Triggered when an existing Command Palette instance is reactivated. |
 | Microsoft.PowerToys.CmdPal_RunCommand | Logs when a command is executed through the Command Palette, including admin elevation status. |
 | Microsoft.PowerToys.CmdPal_RunQuery | Triggered when a search query is performed, including result count and duration. |
+| Microsoft.PowerToys.CmdPal_SessionDuration | Logs session metrics from launch to dismissal including duration, commands executed, pages visited, search queries, navigation depth, and errors. |
 | Microsoft.PowerToys.CmdPalDismissedOnEsc | Occurs when the Command Palette is dismissed by pressing the Escape key. |
 | Microsoft.PowerToys.CmdPalDismissedOnLostFocus | Triggered when the Command Palette is dismissed due to losing focus. |
 | Microsoft.PowerToys.CmdPalHotkeySummoned | Logs when the Command Palette is summoned via hotkey, distinguishing between global and context-specific hotkeys. |
 | Microsoft.PowerToys.CmdPalInvokeResult | Records the result type of a Command Palette invocation. |
 | Microsoft.PowerToys.CmdPalProcessStarted | Triggered when the Command Palette process is started. |
-| Microsoft.PowerToys.CmdPal_ExtensionInvoked | Tracks extension usage including extension ID, command details, success status, and execution time. |
-| Microsoft.PowerToys.CmdPal_SessionDuration | Logs session metrics from launch to dismissal including duration, commands executed, pages visited, search queries, navigation depth, and errors. |
 
 ### Crop and lock
 
@@ -176,6 +178,7 @@ Thank you for using PowerToys!
 
 | Event Name | Description |
 | --- | --- |
+| Microsoft.PowerToys.FancyZones_CLICommand | Triggered when a FancyZones CLI command is executed, logging the command name and success status. |
 | Microsoft.PowerToys.FancyZones_CycleActiveZoneSet | Triggered when the active zone set is cycled through. |
 | Microsoft.PowerToys.FancyZones_EditorLaunch | Occurs when the FancyZones editor is launched. |
 | Microsoft.PowerToys.FancyZones_EnableFancyZones | Occurs when FancyZones is enabled. |
@@ -190,7 +193,6 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.FancyZones_VirtualDesktopChanged | Occurs when the virtual desktop changes, affecting zone layout. |
 | Microsoft.PowerToys.FancyZones_ZoneSettingsChanged | Triggered when the settings for specific zones are altered. |
 | Microsoft.PowerToys.FancyZones_ZoneWindowKeyUp | Occurs when a key is released while interacting with zones. |
-| Microsoft.PowerToys.FancyZones_CLICommand | Triggered when a FancyZones CLI command is executed, logging the command name and success status. |
 | Microsoft.PowerToys.FancyZonesEditorStartEvent | Triggered when the FancyZones Editor application starts. This logs the initialization of the editor UI, which is used to create and configure custom zone layouts. |
 | Microsoft.PowerToys.FancyZonesEditorStartFinishEvent | Triggered when the FancyZones Editor has completed loading and is ready for user interaction. |
 
@@ -207,12 +209,12 @@ Thank you for using PowerToys!
 
 | Event Name | Description |
 | --- | --- |
-| Microsoft.PowerToys.GcodeFileHandlerLoaded | Triggered when a G-code file handler is loaded. |
-| Microsoft.PowerToys.GcodeFilePreviewed | Occurs when a G-code file is previewed in File Explorer. |
-| Microsoft.PowerToys.GcodeFilePreviewError | Triggered when there is an error previewing a G-code file. |
 | Microsoft.PowerToys.BgcodeFileHandlerLoaded | Triggered when a Binary G-code file handler is loaded. |
 | Microsoft.PowerToys.BgcodeFilePreviewed | Occurs when a Binary G-code file is previewed in File Explorer. |
 | Microsoft.PowerToys.BgcodeFilePreviewError | Triggered when there is an error previewing a Binary G-code file. |
+| Microsoft.PowerToys.GcodeFileHandlerLoaded | Triggered when a G-code file handler is loaded. |
+| Microsoft.PowerToys.GcodeFilePreviewed | Occurs when a G-code file is previewed in File Explorer. |
+| Microsoft.PowerToys.GcodeFilePreviewError | Triggered when there is an error previewing a G-code file. |
 | Microsoft.PowerToys.MarkdownFileHandlerLoaded | Occurs when a Markdown file handler is loaded. |
 | Microsoft.PowerToys.MarkdownFilePreviewed | Triggered when a Markdown file is previewed in File Explorer. |
 | Microsoft.PowerToys.MarkdownFilePreviewError | Triggered when there is an error previewing a Markdown file in File Explorer. |
@@ -242,11 +244,11 @@ Thank you for using PowerToys!
 
 | Event Name | Description |
 | --- | --- |
+| Microsoft.PowerToys.HostEditorStartEvent | Triggered when the Hosts File Editor application starts. This logs the initialization of the Hosts File Editor UI with a timestamp. |
+| Microsoft.PowerToys.HostEditorStartFinishEvent | Triggered when the Hosts File Editor has completed loading and is ready for user interaction. |
 | Microsoft.PowerToys.HostsFileEditor_Activate | Triggered when Hosts File Editor is activated. |
 | Microsoft.PowerToys.HostsFileEditor_EnableHostsFileEditor | Occurs when Hosts File Editor is enabled. |
 | Microsoft.PowerToys.HostsFileEditorOpenedEvent | Fires when Hosts File Editor is opened. |
-| Microsoft.PowerToys.HostEditorStartEvent | Triggered when the Hosts File Editor application starts. This logs the initialization of the Hosts File Editor UI with a timestamp. |
-| Microsoft.PowerToys.HostEditorStartFinishEvent | Triggered when the Hosts File Editor has completed loading and is ready for user interaction. |
 
 ### Image Resizer
 
@@ -265,8 +267,6 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutRemapCount | Logs the number of application-specific shortcut remaps configured by the user. |
 | Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutToKeyRemapInvoked | Logs each instance when an application-specific shortcut-to-key remap is used. |
 | Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutToShortcutRemapInvoked | Logs each instance when an application-specific shortcut-to-shortcut remap is used. |
-| Microsoft.PowerToys.KeyboardManager_Error | Triggered when an error occurs in Keyboard Manager. This logs the error code, error message, and the method name where the error occurred. |
-| Microsoft.PowerToys.KeyboardManager_ErrorSendingKeyAndShortcutRemapLoadedConfiguration | Triggered when there is an error sending remapping configuration telemetry. This occurs when Keyboard Manager fails to report the loaded key and shortcut remap configurations. |
 | Microsoft.PowerToys.KeyboardManager_DailyAppSpecificShortcutToKeyRemapInvoked | Logs the daily count of application-specific shortcut-to-key remaps executed by the user. |
 | Microsoft.PowerToys.KeyboardManager_DailyAppSpecificShortcutToShortcutRemapInvoked | Logs the daily count of application-specific shortcut-to-shortcut remaps executed by the user. |
 | Microsoft.PowerToys.KeyboardManager_DailyKeyToKeyRemapInvoked | Logs the daily count of key-to-key remaps used by the user. |
@@ -274,10 +274,13 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.KeyboardManager_DailyShortcutToKeyRemapInvoked | Logs the daily count of shortcut-to-key remaps used by the user. |
 | Microsoft.PowerToys.KeyboardManager_DailyShortcutToShortcutRemapInvoked | Logs the daily count of shortcut-to-shortcut remaps used by the user. |
 | Microsoft.PowerToys.KeyboardManager_EnableKeyboardManager | Indicates that the Keyboard Manager has been enabled in PowerToys settings. |
+| Microsoft.PowerToys.KeyboardManager_Error | Triggered when an error occurs in Keyboard Manager. This logs the error code, error message, and the method name where the error occurred. |
+| Microsoft.PowerToys.KeyboardManager_ErrorSendingKeyAndShortcutRemapLoadedConfiguration | Triggered when there is an error sending remapping configuration telemetry. This occurs when Keyboard Manager fails to report the loaded key and shortcut remap configurations. |
 | Microsoft.PowerToys.KeyboardManager_KeyRemapConfigurationLoaded | Indicates that the key remap configuration has been successfully loaded. |
 | Microsoft.PowerToys.KeyboardManager_KeyRemapCount | Logs the number of individual key remaps configured by the user. |
 | Microsoft.PowerToys.KeyboardManager_KeyToKeyRemapInvoked | Logs each instance of a key-to-key remap being used. |
 | Microsoft.PowerToys.KeyboardManager_KeyToShortcutRemapInvoked | Logs each instance of a key-to-shortcut remap being used. |
+| Microsoft.PowerToys.KeyboardManager_LaunchEditor | Logs when the Keyboard Manager editor is launched, including whether it was opened via hotkey or through settings. |
 | Microsoft.PowerToys.KeyboardManager_OSLevelShortcutRemapCount | Logs the total number of OS-level shortcut remaps configured by the user. |
 | Microsoft.PowerToys.KeyboardManager_OSLevelShortcutToKeyRemapInvoked | Logs each instance of an OS-level shortcut-to-key remap being used. |
 | Microsoft.PowerToys.KeyboardManager_OSLevelShortcutToShortcutRemapInvoked | Logs each instance of an OS-level shortcut-to-shortcut remap being used. |
@@ -288,8 +291,8 @@ Thank you for using PowerToys!
 | Event Name | Description |
 | --- | --- |
 | Microsoft.PowerToys.LightSwitch_EnableLightSwitch | Triggered when Light Switch is enabled or disabled. |
-| Microsoft.PowerToys.LightSwitch_ShortcutInvoked | Occurs when the shortcut for Light Switch is invoked. |
 | Microsoft.PowerToys.LightSwitch_ScheduleModeToggled | Occurs when a new schedule mode is selected for Light Switch. |
+| Microsoft.PowerToys.LightSwitch_ShortcutInvoked | Occurs when the shortcut for Light Switch is invoked. |
 | Microsoft.PowerToys.LightSwitch_ThemeTargetChanged | Occurs when the options for targeting the system or apps is updated. |
 
 ### Mouse Highlighter
@@ -437,15 +440,15 @@ Thank you for using PowerToys!
 
 | Event Name | Description |
 | --- | --- |
-| Microsoft.PowerToys.ZoomIt_EnableZoomIt | Triggered when ZoomIt is enabled/disabled. |
-| Microsoft.PowerToys.ZoomIt_Started | Triggered when the ZoomIt process starts. |
 | Microsoft.PowerToys.ZoomIt_ActivateBreak | Triggered when the Break mode is entered. |
-| Microsoft.PowerToys.ZoomIt_ActivateDraw | Triggered when the Draw mode is entered. |
-| Microsoft.PowerToys.ZoomIt_ActivateZoom | Triggered when the Zoom mode is entered. |
-| Microsoft.PowerToys.ZoomIt_ActivateLiveZoom | Triggered when the Live Zoom mode is entered. |
 | Microsoft.PowerToys.ZoomIt_ActivateDemoType | Triggered when the DemoType mode is entered. |
+| Microsoft.PowerToys.ZoomIt_ActivateDraw | Triggered when the Draw mode is entered. |
+| Microsoft.PowerToys.ZoomIt_ActivateLiveZoom | Triggered when the Live Zoom mode is entered. |
 | Microsoft.PowerToys.ZoomIt_ActivateRecord | Triggered when the Record mode is entered. |
 | Microsoft.PowerToys.ZoomIt_ActivateSnip | Triggered when the Snip mode is entered. |
+| Microsoft.PowerToys.ZoomIt_ActivateZoom | Triggered when the Zoom mode is entered. |
+| Microsoft.PowerToys.ZoomIt_EnableZoomIt | Triggered when ZoomIt is enabled/disabled. |
+| Microsoft.PowerToys.ZoomIt_Started | Triggered when the ZoomIt process starts. |
 
 <!-- back up of table
 
