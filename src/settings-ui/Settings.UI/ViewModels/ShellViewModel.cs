@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -135,7 +136,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void Frame_NavigationFailed(object sender, NavigationFailedEventArgs e)
         {
-            throw e.Exception;
+            e.Handled = true;
+            Logger.LogError($"Failed to navigate to page {e.SourcePageType?.FullName ?? "(unknown)"}", e.Exception);
         }
 
         private void Frame_Navigated(object sender, NavigationEventArgs e)
