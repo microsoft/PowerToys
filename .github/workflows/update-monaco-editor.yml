@@ -37,6 +37,11 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install Playwright
+        run: |
+          npm install playwright@latest
+          npx playwright install chromium --with-deps
+
       - name: Get current Monaco version
         id: current_version
         shell: bash
@@ -48,8 +53,10 @@ jobs:
       - name: Run Monaco update script
         id: update
         shell: pwsh
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          $version = '${{ inputs.version }}'
+          $version = $env:INPUT_VERSION
           if ([string]::IsNullOrWhiteSpace($version)) {
             $version = 'latest'
           }
@@ -81,7 +88,8 @@ jobs:
 
       - name: Create pull request
         if: steps.changes.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v7
+        # 3rd-party action pinned to commit hash per Microsoft security guidelines
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Update Monaco Editor to ${{ steps.update.outputs.new_version }}"

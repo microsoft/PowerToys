@@ -117,6 +117,14 @@ try {
     Write-Host "`n--- Step 3: Generating monaco_languages.json ---"
     $generateScript = Join-Path $PSScriptRoot "generate-monaco-languages.js"
 
+    # Ensure playwright is available (installed in workflow, but verify here)
+    $playwrightCheck = npm list playwright 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Installing playwright for headless browser..."
+        npm install playwright@latest 2>&1
+        npx playwright install chromium --with-deps 2>&1
+    }
+
     node $generateScript $monacoDir
 
     if ($LASTEXITCODE -ne 0) {

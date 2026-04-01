@@ -1,17 +1,23 @@
 /**
  * generate-monaco-languages.js
  *
- * Headless Node.js replacement for generateLanguagesJson.html.
- * Loads the Monaco AMD loader natively, registers built-in and custom
- * languages, then writes monaco_languages.json.
+ * Headless replacement for the manual generateLanguagesJson.html workflow.
+ * Serves the Monaco directory on a local HTTP server, then uses Playwright
+ * to open generateLanguagesJson.html and capture the generated JSON.
+ *
+ * Monaco's AMD loader requires a real browser DOM, so we use Playwright
+ * instead of trying to load it in Node.js directly.
  *
  * Usage: node generate-monaco-languages.js <path-to-src/Monaco>
+ *
+ * Prerequisites: npx playwright install chromium
  */
 
 "use strict";
 
 const path = require("path");
 const fs = require("fs");
+const http = require("http");
 
 const monacoDir = process.argv[2];
 if (!monacoDir) {
@@ -20,97 +26,117 @@ if (!monacoDir) {
 }
 
 const absMonacoDir = path.resolve(monacoDir);
-const monacoSrcMin = path.join(absMonacoDir, "monacoSRC", "min");
-const loaderPath = path.join(monacoSrcMin, "vs", "loader.js");
 const outputPath = path.join(absMonacoDir, "monaco_languages.json");
-const specialLangPath = path.join(absMonacoDir, "monacoSpecialLanguages.js");
-const customLangDir = path.join(absMonacoDir, "customLanguages");
+const htmlPath = path.join(absMonacoDir, "generateLanguagesJson.html");
 
-if (!fs.existsSync(loaderPath)) {
-  console.error(`loader.js not found at: ${loaderPath}`);
+if (!fs.existsSync(htmlPath)) {
+  console.error(`generateLanguagesJson.html not found at: ${htmlPath}`);
   process.exit(1);
 }
 
-// Load the AMD loader into the global scope.
-// We must use eval (via Function) so that `this` inside the loader IIFE
-// resolves to `globalThis`, not `module.exports` (which `require()` would do).
-const loaderCode = fs.readFileSync(loaderPath, "utf-8");
-new Function(loaderCode).call(globalThis);
+// MIME types for serving Monaco files
+const MIME_TYPES = {
+  ".html": "text/html",
+  ".js": "application/javascript",
+  ".css": "text/css",
+  ".json": "application/json",
+  ".ttf": "font/ttf",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".svg": "image/svg+xml",
+};
 
-// The AMD loader installs `require` and `define` on globalThis
-const amdRequire = globalThis.require;
-if (!amdRequire || typeof amdRequire.config !== "function") {
-  console.error("AMD loader did not install correctly on globalThis");
-  process.exit(1);
+/**
+ * Create a simple static file server rooted at absMonacoDir.
+ */
+function createServer() {
+  return http.createServer((req, res) => {
+    const url = new URL(req.url, "http://localhost");
+    // Resolve the file path relative to absMonacoDir, preventing path traversal
+    const requestedPath = decodeURIComponent(url.pathname);
+    const filePath = path.resolve(absMonacoDir, requestedPath.replace(/^\/+/, ""));
+
+    // Ensure the resolved path is within absMonacoDir
+    if (!filePath.startsWith(absMonacoDir + path.sep) && filePath !== absMonacoDir) {
+      res.writeHead(403);
+      res.end("Forbidden");
+      return;
+    }
+
+    if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+      res.writeHead(404);
+      res.end("Not found");
+      return;
+    }
+
+    const ext = path.extname(filePath).toLowerCase();
+    const contentType = MIME_TYPES[ext] || "application/octet-stream";
+
+    const content = fs.readFileSync(filePath);
+    res.writeHead(200, { "Content-Type": contentType });
+    res.end(content);
+  });
 }
 
-// Configure the AMD require to find Monaco modules
-amdRequire.config({
-  paths: {
-    vs: path.join(monacoSrcMin, "vs").replace(/\\/g, "/"),
-  },
-});
+async function main() {
+  // Start local HTTP server
+  const server = createServer();
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const port = server.address().port;
+  const baseUrl = `http://127.0.0.1:${port}`;
+  console.log(`Local server started at ${baseUrl}`);
 
-// Load vs/editor/editor.main which registers all built-in languages
-amdRequire(
-  ["vs/editor/editor.main"],
-  function (monaco) {
-    // Register the custom / additional languages from monacoSpecialLanguages.js
-    registerCustomLanguages(monaco);
+  let browser;
+  try {
+    // Launch Playwright browser
+    const { chromium } = require("playwright");
+    browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({
+      // Accept downloads so we can capture the generated file
+      acceptDownloads: true,
+    });
+    const page = await context.newPage();
 
-    // Write the JSON
-    const languages = monaco.languages.getLanguages();
-    const output = JSON.stringify({ list: languages });
+    // The generateLanguagesJson.html auto-triggers a download of the JSON.
+    // We intercept that download event to capture the content.
+    const downloadPromise = page.waitForEvent("download", { timeout: 30000 });
 
-    fs.writeFileSync(outputPath, output + "\n", "utf-8");
+    console.log("Loading generateLanguagesJson.html in headless browser...");
+    await page.goto(`${baseUrl}/generateLanguagesJson.html`, {
+      waitUntil: "networkidle",
+      timeout: 30000,
+    });
+
+    // Wait for the download to be triggered
+    const download = await downloadPromise;
+    console.log(`Download triggered: ${download.suggestedFilename()}`);
+
+    // Save the downloaded file
+    const downloadPath = await download.path();
+    const content = fs.readFileSync(downloadPath, "utf-8");
+
+    // Validate the JSON before writing
+    const parsed = JSON.parse(content);
+    if (!parsed.list || !Array.isArray(parsed.list) || parsed.list.length === 0) {
+      throw new Error(
+        "Generated JSON is invalid: missing or empty 'list' property"
+      );
+    }
+
+    // Write to output
+    fs.writeFileSync(outputPath, content, "utf-8");
     console.log(
-      `monaco_languages.json written with ${languages.length} languages.`
+      `monaco_languages.json written with ${parsed.list.length} languages.`
     );
-  },
-  function (err) {
-    console.error("Failed to load Monaco editor:", err);
-    process.exit(1);
-  }
-);
-
-// ─── Custom language registration ────────────────────────────────────
-
-function registerCustomLanguages(monaco) {
-  if (!fs.existsSync(specialLangPath)) {
-    console.warn(
-      "monacoSpecialLanguages.js not found, skipping custom languages"
-    );
-    return;
-  }
-
-  const specialContent = fs.readFileSync(specialLangPath, "utf-8");
-
-  // Parse registerAdditionalLanguage calls (existing language extensions)
-  const addLangRegex =
-    /registerAdditionalLanguage\(\s*"([^"]+)"\s*,\s*\[([^\]]*)\]\s*,\s*"([^"]+)"/g;
-  let match;
-  while ((match = addLangRegex.exec(specialContent)) !== null) {
-    const id = match[1];
-    const extensionsStr = match[2];
-    const extensions = extensionsStr
-      .split(",")
-      .map((e) => e.trim().replace(/"/g, ""))
-      .filter((e) => e.length > 0);
-
-    monaco.languages.register({ id, extensions });
-  }
-
-  // Parse registerAdditionalNewLanguage calls (brand new languages)
-  const newLangRegex =
-    /registerAdditionalNewLanguage\(\s*"([^"]+)"\s*,\s*\[([^\]]*)\]/g;
-  while ((match = newLangRegex.exec(specialContent)) !== null) {
-    const id = match[1];
-    const extensionsStr = match[2];
-    const extensions = extensionsStr
-      .split(",")
-      .map((e) => e.trim().replace(/"/g, ""))
-      .filter((e) => e.length > 0);
-
-    monaco.languages.register({ id, extensions });
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+    server.close();
   }
 }
+
+main().catch((err) => {
+  console.error("Error:", err.message || err);
+  process.exit(1);
+});
