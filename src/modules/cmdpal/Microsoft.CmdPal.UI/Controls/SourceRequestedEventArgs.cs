@@ -11,11 +11,13 @@ namespace Microsoft.CmdPal.UI.Controls;
 /// <summary>
 /// See <see cref="IconBox.SourceRequested"/> event.
 /// </summary>
-public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme) : DeferredEventArgs
+public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme, double scale = 1.0) : DeferredEventArgs
 {
     public object? Key { get; private set; } = key;
 
     public IconSource? Value { get; set; }
 
     public ElementTheme Theme => requestedTheme;
+
+    public double Scale => scale;
 }

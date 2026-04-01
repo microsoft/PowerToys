@@ -4,6 +4,7 @@
 #include <LightSwitchUtils.h>
 #include "ThemeScheduler.h"
 #include <ThemeHelper.h>
+#include <common/interop/shared_constants.h>
 
 void ApplyTheme(bool shouldBeLight);
 
@@ -17,12 +18,10 @@ LightSwitchStateManager::LightSwitchStateManager()
 void LightSwitchStateManager::OnSettingsChanged()
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
-    Logger::info(L"[LightSwitchStateManager] Settings changed event received");
 
     // If manual override was active, clear it so new settings take effect
     if (_state.isManualOverride)
     {
-        Logger::info(L"[LightSwitchStateManager] Clearing manual override due to settings update.");
         _state.isManualOverride = false;
     }
 
@@ -30,14 +29,16 @@ void LightSwitchStateManager::OnSettingsChanged()
 }
 
 // Called once per minute
-void LightSwitchStateManager::OnTick(int currentMinutes)
+void LightSwitchStateManager::OnTick()
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
-    Logger::debug(L"[LightSwitchStateManager] Tick received: {}", currentMinutes);
-    EvaluateAndApplyIfNeeded();
+    if (_state.lastAppliedMode != ScheduleMode::FollowNightLight)
+    {
+        EvaluateAndApplyIfNeeded();
+    }
 }
 
-// Called when manual override is triggered
+// Called when manual override is triggered (via hotkey)
 void LightSwitchStateManager::OnManualOverride()
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
@@ -45,15 +46,49 @@ void LightSwitchStateManager::OnManualOverride()
     _state.isManualOverride = !_state.isManualOverride;
 
     // When entering manual override, sync internal theme state to match the current system
+    // The hotkey handler in ModuleInterface has already toggled the theme, so we read the new state
     if (_state.isManualOverride)
     {
         _state.isSystemLightActive = GetCurrentSystemTheme();
-
         _state.isAppsLightActive = GetCurrentAppsTheme();
 
-        Logger::info(L"[LightSwitchStateManager] Synced internal theme state to current system theme ({}) and apps theme ({}).",
-                     (_state.isSystemLightActive ? L"light" : L"dark"),
-                     (_state.isAppsLightActive ? L"light" : L"dark"));
+        Logger::debug(L"[LightSwitchStateManager] Synced internal theme state to current system theme ({}) and apps theme ({}).",
+                      (_state.isSystemLightActive ? L"light" : L"dark"),
+                      (_state.isAppsLightActive ? L"light" : L"dark"));
+
+        // Notify PowerDisplay about the theme change triggered by hotkey
+        // The theme has already been applied by ModuleInterface, we just need to notify PowerDisplay
+        NotifyPowerDisplay(_state.isSystemLightActive);
+    }
+
+    EvaluateAndApplyIfNeeded();
+}
+
+// Runs with the registry observer detects a change in Night Light settings.
+void LightSwitchStateManager::OnNightLightChange()
+{
+    std::lock_guard<std::mutex> lock(_stateMutex);
+
+    bool newNightLightState = IsNightLightEnabled();
+
+    // In Follow Night Light mode, treat a Night Light toggle as a boundary
+    if (_state.lastAppliedMode == ScheduleMode::FollowNightLight && _state.isManualOverride)
+    {
+        Logger::info(L"[LightSwitchStateManager] Night Light changed while manual override active; "
+                     L"treating as a boundary and clearing manual override.");
+        _state.isManualOverride = false;
+    }
+
+    if (newNightLightState != _state.isNightLightActive)
+    {
+        Logger::info(L"[LightSwitchStateManager] Night Light toggled to {}",
+                     newNightLightState ? L"ON" : L"OFF");
+
+        _state.isNightLightActive = newNightLightState;
+    }
+    else
+    {
+        Logger::debug(L"[LightSwitchStateManager] Night Light change event fired, but no actual change.");
     }
 
     EvaluateAndApplyIfNeeded();
@@ -79,10 +114,14 @@ void LightSwitchStateManager::SyncInitialThemeState()
     std::lock_guard<std::mutex> lock(_stateMutex);
     _state.isSystemLightActive = GetCurrentSystemTheme();
     _state.isAppsLightActive = GetCurrentAppsTheme();
-    Logger::info(L"[LightSwitchStateManager] Synced initial state to current system theme ({})",
-                 _state.isSystemLightActive ? L"light" : L"dark");
-    Logger::info(L"[LightSwitchStateManager] Synced initial state to current apps theme ({})",
-                 _state.isAppsLightActive ? L"light" : L"dark");
+    _state.isNightLightActive = IsNightLightEnabled();
+    Logger::debug(L"[LightSwitchStateManager] Synced initial state to current system theme ({})",
+                  _state.isSystemLightActive ? L"light" : L"dark");
+    Logger::debug(L"[LightSwitchStateManager] Synced initial state to current apps theme ({})",
+                  _state.isAppsLightActive ? L"light" : L"dark");
+    
+    // This will ensure that the theme is applied according to current settings at startup
+    EvaluateAndApplyIfNeeded();
 }
 
 static std::pair<int, int> update_sun_times(auto& settings)
@@ -127,7 +166,6 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
     // Early exit: OFF mode just pauses activity
     if (_currentSettings.scheduleMode == ScheduleMode::Off)
     {
-        Logger::debug(L"[LightSwitchStateManager] Mode is OFF — pausing service logic.");
         _state.lastTickMinutes = now;
         return;
     }
@@ -145,7 +183,6 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
         if (newDay || modeChangedToSun)
         {
-            Logger::info(L"[LightSwitchStateManager] Recalculating sun times (mode/day change).");
             auto [newLightTime, newDarkTime] = update_sun_times(_currentSettings);
             _state.lastEvaluatedDay = st.wDay;
             _state.effectiveLightMinutes = newLightTime + _currentSettings.sunrise_offset;
@@ -188,12 +225,10 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
         if (crossedBoundary)
         {
-            Logger::info(L"[LightSwitchStateManager] Manual override cleared after crossing boundary.");
             _state.isManualOverride = false;
         }
         else
         {
-            Logger::debug(L"[LightSwitchStateManager] Manual override active — skipping auto apply.");
             _state.lastTickMinutes = now;
             return;
         }
@@ -201,12 +236,20 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
 
     _state.lastAppliedMode = _currentSettings.scheduleMode;
 
-    bool shouldBeLight = ShouldBeLight(now, _state.effectiveLightMinutes, _state.effectiveDarkMinutes);
+    bool shouldBeLight = false;
+    if (_currentSettings.scheduleMode == ScheduleMode::FollowNightLight)
+    {
+        shouldBeLight = !_state.isNightLightActive;
+    }
+    else
+    {
+        shouldBeLight = ShouldBeLight(now, _state.effectiveLightMinutes, _state.effectiveDarkMinutes);
+    }
 
     bool appsNeedsToChange = _currentSettings.changeApps && (_state.isAppsLightActive != shouldBeLight);
     bool systemNeedsToChange = _currentSettings.changeSystem && (_state.isSystemLightActive != shouldBeLight);
 
-    Logger::debug(
+    /* Logger::debug(
         L"[LightSwitchStateManager] now = {:02d}:{:02d}, light boundary = {:02d}:{:02d} ({}), dark boundary = {:02d}:{:02d} ({})",
         now / 60,
         now % 60,
@@ -215,12 +258,12 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
         _state.effectiveLightMinutes,
         _state.effectiveDarkMinutes / 60,
         _state.effectiveDarkMinutes % 60,
-        _state.effectiveDarkMinutes);
+        _state.effectiveDarkMinutes); */
 
-    Logger::debug("should be light = {}, apps needs change = {}, system needs change = {}",
+    /* Logger::debug("should be light = {}, apps needs change = {}, system needs change = {}",
                   shouldBeLight ? "true" : "false",
                   appsNeedsToChange ? "true" : "false",
-                  systemNeedsToChange ? "true" : "false");
+                  systemNeedsToChange ? "true" : "false"); */
 
     // Only apply theme if there's a change or no override active
     if (!_state.isManualOverride && (appsNeedsToChange || systemNeedsToChange))
@@ -231,13 +274,60 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
         _state.isSystemLightActive = GetCurrentSystemTheme();
         _state.isAppsLightActive = GetCurrentAppsTheme();
 
-        Logger::debug(L"[LightSwitchStateManager] Synced post-apply theme state — System: {}, Apps: {}",
-                      _state.isSystemLightActive ? L"light" : L"dark",
-                      _state.isAppsLightActive ? L"light" : L"dark");
+        // Notify PowerDisplay to apply display profile if configured
+        NotifyPowerDisplay(shouldBeLight);
     }
 
     _state.lastTickMinutes = now;
 }
 
+// Notify PowerDisplay module about theme change to apply display profiles
+void LightSwitchStateManager::NotifyPowerDisplay(bool isLight)
+{
+    const auto& settings = LightSwitchSettings::settings();
 
+    // Check if any profile is enabled and configured
+    bool shouldNotify = false;
 
+    if (isLight && settings.enableLightModeProfile && !settings.lightModeProfile.empty())
+    {
+        shouldNotify = true;
+    }
+    else if (!isLight && settings.enableDarkModeProfile && !settings.darkModeProfile.empty())
+    {
+        shouldNotify = true;
+    }
+
+    if (!shouldNotify)
+    {
+        return;
+    }
+
+    try
+    {
+        // Signal PowerDisplay with the specific theme event
+        // Using separate events for light/dark eliminates race conditions where PowerDisplay
+        // might read the registry before LightSwitch has finished updating it
+        const wchar_t* eventName = isLight
+            ? CommonSharedConstants::LIGHT_SWITCH_LIGHT_THEME_EVENT
+            : CommonSharedConstants::LIGHT_SWITCH_DARK_THEME_EVENT;
+
+        Logger::info(L"[LightSwitchStateManager] Notifying PowerDisplay about theme change (isLight: {})", isLight);
+
+        HANDLE hThemeEvent = CreateEventW(nullptr, FALSE, FALSE, eventName);
+        if (hThemeEvent)
+        {
+            SetEvent(hThemeEvent);
+            CloseHandle(hThemeEvent);
+            Logger::info(L"[LightSwitchStateManager] Theme event signaled to PowerDisplay: {}", eventName);
+        }
+        else
+        {
+            Logger::warn(L"[LightSwitchStateManager] Failed to create theme event (error: {})", GetLastError());
+        }
+    }
+    catch (...)
+    {
+        Logger::error(L"[LightSwitchStateManager] Failed to notify PowerDisplay");
+    }
+}

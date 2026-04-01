@@ -37,7 +37,7 @@ public:
         }
 
         triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT);
-        triggerEventWaiter = EventWaiter(CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT, [this](int) {
+        triggerEventWaiter.start(CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT, [this](DWORD) {
             OnHotkeyEx();
         });
 

@@ -156,7 +156,7 @@
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             BorderThickness="1"
             CornerRadius="20"
-            Visibility="{x:Bind ViewModel.ClipboardHasData, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.ShowClipboardPreview, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -168,7 +168,8 @@
                 Margin="0,0,4,0"
                 VerticalAlignment="Center"
                 IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}"
-                Style="{StaticResource SubtleButtonStyle}">
+                Style="{StaticResource SubtleButtonStyle}"
+                Visibility="{x:Bind ViewModel.ShowClipboardHistoryButton, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="ClipboardHistoryButtonToolTip" />
                 </ToolTipService.ToolTip>
@@ -263,16 +264,17 @@
                     <Button
                         Padding="0"
                         VerticalAlignment="Center"
-                        Style="{StaticResource SubtleButtonStyle}">
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Visibility="{x:Bind ViewModel.HasLegalLinks, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <FontIcon FontSize="12" Glyph="&#xE946;" />
                         <Button.Flyout>
                             <Flyout>
                                 <StackPanel Spacing="8">
                                     <TextBlock TextWrapping="Wrap">
                                         <Run x:Uid="AIMistakeNote" /><LineBreak /><Run
+                                            x:Uid="CustomEndpointWarning"
                                             FontSize="12"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="You are using a custom endpoint. Verify all answers." />
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     </TextBlock>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <HyperlinkButton
@@ -297,47 +299,49 @@
                 </StackPanel>
             </controls:PromptBox.Footer>
         </controls:PromptBox>
-        <Grid Grid.Row="2" RowSpacing="4">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="{x:Bind ViewModel.StandardPasteFormats.Count, Mode=OneWay, Converter={StaticResource standardPasteFormatsToHeightConverter}}" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsToMinHeightConverter}}" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <ListView
-                x:Name="PasteOptionsListView"
-                Grid.Row="0"
-                VerticalAlignment="Bottom"
-                IsItemClickEnabled="True"
-                ItemClick="PasteFormat_ItemClick"
-                ItemContainerTransitions="{x:Null}"
-                ItemTemplateSelector="{StaticResource PasteFormatTemplateSelector}"
-                ItemsSource="{x:Bind ViewModel.StandardPasteFormats, Mode=OneWay}"
-                ScrollViewer.VerticalScrollBarVisibility="Visible"
-                ScrollViewer.VerticalScrollMode="Auto"
-                SelectionMode="None"
-                TabIndex="1" />
-            <Rectangle
-                Grid.Row="1"
-                Height="1"
-                HorizontalAlignment="Stretch"
-                Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
-                Visibility="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource countToVisibilityConverter}}" />
+        <ScrollViewer Grid.Row="2">
+            <Grid RowSpacing="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="{x:Bind ViewModel.StandardPasteFormats.Count, Mode=OneWay, Converter={StaticResource standardPasteFormatsToHeightConverter}}" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsToMinHeightConverter}}" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <ListView
+                    x:Name="PasteOptionsListView"
+                    Grid.Row="0"
+                    VerticalAlignment="Bottom"
+                    IsItemClickEnabled="True"
+                    ItemClick="PasteFormat_ItemClick"
+                    ItemContainerTransitions="{x:Null}"
+                    ItemTemplateSelector="{StaticResource PasteFormatTemplateSelector}"
+                    ItemsSource="{x:Bind ViewModel.StandardPasteFormats, Mode=OneWay}"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    SelectionMode="None"
+                    TabIndex="1" />
+                <Rectangle
+                    Grid.Row="1"
+                    Height="1"
+                    HorizontalAlignment="Stretch"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    Visibility="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource countToVisibilityConverter}}" />
 
-            <ListView
-                x:Name="CustomActionsListView"
-                Grid.Row="2"
-                VerticalAlignment="Top"
-                IsItemClickEnabled="True"
-                ItemClick="PasteFormat_ItemClick"
-                ItemContainerTransitions="{x:Null}"
-                ItemTemplateSelector="{StaticResource PasteFormatTemplateSelector}"
-                ItemsSource="{x:Bind ViewModel.CustomActionPasteFormats, Mode=OneWay}"
-                ScrollViewer.VerticalScrollBarVisibility="Visible"
-                ScrollViewer.VerticalScrollMode="Auto"
-                SelectionMode="None"
-                TabIndex="2" />
-        </Grid>
+                <ListView
+                    x:Name="CustomActionsListView"
+                    Grid.Row="2"
+                    VerticalAlignment="Top"
+                    IsItemClickEnabled="True"
+                    ItemClick="PasteFormat_ItemClick"
+                    ItemContainerTransitions="{x:Null}"
+                    ItemTemplateSelector="{StaticResource PasteFormatTemplateSelector}"
+                    ItemsSource="{x:Bind ViewModel.CustomActionPasteFormats, Mode=OneWay}"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    SelectionMode="None"
+                    TabIndex="2" />
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Page>

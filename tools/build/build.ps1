@@ -11,6 +11,9 @@ Target platform (e.g., 'x64', 'arm64'). If omitted the script will try to detect
 .PARAMETER Configuration
 Build configuration (e.g., 'Debug', 'Release'). Default: 'Debug'.
 
+.PARAMETER Path
+Optional directory path containing projects to build. If not specified, uses the current working directory.
+
 .PARAMETER RestoreOnly
 If specified, only perform package restore for local projects and skip the build steps for a solution file (i.e. .sln).
 
@@ -20,6 +23,10 @@ Any remaining, positional arguments passed to the script are forwarded to MSBuil
 .EXAMPLE
 .\tools\build\build.ps1
 Builds any .sln/.csproj/.vcxproj in the current working directory (auto-detects Platform).
+
+.EXAMPLE
+.\tools\build\build.ps1 -Platform x64 -Configuration Release -Path "C:\MyProject\src"
+Builds local projects in the specified directory for x64 Release.
 
 .EXAMPLE
 .\tools\build\build.ps1 -Platform x64 -Configuration Release
@@ -41,6 +48,7 @@ Only restores packages for local projects; ExtraArgs still forwarded to msbuild'
 param (
     [string]$Platform = '',
     [string]$Configuration = 'Debug',
+    [string]$Path = '',
     [switch]$RestoreOnly,
     [Parameter(ValueFromRemainingArguments=$true)]
     [string[]]$ExtraArgs
@@ -78,7 +86,11 @@ if (-not $Platform -or $Platform -eq '') {
     }
 }
 
-$cwd = (Get-Location).ProviderPath
+$cwd = if ($Path) {
+    (Resolve-Path $Path).ProviderPath
+} else {
+    (Get-Location).ProviderPath
+}
 $extraArgsString = $null
 if ($ExtraArgs -and $ExtraArgs.Count -gt 0) { $extraArgsString = ($ExtraArgs -join ' ') }
 

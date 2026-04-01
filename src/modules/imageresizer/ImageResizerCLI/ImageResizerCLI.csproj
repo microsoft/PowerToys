@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
+
+  <PropertyGroup>
+    <AssemblyTitle>PowerToys.ImageResizerCLI</AssemblyTitle>
+    <AssemblyDescription>PowerToys Image Resizer Command Line Interface</AssemblyDescription>
+    <Description>PowerToys Image Resizer CLI</Description>
+    <OutputType>Exe</OutputType>
+    <Platforms>x64;ARM64</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
+    <AssemblyName>PowerToys.ImageResizerCLI</AssemblyName>
+    <NoWarn>$(NoWarn);SA1500;SA1402;CA1852</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ui\ImageResizerUI.csproj" />
+  </ItemGroup>
+
+  <!-- Force using WindowsDesktop runtime to ensure consistent dll versions with other projects -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WPF" />
+  </ItemGroup>
+</Project>

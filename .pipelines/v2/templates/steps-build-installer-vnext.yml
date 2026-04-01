@@ -35,8 +35,8 @@ steps:
   - task: VSBuild@1
     displayName: Build Shared Support DLLs
     inputs:
-      solution: "**/installer/PowerToysSetup.sln"
-      vsVersion: 17.0
+      solution: "**/installer/PowerToysSetup.slnx"
+      vsVersion: 18.0
       msbuildArgs: >-
         /t:PowerToysSetupCustomActionsVNext;SilentFilesInUseBAFunction
         /p:RunBuildEvents=true;RestorePackagesConfig=true;CIBuild=true
@@ -74,8 +74,8 @@ steps:
   - task: VSBuild@1
     displayName: 💻 Build VNext MSI
     inputs:
-      solution: "**/installer/PowerToysSetup.sln"
-      vsVersion: 17.0
+      solution: "**/installer/PowerToysSetup.slnx"
+      vsVersion: 18.0
       msbuildArgs: >-
         -restore
         /t:PowerToysInstallerVNext
@@ -91,8 +91,8 @@ steps:
   - task: VSBuild@1
     displayName: 👤 Build VNext MSI
     inputs:
-      solution: "**/installer/PowerToysSetup.sln"
-      vsVersion: 17.0
+      solution: "**/installer/PowerToysSetup.slnx"
+      vsVersion: 18.0
       msbuildArgs: >-
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=true;BuildProjectReferences=false;CIBuild=true
@@ -142,8 +142,8 @@ steps:
   - task: VSBuild@1
     displayName: 💻 Build VNext Bootstrapper
     inputs:
-      solution: "**/installer/PowerToysSetup.sln"
-      vsVersion: 17.0
+      solution: "**/installer/PowerToysSetup.slnx"
+      vsVersion: 18.0
       msbuildArgs: >-
         -restore
         /t:PowerToysBootstrapperVNext
@@ -159,8 +159,8 @@ steps:
   - task: VSBuild@1
     displayName: 👤 Build VNext Bootstrapper
     inputs:
-      solution: "**/installer/PowerToysSetup.sln"
-      vsVersion: 17.0
+      solution: "**/installer/PowerToysSetup.slnx"
+      vsVersion: 18.0
       msbuildArgs: >-
         /t:PowerToysBootstrapperVNext
         /p:PerUser=true;BuildProjectReferences=false;CIBuild=true

@@ -40,6 +40,8 @@ namespace AdvancedPaste.Settings
 
         public bool CloseAfterLosingFocus { get; private set; }
 
+        public bool EnableClipboardPreview { get; private set; }
+
         public IReadOnlyList<PasteFormats> AdditionalActions => _additionalActions;
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
@@ -53,6 +55,7 @@ namespace AdvancedPaste.Settings
             IsAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
+            EnableClipboardPreview = true;
             PasteAIConfiguration = new PasteAIConfiguration();
             _additionalActions = [];
             _customActions = [];
@@ -107,6 +110,7 @@ namespace AdvancedPaste.Settings
                                 IsAIEnabled = properties.IsAIEnabled;
                                 ShowCustomPreview = properties.ShowCustomPreview;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
+                                EnableClipboardPreview = properties.EnableClipboardPreview;
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
 
                                 var sourceAdditionalActions = properties.AdditionalActions;
@@ -163,26 +167,132 @@ namespace AdvancedPaste.Settings
                 return false;
             }
 
-            if (settings.Properties.IsAIEnabled || !LegacyOpenAIKeyExists())
+            var properties = settings.Properties;
+            bool legacyAdvancedAIConsumed = properties.TryConsumeLegacyAdvancedAIEnabled(out var advancedFlag);
+            bool legacyAdvancedAIEnabled = legacyAdvancedAIConsumed && advancedFlag;
+            PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
+
+            if (legacyCredential is null)
             {
-                return false;
+                return legacyAdvancedAIConsumed;
             }
 
-            settings.Properties.IsAIEnabled = true;
-            return true;
+            var configuration = properties.PasteAIConfiguration;
+
+            if (configuration is null)
+            {
+                configuration = new PasteAIConfiguration();
+                properties.PasteAIConfiguration = configuration;
+            }
+
+            bool configurationUpdated = false;
+
+            var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
+            PasteAIProviderDefinition openAIProvider = ensureResult.Provider;
+            configurationUpdated |= ensureResult.Updated;
+
+            if (legacyAdvancedAIConsumed && openAIProvider is not null && openAIProvider.EnableAdvancedAI != legacyAdvancedAIEnabled)
+            {
+                openAIProvider.EnableAdvancedAI = legacyAdvancedAIEnabled;
+                configurationUpdated = true;
+            }
+
+            if (openAIProvider is not null)
+            {
+                StoreMigratedOpenAICredential(openAIProvider.Id, openAIProvider.ServiceType, legacyCredential.Password);
+                RemoveLegacyOpenAICredential();
+            }
+
+            const bool shouldEnableAI = true;
+            bool enabledUpdated = false;
+            if (properties.IsAIEnabled != shouldEnableAI)
+            {
+                properties.IsAIEnabled = shouldEnableAI;
+                enabledUpdated = true;
+            }
+
+            return configurationUpdated || enabledUpdated || legacyAdvancedAIConsumed;
         }
 
-        private static bool LegacyOpenAIKeyExists()
+        private static PasswordCredential TryGetLegacyOpenAICredential()
         {
             try
             {
                 PasswordVault vault = new();
-                return vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey") is not null;
+                var credential = vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
+                credential?.RetrievePassword();
+                return credential;
             }
             catch (Exception)
             {
-                return false;
+                return null;
             }
+        }
+
+        private static void RemoveLegacyOpenAICredential()
+        {
+            try
+            {
+                PasswordVault vault = new();
+                TryRemoveCredential(vault, "https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private static void StoreMigratedOpenAICredential(string providerId, string serviceType, string password)
+        {
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                return;
+            }
+
+            try
+            {
+                var serviceKind = serviceType.ToAIServiceType();
+                if (serviceKind != AIServiceType.OpenAI)
+                {
+                    return;
+                }
+
+                string resource = "https://platform.openai.com/api-keys";
+                string username = $"PowerToys_AdvancedPaste_PasteAI_openai_{NormalizeProviderIdentifier(providerId)}";
+
+                PasswordVault vault = new();
+                TryRemoveCredential(vault, resource, username);
+
+                PasswordCredential credential = new(resource, username, password);
+                vault.Add(credential);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to migrate legacy OpenAI credential", ex);
+            }
+        }
+
+        private static void TryRemoveCredential(PasswordVault vault, string credentialResource, string credentialUserName)
+        {
+            try
+            {
+                PasswordCredential existingCred = vault.Retrieve(credentialResource, credentialUserName);
+                vault.Remove(existingCred);
+            }
+            catch (Exception)
+            {
+                // Credential doesn't exist, which is fine
+            }
+        }
+
+        private static string NormalizeProviderIdentifier(string providerId)
+        {
+            if (string.IsNullOrWhiteSpace(providerId))
+            {
+                return "default";
+            }
+
+            var filtered = new string(providerId.Where(char.IsLetterOrDigit).ToArray());
+            return string.IsNullOrWhiteSpace(filtered) ? "default" : filtered.ToLowerInvariant();
         }
 
         public async Task SetActiveAIProviderAsync(string providerId)

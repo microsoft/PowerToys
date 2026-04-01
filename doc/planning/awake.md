@@ -1,5 +1,5 @@
 ---
-last-update: 7-16-2024
+last-update: 1-18-2026
 ---
 
 # PowerToys Awake Changelog
@@ -12,6 +12,7 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 
 | Build ID                                                           | Build Date        |
 |:-------------------------------------------------------------------|:------------------|
+| [`DIDACT_01182026`](#DIDACT_01182026-january-18-2026)              | January 18, 2026  |
 | [`TILLSON_11272024`](#TILLSON_11272024-november-27-2024)           | November 27, 2024 |
 | [`PROMETHEAN_09082024`](#PROMETHEAN_09082024-september-8-2024)     | September 8, 2024 |
 | [`VISEGRADRELAY_08152024`](#VISEGRADRELAY_08152024-august-15-2024) | August 15, 2024   |
@@ -19,6 +20,22 @@ The build ID moniker is made up of two components - a reference to a [Halo](http
 | [`ATRIOX_04132023`](#ATRIOX_04132023-april-13-2023)                | April 13, 2023    |
 | [`LIBRARIAN_03202022`](#librarian_03202022-march-20-2022)          | March 20, 2022    |
 | `ARBITER_01312022`                                                 | January 31, 2022  |
+
+### `DIDACT_01182026` (January 18, 2026)
+
+>[!NOTE]
+>See pull request: [Awake - `DIDACT_01182026`](https://github.com/microsoft/PowerToys/pull/44795)
+
+- [#32544](https://github.com/microsoft/PowerToys/issues/32544) Fixed an issue where Awake settings became non-functional after the PC wakes from sleep. Added `WM_POWERBROADCAST` handling to detect system resume events (`PBT_APMRESUMEAUTOMATIC`, `PBT_APMRESUMESUSPEND`) and re-apply `SetThreadExecutionState` to restore the awake state.
+- [#36150](https://github.com/microsoft/PowerToys/issues/36150) Fixed an issue where Awake would not prevent sleep when AC power is connected. Added `PBT_APMPOWERSTATUSCHANGE` handling to re-apply `SetThreadExecutionState` when the power source changes (AC/battery transitions).
+- Fixed an issue where toggling "Keep screen on" during an active timed session would disrupt the countdown timer. The display setting now updates directly without restarting the timer, preserving the exact remaining time.
+- [#41918](https://github.com/microsoft/PowerToys/issues/41918) Fixed `WM_COMMAND` message processing flaw in `TrayHelper.WndProc` that incorrectly compared enum values against enum count. Added proper bounds checking for custom tray time entries.
+- Investigated [#44134](https://github.com/microsoft/PowerToys/issues/44134) - documented that `ES_DISPLAY_REQUIRED` (used when "Keep display on" is enabled) blocks Task Scheduler idle detection, preventing scheduled maintenance tasks like SSD TRIM. Workaround: disable "Keep display on" or manually run `Optimize-Volume -DriveLetter C -ReTrim`. Additional investigation needed for potential "idle window" feature.
+- [#41738](https://github.com/microsoft/PowerToys/issues/41738) Fixed `--display-on` CLI flag default from `true` to `false` to align with documentation and PowerToys settings behavior. This is a breaking change for scripts relying on the undocumented default.
+- [#41674](https://github.com/microsoft/PowerToys/issues/41674) Fixed silent failure when `SetThreadExecutionState` fails. The monitor thread now handles the return value, logs an error, and reverts to passive mode with updated tray icon.
+- [#38770](https://github.com/microsoft/PowerToys/issues/38770) Fixed tray icon failing to appear after Windows updates. Increased retry attempts and delays for icon Add operations (10 attempts, up to ~15.5 seconds total) while keeping existing fast retry behavior for Update/Delete operations.
+- [#40501](https://github.com/microsoft/PowerToys/issues/40501) Fixed tray icon not disappearing when Awake is disabled. The `SetShellIcon` function was incorrectly requiring an icon for Delete operations, causing the `NIM_DELETE` message to never be sent.
+- [#40659](https://github.com/microsoft/PowerToys/issues/40659) Fixed potential stack overflow crash in EXPIRABLE mode. Added early return after SaveSettings when correcting past expiration times, matching the pattern used by other mode handlers to prevent reentrant execution.
 
 ### `TILLSON_11272024` (November 27, 2024)
 

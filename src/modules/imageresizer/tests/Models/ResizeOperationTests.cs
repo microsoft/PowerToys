@@ -395,6 +395,93 @@ namespace ImageResizer.Models
         }
 
         [TestMethod]
+        public void TransformHonorsFillWithShrinkOnlyWhenCropRequired()
+        {
+            // Testing original 96x96 pixel Test.jpg cropped to 48x96 (Fill mode).
+            //
+            // ScaleX = 48/96 = 0.5
+            // ScaleY = 96/96 = 1.0
+            // Fill mode takes the max of these = 1.0.
+            //
+            // Previously, the transform logic saw the scale of 1.0 and returned the
+            // original dimensions. The corrected logic recognizes that a crop is
+            // required on one dimension and proceeds with the operation.
+            var operation = new ResizeOperation(
+                "Test.jpg",
+                _directory,
+                Settings(x =>
+                {
+                    x.ShrinkOnly = true;
+                    x.SelectedSize.Fit = ResizeFit.Fill;
+                    x.SelectedSize.Width = 48;
+                    x.SelectedSize.Height = 96;
+                }));
+
+            operation.Execute();
+
+            AssertEx.Image(
+                _directory.File(),
+                image =>
+                {
+                    Assert.AreEqual(48, image.Frames[0].PixelWidth);
+                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
+                });
+        }
+
+        [TestMethod]
+        public void TransformHonorsFillWithShrinkOnlyWhenUpscaleAttempted()
+        {
+            // Confirm that attempting to upscale the original image will return the
+            // original dimensions when Shrink Only is enabled.
+            var operation = new ResizeOperation(
+                "Test.jpg",
+                _directory,
+                Settings(x =>
+                {
+                    x.ShrinkOnly = true;
+                    x.SelectedSize.Fit = ResizeFit.Fill;
+                    x.SelectedSize.Width = 192;
+                    x.SelectedSize.Height = 192;
+                }));
+
+            operation.Execute();
+
+            AssertEx.Image(
+                _directory.File(),
+                image =>
+                {
+                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
+                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
+                });
+        }
+
+        [TestMethod]
+        public void TransformHonorsFillWithShrinkOnlyWhenNoChangeRequired()
+        {
+            // With a scale of 1.0 on both axes, the original should be returned.
+            var operation = new ResizeOperation(
+                "Test.jpg",
+                _directory,
+                Settings(x =>
+                {
+                    x.ShrinkOnly = true;
+                    x.SelectedSize.Fit = ResizeFit.Fill;
+                    x.SelectedSize.Width = 96;
+                    x.SelectedSize.Height = 96;
+                }));
+
+            operation.Execute();
+
+            AssertEx.Image(
+                _directory.File(),
+                image =>
+                {
+                    Assert.AreEqual(96, image.Frames[0].PixelWidth);
+                    Assert.AreEqual(96, image.Frames[0].PixelHeight);
+                });
+        }
+
+        [TestMethod]
         public void GetDestinationPathUniquifiesOutputFilename()
         {
             File.WriteAllBytes(Path.Combine(_directory, "Test (Test).png"), Array.Empty<byte>());

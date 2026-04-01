@@ -12,13 +12,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
 {
     public struct SunTimes
     {
-        public int SunriseHour;
-        public int SunriseMinute;
-        public int SunsetHour;
-        public int SunsetMinute;
-        public string Text;
+        public int SunriseHour { get; set; }
 
-        public bool HasSunrise;
-        public bool HasSunset;
+        public int SunriseMinute { get; set; }
+
+        public int SunsetHour { get; set; }
+
+        public int SunsetMinute { get; set; }
+
+        public string Text { get; set; }
+
+        public bool HasSunrise { get; set; }
+
+        public bool HasSunset { get; set; }
     }
 }

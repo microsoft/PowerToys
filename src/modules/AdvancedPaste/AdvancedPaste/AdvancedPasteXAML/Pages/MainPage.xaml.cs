@@ -198,20 +198,14 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private async void ClipboardHistory_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
+        private void ClipboardHistory_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
         {
-            if (args.InvokedItem is ClipboardItem item)
+            if (args.InvokedItem is ClipboardItem item && item.Item is not null)
             {
                 PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteClipboardItemClicked());
-                if (!string.IsNullOrEmpty(item.Content))
-                {
-                    ClipboardHelper.SetTextContent(item.Content);
-                }
-                else if (item.Image is not null)
-                {
-                    RandomAccessStreamReference image = await item.Item.Content.GetBitmapAsync();
-                    ClipboardHelper.SetImageContent(image);
-                }
+
+                // Use SetHistoryItemAsContent to set the clipboard content without creating a new history entry
+                Clipboard.SetHistoryItemAsContent(item.Item);
             }
         }
     }

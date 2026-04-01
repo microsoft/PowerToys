@@ -7,7 +7,9 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -24,6 +26,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class LightSwitchPage : NavigablePage, IRefreshablePage
     {
+        private static readonly TimeSpan GeoLocationTimeout = TimeSpan.FromSeconds(10);
+
         private readonly string appName = "LightSwitch";
         private readonly SettingsUtils settingsUtils;
         private readonly Func<string, int> sendConfigMsg = ShellPage.SendDefaultIPCMessage;
@@ -35,15 +39,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private readonly IFileSystemWatcher fileSystemWatcher;
         private readonly DispatcherQueue dispatcherQueue;
         private bool suppressViewModelUpdates;
-        private bool suppressLatLonChange = true;
-        private bool latBoxLoaded;
-        private bool lonBoxLoaded;
 
         private LightSwitchViewModel ViewModel { get; set; }
 
         public LightSwitchPage()
         {
-            this.settingsUtils = new SettingsUtils();
+            this.settingsUtils = SettingsUtils.Default;
             this.sendConfigMsg = ShellPage.SendDefaultIPCMessage;
 
             this.generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(this.settingsUtils);
@@ -53,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var darkSettings = this.moduleSettingsRepository.SettingsConfig;
 
             // Pass them into the ViewModel
-            this.ViewModel = new LightSwitchViewModel(darkSettings, this.sendConfigMsg);
+            this.ViewModel = new LightSwitchViewModel(this.generalSettingsRepository, darkSettings, ShellPage.SendDefaultIPCMessage);
             this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             this.LoadSettings(this.generalSettingsRepository, this.moduleSettingsRepository);
@@ -103,6 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.SyncLoader.IsActive = true;
             this.SyncLoader.Visibility = Visibility.Visible;
             this.LocationResultPanel.Visibility = Visibility.Collapsed;
+            this.LocationErrorText.Visibility = Visibility.Collapsed;
 
             try
             {
@@ -110,13 +112,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 var accessStatus = await Geolocator.RequestAccessAsync();
                 if (accessStatus != GeolocationAccessStatus.Allowed)
                 {
-                    // User denied location or it's not available
+                    ShowLocationError(ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Unavailable"));
                     return;
                 }
 
                 var geolocator = new Geolocator { DesiredAccuracy = PositionAccuracy.Default };
 
-                Geoposition pos = await geolocator.GetGeopositionAsync();
+                using var cts = new CancellationTokenSource(GeoLocationTimeout);
+                var positionTask = geolocator.GetGeopositionAsync().AsTask(cts.Token);
+                Geoposition pos = await positionTask;
 
                 double latitude = Math.Round(pos.Coordinate.Point.Position.Latitude);
                 double longitude = Math.Round(pos.Coordinate.Point.Position.Longitude);
@@ -132,9 +136,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // Since we use this mode, we can remove the selected city data.
                 this.ViewModel.SelectedCity = null;
 
-                this.suppressLatLonChange = false;
-
-                // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
                 this.SyncButton.IsEnabled = true;
                 this.SyncLoader.IsActive = false;
                 this.SyncLoader.Visibility = Visibility.Collapsed;
@@ -143,37 +144,35 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 this.LongitudeBox.IsEnabled = true;
                 this.LocationResultPanel.Visibility = Visibility.Visible;
             }
+            catch (OperationCanceledException)
+            {
+                ShowLocationError(ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Timeout"));
+            }
             catch (Exception ex)
             {
-                this.SyncButton.IsEnabled = true;
-                this.SyncLoader.IsActive = false;
-                this.SyncLoader.Visibility = Visibility.Collapsed;
-                this.LocationResultPanel.Visibility = Visibility.Collapsed;
-                this.LatitudeBox.IsEnabled = true;
-                this.LongitudeBox.IsEnabled = true;
+                ShowLocationError(ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Timeout"));
                 Logger.LogInfo($"Location error: " + ex.Message);
             }
         }
 
+        private void ShowLocationError(string message)
+        {
+            this.SyncButton.IsEnabled = true;
+            this.SyncLoader.IsActive = false;
+            this.SyncLoader.Visibility = Visibility.Collapsed;
+            this.LocationResultPanel.Visibility = Visibility.Collapsed;
+            this.LatitudeBox.IsEnabled = true;
+            this.LongitudeBox.IsEnabled = true;
+            this.LocationErrorText.Text = message;
+            this.LocationErrorText.Visibility = Visibility.Visible;
+        }
+
         private void LatLonBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
         {
-            if (this.suppressLatLonChange)
-            {
-                return;
-            }
-
             double latitude = this.LatitudeBox.Value;
             double longitude = this.LongitudeBox.Value;
 
-            if (double.IsNaN(latitude) || double.IsNaN(longitude))
-            {
-                return;
-            }
-
-            double viewModelLatitude = double.TryParse(this.ViewModel.Latitude, out var lat) ? lat : 0.0;
-            double viewModelLongitude = double.TryParse(this.ViewModel.Longitude, out var lon) ? lon : 0.0;
-
-            if (Math.Abs(latitude - viewModelLatitude) < 0.0001 && Math.Abs(longitude - viewModelLongitude) < 0.0001)
+            if (double.IsNaN(latitude) || double.IsNaN(longitude) || (latitude == 0 && longitude == 0))
             {
                 return;
             }
@@ -183,7 +182,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.ViewModel.LocationPanelLightTimeMinutes = (result.SunriseHour * 60) + result.SunriseMinute;
             this.ViewModel.LocationPanelDarkTimeMinutes = (result.SunsetHour * 60) + result.SunsetMinute;
 
-            // Show the panel with these values
             this.LocationResultPanel.Visibility = Visibility.Visible;
             if (this.LocationDialog != null)
             {
@@ -204,7 +202,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // need to save the values
             this.ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
             this.ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
-            this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}°, {this.ViewModel.Longitude}°";
+            this.ViewModel.SyncButtonInformation = $"{this.ViewModel.Latitude}Â°, {this.ViewModel.Longitude}Â°";
 
             var result = SunCalc.CalculateSunriseSunset(latitude, longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
 
@@ -212,37 +210,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
 
             this.SunriseModeChartState();
-        }
-
-        private void LocationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
-        {
-            this.LatitudeBox.Loaded += LatLonBox_Loaded;
-            this.LongitudeBox.Loaded += LatLonBox_Loaded;
-        }
-
-        private void LocationDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
-        {
-            this.LatitudeBox.Loaded -= LatLonBox_Loaded;
-            this.LongitudeBox.Loaded -= LatLonBox_Loaded;
-            this.latBoxLoaded = false;
-            this.lonBoxLoaded = false;
-        }
-
-        private void LatLonBox_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (sender is NumberBox numberBox && numberBox == this.LatitudeBox && this.LatitudeBox.IsLoaded)
-            {
-                this.latBoxLoaded = true;
-            }
-            else if (sender is NumberBox numberBox2 && numberBox2 == this.LongitudeBox && this.LongitudeBox.IsLoaded)
-            {
-                this.lonBoxLoaded = true;
-            }
-
-            if (this.latBoxLoaded && this.lonBoxLoaded)
-            {
-                this.suppressLatLonChange = false;
-            }
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -343,24 +310,28 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void UpdateEnabledState(bool recommendedState)
         {
-            var enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredLightSwitchEnabledValue();
-
-            if (enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                this.ViewModel.IsEnabledGpoConfigured = true;
-                this.ViewModel.EnabledGPOConfiguration = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-            }
-            else
-            {
-                this.ViewModel.IsEnabled = recommendedState;
-            }
+            ViewModel.RefreshEnabledState();
         }
 
         private async void SyncLocationButton_Click(object sender, RoutedEventArgs e)
         {
             this.LocationDialog.IsPrimaryButtonEnabled = false;
             this.LocationResultPanel.Visibility = Visibility.Collapsed;
+            this.LocationErrorText.Visibility = Visibility.Collapsed;
+
+            // Pre-check location services availability
+            var accessStatus = await Geolocator.RequestAccessAsync();
+            if (accessStatus != GeolocationAccessStatus.Allowed)
+            {
+                this.SyncButton.IsEnabled = false;
+                this.LocationErrorText.Text = ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Unavailable");
+                this.LocationErrorText.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                this.SyncButton.IsEnabled = true;
+            }
+
             await this.LocationDialog.ShowAsync();
         }
 
@@ -405,10 +376,26 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     VisualStateManager.GoToState(this, "SunsetToSunriseState", true);
                     this.SunriseModeChartState();
                     break;
+                case "FollowNightLight":
+                    VisualStateManager.GoToState(this, "FollowNightLightState", true);
+                    TimelineCard.Visibility = Visibility.Collapsed;
+                    break;
                 default:
                     VisualStateManager.GoToState(this, "OffState", true);
                     this.TimelineCard.Visibility = Visibility.Collapsed;
                     break;
+            }
+        }
+
+        private void OpenNightLightSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.NightLightSettings);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error while trying to open the system night light settings", ex);
             }
         }
 
@@ -424,6 +411,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 this.TimelineCard.Visibility = Visibility.Collapsed;
                 this.LocationWarningBar.Visibility = Visibility.Visible;
             }
+        }
+
+        private void NavigatePowerDisplaySettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ShellPage.Navigate(typeof(PowerDisplayPage));
         }
     }
 }

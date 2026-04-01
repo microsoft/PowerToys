@@ -38,7 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
 
         private readonly AdvancedPasteSettings _advancedPasteSettings;
         private readonly AdvancedPasteAdditionalActions _additionalActions;
@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         };
 
         public AdvancedPasteViewModel(
-            ISettingsUtils settingsUtils,
+            SettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<AdvancedPasteSettings> advancedPasteSettingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
@@ -76,16 +76,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
-            // To obtain the settings configurations of Fancy zones.
-            ArgumentNullException.ThrowIfNull(settingsRepository);
+            // To obtain the settings configurations of Advanced Paste.
+            ArgumentNullException.ThrowIfNull(advancedPasteSettingsRepository);
 
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            ArgumentNullException.ThrowIfNull(advancedPasteSettingsRepository);
+            _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig ?? throw new ArgumentException("SettingsConfig cannot be null", nameof(advancedPasteSettingsRepository));
 
-            _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
+            if (_advancedPasteSettings.Properties is null)
+            {
+                throw new ArgumentException("AdvancedPasteSettings.Properties cannot be null", nameof(advancedPasteSettingsRepository));
+            }
+
+            // Ensure AdditionalActions and CustomActions are initialized to prevent null reference exceptions
+            // This handles legacy settings files that may be missing these properties
+            _advancedPasteSettings.Properties.AdditionalActions ??= new AdvancedPasteAdditionalActions();
+            _advancedPasteSettings.Properties.CustomActions ??= new AdvancedPasteCustomActions();
 
             AttachConfigurationHandlers();
 
@@ -93,7 +101,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
 
             _additionalActions = _advancedPasteSettings.Properties.AdditionalActions;
-            _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
+            _customActions = _advancedPasteSettings.Properties.CustomActions.Value ?? new ObservableCollection<AdvancedPasteCustomAction>();
 
             SetupSettingsFileWatcher();
 
@@ -172,19 +180,86 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void MigrateLegacyAIEnablement()
         {
-            if (_advancedPasteSettings.Properties.IsAIEnabled || IsOnlineAIModelsDisallowedByGPO)
+            var properties = _advancedPasteSettings?.Properties;
+            if (properties is null)
             {
                 return;
             }
 
-            if (!LegacyOpenAIKeyExists())
+            bool legacyAdvancedAIConsumed = properties.TryConsumeLegacyAdvancedAIEnabled(out var advancedFlag);
+            bool legacyAdvancedAIEnabled = legacyAdvancedAIConsumed && advancedFlag;
+
+            if (IsOnlineAIModelsDisallowedByGPO)
             {
+                if (legacyAdvancedAIConsumed)
+                {
+                    SaveAndNotifySettings();
+                }
+
                 return;
             }
 
-            _advancedPasteSettings.Properties.IsAIEnabled = true;
-            SaveAndNotifySettings();
-            OnPropertyChanged(nameof(IsAIEnabled));
+            PasswordCredential legacyCredential = TryGetLegacyOpenAICredential();
+
+            if (legacyCredential is null)
+            {
+                if (legacyAdvancedAIConsumed)
+                {
+                    SaveAndNotifySettings();
+                }
+
+                return;
+            }
+
+            var configuration = properties.PasteAIConfiguration;
+            if (configuration is null)
+            {
+                configuration = new PasteAIConfiguration();
+                properties.PasteAIConfiguration = configuration;
+            }
+
+            bool configurationUpdated = false;
+
+            var ensureResult = AdvancedPasteMigrationHelper.EnsureOpenAIProvider(configuration);
+            PasteAIProviderDefinition openAIProvider = ensureResult.Provider;
+            configurationUpdated |= ensureResult.Updated;
+
+            if (legacyAdvancedAIConsumed && openAIProvider is not null && openAIProvider.EnableAdvancedAI != legacyAdvancedAIEnabled)
+            {
+                openAIProvider.EnableAdvancedAI = legacyAdvancedAIEnabled;
+                configurationUpdated = true;
+            }
+
+            if (legacyCredential is not null && openAIProvider is not null)
+            {
+                SavePasteAIApiKey(openAIProvider.Id, openAIProvider.ServiceType, legacyCredential.Password);
+                RemoveLegacyOpenAICredential();
+            }
+
+            const bool shouldEnableAI = true;
+            bool enabledChanged = false;
+            if (properties.IsAIEnabled != shouldEnableAI)
+            {
+                properties.IsAIEnabled = shouldEnableAI;
+                enabledChanged = true;
+            }
+
+            bool shouldPersist = configurationUpdated || enabledChanged || legacyAdvancedAIConsumed;
+
+            if (shouldPersist)
+            {
+                SaveAndNotifySettings();
+
+                if (configurationUpdated)
+                {
+                    OnPropertyChanged(nameof(PasteAIConfiguration));
+                }
+
+                if (enabledChanged)
+                {
+                    OnPropertyChanged(nameof(IsAIEnabled));
+                }
+            }
         }
 
         public bool IsEnabled
@@ -229,34 +304,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsAIEnabled => _advancedPasteSettings.Properties.IsAIEnabled && !IsOnlineAIModelsDisallowedByGPO;
 
-        private bool LegacyOpenAIKeyExists()
+        private PasswordCredential TryGetLegacyOpenAICredential()
         {
             try
             {
                 PasswordVault vault = new();
-
-                // return vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey") is not null;
-                var legacyOpenAIKey = vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
-                if (legacyOpenAIKey != null)
-                {
-                    string credentialResource = GetAICredentialResource("OpenAI");
-                    var targetProvider = PasteAIConfiguration?.ActiveProvider ?? PasteAIConfiguration?.Providers?.FirstOrDefault();
-                    string providerId = targetProvider?.Id ?? string.Empty;
-                    string serviceType = targetProvider?.ServiceType ?? "OpenAI";
-                    string credentialUserName = GetPasteAICredentialUserName(providerId, serviceType);
-                    PasswordCredential cred = new(credentialResource, credentialUserName, legacyOpenAIKey.Password);
-                    vault.Add(cred);
-
-                    // delete old key
-                    TryRemoveCredential(vault, "https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
-                    return true;
-                }
-
-                return false;
+                var credential = vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
+                credential?.RetrievePassword();
+                return credential;
             }
             catch (Exception)
             {
-                return false;
+                return null;
+            }
+        }
+
+        private void RemoveLegacyOpenAICredential()
+        {
+            try
+            {
+                PasswordVault vault = new();
+                TryRemoveCredential(vault, "https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
+            }
+            catch (Exception)
+            {
             }
         }
 
@@ -406,7 +477,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public PasteAIConfiguration PasteAIConfiguration
         {
-            get => _advancedPasteSettings.Properties.PasteAIConfiguration;
+            get
+            {
+                // Ensure PasteAIConfiguration is never null for XAML binding
+                _advancedPasteSettings.Properties.PasteAIConfiguration ??= new PasteAIConfiguration();
+                return _advancedPasteSettings.Properties.PasteAIConfiguration;
+            }
+
             set
             {
                 if (!ReferenceEquals(value, _advancedPasteSettings.Properties.PasteAIConfiguration))
@@ -479,6 +556,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool EnableClipboardPreview
+        {
+            get => _advancedPasteSettings.Properties.EnableClipboardPreview;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.EnableClipboardPreview)
+                {
+                    _advancedPasteSettings.Properties.EnableClipboardPreview = value;
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool AutoCopySelectionForCustomActionHotkey
+        {
+            get => _advancedPasteSettings.Properties.AutoCopySelectionForCustomActionHotkey;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.AutoCopySelectionForCustomActionHotkey)
+                {
+                    _advancedPasteSettings.Properties.AutoCopySelectionForCustomActionHotkey = value;
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool IsConflictingCopyShortcut =>
             _customActions.Select(customAction => customAction.Shortcut)
                           .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
@@ -519,7 +622,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var provider = new PasteAIProviderDefinition
             {
                 ServiceType = persistedServiceType,
-                ModelName = GetDefaultModelName(normalizedServiceType),
+                ModelName = PasteAIProviderDefaults.GetDefaultModelName(normalizedServiceType),
                 EndpointUrl = string.Empty,
                 ApiVersion = string.Empty,
                 DeploymentName = string.Empty,
@@ -557,20 +660,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             persistedServiceType = trimmed;
             return serviceTypeKind;
-        }
-
-        private static string GetDefaultModelName(AIServiceType serviceType)
-        {
-            return serviceType switch
-            {
-                AIServiceType.OpenAI => "gpt-4",
-                AIServiceType.AzureOpenAI => "gpt-4",
-                AIServiceType.Mistral => "mistral-large-latest",
-                AIServiceType.Google => "gemini-2.5-pro",
-                AIServiceType.AzureAIInference => "gpt-4o-mini",
-                AIServiceType.Ollama => "llama3",
-                _ => string.Empty,
-            };
         }
 
         public bool IsServiceTypeAllowedByGPO(AIServiceType serviceType)
@@ -1151,6 +1240,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 OnPropertyChanged(nameof(CloseAfterLosingFocus));
             }
 
+            if (target.EnableClipboardPreview != source.EnableClipboardPreview)
+            {
+                target.EnableClipboardPreview = source.EnableClipboardPreview;
+                OnPropertyChanged(nameof(EnableClipboardPreview));
+            }
+
+            if (target.AutoCopySelectionForCustomActionHotkey != source.AutoCopySelectionForCustomActionHotkey)
+            {
+                target.AutoCopySelectionForCustomActionHotkey = source.AutoCopySelectionForCustomActionHotkey;
+                OnPropertyChanged(nameof(AutoCopySelectionForCustomActionHotkey));
+            }
+
             var incomingConfig = source.PasteAIConfiguration ?? new PasteAIConfiguration();
             if (ShouldReplacePasteAIConfiguration(target.PasteAIConfiguration, incomingConfig))
             {
@@ -1171,11 +1272,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             if (!string.Equals(current.ActiveProviderId ?? string.Empty, incoming.ActiveProviderId ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (current.UseSharedCredentials != incoming.UseSharedCredentials)
             {
                 return true;
             }
@@ -1335,8 +1431,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return;
             }
 
-            if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.ActiveProviderId), StringComparison.Ordinal)
-                || string.Equals(e.PropertyName, nameof(PasteAIConfiguration.UseSharedCredentials), StringComparison.Ordinal))
+            if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.ActiveProviderId), StringComparison.Ordinal))
             {
                 SaveAndNotifySettings();
             }
@@ -1352,6 +1447,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             pasteConfig.Providers ??= new ObservableCollection<PasteAIProviderDefinition>();
+
             SubscribeToPasteAIProviders(pasteConfig);
         }
 

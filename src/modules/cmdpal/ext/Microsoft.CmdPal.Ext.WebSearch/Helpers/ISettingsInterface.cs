@@ -18,5 +18,7 @@ public interface ISettingsInterface
 
     public IReadOnlyList<HistoryItem> HistoryItems { get; }
 
+    string CustomSearchUri { get; }
+
     public void AddHistoryItem(HistoryItem historyItem);
 }

@@ -88,7 +88,7 @@
 ### Building PowerToys Locally
 
 #### One stop script for building installer
-1. Open developer powershell for vs 2022
+1. Open `Developer PowerShell for VS`.
 2. Run tools\build\build-installer.ps1
 > For the first-time setup, please run the installer as an administrator. This ensures that the Wix tool can move wix.target to the desired location and trust the certificate used to sign the MSIX packages.
 
@@ -109,7 +109,7 @@ dotnet tool install --global wix --version 5.0.2
 
 ##### From the command line
 
-1. From the start menu, open a `Developer Command Prompt for VS 2022`
+1. From the start menu, open a `Developer Command Prompt for VS`
 1. Ensure `nuget.exe` is in your `%path%`
 1. In the repo root, run these commands:
   
@@ -134,19 +134,19 @@ If you prefer, you can alternatively build prerequisite projects for the install
 
 #### Locally compiling the installer
 
-1. Open `installer\PowerToysSetup.sln`
+1. Open `installer\PowerToysSetup.slnx`
 1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
 1. From the `Build` menu choose `Build Solution`.
 
 The resulting installer will be available in the `installer\PowerToysSetupVNext\x64\Release\` folder.
 
-To build the installer from the command line, run `Developer Command Prompt for VS 2022` in admin mode and execute the following commands. The generated installer package will be located at `\installer\PowerToysSetupVNext\{platform}\Release\MachineSetup`.
+To build the installer from the command line, run `Developer Command Prompt for VS` in admin mode and execute the following commands. The generated installer package will be located at `\installer\PowerToysSetupVNext\{platform}\Release\MachineSetup`.
 
 ```
 git clean -xfd  -e *exe -- .\installer\
-MSBuild -t:restore  .\installer\PowerToysSetup.sln -p:RestorePackagesConfig=true /p:Platform="x64" /p:Configuration=Release
-MSBuild -t:Restore -m .\installer\PowerToysSetup.sln /t:PowerToysInstallerVNext /p:Configuration=Release /p:Platform="x64"
-MSBuild -t:Restore -m .\installer\PowerToysSetup.sln /t:PowerToysBootstrapperVNext /p:Configuration=Release /p:Platform="x64" 
+MSBuild -t:restore  .\installer\PowerToysSetup.slnx -p:RestorePackagesConfig=true /p:Platform="x64" /p:Configuration=Release
+MSBuild -t:Restore -m .\installer\PowerToysSetup.slnx /t:PowerToysInstallerVNext /p:Configuration=Release /p:Platform="x64"
+MSBuild -t:Restore -m .\installer\PowerToysSetup.slnx /t:PowerToysBootstrapperVNext /p:Configuration=Release /p:Platform="x64" 
 ```
 
 ### Supported arguments for the .EXE Bootstrapper installer

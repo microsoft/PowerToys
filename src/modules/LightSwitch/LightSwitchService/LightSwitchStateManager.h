@@ -9,6 +9,7 @@ struct LightSwitchState
     bool isManualOverride = false;
     bool isSystemLightActive = false;
     bool isAppsLightActive = false;
+    bool isNightLightActive = false;
     int lastEvaluatedDay = -1;
     int lastTickMinutes = -1;
 
@@ -27,10 +28,13 @@ public:
     void OnSettingsChanged();
 
     // Called every minute (from service worker tick).
-    void OnTick(int currentMinutes);
+    void OnTick();
 
     // Called when manual override is toggled (via shortcut or system change).
     void OnManualOverride();
+
+    // Called when night light changes in windows settings
+    void OnNightLightChange();
 
     // Initial sync at startup to align internal state with system theme
     void SyncInitialThemeState();
@@ -44,4 +48,7 @@ private:
 
     void EvaluateAndApplyIfNeeded();
     bool CoordinatesAreValid(const std::wstring& lat, const std::wstring& lon);
+
+    // Notify PowerDisplay module about theme change to apply display profiles
+    void NotifyPowerDisplay(bool isLight);
 };

@@ -72,7 +72,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     [DataRow("sin(60)", "0.809016", CalculateEngine.TrigMode.Gradians)]
     public void TrigModeSettingsTest(string input, string expected, CalculateEngine.TrigMode trigMode)
     {
-        var settings = new Settings(trigUnit: trigMode);
+        var settings = new Settings(trigUnit: trigMode, outputUseEnglishFormat: true);
 
         var page = new CalculatorListPage(settings);
 
@@ -82,5 +82,25 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsNotNull(result);
 
         Assert.IsTrue(result.Title.Contains(expected, System.StringComparison.Ordinal), $"Calc trigMode convert result isn't correct. Current result: {result.Title}");
+    }
+
+    [DataTestMethod]
+    [DataRow("2^64", "18446744073709551616", "0x10000000000000000")]
+    [DataRow("0-(2^64)", "-18446744073709551616", "-0x10000000000000000")]
+    public void TopLevelPageQuery_ReturnsResult_WhenIntegerExceedsInt64Bounds(string input, string expectedTitle, string expectedHexContext)
+    {
+        var settings = new Settings(outputUseEnglishFormat: true);
+        var page = new CalculatorListPage(settings);
+
+        page.UpdateSearchText(string.Empty, input);
+        var results = page.GetItems();
+        var result = results.FirstOrDefault();
+
+        Assert.AreEqual(1, results.Length, "Large integer results should still produce the main result item.");
+        Assert.IsNotNull(result);
+        Assert.AreEqual(expectedTitle, result!.Title);
+        Assert.IsTrue(
+            result.MoreCommands.OfType<CommandContextItem>().Any(item => item.Title == expectedHexContext),
+            "Large integer results should still include integer conversion context items.");
     }
 }

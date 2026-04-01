@@ -112,11 +112,7 @@ namespace AdvancedPaste
         /// Invoked when the application is launched.
         /// </summary>
         /// <param name="args">Details about the launch request and process.</param>
-#if DEBUG
-        protected async override void OnLaunched(LaunchActivatedEventArgs args)
-#else
         protected override void OnLaunched(LaunchActivatedEventArgs args)
-#endif
         {
             var cmdArgs = Environment.GetCommandLineArgs();
             if (cmdArgs?.Length > 1)
@@ -138,10 +134,6 @@ namespace AdvancedPaste
             {
                 ProcessNamedPipe(cmdArgs[2]);
             }
-
-#if DEBUG
-            await ShowWindow(); // This allows for direct access without using PowerToys Runner, not all functionality might work
-#endif
         }
 
         private void ProcessNamedPipe(string pipeName)

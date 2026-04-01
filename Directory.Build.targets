@@ -8,4 +8,61 @@
   <PropertyGroup Label="ManifestToolOverride">
     <ManifestTool Condition="Exists('$(WindowsSdkDir)bin\x64\mt.exe')">$(WindowsSdkDir)bin\x64\mt.exe</ManifestTool>
   </PropertyGroup>
+
+  <!-- Auto-restore NuGet for native vcxproj (PackageReference) when building inside VS -->
+  <Target Name="EnsureNuGetRestoreForVcxproj" BeforeTargets="PrepareForBuild" Condition="
+            '$(BuildingInsideVisualStudio)' == 'true'
+            and '$(DesignTimeBuild)' != 'true'
+            and '$(RestoreInProgress)' != 'true'
+            and '$(MSBuildProjectExtension)' == '.vcxproj'
+            and '$(RestoreProjectStyle)' == 'PackageReference'
+            and '$(MSBuildProjectExtensionsPath)' != ''
+            and !Exists('$(MSBuildProjectExtensionsPath)project.assets.json')
+          ">
+
+    <Message Importance="normal" Text="NuGet assets missing for $(MSBuildProjectName); running Restore...; IntDir=$(IntDir); BaseIntermediateOutputPath=$(BaseIntermediateOutputPath)" />
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Restore" Properties="RestoreInProgress=true" BuildInParallel="false" />
+  </Target>
+
+  <PropertyGroup Condition="'$(IgnoreExperimentalWarnings)' == 'true'">
+    <NoWarn>$(NoWarn);CS8305;SA1500;CA1852</NoWarn>
+  </PropertyGroup>
+
+  <!-- Skipped test projects when BuildTests=false: no-op build and remove references.
+       This must be in targets (not props) so it runs AFTER the project file adds its items. -->
+  <PropertyGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
+    <BuildDependsOn />
+    <CoreBuildDependsOn />
+    <RebuildDependsOn />
+  </PropertyGroup>
+
+  <!-- For C# projects: remove all items -->
+  <ItemGroup Condition="'$(_IsSkippedTestProject)' == 'true' and '$(MSBuildProjectExtension)' == '.csproj'">
+    <PackageReference Remove="@(PackageReference)" />
+    <ProjectReference Remove="@(ProjectReference)" />
+    <Reference Remove="@(Reference)" />
+    <Compile Remove="@(Compile)" />
+    <Content Remove="@(Content)" />
+    <EmbeddedResource Remove="@(EmbeddedResource)" />
+    <None Remove="@(None)" />
+    <Using Remove="@(Using)" />
+    <GlobalUsing Remove="@(GlobalUsing)" />
+  </ItemGroup>
+
+  <!-- For C++ projects (vcxproj): remove all compile/link items to prevent build -->
+  <ItemGroup Condition="'$(_IsSkippedTestProject)' == 'true' and '$(MSBuildProjectExtension)' == '.vcxproj'">
+    <ClCompile Remove="@(ClCompile)" />
+    <ClInclude Remove="@(ClInclude)" />
+    <Link Remove="@(Link)" />
+    <Lib Remove="@(Lib)" />
+    <ProjectReference Remove="@(ProjectReference)" />
+    <None Remove="@(None)" />
+    <ResourceCompile Remove="@(ResourceCompile)" />
+    <Midl Remove="@(Midl)" />
+  </ItemGroup>
+
+  <!-- Note: For C++ skipped test projects, build is effectively skipped by removing all compile items above.
+       We don't define empty Build/Rebuild/Clean targets here because MSBuild Target definitions with Condition
+       on the Target element still override the default targets even when condition is false. -->
 </Project>

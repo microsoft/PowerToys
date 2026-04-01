@@ -12,8 +12,8 @@ namespace LanguageModelProvider;
 
 public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 {
-    private IEnumerable<ModelDetails>? _downloadedModels;
-    private FoundryClient? _foundryManager;
+    private FoundryClient? _foundryClient;
+    private IEnumerable<FoundryCatalogModel>? _catalogModels;
     private string? _serviceUrl;
 
     public static FoundryLocalModelProvider Instance { get; } = new();
@@ -22,70 +22,61 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 
     public string ProviderDescription => "The model will run locally via Foundry Local";
 
-    public string UrlPrefix => "fl://";
-
-    public IChatClient? GetIChatClient(string url)
+    public IChatClient? GetIChatClient(string modelId)
     {
-        try
-        {
-            Logger.LogInfo($"[FoundryLocal] GetIChatClient called with url: {url}");
-            InitializeAsync().GetAwaiter().GetResult();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"[FoundryLocal] Failed to initialize: {ex.Message}");
-            return null;
-        }
+        Logger.LogInfo($"[FoundryLocal] GetIChatClient called with url: {modelId}");
+        InitializeAsync().GetAwaiter().GetResult();
 
-        if (string.IsNullOrWhiteSpace(_serviceUrl) || _foundryManager == null)
-        {
-            Logger.LogError("[FoundryLocal] Service URL or manager is null");
-            return null;
-        }
-
-        // Extract model ID from URL (format: fl://modelname)
-        var modelId = url.Replace(UrlPrefix, string.Empty).Trim('/');
         if (string.IsNullOrWhiteSpace(modelId))
         {
             Logger.LogError("[FoundryLocal] Model ID is empty after extraction");
             return null;
         }
 
-        Logger.LogInfo($"[FoundryLocal] Extracted model ID: {modelId}");
+        // Check if model is in catalog
+        if (!EnsureModelInCatalog(modelId))
+        {
+            var errorMessage = $"{modelId} is not supported in Foundry Local. Please configure supported models in Settings.";
+            Logger.LogError($"[FoundryLocal] {errorMessage}");
+            throw new InvalidOperationException(errorMessage);
+        }
 
         // Ensure the model is loaded before returning chat client
-        try
+        var isLoaded = EnsureModelLoadedWithRefresh(modelId);
+        if (!isLoaded)
         {
-            var isLoaded = _foundryManager.EnsureModelLoaded(modelId).GetAwaiter().GetResult();
-            if (!isLoaded)
-            {
-                Logger.LogError($"[FoundryLocal] Failed to load model: {modelId}");
-                return null;
-            }
-
-            Logger.LogInfo($"[FoundryLocal] Model is loaded: {modelId}");
+            Logger.LogError($"[FoundryLocal] Failed to load model: {modelId}");
+            throw new InvalidOperationException($"Failed to load the model '{modelId}'.");
         }
-        catch (Exception ex)
+
+        var client = _foundryClient;
+        if (client == null)
         {
-            Logger.LogError($"[FoundryLocal] Exception ensuring model loaded: {ex.Message}");
-            return null;
+            const string message = "Foundry Local client could not be created. Please make sure Foundry Local is installed and running.";
+            Logger.LogError($"[FoundryLocal] {message}");
+            throw new InvalidOperationException(message);
         }
 
         // Use ServiceUri instead of Endpoint since Endpoint already includes /v1
-        var baseUri = _foundryManager.GetServiceUri();
+        var baseUri = client.GetServiceUri();
+        if (baseUri == null && TryRefreshClient("Service URI was not available"))
+        {
+            baseUri = _foundryClient?.GetServiceUri();
+        }
+
         if (baseUri == null)
         {
-            Logger.LogError("[FoundryLocal] Service URI is null");
-            return null;
+            const string message = "Foundry Local service URL is not available. Please make sure Foundry Local is installed and running.";
+            Logger.LogError($"[FoundryLocal] {message}");
+            throw new InvalidOperationException(message);
         }
 
         var endpointUri = new Uri($"{baseUri.ToString().TrimEnd('/')}/v1");
         Logger.LogInfo($"[FoundryLocal] Creating OpenAI client with endpoint: {endpointUri}");
-        Logger.LogInfo($"[FoundryLocal] Model ID for chat client: {modelId}");
 
         return new OpenAIClient(
             new ApiKeyCredential("none"),
-            new OpenAIClientOptions { Endpoint = endpointUri })
+            new OpenAIClientOptions { Endpoint = endpointUri, NetworkTimeout = TimeSpan.FromMinutes(5) })
             .GetChatClient(modelId)
             .AsIChatClient();
     }
@@ -111,48 +102,16 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         return $"new OpenAIClient(new ApiKeyCredential(\"none\"), new OpenAIClientOptions{{ Endpoint = new Uri(\"{_serviceUrl}/v1\") }}).GetChatClient(\"{modelId}\").AsIChatClient()";
     }
 
-    public async Task<IEnumerable<ModelDetails>> GetModelsAsync(bool ignoreCached = false, CancellationToken cancelationToken = default)
+    public async Task<IEnumerable<ModelDetails>> GetModelsAsync(CancellationToken cancelationToken = default)
     {
-        if (ignoreCached)
-        {
-            Logger.LogInfo("[FoundryLocal] Ignoring cached models, resetting");
-            Reset();
-        }
-
         await InitializeAsync(cancelationToken);
 
-        Logger.LogInfo($"[FoundryLocal] Returning {_downloadedModels?.Count() ?? 0} downloaded models");
-        return _downloadedModels ?? [];
-    }
-
-    private void Reset()
-    {
-        _downloadedModels = null;
-        _ = InitializeAsync();
-    }
-
-    private async Task InitializeAsync(CancellationToken cancelationToken = default)
-    {
-        if (_foundryManager != null && _downloadedModels != null && _downloadedModels.Any())
+        if (_foundryClient == null)
         {
-            return;
+            return Array.Empty<ModelDetails>();
         }
 
-        Logger.LogInfo("[FoundryLocal] Initializing provider");
-        _foundryManager ??= await FoundryClient.CreateAsync();
-
-        if (_foundryManager == null)
-        {
-            Logger.LogError("[FoundryLocal] Failed to create Foundry client");
-            return;
-        }
-
-        _serviceUrl ??= await _foundryManager.GetServiceUrl();
-        Logger.LogInfo($"[FoundryLocal] Service URL: {_serviceUrl}");
-
-        var cachedModels = await _foundryManager.ListCachedModels();
-        Logger.LogInfo($"[FoundryLocal] Found {cachedModels.Count} cached models");
-
+        var cachedModels = await _foundryClient.ListCachedModels();
         List<ModelDetails> downloadedModels = [];
 
         foreach (var model in cachedModels)
@@ -162,24 +121,120 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
             {
                 Id = $"fl-{model.Name}",
                 Name = model.Name,
-                Url = $"{UrlPrefix}{model.Name}",
+                Url = $"fl://{model.Name}",
                 Description = $"{model.Name} running locally with Foundry Local",
                 HardwareAccelerators = [HardwareAccelerator.FOUNDRYLOCAL],
-                SupportedOnQualcomm = true,
                 ProviderModelDetails = model,
             });
         }
 
-        _downloadedModels = downloadedModels;
-        Logger.LogInfo($"[FoundryLocal] Initialization complete. Total downloaded models: {downloadedModels.Count}");
+        return downloadedModels;
+    }
+
+    private async Task InitializeAsync(CancellationToken cancelationToken = default)
+    {
+        if (_foundryClient != null && _catalogModels != null && _catalogModels.Any())
+        {
+            await _foundryClient.EnsureRunning().ConfigureAwait(false);
+            _serviceUrl = await _foundryClient.GetServiceUrl().ConfigureAwait(false);
+            return;
+        }
+
+        Logger.LogInfo("[FoundryLocal] Initializing provider");
+        _foundryClient ??= await FoundryClient.CreateAsync();
+
+        if (_foundryClient == null)
+        {
+            const string message = "Foundry Local client could not be created. Please make sure Foundry Local is installed and running.";
+            Logger.LogError($"[FoundryLocal] {message}");
+            throw new InvalidOperationException(message);
+        }
+
+        _serviceUrl ??= await _foundryClient.GetServiceUrl();
+        Logger.LogInfo($"[FoundryLocal] Service URL: {_serviceUrl}");
+
+        var catalogModels = await _foundryClient.ListCatalogModels();
+        Logger.LogInfo($"[FoundryLocal] Found {catalogModels.Count} catalog models");
+        _catalogModels = catalogModels;
     }
 
     public async Task<bool> IsAvailable()
     {
         Logger.LogInfo("[FoundryLocal] Checking availability");
         await InitializeAsync();
-        var available = _foundryManager != null;
+        var available = _foundryClient != null;
         Logger.LogInfo($"[FoundryLocal] Available: {available}");
         return available;
+    }
+
+    private bool EnsureModelInCatalog(string modelId)
+    {
+        var isInCatalog = _catalogModels?.Any(m => m.Name == modelId) ?? false;
+        if (isInCatalog)
+        {
+            return true;
+        }
+
+        Logger.LogWarning($"[FoundryLocal] Model not found in catalog. Refreshing client for model: {modelId}");
+        if (!TryRefreshClient("Model not in catalog"))
+        {
+            return false;
+        }
+
+        return _catalogModels?.Any(m => m.Name == modelId) ?? false;
+    }
+
+    private bool EnsureModelLoadedWithRefresh(string modelId)
+    {
+        var isLoaded = false;
+
+        try
+        {
+            isLoaded = _foundryClient!.EnsureModelLoaded(modelId).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"[FoundryLocal] EnsureModelLoaded failed: {ex.Message}");
+        }
+
+        if (isLoaded)
+        {
+            return true;
+        }
+
+        if (!TryRefreshClient("EnsureModelLoaded failed"))
+        {
+            return false;
+        }
+
+        try
+        {
+            return _foundryClient!.EnsureModelLoaded(modelId).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[FoundryLocal] EnsureModelLoaded failed after refresh: {ex.Message}", ex);
+            return false;
+        }
+    }
+
+    private bool TryRefreshClient(string reason)
+    {
+        Logger.LogInfo($"[FoundryLocal] Refreshing Foundry Local client: {reason}");
+
+        try
+        {
+            _foundryClient = null;
+            _catalogModels = null;
+            _serviceUrl = null;
+
+            InitializeAsync().GetAwaiter().GetResult();
+            return _foundryClient != null;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[FoundryLocal] Failed to refresh Foundry Local client: {ex.Message}", ex);
+            return false;
+        }
     }
 }

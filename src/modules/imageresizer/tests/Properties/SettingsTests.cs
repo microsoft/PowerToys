@@ -126,13 +126,10 @@ namespace ImageResizer.Properties
                 h => ncc.CollectionChanged -= h,
                 () => settings.CustomSize = new CustomSize());
 
-            Assert.AreEqual(NotifyCollectionChangedAction.Replace, result.Arguments.Action);
-            Assert.AreEqual(1, result.Arguments.NewItems.Count);
-            Assert.AreEqual(settings.CustomSize, result.Arguments.NewItems[0]);
-            Assert.AreEqual(0, result.Arguments.NewStartingIndex);
-            Assert.AreEqual(1, result.Arguments.OldItems.Count);
-            Assert.AreEqual(originalCustomSize, result.Arguments.OldItems[0]);
-            Assert.AreEqual(0, result.Arguments.OldStartingIndex);
+            // Reset is used instead of Replace to avoid ArgumentOutOfRangeException
+            // when notifying changes for virtual items (CustomSize/AiSize) that exist
+            // outside the bounds of the underlying _sizes collection.
+            Assert.AreEqual(NotifyCollectionChangedAction.Reset, result.Arguments.Action);
         }
 
         [TestMethod]

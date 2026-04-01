@@ -24,6 +24,11 @@ public partial class SamplesListPage : ListPage
             Title = "List Page With Details",
             Subtitle = "A list of items, each with additional details to display",
         },
+        new ListItem(new SectionsIndexPage())
+        {
+            Title = "List Pages With Sections",
+            Subtitle = "A list of items, with sections header",
+        },
         new ListItem(new SampleUpdatingItemsPage())
         {
             Title = "List page with items that change",
@@ -34,9 +39,9 @@ public partial class SamplesListPage : ListPage
             Title = "Dynamic List Page Command",
             Subtitle = "Changes the list of items in response to the typed query",
         },
-        new ListItem(new SampleGalleryListPage())
+        new ListItem(new SampleGridsListPage())
         {
-            Title = "Gallery List Page Command",
+            Title = "Grid views and galleries",
             Subtitle = "Displays items as a gallery",
         },
         new ListItem(new OnLoadPage())
@@ -60,6 +65,16 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Sample content page",
             Subtitle = "Display mixed forms, markdown, and other types of content",
+        },
+        new ListItem(new SamplePlainTextContentPage())
+        {
+            Title = "Sample plain text content page",
+            Subtitle = "Display a page of plain text content",
+        },
+        new ListItem(new SampleImageContentPage())
+        {
+            Title = "Sample image content page",
+            Subtitle = "Display a page with an image",
         },
         new ListItem(new SampleTreeContentPage())
         {
@@ -99,6 +114,13 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Sample settings page",
             Subtitle = "A demo of the settings helpers",
+        },
+
+        // Data package samples
+        new ListItem(new SampleDataTransferPage())
+        {
+            Title = "Clipboard and Drag-and-Drop Demo",
+            Subtitle = "Demonstrates clipboard integration and drag-and-drop functionality",
         },
 
         // Evil edge cases

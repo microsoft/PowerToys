@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Version = "1.1";
         }
 
-        public void Save(ISettingsUtils settingsUtils)
+        public void Save(SettingsUtils settingsUtils)
         {
             // Save settings to file
             var options = _serializerOptions;

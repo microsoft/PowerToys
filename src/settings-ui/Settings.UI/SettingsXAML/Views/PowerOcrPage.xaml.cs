@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public PowerOcrPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new PowerOcrViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),

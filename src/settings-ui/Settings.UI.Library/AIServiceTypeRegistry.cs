@@ -19,7 +19,7 @@ public static class AIServiceTypeRegistry
         {
             ServiceType = AIServiceType.AzureAIInference,
             DisplayName = "Azure AI Inference",
-            IconPath = "ms-appx:///Assets/Settings/Icons/Models/FoundryLocal.svg", // No icon for Azure AI Inference, use Foundry Local temporarily
+            IconPath = "ms-appx:///Assets/Settings/Icons/Models/Azure.svg",
             IsOnlineService = true,
             LegalDescription = "AdvancedPaste_AzureAIInference_LegalDescription",
             TermsLabel = "AdvancedPaste_AzureAIInference_TermsLabel",

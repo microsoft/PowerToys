@@ -40,15 +40,15 @@ namespace AdvancedPaste.Services.CustomActions
             this.userSettings = userSettings;
         }
 
-        public async Task<CustomActionTransformResult> TransformTextAsync(string prompt, string inputText, CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var pasteConfig = userSettings?.PasteAIConfiguration;
             var providerConfig = BuildProviderConfig(pasteConfig);
 
-            return await TransformAsync(prompt, inputText, providerConfig, cancellationToken, progress);
+            return await TransformAsync(prompt, inputText, imageBytes, providerConfig, cancellationToken, progress);
         }
 
-        private async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, PasteAIConfig providerConfig, CancellationToken cancellationToken, IProgress<double> progress)
+        private async Task<CustomActionTransformResult> TransformAsync(string prompt, string inputText, byte[] imageBytes, PasteAIConfig providerConfig, CancellationToken cancellationToken, IProgress<double> progress)
         {
             ArgumentNullException.ThrowIfNull(providerConfig);
 
@@ -57,9 +57,9 @@ namespace AdvancedPaste.Services.CustomActions
                 return new CustomActionTransformResult(string.Empty, AIServiceUsage.None);
             }
 
-            if (string.IsNullOrWhiteSpace(inputText))
+            if (string.IsNullOrWhiteSpace(inputText) && imageBytes is null)
             {
-                Logger.LogWarning("Clipboard has no usable text data");
+                Logger.LogWarning("Clipboard has no usable data");
                 return new CustomActionTransformResult(string.Empty, AIServiceUsage.None);
             }
 
@@ -80,35 +80,44 @@ namespace AdvancedPaste.Services.CustomActions
                 {
                     Prompt = prompt,
                     InputText = inputText,
+                    ImageBytes = imageBytes,
+                    ImageMimeType = imageBytes != null ? "image/png" : null,
                     SystemPrompt = systemPrompt,
                 };
+
+                var operationStart = DateTime.UtcNow;
 
                 var providerContent = await provider.ProcessPasteAsync(
                     request,
                     cancellationToken,
                     progress);
 
+                var durationMs = (int)Math.Round((DateTime.UtcNow - operationStart).TotalMilliseconds);
+
                 var usage = request.Usage;
                 var content = providerContent ?? string.Empty;
 
-                // Log endpoint usage
-                var endpointEvent = new AdvancedPasteEndpointUsageEvent(providerConfig.ProviderType);
+                // Log endpoint usage (custom action pipeline is not the advanced SK flow)
+                var endpointEvent = new AdvancedPasteEndpointUsageEvent(providerConfig.ProviderType, providerConfig.Model ?? string.Empty, isAdvanced: false, durationMs: durationMs);
                 PowerToysTelemetry.Log.WriteEvent(endpointEvent);
 
-                Logger.LogDebug($"{nameof(CustomActionTransformService)}.{nameof(TransformAsync)} complete; ModelName={providerConfig.Model ?? string.Empty}, PromptTokens={usage.PromptTokens}, CompletionTokens={usage.CompletionTokens}");
+                Logger.LogDebug($"{nameof(CustomActionTransformService)}.{nameof(TransformAsync)} complete; ModelName={providerConfig.Model ?? string.Empty}, PromptTokens={usage.PromptTokens}, CompletionTokens={usage.CompletionTokens}, DurationMs={durationMs}");
 
                 return new CustomActionTransformResult(content, usage);
             }
             catch (Exception ex)
             {
                 Logger.LogError($"{nameof(CustomActionTransformService)}.{nameof(TransformAsync)} failed", ex);
+                var statusCode = ExtractStatusCode(ex);
+                var modelName = providerConfig.Model ?? string.Empty;
+                AdvancedPasteCustomActionErrorEvent errorEvent = new(providerConfig.ProviderType, modelName, statusCode, ex is PasteActionModeratedException ? PasteActionModeratedException.ErrorDescription : ex.Message);
+                PowerToysTelemetry.Log.WriteEvent(errorEvent);
 
                 if (ex is PasteActionException or OperationCanceledException)
                 {
                     throw;
                 }
 
-                var statusCode = ExtractStatusCode(ex);
                 var failureMessage = providerConfig.ProviderType switch
                 {
                     AIServiceType.OpenAI or AIServiceType.AzureOpenAI => ErrorHelpers.TranslateErrorText(statusCode),

@@ -160,10 +160,10 @@
     <value>Active provider: {0}</value>
   </data>
   <data name="AIProvidersFlyoutHeader.Text" xml:space="preserve">
-    <value>AI providers</value>
+    <value>Configured models</value>
   </data>
   <data name="AIProvidersEmptyText.Text" xml:space="preserve">
-    <value>No AI providers configured</value>
+    <value>No models configured</value>
   </data>
   <data name="AIProvidersManageButtonContent.Content" xml:space="preserve">
     <value>Configure models in Settings</value>
@@ -359,6 +359,17 @@
   </data>
   <data name="Relative_Date_TimeFormat" xml:space="preserve">
     <value>{0}, {1}</value>
-    <comment>(e.g., “10/20/2025, 17:05” in the user’s locale)</comment>
+    <comment>(e.g., "10/20/2025, 17:05" in the user's locale)</comment>
+  </data>
+  <data name="CustomEndpointWarning" xml:space="preserve">
+    <value>You are using a custom endpoint. Verify all answers.</value>
+  </data>
+  <data name="LocalModelBadge.Text" xml:space="preserve">
+    <value>Local</value>
+    <comment>Badge label displayed next to local AI model providers (e.g., Ollama, Foundry Local) to indicate the model runs locally</comment>
+  </data>
+  <data name="FoundryLocal_UnableToLoadModel" xml:space="preserve">
+    <value>Unable to load Foundry Local model: {0}</value>
+    <comment>{0} is the model identifier. Do not translate {0}.</comment>
   </data>
 </root>

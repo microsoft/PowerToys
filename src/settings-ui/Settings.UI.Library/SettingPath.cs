@@ -9,7 +9,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class SettingPath : ISettingsPath
+    public class SettingPath
     {
         private const string DefaultFileName = "settings.json";
 
@@ -21,6 +21,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             _directory = directory ?? throw new ArgumentNullException(nameof(directory));
             _path = path ?? throw new ArgumentNullException(nameof(path));
+        }
+
+        public SettingPath()
+            : this(new FileSystem().Directory, new FileSystem().Path)
+        {
         }
 
         public bool SettingsFolderExists(string powertoy)

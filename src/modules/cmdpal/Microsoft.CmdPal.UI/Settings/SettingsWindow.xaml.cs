@@ -4,14 +4,18 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Navigation;
+using Windows.System;
 using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 using TitleBar = Microsoft.UI.Xaml.Controls.TitleBar;
@@ -19,13 +23,18 @@ using TitleBar = Microsoft.UI.Xaml.Controls.TitleBar;
 namespace Microsoft.CmdPal.UI.Settings;
 
 public sealed partial class SettingsWindow : WindowEx,
+    IDisposable,
     IRecipient<NavigateToExtensionSettingsMessage>,
     IRecipient<QuitMessage>
 {
+    private readonly LocalKeyboardListener _localKeyboardListener;
+
+    private readonly NavigationViewItem? _internalNavItem;
+
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
     // Gets or sets optional action invoked after NavigationView is loaded.
-    public Action NavigationViewLoaded { get; set; } = () => { };
+    public Action? NavigationViewLoaded { get; set; }
 
     public SettingsWindow()
     {
@@ -34,12 +43,39 @@ public sealed partial class SettingsWindow : WindowEx,
         this.SetIcon();
         var title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.Title = title;
-        this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         this.AppTitleBar.Title = title;
         PositionCentered();
 
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
+
+        _localKeyboardListener = new LocalKeyboardListener();
+        _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
+        _localKeyboardListener.Start();
+        Closed += SettingsWindow_Closed;
+        RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
+
+        if (!BuildInfo.IsCiBuild)
+        {
+            _internalNavItem = new NavigationViewItem
+            {
+                Content = "Internal Tools",
+                Icon = new FontIcon { Glyph = "\uEC7A" },
+                Tag = "Internal",
+            };
+            NavView.MenuItems.Add(_internalNavItem);
+        }
+        else
+        {
+            _internalNavItem = null;
+        }
+
+        Navigate("General");
+    }
+
+    private void SettingsWindow_Closed(object sender, WindowEventArgs args)
+    {
+        Dispose();
     }
 
     // Handles NavigationView loaded event.
@@ -48,9 +84,6 @@ public sealed partial class SettingsWindow : WindowEx,
     {
         // Delay necessary to ensure NavigationView visual state can match navigation
         Task.Delay(500).ContinueWith(_ => this.NavigationViewLoaded?.Invoke(), TaskScheduler.FromCurrentSynchronizationContext());
-
-        NavView.SelectedItem = NavView.MenuItems[0];
-        Navigate("General");
 
         if (sender is NavigationView navigationView)
         {
@@ -77,26 +110,58 @@ public sealed partial class SettingsWindow : WindowEx,
         Navigate((selectedItem.Tag as string)!);
     }
 
-    private void Navigate(string page)
+    internal void Navigate(string page)
     {
-        var pageType = page switch
+        Type? pageType;
+        switch (page)
         {
-            "General" => typeof(GeneralPage),
-            "Extensions" => typeof(ExtensionsPage),
-            _ => null,
-        };
+            case "General":
+                pageType = typeof(GeneralPage);
+                break;
+            case "Appearance":
+                pageType = typeof(AppearancePage);
+                break;
+            case "Extensions":
+                pageType = typeof(ExtensionsPage);
+                break;
+            case "Dock":
+                pageType = typeof(DockSettingsPage);
+                break;
+            case "Internal":
+                pageType = typeof(InternalPage);
+                break;
+            case "":
+                // intentional no-op: empty tag means no navigation
+                pageType = null;
+                break;
+            default:
+                // unknown page, no-op and log
+                pageType = null;
+                Logger.LogError($"Unknown settings page tag '{page}'");
+                break;
+        }
+
         if (pageType is not null)
         {
-            BreadCrumbs.Clear();
-            BreadCrumbs.Add(new(page, page));
             NavFrame.Navigate(pageType);
+
+            // Now, make sure to actually select the correct menu item too
+            foreach (var obj in NavView.MenuItems)
+            {
+                if (obj is NavigationViewItem item)
+                {
+                    if (item.Tag is string s && s == page)
+                    {
+                        NavView.SelectedItem = item;
+                    }
+                }
+            }
         }
     }
 
     private void Navigate(ProviderSettingsViewModel extension)
     {
         NavFrame.Navigate(typeof(ExtensionPage), extension);
-        BreadCrumbs.Add(new(extension.DisplayName, string.Empty));
     }
 
     private void PositionCentered()
@@ -127,9 +192,9 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
-    private void Window_Activated(object sender, WindowActivatedEventArgs args)
+    private void Window_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
     {
-        WeakReferenceMessenger.Default.Send<WindowActivatedEventArgs>(args);
+        WeakReferenceMessenger.Default.Send<Microsoft.UI.Xaml.WindowActivatedEventArgs>(args);
     }
 
     private void Window_Closed(object sender, WindowEventArgs args)
@@ -141,15 +206,13 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void NavView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
     {
-        if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
+        if (args.DisplayMode is NavigationViewDisplayMode.Compact or NavigationViewDisplayMode.Minimal)
         {
             AppTitleBar.IsPaneToggleButtonVisible = true;
-            WorkAroundIcon.Margin = new Thickness(8, 0, 16, 0); // Required for workaround, see XAML comment
         }
         else
         {
             AppTitleBar.IsPaneToggleButtonVisible = false;
-            WorkAroundIcon.Margin = new Thickness(16, 0, 0, 0); // Required for workaround, see XAML comment
         }
     }
 
@@ -162,6 +225,110 @@ public sealed partial class SettingsWindow : WindowEx,
     private void AppTitleBar_PaneToggleRequested(TitleBar sender, object args)
     {
         NavView.IsPaneOpen = !NavView.IsPaneOpen;
+    }
+
+    private void TryGoBack()
+    {
+        if (NavFrame.CanGoBack)
+        {
+            NavFrame.GoBack();
+        }
+    }
+
+    private void TitleBar_BackRequested(TitleBar sender, object args)
+    {
+        TryGoBack();
+    }
+
+    private void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case VirtualKey.GoBack:
+            case VirtualKey.XButton1:
+                TryGoBack();
+                break;
+
+            case VirtualKey.Left:
+                if (KeyModifiers.GetCurrent().Alt)
+                {
+                    TryGoBack();
+                }
+
+                break;
+        }
+    }
+
+    private void RootElement_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        try
+        {
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
+            {
+                var ptrPt = e.GetCurrentPoint(RootElement);
+                if (ptrPt.Properties.IsXButton1Pressed)
+                {
+                    TryGoBack();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error handling mouse button press event", ex);
+        }
+    }
+
+    public void Dispose()
+    {
+        _localKeyboardListener?.Dispose();
+    }
+
+    private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
+    {
+        BreadCrumbs.Clear();
+
+        if (e.SourcePageType == typeof(GeneralPage))
+        {
+            NavView.SelectedItem = GeneralPageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_GeneralPage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(AppearancePage))
+        {
+            NavView.SelectedItem = AppearancePageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_AppearancePage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(ExtensionsPage))
+        {
+            NavView.SelectedItem = ExtensionPageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(DockSettingsPage))
+        {
+            NavView.SelectedItem = DockSettingsPageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_DockPage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
+        {
+            NavView.SelectedItem = ExtensionPageNavItem;
+            var extensionsPageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
+            BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));
+            BreadCrumbs.Add(new(vm.DisplayName, vm));
+        }
+        else if (e.SourcePageType == typeof(InternalPage) && _internalNavItem is not null)
+        {
+            NavView.SelectedItem = _internalNavItem;
+            var pageType = "Internal";
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else
+        {
+            BreadCrumbs.Add(new($"[{e.SourcePageType?.Name}]", string.Empty));
+            Logger.LogError($"Unknown breadcrumb for page type '{e.SourcePageType}'");
+        }
     }
 }
 

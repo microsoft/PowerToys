@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CmdPal.Ext.Shell.Properties;
@@ -39,7 +39,6 @@ public partial class ShellCommandsProvider : CommandProvider
         {
             Icon = Icons.RunV2Icon,
             Title = Resources.shell_command_name,
-            Subtitle = Resources.cmd_plugin_description,
             MoreCommands = [
                 new CommandContextItem(Settings.SettingsPage),
             ],

@@ -1,0 +1,75 @@
+﻿<ContentDialog
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.CustomVcpMappingEditorDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Width="400"
+    MinWidth="400"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="{x:Bind CanSave, Mode=OneWay}"
+    PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
+    Style="{StaticResource DefaultContentDialogStyle}"
+    mc:Ignorable="d">
+
+    <StackPanel MinWidth="350" Spacing="16">
+        <!--  VCP Code Selection  -->
+        <ComboBox
+            x:Name="VcpCodeComboBox"
+            x:Uid="PowerDisplay_CustomMappingEditor_VcpCode"
+            HorizontalAlignment="Stretch"
+            SelectionChanged="VcpCodeComboBox_SelectionChanged">
+            <ComboBoxItem x:Name="VcpCodeItem_0x14" Tag="20" />
+            <ComboBoxItem x:Name="VcpCodeItem_0x60" Tag="96" />
+        </ComboBox>
+
+        <!--  Value Selection from monitors  -->
+        <StackPanel Spacing="8">
+            <ComboBox
+                x:Name="ValueComboBox"
+                x:Uid="PowerDisplay_CustomMappingEditor_ValueComboBox"
+                HorizontalAlignment="Stretch"
+                DisplayMemberPath="DisplayName"
+                ItemsSource="{x:Bind AvailableValues, Mode=OneWay}"
+                SelectedValuePath="Value"
+                SelectionChanged="ValueComboBox_SelectionChanged" />
+
+            <!--  Custom Value Input (shown when "Custom value" is selected)  -->
+            <TextBox
+                x:Name="CustomValueTextBox"
+                x:Uid="PowerDisplay_CustomMappingEditor_CustomValueInput"
+                HorizontalAlignment="Stretch"
+                PlaceholderText="0x11"
+                TextChanged="CustomValueTextBox_TextChanged"
+                Visibility="{x:Bind ShowCustomValueInput, Mode=OneWay}" />
+        </StackPanel>
+
+        <!--  Custom Name Input  -->
+        <TextBox
+            x:Name="CustomNameTextBox"
+            x:Uid="PowerDisplay_CustomMappingEditor_CustomName"
+            HorizontalAlignment="Stretch"
+            MaxLength="50"
+            TextChanged="CustomNameTextBox_TextChanged" />
+
+        <!--  Apply Scope  -->
+        <StackPanel Spacing="8">
+            <ToggleSwitch
+                x:Name="ApplyToAllToggle"
+                x:Uid="PowerDisplay_CustomMappingEditor_ApplyToAll"
+                IsOn="True"
+                Toggled="ApplyToAllToggle_Toggled" />
+
+            <!--  Monitor Selection (shown when ApplyToAll is off)  -->
+            <ComboBox
+                x:Name="MonitorComboBox"
+                x:Uid="PowerDisplay_CustomMappingEditor_SelectMonitor"
+                HorizontalAlignment="Stretch"
+                DisplayMemberPath="DisplayName"
+                ItemsSource="{x:Bind AvailableMonitors, Mode=OneWay}"
+                SelectedValuePath="Id"
+                SelectionChanged="MonitorComboBox_SelectionChanged"
+                Visibility="{x:Bind ShowMonitorSelector, Mode=OneWay}" />
+        </StackPanel>
+    </StackPanel>
+</ContentDialog>

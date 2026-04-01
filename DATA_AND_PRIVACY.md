@@ -30,7 +30,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 - [C++ events](https://github.com/search?q=repo%3Amicrosoft%2FPowerToys+ProjectTelemetryPrivacyDataTag&type=code)
 
 ### General
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -42,6 +46,18 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.GeneralSettingsChanged</td>
     <td>Logs changes made to general settings within PowerToys.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.Install_Fail</td>
+    <td>Triggered when the PowerToys installation process encounters an error and fails to complete.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.Repair_Cancel</td>
+    <td>Triggered when a PowerToys repair operation is cancelled by the user before completion.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.Repair_Fail</td>
+    <td>Triggered when the PowerToys repair operation fails to complete successfully due to an error.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.Runner_Launch</td>
@@ -60,6 +76,18 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when SCOOBE (Secondary Out-of-box experience) starts.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.ShortcutConflictControlClickedEvent</td>
+    <td>Triggered when a user clicks on the Shortcut Conflict Control button in the PowerToys Settings UI Dashboard.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ShortcutConflictDetectedEvent</td>
+    <td>Triggered when keyboard shortcut conflicts are detected in the PowerToys Settings UI Dashboard.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ShortcutConflictResolvedEvent</td>
+    <td>Triggered when a keyboard shortcut conflict is resolved in the PowerToys Settings UI.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.TrayFlyoutActivatedEvent</td>
     <td>Indicates when the tray flyout menu is activated.</td>
   </tr>
@@ -68,16 +96,40 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Logs when a utility from the tray flyout menu is run.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.UnInstall_Cancel</td>
+    <td>Triggered when the PowerToys uninstallation process is cancelled by the user before completion.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.UnInstall_Fail</td>
+    <td>Triggered when the PowerToys uninstallation process fails to complete successfully due to an error. </td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.Uninstall_Success</td>
     <td>Logs when PowerToys is successfully uninstalled (who would do such a thing!).</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.UpdateCheck_Completed</td>
+    <td>Logs when an auto-update check completes, including success status, whether an update is available, and version information.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.UpdateDownload_Completed</td>
+    <td>Logs when an update download completes, including success status and version.</td>
   </tr>
 </table>
 
 ### OOBE (Out-of-box experience)
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.OobeModuleRunEvent</td>
+    <td>Triggered when a user clicks to run or launch a PowerToys module directly from the OOBE (out-of-box experience) interface.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.OobeSectionEvent</td>
@@ -91,10 +143,18 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.OobeStartedEvent</td>
     <td>Indicates when the out-of-box experience has been initiated.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.OobeVariantAssignmentEvent</td>
+    <td>This event logs A/B testing assignments for experimental features, helping track which users are in control or alternate groups for feature experiments. </td>
+  </tr>
 </table>
 
 ### Advanced Paste
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -147,10 +207,26 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.AdvancedPasteSemanticKernelFormatEvent</td>
     <td>Triggered when Advanced Paste leverages the Semantic Kernel.</td>
   </tr> 
+  <tr>
+    <td>Microsoft.PowerToys.AdvancedPasteSemanticKernelErrorEvent</td>
+    <td>Occurs when the Semantic Kernel workflow encounters an error.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.AdvancedPasteEndpointUsageEvent</td>
+    <td>Logs the AI provider, model, and processing duration for each endpoint call.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.AdvancedPasteCustomActionErrorEvent</td>
+    <td>Records provider, model, and status details when a custom action fails.</td>
+  </tr>
 </table>
 
 ### Always on Top
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -170,7 +246,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Awake
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -198,7 +278,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Color Picker
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -215,29 +299,25 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.ColorPicker_Settings</td>
     <td>Triggered when the settings for the Color Picker are accessed or modified.</td>
   </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ColorPickerCancelledEvent</td>
-    <td>Occurs when a color picking action is cancelled by the user.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ColorPickerShowEvent</td>
-    <td>Triggered when the Color Picker UI is displayed on the screen.</td>
-  </tr>  
 </table>
 
 ### Command Not Found
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
   </tr>
   <tr>
-    <td>Microsoft.PowerToys.CmdNotFoundInstallEvent</td>
-    <td>Triggered when a Command Not Found is installed.</td>
+    <td>Microsoft.PowerToys.CmdNotFound_EnableCmdNotFound</td>
+    <td>Triggered when Command Not Found is enabled or disabled.</td>
   </tr>
   <tr>
-    <td>Microsoft.PowerToys.CmdNotFoundInstanceCreatedEvent</td>
-    <td>Occurs when an instance of a Command Not Found is created.</td>
+    <td>Microsoft.PowerToys.CmdNotFoundInstallEvent</td>
+    <td>Triggered when a Command Not Found is installed.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.CmdNotFoundUninstallEvent</td>
@@ -245,8 +325,81 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>  
 </table>
 
+### Command Palette
+
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
+  <tr>
+    <th>Event Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_BeginInvoke</td>
+    <td>Triggered when the Command Palette is launched by the user.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_ColdLaunch</td>
+    <td>Occurs when Command Palette starts for the first time (cold start).</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_OpenPage</td>
+    <td>Triggered when a page is opened within the Command Palette, tracking navigation depth.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_OpenUri</td>
+    <td>Occurs when a URI is opened through the Command Palette, including whether it's a web URL.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_ReactivateInstance</td>
+    <td>Triggered when an existing Command Palette instance is reactivated.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_RunCommand</td>
+    <td>Logs when a command is executed through the Command Palette, including admin elevation status.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_RunQuery</td>
+    <td>Triggered when a search query is performed, including result count and duration.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPalDismissedOnEsc</td>
+    <td>Occurs when the Command Palette is dismissed by pressing the Escape key.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPalDismissedOnLostFocus</td>
+    <td>Triggered when the Command Palette is dismissed due to losing focus.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPalHotkeySummoned</td>
+    <td>Logs when the Command Palette is summoned via hotkey, distinguishing between global and context-specific hotkeys.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPalInvokeResult</td>
+    <td>Records the result type of a Command Palette invocation.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPalProcessStarted</td>
+    <td>Triggered when the Command Palette process is started.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_ExtensionInvoked</td>
+    <td>Tracks extension usage including extension ID, command details, success status, and execution time.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_SessionDuration</td>
+    <td>Logs session metrics from launch to dismissal including duration, commands executed, pages visited, search queries, navigation depth, and errors.</td>
+  </tr>
+</table>
+
 ### Crop And Lock
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -256,8 +409,24 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when the cropping interface is activated for reparenting the cropped content.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.CropAndLock_ActivateScreenshot</td>
+    <td>Triggered when the screenshot mode is activated in Crop and Lock.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.CropAndLock_ActivateThumbnail</td>
     <td>Occurs when the thumbnail view for cropped content is activated.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CropAndLock_CreateReparentWindow</td>
+    <td>Triggered when a reparent window is created in Crop and Lock mode.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CropAndLock_CreateScreenshotWindow</td>
+    <td>Triggered when a screenshot window is created in Crop and Lock mode.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CropAndLock_CreateThumbnailWindow</td>
+    <td>Triggered when a thumbnail window is created in Crop and Lock mode.<-/td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.CropAndLock_EnableCropAndLock</td>
@@ -269,8 +438,28 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>  
 </table>
 
+### Cursor Wrap
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
+  <tr>
+    <th>Event Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CursorWrap_EnableCursorWrap</td>
+    <td>Triggered when Cursor Wrap is enabled or disabled.</td>
+  </tr>
+</table>
+
 ### Environment Variables
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -298,7 +487,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### FancyZones
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -316,6 +509,10 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Occurs when FancyZones is enabled.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.FancyZones_Error</td>
+    <td>Triggered when an error occurs within the FancyZones module. This event logs critical errors to help diagnose and troubleshoot issues with FancyZones functionality, such as failures to set up Windows hooks or other system-level operations required for window management.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.FancyZones_KeyboardSnapWindowToZone</td>
     <td>Triggered when a window is snapped to a zone using the keyboard.</td>
   </tr>
@@ -328,10 +525,6 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when a window move or resize action is initiated.</td>
   </tr>
   <tr>
-    <td>Microsoft.PowerToys.FancyZones_MoveSizeEnd</td>
-    <td>Occurs when the moving or resizing of a window has ended.</td>
-  </tr>
-  <tr>
     <td>Microsoft.PowerToys.FancyZones_OnKeyDown</td>
     <td>Triggered when a key is pressed down while interacting with zones.</td>
   </tr>
@@ -342,10 +535,6 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.FancyZones_Settings</td>
     <td>Triggered when FancyZones settings are accessed or modified.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FancyZones_SettingsChanged</td>
-    <td>Occurs when there is a change in the FancyZones settings.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.FancyZones_SnapNewWindowIntoZone</td>
@@ -363,10 +552,54 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.FancyZones_ZoneWindowKeyUp</td>
     <td>Occurs when a key is released while interacting with zones.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FancyZones_CLICommand</td>
+    <td>Triggered when a FancyZones CLI command is executed, logging the command name and success status.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FancyZonesEditorStartEvent</td>
+    <td>Triggered when the FancyZones Editor application starts. This logs the initialization of the editor UI, which is used to create and configure custom zone layouts.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FancyZonesEditorStartFinishEvent</td>
+    <td>Triggered when the FancyZones Editor has completed loading and is ready for user interaction.</td>
+  </tr>
+</table>
+
+### File Locksmith
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
+  <tr>
+    <th>Event Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FileLocksmith_EnableFileLocksmith</td>
+    <td>Triggered when File Locksmith is enabled.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FileLocksmith_Invoked</td>
+    <td>Occurs when File Locksmith is invoked.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FileLocksmith_InvokedRet</td>
+    <td>Triggered when File Locksmith invocation returns a result.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.FileLocksmith_QueryContextMenuError</td>
+    <td>Occurs when there is an error querying the context menu for File Locksmith.</td>
+  </tr>
 </table>
 
 ### FileExplorerAddOns
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -404,12 +637,20 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when a Markdown file is previewed in File Explorer.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.MarkdownFilePreviewError</td>
+    <td>Triggered when there is an error previewing a Markdown file in File Explorer.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.PdfFileHandlerLoaded</td>
     <td>Occurs when a PDF file handler is loaded.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.PdfFilePreviewed</td>
     <td>Triggered when a PDF file is previewed in File Explorer.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.PdfFilePreviewError</td>
+    <td>Triggered when there is an error previewing a PDF file in File Explorer.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.PowerPreview_Enabled</td>
@@ -428,12 +669,20 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when there is an error loading a file during Tweak UI settings initialization.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.PowerPreview_TweakUISettings_SetConfig__InvalidJSONGiven</td>
+    <td>Triggered when invalid JSON is provided to the Power Preview settings configuration</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.PowerPreview_TweakUISettings_SuccessfullyUpdatedSettings</td>
     <td>Occurs when the Tweak UI settings for Power Preview are successfully updated.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.QoiFilePreviewed</td>
     <td>Triggered when a QOI file is previewed in File Explorer.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.QoiFilePreviewError</td>
+    <td>Triggered when there is an error previewing a QOI (Quite OK Image) file in File Explorer.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.SvgFileHandlerLoaded</td>
@@ -449,32 +698,12 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
 </table>
 
-### File Locksmith
-<table style="width:100%">
-  <tr>
-    <th>Event Name</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FileLocksmith_EnableFileLocksmith</td>
-    <td>Triggered when File Locksmith is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FileLocksmith_Invoked</td>
-    <td>Occurs when File Locksmith is invoked.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FileLocksmith_InvokedRet</td>
-    <td>Triggered when File Locksmith invocation returns a result.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.FileLocksmith_QueryContextMenuError</td>
-    <td>Occurs when there is an error querying the context menu for File Locksmith.</td>
-  </tr>
-</table>
-
 ### Find My Mouse
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -485,12 +714,16 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
   <tr>
     <td>Microsoft.PowerToys.FindMyMouse_MousePointerFocused</td>
-    <td>Occurs when the mouse pointer is focused using Find My Mouse.</td>
+    <td>Occurs when the mouse pointer is focused using Find My Mouse, including the activation method (double-tap left/right Ctrl, shake mouse, or shortcut).</td>
   </tr>
 </table>
 
 ### Hosts File Editor
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -507,10 +740,22 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.HostsFileEditorOpenedEvent</td>
     <td>Fires when Hosts File Editor is opened.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.HostEditorStartEvent</td>
+    <td>Triggered when the Hosts File Editor application starts. This logs the initialization of the Hosts File Editor UI with a timestamp.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.HostEditorStartFinishEvent</td>
+    <td>Triggered when the Hosts File Editor has completed loading and is ready for user interaction.</td>
+  </tr>
 </table>
 
 ### Image Resizer
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -527,10 +772,18 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.ImageResizer_InvokedRet</td>
     <td>Fires when the Image Resizer operation is completed and returns a result.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.ImageResizer_QueryContextMenuError</td>
+    <td>Triggered when there is an error querying the context menu for Image Resizer.</td>
+  </tr>
 </table>
 
 ### Keyboard Manager
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -544,8 +797,20 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Logs the number of application-specific shortcut remaps configured by the user.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutToKeyRemapInvoked</td>
+    <td>Logs each instance when an application-specific shortcut-to-key remap is used.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.KeyboardManager_AppSpecificShortcutToShortcutRemapInvoked</td>
     <td>Logs each instance when an application-specific shortcut-to-shortcut remap is used.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.KeyboardManager_Error</td>
+    <td>Triggered when an error occurs in Keyboard Manager. This logs the error code, error message, and the method name where the error occurred.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.KeyboardManager_ErrorSendingKeyAndShortcutRemapLoadedConfiguration</td>
+    <td>Triggered when there is an error sending remapping configuration telemetry. This occurs when Keyboard Manager fails to report the loaded key and shortcut remap configurations</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_DailyAppSpecificShortcutToKeyRemapInvoked</td>
@@ -609,8 +874,40 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
 </table>
 
+### Light Switch
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
+  <tr>
+    <th>Event Name</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.LightSwitch_EnableLightSwitch</td>
+    <td>Triggered when Light Switch is enabled or disabled.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.LightSwitch_ShortcutInvoked</td>
+    <td>Occurs when the shortcut for Light Switch is invoked.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.LightSwitch_ScheduleModeToggled</td>
+    <td>Occurs when a new schedule mode is selected for Light Switch.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.LightSwitch_ThemeTargetChanged</td>
+    <td>Occurs when the options for targeting the system or apps is updated.</td>
+  </tr>
+</table>
+
 ### Mouse Highlighter
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -623,10 +920,18 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.MouseHighlighter_StartHighlightingSession</td>
     <td>Occurs when a new highlighting session is started.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.MouseHighlighter_StartSpotlightSession</td>
+    <td>Triggered when a spotlight session is started in Mouse Highlighter. This occurs when the user activates the spotlight mode.</td>
+  </tr>
 </table>
 
 ### Mouse Jump
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -650,7 +955,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Mouse Pointer Crosshairs
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -666,7 +975,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Mouse Without Borders
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -718,10 +1031,18 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### New+
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.NewPlus_ChangedTemplateLocation</td>
+    <td>Triggered when the template folder location is changed.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.NewPlus_EventCopyTemplate</td>
@@ -730,6 +1051,10 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.NewPlus_EventCopyTemplateResult</td>
     <td>Logs the success of item creation (copying).</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.NewPlus_EventOpenTemplates</td>
+    <td>Triggered when the templates folder is opened.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.NewPlus_EventShowTemplateItems</td>
@@ -742,7 +1067,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Peek
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -775,10 +1104,18 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.Peek_Settings</td>
     <td>Triggered when the settings for Peek are modified.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.Peek_SpaceModeEnabled</td>
+    <td>Triggered when the Space key activation mode is enabled or disabled in Peek</td>
+  </tr>
 </table>
 
 ### PowerRename
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -810,7 +1147,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### PowerToys Run
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -851,14 +1192,14 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.RunPluginsSettingsEvent</td>
     <td>Triggered when the settings for PowerToys Run plugins are accessed or modified.</td>
   </tr>
-  <tr>
-    <td>Microsoft.PowerToys.WindowWalker_EnableWindowWalker</td>
-    <td>Triggered when the Window Walker plugin is enabled.</td>
-  </tr>
 </table>
 
 ### Quick Accent
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -874,7 +1215,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Registry Preview
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -887,10 +1232,22 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Microsoft.PowerToys.RegistryPreview_EnableRegistryPreview</td>
     <td>Occurs when Registry Preview is enabled.</td>
   </tr>
+  <tr>
+    <td>Microsoft.PowerToys.RegistryPreviewEditorStartEvent</td>
+    <td>Triggered when the Registry Preview application starts. This logs the initialization of the Registry Preview UI with a timestamp.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.RegistryPreviewEditorStartFinishEvent</td>
+    <td>Triggered when the Registry Preview application has completed loading and is ready for user interaction.</td>
+  </tr>
 </table>
 
 ### Screen Ruler
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -910,18 +1267,18 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Shortcut Guide
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
   </tr>
   <tr>
-    <td>Microsoft.PowerToys.ShortcutGuide_EnableGuide</td>
-    <td>Triggered when Shortcut Guide is enabled.</td>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.ShortcutGuide_HideGuide</td>
-    <td>Occurs when Shortcut Guide is hidden from view.</td>
+    <td>Microsoft.PowerToys.ShortcutGuide_GuideSession</td>
+    <td>Logs a Shortcut Guide session including duration and how it was closed.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.ShortcutGuide_Settings</td>
@@ -930,7 +1287,11 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Text Extractor
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
@@ -954,14 +1315,14 @@ _If you want to find diagnostic data events in the source code, these two links 
 </table>
 
 ### Workspaces
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>
-  </tr>
-  <tr>
-    <td>Microsoft.PowerToys.Projects_CLIUsage</td>
-    <td>Logs usage of command-line arguments for launching apps.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.Workspaces_CreateEvent</td>
@@ -984,13 +1345,21 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when a workspace is launched.</td>
   </tr>
   <tr>
-    <td>Microsoft.PowerToys.Workspaces_Settings</td>
-    <td>Logs changes to workspaces settings.</td>
+    <td>Microsoft.PowerToys.WorkspacesEditorStartEvent</td>
+    <td>Triggered when the Workspaces Editor application starts. This logs the initialization of the Workspaces Editor UI with a timestamp.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.WorkspacesEditorStartFinishEvent</td>
+    <td>Triggered when the Workspaces Editor has completed loading and is ready for user interaction.</td>
   </tr>
 </table>
 
 ### ZoomIt
-<table style="width:100%">
+<table style="width:100%; table-layout:fixed">
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:60%">
+  </colgroup>
   <tr>
     <th>Event Name</th>
     <th>Description</th>

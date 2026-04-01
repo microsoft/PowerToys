@@ -59,6 +59,7 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
         _selectedIndex = index;
         characters.SelectedIndex = _selectedIndex;
         characterName.Text = _powerAccent.CharacterDescriptions[_selectedIndex];
+        characters.ScrollIntoView(character);
     }
 
     private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
@@ -73,6 +74,7 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
             characters.ItemsSource = chars;
             characters.SelectedIndex = _selectedIndex;
             this.UpdateLayout(); // Required for filling the actual width/height before positioning.
+            SetWindowsSize();
             SetWindowPosition();
             Show();
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new PowerAccent.Core.Telemetry.PowerAccentShowAccentMenuEvent());
@@ -94,6 +96,11 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
         Point position = _powerAccent.GetDisplayCoordinates(windowSize);
         this.Left = position.X;
         this.Top = position.Y;
+    }
+
+    private void SetWindowsSize()
+    {
+        this.characters.MaxWidth = _powerAccent.GetDisplayMaxWidth();
     }
 
     protected override void OnClosed(EventArgs e)

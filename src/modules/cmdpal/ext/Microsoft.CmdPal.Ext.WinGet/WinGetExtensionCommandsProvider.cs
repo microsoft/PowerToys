@@ -41,5 +41,9 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
 
     public override void InitializeWithHost(IExtensionHost host) => WinGetExtensionHost.Instance.Initialize(host);
 
-    public void SetAllLookup(Func<string, ICommandItem?> callback) => WinGetStatics.AppSearchCallback = callback;
+    public void SetAllLookup(Func<string, ICommandItem?> lookupByPackageName, Func<string, ICommandItem?> lookupByProductCode)
+    {
+        WinGetStatics.AppSearchByPackageFamilyNameCallback = lookupByPackageName;
+        WinGetStatics.AppSearchByProductCodeCallback = lookupByProductCode;
+    }
 }

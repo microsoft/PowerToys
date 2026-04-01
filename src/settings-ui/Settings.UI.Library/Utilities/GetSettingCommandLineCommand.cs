@@ -48,7 +48,7 @@ public sealed class GetSettingCommandLineCommand
         var modulesSettings = new Dictionary<string, Dictionary<string, object>>();
 
         var settingsAssembly = CommandLineUtils.GetSettingsAssembly();
-        var settingsUtils = new SettingsUtils();
+        var settingsUtils = SettingsUtils.Default;
 
         var enabledModules = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Enabled;
 

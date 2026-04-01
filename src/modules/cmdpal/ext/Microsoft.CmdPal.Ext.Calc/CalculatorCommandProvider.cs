@@ -15,7 +15,6 @@ public partial class CalculatorCommandProvider : CommandProvider
     private static ISettingsInterface settings = new SettingsManager();
     private readonly ListItem _listItem = new(new CalculatorListPage(settings))
     {
-        Subtitle = Resources.calculator_top_level_subtitle,
         MoreCommands = [new CommandContextItem(((SettingsManager)settings).Settings.SettingsPage)],
     };
 

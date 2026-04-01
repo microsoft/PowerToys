@@ -11,6 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     {
         public const string ColorsSettings = "ms-settings:colors";
         public const string DiagnosticsAndFeedback = "ms-settings:privacy-feedback";
+        public const string NightLightSettings = "ms-settings:nightlight";
 
         public static string AnimationsSettings => OSVersionHelper.IsWindows11()
             ? "ms-settings:easeofaccess-visualeffects"

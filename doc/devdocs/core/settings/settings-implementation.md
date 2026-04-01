@@ -38,7 +38,7 @@ For C# modules, the settings are accessed through the `SettingsUtils` class in t
 using Microsoft.PowerToys.Settings.UI.Library;
 
 // Read settings
-var settings = SettingsUtils.GetSettings<ModuleSettings>("ModuleName");
+var settings = SettingsUtils.Default.GetSettings<ModuleSettings>("ModuleName");
 bool enabled = settings.Enabled;
 ```
 
@@ -49,7 +49,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 
 // Write settings
 settings.Enabled = true;
-SettingsUtils.SaveSettings(settings.ToJsonString(), "ModuleName");
+SettingsUtils.Default.SaveSettings(settings.ToJsonString(), "ModuleName");
 ```
 
 ## Settings Handling in Modules

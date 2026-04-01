@@ -558,7 +558,7 @@
                                 <TextBlock
                                     x:Uid="AIProvidersFlyoutHeader"
                                     Grid.Row="0"
-                                    Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <ListView
                                     x:Name="AIProviderListView"
                                     Grid.Row="1"
@@ -611,10 +611,10 @@
                                                     CornerRadius="{StaticResource ControlCornerRadius}"
                                                     Visibility="{x:Bind IsLocalModel, Mode=OneWay}">
                                                     <TextBlock
+                                                        x:Uid="LocalModelBadge"
                                                         AutomationProperties.AccessibilityView="Raw"
                                                         FontSize="10"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        Text="Local" />
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                 </Border>
                                                 <!--<Border
                                                     Grid.Column="2"

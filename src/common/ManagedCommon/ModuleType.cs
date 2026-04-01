@@ -30,11 +30,13 @@ namespace ManagedCommon
         PowerRename,
         PowerLauncher,
         PowerAccent,
+        PowerDisplay,
         RegistryPreview,
         MeasureTool,
         ShortcutGuide,
         PowerOCR,
         Workspaces,
         ZoomIt,
+        GeneralSettings,
     }
 }

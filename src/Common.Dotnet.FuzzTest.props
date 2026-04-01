@@ -5,6 +5,15 @@
        As a temporary workaround, create a .NET 8 project and use file links 
        to include the code that needs testing. -->
   <PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.26100.0</TargetFramework>
+  </PropertyGroup>
+
+  <!--
+    In CI, the main build runs `/t:Build;Test` across the full solution.
+    Fuzz test projects are built for OneFuzz ingestion, but should not be
+    executed as regular MSTest tests in this pass.
+  -->
+  <PropertyGroup Condition="'$(TF_BUILD)' != ''">
+    <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
   </PropertyGroup>
 </Project>

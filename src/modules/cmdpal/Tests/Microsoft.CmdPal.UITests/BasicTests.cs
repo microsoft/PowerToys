@@ -55,7 +55,7 @@ public class BasicTests : CommandPaletteTestBase
 
         SetTimeAndDaterExtensionSearchBox("year");
 
-        Assert.IsNotNull(this.Find<NavigationViewItem>("2025"));
+        Assert.IsNotNull(this.Find<NavigationViewItem>("2026"));
     }
 
     [TestMethod]
@@ -124,6 +124,6 @@ public class BasicTests : CommandPaletteTestBase
 
         SetSearchBox("Sleep");
 
-        Assert.IsNotNull(this.Find<NavigationViewItem>("Sleep"));
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Put computer to sleep"));
     }
 }

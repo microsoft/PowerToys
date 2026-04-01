@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.PowerToys.UITest;
@@ -16,6 +17,20 @@ namespace LightSwitch.UITests
     internal sealed class TestHelper
     {
         private static readonly string[] ShortcutSeparators = { " + ", "+", " " };
+
+        [DllImport("PowerToys.LightSwitchModuleInterface.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void LightSwitch_SetSystemTheme(bool isLight);
+
+        [DllImport("PowerToys.LightSwitchModuleInterface.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void LightSwitch_SetAppsTheme(bool isLight);
+
+        [DllImport("PowerToys.LightSwitchModuleInterface.dll", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        private static extern bool LightSwitch_GetCurrentSystemTheme();
+
+        [DllImport("PowerToys.LightSwitchModuleInterface.dll", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        private static extern bool LightSwitch_GetCurrentAppsTheme();
 
         /// <summary>
         /// Performs common test initialization: navigate to settings, enable toggle, verify shortcut
@@ -127,8 +142,7 @@ namespace LightSwitch.UITests
         /// <param name="testBase">The test base instance</param>
         public static void CleanupTest(UITestBase testBase)
         {
-            // TODO: Make sure the task kills?
-            // CloseLightSwitch(testBase);
+            CloseLightSwitch(testBase);
 
             // Ensure we're attached to settings after cleanup
             try
@@ -138,6 +152,51 @@ namespace LightSwitch.UITests
             catch
             {
                 // Ignore attachment errors - this is just cleanup
+            }
+        }
+
+        /// <summary>
+        /// Switch to white/light theme for both system and apps
+        /// </summary>
+        /// <param name="testBase">The test base instance</param>
+        public static void CloseLightSwitch(UITestBase testBase)
+        {
+            // Kill LightSwitch process before setting themes
+            KillLightSwitchProcess();
+
+            // Set both themes to light (white)
+            SetSystemTheme(true);
+            SetAppsTheme(true);
+        }
+
+        /// <summary>
+        /// Kill the LightSwitch service process if it's running
+        /// </summary>
+        private static void KillLightSwitchProcess()
+        {
+            try
+            {
+                var processes = System.Diagnostics.Process.GetProcessesByName("PowerToys.LightSwitchService");
+                foreach (var process in processes)
+                {
+                    try
+                    {
+                        process.Kill();
+                        process.WaitForExit(2000);
+                    }
+                    catch
+                    {
+                        // Ignore errors killing individual processes
+                    }
+                    finally
+                    {
+                        process.Dispose();
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore errors enumerating processes
             }
         }
 
@@ -408,24 +467,22 @@ namespace LightSwitch.UITests
         /* Helpers */
         private static int GetSystemTheme()
         {
-            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-            if (key is null)
-            {
-                return 1;
-            }
-
-            return (int)key.GetValue("SystemUsesLightTheme", 1);
+            return LightSwitch_GetCurrentSystemTheme() ? 1 : 0;
         }
 
         private static int GetAppsTheme()
         {
-            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-            if (key is null)
-            {
-                return 1;
-            }
+            return LightSwitch_GetCurrentAppsTheme() ? 1 : 0;
+        }
 
-            return (int)key.GetValue("AppsUseLightTheme", 1);
+        private static void SetSystemTheme(bool isLight)
+        {
+            LightSwitch_SetSystemTheme(isLight);
+        }
+
+        private static void SetAppsTheme(bool isLight)
+        {
+            LightSwitch_SetAppsTheme(isLight);
         }
 
         private static string GetHelpTextValue(string helpText, string key)

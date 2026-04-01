@@ -29,6 +29,7 @@ namespace
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_REPARENT_HOTKEY[] = L"reparent-hotkey";
     const wchar_t JSON_KEY_THUMBNAIL_HOTKEY[] = L"thumbnail-hotkey";
+    const wchar_t JSON_KEY_SCREENSHOT_HOTKEY[] = L"screenshot-hotkey";
     const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
@@ -124,6 +125,10 @@ public:
                 SetEvent(m_thumbnail_event_handle);
                 Trace::CropAndLock::ActivateThumbnail();
             }
+            if (hotkeyId == 2) { // Same order as set by get_hotkeys
+                SetEvent(m_screenshot_event_handle);
+                Trace::CropAndLock::ActivateScreenshot();
+            }
 
             return true;
         }
@@ -133,12 +138,13 @@ public:
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
-        if (hotkeys && buffer_size >= 2)
+        if (hotkeys && buffer_size >= 3)
         {
             hotkeys[0] = m_reparent_hotkey;
             hotkeys[1] = m_thumbnail_hotkey;
+            hotkeys[2] = m_screenshot_hotkey;
         }
-        return 2;
+        return 3;
     }
 
     // Enable the powertoy
@@ -171,7 +177,7 @@ public:
     virtual void send_settings_telemetry() override
     {
         Logger::info("Send settings telemetry");
-        Trace::CropAndLock::SettingsTelemetry(m_reparent_hotkey, m_thumbnail_hotkey);
+        Trace::CropAndLock::SettingsTelemetry(m_reparent_hotkey, m_thumbnail_hotkey, m_screenshot_hotkey);
     }
 
     CropAndLockModuleInterface()
@@ -182,6 +188,7 @@ public:
 
         m_reparent_event_handle = CreateDefaultEvent(CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT);
         m_thumbnail_event_handle = CreateDefaultEvent(CommonSharedConstants::CROP_AND_LOCK_THUMBNAIL_EVENT);
+        m_screenshot_event_handle = CreateDefaultEvent(CommonSharedConstants::CROP_AND_LOCK_SCREENSHOT_EVENT);
         m_exit_event_handle = CreateDefaultEvent(CommonSharedConstants::CROP_AND_LOCK_EXIT_EVENT);
 
         init_settings();
@@ -202,6 +209,7 @@ private:
         
         ResetEvent(m_reparent_event_handle);
         ResetEvent(m_thumbnail_event_handle);
+        ResetEvent(m_screenshot_event_handle);
         ResetEvent(m_exit_event_handle);
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
@@ -234,6 +242,7 @@ private:
 
         ResetEvent(m_reparent_event_handle);
         ResetEvent(m_thumbnail_event_handle);
+        ResetEvent(m_screenshot_event_handle);
 
         // Log telemetry
         if (traceEvent)
@@ -283,6 +292,21 @@ private:
             {
                 Logger::error("Failed to initialize CropAndLock thumbnail shortcut from settings. Value will keep unchanged.");
             }
+            try
+            {
+                Hotkey _temp_screenshot;
+                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SCREENSHOT_HOTKEY).GetNamedObject(JSON_KEY_VALUE);
+                _temp_screenshot.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                _temp_screenshot.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                _temp_screenshot.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                _temp_screenshot.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                _temp_screenshot.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                m_screenshot_hotkey = _temp_screenshot;
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize CropAndLock screenshot shortcut from settings. Value will keep unchanged.");
+            }
         }
         else
         {
@@ -321,9 +345,11 @@ private:
     // TODO: actual default hotkey setting in line with other PowerToys.
     Hotkey m_reparent_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'R' };
     Hotkey m_thumbnail_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'T' };
+    Hotkey m_screenshot_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'S' };
 
     HANDLE m_reparent_event_handle;
     HANDLE m_thumbnail_event_handle;
+    HANDLE m_screenshot_event_handle;
     HANDLE m_exit_event_handle;
 
 };

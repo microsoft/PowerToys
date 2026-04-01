@@ -70,7 +70,7 @@ namespace MouseWithoutBorders.Class
                             continue;
                         }
 
-                        if (!Common.IsMyDesktopActive())
+                        if (!WinAPI.IsMyDesktopActive())
                         {
                             // We can just throw the SocketException but to avoid a redundant log entry:
                             throw new ExpectedSocketException($"{nameof(StartServer)}: The desktop is no longer active.");

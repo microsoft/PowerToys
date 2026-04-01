@@ -140,12 +140,14 @@ namespace EditorHelpers
         // Win+L
         if (shortcut.winKey != ModifierKey::Disabled && shortcut.ctrlKey == ModifierKey::Disabled && shortcut.altKey == ModifierKey::Disabled && shortcut.shiftKey == ModifierKey::Disabled && shortcut.actionKey == 0x4C)
         {
+            Logger::info(L"Illegal shortcut detected: Win+L");
             return ShortcutErrorType::WinL;
         }
 
         // Ctrl+Alt+Del
         if (shortcut.winKey == ModifierKey::Disabled && shortcut.ctrlKey != ModifierKey::Disabled && shortcut.altKey != ModifierKey::Disabled && shortcut.shiftKey == ModifierKey::Disabled && shortcut.actionKey == VK_DELETE)
         {
+            Logger::info(L"Illegal shortcut detected: Ctrl+Alt+Del");
             return ShortcutErrorType::CtrlAltDel;
         }
 

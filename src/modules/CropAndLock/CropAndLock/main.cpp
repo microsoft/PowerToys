@@ -2,6 +2,7 @@
 #include "SettingsWindow.h"
 #include "OverlayWindow.h"
 #include "CropAndLockWindow.h"
+#include "ScreenshotCropAndLockWindow.h"
 #include "ThumbnailCropAndLockWindow.h"
 #include "ReparentCropAndLockWindow.h"
 #include "ModuleConstants.h"
@@ -133,6 +134,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     // Handles and thread for the events sent from runner
     HANDLE m_reparent_event_handle;
     HANDLE m_thumbnail_event_handle;
+    HANDLE m_screenshot_event_handle;
     HANDLE m_exit_event_handle;
     std::thread m_event_triggers_thread;
 
@@ -181,6 +183,11 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
                 Logger::trace(L"Creating a thumbnail window");
                 Trace::CropAndLock::CreateThumbnailWindow();
                 break;
+            case CropAndLockType::Screenshot:
+                croppedWindow = std::make_shared<ScreenshotCropAndLockWindow>(title, 800, 600);
+                Logger::trace(L"Creating a screenshot window");
+                Trace::CropAndLock::CreateScreenshotWindow();
+                break;
             default:
                 return;
             }
@@ -215,8 +222,9 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     // Start a thread to listen on the events.
     m_reparent_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::CROP_AND_LOCK_REPARENT_EVENT);
     m_thumbnail_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::CROP_AND_LOCK_THUMBNAIL_EVENT);
+    m_screenshot_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::CROP_AND_LOCK_SCREENSHOT_EVENT);
     m_exit_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::CROP_AND_LOCK_EXIT_EVENT);
-    if (!m_reparent_event_handle || !m_thumbnail_event_handle || !m_exit_event_handle)
+    if (!m_reparent_event_handle || !m_thumbnail_event_handle || !m_screenshot_event_handle || !m_exit_event_handle)
     {
         Logger::warn(L"Failed to create events. {}", get_last_error_or_default(GetLastError()));
         return 1;
@@ -224,10 +232,10 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
 
     m_event_triggers_thread = std::thread([&]() {
         MSG msg;
-        HANDLE event_handles[3] = { m_reparent_event_handle, m_thumbnail_event_handle, m_exit_event_handle };
+        HANDLE event_handles[4] = { m_reparent_event_handle, m_thumbnail_event_handle, m_screenshot_event_handle, m_exit_event_handle };
         while (m_running)
         {
-            DWORD dwEvt = MsgWaitForMultipleObjects(3, event_handles, false, INFINITE, QS_ALLINPUT);
+            DWORD dwEvt = MsgWaitForMultipleObjects(4, event_handles, false, INFINITE, QS_ALLINPUT);
             if (!m_running)
             {
                 break;
@@ -260,12 +268,24 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
             }
             case WAIT_OBJECT_0 + 2:
             {
+                // Screenshot Event
+                bool enqueueSucceeded = controller.DispatcherQueue().TryEnqueue([&]() {
+                    ProcessCommand(CropAndLockType::Screenshot);
+                });
+                if (!enqueueSucceeded)
+                {
+                    Logger::error("Couldn't enqueue message to screenshot a window.");
+                }
+                break;
+            }
+            case WAIT_OBJECT_0 + 3:
+            {
                 // Exit Event
                 Logger::trace(L"Received an exit event.");
                 PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
                 break;
             }
-            case WAIT_OBJECT_0 + 3:
+            case WAIT_OBJECT_0 + 4:
                 if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
                 {
                     TranslateMessage(&msg);
@@ -295,6 +315,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     SetEvent(m_reparent_event_handle);
     CloseHandle(m_reparent_event_handle);
     CloseHandle(m_thumbnail_event_handle);
+    CloseHandle(m_screenshot_event_handle);
     CloseHandle(m_exit_event_handle);
     m_event_triggers_thread.join();
 

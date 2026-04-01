@@ -29,6 +29,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static HotkeySettings DefaultSnipToggleKey => new HotkeySettings(false, true, false, false, '6'); // Ctrl+6
 
         [CmdConfigureIgnore]
+        public static HotkeySettings DefaultSnipOcrToggleKey => new HotkeySettings(false, true, true, false, '6'); // Ctrl+Alt+6
+
+        [CmdConfigureIgnore]
+        public static HotkeySettings DefaultSnipPanoramaToggleKey => new HotkeySettings(false, true, false, false, '8'); // Ctrl+8
+
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultBreakTimerKey => new HotkeySettings(false, true, false, false, '3'); // Ctrl+3
 
         [CmdConfigureIgnore]
@@ -43,6 +49,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public KeyboardKeysProperty RecordToggleKey { get; set; }
 
         public KeyboardKeysProperty SnipToggleKey { get; set; }
+
+        public KeyboardKeysProperty SnipOcrToggleKey { get; set; }
+
+        public KeyboardKeysProperty SnipPanoramaToggleKey { get; set; }
 
         public KeyboardKeysProperty BreakTimerKey { get; set; }
 
@@ -89,8 +99,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public StringProperty RecordFormat { get; set; }
 
+        public BoolProperty CaptureSystemAudio { get; set; }
+
         public BoolProperty CaptureAudio { get; set; }
 
+        public BoolProperty MicMonoMix { get; set; }
+
         public StringProperty MicrophoneDeviceId { get; set; }
+
+        public BoolProperty BreakLockWorkstation { get; set; }
     }
 }

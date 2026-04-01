@@ -30,7 +30,7 @@ public sealed partial class FoundryLocalModelPicker : UserControl
 
     public delegate void DownloadRequestedEventHandler(object sender, object payload);
 
-    public delegate void LoadRequestedEventHandler(object sender, FoundryLoadRequestedEventArgs args);
+    public delegate void LoadRequestedEventHandler(object sender);
 
     public event ModelSelectionChangedEventHandler SelectionChanged;
 
@@ -94,7 +94,7 @@ public sealed partial class FoundryLocalModelPicker : UserControl
 
     public bool HasDownloadableModels => DownloadableModels?.Cast<object>().Any() ?? false;
 
-    public void RequestLoad(bool refresh)
+    public void RequestLoad()
     {
         if (IsLoading)
         {
@@ -107,7 +107,7 @@ public sealed partial class FoundryLocalModelPicker : UserControl
 
         IsAvailable = false;
         StatusText = "Loading Foundry Local status...";
-        LoadRequested?.Invoke(this, new FoundryLoadRequestedEventArgs(refresh));
+        LoadRequested?.Invoke(this);
     }
 
     private static void OnCachedModelsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -310,7 +310,7 @@ public sealed partial class FoundryLocalModelPicker : UserControl
 
     private void RefreshModelsButton_Click(object sender, RoutedEventArgs e)
     {
-        RequestLoad(refresh: true);
+        RequestLoad();
     }
 
     private void UpdateVisualStates()
@@ -443,15 +443,5 @@ public sealed partial class FoundryLocalModelPicker : UserControl
     public static Visibility GetLicenseVisibility(string license)
     {
         return string.IsNullOrWhiteSpace(license) ? Visibility.Collapsed : Visibility.Visible;
-    }
-
-    public sealed class FoundryLoadRequestedEventArgs : EventArgs
-    {
-        public FoundryLoadRequestedEventArgs(bool refresh)
-        {
-            Refresh = refresh;
-        }
-
-        public bool Refresh { get; }
     }
 }

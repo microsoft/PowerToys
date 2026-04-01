@@ -61,6 +61,16 @@
         </RegistryKey>
         <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" />
       </Component>
+      <Directory Id="SvgsFolder" Name="svgs">
+        <Component Id="svgs_icons" Guid="A9B7C5D3-E1F2-4A6B-8C9D-0E1F2A3B4C5D" Bitness="always64">
+          <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+            <RegistryValue Type="string" Name="svgs_icons" Value="" KeyPath="yes" />
+          </RegistryKey>
+          <File Id="icon.ico" Source="$(var.BinDir)svgs\icon.ico" />
+          <File Id="PowerToysWhite.ico" Source="$(var.BinDir)svgs\PowerToysWhite.ico" />
+          <File Id="PowerToysDark.ico" Source="$(var.BinDir)svgs\PowerToysDark.ico" />
+        </Component>
+      </Directory>
     </DirectoryRef>
 
     <?if $(var.PerUser) = "true" ?>
@@ -112,6 +122,7 @@
         <RemoveFolder Id="RemoveBaseApplicationsAssetsFolder" Directory="BaseApplicationsAssetsFolder" On="uninstall" />
         <RemoveFolder Id="RemoveWinUI3AppsInstallFolder" Directory="WinUI3AppsInstallFolder" On="uninstall" />
         <RemoveFolder Id="RemoveWinUI3AppsAssetsFolder" Directory="WinUI3AppsAssetsFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveSvgsFolder" Directory="SvgsFolder" On="uninstall" />
         <RemoveFolder Id="RemoveINSTALLFOLDER" Directory="INSTALLFOLDER" On="uninstall" />
       </Component>
       <ComponentRef Id="powertoys_exe" />
@@ -120,6 +131,7 @@
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />
+      <ComponentRef Id="svgs_icons" />
       <ComponentRef Id="DesktopShortcut" />
       <?if $(var.PerUser) = "true" ?>
       <ComponentRef Id="powertoys_env_path_user" />

@@ -45,6 +45,7 @@ namespace AdvancedPaste.ViewModels
         private CancellationTokenSource _pasteActionCancellationTokenSource;
 
         private string _currentClipboardHistoryId;
+        private uint _lastClipboardSequenceNumber;
         private DateTimeOffset? _currentClipboardTimestamp;
         private ClipboardFormat _lastClipboardFormats = ClipboardFormat.None;
         private bool _clipboardHistoryUnavailableLogged;
@@ -63,6 +64,7 @@ namespace AdvancedPaste.ViewModels
         private ClipboardFormat _availableClipboardFormats;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ShowClipboardHistoryButton))]
         private bool _clipboardHistoryEnabled;
 
         [ObservableProperty]
@@ -76,6 +78,7 @@ namespace AdvancedPaste.ViewModels
         [NotifyPropertyChangedFor(nameof(PrivacyLinkUri))]
         [NotifyPropertyChangedFor(nameof(HasTermsLink))]
         [NotifyPropertyChangedFor(nameof(HasPrivacyLink))]
+        [NotifyPropertyChangedFor(nameof(HasLegalLinks))]
         private bool _isAllowedByGPO;
 
         [ObservableProperty]
@@ -221,9 +224,15 @@ namespace AdvancedPaste.ViewModels
 
         public bool HasPrivacyLink => GetActiveProviderMetadata().HasPrivacyLink;
 
+        public bool HasLegalLinks => HasTermsLink || HasPrivacyLink;
+
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
         public bool ClipboardHasDataForCustomAI => PasteFormat.SupportsClipboardFormats(CustomAIFormat, AvailableClipboardFormats);
+
+        public bool ShowClipboardPreview => _userSettings.EnableClipboardPreview;
+
+        public bool ShowClipboardHistoryButton => ClipboardHistoryEnabled;
 
         public bool HasIndeterminateTransformProgress => double.IsNaN(TransformProgress);
 
@@ -310,6 +319,7 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(IsAdvancedAIEnabled));
             OnPropertyChanged(nameof(AIProviders));
             OnPropertyChanged(nameof(AllowedAIProviders));
+            OnPropertyChanged(nameof(ShowClipboardPreview));
 
             NotifyActiveProviderChanged();
 
@@ -361,6 +371,7 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(PrivacyLinkUri));
             OnPropertyChanged(nameof(HasTermsLink));
             OnPropertyChanged(nameof(HasPrivacyLink));
+            OnPropertyChanged(nameof(HasLegalLinks));
         }
 
         private void RefreshPasteFormats()
@@ -445,6 +456,7 @@ namespace AdvancedPaste.ViewModels
             {
                 ResetClipboardPreview();
                 _currentClipboardHistoryId = null;
+                _lastClipboardSequenceNumber = 0;
                 _currentClipboardTimestamp = null;
                 _lastClipboardFormats = ClipboardFormat.None;
                 return;
@@ -466,6 +478,13 @@ namespace AdvancedPaste.ViewModels
         private async Task<bool> UpdateClipboardTimestampAsync(bool formatsChanged)
         {
             bool clipboardChanged = formatsChanged;
+
+            var currentSequenceNumber = NativeMethods.GetClipboardSequenceNumber();
+            if (_lastClipboardSequenceNumber != currentSequenceNumber)
+            {
+                clipboardChanged = true;
+                _lastClipboardSequenceNumber = currentSequenceNumber;
+            }
 
             if (Clipboard.IsHistoryEnabled())
             {
@@ -642,7 +661,7 @@ namespace AdvancedPaste.ViewModels
         [RelayCommand]
         public void OpenSettings()
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.AdvancedPaste, true);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.AdvancedPaste);
             GetMainWindow()?.Close();
         }
 

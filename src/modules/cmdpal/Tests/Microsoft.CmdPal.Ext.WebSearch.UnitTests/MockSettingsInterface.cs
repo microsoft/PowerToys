@@ -18,6 +18,8 @@ public class MockSettingsInterface : ISettingsInterface
 
     public int HistoryItemCount { get; set; }
 
+    public string CustomSearchUri { get; }
+
     public IReadOnlyList<HistoryItem> HistoryItems => _historyItems;
 
     public MockSettingsInterface(int historyItemCount = 0, bool globalIfUri = true, List<HistoryItem> mockHistory = null)

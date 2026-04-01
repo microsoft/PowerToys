@@ -18,15 +18,16 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeAdvancedPaste()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.AdvancedPaste]);
+
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.AdvancedPaste);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(AdvancedPastePage));
+                OobeWindow.OpenMainWindowCallback(typeof(AdvancedPastePage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
@@ -35,9 +36,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
-            AdvancedPasteUIHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.AdvancedPasteUIShortcut.GetKeysList();
-            PasteAsPlainTextHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.PasteAsPlainTextShortcut.GetKeysList();
-            PasteAsMarkdownHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.PasteAsMarkdownShortcut.GetKeysList();
+            AdvancedPasteUIHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.AdvancedPasteUIShortcut.GetKeysList();
+            PasteAsPlainTextHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.PasteAsPlainTextShortcut.GetKeysList();
+            PasteAsMarkdownHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.PasteAsMarkdownShortcut.GetKeysList();
 
             // TODO(stefan): Check how to remove additional space if item is set to Collapsed.
             if (PasteAsMarkdownHotkeyControl.Keys.Count > 0)
@@ -45,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 PasteAsMarkdownHotkeyControl.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
             }
 
-            PasteAsJsonHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.PasteAsJsonShortcut.GetKeysList();
+            PasteAsJsonHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.PasteAsJsonShortcut.GetKeysList();
             if (PasteAsJsonHotkeyControl.Keys.Count > 0)
             {
                 PasteAsJsonHotkeyControl.Visibility = Microsoft.UI.Xaml.Visibility.Visible;

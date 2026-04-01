@@ -10,17 +10,9 @@ public abstract partial class ContentPage : Page, IContentPage
 {
     public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
 
-    public virtual IDetails? Details
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged(nameof(Details));
-        }
-    }
+    public virtual IDetails? Details { get; set => SetProperty(ref field, value); }
 
-    public virtual IContextItem[] Commands { get; set; } = [];
+    public virtual IContextItem[] Commands { get; set => SetProperty(ref field, value); } = [];
 
     public abstract IContent[] GetContent();
 

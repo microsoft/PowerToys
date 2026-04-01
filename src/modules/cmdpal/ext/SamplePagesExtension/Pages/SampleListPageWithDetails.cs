@@ -5,7 +5,6 @@
 using System;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.UI.Xaml;
 
 namespace SamplePagesExtension;
 
@@ -23,11 +22,31 @@ internal sealed partial class SampleListPageWithDetails : ListPage
         return [
             new ListItem(new NoOpCommand())
             {
-                Title = "This page demonstrates Details on ListItems",
+                Title = "Details on ListItems (Small)",
                 Details = new Details()
                 {
-                    Title = "List Item 1",
+                    Title = "This item has default details size",
                     Body = "Each of these items can have a `Body` formatted with **Markdown**",
+                },
+            },
+            new ListItem(new NoOpCommand())
+            {
+                Title = "Details on ListItems (Medium)",
+                Details = new Details()
+                {
+                    Title = "This item has medium details size",
+                    Body = "Each of these items can have a `Body` formatted with **Markdown**",
+                    Size = ContentSize.Medium,
+                },
+            },
+            new ListItem(new NoOpCommand())
+            {
+                Title = "Details on ListItems (Large)",
+                Details = new Details()
+                {
+                    Title = "This item has large details size",
+                    Body = "Each of these items can have a `Body` formatted with **Markdown**",
+                    Size = ContentSize.Large,
                 },
             },
             new ListItem(new NoOpCommand())
@@ -70,11 +89,13 @@ internal sealed partial class SampleListPageWithDetails : ListPage
             new ListItem(new NoOpCommand())
             {
                 Title = "This one has metadata",
+                Subtitle = "And Large Details panel",
                 Tags = [],
                 Details = new Details()
                 {
                     Title = "Metadata Example",
                     Body = "Each of the sections below is some sample metadata",
+                    Size = ContentSize.Large,
                     Metadata = [
                         new DetailsElement()
                         {

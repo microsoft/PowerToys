@@ -2,7 +2,6 @@
 
 #include <optional>
 #include <string>
-#include <future>
 #include <filesystem>
 #include <variant>
 #include <winrt/Windows.Foundation.h>
@@ -16,6 +15,7 @@
 #endif
 
 #include <common/version/helper.h>
+#include <wil/coroutine.h>
 
 namespace updating
 {
@@ -32,13 +32,15 @@ namespace updating
     };
     using github_version_info = std::variant<new_version_download_info, version_up_to_date>;
 
-    std::future<std::optional<std::filesystem::path>> download_new_version(const new_version_download_info& new_version);
-    std::filesystem::path get_pending_updates_path();
 #if USE_STD_EXPECTED
-    std::future<std::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease = false);
+    using github_version_result = std::expected<github_version_info, std::wstring>;
 #else
-    std::future<nonstd::expected<github_version_info, std::wstring>> get_github_version_info_async(const bool prerelease = false);
+    using github_version_result = nonstd::expected<github_version_info, std::wstring>;
 #endif
+
+    wil::task<github_version_result> get_github_version_info_async(bool prerelease = false);
+    wil::task<std::optional<std::filesystem::path>> download_new_version_async(new_version_download_info new_version);
+    std::filesystem::path get_pending_updates_path();
     void cleanup_updates();
 
     // non-localized

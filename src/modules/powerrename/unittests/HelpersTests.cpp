@@ -507,24 +507,26 @@ namespace HelpersTests
             return testTime;
         }
 
-        // Category 1: Tests for invalid patterns with extra characters (verify negative lookahead prevents wrong matching)
+        // Category 1: Tests for patterns with extra characters. Verifies negative
+        // lookahead doesn't cause issues with partially matched patterns and the
+        // ordering of pattern matches is correct, i.e. longer patterns are matched
+        // first.
 
-        TEST_METHOD(InvalidPattern_YYY_NotMatched)
+        TEST_METHOD(ValidPattern_YYY_PartiallyMatched)
         {
-            // Test $YYY (3 Y's) is not a valid pattern and should remain unchanged
-            // Negative lookahead in $YY(?!Y) prevents matching $YYY
+            // Test $YYY (3 Y's) is recognized as a valid pattern $YY plus a verbatim 'Y'
             SYSTEMTIME testTime = GetTestTime();
             wchar_t result[MAX_PATH] = { 0 };
             HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$YYY", testTime);
 
             Assert::IsTrue(SUCCEEDED(hr));
-            Assert::AreEqual(L"file_$YYY", result);  // $YYY is invalid, should remain unchanged
+            Assert::AreEqual(L"file_24Y", result);
         }
 
-        TEST_METHOD(InvalidPattern_DDD_NotPartiallyMatched)
+        TEST_METHOD(ValidPattern_DDD_Matched)
         {
             // Test that $DDD (short weekday) is not confused with $DD (2-digit day)
-            // This verifies negative lookahead works correctly
+            // Verifies that the matching of $DDD before $DD works correctly
             SYSTEMTIME testTime = GetTestTime();
             wchar_t result[MAX_PATH] = { 0 };
             HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$DDD", testTime);
@@ -533,9 +535,10 @@ namespace HelpersTests
             Assert::AreEqual(L"file_Fri", result);  // Should be "Fri", not "15D"
         }
 
-        TEST_METHOD(InvalidPattern_MMM_NotPartiallyMatched)
+        TEST_METHOD(ValidPattern_MMM_Matched)
         {
             // Test that $MMM (short month name) is not confused with $MM (2-digit month)
+            // Verifies that the matching of $MMM before $MM works correctly
             SYSTEMTIME testTime = GetTestTime();
             wchar_t result[MAX_PATH] = { 0 };
             HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$MMM", testTime);
@@ -544,15 +547,16 @@ namespace HelpersTests
             Assert::AreEqual(L"file_Mar", result);  // Should be "Mar", not "03M"
         }
 
-        TEST_METHOD(InvalidPattern_HHH_NotMatched)
+        TEST_METHOD(ValidPattern_HHH_PartiallyMatched)
         {
-            // Test $HHH (3 H's) is not valid and negative lookahead prevents $HH from matching
+            // Test $HHH (3 H's) should match $HH and leave extra H unchanged
+            // Also confirms that $HH is matched before $H
             SYSTEMTIME testTime = GetTestTime();
             wchar_t result[MAX_PATH] = { 0 };
             HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$HHH", testTime);
 
             Assert::IsTrue(SUCCEEDED(hr));
-            Assert::AreEqual(L"file_$HHH", result);  // Should remain unchanged
+            Assert::AreEqual(L"file_02H", result);
         }
 
         TEST_METHOD(SeparatedPatterns_SingleY)
@@ -669,9 +673,9 @@ namespace HelpersTests
             Assert::AreEqual(E_INVALIDARG, hr);
         }
 
-        // Category 4: Tests to explicitly verify negative lookahead is working
+        // Category 4: Tests to explicitly verify execution order
 
-        TEST_METHOD(NegativeLookahead_YearNotMatchedInYYYY)
+        TEST_METHOD(ExecutionOrder_YearNotMatchedInYYYY)
         {
             // Verify $Y doesn't match when part of $YYYY
             SYSTEMTIME testTime = GetTestTime();
@@ -682,9 +686,9 @@ namespace HelpersTests
             Assert::AreEqual(L"file_2024", result);  // Should be "2024", not "202Y"
         }
 
-        TEST_METHOD(NegativeLookahead_MonthNotMatchedInMMM)
+        TEST_METHOD(ExecutionOrder_MonthNotMatchedInMMM)
         {
-            // Verify $M doesn't match when part of $MMM
+            // Verify $M or $MM don't match when $MMM is given
             SYSTEMTIME testTime = GetTestTime();
             wchar_t result[MAX_PATH] = { 0 };
             HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$MMM", testTime);
@@ -693,9 +697,9 @@ namespace HelpersTests
             Assert::AreEqual(L"file_Mar", result);  // Should be "Mar", not "3ar"
         }
 
-        TEST_METHOD(NegativeLookahead_DayNotMatchedInDDDD)
+        TEST_METHOD(ExecutionOrder_DayNotMatchedInDDDD)
         {
-            // Verify $D doesn't match when part of $DDDD
+            // Verify $D or $DD don't match when $DDDD is given
             SYSTEMTIME testTime = GetTestTime();
             wchar_t result[MAX_PATH] = { 0 };
             HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$DDDD", testTime);
@@ -704,7 +708,7 @@ namespace HelpersTests
             Assert::AreEqual(L"file_Friday", result);  // Should be "Friday", not "15riday"
         }
 
-        TEST_METHOD(NegativeLookahead_HourNotMatchedInHH)
+        TEST_METHOD(ExecutionOrder_HourNotMatchedInHH)
         {
             // Verify $H doesn't match when part of $HH
             // Note: $HH is 12-hour format, so 14:00 (2 PM) displays as "02"
@@ -716,9 +720,9 @@ namespace HelpersTests
             Assert::AreEqual(L"file_02", result);  // 14:00 in 12-hour format is "02 PM"
         }
 
-        TEST_METHOD(NegativeLookahead_MillisecondNotMatchedInFFF)
+        TEST_METHOD(ExecutionOrder_MillisecondNotMatchedInFFF)
         {
-            // Verify $f doesn't match when part of $fff
+            // Verify $f or $ff don't match when $fff is given
             SYSTEMTIME testTime = GetTestTime();
             wchar_t result[MAX_PATH] = { 0 };
             HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$fff", testTime);
@@ -761,6 +765,69 @@ namespace HelpersTests
 
             Assert::IsTrue(SUCCEEDED(hr));
             Assert::AreEqual(L"15-15-Fri-Friday", result);
+        }
+
+        // Category 6: Specific bug fixes and collision avoidance
+
+        TEST_METHOD(BugFix_DDT_AllowsSuffixT)
+        {
+            // #44202 - $DDT should be allowed and matched as $DD plus verbatim 'T'. It
+            // was previously blocked due to the negative lookahead for any capital
+            // letter after $DD.
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$DDT", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_15T", result);
+        }
+
+        TEST_METHOD(RelaxedConstraint_VerbatimCapitalAfterPatterns)
+        {
+            // Verify that patterns can be followed by capital letters that are not part
+            // of longer patterns, e.g., $DDC should match $DD + 'C'.
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$YYYYA_$MMB_$DDC", testTime); /* #no-spell-check-line */
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_2024A_03B_15C", result);
+        }
+
+        TEST_METHOD(Collision_DateTaken_Protected)
+        {
+            // Verify that date patterns do not collide with metadata patterns like
+            // DATE_TAKEN_YYYY.
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$DATE_TAKEN_YYYY", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_$DATE_TAKEN_YYYY", result); // Not replaced
+        }
+
+        TEST_METHOD(Collision_Height_Protected)
+        {
+            // Verify that HEIGHT metadata pattern does not collide with date pattern $H.
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$HEIGHT", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_$HEIGHT", result); // Not replaced
+        }
+
+        TEST_METHOD(Collision_SafeSuffix_Deer)
+        {
+            // Verifies that patterns can be safely followed by certain suffix letters as
+            // long as they don't match a longer pattern. $DEER should be matched as
+            // $D + 'EER'
+            SYSTEMTIME testTime = GetTestTime();
+            wchar_t result[MAX_PATH] = { 0 };
+            HRESULT hr = GetDatedFileName(result, MAX_PATH, L"file_$DEER", testTime);
+
+            Assert::IsTrue(SUCCEEDED(hr));
+            Assert::AreEqual(L"file_15EER", result);
         }
     };
 }

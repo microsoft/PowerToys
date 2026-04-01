@@ -1,0 +1,29 @@
+{
+  "solution": {
+    "path": "..\\..\\PowerToys.slnx",
+    "projects": [
+      "src\\common\\Common.Search\\Common.Search.csproj",
+      "src\\common\\Common.UI.Controls\\Common.UI.Controls.csproj",
+      "src\\common\\Common.UI\\Common.UI.csproj",
+      "src\\common\\GPOWrapper\\GPOWrapper.vcxproj",
+      "src\\common\\LanguageModelProvider\\LanguageModelProvider.csproj",
+      "src\\common\\ManagedCommon\\ManagedCommon.csproj",
+      "src\\common\\ManagedCsWin32\\ManagedCsWin32.csproj",
+      "src\\common\\ManagedTelemetry\\Telemetry\\ManagedTelemetry.csproj",
+      "src\\common\\SettingsAPI\\SettingsAPI.vcxproj",
+      "src\\common\\interop\\PowerToys.Interop.vcxproj",
+      "src\\common\\logger\\logger.vcxproj",
+      "src\\common\\version\\version.vcxproj",
+      "src\\logging\\logging.vcxproj",
+      "src\\modules\\MouseUtils\\MouseJump.Common\\MouseJump.Common.csproj",
+      "src\\modules\\ZoomIt\\ZoomItSettingsInterop\\ZoomItSettingsInterop.vcxproj",
+      "src\\modules\\powerdisplay\\PowerDisplay.Lib\\PowerDisplay.Lib.csproj",
+      "src\\settings-ui\\QuickAccess.UI\\PowerToys.QuickAccess.csproj",
+      "src\\settings-ui\\Settings.UI.Controls\\Settings.UI.Controls.csproj",
+      "src\\settings-ui\\Settings.UI.Library\\Settings.UI.Library.csproj",
+      "src\\settings-ui\\Settings.UI.UnitTests\\Settings.UI.UnitTests.csproj",
+      "src\\settings-ui\\Settings.UI.XamlIndexBuilder\\Settings.UI.XamlIndexBuilder.csproj",
+      "src\\settings-ui\\Settings.UI\\PowerToys.Settings.csproj"
+    ]
+  }
+}

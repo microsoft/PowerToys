@@ -1,0 +1,106 @@
+{
+  "version": "2.0.0",
+  "windows": {
+    "options": {
+      "shell": {
+        "executable": "cmd.exe",
+        "args": ["/d", "/c"]
+      }
+    }
+  },
+
+  "inputs": [
+    {
+      "id": "config",
+      "type": "pickString",
+      "description": "Configuration",
+      "options": ["Debug", "Release"],
+      "default": "Debug"
+    },
+    {
+      "id": "platform",
+      "type": "pickString",
+      "description": "Platform (leave empty to auto-detect host platform)",
+      "options": ["", "X64", "ARM64"],
+      "default": "X64"
+    },
+    {
+      "id": "msbuildExtra",
+      "type": "promptString",
+      "description": "Extra MSBuild args (optional). Example: /p:CIBuild=true /m",
+      "default": ""
+    }
+  ],
+
+  "tasks": [
+    {
+      "label": "PT: Build (quick)",
+      "type": "shell",
+      "command": "\"${workspaceFolder}\\tools\\build\\build.cmd\"",
+      "args": [
+        "-Path",
+        "${fileDirname}"
+      ],
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": "$msCompile"
+    },
+
+    {
+      "label": "PT: Build (with options)",
+      "type": "shell",
+      "command": "\"${workspaceFolder}\\tools\\build\\build.cmd\"",
+      "args": [
+        "-Path",
+        "${fileDirname}",
+        "-Platform",
+        "${input:platform}",
+        "-Configuration",
+        "${input:config}",
+        "${input:msbuildExtra}"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": "$msCompile"
+    },
+
+    {
+      "label": "PT: Build Essentials (quick)",
+      "type": "shell",
+      "command": "\"${workspaceFolder}\\tools\\build\\build-essentials.cmd\"",
+      "args": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": "$msCompile"
+    },
+
+    {
+      "label": "PT: Build Essentials (with options)",
+      "type": "shell",
+      "command": "\"${workspaceFolder}\\tools\\build\\build-essentials.cmd\"",
+      "args": [
+        "-Platform",
+        "${input:platform}",
+        "-Configuration",
+        "${input:config}",
+        "${input:msbuildExtra}"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

@@ -11,6 +11,23 @@ internal sealed class FoundryClient
 {
     public static async Task<FoundryClient?> CreateAsync()
     {
+        // First attempt with current environment
+        var client = await TryCreateClientAsync().ConfigureAwait(false);
+        if (client != null)
+        {
+            return client;
+        }
+
+        // If failed, refresh PATH from registry and retry once
+        // This handles cases where PowerToys was launched by MSI installer.
+        Logger.LogInfo("[FoundryClient] First attempt failed, refreshing PATH and retrying");
+        RefreshEnvironmentPath();
+
+        return await TryCreateClientAsync().ConfigureAwait(false);
+    }
+
+    private static async Task<FoundryClient?> TryCreateClientAsync()
+    {
         try
         {
             Logger.LogInfo("[FoundryClient] Creating Foundry Local client");
@@ -169,40 +186,94 @@ internal sealed class FoundryClient
 
     public async Task<bool> EnsureModelLoaded(string modelId)
     {
+        Logger.LogInfo($"[FoundryClient] EnsureModelLoaded called with: {modelId}");
+
+        // Check if already loaded
+        if (await IsModelLoaded(modelId).ConfigureAwait(false))
+        {
+            Logger.LogInfo($"[FoundryClient] Model already loaded: {modelId}");
+            return true;
+        }
+
+        // Load the model
+        Logger.LogInfo($"[FoundryClient] Loading model: {modelId}");
+        await _foundryManager.LoadModelAsync(modelId).ConfigureAwait(false);
+
+        // Verify it's loaded
+        var loaded = await IsModelLoaded(modelId).ConfigureAwait(false);
+        Logger.LogInfo($"[FoundryClient] Model load result: {loaded}");
+        return loaded;
+    }
+
+    public async Task EnsureRunning()
+    {
+        if (!_foundryManager.IsServiceRunning)
+        {
+            await _foundryManager.StartServiceAsync();
+        }
+    }
+
+    /// <summary>
+    /// Refreshes the PATH environment variable from the system registry.
+    /// This is necessary when tools are installed while PowerToys is running,
+    /// as the installer updates the system PATH but running processes don't see the change.
+    /// </summary>
+    private static void RefreshEnvironmentPath()
+    {
         try
         {
-            Logger.LogInfo($"[FoundryClient] EnsureModelLoaded called with: {modelId}");
+            Logger.LogInfo("[FoundryClient] Refreshing PATH environment variable from system");
 
-            // Check if already loaded
-            if (await IsModelLoaded(modelId).ConfigureAwait(false))
+            var currentPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Process) ?? string.Empty;
+            var machinePath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) ?? string.Empty;
+            var userPath = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty;
+
+            var pathsToAdd = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(currentPath))
             {
-                Logger.LogInfo($"[FoundryClient] Model already loaded: {modelId}");
-                return true;
+                pathsToAdd.AddRange(currentPath.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries));
             }
 
-            // Check if model exists in cache
-            var cachedModels = await ListCachedModels().ConfigureAwait(false);
-            Logger.LogInfo($"[FoundryClient] Cached models: {string.Join(", ", cachedModels.Select(m => m.Name))}");
-
-            if (!cachedModels.Any(m => m.Name == modelId))
+            if (!string.IsNullOrWhiteSpace(userPath))
             {
-                Logger.LogWarning($"[FoundryClient] Model not found in cache: {modelId}");
-                return false;
+                var userPaths = userPath.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var path in userPaths)
+                {
+                    if (!pathsToAdd.Contains(path, StringComparer.OrdinalIgnoreCase))
+                    {
+                        pathsToAdd.Add(path);
+                    }
+                }
             }
 
-            // Load the model
-            Logger.LogInfo($"[FoundryClient] Loading model: {modelId}");
-            await _foundryManager.LoadModelAsync(modelId).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(machinePath))
+            {
+                var machinePaths = machinePath.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var path in machinePaths)
+                {
+                    if (!pathsToAdd.Contains(path, StringComparer.OrdinalIgnoreCase))
+                    {
+                        pathsToAdd.Add(path);
+                    }
+                }
+            }
 
-            // Verify it's loaded
-            var loaded = await IsModelLoaded(modelId).ConfigureAwait(false);
-            Logger.LogInfo($"[FoundryClient] Model load result: {loaded}");
-            return loaded;
+            var newPath = string.Join(Path.PathSeparator.ToString(), pathsToAdd);
+
+            if (currentPath != newPath)
+            {
+                Logger.LogInfo("[FoundryClient] Updating process PATH with latest system values");
+                Environment.SetEnvironmentVariable("PATH", newPath, EnvironmentVariableTarget.Process);
+            }
+            else
+            {
+                Logger.LogInfo("[FoundryClient] PATH is already up to date");
+            }
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[FoundryClient] EnsureModelLoaded exception: {ex.Message}");
-            return false;
+            Logger.LogError($"[FoundryClient] Failed to refresh PATH: {ex.Message}");
         }
     }
 }

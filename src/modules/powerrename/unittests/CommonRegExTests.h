@@ -647,6 +647,86 @@ TEST_METHOD(VerifyCounterIncrementsWhenResultIsUnchanged)
     CoTaskMemFree(result);
 }
 
+// Helper function to verify normalization behavior.
+void VerifyNormalizationHelper(DWORD flags)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+
+    // 1. Unicode Normalization: NFD source with NFC search term.
+    PWSTR result = nullptr;
+    unsigned long index = 0;
+
+    // Source: "Test" + U+0438 (Cyrillic small letter i) + U+0306 (combining breve).
+    std::wstring sourceNFD = L"Test\u0438\u0306";
+    // Search: "Test" + U+0438 (Cyrillic small letter i with breve).
+    std::wstring searchNFC = L"Test\u0439";
+
+    // A match should occur despite different normalization forms.
+    Assert::IsTrue(renameRegEx->PutSearchTerm(searchNFC.c_str()) == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"Match") == S_OK);
+    Assert::IsTrue(renameRegEx->Replace(sourceNFD.c_str(), &result, index) == S_OK);
+    Assert::AreEqual(L"Match", result, L"Failed to match NFD source with NFC search term.");
+    CoTaskMemFree(result);
+
+    // 2. Whitespace Normalization: test non-breaking space versus regular space.
+    result = nullptr;
+    index = 0;
+
+    // Source: "Hello" + non-breaking space + "World".
+    std::wstring sourceNBSP = L"Hello\u00A0World";
+    // Search: "Hello" + regular space + "World".
+    std::wstring searchSpace = L"Hello World";
+
+    Assert::IsTrue(renameRegEx->PutSearchTerm(searchSpace.c_str()) == S_OK);
+    Assert::IsTrue(renameRegEx->Replace(sourceNBSP.c_str(), &result, index) == S_OK);
+    Assert::AreEqual(L"Match", result, L"Failed to match non-breaking space source with regular space search term.");
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD(VerifyUnicodeAndWhitespaceNormalizationSimpleSearch)
+{
+    VerifyNormalizationHelper(0);
+}
+
+TEST_METHOD(VerifyUnicodeAndWhitespaceNormalizationRegex)
+{
+    VerifyNormalizationHelper(UseRegularExpressions);
+}
+
+TEST_METHOD(VerifyRegexMetacharacterDollarSign)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"$") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"_end") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"test.txt", &result, index) == S_OK);
+    Assert::AreEqual(L"test.txt_end", result);
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD(VerifyRegexMetacharacterCaret)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"^") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"start_") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"test.txt", &result, index) == S_OK);
+    Assert::AreEqual(L"start_test.txt", result);
+    CoTaskMemFree(result);
+}
+
 #ifndef TESTS_PARTIAL
 };
 }

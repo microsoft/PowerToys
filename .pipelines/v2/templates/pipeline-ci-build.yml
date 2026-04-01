@@ -34,6 +34,25 @@ parameters:
   - name: useExperimentalVersion
     type: boolean
     default: false
+  # Artifact mode parameters
+  - name: useArtifactSource
+    type: boolean
+    default: false
+  - name: azureDevOpsOrg
+    type: string
+    default: 'https://dev.azure.com/microsoft'
+  - name: azureDevOpsProject
+    type: string
+    default: 'ProjectReunion'
+  - name: buildId
+    type: string
+    default: ''
+  - name: artifactName
+    type: string
+    default: 'WindowsAppSDK_Nuget_And_MSIX'
+  - name: metaPackageName
+    type: string
+    default: 'Microsoft.WindowsAppSDK'
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
@@ -49,7 +68,9 @@ stages:
               ${{ else }}:
                 name: SHINE-OSS-L
               ${{ if eq(parameters.useVSPreview, true) }}:
-                demands: ImageOverride -equals SHINE-VS17-Preview
+                demands: ImageOverride -equals SHINE-VS18-Preview
+              ${{ else }}:
+                demands: ImageOverride -equals SHINE-VS18-Latest
             buildPlatforms:
               - ${{ platform }}
             buildConfigurations: [Release]
@@ -57,9 +78,35 @@ stages:
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
             msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}
             runTests: ${{ parameters.runTests }}
+            buildTests: true
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
               winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
               useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+              useArtifactSource: ${{ parameters.useArtifactSource }}
+              azureDevOpsOrg: ${{ parameters.azureDevOpsOrg }}
+              azureDevOpsProject: ${{ parameters.azureDevOpsProject }}
+              buildId: ${{ parameters.buildId }}
+              artifactName: ${{ parameters.artifactName }}
+              metaPackageName: ${{ parameters.metaPackageName }}
             timeoutInMinutes: 90
+
+  - stage: Build_SDK
+    displayName: Build Command Palette Toolkit SDK
+    dependsOn: []
+    jobs:
+      - template: job-build-sdk.yml
+        parameters:
+          pool:
+            ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+              name: SHINE-INT-L
+            ${{ else }}:
+              name: SHINE-OSS-L
+            ${{ if eq(parameters.useVSPreview, true) }}:
+              demands: ImageOverride -equals SHINE-VS18-Preview
+            ${{ else }}:
+              demands: ImageOverride -equals SHINE-VS18-Latest
+          buildConfigurations: [Release]
+          official: false
+          codeSign: false
