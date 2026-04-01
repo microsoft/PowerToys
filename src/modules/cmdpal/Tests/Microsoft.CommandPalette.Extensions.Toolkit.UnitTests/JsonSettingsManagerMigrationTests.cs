@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Text.Json.Nodes;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -89,9 +90,10 @@ public class JsonSettingsManagerMigrationTests
 
         Assert.IsTrue(File.Exists(extPath));
         var content = File.ReadAllText(extPath);
-        Assert.IsTrue(content.Contains("key1"));
-        Assert.IsTrue(content.Contains("migrated"));
-        Assert.IsFalse(content.Contains("otherKey"));
+        var json = JsonNode.Parse(content)!.AsObject();
+        Assert.IsTrue(json.ContainsKey("key1"));
+        Assert.AreEqual("migrated", json["key1"]!.GetValue<string>());
+        Assert.IsFalse(json.ContainsKey("otherKey"));
     }
 
     [TestMethod]

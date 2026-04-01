@@ -80,8 +80,8 @@ public abstract class JsonSettingsManager
         var filePath = FilePath;
         if (!File.Exists(filePath))
         {
-            // First run — persist defaults so subsequent loads find the file.
-            SaveSettings();
+            // No settings file yet: keep in-memory defaults without persisting.
+            // The file is created on the first user-initiated settings change.
             return;
         }
 
