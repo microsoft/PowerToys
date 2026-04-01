@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="PowerDisplay.MonitorIcon"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -17,12 +17,10 @@
     </UserControl.Resources>
 
     <Grid>
-        <!-- Decorative badge: keep fixed text scaling for the glyph overlay and rely on adjacent DisplayName text for accessible monitor numbering. -->
+        <!--  Decorative badge: keep fixed text scaling for the glyph overlay and rely on adjacent DisplayName text for accessible monitor numbering.  -->
         <Viewbox>
             <Grid>
-                <Grid
-                    x:Name="MonitorGrid"
-                    x:Uid="ExternalMonitorTooltip">
+                <Grid x:Name="MonitorGrid" x:Uid="ExternalMonitorTooltip">
                     <FontIcon
                         VerticalAlignment="Center"
                         FontSize="{StaticResource MonitorGlyphFontSize}"

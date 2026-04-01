@@ -122,9 +122,7 @@
                                 </ItemsRepeater.Layout>
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="vm:MonitorViewModel">
-                                        <StackPanel
-                                            Spacing="{StaticResource FlyoutCompactSpacing}"
-                                            TabFocusNavigation="Local">
+                                        <StackPanel Spacing="{StaticResource FlyoutCompactSpacing}" TabFocusNavigation="Local">
                                             <!--  Monitor Name with Icon  -->
                                             <Grid
                                                 Margin="{StaticResource MonitorHeaderOffsetMargin}"
@@ -142,11 +140,11 @@
                                                 <TextBlock
                                                     Grid.Column="1"
                                                     Margin="{StaticResource MonitorNameBaselineMargin}"
+                                                    VerticalAlignment="Center"
+                                                    Text="{x:Bind DisplayName, Mode=OneWay}"
                                                     TextTrimming="CharacterEllipsis"
                                                     TextWrapping="NoWrap"
-                                                    ToolTipService.ToolTip="{x:Bind DisplayName, Mode=OneWay}"
-                                                    VerticalAlignment="Center"
-                                                    Text="{x:Bind DisplayName, Mode=OneWay}" />
+                                                    ToolTipService.ToolTip="{x:Bind DisplayName, Mode=OneWay}" />
                                                 <!--  Icon buttons for InputSource and ColorTemperature  -->
                                                 <StackPanel
                                                     Grid.Column="2"
@@ -168,35 +166,35 @@
                                                                     ItemsSource="{x:Bind AvailableColorPresets, Mode=OneWay}"
                                                                     SelectionChanged="{x:Bind HandleColorTemperatureSelectionChanged}"
                                                                     SelectionMode="Single">
-                                                                        <ListView.Header>
-                                                                            <TextBlock
-                                                                                x:Uid="ColorTemperatureHeader"
-                                                                                Margin="{StaticResource FlyoutListHeaderMargin}"
-                                                                                FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
-                                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                                        </ListView.Header>
-                                                                        <ListView.ItemTemplate>
-                                                                            <DataTemplate x:DataType="vm:ColorTemperatureItem">
-                                                                                <Grid Padding="{StaticResource FlyoutListItemPadding}">
-                                                                                    <Grid.ColumnDefinitions>
-                                                                                        <ColumnDefinition Width="*" />
-                                                                                        <ColumnDefinition Width="Auto" />
-                                                                                    </Grid.ColumnDefinitions>
-                                                                                    <TextBlock
-                                                                                        VerticalAlignment="Center"
-                                                                                        Text="{x:Bind DisplayName}"
-                                                                                        TextTrimming="CharacterEllipsis"
-                                                                                        TextWrapping="NoWrap" />
-                                                                                    <FontIcon
-                                                                                        Grid.Column="1"
-                                                                                        Margin="{StaticResource FlyoutSelectionGlyphMargin}"
-                                                                                        FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
-                                                                                        Glyph="&#xE73E;"
-                                                                                        Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(IsSelected)}" />
-                                                                                </Grid>
-                                                                            </DataTemplate>
-                                                                        </ListView.ItemTemplate>
-                                                                    </ListView>
+                                                                    <ListView.Header>
+                                                                        <TextBlock
+                                                                            x:Uid="ColorTemperatureHeader"
+                                                                            Margin="{StaticResource FlyoutListHeaderMargin}"
+                                                                            FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
+                                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                                    </ListView.Header>
+                                                                    <ListView.ItemTemplate>
+                                                                        <DataTemplate x:DataType="vm:ColorTemperatureItem">
+                                                                            <Grid Padding="{StaticResource FlyoutListItemPadding}">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="*" />
+                                                                                    <ColumnDefinition Width="Auto" />
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <TextBlock
+                                                                                    VerticalAlignment="Center"
+                                                                                    Text="{x:Bind DisplayName}"
+                                                                                    TextTrimming="CharacterEllipsis"
+                                                                                    TextWrapping="NoWrap" />
+                                                                                <FontIcon
+                                                                                    Grid.Column="1"
+                                                                                    Margin="{StaticResource FlyoutSelectionGlyphMargin}"
+                                                                                    FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
+                                                                                    Glyph="&#xE73E;"
+                                                                                    Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(IsSelected)}" />
+                                                                            </Grid>
+                                                                        </DataTemplate>
+                                                                    </ListView.ItemTemplate>
+                                                                </ListView>
                                                             </Flyout>
                                                         </Button.Flyout>
                                                     </Button>
@@ -212,9 +210,7 @@
                                                                 Opened="Flyout_Opened"
                                                                 Placement="BottomEdgeAlignedRight"
                                                                 ShouldConstrainToRootBounds="False">
-                                                                <StackPanel
-                                                                    MinWidth="{StaticResource FlyoutContextMenuMinWidth}"
-                                                                    MaxWidth="{StaticResource FlyoutContextMenuMaxWidth}">
+                                                                <StackPanel MinWidth="{StaticResource FlyoutContextMenuMinWidth}" MaxWidth="{StaticResource FlyoutContextMenuMaxWidth}">
                                                                     <!--  Input Source Section  -->
                                                                     <ListView
                                                                         ItemsSource="{x:Bind AvailableInputSources, Mode=OneWay}"
@@ -307,9 +303,7 @@
                                                 TabFocusNavigation="Local"
                                                 XYFocusKeyboardNavigation="Enabled">
                                                 <!--  Brightness Control  -->
-                                                <Grid
-                                                    Margin="{StaticResource FlyoutSectionTopMargin}"
-                                                    ColumnSpacing="{StaticResource FlyoutStandardSpacing}">
+                                                <Grid Margin="{StaticResource FlyoutSectionTopMargin}" ColumnSpacing="{StaticResource FlyoutStandardSpacing}">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="{StaticResource FlyoutSliderIconColumnWidth}" />
                                                         <ColumnDefinition Width="*" />
