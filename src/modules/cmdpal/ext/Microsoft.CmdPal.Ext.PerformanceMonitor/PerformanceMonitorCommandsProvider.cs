@@ -94,7 +94,6 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
             DisposeActivePages();
         }
 
-        GC.SuppressFinalize(this);
         base.Dispose();
     }
 

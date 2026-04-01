@@ -368,3 +368,8 @@ installer/*/*.wxs.bk
 .squad/
 .squad-workstream
 .github/agents/
+nuget.exe
+format_report.json
+build_output*.log
+dotnet_format_output.log
+*.binlog

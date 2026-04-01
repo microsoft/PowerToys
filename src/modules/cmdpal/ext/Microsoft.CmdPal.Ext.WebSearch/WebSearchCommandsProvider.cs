@@ -52,6 +52,5 @@ public sealed partial class WebSearchCommandsProvider : CommandProvider
         _webSearchTopLevelItem?.Dispose();
 
         base.Dispose();
-        GC.SuppressFinalize(this);
     }
 }
