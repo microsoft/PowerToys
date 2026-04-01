@@ -29,7 +29,6 @@ namespace EnvironmentVariablesUILib.Models
         public partial bool ApplyToSystem { get; set; }
 
         [JsonIgnore]
-        [property: JsonIgnore]
         [ObservableProperty]
         public partial bool IsAppliedFromProfile { get; set; } // Used to mark that a variable in a default set is applied by a profile. Used to disable editing / mark it in the UI.
 
@@ -52,7 +51,6 @@ namespace EnvironmentVariablesUILib.Models
         }
 
         [ObservableProperty]
-        [JsonIgnore]
         [JsonIgnore]
         public partial ObservableCollection<ValuesListItem> ValuesList { get; set; }
 
