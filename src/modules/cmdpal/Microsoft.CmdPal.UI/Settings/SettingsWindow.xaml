@@ -69,17 +69,6 @@
                     Icon="{ui:FontIcon Glyph=&#xE790;}"
                     Tag="Appearance" />
                 <NavigationViewItem
-                    x:Name="ExtensionPageNavItem"
-                    x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"
-                    Icon="{ui:FontIcon Glyph=&#xEA86;}"
-                    Tag="Extensions" />
-                <NavigationViewItem
-                    x:Name="GalleryPageNavItem"
-                    x:Uid="Settings_GeneralPage_NavigationViewItem_Gallery"
-                    Icon="{ui:FontIcon Glyph=&#xE719;}"
-                    Tag="Gallery" />
-                <!--  xF596 is HolePunchLandscapeTop  -->
-                <NavigationViewItem
                     x:Name="DockSettingsPageNavItem"
                     x:Uid="Settings_GeneralPage_NavigationViewItem_Dock"
                     Icon="{ui:FontIcon Glyph=&#xF596;}"
@@ -88,6 +77,20 @@
                         <InfoBadge Style="{StaticResource NewInfoBadge}" />
                     </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
+                <NavigationViewItemHeader Content="Extensions" />
+                <!--  x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"  -->
+                <NavigationViewItem
+                    x:Name="ExtensionPageNavItem"
+                    Content="Installed"
+                    Icon="{ui:FontIcon Glyph=&#xEA86;}"
+                    Tag="Extensions" />
+                <!--  x:Uid="Settings_GeneralPage_NavigationViewItem_Gallery"  -->
+                <NavigationViewItem
+                    x:Name="GalleryPageNavItem"
+                    Content="Gallery"
+                    Icon="{ui:FontIcon Glyph=&#xE719;}"
+                    Tag="Gallery" />
+                <!--  xF596 is HolePunchLandscapeTop  -->
                 <!--  "Internal Tools" page item is added dynamically from code  -->
             </NavigationView.MenuItems>
             <Grid>

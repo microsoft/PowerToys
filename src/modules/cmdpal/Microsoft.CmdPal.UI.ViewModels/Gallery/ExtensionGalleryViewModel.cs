@@ -192,7 +192,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
             FromCache = result.FromCache;
             ApplyFilter();
 
-            StartBackgroundRefresh(result.Extensions, refreshInstallationStatus, cts.Token);
+            StartBackgroundRefresh(refreshInstallationStatus, cts.Token);
         }
         catch (OperationCanceledException)
         {
@@ -227,84 +227,13 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
     }
 
     private void StartBackgroundRefresh(
-        IReadOnlyList<GalleryExtensionEntry> feedEntries,
         bool refreshInstallationStatus,
         CancellationToken cancellationToken)
     {
-        _ = LoadWinGetOnlyEntriesAsync(feedEntries, cancellationToken);
         _ = CheckInstalledAsync(
             cancellationToken,
             refreshInstalledExtensions: refreshInstallationStatus,
             refreshWinGetCatalogs: refreshInstallationStatus);
-    }
-
-    private async Task LoadWinGetOnlyEntriesAsync(
-        IReadOnlyList<GalleryExtensionEntry> feedEntries,
-        CancellationToken cancellationToken)
-    {
-        if (_winGetPackageManagerService is null || !_winGetPackageManagerService.State.IsAvailable)
-        {
-            return;
-        }
-
-        try
-        {
-            using var wingetCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            wingetCts.CancelAfter(WinGetRefreshTimeout);
-
-            var winGetOnlyEntries = await DiscoverMissingWinGetOnlyEntriesAsync(feedEntries, wingetCts.Token);
-            wingetCts.Token.ThrowIfCancellationRequested();
-            if (winGetOnlyEntries.Count == 0)
-            {
-                return;
-            }
-
-            AppendEntries(winGetOnlyEntries);
-            ApplyFilter();
-            await CheckInstalledAsync(cancellationToken, refreshInstalledExtensions: false, refreshWinGetCatalogs: false);
-        }
-        catch (OperationCanceledException)
-        {
-            // Timed out or superseded by a later refresh.
-        }
-        catch (Exception ex)
-        {
-            // Non-critical; keep the curated feed visible.
-            Logger.LogError("Failed to load WinGet-only entries", ex);
-        }
-    }
-
-    private async Task<List<GalleryExtensionEntry>> DiscoverMissingWinGetOnlyEntriesAsync(
-        IReadOnlyList<GalleryExtensionEntry> feedEntries,
-        CancellationToken cancellationToken)
-    {
-        List<GalleryExtensionEntry> merged = [];
-        var searchResult = await RunInBackgroundAsync(
-            () => _winGetPackageManagerService!.SearchCommandPaletteExtensionsAsync(cancellationToken: cancellationToken),
-            cancellationToken);
-        if (!searchResult.IsSuccess || searchResult.Value is null || searchResult.Value.Count == 0)
-        {
-            return merged;
-        }
-
-        HashSet<string> knownWinGetIds = new(StringComparer.OrdinalIgnoreCase);
-        for (var i = 0; i < feedEntries.Count; i++)
-        {
-            AddWinGetIds(knownWinGetIds, feedEntries[i]);
-        }
-
-        for (var i = 0; i < searchResult.Value.Count; i++)
-        {
-            var discoveredEntry = searchResult.Value[i];
-            if (string.IsNullOrWhiteSpace(discoveredEntry.PackageId) || !knownWinGetIds.Add(discoveredEntry.PackageId))
-            {
-                continue;
-            }
-
-            merged.Add(CreateGalleryEntryFromWinGet(discoveredEntry));
-        }
-
-        return merged;
     }
 
     private CancellationTokenSource ResetCancellation()
@@ -450,40 +379,6 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         }
     }
 
-    private void AppendEntries(IReadOnlyList<GalleryExtensionEntry> entries)
-    {
-        lock (_entriesLock)
-        {
-            HashSet<string> knownEntryIds = new(_allEntries.Select(static entry => entry.Id), StringComparer.OrdinalIgnoreCase);
-            HashSet<string> knownWinGetIds = new(
-                _allEntries
-                    .Select(static entry => entry.WinGetId)
-                    .Where(static id => !string.IsNullOrWhiteSpace(id))
-                    .Cast<string>(),
-                StringComparer.OrdinalIgnoreCase);
-
-            foreach (var entry in entries)
-            {
-                if (!knownEntryIds.Add(entry.Id))
-                {
-                    continue;
-                }
-
-                var winGetId = GetPrimaryWinGetId(entry);
-                if (!string.IsNullOrWhiteSpace(winGetId) && !knownWinGetIds.Add(winGetId))
-                {
-                    continue;
-                }
-
-                _allEntries.Add(CreateEntryViewModel(entry));
-            }
-
-            RebuildWinGetEntryIndex();
-        }
-
-        ApplyCurrentWinGetOperations();
-    }
-
     private GalleryExtensionViewModel CreateEntryViewModel(GalleryExtensionEntry entry)
     {
         return new GalleryExtensionViewModel(
@@ -562,80 +457,6 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         }
 
         return false;
-    }
-
-    private static void AddWinGetIds(HashSet<string> knownWinGetIds, GalleryExtensionEntry entry)
-    {
-        if (entry.InstallSources is null || entry.InstallSources.Count == 0)
-        {
-            return;
-        }
-
-        for (var i = 0; i < entry.InstallSources.Count; i++)
-        {
-            var installSource = entry.InstallSources[i];
-            if (!string.Equals(installSource.Type, WinGetSourceType, StringComparison.OrdinalIgnoreCase)
-                || string.IsNullOrWhiteSpace(installSource.Id))
-            {
-                continue;
-            }
-
-            knownWinGetIds.Add(installSource.Id);
-        }
-    }
-
-    private static string? GetPrimaryWinGetId(GalleryExtensionEntry entry)
-    {
-        if (entry.InstallSources is null || entry.InstallSources.Count == 0)
-        {
-            return null;
-        }
-
-        for (var i = 0; i < entry.InstallSources.Count; i++)
-        {
-            var installSource = entry.InstallSources[i];
-            if (string.Equals(installSource.Type, WinGetSourceType, StringComparison.OrdinalIgnoreCase)
-                && !string.IsNullOrWhiteSpace(installSource.Id))
-            {
-                return installSource.Id;
-            }
-        }
-
-        return null;
-    }
-
-    private static GalleryExtensionEntry CreateGalleryEntryFromWinGet(WinGetExtensionCatalogEntry discoveredEntry)
-    {
-        var title = !string.IsNullOrWhiteSpace(discoveredEntry.PackageName) ? discoveredEntry.PackageName : discoveredEntry.PackageId;
-        var description = !string.IsNullOrWhiteSpace(discoveredEntry.Description)
-            ? discoveredEntry.Description
-            : discoveredEntry.Summary ?? string.Empty;
-        var authorName = !string.IsNullOrWhiteSpace(discoveredEntry.Author)
-            ? discoveredEntry.Author
-            : discoveredEntry.Publisher ?? string.Empty;
-
-        return new GalleryExtensionEntry
-        {
-            Id = discoveredEntry.PackageId,
-            Title = title,
-            Description = description,
-            Author = new GalleryAuthor
-            {
-                Name = authorName,
-                Url = discoveredEntry.PublisherUrl,
-            },
-            Homepage = discoveredEntry.PackageUrl ?? discoveredEntry.PublisherUrl,
-            Icon = discoveredEntry.IconUrl,
-            InstallSources =
-            [
-                new GalleryInstallSource
-                {
-                    Type = WinGetSourceType,
-                    Id = discoveredEntry.PackageId,
-                },
-            ],
-            Tags = [.. discoveredEntry.Tags],
-        };
     }
 
     private void NotifyStateChanged()

@@ -96,6 +96,14 @@
                         Content="{x:Bind ViewModel.AuthorUrl, Mode=OneWay}" />
                 </controls:SettingsCard>
 
+                <controls:SettingsCard Header="Tags" Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasTags), Mode=OneWay, FallbackValue=Collapsed}">
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.TagsText, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                </controls:SettingsCard>
+
 
                 <!--  Installation info sections  -->
 

@@ -12,7 +12,7 @@ namespace Microsoft.CmdPal.Common.ExtensionGallery.Services;
 
 public sealed partial class ExtensionGalleryService : IExtensionGalleryService, IDisposable
 {
-    private const string DefaultFeedUrl = "https://github.com/microsoft/CmdPal-Extensions/blob/main/extensions.json";
+    private const string DefaultFeedUrl = "https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/refs/heads/main/extensions.json";
     private const string CachedIndexFileName = "index.json";
     private const string ManifestFileName = "manifest.json";
     private const string ManifestLocalizedPrefix = "manifest.";
@@ -97,7 +97,26 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
     {
         try
         {
-            var index = await FetchIndexAsync(cancellationToken);
+            if (!TryGetFeedUri(out var feedUri))
+            {
+                throw new InvalidOperationException($"Invalid gallery feed URL '{GetFeedUrl()}'.");
+            }
+
+            var json = await FetchStringAsync(feedUri, cancellationToken);
+
+            // Try wrapped gallery format (full extension data inline).
+            var inlineExtensions = TryParseWrappedGallery(json);
+            if (inlineExtensions is not null && inlineExtensions.Count > 0)
+            {
+                NormalizeRemoteEntries(inlineExtensions);
+                var indexEntries = BuildIndexFromExtensions(inlineExtensions);
+                CacheResults(indexEntries, inlineExtensions);
+                TouchCacheTimestamp();
+                return new GalleryFetchResult { Extensions = inlineExtensions };
+            }
+
+            // Fall back to index + per-manifest fetch.
+            var index = ParseIndex(json);
             if (index == null || index.Count == 0)
             {
                 return TryLoadFromCache("Empty or null index received.");
@@ -435,6 +454,55 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
     public void Dispose()
     {
         _httpClient.Dispose();
+    }
+
+    private static List<GalleryExtensionEntry>? TryParseWrappedGallery(string json)
+    {
+        try
+        {
+            var index = JsonSerializer.Deserialize(json, GallerySerializationContext.Default.GalleryRemoteIndex);
+            return index?.Extensions;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static void NormalizeRemoteEntries(List<GalleryExtensionEntry> entries)
+    {
+        for (var i = entries.Count - 1; i >= 0; i--)
+        {
+            var entry = entries[i];
+            if (string.IsNullOrWhiteSpace(entry.Id))
+            {
+                entries.RemoveAt(i);
+                continue;
+            }
+
+            entry.Id = entry.Id.Trim();
+
+            // Map iconUrl to icon for downstream compatibility.
+            if (string.IsNullOrWhiteSpace(entry.Icon) && !string.IsNullOrWhiteSpace(entry.IconUrl))
+            {
+                entry.Icon = entry.IconUrl;
+            }
+        }
+    }
+
+    private static List<GalleryIndexEntry> BuildIndexFromExtensions(IReadOnlyList<GalleryExtensionEntry> extensions)
+    {
+        var index = new List<GalleryIndexEntry>(extensions.Count);
+        for (var i = 0; i < extensions.Count; i++)
+        {
+            index.Add(new GalleryIndexEntry
+            {
+                Id = extensions[i].Id,
+                Tags = extensions[i].Tags,
+            });
+        }
+
+        return index;
     }
 
     private static List<GalleryIndexEntry>? ParseIndex(string json)

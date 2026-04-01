@@ -27,142 +27,6 @@ public class ExtensionGalleryViewModelTests
     private static readonly string[] InstallationStatusOrderIds = ["update", "installed", "not-installed"];
 
     [TestMethod]
-    public async Task LoadAsync_AppendsWinGetOnlyExtensions_WithoutDuplicatingFeedEntries()
-    {
-        var galleryService = new Mock<IExtensionGalleryService>();
-        galleryService.Setup(s => s.IsCustomFeed).Returns(false);
-        galleryService.Setup(s => s.GetBaseUrl()).Returns("https://example.com/index.json");
-        galleryService
-            .Setup(s => s.FetchExtensionsAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new GalleryFetchResult
-            {
-                Extensions =
-                [
-                    new GalleryExtensionEntry
-                    {
-                        Id = "feed-extension",
-                        Title = "Feed Extension",
-                        Description = "Curated feed entry",
-                        Author = new GalleryAuthor { Name = "Feed Author" },
-                        InstallSources =
-                        [
-                            new GalleryInstallSource { Type = "winget", Id = "Contoso.FeedExtension" },
-                        ],
-                    },
-                ],
-            });
-
-        var extensionService = new Mock<IExtensionService>();
-        extensionService
-            .Setup(s => s.GetInstalledExtensionsAsync(true))
-            .ReturnsAsync(Array.Empty<IExtensionWrapper>());
-
-        var winGetService = new Mock<IWinGetPackageManagerService>();
-        winGetService.Setup(s => s.State).Returns(new WinGetServiceState(true, null));
-        winGetService
-            .Setup(s => s.SearchCommandPaletteExtensionsAsync(It.IsAny<uint>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new WinGetQueryResult<IReadOnlyList<WinGetExtensionCatalogEntry>>(
-                new List<WinGetExtensionCatalogEntry>
-                {
-                    new WinGetExtensionCatalogEntry(
-                        PackageId: "Contoso.FeedExtension",
-                        PackageName: "Feed Extension from WinGet",
-                        Summary: "Ignored because feed already has this package",
-                        Description: "Ignored",
-                        Publisher: "Contoso",
-                        PublisherUrl: "https://contoso.example/publisher",
-                        Author: "Contoso",
-                        PackageUrl: "https://contoso.example/feed",
-                        IconUrl: null,
-                        Tags: ["duplicate"]),
-                    new WinGetExtensionCatalogEntry(
-                        PackageId: "Contoso.RawExtension",
-                        PackageName: "Raw WinGet Extension",
-                        Summary: "WinGet-only summary",
-                        Description: "WinGet-only description",
-                        Publisher: "Contoso",
-                        PublisherUrl: "https://contoso.example/publisher",
-                        Author: "Contoso Team",
-                        PackageUrl: "https://contoso.example/raw",
-                        IconUrl: "https://contoso.example/raw-icon.png",
-                        Tags: ["utility", "community"]),
-                },
-                IsUnavailable: false,
-                ErrorMessage: null));
-
-        using var viewModel = new ExtensionGalleryViewModel(
-            galleryService.Object,
-            extensionService.Object,
-            winGetService.Object,
-            winGetPackageStatusService: null,
-            winGetOperationTrackerService: null);
-
-        await viewModel.LoadAsync();
-        await WaitForConditionAsync(() => viewModel.FilteredEntries.Count == 2);
-
-        Assert.AreEqual(2, viewModel.FilteredEntries.Count);
-        Assert.AreEqual("Feed Extension", viewModel.FilteredEntries[0].Title);
-        Assert.AreEqual("Raw WinGet Extension", viewModel.FilteredEntries[1].Title);
-        Assert.AreEqual("Contoso.RawExtension", viewModel.FilteredEntries[1].WinGetId);
-        Assert.AreEqual("utility, community", viewModel.FilteredEntries[1].TagsText);
-        Assert.AreEqual(new Uri("https://contoso.example/raw-icon.png"), viewModel.FilteredEntries[1].IconUri);
-    }
-
-    [TestMethod]
-    public async Task LoadAsync_DoesNotBlockOnSlowWinGetMerge()
-    {
-        var galleryService = new Mock<IExtensionGalleryService>();
-        galleryService.Setup(s => s.IsCustomFeed).Returns(false);
-        galleryService.Setup(s => s.GetBaseUrl()).Returns("https://example.com/index.json");
-        galleryService
-            .Setup(s => s.FetchExtensionsAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new GalleryFetchResult
-            {
-                Extensions =
-                [
-                    new GalleryExtensionEntry
-                    {
-                        Id = "feed-extension",
-                        Title = "Feed Extension",
-                        Description = "Curated feed entry",
-                        Author = new GalleryAuthor { Name = "Feed Author" },
-                        InstallSources = [],
-                    },
-                ],
-            });
-
-        var extensionService = new Mock<IExtensionService>();
-        extensionService
-            .Setup(s => s.GetInstalledExtensionsAsync(true))
-            .ReturnsAsync(Array.Empty<IExtensionWrapper>());
-
-        var winGetService = new Mock<IWinGetPackageManagerService>();
-        winGetService.Setup(s => s.State).Returns(new WinGetServiceState(true, null));
-        winGetService
-            .Setup(s => s.SearchCommandPaletteExtensionsAsync(It.IsAny<uint>(), It.IsAny<CancellationToken>()))
-            .Returns(async (uint _, CancellationToken cancellationToken) =>
-            {
-                await Task.Delay(Timeout.Infinite, cancellationToken);
-                return new WinGetQueryResult<IReadOnlyList<WinGetExtensionCatalogEntry>>([], false, null);
-            });
-
-        using var viewModel = new ExtensionGalleryViewModel(
-            galleryService.Object,
-            extensionService.Object,
-            winGetService.Object,
-            winGetPackageStatusService: null,
-            winGetOperationTrackerService: null);
-
-        var loadTask = viewModel.LoadAsync();
-        var completedTask = await Task.WhenAny(loadTask, Task.Delay(TimeSpan.FromSeconds(1)));
-
-        Assert.AreSame(loadTask, completedTask);
-        Assert.IsTrue(loadTask.IsCompletedSuccessfully);
-        Assert.AreEqual(1, viewModel.FilteredEntries.Count);
-        Assert.AreEqual("Feed Extension", viewModel.FilteredEntries[0].Title);
-    }
-
-    [TestMethod]
     public async Task LoadAsync_DoesNotBlockOnSlowSynchronousInstalledStatusKickoff()
     {
         var galleryService = new Mock<IExtensionGalleryService>();
@@ -241,9 +105,6 @@ public class ExtensionGalleryViewModelTests
         winGetService
             .Setup(s => s.RefreshCatalogsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
-        winGetService
-            .Setup(s => s.SearchCommandPaletteExtensionsAsync(It.IsAny<uint>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new WinGetQueryResult<IReadOnlyList<WinGetExtensionCatalogEntry>>([], false, null));
 
         var winGetStatusService = new Mock<IWinGetPackageStatusService>();
         winGetStatusService
@@ -321,9 +182,6 @@ public class ExtensionGalleryViewModelTests
                 Thread.Sleep(1500);
                 return Task.FromResult(true);
             });
-        winGetService
-            .Setup(s => s.SearchCommandPaletteExtensionsAsync(It.IsAny<uint>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new WinGetQueryResult<IReadOnlyList<WinGetExtensionCatalogEntry>>([], false, null));
 
         var winGetStatusService = new Mock<IWinGetPackageStatusService>();
         winGetStatusService

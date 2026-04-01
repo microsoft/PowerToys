@@ -64,7 +64,7 @@ public sealed partial class SettingsWindow : WindowEx,
                 Icon = new FontIcon { Glyph = "\uEC7A" },
                 Tag = "Internal",
             };
-            NavView.MenuItems.Add(_internalNavItem);
+            NavView.FooterMenuItems.Add(_internalNavItem);
         }
         else
         {
