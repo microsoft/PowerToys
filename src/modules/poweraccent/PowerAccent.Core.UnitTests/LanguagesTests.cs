@@ -10,8 +10,6 @@ namespace PowerAccent.Core.UnitTests
     [TestClass]
     public class LanguagesTests
     {
-        #region GetDefaultLetterKey - Empty and boundary cases
-
         [TestMethod]
         public void GetDefaultLetterKey_EmptyLanguageArray_ShouldReturnEmpty()
         {
@@ -49,10 +47,6 @@ namespace PowerAccent.Core.UnitTests
                 CollectionAssert.Contains(combinedResult, ch, $"Combined result should contain Spanish character '{ch}'");
             }
         }
-
-        #endregion
-
-        #region GetDefaultLetterKey - Known character verification
 
         [TestMethod]
         public void GetDefaultLetterKey_French_A_ShouldContainExpectedAccents()
@@ -119,10 +113,6 @@ namespace PowerAccent.Core.UnitTests
             CollectionAssert.Contains(result, "â", "Vietnamese should contain â");
         }
 
-        #endregion
-
-        #region GetDefaultLetterKey - Special characters
-
         [TestMethod]
         public void GetDefaultLetterKey_Special_Digits_ShouldReturnSubscriptsSuperscripts()
         {
@@ -151,10 +141,6 @@ namespace PowerAccent.Core.UnitTests
             Assert.IsNotNull(result);
         }
 
-        #endregion
-
-        #region GetDefaultLetterKey - Keys with no accents
-
         [TestMethod]
         public void GetDefaultLetterKey_UnusedKeyForLanguage_ShouldReturnEmpty()
         {
@@ -162,10 +148,6 @@ namespace PowerAccent.Core.UnitTests
             var result = Languages.GetDefaultLetterKey(LetterKey.VK_Q, new[] { Language.DE });
             Assert.AreEqual(0, result.Length, "German should have no accented characters for Q");
         }
-
-        #endregion
-
-        #region GetDefaultLetterKey - All languages combined
 
         [TestMethod]
         public void GetDefaultLetterKey_AllLanguages_ShouldReturnCachedResults()
@@ -198,6 +180,5 @@ namespace PowerAccent.Core.UnitTests
             }
         }
 
-        #endregion
     }
 }

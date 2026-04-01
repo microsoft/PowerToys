@@ -17,8 +17,6 @@ namespace PowerAccent.Core.UnitTests
         // A typical toolbar window size (300x50 in WPF DIPs)
         private static readonly Size ToolbarWindow = new Size(300, 50);
 
-        #region GetRawCoordinatesFromCaret
-
         [TestMethod]
         public void GetRawCoordinatesFromCaret_CenterOfScreen_ShouldCenterToolbar()
         {
@@ -104,10 +102,6 @@ namespace PowerAccent.Core.UnitTests
             // top = 100 - 50 - 20 = 30, which >= 0
             Assert.AreEqual(30.0, result.Y);
         }
-
-        #endregion
-
-        #region GetRawCoordinatesFromPosition
 
         [TestMethod]
         [DataRow(Position.Top)]
@@ -264,6 +258,5 @@ namespace PowerAccent.Core.UnitTests
             Assert.AreEqual(24.0, result.Y);
         }
 
-        #endregion
     }
 }

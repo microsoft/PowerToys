@@ -10,8 +10,6 @@ namespace Peek.Common.UnitTests
     [TestClass]
     public class PathHelperTests
     {
-        #region UNC Paths - Should return true
-
         [TestMethod]
         public void IsUncPath_StandardUncPath_ShouldReturnTrue()
         {
@@ -36,10 +34,6 @@ namespace Peek.Common.UnitTests
             Assert.IsTrue(PathHelper.IsUncPath(@"\\192.168.1.1\share"));
         }
 
-        #endregion
-
-        #region Local Paths - Should return false
-
         [TestMethod]
         public void IsUncPath_LocalDrivePath_ShouldReturnFalse()
         {
@@ -57,10 +51,6 @@ namespace Peek.Common.UnitTests
         {
             Assert.IsFalse(PathHelper.IsUncPath(@"folder\file.txt"));
         }
-
-        #endregion
-
-        #region Edge Cases
 
         [TestMethod]
         public void IsUncPath_EmptyString_ShouldReturnFalse()
@@ -93,6 +83,5 @@ namespace Peek.Common.UnitTests
             Assert.IsFalse(PathHelper.IsUncPath(@"\server\share"));
         }
 
-        #endregion
     }
 }

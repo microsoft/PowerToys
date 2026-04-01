@@ -10,8 +10,6 @@ namespace Peek.Common.UnitTests
     [TestClass]
     public class MathHelperTests
     {
-        #region Modulo
-
         [TestMethod]
         public void Modulo_PositiveNumbers_ShouldReturnStandardModulo()
         {
@@ -80,10 +78,6 @@ namespace Peek.Common.UnitTests
         {
             Assert.AreEqual(1, MathHelper.Modulo(-2, 3));
         }
-
-        #endregion
-
-        #region NumberOfDigits
 
         [TestMethod]
         public void NumberOfDigits_Zero_ShouldReturnOne()
@@ -155,6 +149,5 @@ namespace Peek.Common.UnitTests
             Assert.AreEqual(3, MathHelper.NumberOfDigits(100));
         }
 
-        #endregion
     }
 }
