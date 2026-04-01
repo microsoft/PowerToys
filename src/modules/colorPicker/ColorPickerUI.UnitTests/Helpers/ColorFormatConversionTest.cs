@@ -366,7 +366,7 @@ namespace ColorPicker.UnitTests.Helpers
         [DataRow("HSB", "hsb(0, 100%, 100%)")]
         [DataRow("HSI", "hsi(0, 100%, 33%)")]
         [DataRow("HWB", "hwb(0, 0%, 0%)")]
-        [DataRow("Decimal", "16711680")]
+        [DataRow("Decimal", "255")]
         [DataRow("HEX Int", "0xFFFF0000")]
         [DataRow("VEC4", "(1f, 0f, 0f, 1f)")]
         public void GetStringRepresentation_Red(string type, string expected)
@@ -410,7 +410,7 @@ namespace ColorPicker.UnitTests.Helpers
         [DataRow("RGB", "rgb(0, 0, 255)")]
         [DataRow("HSL", "hsl(240, 100%, 50%)")]
         [DataRow("HSV", "hsv(240, 100%, 100%)")]
-        [DataRow("Decimal", "255")]
+        [DataRow("Decimal", "16711680")]
         [DataRow("HEX Int", "0xFF0000FF")]
         public void GetStringRepresentation_Blue(string type, string expected)
         {
