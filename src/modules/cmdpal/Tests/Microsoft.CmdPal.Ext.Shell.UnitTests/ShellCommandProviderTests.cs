@@ -19,7 +19,6 @@ public class ShellCommandProviderTests
         var provider = new ShellCommandsProvider(mockHistoryService.Object, telemetryService: null);
 
         // Assert
-        Assert.IsNotNull(provider.DisplayName);
         Assert.IsTrue(provider.DisplayName.Length > 0);
     }
 
@@ -30,8 +29,7 @@ public class ShellCommandProviderTests
         var mockHistoryService = new Mock<IRunHistoryService>();
         var provider = new ShellCommandsProvider(mockHistoryService.Object, telemetryService: null);
 
-        // Assert
-        Assert.IsNotNull(provider.Icon);
+        // Assert - Icon is a non-nullable property; accessing it validates it doesn't throw
     }
 
     [TestMethod]

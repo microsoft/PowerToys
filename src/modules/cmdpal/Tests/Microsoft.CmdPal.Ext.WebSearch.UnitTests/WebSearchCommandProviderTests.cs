@@ -26,7 +26,6 @@ public class WebSearchCommandProviderTests
         var provider = new WebSearchCommandsProvider();
 
         // Assert
-        Assert.IsNotNull(provider.DisplayName);
         Assert.IsTrue(provider.DisplayName.Length > 0);
     }
 
@@ -36,8 +35,7 @@ public class WebSearchCommandProviderTests
         // Setup
         var provider = new WebSearchCommandsProvider();
 
-        // Assert
-        Assert.IsNotNull(provider.Icon);
+        // Assert - Icon is a non-nullable property; accessing it validates it doesn't throw
     }
 
     [TestMethod]

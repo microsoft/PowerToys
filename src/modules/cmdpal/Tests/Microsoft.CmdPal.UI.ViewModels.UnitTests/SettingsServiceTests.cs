@@ -63,7 +63,6 @@ public class SettingsServiceTests
         var service = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
 
         // Assert
-        Assert.IsNotNull(service.Settings);
         _mockPersistence.Verify(
             p => p.Load(
                 It.IsAny<string>(),

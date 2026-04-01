@@ -69,12 +69,10 @@ public partial class BookmarkResolverTests
         var classification = await resolver.TryClassifyAsync(c.Input, CancellationToken.None);
 
         // Assert
-        Assert.IsNotNull(classification);
         Assert.AreEqual(c.ExpectSuccess, classification.Success, "Success flag mismatch.");
 
         if (c.ExpectSuccess)
         {
-            Assert.IsNotNull(classification.Result, "Result should not be null for successful classification.");
             Assert.AreEqual(c.ExpectedKind, classification.Result.Kind, $"CommandKind mismatch for input: {c.Input}");
             Assert.AreEqual(c.ExpectedTarget, classification.Result.Target, StringComparer.OrdinalIgnoreCase, $"Target mismatch for input: {c.Input}");
             Assert.AreEqual(c.ExpectedLaunch, classification.Result.Launch, $"LaunchMethod mismatch for input: {c.Input}");

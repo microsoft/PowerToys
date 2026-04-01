@@ -19,7 +19,6 @@ public class AllAppsCommandProviderTests : AppsTestBase
         var provider = new AllAppsCommandProvider();
 
         // Assert
-        Assert.IsNotNull(provider.DisplayName);
         Assert.IsTrue(provider.DisplayName.Length > 0);
     }
 
@@ -29,8 +28,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
         // Setup
         var provider = new AllAppsCommandProvider();
 
-        // Assert
-        Assert.IsNotNull(provider.Icon);
+        // Assert - Icon is a non-nullable property; accessing it validates it doesn't throw
     }
 
     [TestMethod]

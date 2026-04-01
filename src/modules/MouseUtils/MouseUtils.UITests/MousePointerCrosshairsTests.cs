@@ -298,7 +298,6 @@ namespace MouseUtils.UITests
                 // Set the duration to duration ms
                 var opacitySlider = foundCustom.Find<Slider>(settings.GetElementName(MousePointerCrosshairsSettings.SettingsUIElements.OpacitySlider));
                 Assert.IsNotNull(opacitySlider);
-                Assert.IsNotNull(settings.Opacity);
                 int opacityValue = int.Parse(settings.Opacity, CultureInfo.InvariantCulture);
                 opacitySlider.QuickSetValue(opacityValue);
                 Assert.AreEqual(settings.Opacity, opacitySlider.Text);

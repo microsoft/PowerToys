@@ -18,7 +18,6 @@ public class QueryTests : CommandPaletteUnitTestBase
         var bookmarks = Settings.CreateDefaultBookmarks();
 
         // Assert
-        Assert.IsNotNull(bookmarks);
         Assert.IsNotNull(bookmarks.Data);
         Assert.AreEqual(2, bookmarks.Data.Count);
     }

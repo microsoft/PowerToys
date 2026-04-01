@@ -30,8 +30,8 @@ public class AllAppsPageTests : AppsTestBase
 
         // Assert
         Assert.IsNotNull(page);
-        Assert.IsNotNull(page.Name);
-        Assert.IsNotNull(page.Icon);
+        Assert.IsFalse(string.IsNullOrEmpty(page.Name));
+        _ = page.Icon; // Verify Icon property is accessible
     }
 
     [TestMethod]

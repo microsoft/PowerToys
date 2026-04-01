@@ -192,7 +192,7 @@ public class PowerOCRTests : UITestBase
                 languageOption.Click();
                 Thread.Sleep(1000);
 
-                Assert.IsTrue(true, "Language selection changed successfully through right-click menu");
+                // Language selection changed successfully through right-click menu
             }
         }
 

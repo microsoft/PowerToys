@@ -647,8 +647,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             // Act
             List<ContextMenuResult> contextMenuResults = _dummyInternetShortcutApp.ContextMenus(argument, mock.Object);
 
-            // Assert (Should always return if the above does not throw any exception)
-            Assert.IsTrue(true);
+            // Assert - test passes if the above does not throw any exception
         }
     }
 }

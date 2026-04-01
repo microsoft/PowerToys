@@ -27,7 +27,6 @@ public partial class BookmarkResolverTests
         // Act & Assert - Should not throw exceptions
         var classification = await resolver.TryClassifyAsync(c.Input, CancellationToken.None);
 
-        Assert.IsNotNull(classification);
         Assert.AreEqual(c.ExpectSuccess, classification.Success);
 
         if (c.ExpectSuccess && classification.Result != null)

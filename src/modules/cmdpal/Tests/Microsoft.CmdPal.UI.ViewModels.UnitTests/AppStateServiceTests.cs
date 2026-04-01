@@ -54,7 +54,6 @@ public class AppStateServiceTests
         var service = new AppStateService(_mockPersistence.Object, _mockAppInfo.Object);
 
         // Assert
-        Assert.IsNotNull(service.State);
         Assert.AreEqual(2, service.State.RunHistory.Count);
         Assert.AreEqual("command1", service.State.RunHistory[0]);
         _mockPersistence.Verify(

@@ -51,7 +51,7 @@ public class FallbackTimeDateItemTests
             Assert.IsTrue(
                 fallbackItem.Title.Contains(expectedTitle, StringComparison.OrdinalIgnoreCase),
                 $"Expected title to contain '{expectedTitle}', but got '{fallbackItem.Title}'");
-            Assert.IsNotNull(fallbackItem.Subtitle, "Subtitle should not be null");
+            Assert.IsFalse(string.IsNullOrEmpty(fallbackItem.Subtitle), "Subtitle should not be empty");
             Assert.IsNotNull(fallbackItem.Icon, "Icon should not be null");
         }
         catch (Exception ex)

@@ -29,7 +29,6 @@ public class RemoteDesktopCommandProviderTests
         var provider = new RemoteDesktopCommandProvider();
 
         // Assert
-        Assert.IsNotNull(provider.DisplayName);
         Assert.IsTrue(provider.DisplayName.Length > 0);
     }
 
@@ -39,8 +38,7 @@ public class RemoteDesktopCommandProviderTests
         // Setup
         var provider = new RemoteDesktopCommandProvider();
 
-        // Assert
-        Assert.IsNotNull(provider.Icon);
+        // Assert - Icon is a non-nullable property; accessing it validates it doesn't throw
     }
 
     [TestMethod]

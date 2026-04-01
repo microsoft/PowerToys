@@ -154,7 +154,7 @@ namespace MarkdownPreviewHandlerUnitTests
 
                 // Assert
                 Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[1], typeof(RichTextBox));
-                Assert.IsNotNull(((RichTextBox)markdownPreviewHandlerControl.Controls[1]).Text);
+                Assert.IsFalse(string.IsNullOrEmpty(((RichTextBox)markdownPreviewHandlerControl.Controls[1]).Text));
                 Assert.AreEqual(DockStyle.Top, ((RichTextBox)markdownPreviewHandlerControl.Controls[1]).Dock);
                 Assert.AreEqual(BorderStyle.None, ((RichTextBox)markdownPreviewHandlerControl.Controls[1]).BorderStyle);
                 Assert.AreEqual(Color.LightYellow, ((RichTextBox)markdownPreviewHandlerControl.Controls[1]).BackColor);

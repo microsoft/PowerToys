@@ -17,7 +17,6 @@ public class SettingsManagerTests
         var settingsManager = new SettingsManager();
 
         // Assert
-        Assert.IsNotNull(settingsManager);
         Assert.IsNotNull(settingsManager.Settings);
     }
 

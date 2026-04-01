@@ -78,7 +78,9 @@ namespace Microsoft.PowerToys.UITest
         public T Find<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
+#pragma warning disable MSTEST0032 // Review or remove the assertion as its condition is known to be always true
             Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
+#pragma warning restore MSTEST0032
 
             // leverage findAll to filter out mismatched elements
             var collection = this.FindAll<T>(by, timeoutMS, global);
@@ -528,7 +530,9 @@ namespace Microsoft.PowerToys.UITest
             }
             else
             {
+#pragma warning disable MSTEST0032 // Review or remove the assertion as its condition is known to be always true
                 Assert.IsNotNull(this.Root, $"Failed to attach to the window '{windowName}'. Root driver is null");
+#pragma warning restore MSTEST0032
             }
 
             Task.Delay(3000).Wait();

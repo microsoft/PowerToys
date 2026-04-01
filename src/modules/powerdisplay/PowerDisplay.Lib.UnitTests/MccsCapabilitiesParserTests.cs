@@ -41,7 +41,6 @@ public class MccsCapabilitiesParserTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.IsNotNull(result.Capabilities);
         Assert.AreEqual(0, result.Capabilities.SupportedVcpCodes.Count);
         Assert.IsFalse(result.HasErrors);
     }

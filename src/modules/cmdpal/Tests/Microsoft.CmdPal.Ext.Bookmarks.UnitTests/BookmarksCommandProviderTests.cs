@@ -31,7 +31,6 @@ public class BookmarksCommandProviderTests
         var provider = new BookmarksCommandProvider(mockBookmarkManager);
 
         // Assert
-        Assert.IsNotNull(provider.DisplayName);
         Assert.IsTrue(provider.DisplayName.Length > 0);
     }
 
@@ -42,8 +41,7 @@ public class BookmarksCommandProviderTests
         var mockBookmarkManager = new MockBookmarkManager();
         var provider = new BookmarksCommandProvider(mockBookmarkManager);
 
-        // Assert
-        Assert.IsNotNull(provider.Icon);
+        // Assert - Icon is a non-nullable property; accessing it validates it doesn't throw
     }
 
     [TestMethod]

@@ -73,8 +73,6 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
                     Assert.Fail("Parser should have thrown an exception");
                 }
 
-                Assert.IsNotNull(request);
-
                 Assert.AreEqual(expectedRequestType, request.GetType());
             }
             catch (AssertFailedException)

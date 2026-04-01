@@ -40,9 +40,9 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 
             // Assert
             Assert.IsNotNull(provider);
-            Assert.IsNotNull(provider.DisplayName);
+            Assert.IsFalse(string.IsNullOrEmpty(provider.DisplayName));
             Assert.AreEqual("com.microsoft.cmdpal.builtin.datetime", provider.Id);
-            Assert.IsNotNull(provider.Icon);
+            _ = provider.Icon; // Verify Icon property is accessible
             Assert.IsNotNull(provider.Settings);
         }
 

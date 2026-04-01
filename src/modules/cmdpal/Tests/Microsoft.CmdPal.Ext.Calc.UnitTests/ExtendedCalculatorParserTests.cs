@@ -81,7 +81,6 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out _);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(CalculateEngine.FormatMax15Digits(expectedResult, new CultureInfo("en-US")), result.RoundedResult);
     }
 
@@ -103,11 +102,10 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out _);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(expectedResult, result.Result);
     }
 
-    private static IEnumerable<object[]> Interpret_DifferentCulture_WhenCalled_Data =>
+    private static IEnumerable<object[]> Interpret_DifferentCulture_WhenCalled_Data=>
         [
             ["4.5/3", 1.5M, "nl-NL"],
             ["4.5/3", 1.5M, "en-EN"],
@@ -126,7 +124,6 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         var result = CalculateEngine.Interpret(settings, input, cultureInfo, out _);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(CalculateEngine.Round(expectedResult), result.RoundedResult);
     }
 
@@ -188,7 +185,6 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out _);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(0.0M, result.Result);
     }
 
@@ -218,11 +214,10 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         var result = CalculateEngine.Interpret(settings, input, new CultureInfo("en-us", false), out _);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(expectedResult, result.Result);
     }
 
-    private static IEnumerable<object[]> Interpret_TestScientificNotation_WhenCalled_Data =>
+    private static IEnumerable<object[]> Interpret_TestScientificNotation_WhenCalled_Data=>
         [
             ["0.2E1", "en-US", 2M],
             ["0,2E1", "pt-PT", 2M],
@@ -245,7 +240,6 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         var result = CalculateEngine.Interpret(settings, translatedInput, new CultureInfo("en-US", false), out _);
 
         // Assert
-        Assert.IsNotNull(result);
         Assert.AreEqual(expectedResult, result.Result);
     }
 

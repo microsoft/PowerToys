@@ -12,7 +12,6 @@ public class BasicStructureTest
     [TestMethod]
     public void CanCreateTestClass()
     {
-        // This is a basic test to verify the test project structure is correct
-        Assert.IsTrue(true);
+        // This test verifies the test project structure is correct by reaching here without throwing
     }
 }

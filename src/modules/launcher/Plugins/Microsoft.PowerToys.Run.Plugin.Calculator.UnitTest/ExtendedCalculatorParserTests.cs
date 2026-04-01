@@ -91,11 +91,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(CalculateEngine.Round(expectedResult), result.RoundedResult);
         }
 
-        private static IEnumerable<object[]> Interpret_QuirkOutput_WhenCalled_Data =>
+        private static IEnumerable<object[]> Interpret_QuirkOutput_WhenCalled_Data=>
             new[]
             {
                 new object[] { "123 456", 56088M }, // BUG: Framework accepts ' ' as multiplication
@@ -113,11 +112,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result.Result);
         }
 
-        private static IEnumerable<object[]> Interpret_GreaterPrecision_WhenCalled_Data =>
+        private static IEnumerable<object[]> Interpret_GreaterPrecision_WhenCalled_Data=>
     new[]
     {
                 new object[] { "0.100000000000000000000", 0.1M },
@@ -136,11 +134,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result.Result);
         }
 
-        private static IEnumerable<object[]> Interpret_DifferentCulture_WhenCalled_Data =>
+        private static IEnumerable<object[]> Interpret_DifferentCulture_WhenCalled_Data=>
             new[]
             {
                 new object[] { "4.5/3", 1.5M, "nl-NL" },
@@ -160,7 +157,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(input, cultureInfo, out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(CalculateEngine.Round(expectedResult), result.RoundedResult);
         }
 
@@ -222,7 +218,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(0.0M, result.Result);
         }
 
@@ -251,11 +246,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(input, new CultureInfo("en-us", false), out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result.Result);
         }
 
-        private static IEnumerable<object[]> Interpret_TestScientificNotation_WhenCalled_Data =>
+        private static IEnumerable<object[]> Interpret_TestScientificNotation_WhenCalled_Data=>
            new[]
            {
                new object[] { "0.2E1", "en-US", 2M },
@@ -276,7 +270,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = engine.Interpret(translatedInput, new CultureInfo("en-US", false), out _);
 
             // Assert
-            Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result.Result);
         }
 
