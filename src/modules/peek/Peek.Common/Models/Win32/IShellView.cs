@@ -4,15 +4,14 @@
 
 using System;
 using System.Runtime.InteropServices;
-using System.Security;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Peek.Common.Models
 {
-    [ComImport]
+    [GeneratedComInterface]
     [Guid("000214E3-0000-0000-C000-000000000046")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [SuppressUnmanagedCodeSecurity]
-    public interface IShellView
+    public partial interface IShellView
     {
     }
 }

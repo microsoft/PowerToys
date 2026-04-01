@@ -4,15 +4,16 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 using static Peek.Common.Helpers.PropertyStoreHelper;
 
 namespace Peek.Common.Models
 {
-    [ComImport]
+    [GeneratedComInterface]
     [Guid("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IPropertyStore
+    public partial interface IPropertyStore
     {
         void GetCount(out uint propertyCount);
 

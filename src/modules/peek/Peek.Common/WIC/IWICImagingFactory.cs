@@ -4,13 +4,14 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Peek.Common.WIC
 {
-    [ComImport]
+    [GeneratedComInterface]
     [Guid(IID.IWICImagingFactory)]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IWICImagingFactory
+    public partial interface IWICImagingFactory
     {
         IWICBitmapDecoder CreateDecoderFromFilename(
             [In, MarshalAs(UnmanagedType.LPWStr)] string wzFilename,

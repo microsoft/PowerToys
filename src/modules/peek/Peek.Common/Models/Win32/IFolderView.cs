@@ -5,15 +5,14 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Security;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Peek.Common.Models
 {
-    [ComImport]
+    [GeneratedComInterface]
     [Guid("cde725b0-ccc9-4519-917e-325d72fab4ce")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [SuppressUnmanagedCodeSecurity]
-    public interface IFolderView
+    public partial interface IFolderView
     {
         void GetCurrentViewMode([Out] out uint pViewMode);
 

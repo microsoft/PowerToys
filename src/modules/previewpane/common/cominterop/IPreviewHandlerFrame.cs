@@ -4,16 +4,17 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Common.ComInterlop
 {
     /// <summary>
     /// Enables preview handlers to pass keyboard shortcuts to the host. This interface retrieves a list of keyboard shortcuts and directs the host to handle a keyboard shortcut.
     /// </summary>
-    [ComImport]
+    [GeneratedComInterface]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("fec87aaf-35f9-447a-adb7-20234491401a")]
-    public interface IPreviewHandlerFrame
+    public partial interface IPreviewHandlerFrame
     {
         /// <summary>
         /// Gets a list of the keyboard shortcuts for the preview host.

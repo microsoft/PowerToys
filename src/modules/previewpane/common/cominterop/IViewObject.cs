@@ -4,16 +4,17 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Common.ComInterlop
 {
     /// <summary>
     /// Enables an object to display itself directly without passing a data object to the caller.
     /// </summary>
-    [ComImport]
+    [GeneratedComInterface]
     [Guid("0000010D-0000-0000-C000-000000000046")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IViewObject
+    public partial interface IViewObject
     {
         /// <summary>
         /// Draws a representation of an object onto the specified device context.

@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Wox.Infrastructure.Image
 {
@@ -19,10 +20,10 @@ namespace Wox.Infrastructure.Image
         URL = 0x80068000,
     }
 
-    [ComImport]
+    [GeneratedComInterface]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("43826d1e-e718-42ee-bc55-a1e261c37bfe")]
-    internal interface IShellItem
+    internal partial interface IShellItem
     {
         void BindToHandler(
             IntPtr pbc,

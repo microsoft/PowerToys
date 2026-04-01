@@ -4,13 +4,14 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Peek.Common.Models
 {
-    [ComImport]
+    [GeneratedComInterface]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("000214F2-0000-0000-C000-000000000046")]
-    public interface IEnumIDList
+    public partial interface IEnumIDList
     {
         [PreserveSig]
 #pragma warning disable CA1716

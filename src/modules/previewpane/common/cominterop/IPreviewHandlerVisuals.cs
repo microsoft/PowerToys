@@ -4,16 +4,17 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Common.ComInterlop
 {
     /// <summary>
     /// Exposes methods for applying color and font information to preview handlers.
     /// </summary>
-    [ComImport]
+    [GeneratedComInterface]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("8327b13c-b63f-4b24-9b8a-d010dcc3f599")]
-    public interface IPreviewHandlerVisuals
+    public partial interface IPreviewHandlerVisuals
     {
         /// <summary>
         /// Sets the background color of the preview handler.

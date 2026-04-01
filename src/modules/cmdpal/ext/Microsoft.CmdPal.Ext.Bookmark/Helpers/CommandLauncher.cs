@@ -4,11 +4,12 @@
 
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
-internal static class CommandLauncher
+internal static partial class CommandLauncher
 {
     /// <summary>
     ///     Launches the classified item.
@@ -83,10 +84,10 @@ internal static class CommandLauncher
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Private class")]
         private class _ApplicationActivationManager;
 
-        [ComImport]
+        [GeneratedComInterface]
         [Guid("2E941141-7F97-4756-BA1D-9DECDE894A3D")]
         [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        private interface IApplicationActivationManager
+        private partial interface IApplicationActivationManager
         {
             int ActivateApplication(
                 [MarshalAs(UnmanagedType.LPWStr)] string appUserModelId,

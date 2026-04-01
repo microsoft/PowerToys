@@ -4,15 +4,16 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 using Windows.Win32.UI.Shell;
 
 namespace Peek.Common.Models
 {
-    [ComImport]
+    [GeneratedComInterface]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("43826d1e-e718-42ee-bc55-a1e261c37bfe")]
-    public interface IShellItem
+    public partial interface IShellItem
     {
         void BindToHandler(
             IntPtr pbc,

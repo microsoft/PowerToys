@@ -4,16 +4,17 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Common.Cominterop
 {
     /// <summary>
     /// Exposes a method to initialize a handler, such as a property handler, thumbnail handler, or preview handler, with a file path.
     /// </summary>
-    [ComImport]
+    [GeneratedComInterface]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("b7d14566-0509-4cce-a71f-0a554233bd9b")]
-    public interface IInitializeWithFile
+    public partial interface IInitializeWithFile
     {
         /// <summary>
         /// Initializes a handler with a file path.

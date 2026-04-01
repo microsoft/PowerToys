@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
 {
@@ -18,10 +19,10 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
     }
 
     // ApplicationActivationManager
-    [ComImport]
+    [GeneratedComInterface]
     [Guid("2e941141-7f97-4756-ba1d-9decde894a3d")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IApplicationActivationManager
+    public partial interface IApplicationActivationManager
     {
         IntPtr ActivateApplication([In] string appUserModelId, [In] string arguments, [In] ActivateOptions options, [Out] out uint processId);
 

@@ -6,6 +6,7 @@ using System;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
@@ -26,7 +27,7 @@ namespace Wox.Infrastructure.Image
         InCacheOnly = 0x10,
     }
 
-    public static class WindowsThumbnailProvider
+    public static partial class WindowsThumbnailProvider
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
@@ -52,10 +53,10 @@ namespace Wox.Infrastructure.Image
             AccessDenied = unchecked((int)0x80030005),
         }
 
-        [ComImport]
+        [GeneratedComInterface]
         [Guid("bcc18b79-ba16-442f-80c4-8a59c30c463b")]
         [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        internal interface IShellItemImageFactory
+        internal partial interface IShellItemImageFactory
         {
             [PreserveSig]
             HResult GetImage(

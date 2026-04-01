@@ -4,15 +4,16 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 using Windows.Win32.UI.Shell;
 
 namespace Peek.Common.Models
 {
-    [ComImport]
+    [GeneratedComInterface]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("93F2F68C-1D1B-11D3-A30E-00C04F79ABD1")]
-    public interface IShellFolder2
+    public partial interface IShellFolder2
     {
         [PreserveSig]
         int ParseDisplayName(IntPtr hwnd, IntPtr pbc, [MarshalAs(UnmanagedType.LPWStr)] string pszDisplayName, ref int pchEaten, out IntPtr ppidl, ref int pdwAttributes);

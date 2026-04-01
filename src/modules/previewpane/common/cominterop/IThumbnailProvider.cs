@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Common.ComInterlop
 {
@@ -31,10 +32,10 @@ namespace Common.ComInterlop
     /// <summary>
     /// Exposes methods for thumbnail provider.
     /// </summary>
-    [ComImport]
+    [GeneratedComInterface]
     [Guid("e357fccd-a995-4576-b01f-234630154e96")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IThumbnailProvider
+    public partial interface IThumbnailProvider
     {
         /// <summary>
         /// Gets a thumbnail image and alpha type.

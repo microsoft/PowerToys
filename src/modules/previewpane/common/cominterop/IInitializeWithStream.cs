@@ -5,16 +5,17 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Common.ComInterlop
 {
     /// <summary>
     /// Exposes a method that initializes a handler, such as a property handler, thumbnail handler, or preview handler, with a stream.
     /// </summary>
-    [ComImport]
+    [GeneratedComInterface]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("b824b49d-22ac-4161-ac8a-9916e8fa3f7f")]
-    public interface IInitializeWithStream
+    public partial interface IInitializeWithStream
     {
         /// <summary>
         /// Initializes a handler with a stream.

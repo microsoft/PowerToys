@@ -4,13 +4,14 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Peek.Common.Models
 {
-    [ComImport]
+    [GeneratedComInterface]
     [Guid("bcc18b79-ba16-442f-80c4-8a59c30c463b")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IShellItemImageFactory
+    public partial interface IShellItemImageFactory
     {
         [PreserveSig]
         HResult GetImage(

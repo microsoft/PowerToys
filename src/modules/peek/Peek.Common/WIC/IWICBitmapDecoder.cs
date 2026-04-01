@@ -4,13 +4,14 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Peek.Common.WIC
 {
-    [ComImport]
+    [GeneratedComInterface]
     [Guid(IID.IWICBitmapDecoder)]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IWICBitmapDecoder
+    public partial interface IWICBitmapDecoder
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Implements COM Interface")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Implements COM Interface")]

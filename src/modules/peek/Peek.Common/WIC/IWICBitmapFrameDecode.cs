@@ -4,13 +4,14 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Peek.Common.WIC
 {
-    [ComImport]
+    [GeneratedComInterface]
     [Guid(IID.IWICBitmapFrameDecode)]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IWICBitmapFrameDecode : IWICBitmapSource
+    public partial interface IWICBitmapFrameDecode : IWICBitmapSource
     {
         new void GetSize([Out] out int puiWidth, [Out] out int puiHeight);
     }
