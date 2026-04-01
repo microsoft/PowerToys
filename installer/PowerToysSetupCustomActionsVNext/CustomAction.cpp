@@ -1468,7 +1468,7 @@ UINT __stdcall UnRegisterAdvancedPastePackageCA(MSIHANDLE hInstall)
 
     try
     {
-        std::wstring packageToRemoveDisplayName{L"PowerToys Advanced Paste"};
+        std::wstring packageToRemoveDisplayName{L"PowerToys.AdvancedPaste"};
 
         if (!package::UnRegisterPackage(packageToRemoveDisplayName))
         {
