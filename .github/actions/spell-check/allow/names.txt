@@ -48,6 +48,7 @@ bsky
 CCcat
 chemwolf
 chenmy
+Chieh
 Chinh
 chrdavis
 Chrzan
@@ -69,6 +70,7 @@ Essey
 ethanfangg
 Feng
 ferraridavide
+Fintz
 foxmsft
 frankychen
 Gaarden
@@ -101,6 +103,8 @@ Jaswal
 Jaylyn
 jefflord
 Jeremic
+Jiri
+jiripolasek
 Jordi
 jyuwono
 kai
@@ -142,6 +146,7 @@ pedrolamas
 Peiyao
 peteblois
 phoboslab
+Polasek
 Ponten
 Pooja
 Pylyp
@@ -208,6 +213,7 @@ BVID
 capturevideosample
 cmdow
 Contoso
+contoso
 Controlz
 cortana
 devhints
