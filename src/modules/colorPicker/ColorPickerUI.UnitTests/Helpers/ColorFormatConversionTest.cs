@@ -228,9 +228,9 @@ namespace ColorPicker.UnitTests.Helpers
         }
 
         [TestMethod]
-        public void ConvertToCIELAB_Blue_HasNegativeA()
+        public void ConvertToCIELAB_Blue_HasNegativeB()
         {
-            // Blue is in the -a* direction (and +b* direction)
+            // Blue is in the -b* direction
             var result = ColorFormatHelper.ConvertToCIELABColor(Color.FromArgb(255, 0, 0, 255));
             Assert.IsTrue(result.ChromaticityB < 0, "Blue should have negative b* in CIE LAB");
         }
@@ -328,14 +328,14 @@ namespace ColorPicker.UnitTests.Helpers
         }
 
         [TestMethod]
-        public void ConvertToNaturalColor_Green_ReturnsG0()
+        public void ConvertToNaturalColor_Green_HueStartsWithG()
         {
             var result = ColorFormatHelper.ConvertToNaturalColor(Color.FromArgb(255, 0, 128, 0));
             Assert.IsTrue(result.Hue.StartsWith('G'), $"Green should start with G, got {result.Hue}");
         }
 
         [TestMethod]
-        public void ConvertToNaturalColor_Blue_ReturnsB0()
+        public void ConvertToNaturalColor_Blue_HueStartsWithB()
         {
             var result = ColorFormatHelper.ConvertToNaturalColor(Color.FromArgb(255, 0, 0, 255));
             Assert.IsTrue(result.Hue.StartsWith('B'), $"Blue should start with B, got {result.Hue}");

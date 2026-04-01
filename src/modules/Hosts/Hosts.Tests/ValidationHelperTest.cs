@@ -149,7 +149,7 @@ namespace Hosts.Tests
         public void ValidHosts_WithoutLengthValidation_ExceedsMaxCount_ReturnsTrue()
         {
             // When validateHostsLength is false, exceeding max count should still return true
-            string hosts = "h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12";
+            var hosts = string.Join(" ", Enumerable.Range(1, Consts.MaxHostsCount + 1).Select(i => $"h{i}"));
             Assert.IsTrue(ValidationHelper.ValidHosts(hosts, validateHostsLength: false));
         }
 
