@@ -18,7 +18,7 @@ namespace Microsoft.CmdPal.UI.Events;
 public class CmdPalDockConfiguration : EventBase, IEvent
 {
     /// <summary>
-    /// Gets or sets whether the dock is enabled.
+    /// Gets or sets a value indicating whether the dock is enabled.
     /// </summary>
     public bool IsDockEnabled { get; set; }
 

@@ -26,7 +26,7 @@ public class BaseDscTest
     /// </summary>
     /// <param name="name">The name of the resource string.</param>
     /// <param name="args">The arguments to format the resource string with.</param>
-    /// <returns></returns>
+    /// <returns>The formatted resource string.</returns>
     public string GetResourceString(string name, params string[] args)
     {
         return string.Format(CultureInfo.InvariantCulture, _resourceManager.GetString(name, CultureInfo.InvariantCulture), args);
@@ -37,7 +37,7 @@ public class BaseDscTest
     /// </summary>
     /// <typeparam name="T">The type of the DSC command to execute.</typeparam>
     /// <param name="args">The command-line arguments to pass to the DSC command.</param>
-    /// <returns></returns>
+    /// <returns>The result of the DSC command execution.</returns>
     protected DscExecuteResult ExecuteDscCommand<T>(params string[] args)
         where T : Command, new()
     {
