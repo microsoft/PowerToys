@@ -56,8 +56,10 @@ function createServer() {
     const requestedPath = decodeURIComponent(url.pathname);
     const filePath = path.resolve(absMonacoDir, requestedPath.replace(/^\/+/, ""));
 
-    // Ensure the resolved path is within absMonacoDir
-    if (!filePath.startsWith(absMonacoDir + path.sep) && filePath !== absMonacoDir) {
+    // Ensure the resolved path is within absMonacoDir (case-insensitive on Windows)
+    const normalizedFile = process.platform === "win32" ? filePath.toLowerCase() : filePath;
+    const normalizedBase = process.platform === "win32" ? absMonacoDir.toLowerCase() : absMonacoDir;
+    if (!normalizedFile.startsWith(normalizedBase + path.sep) && normalizedFile !== normalizedBase) {
       res.writeHead(403);
       res.end("Forbidden");
       return;
