@@ -12,7 +12,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 public static class ShellHelpers
 {
     /// <summary>
-    /// These are the executable file extensions that Windows Shell recognizes. Unlike CMD/PowerShell,
+    /// Gets the executable file extensions that Windows Shell recognizes. Unlike CMD/PowerShell,
     /// Shell does not use PATHEXT, but has a magic fixed list.
     /// </summary>
     public static string[] ExecutableExtensions { get; } = [".PIF", ".COM", ".EXE", ".BAT", ".CMD"];
