@@ -85,8 +85,7 @@
             IsClosable="False"
             IsOpen="True"
             Severity="Error"
-            Visibility="Collapsed">
-        </InfoBar>
+            Visibility="Collapsed" />
 
         <ContentControl
             x:Name="MainContentControl"
