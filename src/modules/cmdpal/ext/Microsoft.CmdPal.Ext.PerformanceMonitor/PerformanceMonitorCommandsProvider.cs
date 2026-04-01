@@ -21,6 +21,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     internal static ProviderCrashSentinel CrashSentinel { get; } = new(ProviderIdValue);
 
     private readonly Lock _stateLock = new();
+    private readonly SettingsManager _settingsManager = new();
     private ICommandItem[] _commands = [];
     private ICommandItem _band = new CommandItem();
     private PerformanceWidgetsPage? _mainPage;
@@ -32,6 +33,8 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         DisplayName = Resources.GetResource("Performance_Monitor_Title");
         Id = ProviderIdValue;
         Icon = Icons.PerformanceMonitorIcon;
+
+        Settings = _settingsManager.Settings;
 
         if (softDisabled)
         {
@@ -121,12 +124,16 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     {
         DisposeActivePages();
 
-        _mainPage = new PerformanceWidgetsPage(false);
-        _bandPage = new PerformanceWidgetsPage(true);
+        _mainPage = new PerformanceWidgetsPage(_settingsManager, false);
+        _bandPage = new PerformanceWidgetsPage(_settingsManager, true);
         _band = new CommandItem(_bandPage) { Title = DisplayName };
         _commands =
         [
-            new CommandItem(_mainPage) { Title = DisplayName },
+            new CommandItem(_mainPage)
+            {
+                Title = DisplayName,
+                MoreCommands = [new CommandContextItem(_settingsManager.Settings.SettingsPage)],
+            },
         ];
         _softDisabled = false;
     }
