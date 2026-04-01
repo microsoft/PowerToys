@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using System;
-using System.Collections.Generic;
-using System.Linq;
+
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
-using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
-using Microsoft.CmdPal.Ext.WindowWalker.Properties;
-using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.CmdPal.Ext.WindowWalker.Pages;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
@@ -19,33 +16,54 @@ internal static class ResultHelper
     /// <summary>
     /// Returns a list of all results for the query.
     /// </summary>
-    /// <param name="searchControllerResults">List with all search controller matches</param>
+    /// <param name="scoredWindows">List with all search controller matches</param>
     /// <returns>List of results</returns>
-    internal static List<WindowWalkerListItem> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch)
+    internal static WindowWalkerListItem[] GetResultList(ICollection<Scored<Window>>? scoredWindows)
     {
-        if (searchControllerResults is null || searchControllerResults.Count == 0)
+        if (scoredWindows is null || scoredWindows.Count == 0)
         {
             return [];
         }
 
-        var resultsList = new List<WindowWalkerListItem>(searchControllerResults.Count);
-        var addExplorerInfo = searchControllerResults.Any(x =>
-            string.Equals(x.Result.Process.Name, "explorer.exe", StringComparison.OrdinalIgnoreCase) &&
-            x.Result.Process.IsShellProcess);
+        var list = scoredWindows as IList<Scored<Window>> ?? new List<Scored<Window>>(scoredWindows);
 
-        // Process each SearchResult to convert it into a Result.
-        // Using parallel processing if the operation is CPU-bound and the list is large.
-        resultsList = searchControllerResults
-            .AsParallel()
-            .Select(x => CreateResultFromSearchResult(x))
-            .ToList();
+        var addExplorerInfo = false;
+        for (var i = 0; i < list.Count; i++)
+        {
+            var window = list[i].Item;
+
+            if (string.Equals(window.Process.Name, "explorer.exe", StringComparison.OrdinalIgnoreCase) && window.Process.IsShellProcess)
+            {
+                addExplorerInfo = true;
+                break;
+            }
+        }
+
+        var projected = new WindowWalkerListItem[list.Count];
+        if (list.Count >= 32)
+        {
+            Parallel.For(0, list.Count, i =>
+            {
+                projected[i] = CreateResultFromSearchResult(list[i]);
+            });
+        }
+        else
+        {
+            for (var i = 0; i < list.Count; i++)
+            {
+                projected[i] = CreateResultFromSearchResult(list[i]);
+            }
+        }
 
         if (addExplorerInfo && !SettingsManager.Instance.HideExplorerSettingInfo)
         {
-            resultsList.Insert(0, GetExplorerInfoResult());
+            var withInfo = new WindowWalkerListItem[projected.Length + 1];
+            withInfo[0] = GetExplorerInfoResult();
+            Array.Copy(projected, 0, withInfo, 1, projected.Length);
+            return withInfo;
         }
 
-        return resultsList;
+        return projected;
     }
 
     /// <summary>
@@ -53,16 +71,15 @@ internal static class ResultHelper
     /// </summary>
     /// <param name="searchResult">The SearchResult object to convert.</param>
     /// <returns>A Result object populated with data from the SearchResult.</returns>
-    private static WindowWalkerListItem CreateResultFromSearchResult(SearchResult searchResult)
+    private static WindowWalkerListItem CreateResultFromSearchResult(Scored<Window> searchResult)
     {
-        var item = new WindowWalkerListItem(searchResult.Result)
+        var item = new WindowWalkerListItem(searchResult.Item)
         {
-            Title = searchResult.Result.Title,
-            Subtitle = GetSubtitle(searchResult.Result),
-            Tags = GetTags(searchResult.Result),
+            Title = searchResult.Item.Title,
+            Subtitle = GetSubtitle(searchResult.Item),
+            Tags = GetTags(searchResult.Item),
         };
         item.MoreCommands = ContextMenuHelper.GetContextMenuResults(item).ToArray();
-
         return item;
     }
 

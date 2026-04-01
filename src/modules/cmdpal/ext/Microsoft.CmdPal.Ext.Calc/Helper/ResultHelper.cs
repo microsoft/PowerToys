@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Numerics;
 using ManagedCommon;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
@@ -13,7 +15,14 @@ namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
 public static class ResultHelper
 {
-    public static ListItem CreateResult(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture, string query, ISettingsInterface settings, TypedEventHandler<object, object> handleSave)
+    public static ListItem CreateResult(
+        decimal? roundedResult,
+        CultureInfo inputCulture,
+        CultureInfo outputCulture,
+        string query,
+        ISettingsInterface settings,
+        TypedEventHandler<object, object> handleSave,
+        TypedEventHandler<object, object> handleReplace)
     {
         // Return null when the expression is not a valid calculator query.
         if (roundedResult is null)
@@ -28,6 +37,9 @@ public static class ResultHelper
         var saveCommand = new SaveCommand(result);
         saveCommand.SaveRequested += handleSave;
 
+        var replaceCommand = new ReplaceQueryCommand();
+        replaceCommand.ReplaceRequested += handleReplace;
+
         var copyCommandItem = CreateResult(roundedResult, inputCulture, outputCulture, query);
 
         // No TextToSuggest on the main save command item. We don't want to keep suggesting what the result is,
@@ -40,6 +52,7 @@ public static class ResultHelper
             Subtitle = query,
             MoreCommands = [
                 new CommandContextItem(settings.CloseOnEnter ? saveCommand : copyCommandItem.Command),
+                new CommandContextItem(replaceCommand) { RequestedShortcut = KeyChords.CopyResultToSearchBox, },
                 ..copyCommandItem.MoreCommands,
             ],
         };
@@ -54,37 +67,64 @@ public static class ResultHelper
         }
 
         var decimalResult = roundedResult?.ToString(outputCulture);
+        var decimalValue = (decimal)roundedResult;
 
-        List<CommandContextItem> context = [];
+        List<IContextItem> context = [];
 
-        if (decimal.IsInteger((decimal)roundedResult))
+        try
         {
-            var i = decimal.ToInt64((decimal)roundedResult);
-            try
+            if (decimal.IsInteger(decimalValue))
             {
-                var hexResult = "0x" + i.ToString("X", outputCulture);
-                context.Add(new CommandContextItem(new CopyTextCommand(hexResult) { Name = Properties.Resources.calculator_copy_hex })
-                {
-                    Title = hexResult,
-                });
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Error parsing hex format", ex);
-            }
+                context.Add(new Separator());
 
-            try
-            {
-                var binaryResult = "0b" + i.ToString("B", outputCulture);
-                context.Add(new CommandContextItem(new CopyTextCommand(binaryResult) { Name = Properties.Resources.calculator_copy_binary })
+                var i = (BigInteger)decimalValue;
+
+                // hexadecimal
+                try
                 {
-                    Title = binaryResult,
-                });
+                    var hexResult = BaseConverter.Convert(i, 16);
+                    context.Add(new CommandContextItem(new CopyTextCommand(hexResult) { Name = Properties.Resources.calculator_copy_hex })
+                    {
+                        Title = hexResult,
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Error converting to hex format", ex);
+                }
+
+                // binary
+                try
+                {
+                    var binaryResult = BaseConverter.Convert(i, 2);
+                    context.Add(new CommandContextItem(new CopyTextCommand(binaryResult) { Name = Properties.Resources.calculator_copy_binary })
+                    {
+                        Title = binaryResult,
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Error converting to binary format", ex);
+                }
+
+                // octal
+                try
+                {
+                    var octalResult = BaseConverter.Convert(i, 8);
+                    context.Add(new CommandContextItem(new CopyTextCommand(octalResult) { Name = Properties.Resources.calculator_copy_octal })
+                    {
+                        Title = octalResult,
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Error converting to octal format", ex);
+                }
             }
-            catch (Exception ex)
-            {
-                Logger.LogError("Error parsing binary format", ex);
-            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error creating integer context items", ex);
         }
 
         return new ListItem(new CopyTextCommand(decimalResult))

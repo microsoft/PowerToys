@@ -42,6 +42,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
     public WinGetExtensionPage(string tag = "")
     {
         Icon = tag == ExtensionsTag ? Icons.ExtensionsIcon : Icons.WinGetIcon;
+        Id = tag == ExtensionsTag ? "com.microsoft.cmdpal.winget-extensions" : "com.microsoft.cmdpal.winget";
         Name = Properties.Resources.winget_page_name;
         _tag = tag;
         ShowDetails = true;

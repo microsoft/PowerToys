@@ -1,6 +1,5 @@
 ---
 agent: 'agent'
-model: 'GPT-5.1-Codex-Max'
 description: 'Execute the fix for a GitHub issue using the previously generated implementation plan'
 ---
 

@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<!-- Look at Directory.Build.props in root for common stuff as well -->
-	<Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
 	<PropertyGroup>
 		<ProjectGuid>{2B1505FA-132A-460B-B22B-7CC3FFAB0C5D}</ProjectGuid>
@@ -14,7 +14,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UITests-AdvancedPaste\</OutputPath>
+		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\UITests-AdvancedPaste\</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>

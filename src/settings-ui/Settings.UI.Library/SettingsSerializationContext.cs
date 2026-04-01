@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using SettingsUILibrary = Settings.UI.Library;
 using SettingsUILibraryHelpers = Settings.UI.Library.Helpers;
@@ -65,6 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(NewPlusSettings))]
     [JsonSerializable(typeof(PeekSettings))]
     [JsonSerializable(typeof(PowerAccentSettings))]
+    [JsonSerializable(typeof(PowerDisplaySettings))]
     [JsonSerializable(typeof(PowerLauncherSettings))]
     [JsonSerializable(typeof(PowerOcrSettings))]
     [JsonSerializable(typeof(PowerPreviewSettings))]
@@ -102,6 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(PeekProperties))]
     [JsonSerializable(typeof(SettingsUILibrary.PeekPreviewSettings))]
     [JsonSerializable(typeof(PowerAccentProperties))]
+    [JsonSerializable(typeof(PowerDisplayProperties))]
     [JsonSerializable(typeof(PowerLauncherProperties))]
     [JsonSerializable(typeof(PowerOcrProperties))]
     [JsonSerializable(typeof(PowerPreviewProperties))]
@@ -134,12 +137,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(AdvancedPasteAdditionalAction))]
     [JsonSerializable(typeof(AdvancedPastePasteAsFileAction))]
     [JsonSerializable(typeof(AdvancedPasteTranscodeAction))]
-    [JsonSerializable(typeof(PasteAIConfiguration))]
-    [JsonSerializable(typeof(PasteAIProviderDefinition))]
     [JsonSerializable(typeof(ImageResizerSizes))]
     [JsonSerializable(typeof(ImageResizerCustomSizeProperty))]
     [JsonSerializable(typeof(KeyboardKeysProperty))]
+    [JsonSerializable(typeof(MonitorInfo))]
+    [JsonSerializable(typeof(PowerDisplayActionMessage))]
+    [JsonSerializable(typeof(PowerDisplayActionMessage.ActionData))]
+    [JsonSerializable(typeof(PowerDisplayActionMessage.PowerDisplayAction))]
+    [JsonSerializable(typeof(VcpCodeDisplayInfo))]
+    [JsonSerializable(typeof(VcpValueInfo))]
+    [JsonSerializable(typeof(List<string>))]
+    [JsonSerializable(typeof(List<MonitorInfo>))]
+    [JsonSerializable(typeof(List<VcpCodeDisplayInfo>))]
+    [JsonSerializable(typeof(List<VcpValueInfo>))]
     [JsonSerializable(typeof(SettingsUILibraryHelpers.SearchLocation))]
+
+    // AdvancedPaste AI Provider Types (for AOT compatibility)
+    [JsonSerializable(typeof(PasteAIConfiguration))]
+    [JsonSerializable(typeof(PasteAIProviderDefinition))]
+    [JsonSerializable(typeof(System.Collections.ObjectModel.ObservableCollection<PasteAIProviderDefinition>))]
 
     // IPC Send Message Wrapper Classes (Snd*)
     [JsonSerializable(typeof(SndAwakeSettings))]

@@ -8,35 +8,37 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.Utilities;
-using Microsoft.Win32;
+using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class KeyboardManagerViewModel : Observable
+    public partial class KeyboardManagerViewModel : PageViewModelBase
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private readonly SettingsUtils _settingsUtils;
 
-        private const string PowerToyName = KeyboardManagerSettings.ModuleName;
+        protected override string ModuleName => KeyboardManagerSettings.ModuleName;
+
         private const string JsonFileType = ".json";
 
         // Default editor path. Can be removed once the new WinUI3 editor is released.
         private const string KeyboardManagerEditorPath = "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe";
 
-        // New WinUI3 editor path. Still in development and do NOT use it in production.
-        private const string KeyboardManagerEditorUIPath = "KeyboardManagerEditorUI\\PowerToys.KeyboardManagerEditorUI.exe";
+        private const string KeyboardManagerEditorUIPath = "WinUI3Apps\\PowerToys.KeyboardManagerEditorUI.exe";
 
         private Process editor;
 
@@ -54,6 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ICommand _remapKeyboardCommand;
         private ICommand _editShortcutCommand;
+        private ICommand _openNewEditorCommand;
         private KeyboardManagerProfile _profile;
 
         private Func<string, int> SendConfigMSG { get; }
@@ -74,15 +77,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            if (_settingsUtils.SettingsExists(PowerToyName))
+            if (_settingsUtils.SettingsExists(ModuleName))
             {
                 try
                 {
-                    Settings = _settingsUtils.GetSettingsOrDefault<KeyboardManagerSettings>(PowerToyName);
+                    Settings = _settingsUtils.GetSettingsOrDefault<KeyboardManagerSettings>(ModuleName);
                 }
                 catch (Exception e)
                 {
-                    Logger.LogError($"Exception encountered while reading {PowerToyName} settings.", e);
+                    Logger.LogError($"Exception encountered while reading {ModuleName} settings.", e);
 #if DEBUG
                     if (e is ArgumentException || e is ArgumentNullException || e is PathTooLongException)
                     {
@@ -100,7 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 Settings = new KeyboardManagerSettings();
-                _settingsUtils.SaveSettings(Settings.ToJsonString(), PowerToyName);
+                _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
         }
 
@@ -174,6 +177,63 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [EditorShortcut],
+            };
+
+            return hotkeysDict;
+        }
+
+        public bool UseNewEditor
+        {
+            get => Settings.Properties.UseNewEditor;
+            set
+            {
+                if (Settings.Properties.UseNewEditor != value)
+                {
+                    Settings.Properties.UseNewEditor = value;
+                    OnPropertyChanged(nameof(UseNewEditor));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings EditorShortcut
+        {
+            get => Settings.Properties.EditorShortcut;
+            set
+            {
+                if (value != Settings.Properties.EditorShortcut)
+                {
+                    Settings.Properties.EditorShortcut = value == null ? Settings.Properties.DefaultEditorShortcut : value;
+
+                    OnPropertyChanged(nameof(EditorShortcut));
+                    NotifySettingsChanged();
+
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            KeyboardManagerSettings.ModuleName,
+                            JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.KeyboardManagerSettings)));
+                }
+            }
+        }
+
+        private void NotifySettingsChanged()
+        {
+            // Using InvariantCulture as this is an IPC message
+            SendConfigMSG(
+                   string.Format(
+                       CultureInfo.InvariantCulture,
+                       "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                       ModuleName,
+                       JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.KeyboardManagerSettings)));
+        }
+
         public static List<AppSpecificKeysDataModel> CombineShortcutLists(List<KeysDataModel> globalShortcutList, List<AppSpecificKeysDataModel> appSpecificShortcutList)
         {
             string allAppsDescription = "All Apps";
@@ -224,6 +284,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ICommand EditShortcutCommand => _editShortcutCommand ?? (_editShortcutCommand = new RelayCommand(OnEditShortcut));
 
+        public ICommand OpenNewEditorCommand => _openNewEditorCommand ?? (_openNewEditorCommand = new RelayCommand(OnOpenNewEditor));
+
         public void OnRemapKeyboard()
         {
             OpenEditor((int)KeyboardManagerEditorType.KeyEditor);
@@ -232,6 +294,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void OnEditShortcut()
         {
             OpenEditor((int)KeyboardManagerEditorType.ShortcutEditor);
+        }
+
+        public void OnOpenNewEditor()
+        {
+            OpenNewEditor();
         }
 
         private static void BringProcessToFront(Process process)
@@ -256,56 +323,64 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (editor != null && editor.HasExited)
                 {
-                    Logger.LogInfo($"Previous instance of {PowerToyName} editor exited");
+                    Logger.LogInfo($"Previous instance of {ModuleName} editor exited");
                     editor = null;
                 }
 
                 if (editor != null)
                 {
-                    Logger.LogInfo($"The {PowerToyName} editor instance {editor.Id} exists. Bringing the process to the front");
+                    Logger.LogInfo($"The {ModuleName} editor instance {editor.Id} exists. Bringing the process to the front");
                     BringProcessToFront(editor);
                     return;
                 }
 
-                // Launch the new editor if:
-                // 1. the experimentation toggle is enabled in the settings
-                // 2. the new WinUI3 editor is enabled in the registry. The registry value does not exist by default and is only used for development purposes
-                string editorPath = KeyboardManagerEditorPath;
-                try
-                {
-                    // Check if the experimentation toggle is enabled in the settings
-                    var settingsUtils = SettingsUtils.Default;
-                    bool isExperimentationEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
-
-                    // Only read the registry value if the experimentation toggle is enabled
-                    if (isExperimentationEnabled)
-                    {
-                        // Read the registry value to determine which editor to launch
-                        var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\PowerToys\Keyboard Manager");
-                        if (key != null && (int?)key.GetValue("UseNewEditor") == 1)
-                        {
-                            editorPath = KeyboardManagerEditorUIPath;
-                        }
-
-                        // Close the registry key
-                        key?.Close();
-                    }
-                }
-                catch (Exception e)
-                {
-                    // Fall back to the default editor path if any exception occurs
-                    Logger.LogError("Failed to launch the new WinUI3 Editor", e);
-                }
-
-                string path = Path.Combine(Environment.CurrentDirectory, editorPath);
-                Logger.LogInfo($"Starting {PowerToyName} editor from {path}");
+                string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorPath);
+                Logger.LogInfo($"Starting {ModuleName} editor from {path}");
 
                 // InvariantCulture: type represents the KeyboardManagerEditorType enum value
-                editor = Process.Start(path, $"{type.ToString(CultureInfo.InvariantCulture)} {Environment.ProcessId}");
+                ProcessStartInfo startInfo = new ProcessStartInfo(path);
+                startInfo.UseShellExecute = true; // LOAD BEARING
+                startInfo.Arguments = $"{type.ToString(CultureInfo.InvariantCulture)} {Environment.ProcessId}";
+                System.Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", null);
+                editor = Process.Start(startInfo);
+                PowerToysTelemetry.Log.WriteEvent(new ModuleLaunchedFromSettingsEvent("KeyboardManagerClassic"));
             }
             catch (Exception e)
             {
-                Logger.LogError($"Exception encountered when opening an {PowerToyName} editor", e);
+                Logger.LogError($"Exception encountered when opening an {ModuleName} editor", e);
+            }
+        }
+
+        private void OpenNewEditor()
+        {
+            try
+            {
+                if (editor != null && editor.HasExited)
+                {
+                    Logger.LogInfo($"Previous instance of {ModuleName} editor exited");
+                    editor = null;
+                }
+
+                if (editor != null)
+                {
+                    Logger.LogInfo($"The {ModuleName} editor instance {editor.Id} exists. Bringing the process to the front");
+                    BringProcessToFront(editor);
+                    return;
+                }
+
+                string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorUIPath);
+                Logger.LogInfo($"Starting {ModuleName} new editor from {path}");
+
+                System.Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", null);
+                ProcessStartInfo startInfo = new ProcessStartInfo(path);
+                startInfo.UseShellExecute = true; // LOAD BEARING
+                startInfo.Arguments = $"{Environment.ProcessId}";
+                editor = Process.Start(startInfo);
+                PowerToysTelemetry.Log.WriteEvent(new ModuleLaunchedFromSettingsEvent("KeyboardManagerWinUI"));
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Exception encountered when opening the new {ModuleName} editor", e);
             }
         }
 
@@ -338,7 +413,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     while (!readSuccessfully && !ts.IsCancellationRequested)
                     {
-                        profileExists = _settingsUtils.SettingsExists(PowerToyName, fileName);
+                        profileExists = _settingsUtils.SettingsExists(ModuleName, fileName);
                         if (!profileExists)
                         {
                             break;
@@ -347,12 +422,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         {
                             try
                             {
-                                _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
+                                _profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(ModuleName, fileName);
                                 readSuccessfully = true;
                             }
                             catch (Exception e)
                             {
-                                Logger.LogError($"Exception encountered when reading {PowerToyName} settings", e);
+                                Logger.LogError($"Exception encountered when reading {ModuleName} settings", e);
                             }
                         }
 
@@ -379,23 +454,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (!completedInTime)
                 {
-                    Logger.LogError($"Timeout encountered when loading {PowerToyName} profile");
+                    Logger.LogError($"Timeout encountered when loading {ModuleName} profile");
                 }
             }
             catch (Exception e)
             {
                 // Failed to load the configuration.
-                Logger.LogError($"Exception encountered when loading {PowerToyName} profile", e);
+                Logger.LogError($"Exception encountered when loading {ModuleName} profile", e);
                 success = false;
             }
 
             if (!profileExists)
             {
-                Logger.LogInfo($"Couldn't load {PowerToyName} profile because it doesn't exist");
+                Logger.LogInfo($"Couldn't load {ModuleName} profile because it doesn't exist");
             }
             else if (!success)
             {
-                Logger.LogError($"Couldn't load {PowerToyName} profile");
+                Logger.LogError($"Couldn't load {ModuleName} profile");
             }
 
             return success;

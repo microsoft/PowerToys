@@ -2,7 +2,6 @@
 
 #include "pch.h"
 
-#include <atomic>
 #include <mmsystem.h> // sound
 
 class Sound
@@ -12,12 +11,10 @@ public:
     {
         On,
         Off,
+        IncreaseOpacity,
+        DecreaseOpacity,
     };
     
-    Sound()
-        : isPlaying(false)
-    {}
-
     void Play(Type type)
     {
         BOOL success = false;
@@ -29,6 +26,12 @@ public:
         case Type::Off:
             success = PlaySound(TEXT("Media\\Speech Sleep.wav"), NULL, SND_FILENAME | SND_ASYNC);
             break;
+        case Type::IncreaseOpacity:
+            success = PlaySound(TEXT("Media\\Windows Hardware Insert.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            break;
+        case Type::DecreaseOpacity:
+            success = PlaySound(TEXT("Media\\Windows Hardware Remove.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            break;
         default:
             break;
         }
@@ -38,7 +41,4 @@ public:
             Logger::error(L"Sound playing error");
         }
     }
-
-private:
-    std::atomic<bool> isPlaying;
 };

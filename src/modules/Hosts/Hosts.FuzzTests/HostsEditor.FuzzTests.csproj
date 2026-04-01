@@ -1,16 +1,21 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<!-- Look at Directory.Build.props in root for common stuff as well -->
-	<Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-	<Import Project="..\..\..\Common.Dotnet.FuzzTest.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.FuzzTest.props" />
 
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<DefineConstants>TESTONLY</DefineConstants>
+
+		<!-- exit code 8 means no tests ran. -->
+		<!-- Doc: https://learn.microsoft.com/dotnet/core/testing/unit-testing-platform-exit-codes -->
+		<!-- This test project doesn't seem to contain any tests. -->
+		<TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --ignore-exit-code 8</TestingPlatformCommandLineArguments>
 	</PropertyGroup>
 	
 	<PropertyGroup>
-		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\Hosts.FuzzTests\</OutputPath>
+		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\Hosts.FuzzTests\</OutputPath>
 	</PropertyGroup>
 	
 	<ItemGroup>

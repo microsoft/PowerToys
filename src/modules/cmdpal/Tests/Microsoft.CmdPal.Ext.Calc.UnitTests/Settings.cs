@@ -12,17 +12,26 @@ public class Settings : ISettingsInterface
     private readonly bool inputUseEnglishFormat;
     private readonly bool outputUseEnglishFormat;
     private readonly bool closeOnEnter;
+    private readonly bool copyResultToSearchBarIfQueryEndsWithEqualSign;
+    private readonly bool autoFixQuery;
+    private readonly bool inputNormalization;
 
     public Settings(
         CalculateEngine.TrigMode trigUnit = CalculateEngine.TrigMode.Radians,
         bool inputUseEnglishFormat = false,
         bool outputUseEnglishFormat = false,
-        bool closeOnEnter = true)
+        bool closeOnEnter = true,
+        bool copyResultToSearchBarIfQueryEndsWithEqualSign = true,
+        bool autoFixQuery = true,
+        bool inputNormalization = true)
     {
         this.trigUnit = trigUnit;
         this.inputUseEnglishFormat = inputUseEnglishFormat;
         this.outputUseEnglishFormat = outputUseEnglishFormat;
         this.closeOnEnter = closeOnEnter;
+        this.copyResultToSearchBarIfQueryEndsWithEqualSign = copyResultToSearchBarIfQueryEndsWithEqualSign;
+        this.autoFixQuery = autoFixQuery;
+        this.inputNormalization = inputNormalization;
     }
 
     public CalculateEngine.TrigMode TrigUnit => trigUnit;
@@ -32,4 +41,10 @@ public class Settings : ISettingsInterface
     public bool OutputUseEnglishFormat => outputUseEnglishFormat;
 
     public bool CloseOnEnter => closeOnEnter;
+
+    public bool CopyResultToSearchBarIfQueryEndsWithEqualSign => copyResultToSearchBarIfQueryEndsWithEqualSign;
+
+    public bool AutoFixQuery => autoFixQuery;
+
+    public bool InputNormalization => inputNormalization;
 }

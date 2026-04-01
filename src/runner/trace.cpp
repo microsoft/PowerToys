@@ -81,3 +81,36 @@ void Trace::UpdateDownloadCompleted(bool success, const std::wstring& version)
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
+
+void Trace::TrayIconLeftClick(bool quickAccessEnabled)
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "TrayIcon_LeftClick",
+        TraceLoggingBoolean(quickAccessEnabled, "QuickAccessEnabled"),
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+void Trace::TrayIconDoubleClick(bool quickAccessEnabled)
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "TrayIcon_DoubleClick",
+        TraceLoggingBoolean(quickAccessEnabled, "QuickAccessEnabled"),
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
+void Trace::TrayIconRightClick(bool quickAccessEnabled)
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "TrayIcon_RightClick",
+        TraceLoggingBoolean(quickAccessEnabled, "QuickAccessEnabled"),
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}

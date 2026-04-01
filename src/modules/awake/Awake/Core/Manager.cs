@@ -37,7 +37,7 @@ namespace Awake.Core
 
         internal static SettingsUtils? ModuleSettings { get; set; }
 
-        private static AwakeMode CurrentOperatingMode { get; set; }
+        internal static AwakeMode CurrentOperatingMode { get; private set; }
 
         private static bool IsDisplayOn { get; set; }
 
@@ -54,11 +54,12 @@ namespace Awake.Core
         private static readonly CompositeFormat AwakeHour = CompositeFormat.Parse(Resources.AWAKE_HOUR);
         private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Resources.AWAKE_HOURS);
         private static readonly BlockingCollection<ExecutionState> _stateQueue;
-        private static CancellationTokenSource _tokenSource;
+        private static CancellationTokenSource _monitorTokenSource;
+        private static IDisposable? _timerSubscription;
 
         static Manager()
         {
-            _tokenSource = new CancellationTokenSource();
+            _monitorTokenSource = new CancellationTokenSource();
             _stateQueue = [];
             ModuleSettings = SettingsUtils.Default;
         }
@@ -68,16 +69,34 @@ namespace Awake.Core
             Thread monitorThread = new(() =>
             {
                 Thread.CurrentThread.IsBackground = false;
-                while (true)
+                try
                 {
-                    ExecutionState state = _stateQueue.Take();
+                    while (!_monitorTokenSource.Token.IsCancellationRequested)
+                    {
+                        ExecutionState state = _stateQueue.Take(_monitorTokenSource.Token);
 
-                    Logger.LogInfo($"Setting state to {state}");
+                        Logger.LogInfo($"Setting state to {state}");
 
-                    SetAwakeState(state);
+                        if (!SetAwakeState(state))
+                        {
+                            Logger.LogError($"Failed to set execution state to {state}. Reverting to passive mode.");
+                            CurrentOperatingMode = AwakeMode.PASSIVE;
+                            SetModeShellIcon();
+                        }
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.LogInfo("Monitor thread received cancellation signal. Exiting gracefully.");
                 }
             });
             monitorThread.Start();
+        }
+
+        internal static void StopMonitor()
+        {
+            _monitorTokenSource.Cancel();
+            _monitorTokenSource.Dispose();
         }
 
         internal static void SetConsoleControlHandler(ConsoleEventHandler handler, bool addHandler)
@@ -110,8 +129,9 @@ namespace Awake.Core
                 ExecutionState stateResult = Bridge.SetThreadExecutionState(state);
                 return stateResult != 0;
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError($"Failed to set awake state to {state}: {ex.Message}");
                 return false;
             }
         }
@@ -123,26 +143,34 @@ namespace Awake.Core
                 : ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS;
         }
 
+        /// <summary>
+        /// Re-applies the current awake state after a power event.
+        /// Called when WM_POWERBROADCAST indicates system wake or power source change.
+        /// </summary>
+        internal static void ReapplyAwakeState()
+        {
+            if (CurrentOperatingMode == AwakeMode.PASSIVE)
+            {
+                // No need to reapply in passive mode
+                return;
+            }
+
+            Logger.LogInfo($"Power event received. Reapplying awake state for mode: {CurrentOperatingMode}");
+            _stateQueue.Add(ComputeAwakeState(IsDisplayOn));
+        }
+
         internal static void CancelExistingThread()
         {
-            Logger.LogInfo("Ensuring the thread is properly cleaned up...");
+            Logger.LogInfo("Canceling existing timer and resetting state...");
 
-            // Reset the thread state and handle cancellation.
+            // Reset the thread state.
             _stateQueue.Add(ExecutionState.ES_CONTINUOUS);
 
-            if (_tokenSource != null)
-            {
-                _tokenSource.Cancel();
-                _tokenSource.Dispose();
-            }
-            else
-            {
-                Logger.LogWarning("Token source is null.");
-            }
+            // Dispose the timer subscription to stop any running timer.
+            _timerSubscription?.Dispose();
+            _timerSubscription = null;
 
-            _tokenSource = new CancellationTokenSource();
-
-            Logger.LogInfo("New token source and thread token instantiated.");
+            Logger.LogInfo("Timer subscription disposed.");
         }
 
         internal static void SetModeShellIcon(bool forceAdd = false)
@@ -153,25 +181,25 @@ namespace Awake.Core
             switch (CurrentOperatingMode)
             {
                 case AwakeMode.INDEFINITE:
-                    string processText = ProcessId == 0
+                    string pidLine = ProcessId == 0
                         ? string.Empty
-                        : $" - {Resources.AWAKE_TRAY_TEXT_PID_BINDING}: {ProcessId}";
-                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_INDEFINITE}{processText}][{ScreenStateString}]";
+                        : $"\nPID: {ProcessId}";
+                    iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_TEXT_INDEFINITE}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}{pidLine}";
                     icon = TrayHelper.IndefiniteIcon;
                     break;
 
                 case AwakeMode.PASSIVE:
-                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_OFF}]";
+                    iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_SCREEN_OFF}";
                     icon = TrayHelper.DisabledIcon;
                     break;
 
                 case AwakeMode.EXPIRABLE:
-                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_EXPIRATION}][{ScreenStateString}][{ExpireAt:yyyy-MM-dd HH:mm:ss}]";
+                    iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_UNTIL} {ExpireAt:MMM d, h:mm tt}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}";
                     icon = TrayHelper.ExpirableIcon;
                     break;
 
                 case AwakeMode.TIMED:
-                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}]";
+                    iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_TEXT_TIMED}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}";
                     icon = TrayHelper.TimedIcon;
                     break;
             }
@@ -280,9 +308,8 @@ namespace Awake.Core
 
             TimeSpan remainingTime = expireAt - DateTimeOffset.Now;
 
-            Observable.Timer(remainingTime).Subscribe(
-                _ => HandleTimerCompletion("expirable"),
-                _tokenSource.Token);
+            _timerSubscription = Observable.Timer(remainingTime).Subscribe(
+                _ => HandleTimerCompletion("expirable"));
         }
 
         internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
@@ -300,6 +327,8 @@ namespace Awake.Core
                     TimeSpan timeSpan = TimeSpan.FromSeconds(seconds);
 
                     uint totalHours = (uint)timeSpan.TotalHours;
+
+                    // Round up partial minutes to prevent timer from expiring before intended duration
                     uint remainingMinutes = (uint)Math.Ceiling(timeSpan.TotalMinutes % 60);
 
                     bool settingsChanged = currentSettings.Properties.Mode != AwakeMode.TIMED ||
@@ -336,7 +365,7 @@ namespace Awake.Core
 
             var targetExpiryTime = DateTimeOffset.Now.AddSeconds(seconds);
 
-            Observable.Interval(TimeSpan.FromSeconds(1))
+            _timerSubscription = Observable.Interval(TimeSpan.FromSeconds(1))
                 .Select(_ => targetExpiryTime - DateTimeOffset.Now)
                 .TakeWhile(remaining => remaining.TotalSeconds > 0)
                 .Subscribe(
@@ -346,12 +375,11 @@ namespace Awake.Core
 
                         TrayHelper.SetShellIcon(
                             TrayHelper.WindowHandle,
-                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}][{remainingTimeSpan.ToHumanReadableString()}]",
+                            $"{Constants.FullAppName}\n{remainingTimeSpan.ToHumanReadableString()} {Resources.AWAKE_TRAY_REMAINING}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}",
                             TrayHelper.TimedIcon,
                             TrayIconAction.Update);
                     },
-                    () => HandleTimerCompletion("timed"),
-                    _tokenSource.Token);
+                    () => HandleTimerCompletion("timed"));
         }
 
         /// <summary>
@@ -383,6 +411,16 @@ namespace Awake.Core
         internal static void CompleteExit(int exitCode)
         {
             SetPassiveKeepAwake(updateSettings: false);
+
+            // Stop the monitor thread gracefully
+            StopMonitor();
+
+            // Dispose the timer subscription
+            _timerSubscription?.Dispose();
+            _timerSubscription = null;
+
+            // Dispose tray icons
+            TrayHelper.DisposeIcons();
 
             if (TrayHelper.WindowHandle != IntPtr.Zero)
             {
@@ -496,15 +534,21 @@ namespace Awake.Core
                     AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                     currentSettings.Properties.KeepDisplayOn = !currentSettings.Properties.KeepDisplayOn;
 
-                    // We want to make sure that if the display setting changes (e.g., through the tray)
-                    // then we do not reset the counter from zero. Because the settings are only storing
-                    // hours and minutes, we round up the minutes value up when changes occur.
+                    // For TIMED mode: update state directly without restarting timer
+                    // This preserves the existing timer Observable subscription and targetExpiryTime
                     if (CurrentOperatingMode == AwakeMode.TIMED && TimeRemaining > 0)
                     {
-                        TimeSpan timeSpan = TimeSpan.FromSeconds(TimeRemaining);
+                        // Update internal state
+                        IsDisplayOn = currentSettings.Properties.KeepDisplayOn;
 
-                        currentSettings.Properties.IntervalHours = (uint)timeSpan.TotalHours;
-                        currentSettings.Properties.IntervalMinutes = (uint)Math.Ceiling(timeSpan.TotalMinutes % 60);
+                        // Update execution state without canceling timer
+                        _stateQueue.Add(ComputeAwakeState(IsDisplayOn));
+
+                        // Save settings - ProcessSettings will skip reinitialization
+                        // since we're already in TIMED mode
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+
+                        return;
                     }
 
                     ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
