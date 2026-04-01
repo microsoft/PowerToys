@@ -326,7 +326,7 @@
                     <KeyboardAccelerator Key="Enter" Invoked="ResizeAccelerator_Invoked" />
                 </Button.KeyboardAccelerators>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon Glyph="&#xE740;" FontSize="14" />
+                    <FontIcon FontSize="14" Glyph="&#xE740;" />
                     <TextBlock x:Uid="Input_Resize" />
                 </StackPanel>
             </Button>
