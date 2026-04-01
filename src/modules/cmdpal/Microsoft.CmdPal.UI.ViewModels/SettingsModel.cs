@@ -1,171 +1,138 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Nodes;
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
-using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Foundation;
+using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsModel : ObservableObject
+public record SettingsModel
 {
-    [JsonIgnore]
-    public static readonly string FilePath;
-
-    public event TypedEventHandler<SettingsModel, object?>? SettingsChanged;
-
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
-    public HotkeySettings? Hotkey { get; set; } = DefaultActivationShortcut;
+    public HotkeySettings? Hotkey { get; init; } = DefaultActivationShortcut;
 
-    public bool UseLowLevelGlobalHotkey { get; set; }
+    public bool UseLowLevelGlobalHotkey { get; init; }
 
-    public bool ShowAppDetails { get; set; }
+    public bool ShowAppDetails { get; init; }
 
-    public bool HotkeyGoesHome { get; set; }
+    public bool BackspaceGoesBack { get; init; }
 
-    public bool BackspaceGoesBack { get; set; }
+    public bool SingleClickActivates { get; init; }
 
-    public bool SingleClickActivates { get; set; }
+    public bool HighlightSearchOnActivate { get; init; } = true;
 
-    public bool HighlightSearchOnActivate { get; set; } = true;
+    public bool KeepPreviousQuery { get; init; }
 
-    public bool ShowSystemTrayIcon { get; set; } = true;
+    public bool ShowSystemTrayIcon { get; init; } = true;
 
-    public bool IgnoreShortcutWhenFullscreen { get; set; }
+    public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
 
-    public bool AllowExternalReload { get; set; }
+    public bool IgnoreShortcutWhenBusy { get; init; }
 
-    public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
+    public bool AllowBreakthroughShortcut { get; init; }
 
-    public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
+    public bool AllowExternalReload { get; init; }
 
-    public List<TopLevelHotkey> CommandHotkeys { get; set; } = [];
+    public ImmutableDictionary<string, ProviderSettings> ProviderSettings { get; init; }
+        = ImmutableDictionary<string, ProviderSettings>.Empty;
 
-    public MonitorBehavior SummonOn { get; set; } = MonitorBehavior.ToMouse;
+    public string[] FallbackRanks { get; init; } = [];
+
+    public ImmutableDictionary<string, CommandAlias> Aliases { get; init; }
+        = ImmutableDictionary<string, CommandAlias>.Empty;
+
+    public ImmutableList<TopLevelHotkey> CommandHotkeys { get; init; }
+        = ImmutableList<TopLevelHotkey>.Empty;
+
+    public MonitorBehavior SummonOn { get; init; } = MonitorBehavior.ToMouse;
+
+    public bool DisableAnimations { get; init; } = true;
+
+    public WindowPosition? LastWindowPosition { get; init; }
+
+    public TimeSpan AutoGoHomeInterval { get; init; } = Timeout.InfiniteTimeSpan;
+
+    public EscapeKeyBehavior EscapeKeyBehaviorSetting { get; init; } = EscapeKeyBehavior.ClearSearchFirstThenGoBack;
+
+    public bool EnableDock { get; init; }
+
+    public DockSettings DockSettings { get; init; } = new();
+
+    // Theme settings
+    public UserTheme Theme { get; init; } = UserTheme.Default;
+
+    public ColorizationMode ColorizationMode { get; init; }
+
+    public Color CustomThemeColor { get; init; } = new() { A = 0, R = 255, G = 255, B = 255 }; // Transparent — avoids WinUI3 COM dependency on Colors.Transparent
+
+    public int CustomThemeColorIntensity { get; init; } = 100;
+
+    public int BackgroundImageTintIntensity { get; init; }
+
+    public int BackgroundImageOpacity { get; init; } = 20;
+
+    public int BackgroundImageBlurAmount { get; init; }
+
+    public int BackgroundImageBrightness { get; init; }
+
+    public BackgroundImageFit BackgroundImageFit { get; init; }
+
+    public string? BackgroundImagePath { get; init; }
+
+    public BackdropStyle BackdropStyle { get; init; }
+
+    public int BackdropOpacity { get; init; } = 100;
+
+    // </Theme settings>
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 
-    static SettingsModel()
+    public (SettingsModel Model, ProviderSettings Settings) GetProviderSettings(CommandProviderWrapper provider)
     {
-        FilePath = SettingsJsonPath();
+        if (!ProviderSettings.TryGetValue(provider.ProviderId, out var settings))
+        {
+            settings = new ProviderSettings();
+        }
+
+        var connected = settings.WithConnection(provider);
+
+        // If WithConnection returned the same instance, nothing changed — skip SetItem
+        if (ReferenceEquals(connected, settings))
+        {
+            return (this, connected);
+        }
+
+        var newModel = this with
+        {
+            ProviderSettings = ProviderSettings.SetItem(provider.ProviderId, connected),
+        };
+        return (newModel, connected);
     }
 
-    public ProviderSettings GetProviderSettings(CommandProviderWrapper provider)
+    public string[] GetGlobalFallbacks()
     {
-        ProviderSettings? settings;
-        if (!ProviderSettings.TryGetValue(provider.ProviderId, out settings))
+        var globalFallbacks = new HashSet<string>();
+
+        foreach (var provider in ProviderSettings.Values)
         {
-            settings = new ProviderSettings(provider);
-            settings.Connect(provider);
-            ProviderSettings[provider.ProviderId] = settings;
-        }
-        else
-        {
-            settings.Connect(provider);
-        }
-
-        return settings;
-    }
-
-    public static SettingsModel LoadSettings()
-    {
-        if (string.IsNullOrEmpty(FilePath))
-        {
-            throw new InvalidOperationException($"You must set a valid {nameof(SettingsModel.FilePath)} before calling {nameof(LoadSettings)}");
-        }
-
-        if (!File.Exists(FilePath))
-        {
-            Debug.WriteLine("The provided settings file does not exist");
-            return new();
-        }
-
-        try
-        {
-            // Read the JSON content from the file
-            var jsonContent = File.ReadAllText(FilePath);
-
-            var loaded = JsonSerializer.Deserialize<SettingsModel>(jsonContent, JsonSerializationContext.Default.SettingsModel);
-
-            Debug.WriteLine(loaded is not null ? "Loaded settings file" : "Failed to parse");
-
-            return loaded ?? new();
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex.ToString());
-        }
-
-        return new();
-    }
-
-    public static void SaveSettings(SettingsModel model)
-    {
-        if (string.IsNullOrEmpty(FilePath))
-        {
-            throw new InvalidOperationException($"You must set a valid {nameof(FilePath)} before calling {nameof(SaveSettings)}");
-        }
-
-        try
-        {
-            // Serialize the main dictionary to JSON and save it to the file
-            var settingsJson = JsonSerializer.Serialize(model, JsonSerializationContext.Default.SettingsModel);
-
-            // Is it valid JSON?
-            if (JsonNode.Parse(settingsJson) is JsonObject newSettings)
+            foreach (var fallback in provider.FallbackCommands)
             {
-                // Now, read the existing content from the file
-                var oldContent = File.Exists(FilePath) ? File.ReadAllText(FilePath) : "{}";
-
-                // Is it valid JSON?
-                if (JsonNode.Parse(oldContent) is JsonObject savedSettings)
+                var fallbackSetting = fallback.Value;
+                if (fallbackSetting.IsEnabled && fallbackSetting.IncludeInGlobalResults)
                 {
-                    foreach (var item in newSettings)
-                    {
-                        savedSettings[item.Key] = item.Value?.DeepClone();
-                    }
-
-                    var serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.Options);
-                    File.WriteAllText(FilePath, serialized);
-
-                    // TODO: Instead of just raising the event here, we should
-                    // have a file change watcher on the settings file, and
-                    // reload the settings then
-                    model.SettingsChanged?.Invoke(model, null);
-                }
-                else
-                {
-                    Debug.WriteLine("Failed to parse settings file as JsonObject.");
+                    globalFallbacks.Add(fallback.Key);
                 }
             }
-            else
-            {
-                Debug.WriteLine("Failed to parse settings file as JsonObject.");
-            }
         }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex.ToString());
-        }
-    }
 
-    internal static string SettingsJsonPath()
-    {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        Directory.CreateDirectory(directory);
-
-        // now, the settings is just next to the exe
-        return Path.Combine(directory, "settings.json");
+        return globalFallbacks.ToArray();
     }
 
     // [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
@@ -187,12 +154,21 @@ public partial class SettingsModel : ObservableObject
 [JsonSerializable(typeof(int))]
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(bool))]
+[JsonSerializable(typeof(Color))]
 [JsonSerializable(typeof(HistoryItem))]
 [JsonSerializable(typeof(SettingsModel))]
+[JsonSerializable(typeof(WindowPosition))]
 [JsonSerializable(typeof(AppStateModel))]
 [JsonSerializable(typeof(RecentCommandsManager))]
 [JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
 [JsonSerializable(typeof(List<HistoryItem>), TypeInfoPropertyName = "HistoryList")]
+[JsonSerializable(typeof(ImmutableList<HistoryItem>), TypeInfoPropertyName = "ImmutableHistoryList")]
+[JsonSerializable(typeof(ImmutableDictionary<string, FallbackSettings>), TypeInfoPropertyName = "ImmutableFallbackDictionary")]
+[JsonSerializable(typeof(ImmutableList<string>), TypeInfoPropertyName = "ImmutableStringList")]
+[JsonSerializable(typeof(ImmutableList<DockBandSettings>), TypeInfoPropertyName = "ImmutableDockBandSettingsList")]
+[JsonSerializable(typeof(ImmutableDictionary<string, ProviderSettings>), TypeInfoPropertyName = "ImmutableProviderSettingsDictionary")]
+[JsonSerializable(typeof(ImmutableDictionary<string, CommandAlias>), TypeInfoPropertyName = "ImmutableAliasDictionary")]
+[JsonSerializable(typeof(ImmutableList<TopLevelHotkey>), TypeInfoPropertyName = "ImmutableTopLevelHotkeyList")]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Just used here")]
@@ -206,4 +182,13 @@ public enum MonitorBehavior
     ToPrimary = 1,
     ToFocusedWindow = 2,
     InPlace = 3,
+    ToLast = 4,
+}
+
+public enum EscapeKeyBehavior
+{
+    ClearSearchFirstThenGoBack = 0,
+    AlwaysGoBack = 1,
+    AlwaysDismiss = 2,
+    AlwaysHide = 3,
 }

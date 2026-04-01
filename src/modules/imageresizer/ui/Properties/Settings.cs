@@ -1,8 +1,8 @@
-﻿#pragma warning disable IDE0073
+#pragma warning disable IDE0073, SA1636
 // Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
-#pragma warning restore IDE0073
+#pragma warning restore IDE0073, SA1636
 
 using System;
 using System.Collections;
@@ -15,27 +15,45 @@ using System.IO.Abstractions;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Windows.Media.Imaging;
-
+using System.Text.Json.Serialization.Metadata;
+using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ManagedCommon;
+using Microsoft.UI.Dispatching;
 
 namespace ImageResizer.Properties
 {
+    /// <summary>
+    /// Represents the availability state of AI Super Resolution feature.
+    /// </summary>
+    public enum AiAvailabilityState
+    {
+        NotSupported,      // System doesn't support AI (architecture issue or policy disabled)
+        ModelNotReady,     // AI supported but model not downloaded
+        Ready,             // AI fully ready to use
+    }
+
     public sealed partial class Settings : IDataErrorInfo, INotifyPropertyChanged
     {
         private static readonly IFileSystem _fileSystem = new FileSystem();
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
         {
             NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            PropertyNameCaseInsensitive = true,
             WriteIndented = true,
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
 
-        private static readonly CompositeFormat ValueMustBeBetween = System.Text.CompositeFormat.Parse(Properties.Resources.ValueMustBeBetween);
+        // Cached UI thread DispatcherQueue for cross-thread property change notifications
+        private static DispatcherQueue _uiDispatcherQueue;
 
-        // Used to synchronize access to the settings.json file
-        private static Mutex _jsonMutex = new Mutex();
+        private static CompositeFormat _valueMustBeBetween;
+
+        private static CompositeFormat ValueMustBeBetween =>
+            _valueMustBeBetween ??= System.Text.CompositeFormat.Parse(ResourceLoaderInstance.GetString("ValueMustBeBetween"));
+
+        // Used to synchronize access to the settings.json file (in-process only)
+        private static readonly System.Threading.Lock _jsonSyncLock = new();
         private static string _settingsPath = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Image Resizer", "settings.json");
         private string _fileNameFormat;
         private bool _shrinkOnly;
@@ -50,6 +68,7 @@ namespace ImageResizer.Properties
         private bool _keepDateModified;
         private System.Guid _fallbackEncoder;
         private CustomSize _customSize;
+        private AiSize _aiSize;
 
         public Settings()
         {
@@ -59,8 +78,8 @@ namespace ImageResizer.Properties
             IgnoreOrientation = true;
             RemoveMetadata = false;
             JpegQualityLevel = 90;
-            PngInterlaceOption = System.Windows.Media.Imaging.PngInterlaceOption.Default;
-            TiffCompressOption = System.Windows.Media.Imaging.TiffCompressOption.Default;
+            PngInterlaceOption = Models.PngInterlaceOption.Default;
+            TiffCompressOption = Models.TiffCompressOption.Default;
             FileName = "%1 (%2)";
             Sizes = new ObservableCollection<ResizeSize>
             {
@@ -72,13 +91,25 @@ namespace ImageResizer.Properties
             KeepDateModified = false;
             FallbackEncoder = new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057");
             CustomSize = new CustomSize(ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel);
+            AiSize = new AiSize(2);
             AllSizes = new AllSizesCollection(this);
+        }
+
+        private void ValidateSelectedSizeIndex()
+        {
+            var maxIndex = ImageResizer.App.AiAvailabilityState == AiAvailabilityState.NotSupported
+                ? Sizes.Count
+                : Sizes.Count + 1;
+
+            if (_selectedSizeIndex > maxIndex)
+            {
+                _selectedSizeIndex = 0;
+            }
         }
 
         [JsonIgnore]
         public IEnumerable<ResizeSize> AllSizes { get; set; }
 
-        // Using OrdinalIgnoreCase since this is internal and used for comparison with symbols
         public string FileNameFormat
             => _fileNameFormat
                 ?? (_fileNameFormat = FileName
@@ -94,28 +125,46 @@ namespace ImageResizer.Properties
         [JsonIgnore]
         public ResizeSize SelectedSize
         {
-            get => SelectedSizeIndex >= 0 && SelectedSizeIndex < Sizes.Count
-                    ? Sizes[SelectedSizeIndex]
-                    : CustomSize;
+            get
+            {
+                if (SelectedSizeIndex >= 0 && SelectedSizeIndex < Sizes.Count)
+                {
+                    return Sizes[SelectedSizeIndex];
+                }
+                else if (SelectedSizeIndex == Sizes.Count)
+                {
+                    return CustomSize;
+                }
+                else if (ImageResizer.App.AiAvailabilityState != AiAvailabilityState.NotSupported && SelectedSizeIndex == Sizes.Count + 1)
+                {
+                    return AiSize;
+                }
+                else
+                {
+                    return CustomSize;
+                }
+            }
+
             set
             {
                 var index = Sizes.IndexOf(value);
                 if (index == -1)
                 {
-                    index = Sizes.Count;
+                    if (value is AiSize)
+                    {
+                        index = Sizes.Count + 1;
+                    }
+                    else
+                    {
+                        index = Sizes.Count;
+                    }
                 }
 
                 SelectedSizeIndex = index;
             }
         }
 
-        string IDataErrorInfo.Error
-        {
-            get
-            {
-                return string.Empty;
-            }
-        }
+        string IDataErrorInfo.Error => string.Empty;
 
         string IDataErrorInfo.this[string columnName]
         {
@@ -128,7 +177,6 @@ namespace ImageResizer.Properties
 
                 if (JpegQualityLevel < 1 || JpegQualityLevel > 100)
                 {
-                    // Using CurrentCulture since this is user facing
                     return string.Format(CultureInfo.CurrentCulture, ValueMustBeBetween, 1, 100);
                 }
 
@@ -138,13 +186,17 @@ namespace ImageResizer.Properties
 
         private class AllSizesCollection : IEnumerable<ResizeSize>, INotifyCollectionChanged, INotifyPropertyChanged
         {
+            private readonly Settings _settings;
             private ObservableCollection<ResizeSize> _sizes;
             private CustomSize _customSize;
+            private AiSize _aiSize;
 
             public AllSizesCollection(Settings settings)
             {
+                _settings = settings;
                 _sizes = settings.Sizes;
                 _customSize = settings.CustomSize;
+                _aiSize = settings.AiSize;
 
                 _sizes.CollectionChanged += HandleCollectionChanged;
                 ((INotifyPropertyChanged)_sizes).PropertyChanged += HandlePropertyChanged;
@@ -153,27 +205,21 @@ namespace ImageResizer.Properties
                 {
                     if (e.PropertyName == nameof(Models.CustomSize))
                     {
-                        var oldCustomSize = _customSize;
                         _customSize = settings.CustomSize;
-
-                        OnCollectionChanged(
-                            new NotifyCollectionChangedEventArgs(
-                                NotifyCollectionChangedAction.Replace,
-                                _customSize,
-                                oldCustomSize,
-                                _sizes.Count));
+                        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    }
+                    else if (e.PropertyName == nameof(Models.AiSize))
+                    {
+                        _aiSize = settings.AiSize;
+                        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     }
                     else if (e.PropertyName == nameof(Sizes))
                     {
                         var oldSizes = _sizes;
-
                         oldSizes.CollectionChanged -= HandleCollectionChanged;
                         ((INotifyPropertyChanged)oldSizes).PropertyChanged -= HandlePropertyChanged;
-
                         _sizes = settings.Sizes;
-
                         OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-
                         _sizes.CollectionChanged += HandleCollectionChanged;
                         ((INotifyPropertyChanged)_sizes).PropertyChanged += HandlePropertyChanged;
                     }
@@ -181,16 +227,33 @@ namespace ImageResizer.Properties
             }
 
             public event NotifyCollectionChangedEventHandler CollectionChanged;
-
             public event PropertyChangedEventHandler PropertyChanged;
 
             public int Count
-                => _sizes.Count + 1;
+                => _sizes.Count + 1 + (ImageResizer.App.AiAvailabilityState != AiAvailabilityState.NotSupported ? 1 : 0);
 
             public ResizeSize this[int index]
-                => index == _sizes.Count
-                    ? _customSize
-                    : _sizes[index];
+            {
+                get
+                {
+                    if (index < _sizes.Count)
+                    {
+                        return _sizes[index];
+                    }
+                    else if (index == _sizes.Count)
+                    {
+                        return _customSize;
+                    }
+                    else if (ImageResizer.App.AiAvailabilityState != AiAvailabilityState.NotSupported && index == _sizes.Count + 1)
+                    {
+                        return _aiSize;
+                    }
+                    else
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(index), index, $"Index {index} is out of range for AllSizesCollection.");
+                    }
+                }
+            }
 
             public IEnumerator<ResizeSize> GetEnumerator()
                 => new AllSizesEnumerator(this);
@@ -210,7 +273,6 @@ namespace ImageResizer.Properties
             private class AllSizesEnumerator : IEnumerator<ResizeSize>
             {
                 private readonly AllSizesCollection _list;
-
                 private int _index = -1;
 
                 public AllSizesEnumerator(AllSizesCollection list)
@@ -253,9 +315,13 @@ namespace ImageResizer.Properties
             get => _selectedSizeIndex;
             set
             {
+                if (_selectedSizeIndex == value)
+                {
+                    return;
+                }
+
                 _selectedSizeIndex = value;
                 NotifyPropertyChanged();
-                NotifyPropertyChanged(nameof(SelectedSize));
             }
         }
 
@@ -295,15 +361,6 @@ namespace ImageResizer.Properties
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether resizing images removes any metadata that doesn't affect rendering.
-        /// Default is false.
-        /// </summary>
-        /// <remarks>
-        /// Preserved Metadata:
-        /// System.Photo.Orientation,
-        /// System.Image.ColorSpace
-        /// </remarks>
         [JsonConverter(typeof(WrappedJsonValueConverter))]
         [JsonPropertyName("imageresizer_removeMetadata")]
         public bool RemoveMetadata
@@ -410,7 +467,28 @@ namespace ImageResizer.Properties
             }
         }
 
+        [JsonConverter(typeof(WrappedJsonValueConverter))]
+        [JsonPropertyName("imageresizer_aiSize")]
+        public AiSize AiSize
+        {
+            get => _aiSize;
+            set
+            {
+                _aiSize = value;
+                NotifyPropertyChanged();
+            }
+        }
+
         public static string SettingsPath { get => _settingsPath; set => _settingsPath = value; }
+
+        /// <summary>
+        /// Initializes the UI DispatcherQueue for cross-thread property change notifications.
+        /// Must be called from the UI thread during app startup.
+        /// </summary>
+        public static void InitializeDispatcher()
+        {
+            _uiDispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -421,16 +499,23 @@ namespace ImageResizer.Properties
 
         public void Save()
         {
-            _jsonMutex.WaitOne();
+            lock (_jsonSyncLock)
+            {
+                SaveCore();
+            }
+        }
+
+        /// <summary>
+        /// Writes current settings to disk. Must be called under <see cref="_jsonSyncLock"/>.
+        /// </summary>
+        private void SaveCore()
+        {
             string jsonData = JsonSerializer.Serialize(new SettingsWrapper() { Properties = this }, _jsonSerializerOptions);
 
-            // Create directory if it doesn't exist
             IFileInfo file = _fileSystem.FileInfo.New(SettingsPath);
             file.Directory.Create();
 
-            // write string to file
             _fileSystem.File.WriteAllText(SettingsPath, jsonData);
-            _jsonMutex.ReleaseMutex();
         }
 
         public void Reload()
@@ -443,51 +528,72 @@ namespace ImageResizer.Properties
                 _fileSystem.Directory.Move(oldSettingsDir, settingsDir);
             }
 
-            _jsonMutex.WaitOne();
-            if (!_fileSystem.File.Exists(SettingsPath))
+            // Read and deserialize under lock; ReloadCore runs outside the lock
+            // because jsonSettings is an in-memory snapshot with no file I/O.
+            Settings jsonSettings;
+            lock (_jsonSyncLock)
             {
-                _jsonMutex.ReleaseMutex();
-                Save();
-                return;
-            }
-
-            string jsonData = _fileSystem.File.ReadAllText(SettingsPath);
-            var jsonSettings = new Settings();
-            try
-            {
-                jsonSettings = JsonSerializer.Deserialize<SettingsWrapper>(jsonData, _jsonSerializerOptions)?.Properties;
-            }
-            catch (JsonException)
-            {
-            }
-
-            // Needs to be called on the App UI thread as the properties are bound to the UI.
-            App.Current.Dispatcher.Invoke(() =>
-            {
-                ShrinkOnly = jsonSettings.ShrinkOnly;
-                Replace = jsonSettings.Replace;
-                IgnoreOrientation = jsonSettings.IgnoreOrientation;
-                RemoveMetadata = jsonSettings.RemoveMetadata;
-                JpegQualityLevel = jsonSettings.JpegQualityLevel;
-                PngInterlaceOption = jsonSettings.PngInterlaceOption;
-                TiffCompressOption = jsonSettings.TiffCompressOption;
-                FileName = jsonSettings.FileName;
-                KeepDateModified = jsonSettings.KeepDateModified;
-                FallbackEncoder = jsonSettings.FallbackEncoder;
-                CustomSize = jsonSettings.CustomSize;
-                SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
-
-                if (jsonSettings.Sizes.Count > 0)
+                if (!_fileSystem.File.Exists(SettingsPath))
                 {
-                    Sizes.Clear();
-                    Sizes.AddRange(jsonSettings.Sizes);
-
-                    // Ensure Ids are unique and handle missing Ids
-                    IdRecoveryHelper.RecoverInvalidIds(Sizes);
+                    SaveCore();
+                    return;
                 }
-            });
 
-            _jsonMutex.ReleaseMutex();
+                string jsonData = _fileSystem.File.ReadAllText(SettingsPath);
+                jsonSettings = new Settings();
+                try
+                {
+                    jsonSettings = JsonSerializer.Deserialize<SettingsWrapper>(jsonData, _jsonSerializerOptions)?.Properties;
+                }
+                catch (JsonException ex)
+                {
+                    Logger.LogError($"Failed to parse settings JSON, using defaults: {ex.Message}");
+                }
+            }
+
+            // Apply deserialized snapshot to live properties on the UI thread.
+            if (_uiDispatcherQueue != null)
+            {
+                if (_uiDispatcherQueue.HasThreadAccess)
+                {
+                    ReloadCore(jsonSettings);
+                }
+                else
+                {
+                    _uiDispatcherQueue.TryEnqueue(() => ReloadCore(jsonSettings));
+                }
+            }
+            else
+            {
+                // No UI context (unit tests or CLI mode) — call directly.
+                ReloadCore(jsonSettings);
+            }
+        }
+
+        private void ReloadCore(Settings jsonSettings)
+        {
+            ShrinkOnly = jsonSettings.ShrinkOnly;
+            Replace = jsonSettings.Replace;
+            IgnoreOrientation = jsonSettings.IgnoreOrientation;
+            RemoveMetadata = jsonSettings.RemoveMetadata;
+            JpegQualityLevel = jsonSettings.JpegQualityLevel;
+            PngInterlaceOption = jsonSettings.PngInterlaceOption;
+            TiffCompressOption = jsonSettings.TiffCompressOption;
+            FileName = jsonSettings.FileName;
+            KeepDateModified = jsonSettings.KeepDateModified;
+            FallbackEncoder = jsonSettings.FallbackEncoder;
+            CustomSize = jsonSettings.CustomSize;
+            AiSize = jsonSettings.AiSize ?? new AiSize(2);
+            SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
+
+            if (jsonSettings.Sizes.Count > 0)
+            {
+                Sizes.Clear();
+                Sizes.AddRange(jsonSettings.Sizes);
+                IdRecoveryHelper.RecoverInvalidIds(Sizes);
+            }
+
+            ValidateSelectedSizeIndex();
         }
     }
 }

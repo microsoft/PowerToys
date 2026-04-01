@@ -244,7 +244,7 @@ public sealed class SetAdditionalSettingsCommandLineCommand
         }
     }
 
-    public static void Execute(string moduleName, JsonDocument settings, ISettingsUtils settingsUtils)
+    public static void Execute(string moduleName, JsonDocument settings, SettingsUtils settingsUtils)
     {
         Assembly settingsLibraryAssembly = CommandLineUtils.GetSettingsAssembly();
 

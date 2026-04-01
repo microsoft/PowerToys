@@ -14,7 +14,7 @@ namespace FancyZonesEditorCommon.Data
         {
             get
             {
-                return GetDataFolder() + "\\Microsoft\\PowerToys\\FancyZones\\default-layouts.json";
+                return FancyZonesPaths.DefaultLayouts;
             }
         }
 

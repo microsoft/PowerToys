@@ -149,7 +149,7 @@ public:
         init_settings();
 
         triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT);
-        triggerEventWaiter = EventWaiter(CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT, [this](int) {
+        triggerEventWaiter.start(CommonSharedConstants::MEASURE_TOOL_TRIGGER_EVENT, [this](DWORD) {
             on_hotkey(0);
         });
     }

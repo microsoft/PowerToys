@@ -592,7 +592,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         public (bool Success, string Message, string Severity, bool LastBackupExists, string OptionalMessage) DryRunBackup()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
             string settingsBackupAndRestoreDir = GetSettingsBackupAndRestoreDir();
             var results = BackupSettings(appBasePath, settingsBackupAndRestoreDir, true);

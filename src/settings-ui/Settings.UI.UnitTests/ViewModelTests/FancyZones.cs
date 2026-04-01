@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO.Abstractions;
 using System.Text.Json;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -30,7 +32,7 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var settingPathMock = new Mock<ISettingsPath>();
+            var settingPathMock = new Mock<SettingPath>();
 
             var fileMock = BackCompatTestProperties.GetModuleIOProvider(version, FancyZonesSettings.ModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(fileMock.Object, settingPathMock.Object);
@@ -87,9 +89,9 @@ namespace ViewModelTests
             return 0;
         }
 
-        private Mock<ISettingsUtils> mockGeneralSettingsUtils;
+        private Mock<SettingsUtils> mockGeneralSettingsUtils;
 
-        private Mock<ISettingsUtils> mockFancyZonesSettingsUtils;
+        private Mock<SettingsUtils> mockFancyZonesSettingsUtils;
 
         private Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
 
@@ -100,10 +102,26 @@ namespace ViewModelTests
             mockFancyZonesSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<FancyZonesSettings>();
         }
 
+        [TestCleanup]
+        public void CleanUp()
+        {
+            // Reset singleton instances to prevent state pollution between tests
+            ResetSettingsRepository<GeneralSettings>();
+            ResetSettingsRepository<FancyZonesSettings>();
+        }
+
+        private void ResetSettingsRepository<T>()
+            where T : class, ISettingsConfig, new()
+        {
+            var repositoryType = typeof(SettingsRepository<T>);
+            var field = repositoryType.GetField("settingsRepository", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            field?.SetValue(null, null);
+        }
+
         [TestMethod]
         public void IsEnabledShouldDisableModuleWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             Func<string, int> sendMockIPCConfigMSG = msg =>
             {
@@ -123,7 +141,7 @@ namespace ViewModelTests
         [TestMethod]
         public void ShiftDragShouldSetValue2FalseWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -141,7 +159,7 @@ namespace ViewModelTests
         [TestMethod]
         public void OverrideSnapHotkeysShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -159,7 +177,7 @@ namespace ViewModelTests
         [TestMethod]
         public void MoveWindowsAcrossMonitorsShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -177,7 +195,7 @@ namespace ViewModelTests
         [TestMethod]
         public void MoveWindowsBasedOnPositionShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -200,7 +218,7 @@ namespace ViewModelTests
         [TestMethod]
         public void QuickLayoutSwitchShouldSetValue2FalseWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -218,7 +236,7 @@ namespace ViewModelTests
         [TestMethod]
         public void FlashZonesOnQuickSwitchShouldSetValue2FalseWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -236,7 +254,7 @@ namespace ViewModelTests
         [TestMethod]
         public void MakeDraggedWindowsTransparentShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -254,7 +272,7 @@ namespace ViewModelTests
         [TestMethod]
         public void MouseSwitchShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -272,7 +290,7 @@ namespace ViewModelTests
         [TestMethod]
         public void DisplayOrWorkAreaChangeMoveWindowsShouldSetValue2FalseWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -290,7 +308,7 @@ namespace ViewModelTests
         [TestMethod]
         public void ZoneSetChangeMoveWindowsShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -308,7 +326,7 @@ namespace ViewModelTests
         [TestMethod]
         public void AppLastZoneMoveWindowsShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -326,7 +344,7 @@ namespace ViewModelTests
         [TestMethod]
         public void OpenWindowOnActiveMonitorShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -344,7 +362,7 @@ namespace ViewModelTests
         [TestMethod]
         public void RestoreSizeShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -362,7 +380,7 @@ namespace ViewModelTests
         [TestMethod]
         public void UseCursorPosEditorStartupScreenShouldSetValue2FalseWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -380,7 +398,7 @@ namespace ViewModelTests
         [TestMethod]
         public void ShowOnAllMonitorsShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -398,7 +416,7 @@ namespace ViewModelTests
         [TestMethod]
         public void SpanZonesAcrossMonitorsShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -416,7 +434,7 @@ namespace ViewModelTests
         [TestMethod]
         public void OverlappingZonesAlgorithmIndexShouldSetValue2AnotherWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -434,7 +452,7 @@ namespace ViewModelTests
         [TestMethod]
         public void AllowChildWindowsToSnapShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -452,7 +470,7 @@ namespace ViewModelTests
         [TestMethod]
         public void DisableRoundCornersOnSnapShouldSetValue2TrueWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -470,7 +488,7 @@ namespace ViewModelTests
         [TestMethod]
         public void ZoneHighlightColorShouldSetColorValue2WhiteWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -488,7 +506,7 @@ namespace ViewModelTests
         [TestMethod]
         public void ZoneBorderColorShouldSetColorValue2WhiteWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -506,7 +524,7 @@ namespace ViewModelTests
         [TestMethod]
         public void ZoneInActiveColorShouldSetColorValue2WhiteWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -524,7 +542,7 @@ namespace ViewModelTests
         [TestMethod]
         public void ExcludedAppsShouldSetColorValue2WhiteWhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
@@ -542,7 +560,7 @@ namespace ViewModelTests
         [TestMethod]
         public void HighlightOpacityShouldSetOpacityValueTo60WhenSuccessful()
         {
-            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>();
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // arrange
             FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);

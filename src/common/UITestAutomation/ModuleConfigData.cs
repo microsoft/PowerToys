@@ -34,6 +34,7 @@ namespace Microsoft.PowerToys.UITest
         PowerRename,
         CommandPalette,
         ScreenRuler,
+        LightSwitch,
     }
 
     /// <summary>
@@ -106,6 +107,7 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModule.PowerRename] = new ModuleInfo("PowerToys.PowerRename.exe", "PowerRename", "WinUI3Apps"),
                 [PowerToysModule.CommandPalette] = new ModuleInfo("Microsoft.CmdPal.UI.exe", "PowerToys Command Palette", "WinUI3Apps\\CmdPal"),
                 [PowerToysModule.ScreenRuler] = new ModuleInfo("PowerToys.MeasureToolUI.exe", "PowerToys.ScreenRuler", "WinUI3Apps"),
+                [PowerToysModule.LightSwitch] = new ModuleInfo("PowerToys.LightSwitch.exe", "PowerToys.LightSwitch", "LightSwitchService"),
             };
         }
 

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.UnitTestBase;
 
@@ -32,9 +33,14 @@ public class CommandPaletteUnitTestBase
         // and wait for the event to be raised.
         var tcs = new TaskCompletionSource<object>();
 
-        page.ItemsChanged += (sender, args) => tcs.SetResult(null);
+        TypedEventHandler<object, IItemsChangedEventArgs> handleItemsChanged = (object s, IItemsChangedEventArgs e) =>
+        {
+            tcs.TrySetResult(e);
+        };
 
+        page.ItemsChanged += handleItemsChanged;
         modification();
+
         await tcs.Task;
     }
 }

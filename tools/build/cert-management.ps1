@@ -61,8 +61,18 @@ function ImportAndVerifyCertificate {
     try {
         $null = Import-Certificate -FilePath $cerPath -CertStoreLocation $storePath -ErrorAction Stop
     } catch {
-        Write-Warning "Failed to import certificate to $storePath : $_"
-        return $false
+        if ($_.Exception.Message -match "Access is denied" -or $_.Exception.InnerException.Message -match "Access is denied") {
+            Write-Warning "Access denied to $storePath. Attempting to import with admin privileges..."
+            try {
+                Start-Process powershell -ArgumentList "-NoProfile", "-Command", "& { Import-Certificate -FilePath '$cerPath' -CertStoreLocation '$storePath' }" -Verb RunAs -Wait
+            } catch {
+                Write-Warning "Failed to request admin privileges: $_"
+                return $false
+            }
+        } else {
+            Write-Warning "Failed to import certificate to $storePath : $_"
+            return $false
+        }
     }
 
     $imported = Get-ChildItem -Path $storePath | Where-Object { $_.Thumbprint -eq $thumbprint }

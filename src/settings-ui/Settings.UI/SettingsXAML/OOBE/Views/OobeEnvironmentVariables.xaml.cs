@@ -5,6 +5,7 @@
 using System.Threading;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -21,13 +22,17 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeEnvironmentVariables()
         {
             InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.EnvironmentVariables]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.EnvironmentVariables);
             DataContext = ViewModel;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
+
+            // Disable the Launch button if the module is disabled
+            var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
+            LaunchButton.IsEnabled = ModuleHelper.GetIsModuleEnabled(generalSettings, ManagedCommon.ModuleType.EnvironmentVariables);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -37,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Launch_EnvironmentVariables_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.LaunchAdministrator;
+            bool launchAdmin = SettingsRepository<EnvironmentVariablesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.LaunchAdministrator;
             string eventName = !App.IsElevated && launchAdmin
                 ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
                 : Constants.ShowEnvironmentVariablesSharedEvent();
@@ -50,9 +55,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void Launch_Settings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(EnvironmentVariablesPage));
+                OobeWindow.OpenMainWindowCallback(typeof(EnvironmentVariablesPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

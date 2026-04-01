@@ -261,7 +261,7 @@ FancyZones::Run() noexcept
                       } })
         .wait();
 
-    m_toggleEditorEventWaiter = EventWaiter(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT, [&](int err) {
+    m_toggleEditorEventWaiter.start(CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT, [&](DWORD err) {
         if (err == ERROR_SUCCESS)
         {
             Logger::trace(L"{} event was signaled", CommonSharedConstants::FANCY_ZONES_EDITOR_TOGGLE_EVENT);
@@ -727,6 +727,13 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_SETTINGS_CHANGED)
         {
             FancyZonesSettings::instance().LoadSettings();
+        }
+        else if (message == WM_PRIV_SAVE_EDITOR_PARAMETERS)
+        {
+            if (!EditorParameters::Save(m_workAreaConfiguration, m_dpiUnawareThread))
+            {
+                Logger::warn(L"Failed to save editor-parameters.json");
+            }
         }
         else
         {

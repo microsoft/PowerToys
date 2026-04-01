@@ -41,6 +41,15 @@ void Trace::CropAndLock::ActivateThumbnail() noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
+void Trace::CropAndLock::ActivateScreenshot() noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "CropAndLock_ActivateScreenshot",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
 void Trace::CropAndLock::CreateReparentWindow() noexcept
 {
     TraceLoggingWriteWrapper(
@@ -59,8 +68,17 @@ void Trace::CropAndLock::CreateThumbnailWindow() noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
+void Trace::CropAndLock::CreateScreenshotWindow() noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "CropAndLock_CreateScreenshotWindow",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
+
 // Event to send settings telemetry.
-void Trace::CropAndLock::SettingsTelemetry(PowertoyModuleIface::Hotkey& reparentHotkey, PowertoyModuleIface::Hotkey& thumbnailHotkey) noexcept
+void Trace::CropAndLock::SettingsTelemetry(PowertoyModuleIface::Hotkey& reparentHotkey, PowertoyModuleIface::Hotkey& thumbnailHotkey, PowertoyModuleIface::Hotkey& screenshotHotkey) noexcept
 {
     std::wstring hotKeyStrReparent =
         std::wstring(reparentHotkey.win ? L"Win + " : L"") +
@@ -76,11 +94,19 @@ void Trace::CropAndLock::SettingsTelemetry(PowertoyModuleIface::Hotkey& reparent
         std::wstring(thumbnailHotkey.alt ? L"Alt + " : L"") +
         std::wstring(L"VK ") + std::to_wstring(thumbnailHotkey.key);
 
+    std::wstring hotKeyStrScreenshot =
+        std::wstring(screenshotHotkey.win ? L"Win + " : L"") +
+        std::wstring(screenshotHotkey.ctrl ? L"Ctrl + " : L"") +
+        std::wstring(screenshotHotkey.shift ? L"Shift + " : L"") +
+        std::wstring(screenshotHotkey.alt ? L"Alt + " : L"") +
+        std::wstring(L"VK ") + std::to_wstring(screenshotHotkey.key);
+
     TraceLoggingWriteWrapper(
         g_hProvider,
         "CropAndLock_Settings",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingWideString(hotKeyStrReparent.c_str(), "ReparentHotKey"),
-        TraceLoggingWideString(hotKeyStrThumbnail.c_str(), "ThumbnailHotkey"));
+        TraceLoggingWideString(hotKeyStrThumbnail.c_str(), "ThumbnailHotkey"),
+        TraceLoggingWideString(hotKeyStrScreenshot.c_str(), "ScreenshotHotkey"));
 }

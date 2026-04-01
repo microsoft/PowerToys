@@ -18,6 +18,7 @@ UINT WM_PRIV_DEFAULT_LAYOUTS_FILE_UPDATE;
 UINT WM_PRIV_SNAP_HOTKEY;
 UINT WM_PRIV_QUICK_LAYOUT_KEY;
 UINT WM_PRIV_SETTINGS_CHANGED;
+UINT WM_PRIV_SAVE_EDITOR_PARAMETERS;
 
 std::once_flag init_flag;
 
@@ -40,5 +41,6 @@ void InitializeWinhookEventIds()
         WM_PRIV_SNAP_HOTKEY = RegisterWindowMessage(L"{72f4fd8e-23f1-43ab-bbbc-029363df9a84}");
         WM_PRIV_QUICK_LAYOUT_KEY = RegisterWindowMessage(L"{15baab3d-c67b-4a15-aFF0-13610e05e947}");
         WM_PRIV_SETTINGS_CHANGED = RegisterWindowMessage(L"{89ca3Daa-bf2d-4e73-9f3f-c60716364e27}");
+        WM_PRIV_SAVE_EDITOR_PARAMETERS = RegisterWindowMessage(L"{d8f9c0e3-5d77-4e83-8a4f-7c704c2bfb4a}");
     });
 }

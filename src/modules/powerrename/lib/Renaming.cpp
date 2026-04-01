@@ -1,9 +1,13 @@
 #include "pch.h"
 #include <winrt/base.h>
+#include <memory>
+#include <mutex>
+#include <optional>
 
 #include "Renaming.h"
 #include <Helpers.h>
-
+#include "MetadataPatternExtractor.h"
+#include "PowerRenameRegEx.h"
 namespace fs = std::filesystem;
 
 bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnumIndex, CComPtr<IPowerRenameItem>& spItem)
@@ -14,6 +18,7 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
 
     PWSTR replaceTerm = nullptr;
     bool useFileTime = false;
+    bool useMetadata = false;
 
     winrt::check_hresult(spRenameRegEx->GetReplaceTerm(&replaceTerm));
 
@@ -21,7 +26,6 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
     {
         useFileTime = true;
     }
-    CoTaskMemFree(replaceTerm);
 
     int id = -1;
     winrt::check_hresult(spItem->GetId(&id));
@@ -30,6 +34,29 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
     bool isSubFolderContent = false;
     winrt::check_hresult(spItem->GetIsFolder(&isFolder));
     winrt::check_hresult(spItem->GetIsSubFolderContent(&isSubFolderContent));
+
+    // Get metadata type to check if metadata patterns are used
+    PowerRenameLib::MetadataType metadataType;
+    HRESULT hr = spRenameRegEx->GetMetadataType(&metadataType);
+    if (FAILED(hr))
+    {
+        // Fallback to default metadata type if call fails
+        metadataType = PowerRenameLib::MetadataType::EXIF;
+    }
+
+    // Check if metadata is used AND if this file type supports metadata
+    // Get file path early for metadata type checking and reuse later
+    PWSTR filePath = nullptr;
+    winrt::check_hresult(spItem->GetPath(&filePath));
+    std::wstring filePathStr(filePath);  // Copy once for reuse
+    CoTaskMemFree(filePath);  // Free immediately after copying
+
+    if (isMetadataUsed(replaceTerm, metadataType, filePathStr.c_str(), isFolder))
+    {
+        useMetadata = true;
+    }
+
+    CoTaskMemFree(replaceTerm);
     if ((isFolder && (flags & PowerRenameFlags::ExcludeFolders)) ||
         (!isFolder && (flags & PowerRenameFlags::ExcludeFiles)) ||
         (isSubFolderContent && (flags & PowerRenameFlags::ExcludeSubfolders)) ||
@@ -82,6 +109,53 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
         winrt::check_hresult(spRenameRegEx->PutFileTime(fileTime));
     }
 
+    if (useMetadata)
+    {
+        // Extract metadata patterns from the file
+        // Note: filePathStr was already obtained and saved earlier for reuse
+
+        // Get metadata type using the interface method
+        PowerRenameLib::MetadataType metadataType;
+        HRESULT hr = spRenameRegEx->GetMetadataType(&metadataType);
+        if (FAILED(hr))
+        {
+            // Fallback to default metadata type if call fails
+            metadataType = PowerRenameLib::MetadataType::EXIF;
+        }
+        // Extract all patterns for the selected metadata type
+        // At this point we know the file is a supported image format (jpg/jpeg/png/tif/tiff)
+        static std::mutex s_metadataMutex; // Mutex to protect static variables
+        static std::once_flag s_metadataExtractorInitFlag;
+        static std::shared_ptr<PowerRenameLib::MetadataPatternExtractor> s_metadataExtractor;
+        static std::optional<PowerRenameLib::MetadataType> s_activeMetadataType;
+
+        // Initialize the extractor only once
+        std::call_once(s_metadataExtractorInitFlag, []() {
+            s_metadataExtractor = std::make_shared<PowerRenameLib::MetadataPatternExtractor>();
+        });
+
+        // Protect access to shared state
+        {
+            std::lock_guard<std::mutex> lock(s_metadataMutex);
+
+            // Clear cache if metadata type has changed
+            if (s_activeMetadataType.has_value() && s_activeMetadataType.value() != metadataType)
+            {
+                s_metadataExtractor->ClearCache();
+            }
+
+            // Update the active metadata type
+            s_activeMetadataType = metadataType;
+        }
+
+        // Extract patterns (this can be done outside the lock if ExtractPatterns is thread-safe)
+        PowerRenameLib::MetadataPatternMap patterns = s_metadataExtractor->ExtractPatterns(filePathStr, metadataType);
+        
+        // Always call PutMetadataPatterns to ensure all patterns get replaced
+        // Even if empty, this keeps metadata placeholders consistent when no values are extracted
+        winrt::check_hresult(spRenameRegEx->PutMetadataPatterns(patterns));
+    }
+
     PWSTR newName = nullptr;
 
     // Failure here means we didn't match anything or had nothing to match
@@ -93,6 +167,10 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
         winrt::check_hresult(spRenameRegEx->ResetFileTime());
     }
 
+    if (useMetadata)
+    {
+        winrt::check_hresult(spRenameRegEx->ResetMetadata());
+    }
     wchar_t resultName[MAX_PATH] = { 0 };
 
     PWSTR newNameToUse = nullptr;

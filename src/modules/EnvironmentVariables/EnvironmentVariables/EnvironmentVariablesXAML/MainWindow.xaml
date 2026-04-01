@@ -20,14 +20,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TitleBar x:Name="titleBar">
-            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
-            <TitleBar.LeftHeader>
-                <ImageIcon
-                    Height="16"
-                    Margin="16,0,0,0"
-                    Source="/Assets/EnvironmentVariables/EnvironmentVariables.ico" />
-            </TitleBar.LeftHeader>
+        <TitleBar x:Name="titleBar" IsTabStop="False">
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="/Assets/EnvironmentVariables/EnvironmentVariables.ico" />
+            </TitleBar.IconSource>
         </TitleBar>
     </Grid>
 </winuiex:WindowEx>

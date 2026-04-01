@@ -1,0 +1,59 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Threading.Tasks;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using PowerToys.ModuleContracts;
+
+namespace PowerToysExtension.Commands;
+
+internal sealed partial class StartAwakeCommand : InvokableCommand
+{
+    private readonly Func<Task<OperationResult>> _action;
+    private readonly string _successToast;
+    private readonly Action? _onSuccess;
+
+    internal StartAwakeCommand(string title, Func<Task<OperationResult>> action, string successToast = "", Action? onSuccess = null)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+
+        _action = action;
+        _successToast = successToast ?? string.Empty;
+        _onSuccess = onSuccess;
+        Name = title;
+    }
+
+    public override CommandResult Invoke()
+    {
+        try
+        {
+            var result = _action().GetAwaiter().GetResult();
+            if (!result.Success)
+            {
+                return ShowToastKeepOpen(result.Error ?? "Failed to start Awake.");
+            }
+
+            _onSuccess?.Invoke();
+
+            return string.IsNullOrWhiteSpace(_successToast)
+                ? CommandResult.KeepOpen()
+                : ShowToastKeepOpen(_successToast);
+        }
+        catch (Exception ex)
+        {
+            return ShowToastKeepOpen($"Launching Awake failed: {ex.Message}");
+        }
+    }
+
+    private static CommandResult ShowToastKeepOpen(string message)
+    {
+        return CommandResult.ShowToast(new ToastArgs()
+        {
+            Message = message,
+            Result = CommandResult.KeepOpen(),
+        });
+    }
+}

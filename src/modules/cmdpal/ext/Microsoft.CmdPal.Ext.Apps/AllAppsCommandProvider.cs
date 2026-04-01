@@ -4,8 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.CmdPal.Ext.Apps.Helpers;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
-using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -14,6 +15,7 @@ namespace Microsoft.CmdPal.Ext.Apps;
 public partial class AllAppsCommandProvider : CommandProvider
 {
     public const string WellKnownId = "AllApps";
+    internal const int DefaultResultLimit = 10;
 
     public static readonly AllAppsPage Page = new();
 
@@ -35,39 +37,79 @@ public partial class AllAppsCommandProvider : CommandProvider
 
         _listItem = new(_page)
         {
-            Subtitle = Resources.search_installed_apps,
             MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
         };
-
-        // Subscribe to pin state changes to refresh the command provider
-        PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
     }
 
-    public static int TopLevelResultLimit
+    public static int TopLevelResultLimit => AllAppsSettings.Instance.SearchResultLimit ?? DefaultResultLimit;
+
+    public override ICommandItem[] TopLevelCommands() => [_listItem];
+
+    public ICommandItem? LookupAppByPackageFamilyName(string packageFamilyName, bool requireSingleMatch)
     {
-        get
+        if (string.IsNullOrEmpty(packageFamilyName))
         {
-            var limitSetting = AllAppsSettings.Instance.SearchResultLimit;
-
-            if (limitSetting is null)
-            {
-                return 10;
-            }
-
-            var quantity = 10;
-
-            if (int.TryParse(limitSetting, out var result))
-            {
-                quantity = result < 0 ? quantity : result;
-            }
-
-            return quantity;
+            return null;
         }
+
+        var items = _page.GetItems();
+        List<ICommandItem> matches = [];
+
+        foreach (var item in items)
+        {
+            if (item is AppListItem appItem && string.Equals(packageFamilyName, appItem.App.PackageFamilyName, StringComparison.OrdinalIgnoreCase))
+            {
+                matches.Add(item);
+                if (!requireSingleMatch)
+                {
+                    // Return early if we don't require uniqueness.
+                    return item;
+                }
+            }
+        }
+
+        return requireSingleMatch && matches.Count == 1 ? matches[0] : null;
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_listItem, .. _page.GetPinnedApps()];
+    public ICommandItem? LookupAppByProductCode(string productCode, bool requireSingleMatch)
+    {
+        if (string.IsNullOrEmpty(productCode))
+        {
+            return null;
+        }
 
-    public ICommandItem? LookupApp(string displayName)
+        if (!UninstallRegistryAppLocator.TryGetInstallInfo(productCode, out _, out var candidates) || candidates.Count <= 0)
+        {
+            return null;
+        }
+
+        var items = _page.GetItems();
+        List<ICommandItem> matches = [];
+
+        foreach (var item in items)
+        {
+            if (item is not AppListItem appListItem || string.IsNullOrEmpty(appListItem.App.FullExecutablePath))
+            {
+                continue;
+            }
+
+            foreach (var candidate in candidates)
+            {
+                if (string.Equals(appListItem.App.FullExecutablePath, candidate, StringComparison.OrdinalIgnoreCase))
+                {
+                    matches.Add(item);
+                    if (!requireSingleMatch)
+                    {
+                        return item;
+                    }
+                }
+            }
+        }
+
+        return requireSingleMatch && matches.Count == 1 ? matches[0] : null;
+    }
+
+    public ICommandItem? LookupAppByDisplayName(string displayName)
     {
         var items = _page.GetItems();
 
@@ -119,8 +161,17 @@ public partial class AllAppsCommandProvider : CommandProvider
         return null;
     }
 
-    private void OnPinStateChanged(object? sender, System.EventArgs e)
+    public override ICommandItem? GetCommandItem(string id)
     {
-        RaiseItemsChanged(0);
+        var items = _page.GetItems();
+        foreach (var item in items)
+        {
+            if (item.Command.Id == id)
+            {
+                return item;
+            }
+        }
+
+        return null;
     }
 }

@@ -12,8 +12,8 @@ enum struct FindMyMouseActivationMethod : int
 
 constexpr bool FIND_MY_MOUSE_DEFAULT_DO_NOT_ACTIVATE_ON_GAME_MODE = true;
 // Default colors now include full alpha. Opacity is encoded directly in color alpha (legacy overlay_opacity migrated into A channel)
-const winrt::Windows::UI::Color FIND_MY_MOUSE_DEFAULT_BACKGROUND_COLOR = winrt::Windows::UI::ColorHelper::FromArgb(255, 0, 0, 0);
-const winrt::Windows::UI::Color FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_COLOR = winrt::Windows::UI::ColorHelper::FromArgb(255, 255, 255, 255);
+const winrt::Windows::UI::Color FIND_MY_MOUSE_DEFAULT_BACKGROUND_COLOR = winrt::Windows::UI::ColorHelper::FromArgb(128, 0, 0, 0);
+const winrt::Windows::UI::Color FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_COLOR = winrt::Windows::UI::ColorHelper::FromArgb(128, 255, 255, 255);
 constexpr int FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS = 100;
 constexpr int FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS = 500;
 constexpr int FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM = 9;

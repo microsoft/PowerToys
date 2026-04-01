@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -9,7 +9,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.System;
 
-public partial class SystemCommandExtensionProvider : CommandProvider
+public sealed partial class SystemCommandExtensionProvider : CommandProvider
 {
     private readonly ICommandItem[] _commands;
     private static readonly SettingsManager _settingsManager = new();
@@ -19,7 +19,7 @@ public partial class SystemCommandExtensionProvider : CommandProvider
     public SystemCommandExtensionProvider()
     {
         DisplayName = Resources.Microsoft_plugin_ext_system_page_name;
-        Id = "System";
+        Id = "com.microsoft.cmdpal.builtin.system";
         _commands = [
             new CommandItem(Page)
             {
@@ -39,4 +39,18 @@ public partial class SystemCommandExtensionProvider : CommandProvider
     }
 
     public override IFallbackCommandItem[] FallbackCommands() => [_fallbackSystemItem];
+
+    public override ICommandItem? GetCommandItem(string id)
+    {
+        var everything = Page.GetItems();
+        foreach (var item in everything)
+        {
+            if (item.Command.Id == id)
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
 }

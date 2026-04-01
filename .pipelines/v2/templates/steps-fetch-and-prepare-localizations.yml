@@ -8,8 +8,8 @@ steps:
     displayName: 'Download Localization Files -- PowerToys 37400'
     inputs:
       teamId: 37400
-      TDBuildServiceConnection: $(TouchdownServiceConnection)
-      authType: SubjectNameIssuer
+      FederatedIdentityTDBuildServiceConnection: $(TouchdownServiceConnection)
+      authType: FederatedIdentityTDBuild
       resourceFilePath: |
        **\Resources.resx
        **\Resource.resx

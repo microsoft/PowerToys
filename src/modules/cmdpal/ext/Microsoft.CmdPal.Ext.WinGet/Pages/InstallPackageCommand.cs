@@ -62,7 +62,7 @@ public partial class InstallPackageCommand : InvokableCommand
         {
             PackageInstallCommandState.Install => Icons.DownloadIcon,
             PackageInstallCommandState.Update => Icons.UpdateIcon,
-            PackageInstallCommandState.Uninstall => Icons.CompletedIcon,
+            PackageInstallCommandState.Uninstall => Icons.DeleteIcon,
             _ => throw new NotImplementedException(),
         };
         Name = InstallCommandState switch

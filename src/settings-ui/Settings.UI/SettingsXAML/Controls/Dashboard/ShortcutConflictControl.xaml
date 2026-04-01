@@ -9,7 +9,10 @@
     mc:Ignorable="d">
 
     <Grid>
-        <Button Click="ShortcutConflictBtn_Click" Style="{StaticResource SubtleButtonStyle}">
+        <Button
+            x:Uid="ShortcutConflictControl_Automation"
+            Click="ShortcutConflictBtn_Click"
+            Style="{StaticResource SubtleButtonStyle}">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />

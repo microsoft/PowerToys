@@ -18,11 +18,6 @@ public sealed partial class TimeDateCalculator
     private const string InputDelimiter = "::";
 
     /// <summary>
-    /// A list of conjunctions that we ignore on search
-    /// </summary>
-    private static readonly string[] _conjunctionList = Resources.Microsoft_plugin_timedate_Search_ConjunctionList.Split("; ");
-
-    /// <summary>
     /// Searches for results
     /// </summary>
     /// <param name="query">Search query object</param>

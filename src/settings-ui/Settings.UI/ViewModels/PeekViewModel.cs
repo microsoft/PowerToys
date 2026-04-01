@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly DispatcherQueue _dispatcherQueue;
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private readonly PeekPreviewSettings _peekPreviewSettings;
         private PeekSettings _peekSettings;
 
@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private IFileSystemWatcher _watcher;
 
         public PeekViewModel(
-            ISettingsUtils settingsUtils,
+            SettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,
             Func<string, int> ipcMSGCallBackFunc,
             DispatcherQueue dispatcherQueue)

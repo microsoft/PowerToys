@@ -5,13 +5,14 @@
 using System;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
+using Microsoft.CmdPal.Ext.WebSearch.Helpers.Browser;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WebSearch;
 
-public partial class WebSearchCommandsProvider : CommandProvider
+public sealed partial class WebSearchCommandsProvider : CommandProvider
 {
     private readonly SettingsManager _settingsManager = new();
     private readonly FallbackExecuteSearchItem _fallbackItem;
@@ -19,18 +20,19 @@ public partial class WebSearchCommandsProvider : CommandProvider
     private readonly WebSearchTopLevelCommandItem _webSearchTopLevelItem;
     private readonly ICommandItem[] _topLevelItems;
     private readonly IFallbackCommandItem[] _fallbackCommands;
+    private readonly IBrowserInfoService _browserInfoService = new DefaultBrowserInfoService();
 
     public WebSearchCommandsProvider()
     {
-        Id = "WebSearch";
+        Id = "com.microsoft.cmdpal.builtin.websearch";
         DisplayName = Resources.extension_name;
         Icon = Icons.WebSearch;
         Settings = _settingsManager.Settings;
 
-        _fallbackItem = new FallbackExecuteSearchItem(_settingsManager);
-        _openUrlFallbackItem = new FallbackOpenURLItem(_settingsManager);
+        _fallbackItem = new FallbackExecuteSearchItem(_settingsManager, _browserInfoService);
+        _openUrlFallbackItem = new FallbackOpenURLItem(_settingsManager, _browserInfoService);
 
-        _webSearchTopLevelItem = new WebSearchTopLevelCommandItem(_settingsManager)
+        _webSearchTopLevelItem = new WebSearchTopLevelCommandItem(_settingsManager, _browserInfoService)
         {
             MoreCommands =
             [

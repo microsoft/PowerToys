@@ -53,7 +53,7 @@ internal sealed class SettingsHelper
         lock (this.LockObject)
         {
             {
-                var settingsUtils = new SettingsUtils();
+                var settingsUtils = SettingsUtils.Default;
 
                 // set this to 1 to disable retries
                 var remainingRetries = 5;

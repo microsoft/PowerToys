@@ -2,7 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <CmdPalVersion Condition="'$(CmdPalVersion)'=='' and '$(XES_APPXMANIFESTVERSION)'!=''">$(XES_APPXMANIFESTVERSION)</CmdPalVersion>
+
+    <!-- MIKE: The file you're looking for is src/modules/cmdpal/custom.props -->
     <CmdPalVersion Condition="'$(CmdPalVersion)'==''">0.0.1.0</CmdPalVersion>
+
     <DevEnvironment>Local</DevEnvironment>
 
     <!-- Forcing for every DLL on by default -->

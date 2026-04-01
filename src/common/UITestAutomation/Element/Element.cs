@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using ABI.Windows.Foundation;
 using Microsoft.PowerToys.UITest;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -79,6 +78,14 @@ namespace Microsoft.PowerToys.UITest
         public bool Selected
         {
             get { return this.windowsElement?.Selected ?? false; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the UI element is visible to the user.
+        /// </summary>
+        public bool Displayed
+        {
+            get { return this.windowsElement?.Displayed ?? false; }
         }
 
         /// <summary>
@@ -329,7 +336,7 @@ namespace Microsoft.PowerToys.UITest
         /// Send Key of the element.
         /// </summary>
         /// <param name="key">The Key to Send.</param>
-        protected void SendKeys(string key)
+        public void SendKeys(string key)
         {
             PerformAction((actions, windowElement) =>
             {
@@ -368,6 +375,20 @@ namespace Microsoft.PowerToys.UITest
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method SaveToPngFile with parameter: path = {path}");
             this.windowsElement.GetScreenshot().SaveAsFile(path);
+        }
+
+        public void EnsureVisible(Element scrollViewer, int maxScrolls = 10)
+        {
+            int count = 0;
+            if (scrollViewer.WindowsElement != null)
+            {
+                while (!this.windowsElement!.Displayed && count < maxScrolls)
+                {
+                    scrollViewer.WindowsElement.SendKeys(OpenQA.Selenium.Keys.PageDown);
+                    Task.Delay(250).Wait();
+                    count++;
+                }
+            }
         }
     }
 }

@@ -44,6 +44,9 @@ foreach ($csprojFile in $csprojFilesArray) {
     if ($csprojFile -like '*Microsoft.CmdPal.Core.*.csproj') {
         continue
     }
+    if ($csprojFile -like '*Microsoft.CmdPal.Ext.Shell.csproj') {
+        continue
+    }
 
     $importExists = Test-ImportSharedCsWinRTProps -filePath $csprojFile
     if (!$importExists) {

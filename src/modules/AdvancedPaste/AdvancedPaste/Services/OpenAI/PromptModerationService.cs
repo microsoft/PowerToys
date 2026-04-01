@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
+using AdvancedPaste.Services;
 using ManagedCommon;
 using OpenAI.Moderations;
 
@@ -23,7 +24,16 @@ public sealed class PromptModerationService(IAICredentialsProvider aiCredentials
     {
         try
         {
-            ModerationClient moderationClient = new(ModelName, _aiCredentialsProvider.Key);
+            _aiCredentialsProvider.Refresh();
+            var apiKey = _aiCredentialsProvider.GetKey()?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                Logger.LogWarning("Skipping OpenAI moderation because no credential is configured.");
+                return;
+            }
+
+            ModerationClient moderationClient = new(ModelName, apiKey);
             var moderationClientResult = await moderationClient.ClassifyTextAsync(fullPrompt, cancellationToken);
             var moderationResult = moderationClientResult.Value;
 

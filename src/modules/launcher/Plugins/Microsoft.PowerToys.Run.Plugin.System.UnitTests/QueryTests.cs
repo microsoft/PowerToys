@@ -74,7 +74,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
             var result = main.Object.Query(expectedQuery).FirstOrDefault().SubTitle;
 
             // Assert
-            Assert.AreEqual("Reboot computer into UEFI Firmware Settings (Requires administrative permissions.)", result);
+            Assert.AreEqual("Reboot computer into UEFI firmware settings (Requires administrative permissions.)", result);
         }
 
         [TestMethod]

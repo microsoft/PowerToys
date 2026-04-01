@@ -67,20 +67,20 @@ internal static class DragDrop
             return;
         }
 
-        if (wParam == Common.WM_LBUTTONDOWN)
+        if (wParam == WM.WM_LBUTTONDOWN)
         {
             MouseDown = true;
             DragMachine = MachineStuff.desMachineID;
             MachineStuff.dropMachineID = ID.NONE;
             Logger.LogDebug("DragDropStep01: MouseDown");
         }
-        else if (wParam == Common.WM_LBUTTONUP)
+        else if (wParam == WM.WM_LBUTTONUP)
         {
             MouseDown = false;
             Logger.LogDebug("DragDropStep01: MouseUp");
         }
 
-        if (wParam == Common.WM_RBUTTONUP && IsDropping)
+        if (wParam == WM.WM_RBUTTONUP && IsDropping)
         {
             IsDropping = false;
             Clipboard.LastIDWithClipboardData = ID.NONE;
@@ -252,7 +252,7 @@ internal static class DragDrop
 
     internal static void DragDropStep09(int wParam)
     {
-        if (wParam == Common.WM_MOUSEMOVE && IsDropping)
+        if (wParam == WM.WM_MOUSEMOVE && IsDropping)
         {
             // Show/Move form
             Common.DoSomethingInUIThread(() =>
@@ -260,7 +260,7 @@ internal static class DragDrop
                 _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_SHOW_DRAG_DROP, (IntPtr)0, (IntPtr)0);
             });
         }
-        else if (wParam == Common.WM_LBUTTONUP && (IsDropping || IsDragging))
+        else if (wParam == WM.WM_LBUTTONUP && (IsDropping || IsDragging))
         {
             if (IsDropping)
             {

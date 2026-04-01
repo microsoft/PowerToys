@@ -3,18 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO;
-using Microsoft.CmdPal.Ext.WindowWalker.Properties;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 
 public class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
-    private static readonly string _namespace = "windowWalker";
+    private const string Namespace = "windowWalker";
 
-    private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
+    private static string Namespaced(string propertyName) => $"{Namespace}.{propertyName}";
 
-    private static SettingsManager? instance;
+    private static SettingsManager? _instance;
 
     private readonly ToggleSetting _resultsFromVisibleDesktopOnly = new(
         Namespaced(nameof(ResultsFromVisibleDesktopOnly)),
@@ -47,7 +45,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         false);
 
     private readonly ToggleSetting _openAfterKillAndClose = new(
-        Namespaced(nameof(OpenAfterKillAndClose)),
+        Namespaced(nameof(KeepOpenAfterKillAndClose)),
         Resources.windowwalker_SettingOpenAfterKillAndClose,
         Resources.windowwalker_SettingOpenAfterKillAndClose_Description,
         false);
@@ -70,6 +68,12 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.windowwalker_SettingInMruOrder_Description,
         true);
 
+    private readonly ToggleSetting _useWindowIcon = new(
+        Namespaced(nameof(UseWindowIcon)),
+        Resources.windowwalker_SettingUseWindowIcon,
+        Resources.windowwalker_SettingUseWindowIcon_Description,
+        true);
+
     public bool ResultsFromVisibleDesktopOnly => _resultsFromVisibleDesktopOnly.Value;
 
     public bool SubtitleShowPid => _subtitleShowPid.Value;
@@ -80,13 +84,15 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool KillProcessTree => _killProcessTree.Value;
 
-    public bool OpenAfterKillAndClose => _openAfterKillAndClose.Value;
+    public bool KeepOpenAfterKillAndClose => _openAfterKillAndClose.Value;
 
     public bool HideKillProcessOnElevatedProcesses => _hideKillProcessOnElevatedProcesses.Value;
 
     public bool HideExplorerSettingInfo => _hideExplorerSettingInfo.Value;
 
     public bool InMruOrder => _inMruOrder.Value;
+
+    public bool UseWindowIcon => _useWindowIcon.Value;
 
     internal static string SettingsJsonPath()
     {
@@ -110,19 +116,20 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_hideKillProcessOnElevatedProcesses);
         Settings.Add(_hideExplorerSettingInfo);
         Settings.Add(_inMruOrder);
+        Settings.Add(_useWindowIcon);
 
         // Load settings from file upon initialization
         LoadSettings();
 
-        Settings.SettingsChanged += (s, a) => this.SaveSettings();
+        Settings.SettingsChanged += (_, _) => SaveSettings();
     }
 
     internal static SettingsManager Instance
     {
         get
         {
-            instance ??= new SettingsManager();
-            return instance;
+            _instance ??= new SettingsManager();
+            return _instance;
         }
     }
 }

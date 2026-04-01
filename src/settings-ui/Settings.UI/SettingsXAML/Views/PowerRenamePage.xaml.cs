@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public PowerRenamePage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new PowerRenameViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
 
             DataContext = ViewModel;

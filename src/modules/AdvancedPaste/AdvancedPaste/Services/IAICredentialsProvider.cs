@@ -4,11 +4,26 @@
 
 namespace AdvancedPaste.Services;
 
+/// <summary>
+/// Provides access to AI credentials stored for Advanced Paste scenarios.
+/// </summary>
 public interface IAICredentialsProvider
 {
-    bool IsConfigured { get; }
+    /// <summary>
+    /// Gets a value indicating whether any credential is configured.
+    /// </summary>
+    /// <returns><see langword="true"/> when a non-empty credential exists for the active AI provider.</returns>
+    bool IsConfigured();
 
-    string Key { get; }
+    /// <summary>
+    /// Retrieves the credential for the active AI provider.
+    /// </summary>
+    /// <returns>Credential string or <see cref="string.Empty"/> when missing.</returns>
+    string GetKey();
 
+    /// <summary>
+    /// Refreshes the cached credential for the active AI provider.
+    /// </summary>
+    /// <returns><see langword="true"/> when the credential changed.</returns>
     bool Refresh();
 }

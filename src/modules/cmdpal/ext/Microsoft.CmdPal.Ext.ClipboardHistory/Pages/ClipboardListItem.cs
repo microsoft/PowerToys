@@ -9,13 +9,24 @@ using System.Linq;
 using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Commands;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers.Analyzers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.ApplicationModel.DataTransfer;
+using WinRT;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 
 internal sealed partial class ClipboardListItem : ListItem
 {
+    private static readonly IClipboardMetadataProvider[] MetadataProviders =
+    [
+        new ImageMetadataProvider(),
+        new TextFileSystemMetadataProvider(),
+        new WebLinkMetadataProvider(),
+        new TextMetadataProvider(),
+    ];
+
     private readonly SettingsManager _settingsManager;
     private readonly ClipboardItem _item;
 
@@ -53,9 +64,11 @@ internal sealed partial class ClipboardListItem : ListItem
             RequestedShortcut = KeyChords.DeleteEntry,
         };
 
+        DataPackageView = _item.Item.Content;
+
         if (item.IsImage)
         {
-            Title = "Image";
+            Title = Properties.Resources.clipboard_item_image_title;
 
             _pasteCommand = new CommandContextItem(new PasteCommand(_item, ClipboardFormat.Image, _settingsManager));
             _copyCommand = new CommandContextItem(new CopyCommand(_item, ClipboardFormat.Image));
@@ -99,12 +112,7 @@ internal sealed partial class ClipboardListItem : ListItem
         {
             case PrimaryAction.Paste:
                 Command = _pasteCommand?.Command;
-                MoreCommands =
-                [
-                    _copyCommand!,
-                    new Separator(),
-                    _deleteContextMenuItem,
-                ];
+                MoreCommands = BuildMoreCommands(_copyCommand);
 
                 if (_item.IsText)
                 {
@@ -124,12 +132,7 @@ internal sealed partial class ClipboardListItem : ListItem
             case PrimaryAction.Copy:
             default:
                 Command = _copyCommand?.Command;
-                MoreCommands =
-                [
-                    _pasteCommand!,
-                    new Separator(),
-                    _deleteContextMenuItem,
-                ];
+                MoreCommands = BuildMoreCommands(_pasteCommand);
 
                 if (_item.IsText)
                 {
@@ -148,16 +151,83 @@ internal sealed partial class ClipboardListItem : ListItem
         }
     }
 
+    private IContextItem[] BuildMoreCommands(CommandContextItem? firstCommand)
+    {
+        var commands = new List<IContextItem>();
+
+        if (firstCommand != null)
+        {
+            commands.Add(firstCommand);
+        }
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var temp = new List<IContextItem>();
+        foreach (var provider in MetadataProviders)
+        {
+            if (!provider.CanHandle(_item))
+            {
+                continue;
+            }
+
+            foreach (var action in provider.GetActions(_item))
+            {
+                if (string.IsNullOrEmpty(action.Id) || !seen.Add(action.Id))
+                {
+                    continue;
+                }
+
+                temp.Add(action.Action);
+            }
+        }
+
+        if (temp.Count > 0)
+        {
+            if (commands.Count > 0)
+            {
+                commands.Add(new Separator());
+            }
+
+            commands.AddRange(temp);
+        }
+
+        commands.Add(new Separator());
+        commands.Add(_deleteContextMenuItem);
+
+        return [.. commands];
+    }
+
     private Details CreateDetails()
     {
-        IDetailsElement[] metadata =
-        [
-            new DetailsElement
+        List<IDetailsElement> metadata = [];
+
+        foreach (var provider in MetadataProviders)
+        {
+            if (provider.CanHandle(_item))
             {
-                Key = "Copied on",
-                Data = new DetailsLink(_item.Timestamp.DateTime.ToString(DateTimeFormatInfo.CurrentInfo)),
+                var details = provider.GetDetails(_item);
+                if (details.Any())
+                {
+                    metadata.Add(new DetailsElement
+                    {
+                        Key = provider.SectionTitle,
+                        Data = new DetailsSeparator(),
+                    });
+
+                    metadata.AddRange(details);
+                }
             }
-        ];
+        }
+
+        metadata.Add(new DetailsElement
+        {
+            Key = Properties.Resources.metadata_general_section_title,
+            Data = new DetailsSeparator(),
+        });
+        metadata.Add(new DetailsElement
+        {
+            Key = Properties.Resources.metadata_copied_key,
+            Data = new DetailsLink(_item.Timestamp.DateTime.ToString(DateTimeFormatInfo.CurrentInfo)),
+        });
 
         if (_item.IsImage)
         {
@@ -167,7 +237,7 @@ internal sealed partial class ClipboardListItem : ListItem
             {
                 Title = _item.GetDataType(),
                 HeroImage = heroImage,
-                Metadata = metadata,
+                Metadata = [.. metadata],
             };
         }
 
@@ -177,7 +247,7 @@ internal sealed partial class ClipboardListItem : ListItem
             {
                 Title = _item.GetDataType(),
                 Body = $"```text\n{_item.Content}\n```",
-                Metadata = metadata,
+                Metadata = [.. metadata],
             };
         }
 

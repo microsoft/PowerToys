@@ -5,6 +5,25 @@ parameters:
   - name: useExperimentalVersion
     type: boolean
     default: false
+  # Artifact mode parameters
+  - name: useArtifactSource
+    type: boolean
+    default: false
+  - name: azureDevOpsOrg
+    type: string
+    default: 'https://dev.azure.com/microsoft'
+  - name: azureDevOpsProject
+    type: string
+    default: 'ProjectReunion'
+  - name: buildId
+    type: string
+    default: ''
+  - name: artifactName
+    type: string
+    default: 'WindowsAppSDK_Nuget_And_MSIX'
+  - name: metaPackageName
+    type: string
+    default: 'Microsoft.WindowsAppSDK'
 
 steps:
 - task: NuGetAuthenticate@1
@@ -12,46 +31,36 @@ steps:
 
 - task: PowerShell@2
   displayName: Update WinAppSDK Versions
+  env:
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\UpdateVersions.ps1'
     arguments: >
       -winAppSdkVersionNumber ${{ parameters.versionNumber }}
       -useExperimentalVersion $${{ parameters.useExperimentalVersion }}
       -rootPath "$(build.sourcesdirectory)"
+      -useArtifactSource $${{ parameters.useArtifactSource }}
+      -azureDevOpsOrg "${{ parameters.azureDevOpsOrg }}"
+      -azureDevOpsProject "${{ parameters.azureDevOpsProject }}"
+      -buildId "${{ parameters.buildId }}"
+      -artifactName "${{ parameters.artifactName }}"
+      -metaPackageName "${{ parameters.metaPackageName }}"
 
-- script: echo $(WinAppSDKVersion)
-  displayName: 'Display WinAppSDK Version Found'
+# - task: NuGetCommand@2
+#   displayName: 'Restore NuGet packages (slnx)'
+#   inputs:
+#     command: 'restore'
+#     feedsToUse: 'config'
+#     nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
+#     restoreSolution: '$(build.sourcesdirectory)\**\*.slnx'
+#     includeNuGetOrg: false
 
-- task: DownloadPipelineArtifact@2
-  displayName: 'Download WindowsAppSDK'
-  inputs:
-    buildType: 'specific'
-    project: '55e8140e-57ac-4e5f-8f9c-c7c15b51929d'
-    definition: '104083'
-    buildVersionToDownload: 'latestFromBranch'
-    branchName: 'refs/heads/release/${{ parameters.versionNumber }}-stable'
-    artifactName: 'WindowsAppSDK_Nuget_And_MSIX'
-    targetPath: '$(Build.SourcesDirectory)\localpackages'
-
-- script: dir $(Build.SourcesDirectory)\localpackages\NugetPackages
-  displayName: 'List downloaded packages'
-
-- task: NuGetCommand@2
-  displayName: 'Install WindowsAppSDK'
-  inputs:
-    command: 'custom'
-    arguments: >
-      install "Microsoft.WindowsAppSDK"
-      -Source "$(Build.SourcesDirectory)\localpackages\NugetPackages"
-      -Version "$(WinAppSDKVersion)"
-      -OutputDirectory "$(Build.SourcesDirectory)\localpackages\output"
-      -FallbackSource "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json"
-
-- task: NuGetCommand@2
-  displayName: 'Restore NuGet packages'
+- task: DotNetCoreCLI@2
+  displayName: 'Restore NuGet packages (dotnet)'
   inputs:
     command: 'restore'
+    projects: '$(build.sourcesdirectory)\**\*.slnx'
     feedsToUse: 'config'
     nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
-    restoreSolution: '$(build.sourcesdirectory)\**\*.sln'
-    includeNuGetOrg: false
+    workingDirectory: '$(build.sourcesdirectory)'
+    arguments: '/p:NoWarn=NU1602,NU1604'

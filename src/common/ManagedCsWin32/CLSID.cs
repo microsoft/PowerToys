@@ -16,4 +16,5 @@ public static partial class CLSID
     public static readonly Guid CollatorDataSource = new Guid("9E175B8B-F52A-11D8-B9A5-505054503030");
     public static readonly Guid ApplicationActivationManager = new Guid("45BA127D-10A8-46EA-8AB7-56EA9078943C");
     public static readonly Guid VirtualDesktopManager = new("aa509086-5ca9-4c25-8f95-589d3c07b48a");
+    public static readonly Guid DesktopWallpaper = new("C2CF3110-460E-4FC1-B9D0-8A1C0C9CC4BD");
 }

@@ -22,7 +22,7 @@ FancyZonesApp::FancyZonesApp(const std::wstring& appName, const std::wstring& ap
     m_app = MakeFancyZones(reinterpret_cast<HINSTANCE>(&__ImageBase), std::bind(&FancyZonesApp::DisableModule, this));
 
     m_mainThreadId = GetCurrentThreadId();
-    m_exitEventWaiter = EventWaiter(CommonSharedConstants::FZE_EXIT_EVENT, [&](int err) {
+    m_exitEventWaiter.start(CommonSharedConstants::FZE_EXIT_EVENT, [&](DWORD err) {
         if (err == ERROR_SUCCESS)
         {
             DisableModule();

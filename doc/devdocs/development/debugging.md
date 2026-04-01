@@ -15,11 +15,11 @@ Before you can start debugging PowerToys, you need to set up your development en
 
 You can build the entire solution from the command line, which is sometimes faster than building within Visual Studio:
 
-1. Open Developer Command Prompt for VS 2022
+1. Open `Developer Command Prompt for VS`
 2. Navigate to the repository root directory
 3. Run the following command(don't forget to set the correct platform):
    ```pwsh
-   msbuild -restore -p:RestorePackagesConfig=true -p:Platform=ARM64 -m PowerToys.sln /tl /p:NuGetInteractive="true"
+   msbuild -restore -p:RestorePackagesConfig=true -p:Platform=ARM64 -m PowerToys.slnx /tl /p:NuGetInteractive="true"
    ```
 4. This process should complete in approximately 13-14 minutes for a full build
 
@@ -96,3 +96,40 @@ The Shell Process Debugging Tool is a Visual Studio extension that helps debug m
 - Logs are stored in the local app directory: `%LOCALAPPDATA%\Microsoft\PowerToys`
 - Check Event Viewer for application crashes related to `PowerToys.Settings.exe`
 - Crash dumps can be obtained from Event Viewer
+
+## Troubleshooting Build Errors
+
+### Missing Image Files or Corrupted Build State
+
+If you encounter build errors about missing image files (e.g., `.png`, `.ico`, or other assets), this typically indicates a corrupted build state. To resolve:
+
+1. **Clean the solution in Visual Studio**: Build > Clean Solution
+
+   Or from the command line (`Developer Command Prompt for VS`):
+   ```pwsh
+   msbuild PowerToys.slnx /t:Clean /p:Platform=x64 /p:Configuration=Debug
+   ```
+
+2. **Delete build output and package folders** from the repository root:
+   - `x64/`
+   - `ARM64/`
+   - `Debug/`
+   - `Release/`
+   - `packages/`
+
+3. **Rebuild the solution**
+
+#### Helper Script
+
+A PowerShell script is available to automate this cleanup:
+
+```pwsh
+.\tools\build\clean-artifacts.ps1
+```
+
+This script will run MSBuild Clean and remove the build folders listed above. Use `-SkipMSBuildClean` if you only want to delete the folders without running MSBuild Clean.
+
+After cleaning, rebuild with:
+```pwsh
+msbuild -restore -p:RestorePackagesConfig=true -p:Platform=x64 -m PowerToys.slnx
+```

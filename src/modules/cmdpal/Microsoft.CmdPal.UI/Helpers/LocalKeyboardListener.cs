@@ -14,7 +14,7 @@ namespace Microsoft.CmdPal.UI.Helpers;
 /// <summary>
 /// A class that listens for local keyboard events using a Windows hook.
 /// </summary>
-internal sealed class LocalKeyboardListener : IDisposable
+internal sealed partial class LocalKeyboardListener : IDisposable
 {
     /// <summary>
     /// Event that is raised when a key is pressed down.

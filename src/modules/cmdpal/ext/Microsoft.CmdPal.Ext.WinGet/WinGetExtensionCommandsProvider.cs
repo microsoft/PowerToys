@@ -27,7 +27,6 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
             new WinGetExtensionPage(WinGetExtensionPage.ExtensionsTag) { Title = Properties.Resources.winget_install_extensions_title })
          {
             Title = Properties.Resources.winget_install_extensions_title,
-            Subtitle = Properties.Resources.winget_install_extensions_subtitle,
          },
 
         new ListItem(
@@ -42,5 +41,9 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
 
     public override void InitializeWithHost(IExtensionHost host) => WinGetExtensionHost.Instance.Initialize(host);
 
-    public void SetAllLookup(Func<string, ICommandItem?> callback) => WinGetStatics.AppSearchCallback = callback;
+    public void SetAllLookup(Func<string, ICommandItem?> lookupByPackageName, Func<string, ICommandItem?> lookupByProductCode)
+    {
+        WinGetStatics.AppSearchByPackageFamilyNameCallback = lookupByPackageName;
+        WinGetStatics.AppSearchByProductCodeCallback = lookupByProductCode;
+    }
 }

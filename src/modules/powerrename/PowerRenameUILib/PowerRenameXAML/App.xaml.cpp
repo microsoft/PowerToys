@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 
 #include "App.xaml.h"
 #include "MainWindow.xaml.h"
@@ -117,6 +117,9 @@ App::App()
 /// <param name="e">Details about the launch request and process.</param>
 void App::OnLaunched(LaunchActivatedEventArgs const&)
 {
+    // WinUI3 framework automatically initializes COM as STA on the main thread
+    // No manual initialization needed for WIC operations
+
     LoggerHelpers::init_logger(moduleName, L"", LogSettings::powerRenameLoggerName);
 
     if (powertoys_gpo::getConfiguredPowerRenameEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
@@ -237,7 +240,6 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
         }
 #else
 #define BUFSIZE 4096 * 4
-
         BOOL bSuccess;
         WCHAR chBuf[BUFSIZE];
         DWORD dwRead;

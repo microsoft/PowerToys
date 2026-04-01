@@ -18,11 +18,11 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     public static class HotkeyConflictIgnoreHelper
     {
         private static readonly ISettingsRepository<GeneralSettings> _generalSettingsRepository;
-        private static readonly ISettingsUtils _settingsUtils;
+        private static readonly SettingsUtils _settingsUtils;
 
         static HotkeyConflictIgnoreHelper()
         {
-            _settingsUtils = new SettingsUtils();
+            _settingsUtils = SettingsUtils.Default;
             _generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
         }
 

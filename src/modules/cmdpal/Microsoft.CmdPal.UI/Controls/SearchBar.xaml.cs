@@ -4,17 +4,18 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Commands;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
-using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
+using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.Views;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using CoreVirtualKeyStates = Windows.UI.Core.CoreVirtualKeyStates;
 using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -48,6 +49,8 @@ public sealed partial class SearchBar : UserControl,
 
     // 0.6+ suggestions
     private string? _textToSuggest;
+
+    private SettingsModel Settings => App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -122,8 +125,7 @@ public sealed partial class SearchBar : UserControl,
             return;
         }
 
-        var ctrlPressed = (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down;
-        if (ctrlPressed && e.Key == VirtualKey.I)
+        if (KeyModifiers.GetCurrent().Ctrl && e.Key == VirtualKey.I)
         {
             // Today you learned that Ctrl+I in a TextBox will insert a tab
             // We don't want that, so we'll suppress it, this way it can be used for other purposes
@@ -131,20 +133,39 @@ public sealed partial class SearchBar : UserControl,
         }
         else if (e.Key == VirtualKey.Escape)
         {
-            if (string.IsNullOrEmpty(FilterBox.Text))
+            switch (Settings.EscapeKeyBehaviorSetting)
             {
-                WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
-            }
-            else
-            {
-                // Clear the search box
-                FilterBox.Text = string.Empty;
+                case EscapeKeyBehavior.AlwaysGoBack:
+                    WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                    break;
 
-                // hack TODO GH #245
-                if (CurrentPageViewModel is not null)
-                {
-                    CurrentPageViewModel.SearchTextBox = FilterBox.Text;
-                }
+                case EscapeKeyBehavior.AlwaysDismiss:
+                    WeakReferenceMessenger.Default.Send<DismissMessage>(new(ForceGoHome: true));
+                    break;
+
+                case EscapeKeyBehavior.AlwaysHide:
+                    WeakReferenceMessenger.Default.Send<HideWindowMessage>(new());
+                    break;
+
+                case EscapeKeyBehavior.ClearSearchFirstThenGoBack:
+                default:
+                    if (string.IsNullOrEmpty(FilterBox.Text))
+                    {
+                        WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+                    }
+                    else
+                    {
+                        // Clear the search box
+                        FilterBox.Text = string.Empty;
+
+                        // hack TODO GH #245
+                        if (CurrentPageViewModel is not null)
+                        {
+                            CurrentPageViewModel.SearchTextBox = FilterBox.Text;
+                        }
+                    }
+
+                    break;
             }
 
             e.Handled = true;
@@ -185,21 +206,32 @@ public sealed partial class SearchBar : UserControl,
 
             e.Handled = true;
         }
+        else if (e.Key == VirtualKey.Left)
+        {
+            // Check if we're in a grid view, and if so, send grid navigation command
+            var isGridView = CurrentPageViewModel is ListViewModel { IsGridView: true };
+
+            // Special handling is required if we're in grid view.
+            if (isGridView)
+            {
+                WeakReferenceMessenger.Default.Send<NavigateLeftCommand>();
+                e.Handled = true;
+            }
+        }
         else if (e.Key == VirtualKey.Right)
         {
             // Check if the "replace search text with suggestion" feature from 0.4-0.5 is enabled.
             // If it isn't, then only use the suggestion when the caret is at the end of the input.
             if (!IsTextToSuggestEnabled)
             {
-                if (_textToSuggest != null &&
+                if (!string.IsNullOrEmpty(_textToSuggest) &&
                     FilterBox.SelectionStart == FilterBox.Text.Length)
                 {
                     FilterBox.Text = _textToSuggest;
                     FilterBox.Select(_textToSuggest.Length, 0);
                     e.Handled = true;
+                    return;
                 }
-
-                return;
             }
 
             // Here, we're using the "replace search text with suggestion" feature.
@@ -209,11 +241,35 @@ public sealed partial class SearchBar : UserControl,
                 _lastText = null;
                 DoFilterBoxUpdate();
             }
+
+            // Wouldn't want to perform text completion *and* move the selected item, so only perform this if text suggestion wasn't performed.
+            if (!e.Handled)
+            {
+                // Check if we're in a grid view, and if so, send grid navigation command
+                var isGridView = CurrentPageViewModel is ListViewModel { IsGridView: true };
+
+                // Special handling is required if we're in grid view.
+                if (isGridView)
+                {
+                    WeakReferenceMessenger.Default.Send<NavigateRightCommand>();
+                    e.Handled = true;
+                }
+            }
         }
         else if (e.Key == VirtualKey.Down)
         {
             WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
 
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.PageDown)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.PageUp)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
             e.Handled = true;
         }
 
@@ -241,6 +297,8 @@ public sealed partial class SearchBar : UserControl,
 
                 e.Key == VirtualKey.Up ||
                 e.Key == VirtualKey.Down ||
+                e.Key == VirtualKey.Left ||
+                e.Key == VirtualKey.Right ||
 
                 e.Key == VirtualKey.RightMenu ||
                 e.Key == VirtualKey.LeftMenu ||
@@ -294,17 +352,24 @@ public sealed partial class SearchBar : UserControl,
         }
 
         // TODO: We could encapsulate this in a Behavior if we wanted to bind to the Filter property.
-        _debounceTimer.Debounce(
-            () =>
-            {
-                DoFilterBoxUpdate();
-            },
-            //// Couldn't find a good recommendation/resource for value here. PT uses 50ms as default, so that is a reasonable default
-            //// This seems like a useful testing site for typing times: https://keyboardtester.info/keyboard-latency-test/
-            //// i.e. if another keyboard press comes in within 50ms of the last, we'll wait before we fire off the request
-            interval: TimeSpan.FromMilliseconds(50),
-            //// If we're not already waiting, and this is blanking out or the first character type, we'll start filtering immediately instead to appear more responsive and either clear the filter to get back home faster or at least chop to the first starting letter.
-            immediate: FilterBox.Text.Length <= 1);
+        var hasCustomDebounce = (CurrentPageViewModel as ListViewModel)?.HasCustomDebounceLogic == true;
+        if (hasCustomDebounce)
+        {
+            // Good, the page handles debouncing on its own
+            DoFilterBoxUpdate();
+        }
+        else
+        {
+            _debounceTimer.Debounce(
+                DoFilterBoxUpdate,
+                //// Couldn't find a good recommendation/resource for value here. PT uses 50ms as default, so that is a reasonable default
+                //// This seems like a useful testing site for typing times: https://keyboardtester.info/keyboard-latency-test/
+                //// i.e. if another keyboard press comes in within 50ms of the last, we'll wait before we fire off the request
+                interval: TimeSpan.FromMilliseconds(50),
+                //// If we're not already waiting, and this is blanking out or the first character type, we'll start filtering immediately
+                //// instead to appear more responsive and either clear the filter to get back home faster or at least chop to the first starting letter.
+                immediate: FilterBox.Text.Length <= 1);
+        }
     }
 
     private void DoFilterBoxUpdate()
@@ -319,6 +384,12 @@ public sealed partial class SearchBar : UserControl,
         if (CurrentPageViewModel is not null)
         {
             CurrentPageViewModel.SearchTextBox = FilterBox.Text;
+
+            // Telemetry: Track search query count for session metrics (only non-empty queries)
+            if (!string.IsNullOrWhiteSpace(FilterBox.Text))
+            {
+                WeakReferenceMessenger.Default.Send<SearchQueryMessage>(new());
+            }
         }
     }
 
@@ -355,7 +426,13 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    public void Receive(GoHomeMessage message) => ClearSearch();
+    public void Receive(GoHomeMessage message)
+    {
+        if (!Settings.KeepPreviousQuery)
+        {
+            ClearSearch();
+        }
+    }
 
     public void Receive(FocusSearchBoxMessage message) => FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 

@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
 
         public UtilityProvider()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             var generalSettings = settingsUtils.GetSettings<GeneralSettings>();
 
             _utilities = new List<Utility>();
@@ -228,7 +228,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                     {
                         retryCount++;
 
-                        var settingsUtils = new SettingsUtils();
+                        var settingsUtils = SettingsUtils.Default;
                         var generalSettings = settingsUtils.GetSettings<GeneralSettings>();
 
                         foreach (var u in _utilities)

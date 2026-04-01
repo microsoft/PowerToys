@@ -19,6 +19,7 @@ public:
     IFACEMETHODIMP OnReplaceTermChanged(_In_ PCWSTR replaceTerm);
     IFACEMETHODIMP OnFlagsChanged(_In_ DWORD flags);
     IFACEMETHODIMP OnFileTimeChanged(_In_ SYSTEMTIME fileTime);
+    IFACEMETHODIMP OnMetadataChanged();
 
     static HRESULT s_CreateInstance(_Outptr_ IPowerRenameRegExEvents** ppsrree);
 
@@ -39,3 +40,4 @@ public:
     SYSTEMTIME m_fileTime = { 0 };
     long m_refCount;
 };
+

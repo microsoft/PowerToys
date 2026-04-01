@@ -1,12 +1,9 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using System;
+
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
-using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
@@ -23,7 +20,7 @@ internal sealed class WindowProcess
     /// <summary>
     /// An indicator if the window belongs to an 'Universal Windows Platform (UWP)' process
     /// </summary>
-    private readonly bool _isUwpAppFrameHost;
+    private bool _isUwpAppFrameHost;
 
     /// <summary>
     /// Gets the id of the process
@@ -127,6 +124,14 @@ internal sealed class WindowProcess
     }
 
     /// <summary>
+    /// Gets the type of the process (UWP app, packaged Win32 app, unpackaged Win32 app, ...).
+    /// </summary>
+    internal ProcessPackagingInfo ProcessType
+    {
+        get; private set;
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="WindowProcess"/> class.
     /// </summary>
     /// <param name="pid">New process id.</param>
@@ -134,12 +139,9 @@ internal sealed class WindowProcess
     /// <param name="name">New process name.</param>
     internal WindowProcess(uint pid, uint tid, string name)
     {
+        ProcessType = ProcessPackagingInfo.Empty;
         UpdateProcessInfo(pid, tid, name);
-        ProcessType = ProcessPackagingInspector.Inspect((int)pid);
-        _isUwpAppFrameHost = string.Equals(Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase);
     }
-
-    public ProcessPackagingInfo ProcessType { get; private set; }
 
     /// <summary>
     /// Updates the process information of the <see cref="WindowProcess"/> instance.
@@ -156,6 +158,10 @@ internal sealed class WindowProcess
 
         // Process can be elevated only if process id is not 0 (Dummy value on error)
         IsFullAccessDenied = (pid != 0) ? TestProcessAccessUsingAllAccessFlag(pid) : false;
+
+        // Update process type
+        ProcessType = ProcessPackagingInspector.Inspect((int)pid);
+        _isUwpAppFrameHost = string.Equals(Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -183,22 +189,27 @@ internal sealed class WindowProcess
     /// <summary>
     /// Gets the process name for the process ID
     /// </summary>
-    /// <param name="pid">The id of the process/param>
+    /// <param name="pid">The id of the process</param>
     /// <returns>A string representing the process name or an empty string if the function fails</returns>
     internal static string GetProcessNameFromProcessID(uint pid)
     {
         var processHandle = NativeMethods.OpenProcess(ProcessAccessFlags.QueryLimitedInformation, true, (int)pid);
-        StringBuilder processName = new StringBuilder(MaximumFileNameLength);
+        try
+        {
+            var processName = new StringBuilder(MaximumFileNameLength);
+            var processNameLength = NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength);
+            if (processNameLength == 0)
+            {
+                return string.Empty;
+            }
 
-        if (NativeMethods.GetProcessImageFileName(processHandle, processName, MaximumFileNameLength) != 0)
-        {
-            _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
-            return processName.ToString().Split('\\').Reverse().ToArray()[0];
+            var processNameStr = processName.ToString();
+            var lastSeparatorIndex = processNameStr.LastIndexOf('\\');
+            return lastSeparatorIndex >= 0 ? processNameStr[(lastSeparatorIndex + 1)..] : processNameStr;
         }
-        else
+        finally
         {
             _ = Win32Helpers.CloseHandleIfNotNull(processHandle);
-            return string.Empty;
         }
     }
 

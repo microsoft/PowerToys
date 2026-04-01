@@ -24,7 +24,7 @@ public class SettingsService
 
     public SettingsService(KeyboardListener keyboardListener)
     {
-        _settingsUtils = new SettingsUtils();
+        _settingsUtils = SettingsUtils.Default;
         _keyboardListener = keyboardListener;
         ReadSettings();
         _watcher = Helper.GetFileWatcher(PowerAccentModuleName, "settings.json", () => { ReadSettings(); });

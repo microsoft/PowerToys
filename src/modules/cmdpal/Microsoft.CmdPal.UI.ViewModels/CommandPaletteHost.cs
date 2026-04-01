@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -34,6 +34,6 @@ public sealed partial class CommandPaletteHost : AppExtensionHost, IExtensionHos
 
     public override string? GetExtensionDisplayName()
     {
-        return Extension?.ExtensionDisplayName;
+        return Extension?.ExtensionDisplayName ?? _builtInProvider?.DisplayName ?? _builtInProvider?.Id;
     }
 }

@@ -70,7 +70,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to On all Desktops.
+        ///   Looks up a localized string similar to On all desktops.
         /// </summary>
         public static string VirtualDesktopHelper_AllDesktops {
             get {
@@ -196,7 +196,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not Responding.
+        ///   Looks up a localized string similar to Not responding.
         /// </summary>
         public static string windowwalker_NotResponding {
             get {
@@ -399,6 +399,24 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         public static string windowwalker_SettingTagPid {
             get {
                 return ResourceManager.GetString("windowwalker_SettingTagPid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use window icons.
+        /// </summary>
+        public static string windowwalker_SettingUseWindowIcon {
+            get {
+                return ResourceManager.GetString("windowwalker_SettingUseWindowIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show the actual window icon instead of the process icon.
+        /// </summary>
+        public static string windowwalker_SettingUseWindowIcon_Description {
+            get {
+                return ResourceManager.GetString("windowwalker_SettingUseWindowIcon_Description", resourceCulture);
             }
         }
     }

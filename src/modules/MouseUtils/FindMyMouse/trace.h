@@ -9,5 +9,6 @@ public:
     static void EnableFindMyMouse(const bool enabled) noexcept;
 
     // Log that the user activated the module by focusing the mouse pointer
-    static void MousePointerFocused() noexcept;
+    // activationMethod: 0 = DoubleLeftControlKey, 1 = DoubleRightControlKey, 2 = ShakeMouse, 3 = Shortcut
+    static void MousePointerFocused(const int activationMethod) noexcept;
 };

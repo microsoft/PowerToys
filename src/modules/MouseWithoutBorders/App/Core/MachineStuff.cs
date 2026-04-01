@@ -221,9 +221,9 @@ internal static class MachineStuff
 
         if (Setting.Values.BlockMouseAtCorners)
         {
-            lock (Common.SensitivePoints)
+            lock (WinAPI.SensitivePoints)
             {
-                foreach (Point p in Common.SensitivePoints)
+                foreach (Point p in WinAPI.SensitivePoints)
                 {
                     if (Math.Abs(p.X - x) < 100 && Math.Abs(p.Y - y) < 100)
                     {
@@ -793,8 +793,8 @@ internal static class MachineStuff
     internal static void ShowSetupForm(bool reopenSockets = false)
     {
         Logger.LogDebug("========== BEGIN THE SETUP EXPERIENCE ==========", true);
-        Setting.Values.MyKey = Common.MyKey = Common.CreateRandomKey();
-        Common.GeneratedKey = true;
+        Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+        Encryption.GeneratedKey = true;
 
         if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
         {
@@ -1067,7 +1067,7 @@ internal static class MachineStuff
 
     internal static void AssertOneInstancePerDesktopSession()
     {
-        string eventName = $"Global\\{Application.ProductName}-{FrmAbout.AssemblyVersion}-{Common.GetMyDesktop()}-{Common.CurrentProcess.SessionId}";
+        string eventName = $"Global\\{Application.ProductName}-{FrmAbout.AssemblyVersion}-{WinAPI.GetMyDesktop()}-{Common.CurrentProcess.SessionId}";
         oneInstanceCheck = new EventWaitHandle(false, EventResetMode.ManualReset, eventName, out bool created);
 
         if (!created)

@@ -20,8 +20,10 @@ namespace Hosts.Tests
     [TestClass]
     public class HostsServiceTest
     {
+        private const string BackupPath = @"C:\Backup\hosts";
         private static Mock<IUserSettings> _userSettings;
         private static Mock<IElevationHelper> _elevationHelper;
+        private static Mock<IBackupManager> _backupManager;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
@@ -29,27 +31,7 @@ namespace Hosts.Tests
             _userSettings = new Mock<IUserSettings>();
             _elevationHelper = new Mock<IElevationHelper>();
             _elevationHelper.Setup(m => m.IsElevated).Returns(true);
-        }
-
-        [TestMethod]
-        public void Hosts_Exists()
-        {
-            var fileSystem = new CustomMockFileSystem();
-            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
-            fileSystem.AddFile(service.HostsFilePath, new MockFileData(string.Empty));
-            var result = service.Exists();
-
-            Assert.IsTrue(result);
-        }
-
-        [TestMethod]
-        public void Hosts_Not_Exists()
-        {
-            var fileSystem = new CustomMockFileSystem();
-            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
-            var result = service.Exists();
-
-            Assert.IsFalse(result);
+            _backupManager = new Mock<IBackupManager>();
         }
 
         [TestMethod]
@@ -67,7 +49,7 @@ namespace Hosts.Tests
 ";
 
             var fileSystem = new CustomMockFileSystem();
-            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
+            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object, _backupManager.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
             var data = await service.ReadAsync();
@@ -92,7 +74,7 @@ namespace Hosts.Tests
 ";
 
             var fileSystem = new CustomMockFileSystem();
-            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
+            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object, _backupManager.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
             var data = await service.ReadAsync();
@@ -118,7 +100,7 @@ namespace Hosts.Tests
 ";
 
             var fileSystem = new CustomMockFileSystem();
-            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
+            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object, _backupManager.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
             var data = await service.ReadAsync();
@@ -137,7 +119,7 @@ namespace Hosts.Tests
         public async Task Empty_Hosts()
         {
             var fileSystem = new CustomMockFileSystem();
-            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
+            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object, _backupManager.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(string.Empty));
 
             await service.WriteAsync(string.Empty, Enumerable.Empty<Entry>());
@@ -168,7 +150,7 @@ namespace Hosts.Tests
             var fileSystem = new CustomMockFileSystem();
             var userSettings = new Mock<IUserSettings>();
             userSettings.Setup(m => m.AdditionalLinesPosition).Returns(HostsAdditionalLinesPosition.Top);
-            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object, _backupManager.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
             var data = await service.ReadAsync();
@@ -200,7 +182,7 @@ namespace Hosts.Tests
             var fileSystem = new CustomMockFileSystem();
             var userSettings = new Mock<IUserSettings>();
             userSettings.Setup(m => m.AdditionalLinesPosition).Returns(HostsAdditionalLinesPosition.Bottom);
-            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object, _backupManager.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
             var data = await service.ReadAsync();
@@ -224,7 +206,7 @@ namespace Hosts.Tests
 ";
 
             var fileSystem = new CustomMockFileSystem();
-            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
+            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object, _backupManager.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
             var data = await service.ReadAsync();
@@ -241,7 +223,7 @@ namespace Hosts.Tests
             var elevationHelper = new Mock<IElevationHelper>();
             elevationHelper.Setup(m => m.IsElevated).Returns(false);
 
-            var service = new HostsService(fileSystem, _userSettings.Object, elevationHelper.Object);
+            var service = new HostsService(fileSystem, _userSettings.Object, elevationHelper.Object, _backupManager.Object);
             await Assert.ThrowsExceptionAsync<NotRunningElevatedException>(async () => await service.WriteAsync("# Empty hosts file", Enumerable.Empty<Entry>()));
         }
 
@@ -249,7 +231,7 @@ namespace Hosts.Tests
         public async Task Save_ReadOnlyHostsException()
         {
             var fileSystem = new CustomMockFileSystem();
-            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
+            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object, _backupManager.Object);
 
             var hostsFile = new MockFileData(string.Empty)
             {
@@ -265,7 +247,7 @@ namespace Hosts.Tests
         public void Remove_ReadOnly_Attribute()
         {
             var fileSystem = new CustomMockFileSystem();
-            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
+            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object, _backupManager.Object);
 
             var hostsFile = new MockFileData(string.Empty)
             {
@@ -284,7 +266,7 @@ namespace Hosts.Tests
         public async Task Save_Hidden_Hosts()
         {
             var fileSystem = new CustomMockFileSystem();
-            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
+            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object, _backupManager.Object);
 
             var hostsFile = new MockFileData(string.Empty)
             {
@@ -316,7 +298,7 @@ namespace Hosts.Tests
             var fs = new CustomMockFileSystem();
             var settings = new Mock<IUserSettings>();
             settings.Setup(s => s.NoLeadingSpaces).Returns(true);
-            var svc = new HostsService(fs, settings.Object, _elevationHelper.Object);
+            var svc = new HostsService(fs, settings.Object, _elevationHelper.Object, _backupManager.Object);
             fs.AddFile(svc.HostsFilePath, new MockFileData(content));
 
             var data = await svc.ReadAsync();
@@ -326,6 +308,58 @@ namespace Hosts.Tests
 
             var result = fs.GetFile(svc.HostsFilePath);
             Assert.AreEqual(expected, result.TextContents);
+        }
+
+        [TestMethod]
+        public async Task Hosts_Backup_Not_Executed()
+        {
+            var content =
+@"10.1.1.1 host host.local # comment
+10.1.1.2 host2 host2.local # another comment
+";
+
+            var fileSystem = new CustomMockFileSystem();
+            fileSystem.AddDirectory(BackupPath);
+            _userSettings.Setup(m => m.BackupHosts).Returns(false);
+            _userSettings.Setup(m => m.BackupPath).Returns(BackupPath);
+            var backupManager = new BackupManager(fileSystem, _userSettings.Object);
+            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object, backupManager);
+
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
+
+            var data = await service.ReadAsync();
+            var entries = data.Entries.ToList();
+            entries.Add(new Entry(0, "10.1.1.30", "host30 host30.local", "new entry", false));
+            await service.WriteAsync(data.AdditionalLines, data.Entries);
+
+            Assert.AreEqual(0, fileSystem.Directory.GetFiles(BackupPath).Length);
+        }
+
+        [TestMethod]
+        public async Task Hosts_Backup_Executed_Once()
+        {
+            var content =
+@"10.1.1.1 host host.local # comment
+10.1.1.2 host2 host2.local # another comment
+";
+
+            var fileSystem = new CustomMockFileSystem();
+            _userSettings.Setup(m => m.BackupHosts).Returns(true);
+            _userSettings.Setup(m => m.BackupPath).Returns(BackupPath);
+            var backupManager = new BackupManager(fileSystem, _userSettings.Object);
+            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object, backupManager);
+
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
+
+            var data = await service.ReadAsync();
+            var entries = data.Entries.ToList();
+            entries.Add(new Entry(0, "10.1.1.30", "host30 host30.local", "new entry", false));
+            await service.WriteAsync(data.AdditionalLines, data.Entries);
+            await service.WriteAsync(data.AdditionalLines, data.Entries);
+
+            Assert.AreEqual(1, fileSystem.Directory.GetFiles(BackupPath).Length);
+            var backupContent = fileSystem.File.ReadAllText(fileSystem.Directory.GetFiles(BackupPath)[0]);
+            Assert.AreEqual(content, backupContent);
         }
     }
 }

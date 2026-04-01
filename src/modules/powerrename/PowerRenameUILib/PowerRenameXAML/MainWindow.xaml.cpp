@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "MainWindow.xaml.h"
 #if __has_include("MainWindow.g.cpp")
 #include "MainWindow.g.cpp"
@@ -6,6 +6,7 @@
 
 #include <settings.h>
 #include <trace.h>
+#include <Helpers.h>
 
 #include <common/logger/call_tracer.h>
 #include <common/logger/logger.h>
@@ -225,6 +226,11 @@ namespace winrt::PowerRenameUI::implementation
         m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${rstringdigit=36}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Digit").ValueAsString()));
         m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${ruuidv4}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Uuid").ValueAsString()));
 
+        // Initialize metadata shortcuts - will be populated based on selected metadata type
+        m_metadataShortcuts = winrt::single_threaded_observable_vector<PowerRenameUI::PatternSnippet>();
+        // Initialize with EXIF patterns (default)
+        UpdateMetadataShortcuts(PowerRenameLib::MetadataType::EXIF);
+
         InitializeComponent();
 
         m_etwTrace.UpdateState(true);
@@ -356,7 +362,10 @@ namespace winrt::PowerRenameUI::implementation
     hstring MainWindow::OriginalCount()
     {
         UINT count = 0;
-        m_prManager->GetItemCount(&count);
+        if (m_prManager)
+        {
+            m_prManager->GetItemCount(&count);
+        }
         return hstring{ std::to_wstring(count) };
     }
 
@@ -394,13 +403,16 @@ namespace winrt::PowerRenameUI::implementation
         button_showAll().IsChecked(true);
         button_showRenamed().IsChecked(false);
 
-        DWORD filter = 0;
-        m_prManager->GetFilter(&filter);
-        if (filter != PowerRenameFilters::None)
+        if (m_prManager)
         {
-            m_prManager->SwitchFilter(0);
-            get_self<ExplorerItemsSource>(m_explorerItems)->SetIsFiltered(false);
-            InvalidateItemListViewState();
+            DWORD filter = 0;
+            m_prManager->GetFilter(&filter);
+            if (filter != PowerRenameFilters::None)
+            {
+                m_prManager->SwitchFilter(0);
+                get_self<ExplorerItemsSource>(m_explorerItems)->SetIsFiltered(false);
+                InvalidateItemListViewState();
+            }
         }
     }
 
@@ -409,14 +421,17 @@ namespace winrt::PowerRenameUI::implementation
         button_showRenamed().IsChecked(true);
         button_showAll().IsChecked(false);
 
-        DWORD filter = 0;
-        m_prManager->GetFilter(&filter);
-        if (filter != PowerRenameFilters::ShouldRename)
+        if (m_prManager)
         {
-            m_prManager->SwitchFilter(0);
-            UpdateCounts();
-            get_self<ExplorerItemsSource>(m_explorerItems)->SetIsFiltered(true);
-            InvalidateItemListViewState();
+            DWORD filter = 0;
+            m_prManager->GetFilter(&filter);
+            if (filter != PowerRenameFilters::ShouldRename)
+            {
+                m_prManager->SwitchFilter(0);
+                UpdateCounts();
+                get_self<ExplorerItemsSource>(m_explorerItems)->SetIsFiltered(true);
+                InvalidateItemListViewState();
+            }
         }
     }
 
@@ -432,6 +447,27 @@ namespace winrt::PowerRenameUI::implementation
         auto s = e.ClickedItem().try_as<PatternSnippet>();
         DateTimeFlyout().Hide();
         textBox_replace().Text(textBox_replace().Text() + s->Code());
+    }
+
+    void MainWindow::MetadataItemClick(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::ItemClickEventArgs const& e)
+    {
+        auto s = e.ClickedItem().try_as<PatternSnippet>();
+        DateTimeFlyout().Hide();
+        textBox_replace().Text(textBox_replace().Text() + s->Code());
+    }
+
+    void MainWindow::MetadataSourceComboBox_SelectionChanged(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&)
+    {
+        int selectedIndex = comboBox_metadataSource().SelectedIndex();
+        
+        // Get the selected metadata type based on ComboBox selection
+        PowerRenameLib::MetadataType metadataType = static_cast<PowerRenameLib::MetadataType>(selectedIndex);
+        
+        // Update the metadata shortcuts list
+        UpdateMetadataShortcuts(metadataType);
+        
+        // Update the metadata source flags
+        UpdateMetadataSourceFlags(selectedIndex);
     }
 
     void MainWindow::button_rename_Click(winrt::Microsoft::UI::Xaml::Controls::SplitButton const&, winrt::Microsoft::UI::Xaml::Controls::SplitButtonClickEventArgs const&)
@@ -620,6 +656,12 @@ namespace winrt::PowerRenameUI::implementation
     void MainWindow::UpdateFlag(PowerRenameFlags flag, UpdateFlagCommand command)
     {
         _TRACER_;
+
+        if (!m_prManager)
+        {
+            // Manager not initialized yet, ignore flag updates
+            return;
+        }
 
         DWORD flags{};
         m_prManager->GetFlags(&flags);
@@ -818,6 +860,7 @@ namespace winrt::PowerRenameUI::implementation
                 UpdateFlag(ModificationTime, UpdateFlagCommand::Reset);
             }
         });
+
     }
 
     void MainWindow::ToggleItem(int32_t id, bool checked)
@@ -1049,6 +1092,15 @@ namespace winrt::PowerRenameUI::implementation
         {
             toggleButton_capitalize().IsChecked(true);
         }
+
+        int metadataIndex = (flags & MetadataSourceXMP) ? 1 : 0;
+        if (comboBox_metadataSource().SelectedIndex() != metadataIndex)
+        {
+            comboBox_metadataSource().SelectedIndex(metadataIndex);
+        }
+
+        auto metadataType = metadataIndex == 1 ? PowerRenameLib::MetadataType::XMP : PowerRenameLib::MetadataType::EXIF;
+        UpdateMetadataShortcuts(metadataType);
     }
 
     void MainWindow::UpdateCounts()
@@ -1079,6 +1131,220 @@ namespace winrt::PowerRenameUI::implementation
         }
 
         RenamedCount(hstring{ std::to_wstring(m_renamingCount) });
+    }
+
+    void MainWindow::UpdateMetadataShortcuts(PowerRenameLib::MetadataType metadataType)
+    {
+        // Clear existing list
+        m_metadataShortcuts.Clear();
+        
+        // Get supported patterns for the selected metadata type
+        auto supportedPatterns = PowerRenameLib::MetadataPatternExtractor::GetSupportedPatterns(metadataType);
+        
+        auto factory = winrt::get_activation_factory<ResourceManager, IResourceManagerFactory>();
+        ResourceManager manager = factory.CreateInstance(L"PowerToys.PowerRename.pri");
+        
+        // Add each supported pattern to the list
+        for (const auto& pattern : supportedPatterns)
+        {
+            std::wstring resourceKey = L"Resources/MetadataCheatSheet_" + ConvertPatternToResourceKey(pattern);
+            winrt::hstring patternWithDollar = winrt::hstring(L"$" + pattern);
+            
+            try {
+                auto description = manager.MainResourceMap().GetValue(resourceKey).ValueAsString();
+                m_metadataShortcuts.Append(winrt::make<PatternSnippet>(patternWithDollar, description));
+            }
+            catch (...) {
+                // If resource doesn't exist, use the pattern name as description
+                m_metadataShortcuts.Append(winrt::make<PatternSnippet>(patternWithDollar, winrt::hstring(pattern)));
+            }
+        }
+    }
+
+    std::wstring MainWindow::ConvertPatternToResourceKey(const std::wstring& pattern)
+    {
+        // Special cases for patterns that don't follow the standard naming convention
+        if (pattern == L"TITLE")
+        {
+            return L"DocTitle";
+        }
+        else if (pattern == L"DATE_TAKEN_YYYY")
+        {
+            return L"DateTakenYear4";
+        }
+        else if (pattern == L"DATE_TAKEN_YY")
+        {
+            return L"DateTakenYear2";
+        }
+        else if (pattern == L"DATE_TAKEN_MM")
+        {
+            return L"DateTakenMonth";
+        }
+        else if (pattern == L"DATE_TAKEN_DD")
+        {
+            return L"DateTakenDay";
+        }
+        else if (pattern == L"DATE_TAKEN_HH")
+        {
+            return L"DateTakenHour";
+        }
+        else if (pattern == L"DATE_TAKEN_mm")
+        {
+            return L"DateTakenMinute";
+        }
+        else if (pattern == L"DATE_TAKEN_SS")
+        {
+            return L"DateTakenSecond";
+        }
+        else if (pattern == L"CREATE_DATE_YYYY")
+        {
+            return L"CreateDateYear4";
+        }
+        else if (pattern == L"CREATE_DATE_YY")
+        {
+            return L"CreateDateYear2";
+        }
+        else if (pattern == L"CREATE_DATE_MM")
+        {
+            return L"CreateDateMonth";
+        }
+        else if (pattern == L"CREATE_DATE_DD")
+        {
+            return L"CreateDateDay";
+        }
+        else if (pattern == L"CREATE_DATE_HH")
+        {
+            return L"CreateDateHour";
+        }
+        else if (pattern == L"CREATE_DATE_mm")
+        {
+            return L"CreateDateMinute";
+        }
+        else if (pattern == L"CREATE_DATE_SS")
+        {
+            return L"CreateDateSecond";
+        }
+        else if (pattern == L"MODIFY_DATE_YYYY")
+        {
+            return L"ModifyDateYear4";
+        }
+        else if (pattern == L"MODIFY_DATE_YY")
+        {
+            return L"ModifyDateYear2";
+        }
+        else if (pattern == L"MODIFY_DATE_MM")
+        {
+            return L"ModifyDateMonth";
+        }
+        else if (pattern == L"MODIFY_DATE_DD")
+        {
+            return L"ModifyDateDay";
+        }
+        else if (pattern == L"MODIFY_DATE_HH")
+        {
+            return L"ModifyDateHour";
+        }
+        else if (pattern == L"MODIFY_DATE_mm")
+        {
+            return L"ModifyDateMinute";
+        }
+        else if (pattern == L"MODIFY_DATE_SS")
+        {
+            return L"ModifyDateSecond";
+        }
+        else if (pattern == L"METADATA_DATE_YYYY")
+        {
+            return L"MetadataDateYear4";
+        }
+        else if (pattern == L"METADATA_DATE_YY")
+        {
+            return L"MetadataDateYear2";
+        }
+        else if (pattern == L"METADATA_DATE_MM")
+        {
+            return L"MetadataDateMonth";
+        }
+        else if (pattern == L"METADATA_DATE_DD")
+        {
+            return L"MetadataDateDay";
+        }
+        else if (pattern == L"METADATA_DATE_HH")
+        {
+            return L"MetadataDateHour";
+        }
+        else if (pattern == L"METADATA_DATE_mm")
+        {
+            return L"MetadataDateMinute";
+        }
+        else if (pattern == L"METADATA_DATE_SS")
+        {
+            return L"MetadataDateSecond";
+        }
+        else if (pattern == L"ISO")
+        {
+            return L"ISO";
+        }
+        else if (pattern == L"TITLE")
+        {
+            return L"DocTitle";
+        }
+        else if (pattern == L"DESCRIPTION")
+        {
+            return L"DocDescription";
+        }
+        else if (pattern == L"CREATOR")
+        {
+            return L"DocCreator";
+        }
+        else if (pattern == L"SUBJECT")
+        {
+            return L"DocSubject";
+        }
+        else if (pattern == L"RIGHTS")
+        {
+            return L"Rights";
+        }
+        
+        // Convert pattern name to resource key format
+        // e.g., "CAMERA_MAKE" -> "CameraMake"
+        std::wstring result;
+        bool capitalizeNext = true;
+        
+        for (wchar_t ch : pattern)
+        {
+            if (ch == L'_')
+            {
+                capitalizeNext = true;
+            }
+            else
+            {
+                if (capitalizeNext)
+                {
+                    result += static_cast<wchar_t>(std::toupper(ch));
+                    capitalizeNext = false;
+                }
+                else
+                {
+                    result += static_cast<wchar_t>(std::tolower(ch));
+                }
+            }
+        }
+        
+        return result;
+    }
+
+    void MainWindow::UpdateMetadataSourceFlags(int selectedIndex)
+    {
+        // Clear all metadata source flags first
+        UpdateFlag(MetadataSourceEXIF, UpdateFlagCommand::Reset);
+        UpdateFlag(MetadataSourceXMP, UpdateFlagCommand::Reset);
+        
+        // Set the appropriate metadata source flag based on selection
+        switch(selectedIndex) {
+            case 0: UpdateFlag(MetadataSourceEXIF, UpdateFlagCommand::Set); break;
+            case 1: UpdateFlag(MetadataSourceXMP, UpdateFlagCommand::Set); break;
+            default: UpdateFlag(MetadataSourceEXIF, UpdateFlagCommand::Set); break; // Default to EXIF
+        }
     }
 
     HRESULT MainWindow::OnRename(_In_ IPowerRenameItem* /*renameItem*/)
@@ -1122,3 +1388,6 @@ namespace winrt::PowerRenameUI::implementation
         return S_OK;
     }
 }
+
+
+

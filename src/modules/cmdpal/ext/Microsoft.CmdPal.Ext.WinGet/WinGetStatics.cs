@@ -34,7 +34,9 @@ internal static class WinGetStatics
 
     private static readonly StatusMessage _errorMessage = new() { State = MessageState.Error };
 
-    public static Func<string, ICommandItem?>? AppSearchCallback { get; set; }
+    public static Func<string, ICommandItem?>? AppSearchByPackageFamilyNameCallback { get; set; }
+
+    public static Func<string, ICommandItem?>? AppSearchByProductCodeCallback { get; set; }
 
     private static readonly CompositeFormat CreateCatalogErrorMessage = System.Text.CompositeFormat.Parse(Properties.Resources.winget_create_catalog_error);
 

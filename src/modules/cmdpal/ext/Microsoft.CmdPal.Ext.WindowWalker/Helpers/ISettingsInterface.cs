@@ -16,11 +16,13 @@ public interface ISettingsInterface
 
     public bool KillProcessTree { get; }
 
-    public bool OpenAfterKillAndClose { get; }
+    public bool KeepOpenAfterKillAndClose { get; }
 
     public bool HideKillProcessOnElevatedProcesses { get; }
 
     public bool HideExplorerSettingInfo { get; }
 
     public bool InMruOrder { get; }
+
+    public bool UseWindowIcon { get; }
 }

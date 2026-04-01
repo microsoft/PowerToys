@@ -29,8 +29,6 @@ shortcutguide
 
 # 8LWXpg is user name but user folder causes a flag
 LWXpg
-# 0x6f677548 is user name but user folder causes a flag
-x6f677548
 Adoumie
 Advaith
 alekhyareddy
@@ -194,6 +192,7 @@ ycv
 yeelam
 Yuniardi
 yuyoyuppe
+zadjii
 Zeol
 Zhao
 Zhaopeng
@@ -208,8 +207,10 @@ Bilibili
 BVID
 capturevideosample
 cmdow
+Contoso
 Controlz
 cortana
+devhints
 dlnilsson
 fancymouse
 firefox
@@ -222,6 +223,7 @@ Moq
 mozilla
 mspaint
 Newtonsoft
+NVIDIA
 onenote
 openai
 Quickime
@@ -229,6 +231,8 @@ regedit
 roslyn
 Skia
 Spotify
+taskmgr
+tldr
 Vanara
 wangyi
 WEX
@@ -243,4 +247,3 @@ xamlstyler
 Xavalon
 Xbox
 Youdao
-zadjii

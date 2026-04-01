@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:PowerOCR.Properties"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    x:Name="TextExtractorWindow"
     Title="TextExtractor"
     ui:Design.Background="Transparent"
     AllowsTransparency="True"
@@ -87,6 +88,7 @@
                     <Separator />
                     <MenuItem
                         Name="CancelMenuItem"
+                        AutomationProperties.AutomationId="CancelMenuItem"
                         Click="CancelMenuItem_Click"
                         Header="{x:Static p:Resources.Cancel}" />
                 </ContextMenu>
@@ -117,6 +119,7 @@
                 <ComboBox
                     x:Name="LanguagesComboBox"
                     Margin="4,0"
+                    AutomationProperties.AutomationId="OCROverlayLanguagesComboBox"
                     AutomationProperties.Name="{x:Static p:Resources.SelectedLang}"
                     SelectionChanged="LanguagesComboBox_SelectionChanged">
                     <ComboBox.ItemTemplate>

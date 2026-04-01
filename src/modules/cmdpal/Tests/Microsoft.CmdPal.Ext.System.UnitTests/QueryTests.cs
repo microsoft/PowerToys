@@ -17,15 +17,15 @@ namespace Microsoft.CmdPal.Ext.System.UnitTests;
 public class QueryTests : CommandPaletteUnitTestBase
 {
     [DataTestMethod]
-    [DataRow("shutdown", "Shutdown")]
-    [DataRow("restart", "Restart")]
-    [DataRow("sign out", "Sign out")]
-    [DataRow("lock", "Lock")]
-    [DataRow("sleep", "Sleep")]
-    [DataRow("hibernate", "Hibernate")]
+    [DataRow("shutdown", "Shutdown computer")]
+    [DataRow("restart", "Restart computer")]
+    [DataRow("sign out", "Sign out of computer")]
+    [DataRow("lock", "Lock computer")]
+    [DataRow("sleep", "Put computer to sleep")]
+    [DataRow("hibernate", "Hibernate computer")]
     [DataRow("open recycle", "Open Recycle Bin")]
     [DataRow("empty recycle", "Empty Recycle Bin")]
-    [DataRow("uefi", "UEFI Firmware Settings")]
+    [DataRow("uefi", "UEFI firmware settings")]
     public void TopLevelPageQueryTest(string input, string matchedTitle)
     {
         var settings = new Settings();
@@ -143,6 +143,6 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsNotNull(result);
         var firstItem = result.FirstOrDefault();
         var firstItemIsUefiCommand = firstItem?.Title.Contains("UEFI", StringComparison.OrdinalIgnoreCase) ?? false;
-        Assert.AreEqual(hasCommand, firstItemIsUefiCommand, $"Expected to match (or not match) 'UEFI Firmware Settings' but got '{firstItem?.Title}'");
+        Assert.AreEqual(hasCommand, firstItemIsUefiCommand, $"Expected to match (or not match) 'UEFI firmware settings' but got '{firstItem?.Title}'");
     }
 }

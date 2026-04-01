@@ -46,6 +46,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public IntProperty DefaultMeasureStyle { get; set; }
 
-        public override string ToString() => JsonSerializer.Serialize(this);
+        public override string ToString() => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.MeasureToolProperties);
     }
 }

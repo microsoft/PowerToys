@@ -33,6 +33,7 @@
 #include <winrt/Windows.System.h>
 
 #include <wil/resource.h>
+#include <wil/coroutine.h>
 
 #endif //PCH_H
 

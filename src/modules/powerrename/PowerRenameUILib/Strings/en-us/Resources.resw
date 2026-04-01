@@ -414,6 +414,9 @@
   <data name="TextBlock_FileTime.Text" xml:space="preserve">
     <value>Time used for replacement</value>
   </data>
+  <data name="TextBlock_MetadataSource.Text" xml:space="preserve">
+    <value>Metadata source for replacement</value>
+  </data>
   <data name="FileTimeParts_CreationTime.Content" xml:space="preserve">
     <value>Creation Time</value>
   </data>
@@ -422,5 +425,150 @@
   </data>
   <data name="FileTimeParts_AccessTime.Content" xml:space="preserve">
     <value>Access Time</value>
+  </data>
+  
+  <data name="MetadataSource_EXIF.Content" xml:space="preserve">
+    <value>EXIF Metadata</value>
+  </data>
+  <data name="MetadataSource_XMP.Content" xml:space="preserve">
+    <value>XMP Metadata</value>
+  </data>
+
+  <data name="MetadataCheatSheet_Title.Text" xml:space="preserve">
+    <value>Replace with media metadata</value>
+  </data>
+  <data name="MetadataCheatSheet_CameraMake" xml:space="preserve">
+    <value>Camera manufacturer name</value>
+  </data>
+  <data name="MetadataCheatSheet_CameraModel" xml:space="preserve">
+    <value>Camera model name</value>
+  </data>
+  <data name="MetadataCheatSheet_Lens" xml:space="preserve">
+    <value>Lens model name</value>
+  </data>
+  <data name="MetadataCheatSheet_ISO" xml:space="preserve">
+    <value>ISO sensitivity value</value>
+  </data>
+  <data name="MetadataCheatSheet_Aperture" xml:space="preserve">
+    <value>F-number aperture value</value>
+  </data>
+  <data name="MetadataCheatSheet_Shutter" xml:space="preserve">
+    <value>Shutter speed value</value>
+  </data>
+  <data name="MetadataCheatSheet_Focal" xml:space="preserve">
+    <value>Focal length in millimeters</value>
+  </data>
+  <data name="MetadataCheatSheet_Flash" xml:space="preserve">
+    <value>Flash status (On/Off)</value>
+  </data>
+  <data name="MetadataCheatSheet_Width" xml:space="preserve">
+    <value>Image width in pixels</value>
+  </data>
+  <data name="MetadataCheatSheet_Height" xml:space="preserve">
+    <value>Image height in pixels</value>
+  </data>
+  <data name="MetadataCheatSheet_Author" xml:space="preserve">
+    <value>Image author/artist</value>
+  </data>
+  <data name="MetadataCheatSheet_Copyright" xml:space="preserve">
+    <value>Copyright information</value>
+  </data>
+  <data name="MetadataCheatSheet_Latitude" xml:space="preserve">
+    <value>GPS latitude coordinate</value>
+  </data>
+  <data name="MetadataCheatSheet_Longitude" xml:space="preserve">
+    <value>GPS longitude coordinate</value>
+  </data>
+  <data name="MetadataCheatSheet_Altitude" xml:space="preserve">
+    <value>GPS altitude in meters</value>
+  </data>
+  <data name="MetadataCheatSheet_ExposureBias" xml:space="preserve">
+    <value>Exposure compensation value</value>
+  </data>
+  <data name="MetadataCheatSheet_Orientation" xml:space="preserve">
+    <value>Image orientation</value>
+  </data>
+  <data name="MetadataCheatSheet_ColorSpace" xml:space="preserve">
+    <value>Color space information</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenYear4" xml:space="preserve">
+    <value>Year photo was taken (4 digits)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenYear2" xml:space="preserve">
+    <value>Year photo was taken (2 digits)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenMonth" xml:space="preserve">
+    <value>Month photo was taken (01-12)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenDay" xml:space="preserve">
+    <value>Day photo was taken (01-31)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenHour" xml:space="preserve">
+    <value>Hour photo was taken (00-23)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenMinute" xml:space="preserve">
+    <value>Minute photo was taken (00-59)</value>
+  </data>
+  <data name="MetadataCheatSheet_DateTakenSecond" xml:space="preserve">
+    <value>Second photo was taken (00-59)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateYear4" xml:space="preserve">
+    <value>Year from XMP create date (4 digits)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateYear2" xml:space="preserve">
+    <value>Year from XMP create date (2 digits)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateMonth" xml:space="preserve">
+    <value>Month from XMP create date (01-12)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateDay" xml:space="preserve">
+    <value>Day from XMP create date (01-31)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateHour" xml:space="preserve">
+    <value>Hour from XMP create date (00-23)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateMinute" xml:space="preserve">
+    <value>Minute from XMP create date (00-59)</value>
+  </data>
+  <data name="MetadataCheatSheet_CreateDateSecond" xml:space="preserve">
+    <value>Second from XMP create date (00-59)</value>
+  </data>
+
+  <!-- XMP patterns -->
+  <data name="MetadataCheatSheet_CreatorTool" xml:space="preserve">
+    <value>Software used to create/edit</value>
+  </data>
+  
+  <!-- Dublin Core patterns -->
+  <data name="MetadataCheatSheet_DocTitle" xml:space="preserve">
+    <value>Document title</value>
+  </data>
+  <data name="MetadataCheatSheet_DocDescription" xml:space="preserve">
+    <value>Document description</value>
+  </data>
+  <data name="MetadataCheatSheet_DocCreator" xml:space="preserve">
+    <value>Document creator/author</value>
+  </data>
+  <data name="MetadataCheatSheet_DocSubject" xml:space="preserve">
+    <value>Keywords/tags</value>
+  </data>
+  
+  <!-- XMP Rights pattern -->
+  <data name="MetadataCheatSheet_Rights" xml:space="preserve">
+    <value>Copyright/rights information</value>
+  </data>
+
+  <!-- XMP Media Management schema patterns -->
+  <data name="MetadataCheatSheet_DocumentId" xml:space="preserve">
+    <value>Document unique identifier</value>
+  </data>
+  <data name="MetadataCheatSheet_InstanceId" xml:space="preserve">
+    <value>Instance unique identifier</value>
+  </data>
+  <data name="MetadataCheatSheet_OriginalDocumentId" xml:space="preserve">
+    <value>Original document identifier</value>
+  </data>
+  <data name="MetadataCheatSheet_VersionId" xml:space="preserve">
+    <value>Version identifier</value>
   </data>
 </root>
