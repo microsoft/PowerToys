@@ -100,8 +100,8 @@ namespace CommonLibTest
             TestClass settings = mockSettingsUtils.GetSettingsOrDefault<TestClass>(string.Empty);
 
             // Assert
-            Assert.AreEqual(settings.TestInt, 100);
-            Assert.AreEqual(settings.TestString, "test");
+            Assert.AreEqual(100, settings.TestInt);
+            Assert.AreEqual("test", settings.TestString);
         }
 
         public static string RandomString()
