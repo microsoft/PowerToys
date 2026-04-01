@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
@@ -12,6 +13,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.UI.Dispatching;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -20,9 +22,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
 {
     public const int IncrementalRefresh = -2;
 
+    private static readonly IEqualityComparer<IListItem> VmCacheComparer = new ProxyReferenceEqualityComparer();
+
     private readonly TaskFactory filterTaskFactory = new(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
 
-    private readonly Dictionary<IListItem, ListItemViewModel> _vmCache = new(new ProxyReferenceEqualityComparer());
+    private Dictionary<IListItem, ListItemViewModel> _vmCache = new(VmCacheComparer);
 
     // TODO: Do we want a base "ItemsPageViewModel" for anything that's going to have items?
 
@@ -36,23 +40,32 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private readonly ExtensionObject<IListPage> _model;
 
+    private readonly Lock _fetchStateLock = new();
     private readonly Lock _listLock = new();
     private readonly IContextMenuFactory _contextMenuFactory;
 
+    [ThreadStatic]
+    private static Dictionary<ListViewModel, int>? _getItemsDepthByViewModel;
+
     private InterlockedBoolean _isLoading;
-    private bool _isFetching;
+    private int _activeFetchCount;
+    private int _latestFetchGeneration;
+    private bool _deferredFetchRequested;
+    private bool _deferredFetchKeepSelection = true;
 
     public event TypedEventHandler<ListViewModel, ItemsUpdatedEventArgs>? ItemsUpdated;
 
     public bool ShowEmptyContent =>
         IsInitialized &&
         FilteredItems.Count == 0 &&
-        (!_isFetching) &&
-        IsLoading == false;
+        !IsFetching &&
+        !IsLoading;
 
     public bool IsGridView { get; private set; }
 
     public IGridPropertiesViewModel? GridProperties { get; private set; }
+
+    private bool IsFetching => Volatile.Read(ref _activeFetchCount) > 0;
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -123,8 +136,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
-    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems(args.TotalItems == IncrementalRefresh);
+    private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args)
+    {
+        RequestFetch(args.TotalItems == IncrementalRefresh);
+    }
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
@@ -132,9 +147,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         // something needs to change, by raising ItemsChanged.
         if (_isDynamic)
         {
-            filterCancellationTokenSource?.Cancel();
-            filterCancellationTokenSource?.Dispose();
-            filterCancellationTokenSource = new CancellationTokenSource();
+            CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
+            var filterCts = filterCancellationTokenSource = new CancellationTokenSource();
+            var filterToken = filterCts.Token;
 
             // Hop off to an exclusive scheduler background thread to update the
             // extension. We do this to ensure that all filter update requests
@@ -144,7 +159,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             _ = filterTaskFactory.StartNew(
                 () =>
                 {
-                    filterCancellationTokenSource.Token.ThrowIfCancellationRequested();
+                    filterToken.ThrowIfCancellationRequested();
 
                     try
                     {
@@ -161,7 +176,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         ShowException(ex, _model?.Unsafe?.Name);
                     }
                 },
-                filterCancellationTokenSource.Token,
+                filterToken,
                 TaskCreationOptions.None,
                 filterTaskFactory.Scheduler!);
         }
@@ -199,9 +214,73 @@ public partial class ListViewModel : PageViewModel, IDisposable
         });
     }
 
+    private void RequestFetch(bool keepSelection)
+    {
+        // Keep RPC GetItems work off the UI thread. If the provider raises
+        // ItemsChanged while we're already on a background thread, stay on that
+        // thread so same-thread reentrancy detection still works.
+        if (IsCurrentThreadUiThread())
+        {
+            QueueObservedBackgroundFetch(() => RequestFetch(keepSelection), "Failed to request background fetch");
+            return;
+        }
+
+        if (IsGetItemsActiveOnCurrentThread())
+        {
+            lock (_fetchStateLock)
+            {
+                _deferredFetchRequested = true;
+                _deferredFetchKeepSelection &= keepSelection;
+            }
+
+            return;
+        }
+
+        FetchItems(keepSelection);
+    }
+
+    private void QueueDeferredFetchIfNeeded()
+    {
+        bool deferredFetchRequested;
+        bool keepSelection;
+        lock (_fetchStateLock)
+        {
+            deferredFetchRequested = _deferredFetchRequested;
+            keepSelection = _deferredFetchKeepSelection;
+            _deferredFetchRequested = false;
+            _deferredFetchKeepSelection = true;
+        }
+
+        if (deferredFetchRequested)
+        {
+            QueueObservedBackgroundFetch(() => FetchItems(keepSelection), "Failed to execute deferred fetch");
+        }
+    }
+
+    private static void QueueObservedBackgroundFetch(Action action, string logMessage)
+    {
+        _ = Task.Run(
+            () =>
+            {
+                try
+                {
+                    action();
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    CoreLogger.LogError(logMessage, ex);
+                }
+            });
+    }
+
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchItems(bool keepSelection)
     {
+        System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "FetchItems should not run on the UI thread.");
+
         // If this fetch should reset selection, remember that intent even if
         // a later incremental fetch cancels us.
         if (!keepSelection)
@@ -209,34 +288,50 @@ public partial class ListViewModel : PageViewModel, IDisposable
             _forceFirstItemPending = true;
         }
 
-        // Cancel any previous FetchItems operation
-        _fetchItemsCancellationTokenSource?.Cancel();
-        _fetchItemsCancellationTokenSource?.Dispose();
-        _fetchItemsCancellationTokenSource = new CancellationTokenSource();
+        CancellationToken cancellationToken;
+        int fetchGeneration;
+        lock (_fetchStateLock)
+        {
+            // Cancel any previous FetchItems operation
+            CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
+            _fetchItemsCancellationTokenSource = new CancellationTokenSource();
 
-        var cancellationToken = _fetchItemsCancellationTokenSource.Token;
+            cancellationToken = _fetchItemsCancellationTokenSource.Token;
+            fetchGeneration = Interlocked.Increment(ref _latestFetchGeneration);
+        }
 
-        _isFetching = true;
-
-        // Collect all the items into new viewmodels
-        List<ListItemViewModel> newViewModels = [];
+        // Declared outside try so catch blocks can reference them
+        List<ListItemViewModel> createdViewModels = [];
+        var itemsTransferredToList = false;
+        var fetchCountIncremented = false;
 
         try
         {
-            // Check for cancellation before starting expensive operations
-            if (cancellationToken.IsCancellationRequested)
+            fetchCountIncremented = true;
+            if (Interlocked.Increment(ref _activeFetchCount) == 1)
             {
-                return;
+                UpdateEmptyContent();
             }
 
-            var newItems = _model.Unsafe!.GetItems();
+            ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
-            // Check for cancellation after getting items from extension
-            if (cancellationToken.IsCancellationRequested)
+            IListItem[] newItems;
+            try
             {
-                return;
+                EnterGetItemsScope();
+                newItems = _model.Unsafe!.GetItems();
+            }
+            finally
+            {
+                ExitGetItemsScope();
             }
 
+            ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
+
+            // Collect all the items into new viewmodels
+            List<ListItemViewModel> newViewModels = new(newItems.Length);
+            var currentCache = ReadVmCache();
+            var nextCache = new Dictionary<IListItem, ListItemViewModel>(newItems.Length, VmCacheComparer);
             var showsTitle = GridProperties?.ShowTitle ?? true;
             var showsSubtitle = GridProperties?.ShowSubtitle ?? true;
             var created = 0;
@@ -250,17 +345,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         continue;
                     }
 
-                    // Check for cancellation during item processing
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
+                    ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
-                    if (_vmCache.TryGetValue(item, out var existing))
+                    if (nextCache.TryGetValue(item, out var existing) || currentCache.TryGetValue(item, out existing))
                     {
                         existing.LayoutShowsTitle = showsTitle;
                         existing.LayoutShowsSubtitle = showsSubtitle;
                         newViewModels.Add(existing);
+                        nextCache[item] = existing;
                         reused++;
                         continue;
                     }
@@ -273,67 +365,64 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         viewModel.LayoutShowsTitle = showsTitle;
                         viewModel.LayoutShowsSubtitle = showsSubtitle;
 
-                        _vmCache[item] = viewModel;
                         newViewModels.Add(viewModel);
+                        createdViewModels.Add(viewModel);
+                        nextCache[item] = viewModel;
                         created++;
                     }
                 }
+                catch (OperationCanceledException)
+                {
+                    // Our own stale/cancel checks throw OCE to stop the whole fetch
+                    // promptly. Only swallow item-local cancellations.
+                    ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
+                    CoreLogger.LogDebug("Item load cancelled during fetch");
+                }
                 catch (Exception ex)
                 {
-                    CoreLogger.LogError("Failed to load item:\n", ex + ToString());
+                    CoreLogger.LogError("Failed to load item:\n", ex);
                 }
             }
 
 #if DEBUG
-            CoreLogger.LogInfo($"[ListViewModel] FetchItems: {created} created, {reused} reused, {_vmCache.Count} cached");
+            CoreLogger.LogInfo($"[ListViewModel] FetchItems: {created} created, {reused} reused, {nextCache.Count} cached");
 #endif
 
-            // Check for cancellation before initializing first twenty items
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
+            ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
             var firstTwenty = newViewModels.Take(20);
             foreach (var item in firstTwenty)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
+                ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
                 item?.SafeInitializeProperties();
             }
 
-            // Cancel any ongoing search
-            _cancellationTokenSource?.Cancel();
+            // Cancel any ongoing property initialization for the previous list.
+            CancelAndDisposeTokenSource(ref _cancellationTokenSource);
 
-            // Check for cancellation before updating the list
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
+            ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
             List<ListItemViewModel> removedItems;
-            lock (_listLock)
+            lock (_fetchStateLock)
             {
-                // Now that we have new ViewModels for everything from the
-                // extension, smartly update our list of VMs
-                ListHelpers.InPlaceUpdateList(Items, newViewModels, out removedItems);
+                ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
-                _vmCache.Clear();
-                foreach (var vm in newViewModels)
+                lock (_listLock)
                 {
-                    if (vm.Model.Unsafe is { } li)
-                    {
-                        _vmCache[li] = vm;
-                    }
-                }
+                    // Now that we have new ViewModels for everything from the
+                    // extension, smartly update our list of VMs
+                    ListHelpers.InPlaceUpdateList(Items, newViewModels, out removedItems);
 
-                // DO NOT ThrowIfCancellationRequested AFTER THIS! If you do,
-                // you'll clean up list items that we've now transferred into
-                // .Items
+                    PublishVmCache(nextCache);
+
+                    // DO NOT ThrowIfCancellationRequested AFTER THIS! If you do,
+                    // you'll clean up list items that we've now transferred into
+                    // .Items
+                }
             }
+
+            itemsTransferredToList = true;
 
             // If we removed items, we need to clean them up, to remove our event handlers
             foreach (var removedItem in removedItems)
@@ -348,9 +437,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // However, if we were cancelled, we didn't actually add these items to
             // our Items list. Before we release them to the GC, make sure we clean
             // them up
-            foreach (var vm in newViewModels)
+            if (!itemsTransferredToList)
             {
-                vm.SafeCleanup();
+                foreach (var vm in createdViewModels)
+                {
+                    vm.SafeCleanup();
+                }
             }
 
             return;
@@ -359,52 +451,83 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             // TODO: Move this within the for loop, so we can catch issues with individual items
             // Create a special ListItemViewModel for errors and use an ItemTemplateSelector in the ListPage to display error items differently.
+            if (!itemsTransferredToList)
+            {
+                foreach (var vm in createdViewModels)
+                {
+                    vm.SafeCleanup();
+                }
+            }
+
             ShowException(ex, _model?.Unsafe?.Name);
             throw;
         }
         finally
         {
-            _isFetching = false;
+            if (fetchCountIncremented && Interlocked.Decrement(ref _activeFetchCount) == 0)
+            {
+                UpdateEmptyContent();
+            }
         }
 
-        _cancellationTokenSource = new CancellationTokenSource();
+        var initializeItemsCts = new CancellationTokenSource();
+        _cancellationTokenSource = initializeItemsCts;
+        var initializeItemsToken = initializeItemsCts.Token;
 
         _initializeItemsTask = new Task(() =>
         {
-            InitializeItemsTask(_cancellationTokenSource.Token);
+            InitializeItemsTask(initializeItemsToken);
         });
         _initializeItemsTask.Start();
 
         DoOnUiThread(
             () =>
             {
-                lock (_listLock)
+                lock (_fetchStateLock)
                 {
-                    // Now that our Items contains everything we want, it's time for us to
-                    // re-evaluate our Filter on those items.
-                    if (!_isDynamic)
+                    if (!IsLatestFetchGeneration(fetchGeneration))
                     {
-                        // A static list? Great! Just run the filter.
-                        ApplyFilterUnderLock();
-                    }
-                    else
-                    {
-                        // A dynamic list? Even better! Just stick everything into
-                        // FilteredItems. The extension already did any filtering it cared about.
-                        var snapshot = Items.Where(i => !i.IsInErrorState).ToList();
-                        ListHelpers.InPlaceUpdateList(FilteredItems, snapshot);
+                        return;
                     }
 
-                    UpdateEmptyContent();
+                    lock (_listLock)
+                    {
+                        if (!IsLatestFetchGeneration(fetchGeneration))
+                        {
+                            return;
+                        }
+
+                        // Now that our Items contains everything we want, it's time for us to
+                        // re-evaluate our Filter on those items.
+                        if (!_isDynamic)
+                        {
+                            // A static list? Great! Just run the filter.
+                            ApplyFilterUnderLock();
+                        }
+                        else
+                        {
+                            // A dynamic list? Even better! Just stick everything into
+                            // FilteredItems. The extension already did any filtering it cared about.
+                            var snapshot = Items.Where(i => !i.IsInErrorState).ToList();
+                            ListHelpers.InPlaceUpdateList(FilteredItems, snapshot);
+                        }
+
+                        UpdateEmptyContent();
+                    }
+
+                    if (!IsLatestFetchGeneration(fetchGeneration))
+                    {
+                        return;
+                    }
+
+                    // Consume the pending flag on the UI thread so a
+                    // forceFirstItem=true intent survives cancellation.
+                    var forceFirst = _forceFirstItemPending;
+                    _forceFirstItemPending = false;
+
+                    ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirstItem: IsRootPage && forceFirst));
+                    _isLoading.Clear();
                 }
-
-                // Consume the pending flag on the UI thread so a
-                // forceFirstItem=true intent survives cancellation.
-                var forceFirst = _forceFirstItemPending;
-                _forceFirstItemPending = false;
-
-                ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirstItem: IsRootPage && forceFirst));
-                _isLoading.Clear();
             });
     }
 
@@ -448,6 +571,105 @@ public partial class ListViewModel : PageViewModel, IDisposable
     /// FilteredItems to match the results.
     /// </summary>
     private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, SearchTextBox));
+
+    private Dictionary<IListItem, ListItemViewModel> ReadVmCache() => Volatile.Read(ref _vmCache);
+
+    private static bool IsCurrentThreadUiThread()
+    {
+        try
+        {
+            return DispatcherQueue.GetForCurrentThread()?.HasThreadAccess == true;
+        }
+        catch (COMException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Detects if we're currently within a GetItems call on this thread for this view model. This is used to detect
+    /// reentrant calls to GetItems, so we can defer subsequent calls until the first one finishes, to avoid
+    /// concurrent GetItems calls which most extensions won't be expecting.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if we're currently within a GetItems call on this thread for this view model; otherwise, <see langword="false"/>.
+    /// </returns>
+    private bool IsGetItemsActiveOnCurrentThread()
+    {
+        var depths = _getItemsDepthByViewModel;
+        return depths is not null &&
+               depths.TryGetValue(this, out var depth) &&
+               depth > 0;
+    }
+
+    private void EnterGetItemsScope()
+    {
+        var depths = _getItemsDepthByViewModel ??= [];
+        depths.TryGetValue(this, out var depth);
+        depths[this] = depth + 1;
+    }
+
+    private void ExitGetItemsScope()
+    {
+        var depths = _getItemsDepthByViewModel;
+        if (depths is null || !depths.TryGetValue(this, out var depth))
+        {
+            return;
+        }
+
+        if (depth == 1)
+        {
+            depths.Remove(this);
+            if (depths.Count == 0)
+            {
+                _getItemsDepthByViewModel = null;
+            }
+
+            try
+            {
+                QueueDeferredFetchIfNeeded();
+            }
+            catch (Exception ex)
+            {
+                CoreLogger.LogError("Failed to queue deferred fetch", ex);
+            }
+        }
+        else
+        {
+            depths[this] = depth - 1;
+        }
+    }
+
+    private static void CancelAndDisposeTokenSource(ref CancellationTokenSource? tokenSource)
+    {
+        var tokenSourceToDispose = Interlocked.Exchange(ref tokenSource, null);
+        if (tokenSourceToDispose is null)
+        {
+            return;
+        }
+
+        tokenSourceToDispose.Cancel();
+        tokenSourceToDispose.Dispose();
+    }
+
+    private void ThrowIfFetchCanceledOrStale(int fetchGeneration, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (Volatile.Read(ref _latestFetchGeneration) != fetchGeneration)
+        {
+            throw new OperationCanceledException();
+        }
+    }
+
+    private bool IsLatestFetchGeneration(int fetchGeneration)
+    {
+        return Volatile.Read(ref _latestFetchGeneration) == fetchGeneration;
+    }
+
+    private void PublishVmCache(Dictionary<IListItem, ListItemViewModel> newCache)
+    {
+        Volatile.Write(ref _vmCache, newCache);
+    }
 
     /// <summary>
     /// Helper to generate a weighting for a given list item, based on title,
@@ -548,7 +770,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         // Cancel any in-flight slow init from a previous selection and defer
         // the expensive work (extension IPC for MoreCommands, details) so
         // rapid arrow-key navigation skips intermediate items entirely.
-        _selectedItemCts?.Cancel();
+        CancelAndDisposeTokenSource(ref _selectedItemCts);
         var cts = _selectedItemCts = new CancellationTokenSource();
         var ct = cts.Token;
 
@@ -634,7 +856,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void ClearSelectedItem()
     {
-        _selectedItemCts?.Cancel();
+        CancelAndDisposeTokenSource(ref _selectedItemCts);
 
         WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
         WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
@@ -820,21 +1042,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        _cancellationTokenSource = null;
-
-        filterCancellationTokenSource?.Cancel();
-        filterCancellationTokenSource?.Dispose();
-        filterCancellationTokenSource = null;
-
-        _fetchItemsCancellationTokenSource?.Cancel();
-        _fetchItemsCancellationTokenSource?.Dispose();
-        _fetchItemsCancellationTokenSource = null;
-
-        _selectedItemCts?.Cancel();
-        _selectedItemCts?.Dispose();
-        _selectedItemCts = null;
+        CancelAndDisposeTokenSource(ref _cancellationTokenSource);
+        CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
+        CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
+        CancelAndDisposeTokenSource(ref _selectedItemCts);
     }
 
     protected override void UnsafeCleanup()
@@ -844,10 +1055,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         EmptyContent?.SafeCleanup();
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null); // necessary?
 
-        _cancellationTokenSource?.Cancel();
-        filterCancellationTokenSource?.Cancel();
-        _fetchItemsCancellationTokenSource?.Cancel();
-        _selectedItemCts?.Cancel();
+        CancelAndDisposeTokenSource(ref _cancellationTokenSource);
+        CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
+        CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
+        CancelAndDisposeTokenSource(ref _selectedItemCts);
 
         lock (_listLock)
         {
@@ -864,6 +1075,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             FilteredItems.Clear();
         }
+
+        PublishVmCache(new(VmCacheComparer));
 
         Filters?.PropertyChanged -= FiltersPropertyChanged;
         Filters?.SafeCleanup();
