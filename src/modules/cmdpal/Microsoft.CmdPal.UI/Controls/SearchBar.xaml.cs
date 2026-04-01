@@ -9,6 +9,7 @@ using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
@@ -49,7 +50,7 @@ public sealed partial class SearchBar : UserControl,
     // 0.6+ suggestions
     private string? _textToSuggest;
 
-    private SettingsModel Settings => App.Current.Services.GetRequiredService<SettingsModel>();
+    private SettingsModel Settings => App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
     public PageViewModel? CurrentPageViewModel
     {
