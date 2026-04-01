@@ -17,7 +17,7 @@ using Windows.Storage;
 
 namespace Peek.Common.Extensions
 {
-    public static class IFileSystemItemExtensions
+    public static partial class IFileSystemItemExtensions
     {
         public static Size? GetImageSize(this IFileSystemItem item)
         {
@@ -49,8 +49,8 @@ namespace Peek.Common.Extensions
                         string? height = reader.GetAttribute("height");
                         if (width != null && height != null)
                         {
-                            int widthValue = int.Parse(Regex.Match(width, @"\d+").Value, NumberFormatInfo.InvariantInfo);
-                            int heightValue = int.Parse(Regex.Match(height, @"\d+").Value, NumberFormatInfo.InvariantInfo);
+                            int widthValue = int.Parse(DigitsRegex().Match(width).Value, NumberFormatInfo.InvariantInfo);
+                            int heightValue = int.Parse(DigitsRegex().Match(height).Value, NumberFormatInfo.InvariantInfo);
                             size = new Size(widthValue, heightValue);
                         }
                         else
@@ -110,5 +110,8 @@ namespace Peek.Common.Extensions
             };
             return contentType;
         }
+
+        [GeneratedRegex(@"\d+")]
+        private static partial Regex DigitsRegex();
     }
 }

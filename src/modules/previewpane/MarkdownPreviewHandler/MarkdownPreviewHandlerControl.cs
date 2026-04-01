@@ -117,8 +117,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                 }
 
                 string fileText = File.ReadAllText(filePath);
-                Regex imageTagRegex = new Regex(@"<[ ]*img.*>");
-                if (imageTagRegex.IsMatch(fileText))
+                if (ImageTagRegex().IsMatch(fileText))
                 {
                     _infoBarDisplayed = true;
                 }
@@ -309,5 +308,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         {
             _infoBarDisplayed = true;
         }
+
+        [GeneratedRegex(@"<[ ]*img.*>")]
+        private static partial Regex ImageTagRegex();
     }
 }

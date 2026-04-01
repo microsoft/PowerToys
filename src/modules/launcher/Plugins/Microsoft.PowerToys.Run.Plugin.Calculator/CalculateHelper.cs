@@ -10,23 +10,9 @@ using static Microsoft.PowerToys.Run.Plugin.Calculator.CalculateEngine;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
-    public static class CalculateHelper
+    public static partial class CalculateHelper
     {
-        private static readonly Regex RegValidExpressChar = new Regex(
-            @"^(" +
-            @"%|" +
-            @"ceil\s*\(|floor\s*\(|exp\s*\(|max\s*\(|min\s*\(|abs\s*\(|log(?:2|10)?\s*\(|ln\s*\(|sqrt\s*\(|pow\s*\(|" +
-            @"factorial\s*\(|sign\s*\(|round\s*\(|rand\s*\(\)|randi\s*\([^\)]|" +
-            @"sin\s*\(|cos\s*\(|tan\s*\(|arcsin\s*\(|arccos\s*\(|arctan\s*\(|" +
-            @"sinh\s*\(|cosh\s*\(|tanh\s*\(|arsinh\s*\(|arcosh\s*\(|artanh\s*\(|" +
-            @"rad\s*\(|deg\s*\(|grad\s*\(|" + /* trigonometry unit conversion macros */
-            @"pi|" +
-            @"==|~=|&&|\|\||" +
-            @"((-?(\d+(\.\d*)?)|-?(\.\d+))[Ee](-?\d+))|" + /* expression from CheckScientificNotation between parenthesis */
-            @"e|[0-9]|0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
-            @")+$",
-            RegexOptions.Compiled);
-
+        // RegValidExpressChar is now a [GeneratedRegex] method at the bottom of the class.
         private const string DegToRad = "(pi / 180) * ";
         private const string DegToGrad = "(10 / 9) * ";
         private const string GradToRad = "(pi / 200) * ";
@@ -41,7 +27,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 throw new ArgumentNullException(paramName: nameof(input));
             }
 
-            if (!RegValidExpressChar.IsMatch(input))
+            if (!RegValidExpressCharRegex().IsMatch(input))
             {
                 return false;
             }
@@ -85,8 +71,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
              * e: Captures 'e' or 'E'
              * (-?\d+): Captures an integer number (e.g. "-1" or "23")
              */
-            var p = @"(-?(\d+(\.\d*)?)|-?(\.\d+))e(-?\d+)";
-            return Regex.Replace(input, p, "($1 * 10^($5))", RegexOptions.IgnoreCase);
+            return ScientificNotationRegex().Replace(input, "($1 * 10^($5))");
         }
 
         /*
@@ -99,7 +84,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             do
             {
                 input = output;
-                output = Regex.Replace(input, @"(\d+|pi|e)\s*(\()", m =>
+                output = NumberOrConstantThenParenthesisExprRegex().Replace(input, m =>
                 {
                     if (m.Index > 0 && char.IsLetter(input[m.Index - 1]))
                     {
@@ -124,7 +109,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             do
             {
                 input = output;
-                output = Regex.Replace(input, @"(\d+|pi|e)\s*([a-zA-Z]+[0-9]*\s*\()", m =>
+                output = NumberOrConstantThenFuncRegex().Replace(input, m =>
                 {
                     if (input[m.Index] == 'e' && input[m.Index + 1] == 'x' && input[m.Index + 2] == 'p')
                     {
@@ -150,9 +135,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
          */
         private static string CheckParenthesisExprThenFunc(string input)
         {
-            var p = @"(\))\s*([a-zA-Z]+[0-9]*\s*\()";
-            var r = "$1 * $2";
-            return Regex.Replace(input, p, r);
+            return ParenthesisExprThenFuncRegex().Replace(input, "$1 * $2");
         }
 
         /*
@@ -161,9 +144,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
          */
         private static string CheckParenthesisExprThenParenthesisExpr(string input)
         {
-            var p = @"(\))\s*(\()";
-            var r = "$1 * $2";
-            return Regex.Replace(input, p, r);
+            return ParenthesisExprThenParenthesisExprRegex().Replace(input, "$1 * $2");
         }
 
         /*
@@ -175,7 +156,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             do
             {
                 input = output;
-                output = Regex.Replace(input, @"(\d+)\s*(pi|e)", m =>
+                output = NumberThenConstantRegex().Replace(input, m =>
                 {
                     if (m.Index > 0 && char.IsLetter(input[m.Index - 1]))
                     {
@@ -199,7 +180,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             do
             {
                 input = output;
-                output = Regex.Replace(input, @"(pi|e)\s*(pi|e)", m =>
+                output = ConstantThenConstantRegex().Replace(input, m =>
                 {
                     if (m.Index > 0 && char.IsLetter(input[m.Index - 1]))
                     {
@@ -245,7 +226,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             int index = 0;    // Index for match to ensure that the same match is not found twice
 
-            Regex regex = new Regex(pattern);
+            Regex regex = new Regex(pattern); // Dynamic pattern: can't use GeneratedRegex
             Match match;
 
             while ((match = regex.Match(input, index)).Success)
@@ -299,7 +280,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         {
             // Create the pattern to match the function, opening bracket, and any spaces in between
             string pattern = $@"{function}\s*\(";
-            return Regex.Replace(input, pattern, modification + "(");
+            return Regex.Replace(input, pattern, modification + "("); // Dynamic pattern: can't use GeneratedRegex
         }
 
         public static string ExpandTrigConversions(string input, TrigMode mode)
@@ -328,5 +309,29 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             return modifiedInput;
         }
+
+        [GeneratedRegex(@"^(%|ceil\s*\(|floor\s*\(|exp\s*\(|max\s*\(|min\s*\(|abs\s*\(|log(?:2|10)?\s*\(|ln\s*\(|sqrt\s*\(|pow\s*\(|factorial\s*\(|sign\s*\(|round\s*\(|rand\s*\(\)|randi\s*\([^\)]|sin\s*\(|cos\s*\(|tan\s*\(|arcsin\s*\(|arccos\s*\(|arctan\s*\(|sinh\s*\(|cosh\s*\(|tanh\s*\(|arsinh\s*\(|arcosh\s*\(|artanh\s*\(|rad\s*\(|deg\s*\(|grad\s*\(|pi|==|~=|&&|\|\||((-?(\d+(\.\d*)?)|-?(\.\d+))[Ee](-?\d+))|e|[0-9]|0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]])+$")]
+        private static partial Regex RegValidExpressCharRegex();
+
+        [GeneratedRegex(@"(-?(\d+(\.\d*)?)|-?(\.\d+))e(-?\d+)", RegexOptions.IgnoreCase)]
+        private static partial Regex ScientificNotationRegex();
+
+        [GeneratedRegex(@"(\d+|pi|e)\s*(\()")]
+        private static partial Regex NumberOrConstantThenParenthesisExprRegex();
+
+        [GeneratedRegex(@"(\d+|pi|e)\s*([a-zA-Z]+[0-9]*\s*\()")]
+        private static partial Regex NumberOrConstantThenFuncRegex();
+
+        [GeneratedRegex(@"(\))\s*([a-zA-Z]+[0-9]*\s*\()")]
+        private static partial Regex ParenthesisExprThenFuncRegex();
+
+        [GeneratedRegex(@"(\))\s*(\()")]
+        private static partial Regex ParenthesisExprThenParenthesisExprRegex();
+
+        [GeneratedRegex(@"(\d+)\s*(pi|e)")]
+        private static partial Regex NumberThenConstantRegex();
+
+        [GeneratedRegex(@"(pi|e)\s*(pi|e)")]
+        private static partial Regex ConstantThenConstantRegex();
     }
 }

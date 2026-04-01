@@ -13,13 +13,17 @@ using Wox.Plugin;
 
 namespace Community.PowerToys.Run.Plugin.UnitConverter
 {
-    public static class InputInterpreter
+    public static partial class InputInterpreter
     {
-        private static readonly string Pattern = @"(?<=\d)(?![,.\-])(?=[\D])|(?<=[\D])(?<![,.\-])(?=\d)";
+        [GeneratedRegex(@"(?<=\d)(?![,.\-])(?=[\D])|(?<=[\D])(?<![,.\-])(?=\d)")]
+        private static partial Regex SplitPattern();
+
+        [GeneratedRegex("sq(s|μm|mm|cm|dm|m|km|mil|in|ft|yd|mi|nmi)")]
+        private static partial Regex SquareUnitRegex();
 
         public static string[] RegexSplitter(string[] split)
         {
-            return Regex.Split(split[0], Pattern);
+            return SplitPattern().Split(split[0]);
         }
 
         /// <summary>
@@ -32,7 +36,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 return;
             }
 
-            string[] parseInputWithoutSpace = Regex.Split(split[0], Pattern);
+            string[] parseInputWithoutSpace = SplitPattern().Split(split[0]);
 
             if (parseInputWithoutSpace.Length > 1)
             {
@@ -261,8 +265,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         public static void SquareHandler(ref string[] split)
         {
-            split[1] = Regex.Replace(split[1], "sq(s|μm|mm|cm|dm|m|km|mil|in|ft|yd|mi|nmi)", "$1²");
-            split[3] = Regex.Replace(split[3], "sq(s|μm|mm|cm|dm|m|km|mil|in|ft|yd|mi|nmi)", "$1²");
+            split[1] = SquareUnitRegex().Replace(split[1], "$1²");
+            split[3] = SquareUnitRegex().Replace(split[3], "$1²");
         }
 
         public static ConvertModel Parse(Query query)

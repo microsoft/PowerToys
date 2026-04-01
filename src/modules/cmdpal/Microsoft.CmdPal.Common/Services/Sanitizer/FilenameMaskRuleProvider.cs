@@ -8,7 +8,7 @@ using Microsoft.CmdPal.Common.Services.Sanitizer.Abstraction;
 
 namespace Microsoft.CmdPal.Common.Services.Sanitizer;
 
-internal sealed class FilenameMaskRuleProvider : ISanitizationRuleProvider
+internal sealed partial class FilenameMaskRuleProvider : ISanitizationRuleProvider
 {
     private static readonly FrozenSet<string> CommonFileStemExclusions = new[]
     {
@@ -30,14 +30,7 @@ internal sealed class FilenameMaskRuleProvider : ISanitizationRuleProvider
 
     public IEnumerable<SanitizationRule> GetRules()
     {
-        const string pattern = """
-        (?<full>
-            (?: [A-Za-z]: )? (?: [\\/][^\\/:*?""<>|\s]+ )+       # drive-rooted or UNC-like
-          |     [^\\/:*?""<>|\s]+ (?: [\\/][^\\/:*?""<>|\s]+ )+  # relative with at least one sep
-        )
-        """;
-
-        var rx = new Regex(pattern, SanitizerDefaults.DefaultOptions | RegexOptions.IgnorePatternWhitespace, TimeSpan.FromMilliseconds(SanitizerDefaults.DefaultMatchTimeoutMs));
+        var rx = FilePathRegex();
         yield return new SanitizationRule(rx, MatchEvaluator, "Mask filename in any path");
         yield break;
 
@@ -138,4 +131,12 @@ internal sealed class FilenameMaskRuleProvider : ISanitizationRuleProvider
 
         return hasDot;
     }
+
+    [GeneratedRegex("""
+        (?<full>
+            (?: [A-Za-z]: )? (?: [\\/][^\\/:*?""<>|\s]+ )+       # drive-rooted or UNC-like
+          |     [^\\/:*?""<>|\s]+ (?: [\\/][^\\/:*?""<>|\s]+ )+  # relative with at least one sep
+        )
+        """, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.IgnorePatternWhitespace)]
+    private static partial Regex FilePathRegex();
 }

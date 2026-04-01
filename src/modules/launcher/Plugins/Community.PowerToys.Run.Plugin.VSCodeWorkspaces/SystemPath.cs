@@ -6,13 +6,14 @@ using System.Text.RegularExpressions;
 
 namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
 {
-    internal sealed class SystemPath
+    internal sealed partial class SystemPath
     {
-        private static readonly Regex WindowsPath = new Regex(@"^([a-zA-Z]:)", RegexOptions.Compiled);
+        [GeneratedRegex(@"^([a-zA-Z]:)")]
+        private static partial Regex WindowsPath();
 
         public static string RealPath(string path)
         {
-            if (WindowsPath.IsMatch(path))
+            if (WindowsPath().IsMatch(path))
             {
                 string windowsPath = path.Replace("/", "\\");
                 return $"{windowsPath[0]}".ToUpperInvariant() + windowsPath.Remove(0, 1);

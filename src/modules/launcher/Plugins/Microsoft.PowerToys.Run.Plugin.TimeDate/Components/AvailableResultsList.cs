@@ -11,8 +11,14 @@ using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
-    internal static class AvailableResultsList
+    internal static partial class AvailableResultsList
     {
+        [GeneratedRegex("^UTC:")]
+        private static partial Regex RegexUtcPrefix();
+
+        [GeneratedRegex(@"(?<!\\)\\")]
+        private static partial Regex RegexUnescapedBackslash();
+
         /// <summary>
         /// Returns a list with all available date time formats
         /// </summary>
@@ -99,7 +105,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                             }
 
                             // Get formated date
-                            var value = TimeAndDateHelper.ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, eraShort, Regex.Replace(formatSyntax, "^UTC:", string.Empty), firstWeekRule, firstDayOfTheWeek);
+                            var value = TimeAndDateHelper.ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, eraShort, RegexUtcPrefix().Replace(formatSyntax, string.Empty), firstWeekRule, firstDayOfTheWeek);
                             try
                             {
                                 value = dtObject.ToString(value, CultureInfo.CurrentCulture);
@@ -113,7 +119,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                                 else
                                 {
                                     // Do not fail as we have custom format syntax. Instead fix backslashes.
-                                    value = Regex.Replace(value, @"(?<!\\)\\", string.Empty).Replace("\\\\", "\\");
+                                    value = RegexUnescapedBackslash().Replace(value, string.Empty).Replace("\\\\", "\\");
                                 }
                             }
 

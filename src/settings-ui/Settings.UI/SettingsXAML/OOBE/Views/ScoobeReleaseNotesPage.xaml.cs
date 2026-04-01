@@ -31,25 +31,25 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         /// <summary>
         /// Regex to remove installer hash sections from the release notes.
         /// </summary>
-        private const string RemoveInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+## Highlights";
-        private const string RemoveHotFixInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+$";
-        private const RegexOptions RemoveInstallerHashesRegexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
+        [GeneratedRegex(@"(\r\n)+## Installer Hashes(\r\n.*)+## Highlights", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex RemoveInstallerHashesRegex();
+
+        [GeneratedRegex(@"(\r\n)+## Installer Hashes(\r\n.*)+$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex RemoveHotFixInstallerHashesRegex();
 
         /// <summary>
         /// Regex to match markdown images with 'Hero' in the alt text.
         /// Matches: ![...Hero...](url)
         /// </summary>
-        private static readonly Regex HeroImageRegex = new Regex(
-            @"!\[([^\]]*Hero[^\]]*)\]\(([^)]+)\)",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        [GeneratedRegex(@"!\[([^\]]*Hero[^\]]*)\]\(([^)]+)\)", RegexOptions.IgnoreCase)]
+        private static partial Regex HeroImageRegex();
 
         /// <summary>
         /// Regex to match GitHub PR/Issue references (e.g., #41029).
         /// Only matches # followed by digits that are not already part of a markdown link.
         /// </summary>
-        private static readonly Regex GitHubPrReferenceRegex = new Regex(
-            @"(?<!\[)#(\d+)(?!\])",
-            RegexOptions.Compiled);
+        [GeneratedRegex(@"(?<!\[)#(\d+)(?!\])")]
+        private static partial Regex GitHubPrReferenceRegex();
 
         private static readonly CompositeFormat GitHubPrLinkTemplate = CompositeFormat.Parse("[#{0}](https://github.com/microsoft/PowerToys/pull/{0})");
         private static readonly CompositeFormat GitHubReleaseLinkTemplate = CompositeFormat.Parse("https://github.com/microsoft/PowerToys/releases/tag/{0}");
@@ -64,10 +64,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             StringBuilder releaseNotesHtmlBuilder = new StringBuilder(string.Empty);
 
             // Regex to remove installer hash sections from the release notes.
-            Regex removeHashRegex = new Regex(RemoveInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
+            Regex removeHashRegex = RemoveInstallerHashesRegex();
 
             // Regex to remove installer hash sections from the release notes, since there'll be no Highlights section for hotfix releases.
-            Regex removeHotfixHashRegex = new Regex(RemoveHotFixInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
+            Regex removeHotfixHashRegex = RemoveHotFixInstallerHashesRegex();
 
             string lastHeroImageUrl = null;
 
@@ -96,17 +96,17 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 notes = removeHotfixHashRegex.Replace(notes, string.Empty);
 
                 // Find all Hero images and keep track of the last one
-                var heroMatches = HeroImageRegex.Matches(notes);
+                var heroMatches = HeroImageRegex().Matches(notes);
                 foreach (Match match in heroMatches)
                 {
                     lastHeroImageUrl = match.Groups[2].Value;
                 }
 
                 // Remove Hero images from the markdown
-                notes = HeroImageRegex.Replace(notes, string.Empty);
+                notes = HeroImageRegex().Replace(notes, string.Empty);
 
                 // Convert GitHub PR/Issue references to hyperlinks
-                notes = GitHubPrReferenceRegex.Replace(notes, match =>
+                notes = GitHubPrReferenceRegex().Replace(notes, match =>
                     string.Format(CultureInfo.InvariantCulture, GitHubPrLinkTemplate, match.Groups[1].Value));
 
                 releaseNotesHtmlBuilder.AppendLine(notes);
