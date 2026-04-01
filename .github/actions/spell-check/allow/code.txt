@@ -367,3 +367,14 @@ Nonpaged
 
 # XAML
 Untargeted
+
+# Monaco Editor / Puppeteer
+cdp
+Cdp
+crdownload
+networkidle
+
+# Monaco Editor languages
+kotlin
+ksh
+pde
