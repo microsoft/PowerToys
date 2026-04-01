@@ -35,7 +35,7 @@ public class BaseDscTest
     /// <summary>
     /// Execute a dsc command with the provided arguments.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the DSC command to execute.</typeparam>
     /// <param name="args">The command-line arguments to pass to the DSC command.</param>
     /// <returns></returns>
     protected DscExecuteResult ExecuteDscCommand<T>(params string[] args)
