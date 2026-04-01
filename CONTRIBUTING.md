@@ -31,7 +31,7 @@ To let the team know which issues are important, upvote by clicking the [+😊] 
 
 ---
 
-## Contributing fixes/features
+## Contributing fixes or features
 
 Please comment on our [Would you like to contribute to PowerToys?](https://github.com/microsoft/PowerToys/issues/28769) thread to let us know you're interested in working on something before you start. This helps avoid multiple people unexpectedly working on the same thing and ensures everyone is clear on what should be done. It's less work for everyone to establish this up front.
 

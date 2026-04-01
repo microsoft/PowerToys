@@ -1,4 +1,4 @@
-# Notices and information
+# NOTICES AND INFORMATION
 
 This software incorporates material from third parties.
 
@@ -13,7 +13,7 @@ This software incorporates material from third parties.
 - PowerDisplay
 - Registry Preview
 
-## Utility: Color picker
+## Utility: Color Picker
 
 ### Martin Chrzan's Color Picker
 
@@ -143,7 +143,7 @@ TORT OR  OTHERWISE, ARISING  FROM, OUT  OF OR  IN CONNECTION  WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-## Utility: PowerToys run built-in extensions
+## Utility: PowerToys Run built-in extensions
 
 ### Calculator
 
@@ -177,7 +177,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## Utility: File explorer add-ins
+## Utility: File Explorer add-ins
 
 ### Monaco Editor
 
@@ -1529,7 +1529,7 @@ PowerDisplay's DDC/CI implementation references techniques from Twinkle Tray.
 
 MIT License
 
-Copyright &copy; 2020 Xander Frangos
+Copyright © 2020 Xander Frangos
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
