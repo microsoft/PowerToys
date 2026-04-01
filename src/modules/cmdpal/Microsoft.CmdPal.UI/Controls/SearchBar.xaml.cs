@@ -318,7 +318,6 @@ public sealed partial class SearchBar : UserControl,
     private void FilterBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         // Logger.LogInfo($"FilterBox_TextChanged: {FilterBox.Text}");
-
         if (InSuggestion)
         {
             // Logger.LogInfo($"-- skipping, in suggestion --");
