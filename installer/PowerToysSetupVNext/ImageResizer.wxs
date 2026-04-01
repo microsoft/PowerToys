@@ -3,10 +3,10 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define ImageResizerAssetsFiles=?>
-  <?define ImageResizerAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\ImageResizer\?>
+  <?define ImageResizerAssetsFilesPath=$(var.BinDir)Assets\ImageResizer\?>
 
   <Fragment>
-    <DirectoryRef Id="WinUI3AppsAssetsFolder">
+    <DirectoryRef Id="BaseApplicationsAssetsFolder">
       <Directory Id="ImageResizerAssetsFolder" Name="ImageResizer" />
     </DirectoryRef>
 

@@ -3,10 +3,10 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define EnvironmentVariablesAssetsFiles=?>
-  <?define EnvironmentVariablesAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\EnvironmentVariables\?>
+  <?define EnvironmentVariablesAssetsFilesPath=$(var.BinDir)Assets\EnvironmentVariables\?>
 
   <Fragment>
-    <DirectoryRef Id="WinUI3AppsAssetsFolder">
+    <DirectoryRef Id="BaseApplicationsAssetsFolder">
       <Directory Id="EnvironmentVariablesAssetsFolder" Name="EnvironmentVariables" />
     </DirectoryRef>
     <DirectoryRef Id="EnvironmentVariablesAssetsFolder" FileSource="$(var.EnvironmentVariablesAssetsFilesPath)">

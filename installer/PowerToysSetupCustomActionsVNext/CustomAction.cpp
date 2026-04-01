@@ -949,11 +949,11 @@ UINT __stdcall UninstallCommandNotFoundModuleCA(MSIHANDLE hInstall)
     command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted";
     command += " -Command ";
     command += "\"[Environment]::SetEnvironmentVariable('PATH', [Environment]::GetEnvironmentVariable('PATH', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('PATH', 'User'), 'Process');";
-    command += "pwsh.exe -NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File '" + winrt::to_string(installationFolder) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\DisableModule.ps1" + "'\"";
+    command += "pwsh.exe -NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File '" + winrt::to_string(installationFolder) + "\\Assets\\Settings\\Scripts\\DisableModule.ps1" + "'\"";
 #else
     command = "pwsh.exe";
     command += " ";
-    command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(installationFolder) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\DisableModule.ps1" + "\"";
+    command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(installationFolder) + "\\Assets\\Settings\\Scripts\\DisableModule.ps1" + "\"";
 #endif
 
     system(command.c_str());
@@ -978,7 +978,7 @@ UINT __stdcall UpgradeCommandNotFoundModuleCA(MSIHANDLE hInstall)
 
     command = "pwsh.exe";
     command += " ";
-    command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(installationFolder) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\UpgradeModule.ps1" + "\"";
+    command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(installationFolder) + "\\Assets\\Settings\\Scripts\\UpgradeModule.ps1" + "\"";
 
     system(command.c_str());
 
@@ -1354,8 +1354,8 @@ UINT __stdcall InstallCmdPalPackageCA(MSIHANDLE hInstall)
 
     try
     {
-        auto msix = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\CmdPal\\", false);
-        auto dependencies = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\CmdPal\\Dependencies\\", true);
+        auto msix = package::FindMsixFile(installationFolder + L"\\CmdPal\\", false);
+        auto dependencies = package::FindMsixFile(installationFolder + L"\\CmdPal\\Dependencies\\", true);
 
         if (!msix.empty())
         {

@@ -3,10 +3,10 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define PowerRenameAssetsFiles=?>
-  <?define PowerRenameAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\PowerRename\?>
+  <?define PowerRenameAssetsFilesPath=$(var.BinDir)Assets\PowerRename\?>
 
   <Fragment>
-    <DirectoryRef Id="WinUI3AppsAssetsFolder">
+    <DirectoryRef Id="BaseApplicationsAssetsFolder">
       <Directory Id="PowerRenameAssetsFolder" Name="PowerRename" />
     </DirectoryRef>
     <DirectoryRef Id="PowerRenameAssetsFolder" FileSource="$(var.PowerRenameAssetsFilesPath)">

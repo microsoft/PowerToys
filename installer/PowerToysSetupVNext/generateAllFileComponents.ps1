@@ -153,11 +153,11 @@ Set-Content -Path $baseAppWxsPath -Value $baseAppWxs
 Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSScriptRoot\BaseApplications.wxs
 
 #WinUI3Applications
-Generate-FileList -fileDepsJson "" -fileListName WinUI3ApplicationsFiles -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"
+Generate-FileList -fileDepsJson "" -fileListName WinUI3ApplicationsFiles -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release"
 Generate-FileComponents -fileListName "WinUI3ApplicationsFiles" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs
 
 #AdvancedPaste
-Generate-FileList -fileDepsJson "" -fileListName AdvancedPasteAssetsFiles -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\AdvancedPaste"
+Generate-FileList -fileDepsJson "" -fileListName AdvancedPasteAssetsFiles -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\AdvancedPaste"
 Generate-FileComponents -fileListName "AdvancedPasteAssetsFiles" -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs
 
 #AwakeFiles
@@ -169,7 +169,7 @@ Generate-FileList -fileDepsJson "" -fileListName ColorPickerAssetsFiles -wxsFile
 Generate-FileComponents -fileListName "ColorPickerAssetsFiles" -wxsFilePath $PSScriptRoot\ColorPicker.wxs
 
 #Environment Variables
-Generate-FileList -fileDepsJson "" -fileListName EnvironmentVariablesAssetsFiles -wxsFilePath $PSScriptRoot\EnvironmentVariables.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\EnvironmentVariables"
+Generate-FileList -fileDepsJson "" -fileListName EnvironmentVariablesAssetsFiles -wxsFilePath $PSScriptRoot\EnvironmentVariables.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\EnvironmentVariables"
 Generate-FileComponents -fileListName "EnvironmentVariablesAssetsFiles" -wxsFilePath $PSScriptRoot\EnvironmentVariables.wxs
 
 #FileExplorerAdd-ons
@@ -179,20 +179,20 @@ Generate-FileComponents -fileListName "MonacoPreviewHandlerMonacoAssetsFiles" -w
 Generate-FileComponents -fileListName "MonacoPreviewHandlerCustomLanguagesFiles" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs
 
 #FileLocksmith
-Generate-FileList -fileDepsJson "" -fileListName FileLocksmithAssetsFiles -wxsFilePath $PSScriptRoot\FileLocksmith.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\FileLocksmith"
+Generate-FileList -fileDepsJson "" -fileListName FileLocksmithAssetsFiles -wxsFilePath $PSScriptRoot\FileLocksmith.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\FileLocksmith"
 Generate-FileComponents -fileListName "FileLocksmithAssetsFiles" -wxsFilePath $PSScriptRoot\FileLocksmith.wxs
 
 #Hosts
-Generate-FileList -fileDepsJson "" -fileListName HostsAssetsFiles -wxsFilePath $PSScriptRoot\Hosts.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Hosts"
+Generate-FileList -fileDepsJson "" -fileListName HostsAssetsFiles -wxsFilePath $PSScriptRoot\Hosts.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Hosts"
 Generate-FileComponents -fileListName "HostsAssetsFiles" -wxsFilePath $PSScriptRoot\Hosts.wxs
 
 #ImageResizer
-Generate-FileList -fileDepsJson "" -fileListName ImageResizerAssetsFiles -wxsFilePath $PSScriptRoot\ImageResizer.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ImageResizer"
+Generate-FileList -fileDepsJson "" -fileListName ImageResizerAssetsFiles -wxsFilePath $PSScriptRoot\ImageResizer.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\ImageResizer"
 Generate-FileComponents -fileListName "ImageResizerAssetsFiles" -wxsFilePath $PSScriptRoot\ImageResizer.wxs
 
 #KeyboardManager
 Generate-FileList -fileDepsJson "" -fileListName KeyboardManagerAssetsFiles -wxsFilePath $PSScriptRoot\KeyboardManager.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\KeyboardManager"
-Generate-FileList -fileDepsJson "" -fileListName KeyboardManagerAssetsWinUI3Files -wxsFilePath $PSScriptRoot\KeyboardManager.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\KeyboardManagerEditor"
+Generate-FileList -fileDepsJson "" -fileListName KeyboardManagerAssetsWinUI3Files -wxsFilePath $PSScriptRoot\KeyboardManager.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\KeyboardManagerEditor"
 Generate-FileComponents -fileListName "KeyboardManagerAssetsFiles" -wxsFilePath $PSScriptRoot\KeyboardManager.wxs
 Generate-FileComponents -fileListName "KeyboardManagerAssetsWinUI3Files" -wxsFilePath $PSScriptRoot\KeyboardManager.wxs
 
@@ -201,15 +201,15 @@ Generate-FileList -fileDepsJson "" -fileListName LightSwitchFiles -wxsFilePath $
 Generate-FileComponents -fileListName "LightSwitchFiles" -wxsFilePath $PSScriptRoot\LightSwitch.wxs
 
 #New+
-Generate-FileList -fileDepsJson "" -fileListName NewPlusAssetsFiles -wxsFilePath $PSScriptRoot\NewPlus.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\NewPlus"
+Generate-FileList -fileDepsJson "" -fileListName NewPlusAssetsFiles -wxsFilePath $PSScriptRoot\NewPlus.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\NewPlus"
 Generate-FileComponents -fileListName "NewPlusAssetsFiles" -wxsFilePath $PSScriptRoot\NewPlus.wxs
 
 #Peek
-Generate-FileList -fileDepsJson "" -fileListName PeekAssetsFiles -wxsFilePath $PSScriptRoot\Peek.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Peek\"
+Generate-FileList -fileDepsJson "" -fileListName PeekAssetsFiles -wxsFilePath $PSScriptRoot\Peek.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Peek\"
 Generate-FileComponents -fileListName "PeekAssetsFiles" -wxsFilePath $PSScriptRoot\Peek.wxs
 
 #PowerRename
-Generate-FileList -fileDepsJson "" -fileListName PowerRenameAssetsFiles -wxsFilePath $PSScriptRoot\PowerRename.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\PowerRename\"
+Generate-FileList -fileDepsJson "" -fileListName PowerRenameAssetsFiles -wxsFilePath $PSScriptRoot\PowerRename.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\PowerRename\"
 Generate-FileComponents -fileListName "PowerRenameAssetsFiles" -wxsFilePath $PSScriptRoot\PowerRename.wxs
 
 #PowerDisplay
@@ -217,7 +217,7 @@ Generate-FileList -fileDepsJson "" -fileListName PowerDisplayAssetsFiles -wxsFil
 Generate-FileComponents -fileListName "PowerDisplayAssetsFiles" -wxsFilePath $PSScriptRoot\PowerDisplay.wxs
 
 #RegistryPreview
-Generate-FileList -fileDepsJson "" -fileListName RegistryPreviewAssetsFiles -wxsFilePath $PSScriptRoot\RegistryPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\RegistryPreview\"
+Generate-FileList -fileDepsJson "" -fileListName RegistryPreviewAssetsFiles -wxsFilePath $PSScriptRoot\RegistryPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\RegistryPreview\"
 Generate-FileComponents -fileListName "RegistryPreviewAssetsFiles" -wxsFilePath $PSScriptRoot\RegistryPreview.wxs
 
 #Run
@@ -331,11 +331,11 @@ Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideSvgFiles -wxsFileP
 Generate-FileComponents -fileListName "ShortcutGuideSvgFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs
 
 #Settings
-Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\"
-Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsModulesFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Modules\"
-Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEAssetsModulesFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Modules\OOBE\"
-Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEAssetsFluentIconsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Icons\"
-Generate-FileList -fileDepsJson "" -fileListName SettingsV2IconsModelsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Icons\Models\"
+Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Settings\"
+Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsModulesFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Settings\Modules\"
+Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEAssetsModulesFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Settings\Modules\OOBE\"
+Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEAssetsFluentIconsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Settings\Icons\"
+Generate-FileList -fileDepsJson "" -fileListName SettingsV2IconsModelsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Settings\Icons\Models\"
 Generate-FileComponents -fileListName "SettingsV2AssetsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2AssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2OOBEAssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs

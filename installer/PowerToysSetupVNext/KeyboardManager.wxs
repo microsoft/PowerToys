@@ -1,17 +1,17 @@
-﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define KeyboardManagerAssetsFiles=?>
   <?define KeyboardManagerAssetsWinUI3Files=?>
   <?define KeyboardManagerAssetsFilesPath=$(var.BinDir)\Assets\KeyboardManager\?>
-  <?define KeyboardManagerAssetsWinUI3FilesPath=$(var.BinDir)\WinUI3Apps\Assets\KeyboardManagerEditor\?>
+  <?define KeyboardManagerAssetsWinUI3FilesPath=$(var.BinDir)\Assets\KeyboardManagerEditor\?>
 
   <Fragment>
     <DirectoryRef Id="BaseApplicationsAssetsFolder">
       <Directory Id="KeyboardManagerAssetsInstallFolder" Name="KeyboardManager" />
     </DirectoryRef>
-    <DirectoryRef Id="WinUI3AppsAssetsFolder">
+    <DirectoryRef Id="BaseApplicationsAssetsFolder">
       <Directory Id="KeyboardManagerAssetsWinUI3InstallFolder" Name="KeyboardManagerEditor" />
     </DirectoryRef>
 

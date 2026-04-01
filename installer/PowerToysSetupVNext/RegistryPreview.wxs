@@ -3,11 +3,11 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define RegistryPreviewAssetsFiles=?>
-  <?define RegistryPreviewAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\RegistryPreview?>
+  <?define RegistryPreviewAssetsFilesPath=$(var.BinDir)Assets\RegistryPreview?>
 
   <Fragment>
     <!-- Registry Preview -->
-    <DirectoryRef Id="WinUI3AppsAssetsFolder">
+    <DirectoryRef Id="BaseApplicationsAssetsFolder">
       <Directory Id="RegistryPreviewAssetsInstallFolder" Name="RegistryPreview" />
     </DirectoryRef>
     <DirectoryRef Id="RegistryPreviewAssetsInstallFolder" FileSource="$(var.RegistryPreviewAssetsFilesPath)">

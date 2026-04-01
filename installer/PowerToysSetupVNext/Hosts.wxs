@@ -3,10 +3,10 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define HostsAssetsFiles=?>
-  <?define HostsAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\Hosts\?>
+  <?define HostsAssetsFilesPath=$(var.BinDir)Assets\Hosts\?>
 
   <Fragment>
-    <DirectoryRef Id="WinUI3AppsAssetsFolder">
+    <DirectoryRef Id="BaseApplicationsAssetsFolder">
       <Directory Id="HostsAssetsFolder" Name="Hosts" />
     </DirectoryRef>
     <DirectoryRef Id="HostsAssetsFolder" FileSource="$(var.HostsAssetsFilesPath)">

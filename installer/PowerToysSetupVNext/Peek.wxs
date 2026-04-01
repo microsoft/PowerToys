@@ -3,10 +3,10 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define PeekAssetsFiles=?>
-  <?define PeekAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\Peek\?>
+  <?define PeekAssetsFilesPath=$(var.BinDir)Assets\Peek\?>
 
   <Fragment>
-    <DirectoryRef Id="WinUI3AppsAssetsFolder">
+    <DirectoryRef Id="BaseApplicationsAssetsFolder">
       <Directory Id="PeekAssetsFolder" Name="Peek" />
     </DirectoryRef>
     <DirectoryRef Id="PeekAssetsFolder" FileSource="$(var.PeekAssetsFilesPath)">

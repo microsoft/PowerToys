@@ -188,18 +188,6 @@
 
     <CustomAction Id="SetUpgradeCommandNotFoundParam" Property="UpgradeCommandNotFound" Value="[INSTALLFOLDER]" />
 
-    <CustomAction Id="SetCreateWinAppSDKHardlinksParam" Property="CreateWinAppSDKHardlinks" Value="[INSTALLFOLDER]" />
-
-    <CustomAction Id="SetDeleteWinAppSDKHardlinksParam" Property="DeleteWinAppSDKHardlinks" Value="[INSTALLFOLDER]" />
-
-    <CustomAction Id="SetCreatePTInteropHardlinksParam" Property="CreatePTInteropHardlinks" Value="[INSTALLFOLDER]" />
-
-    <CustomAction Id="SetDeletePTInteropHardlinksParam" Property="DeletePTInteropHardlinks" Value="[INSTALLFOLDER]" />
-
-    <CustomAction Id="SetCreateDotnetRuntimeHardlinksParam" Property="CreateDotnetRuntimeHardlinks" Value="[INSTALLFOLDER]" />
-
-    <CustomAction Id="SetDeleteDotnetRuntimeHardlinksParam" Property="DeleteDotnetRuntimeHardlinks" Value="[INSTALLFOLDER]" />
-
     <CustomAction Id="RemovePowerToysSchTasks" Return="ignore" Impersonate="no" Execute="deferred" DllEntry="RemoveScheduledTasksCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="InstallEmbeddedMSIXTask" Return="ignore" Impersonate="yes" DllEntry="InstallEmbeddedMSIXCA" BinaryRef="PTCustomActions" />
@@ -285,12 +273,8 @@
           <Directory Id="BaseApplicationsAssetsFolder" Name="Assets">
           </Directory>
           <Directory Id="DSCModulesReferenceFolder" Name="DSCModules" />
-          <Directory Id="WinUI3AppsInstallFolder" Name="WinUI3Apps">
-              <Directory Id="WinUI3AppsMicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
-                <Directory Id="WinUI3AppsMicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
-              </Directory>
-            <Directory Id="WinUI3AppsAssetsFolder" Name="Assets">
-            </Directory>
+          <Directory Id="MicrosoftUIXamlInstallFolder" Name="Microsoft.UI.Xaml">
+            <Directory Id="MicrosoftUIXamlAssetsInstallFolder" Name="Assets" />
           </Directory>
           <Directory Id="ToolsFolder" Name="Tools" />
         </Directory>

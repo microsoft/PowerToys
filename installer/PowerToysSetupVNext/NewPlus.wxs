@@ -3,14 +3,14 @@
    <?include $(sys.CURRENTDIR)\Common.wxi?>
 
    <?define NewPlusAssetsFiles=?>
-   <?define NewPlusAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\NewPlus\?>
-   <?define NewPlusTemplateFilesPath=$(var.BinDir)WinUI3Apps\Assets\NewPlus\Templates\?>
-   <?define NewPlusTemplateSubFilesPath=$(var.BinDir)WinUI3Apps\Assets\NewPlus\Templates\Example folder\?>
+   <?define NewPlusAssetsFilesPath=$(var.BinDir)Assets\NewPlus\?>
+   <?define NewPlusTemplateFilesPath=$(var.BinDir)Assets\NewPlus\Templates\?>
+   <?define NewPlusTemplateSubFilesPath=$(var.BinDir)Assets\NewPlus\Templates\Example folder\?>
 
    <Fragment>
 
       <!-- Assets -->
-      <DirectoryRef Id="WinUI3AppsAssetsFolder">
+      <DirectoryRef Id="BaseApplicationsAssetsFolder">
          <Directory Id="NewPlusAssetsInstallFolder" Name="NewPlus" />
       </DirectoryRef>
       <DirectoryRef Id="NewPlusAssetsInstallFolder" FileSource="$(var.NewPlusAssetsFilesPath)">
@@ -29,7 +29,7 @@
 
       
       <!-- Example templates -->
-      <DirectoryRef Id="WinUI3AppsAssetsFolder">
+      <DirectoryRef Id="BaseApplicationsAssetsFolder">
          <Directory Id="NewPlusInstallFolder" Name="NewPlus">
             <Directory Id="NewPlusTemplatesInstallFolder" Name="Templates">
                <Directory Id="NewPlusTemplatesSubInstallFolder" Name="Example folder" />

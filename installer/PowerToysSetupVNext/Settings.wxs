@@ -3,22 +3,22 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define SettingsV2AssetsFiles=?>
-  <?define SettingsV2AssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\?>
+  <?define SettingsV2AssetsFilesPath=$(var.BinDir)Assets\Settings\?>
 
   <?define SettingsV2AssetsModulesFiles=?>
-  <?define SettingsV2AssetsModulesFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\Modules\?>
+  <?define SettingsV2AssetsModulesFilesPath=$(var.BinDir)Assets\Settings\Modules\?>
 
   <?define SettingsV2OOBEAssetsModulesFiles=?>
-  <?define SettingsV2OOBEAssetsModulesFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\Modules\OOBE\?>
+  <?define SettingsV2OOBEAssetsModulesFilesPath=$(var.BinDir)Assets\Settings\Modules\OOBE\?>
 
   <?define SettingsV2OOBEAssetsFluentIconsFiles=?>
-  <?define SettingsV2OOBEAssetsFluentIconsFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\Icons\?>
+  <?define SettingsV2OOBEAssetsFluentIconsFilesPath=$(var.BinDir)Assets\Settings\Icons\?>
 
   <?define SettingsV2IconsModelsFiles=?>
-  <?define SettingsV2IconsModelsFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\Icons\Models\?>
+  <?define SettingsV2IconsModelsFilesPath=$(var.BinDir)Assets\Settings\Icons\Models\?>
 
   <Fragment>
-    <DirectoryRef Id="WinUI3AppsAssetsFolder">
+    <DirectoryRef Id="BaseApplicationsAssetsFolder">
       <Directory Id="SettingsV2AssetsInstallFolder" Name="Settings">
         <Directory Id="SettingsAppAssetsScriptsFolder" Name="Scripts" />
         <Directory Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" Name="Icons">

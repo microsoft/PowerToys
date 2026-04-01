@@ -3,10 +3,10 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define AdvancedPasteAssetsFiles=?>
-  <?define AdvancedPasteAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\AdvancedPaste\?>
+  <?define AdvancedPasteAssetsFilesPath=$(var.BinDir)Assets\AdvancedPaste\?>
 
   <Fragment>
-    <DirectoryRef Id="WinUI3AppsAssetsFolder">
+    <DirectoryRef Id="BaseApplicationsAssetsFolder">
       <Directory Id="AdvancedPasteAssetsFolder" Name="AdvancedPaste" />
     </DirectoryRef>
     <DirectoryRef Id="AdvancedPasteAssetsFolder" FileSource="$(var.AdvancedPasteAssetsFilesPath)">
