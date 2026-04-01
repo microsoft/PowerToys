@@ -30,7 +30,7 @@ public class CommandLineHelperTests
         File.WriteAllText(_tempTestFile, "test");
     }
 
-    [ClassCleanup]
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static void ClassCleanup()
     {
         // Clean up test directory

@@ -40,7 +40,7 @@ public partial class BookmarkResolverTests
         File.WriteAllText(Path.Combine(_testDirPath, "app.exe"), "This is a test text file.");
     }
 
-    [ClassCleanup]
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
     public static void ClassCleanup()
     {
         if (Directory.Exists(_testDirPath))

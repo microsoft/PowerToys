@@ -319,7 +319,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
 
             // Assert
             Assert.AreEqual(1, apps.Count);
-            Assert.IsTrue(!string.IsNullOrEmpty(apps[0].LnkFilePath));
+            Assert.IsFalse(string.IsNullOrEmpty(apps[0].LnkFilePath));
         }
 
         [TestMethod]

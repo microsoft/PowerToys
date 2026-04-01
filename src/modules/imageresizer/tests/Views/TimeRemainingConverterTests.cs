@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Views
 {
+    [TestClass]
     public class TimeRemainingConverterTests
     {
         [DataTestMethod]

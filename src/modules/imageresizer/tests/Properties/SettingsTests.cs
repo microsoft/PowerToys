@@ -382,7 +382,7 @@ namespace ImageResizer.Properties
             Assert.AreEqual("Small-NotDefault", resultWrapper2.Properties.Sizes[0].Name);
         }
 
-        [ClassCleanup]
+        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
         public static void ClassCleanup()
         {
             _imageResizerApp.Dispose();

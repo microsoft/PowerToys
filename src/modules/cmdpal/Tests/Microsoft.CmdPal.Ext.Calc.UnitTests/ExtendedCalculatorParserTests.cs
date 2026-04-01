@@ -23,7 +23,7 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     public void InputValid_ThrowError_WhenCalledNullOrEmpty(string input)
     {
         // Act
-        Assert.IsTrue(!CalculateHelper.InputValid(input));
+        Assert.IsFalse(CalculateHelper.InputValid(input));
     }
 
     [DataTestMethod]

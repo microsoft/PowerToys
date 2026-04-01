@@ -124,7 +124,7 @@ public class QueryTests : CommandPaletteUnitTestBase
             }
         }
 
-        Assert.IsTrue(!findDisconnectedMACResult, "Disconnected MAC address found in the results.");
+        Assert.IsFalse(findDisconnectedMACResult, "Disconnected MAC address found in the results.");
     }
 
     [TestMethod]

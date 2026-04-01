@@ -18,7 +18,7 @@ namespace UITests_FancyZones
             _session = new FancyZonesSession(testContext);
         }
 
-        [ClassCleanup]
+        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
         public static void ClassCleanup()
         {
             _session?.Close();

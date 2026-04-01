@@ -441,7 +441,7 @@ namespace MouseUtils.UITests
                 }
                 else
                 {
-                    Assert.IsTrue(false, "ComboBox is not found in the setting page.");
+                    Assert.Fail("ComboBox is not found in the setting page.");
                 }
             }
             else

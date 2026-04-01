@@ -278,7 +278,7 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         foreach (var item in commandList)
         {
-            Assert.IsTrue(!string.IsNullOrEmpty(item.TextToSuggest));
+            Assert.IsFalse(string.IsNullOrEmpty(item.TextToSuggest));
             Assert.IsFalse(item.TextToSuggest.StartsWith('"'));
         }
     }
