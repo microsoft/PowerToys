@@ -139,7 +139,7 @@ public class ExtensionTemplateServiceTests
     [TestMethod]
     public void TemplateFileHandling_ThrowsForUnknownExtension()
     {
-        var ex = Assert.ThrowsException<InvalidOperationException>(() => ExtensionTemplateService.GetTemplateFileHandling("template.svg"));
+        var ex = Assert.ThrowsExactly<InvalidOperationException>(() => ExtensionTemplateService.GetTemplateFileHandling("template.svg"));
 
         StringAssert.Contains(ex.Message, ".svg");
     }

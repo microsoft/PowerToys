@@ -131,7 +131,7 @@ public class PlaceholderParserTests
     [TestMethod]
     public void ParsePlaceholders_NullInput_ThrowsArgumentNullException()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => _parser.ParsePlaceholders(null!, out _, out _));
+        Assert.ThrowsExactly<ArgumentNullException>(() => _parser.ParsePlaceholders(null!, out _, out _));
     }
 
     [TestMethod]
@@ -165,13 +165,13 @@ public class PlaceholderParserTests
     public void Placeholder_Constructor_ThrowsOnNull()
     {
         // Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new PlaceholderInfo(null!, 0));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new PlaceholderInfo(null!, 0));
     }
 
     [TestMethod]
     public void Placeholder_Constructor_ThrowsArgumentOutOfRange()
     {
         // Assert
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => new PlaceholderInfo("Name", -1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new PlaceholderInfo("Name", -1));
     }
 }

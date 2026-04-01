@@ -16,7 +16,7 @@ public class AllAppsPageTests : AppsTestBase
     public void AllAppsPage_Constructor_ThrowsOnNullAppCache()
     {
         // Act & Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new AllAppsPage(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new AllAppsPage(null!));
     }
 
     [TestMethod]

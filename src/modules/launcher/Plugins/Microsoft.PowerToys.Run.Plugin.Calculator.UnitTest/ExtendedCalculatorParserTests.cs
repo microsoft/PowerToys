@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         public void InputValid_ThrowError_WhenCalledNullOrEmpty(string input)
         {
             // Act
-            Assert.ThrowsException<ArgumentNullException>(() => CalculateHelper.InputValid(input));
+            Assert.ThrowsExactly<ArgumentNullException>(() => CalculateHelper.InputValid(input));
         }
 
         [DataTestMethod]
@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var engine = new CalculateEngine();
 
             // Act
-            Assert.ThrowsException<ArgumentNullException>(() => engine.Interpret(input, CultureInfo.CurrentCulture, out _));
+            Assert.ThrowsExactly<ArgumentNullException>(() => engine.Interpret(input, CultureInfo.CurrentCulture, out _));
         }
 
         [DataTestMethod]

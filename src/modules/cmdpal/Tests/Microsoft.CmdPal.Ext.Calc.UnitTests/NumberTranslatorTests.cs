@@ -22,7 +22,7 @@ public class NumberTranslatorTests
         CultureInfo targetCulture = targetCultureName is not null ? new CultureInfo(targetCultureName) : null;
 
         // Act
-        Assert.ThrowsException<ArgumentNullException>(() => NumberTranslator.Create(sourceCulture, targetCulture));
+        Assert.ThrowsExactly<ArgumentNullException>(() => NumberTranslator.Create(sourceCulture, targetCulture));
     }
 
     [DataTestMethod]
@@ -50,7 +50,7 @@ public class NumberTranslatorTests
         var translator = NumberTranslator.Create(new CultureInfo("de-DE", false), new CultureInfo("en-US", false));
 
         // Act
-        Assert.ThrowsException<ArgumentNullException>(() => translator.Translate(input));
+        Assert.ThrowsExactly<ArgumentNullException>(() => translator.Translate(input));
     }
 
     [DataTestMethod]

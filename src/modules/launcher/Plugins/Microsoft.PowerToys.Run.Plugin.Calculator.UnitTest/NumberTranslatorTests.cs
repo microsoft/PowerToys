@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             CultureInfo targetCulture = targetCultureName != null ? new CultureInfo(targetCultureName) : null;
 
             // Act
-            Assert.ThrowsException<ArgumentNullException>(() => NumberTranslator.Create(sourceCulture, targetCulture));
+            Assert.ThrowsExactly<ArgumentNullException>(() => NumberTranslator.Create(sourceCulture, targetCulture));
         }
 
         [DataTestMethod]
@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var translator = NumberTranslator.Create(new CultureInfo("de-DE", false), new CultureInfo("en-US", false));
 
             // Act
-            Assert.ThrowsException<ArgumentNullException>(() => translator.Translate(input));
+            Assert.ThrowsExactly<ArgumentNullException>(() => translator.Translate(input));
         }
 
         [DataTestMethod]

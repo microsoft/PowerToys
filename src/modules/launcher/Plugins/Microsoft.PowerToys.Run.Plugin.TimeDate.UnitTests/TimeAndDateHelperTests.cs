@@ -90,7 +90,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Assert
             if (valueExpected == null)
             {
-                Assert.ThrowsException<ArgumentOutOfRangeException>(() => TimeAndDateHelper.ConvertToOleAutomationFormat(dt, (OADateFormats)type));
+                Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => TimeAndDateHelper.ConvertToOleAutomationFormat(dt, (OADateFormats)type));
             }
             else
             {

@@ -77,7 +77,7 @@ public class PlaceholderInfoNameEqualityComparerTests
     public void GetHashCode_Null_ThrowsArgumentNullException()
     {
         var comparer = PlaceholderInfoNameEqualityComparer.Instance;
-        Assert.ThrowsException<ArgumentNullException>(() => comparer.GetHashCode(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => comparer.GetHashCode(null!));
     }
 
     [TestMethod]

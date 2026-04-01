@@ -58,7 +58,7 @@ public class ResultHelperTests
         AvailableResult availableResult = null;
 
         // Act & Assert
-        Assert.ThrowsException<System.NullReferenceException>(() => availableResult.ToListItem());
+        Assert.ThrowsExactly<System.NullReferenceException>(() => availableResult.ToListItem());
     }
 
     [TestMethod]

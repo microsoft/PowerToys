@@ -140,6 +140,6 @@ public class BaseConverterTests
     [DataRow(-1)]
     public void Convert_ThrowsArgumentOutOfRange_WhenBaseInvalid(int toBase)
     {
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => BaseConverter.Convert(BigInteger.One, toBase));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BaseConverter.Convert(BigInteger.One, toBase));
     }
 }

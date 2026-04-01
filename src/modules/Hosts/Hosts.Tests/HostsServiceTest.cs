@@ -224,7 +224,7 @@ namespace Hosts.Tests
             elevationHelper.Setup(m => m.IsElevated).Returns(false);
 
             var service = new HostsService(fileSystem, _userSettings.Object, elevationHelper.Object, _backupManager.Object);
-            await Assert.ThrowsExceptionAsync<NotRunningElevatedException>(async () => await service.WriteAsync("# Empty hosts file", Enumerable.Empty<Entry>()));
+            await Assert.ThrowsExactlyAsync<NotRunningElevatedException>(async () => await service.WriteAsync("# Empty hosts file", Enumerable.Empty<Entry>()));
         }
 
         [TestMethod]
@@ -240,7 +240,7 @@ namespace Hosts.Tests
 
             fileSystem.AddFile(service.HostsFilePath, hostsFile);
 
-            await Assert.ThrowsExceptionAsync<ReadOnlyHostsException>(async () => await service.WriteAsync("# Empty hosts file", Enumerable.Empty<Entry>()));
+            await Assert.ThrowsExactlyAsync<ReadOnlyHostsException>(async () => await service.WriteAsync("# Empty hosts file", Enumerable.Empty<Entry>()));
         }
 
         [TestMethod]
