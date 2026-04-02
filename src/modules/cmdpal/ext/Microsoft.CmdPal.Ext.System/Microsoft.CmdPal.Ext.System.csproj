@@ -11,6 +11,10 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
+  </ItemGroup>
+
   <!-- WASDK, WebView2, CmdPal Toolkit references now included via Common.ExtDependencies.props -->
 
   <ItemGroup>
