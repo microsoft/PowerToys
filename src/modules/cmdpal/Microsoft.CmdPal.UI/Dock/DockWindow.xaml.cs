@@ -423,7 +423,7 @@ public sealed partial class DockWindow : WindowEx,
 
         // The dock window is borderless (SetBorderAndTitleBar(false, false),
         // IsResizable = false) so no frame compensation is needed — the
-        // appbar rect matches the window rect exactly.
+        // app bar rect matches the window rect exactly.
         PInvoke.MoveWindow(
             _hwnd,
             _appBarData.rc.left,
