@@ -190,20 +190,20 @@ namespace Microsoft.Plugin.Shell
 
         /// <summary>
         /// Escapes embedded double-quotes in a string for cmd.exe.
-        /// cmd.exe uses doubled double-quotes (\"\") for escaping inside a double-quoted string.
+        /// cmd.exe uses doubled double-quotes ("") for escaping inside a double-quoted string.
         /// </summary>
         private static string EscapeCmdArgument(string arg)
         {
-            return string.IsNullOrEmpty(arg) ? string.Empty : arg.Replace(\"\\\"\", \"\\\"\\\"\");
+            return string.IsNullOrEmpty(arg) ? string.Empty : arg.Replace("\"", "\"\"");
         }
 
         /// <summary>
         /// Escapes embedded double-quotes in a string for PowerShell.
-        /// PowerShell honors backslash-escaping (\\\") when receiving a command string via the -Command/-C parameter.
+        /// PowerShell honors backslash-escaping (\") when receiving a command string via the -Command/-C parameter.
         /// </summary>
         private static string EscapePowerShellArgument(string arg)
         {
-            return string.IsNullOrEmpty(arg) ? string.Empty : arg.Replace(\"\\\"\", \"\\\\\\\"\");
+            return string.IsNullOrEmpty(arg) ? string.Empty : arg.Replace("\"", "\\\"");
         }
 
         private ProcessStartInfo PrepareProcessStartInfo(string command, RunAsType runAs = RunAsType.None)
@@ -228,9 +228,9 @@ namespace Microsoft.Plugin.Shell
             if (_settings.Shell == ExecutionShell.Cmd)
             {
                 string escapedCmd = EscapeCmdArgument(command);
-                var arguments = _settings.LeaveShellOpen ? $\"/k \\\"{escapedCmd}\\\"\" : $\"/c \\\"{escapedCmd}\\\" \u0026 pause\";
+                var arguments = _settings.LeaveShellOpen ? $"/k \"{escapedCmd}\"" : $"/c \"{escapedCmd}\" & pause";
 
-                info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, arguments, runAsVerbArg);
+                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.Powershell)
             {
@@ -238,14 +238,14 @@ namespace Microsoft.Plugin.Shell
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $\"-NoExit -C \\\"{escapedPS}\\\"\";
+                    arguments = $"-NoExit -C \"{escapedPS}\"";
                 }
                 else
                 {
-                    arguments = $\"-C \\\"{escapedPS} ; Read-Host -Prompt \\\\\\\"{Resources.run_plugin_cmd_wait_message}\\\\\\\"\\\"\";
+                    arguments = $"-C \"{escapedPS} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
                 }
 
-                info = ShellCommand.SetProcessStartInfo(\"powershell.exe\", workingDirectory, arguments, runAsVerbArg);
+                info = ShellCommand.SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.PowerShellSeven)
             {
@@ -253,14 +253,14 @@ namespace Microsoft.Plugin.Shell
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $\"-NoExit -C \\\"{escapedPS}\\\"\";
+                    arguments = $"-NoExit -C \"{escapedPS}\"";
                 }
                 else
                 {
-                    arguments = $\"-C \\\"{escapedPS} ; Read-Host -Prompt \\\\\\\"{Resources.run_plugin_cmd_wait_message}\\\\\\\"\\\"\";
+                    arguments = $"-C \"{escapedPS} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
                 }
 
-                info = ShellCommand.SetProcessStartInfo(\"pwsh.exe\", workingDirectory, arguments, runAsVerbArg);
+                info = ShellCommand.SetProcessStartInfo("pwsh.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalCmd)
             {
@@ -268,14 +268,14 @@ namespace Microsoft.Plugin.Shell
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $\"cmd.exe /k \\\"{escapedCmd}\\\"\";
+                    arguments = $"cmd.exe /k \"{escapedCmd}\"";
                 }
                 else
                 {
-                    arguments = $\"cmd.exe /c \\\"{escapedCmd}\\\" \u0026 pause\";
+                    arguments = $"cmd.exe /c \"{escapedCmd}\" & pause";
                 }
 
-                info = ShellCommand.SetProcessStartInfo(\"wt.exe\", workingDirectory, arguments, runAsVerbArg);
+                info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalPowerShell)
             {
@@ -283,14 +283,14 @@ namespace Microsoft.Plugin.Shell
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $\"powershell -NoExit -C \\\"{escapedPS}\\\"\";
+                    arguments = $"powershell -NoExit -C \"{escapedPS}\"";
                 }
                 else
                 {
-                    arguments = $\"powershell -C \\\"{escapedPS}\\\"\";
+                    arguments = $"powershell -C \"{escapedPS}\"";
                 }
 
-                info = ShellCommand.SetProcessStartInfo(\"wt.exe\", workingDirectory, arguments, runAsVerbArg);
+                info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalPowerShellSeven)
             {
@@ -298,21 +298,21 @@ namespace Microsoft.Plugin.Shell
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $\"pwsh.exe -NoExit -C \\\"{escapedPS}\\\"\";
+                    arguments = $"pwsh.exe -NoExit -C \"{escapedPS}\"";
                 }
                 else
                 {
-                    arguments = $\"pwsh.exe -C \\\"{escapedPS}\\\"\";
+                    arguments = $"pwsh.exe -C \"{escapedPS}\"";
                 }
 
-                info = ShellCommand.SetProcessStartInfo(\"wt.exe\", workingDirectory, arguments, runAsVerbArg);
+                info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.RunCommand)
             {
                 // Open explorer if the path is a file or directory
                 if (Directory.Exists(command) || File.Exists(command))
                 {
-                    info = ShellCommand.SetProcessStartInfo(\"explorer.exe\", arguments: command, verb: runAsVerbArg);
+                    info = ShellCommand.SetProcessStartInfo("explorer.exe", arguments: command, verb: runAsVerbArg);
                 }
                 else
                 {
@@ -326,7 +326,7 @@ namespace Microsoft.Plugin.Shell
                             if (_settings.LeaveShellOpen)
                             {
                                 // Wrap the command in a cmd.exe process
-                                info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, $\"/k \\\"{filename} {arguments}\\\"\", runAsVerbArg);
+                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{filename} {arguments}\"", runAsVerbArg);
                             }
                             else
                             {
@@ -339,7 +339,7 @@ namespace Microsoft.Plugin.Shell
                             if (_settings.LeaveShellOpen)
                             {
                                 // Wrap the command in a cmd.exe process
-                                info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, $\"/k \\\"{escapedCmd}\\\"\", runAsVerbArg);
+                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{escapedCmd}\"", runAsVerbArg);
                             }
                             else
                             {
@@ -353,7 +353,7 @@ namespace Microsoft.Plugin.Shell
                         if (_settings.LeaveShellOpen)
                         {
                             // Wrap the command in a cmd.exe process
-                            info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, $\"/k \\\"{escapedCmd}\\\"\", runAsVerbArg);
+                            info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{escapedCmd}\"", runAsVerbArg);
                         }
                         else
                         {
@@ -389,14 +389,14 @@ namespace Microsoft.Plugin.Shell
             }
             catch (FileNotFoundException e)
             {
-                var name = \"Plugin: \" + Properties.Resources.wox_plugin_cmd_plugin_name;
-                var message = $\"{Properties.Resources.wox_plugin_cmd_command_not_found}: {e.Message}\";
+                var name = "Plugin: " + Properties.Resources.wox_plugin_cmd_plugin_name;
+                var message = $"{Properties.Resources.wox_plugin_cmd_command_not_found}: {e.Message}";
                 _context.API.ShowMsg(name, message);
             }
             catch (Win32Exception e)
             {
-                var name = \"Plugin: \" + Properties.Resources.wox_plugin_cmd_plugin_name;
-                var message = $\"{Properties.Resources.wox_plugin_cmd_command_failed}: {e.Message}\";
+                var name = "Plugin: " + Properties.Resources.wox_plugin_cmd_plugin_name;
+                var message = $"{Properties.Resources.wox_plugin_cmd_command_failed}: {e.Message}";
                 _context.API.ShowMsg(name, message);
             }
         }
@@ -409,13 +409,13 @@ namespace Microsoft.Plugin.Shell
             }
             else
             {
-                var values = Environment.GetEnvironmentVariable(\"PATH\");
+                var values = Environment.GetEnvironmentVariable("PATH");
                 if (values != null)
                 {
                     foreach (var path in values.Split(';'))
                     {
                         var path1 = Path.Combine(path, filename);
-                        var path2 = Path.Combine(path, filename + \".exe\");
+                        var path2 = Path.Combine(path, filename + ".exe");
                         if (File.Exists(path1) || File.Exists(path2))
                         {
                             return true;
@@ -443,11 +443,11 @@ namespace Microsoft.Plugin.Shell
         {
             if (theme == Theme.Light || theme == Theme.HighContrastWhite)
             {
-                IconPath = \"Images/shell.light.png\";
+                IconPath = "Images/shell.light.png";
             }
             else
             {
-                IconPath = \"Images/shell.dark.png\";
+                IconPath = "Images/shell.dark.png";
             }
         }
 
@@ -479,8 +479,8 @@ namespace Microsoft.Plugin.Shell
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Properties.Resources.wox_plugin_cmd_run_as_administrator,
-                    Glyph = \"\\xE7EF\",
-                    FontFamily = \"Segoe Fluent Icons,Segoe MDL2 Assets\",
+                    Glyph = "\uE7EF",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = c =>
@@ -493,11 +493,11 @@ namespace Microsoft.Plugin.Shell
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Properties.Resources.wox_plugin_cmd_run_as_user,
-                    Glyph = \"\\xE7EE\",
-                    FontFamily = \"Segoe Fluent Icons,Segoe MDL2 Assets\",
+                    Glyph = "\uE7EE",
+                    FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.U,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
-                    Action = _ =\u003e
+                    Action = _ =>
                     {
                         Execute(Process.Start, PrepareProcessStartInfo(selectedResult.Title, RunAsType.OtherUser));
                         return true;
@@ -513,13 +513,13 @@ namespace Microsoft.Plugin.Shell
             var leaveShellOpen = false;
             var shellOption = 2;
 
-            if (settings != null \u0026\u0026 settings.AdditionalOptions != null)
+            if (settings != null && settings.AdditionalOptions != null)
             {
-                var optionLeaveShellOpen = settings.AdditionalOptions.FirstOrDefault(x =\u003e x.Key == \"LeaveShellOpen\");
+                var optionLeaveShellOpen = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "LeaveShellOpen");
                 leaveShellOpen = optionLeaveShellOpen?.Value ?? leaveShellOpen;
                 _settings.LeaveShellOpen = leaveShellOpen;
 
-                var optionShell = settings.AdditionalOptions.FirstOrDefault(x =\u003e x.Key == \"ShellCommandExecution\");
+                var optionShell = settings.AdditionalOptions.FirstOrDefault(x => x.Key == "ShellCommandExecution");
                 shellOption = optionShell?.ComboBoxValue ?? shellOption;
                 _settings.Shell = (ExecutionShell)shellOption;
             }
