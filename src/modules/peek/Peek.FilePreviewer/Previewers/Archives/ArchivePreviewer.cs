@@ -153,6 +153,7 @@ namespace Peek.FilePreviewer.Previewers.Archives
                     {
                         continue;
                     }
+
                     cancellationToken.ThrowIfCancellationRequested();
                     if (encodingDetermined)
                     {
