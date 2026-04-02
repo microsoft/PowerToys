@@ -246,8 +246,8 @@ public static class ShellHelpers
     /// <summary>
     /// Mimics Windows Shell behavior to resolve an executable name to a full path.
     /// </summary>
-    /// <param name="name"></param>
-    /// <param name="fullPath"></param>
+    /// <param name="name">The name of the executable to resolve.</param>
+    /// <param name="fullPath">When this method returns, contains the full path to the executable if found; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if the executable was resolved to a full path; otherwise, <see langword="false"/>.</returns>
     public static bool TryResolveExecutableAsShell(string name, out string fullPath)
     {
