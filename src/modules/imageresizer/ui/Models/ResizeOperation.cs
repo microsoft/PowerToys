@@ -15,17 +15,17 @@ using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 using ImageResizer.Helpers;
+using ImageResizer.Models.ResizeResults;
 using ImageResizer.Properties;
 using ImageResizer.Services;
 using ImageResizer.Utilities;
-using Microsoft.VisualBasic.FileIO;
-using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 
 namespace ImageResizer.Models
 {
     internal class ResizeOperation
     {
         private readonly IFileSystem _fileSystem = new System.IO.Abstractions.FileSystem();
+        private readonly IRecycleBinService _recycleBinService;
 
         private readonly string _file;
         private readonly string _destinationDirectory;
@@ -53,112 +53,143 @@ namespace ImageResizer.Models
             ];
 
         public ResizeOperation(string file, string destinationDirectory, Settings settings, IAISuperResolutionService aiSuperResolutionService = null)
+            : this(file, destinationDirectory, settings, new WindowsRecycleBinService(), aiSuperResolutionService)
+        {
+        }
+
+        public ResizeOperation(string file, string destinationDirectory, Settings settings, IRecycleBinService recycleBinService, IAISuperResolutionService aiSuperResolutionService = null)
         {
             _file = file;
             _destinationDirectory = destinationDirectory;
             _settings = settings;
+            _recycleBinService = recycleBinService;
             _aiSuperResolutionService = aiSuperResolutionService ?? NoOpAiSuperResolutionService.Instance;
         }
 
-        public async Task ExecuteAsync()
+        public async Task<ResizeResult> ExecuteAsync()
         {
-            string path;
-
-            using (var inputStream = _fileSystem.File.OpenRead(_file))
+            try
             {
-                var winrtInputStream = inputStream.AsRandomAccessStream();
-                var decoder = await BitmapDecoder.CreateAsync(winrtInputStream);
+                string path;
 
-                // Determine encoder ID from decoder
-                var encoderId = CodecHelper.GetEncoderIdForDecoder(decoder);
-                if (encoderId == null || !CodecHelper.CanEncode(encoderId.Value))
+                using (var inputStream = _fileSystem.File.OpenRead(_file))
                 {
-                    encoderId = CodecHelper.GetEncoderIdFromLegacyGuid(_settings.FallbackEncoder);
-                }
+                    var winrtInputStream = inputStream.AsRandomAccessStream();
+                    var decoder = await BitmapDecoder.CreateAsync(winrtInputStream);
 
-                var encoderGuid = encoderId.Value;
-
-                if (_settings.SelectedSize is AiSize)
-                {
-                    path = await ExecuteAiAsync(decoder, winrtInputStream, encoderGuid);
-                }
-                else
-                {
-                    var originalWidth = (int)decoder.PixelWidth;
-                    var originalHeight = (int)decoder.PixelHeight;
-
-                    var (scaledWidth, scaledHeight, cropBounds, noTransformNeeded) =
-                        CalculateDimensions(originalWidth, originalHeight, decoder.DpiX, decoder.DpiY);
-
-                    var (outputWidth, outputHeight) = noTransformNeeded
-                        ? (originalWidth, originalHeight)
-                        : cropBounds.HasValue
-                            ? ((int)cropBounds.Value.Width, (int)cropBounds.Value.Height)
-                            : ((int)scaledWidth, (int)scaledHeight);
-
-                    path = GetDestinationPath(encoderGuid, outputWidth, outputHeight);
-                    _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(path));
-
-                    using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.ReadWrite))
+                    // Determine encoder ID from decoder
+                    var encoderId = CodecHelper.GetEncoderIdForDecoder(decoder);
+                    if (encoderId == null || !CodecHelper.CanEncode(encoderId.Value))
                     {
-                        var winrtOutputStream = outputStream.AsRandomAccessStream();
-                        await EncodeToStreamAsync(
-                            decoder,
-                            winrtInputStream,
-                            winrtOutputStream,
-                            encoderGuid,
-                            async (encoder, isTranscode) =>
-                            {
-                                if (isTranscode)
+                        encoderId = CodecHelper.GetEncoderIdFromLegacyGuid(_settings.FallbackEncoder);
+                    }
+
+                    var encoderGuid = encoderId.Value;
+
+                    if (_settings.SelectedSize is AiSize)
+                    {
+                        path = await ExecuteAiAsync(decoder, winrtInputStream, encoderGuid);
+                    }
+                    else
+                    {
+                        var originalWidth = (int)decoder.PixelWidth;
+                        var originalHeight = (int)decoder.PixelHeight;
+
+                        var (scaledWidth, scaledHeight, cropBounds, noTransformNeeded) =
+                            CalculateDimensions(originalWidth, originalHeight, decoder.DpiX, decoder.DpiY);
+
+                        var (outputWidth, outputHeight) = noTransformNeeded
+                            ? (originalWidth, originalHeight)
+                            : cropBounds.HasValue
+                                ? ((int)cropBounds.Value.Width, (int)cropBounds.Value.Height)
+                                : ((int)scaledWidth, (int)scaledHeight);
+
+                        path = GetDestinationPath(encoderGuid, outputWidth, outputHeight);
+                        _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(path));
+
+                        using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.ReadWrite))
+                        {
+                            var winrtOutputStream = outputStream.AsRandomAccessStream();
+                            await EncodeToStreamAsync(
+                                decoder,
+                                winrtInputStream,
+                                winrtOutputStream,
+                                encoderGuid,
+                                async (encoder, isTranscode) =>
                                 {
-                                    if (!noTransformNeeded)
+                                    if (isTranscode)
                                     {
-                                        encoder.BitmapTransform.ScaledWidth = scaledWidth;
-                                        encoder.BitmapTransform.ScaledHeight = scaledHeight;
-                                        encoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Fant;
-
-                                        if (cropBounds.HasValue)
+                                        if (!noTransformNeeded)
                                         {
-                                            encoder.BitmapTransform.Bounds = cropBounds.Value;
-                                        }
+                                            encoder.BitmapTransform.ScaledWidth = scaledWidth;
+                                            encoder.BitmapTransform.ScaledHeight = scaledHeight;
+                                            encoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Fant;
 
-                                        // Apply codec-specific properties (e.g., JPEG quality).
-                                        // Must be set after transforms since re-encoding will occur.
-                                        var encoderProps = GetEncoderPropertySet(encoderGuid);
-                                        if (encoderProps != null)
-                                        {
-                                            await encoder.BitmapProperties.SetPropertiesAsync(encoderProps);
+                                            if (cropBounds.HasValue)
+                                            {
+                                                encoder.BitmapTransform.Bounds = cropBounds.Value;
+                                            }
+
+                                            // Apply codec-specific properties (e.g., JPEG quality).
+                                            // Must be set after transforms since re-encoding will occur.
+                                            var encoderProps = GetEncoderPropertySet(encoderGuid);
+                                            if (encoderProps != null)
+                                            {
+                                                await encoder.BitmapProperties.SetPropertiesAsync(encoderProps);
+                                            }
                                         }
                                     }
-                                }
-                                else
-                                {
-                                    await EncodeFramesAsync(
-                                        encoder,
-                                        decoder,
-                                        scaledWidth,
-                                        scaledHeight,
-                                        cropBounds,
-                                        noTransformNeeded,
-                                        originalWidth,
-                                        originalHeight);
-                                }
-                            });
+                                    else
+                                    {
+                                        await EncodeFramesAsync(
+                                            encoder,
+                                            decoder,
+                                            scaledWidth,
+                                            scaledHeight,
+                                            cropBounds,
+                                            noTransformNeeded,
+                                            originalWidth,
+                                            originalHeight);
+                                    }
+                                });
+                        }
+                    }
+                }
+
+                if (_settings.KeepDateModified)
+                {
+                    _fileSystem.File.SetLastWriteTimeUtc(path, _fileSystem.File.GetLastWriteTimeUtc(_file));
+                }
+
+                if (_settings.Replace)
+                {
+                    var backup = GetBackupPath();
+
+                    try
+                    {
+                        _fileSystem.File.Replace(path, _file, backup, ignoreMetadataErrors: true);
+                    }
+                    catch (Exception ex)
+                    {
+                        return new FileReplaceFailedResult(path, _file, backup, ex);
+                    }
+
+                    try
+                    {
+                        _recycleBinService.DeleteToRecycleBin(backup);
+                    }
+                    catch (Exception ex)
+                    {
+                        return new FileRecycleFailedResult(_file, backup, ex);
                     }
                 }
             }
-
-            if (_settings.KeepDateModified)
+            catch (Exception ex)
             {
-                _fileSystem.File.SetLastWriteTimeUtc(path, _fileSystem.File.GetLastWriteTimeUtc(_file));
+                return new ErrorResult(_file, ex);
             }
 
-            if (_settings.Replace)
-            {
-                var backup = GetBackupPath();
-                _fileSystem.File.Replace(path, _file, backup, ignoreMetadataErrors: true);
-                FileSystem.DeleteFile(backup, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
-            }
+            return new SuccessResult(_file);
         }
 
         private async Task<string> ExecuteAiAsync(BitmapDecoder decoder, IRandomAccessStream winrtInputStream, Guid encoderGuid)
