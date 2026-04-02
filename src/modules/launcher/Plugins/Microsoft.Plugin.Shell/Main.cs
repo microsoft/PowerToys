@@ -189,39 +189,27 @@ namespace Microsoft.Plugin.Shell
         }
 
         /// <summary>
-        /// Escapes embedded double-quotes in a string so that the result can be safely
-        /// wrapped in a double-quoted command-line argument for cmd.exe or PowerShell.
+        /// Escapes embedded double-quotes in a string for cmd.exe.
+        /// cmd.exe uses doubled double-quotes (\"\") for escaping inside a double-quoted string.
         /// </summary>
-        /// <remarks>
-        /// This specifically implements shell-style escaping (doubling double-quotes)
-        /// rather than C-runtime/backslash-style escaping, which many shells do not
-        /// honor for quote-termination.
-        ///
-        /// It is NOT a general-purpose sanitizer for arbitrary shell syntax.
-        /// </remarks>
-        private static string EscapeShellArgument(string arg)
+        private static string EscapeCmdArgument(string arg)
         {
-            if (string.IsNullOrEmpty(arg))
-            {
-                return string.Empty;
-            }
+            return string.IsNullOrEmpty(arg) ? string.Empty : arg.Replace(\"\\\"\", \"\\\"\\\"\");
+        }
 
-            // For cmd.exe and PowerShell, embedded double-quotes inside a double-quoted
-            // string must be represented by a doubled double-quote (\"\").
-            // This avoids relying on C-runtime-style backslash escaping, which those
-            // shells do not honor for terminating quotes.
-            return arg.Replace(\"\\\"\", \"\\\"\\\"\");
+        /// <summary>
+        /// Escapes embedded double-quotes in a string for PowerShell.
+        /// PowerShell honors backslash-escaping (\\\") when receiving a command string via the -Command/-C parameter.
+        /// </summary>
+        private static string EscapePowerShellArgument(string arg)
+        {
+            return string.IsNullOrEmpty(arg) ? string.Empty : arg.Replace(\"\\\"\", \"\\\\\\\"\");
         }
 
         private ProcessStartInfo PrepareProcessStartInfo(string command, RunAsType runAs = RunAsType.None)
         {
             string trimmedCommand = command.Trim();
             command = Environment.ExpandEnvironmentVariables(trimmedCommand);
-
-            // Escape the full command so it can be safely embedded between double quotes
-            // as a single Windows command-line argument (cmd.exe/PowerShell parsing).
-            // This is NOT a general-purpose sanitizer for shell syntax.
-            string escapedCommand = EscapeShellArgument(command);
 
             var workingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
@@ -239,76 +227,82 @@ namespace Microsoft.Plugin.Shell
             ProcessStartInfo info;
             if (_settings.Shell == ExecutionShell.Cmd)
             {
-                var arguments = _settings.LeaveShellOpen ? $\"/k \\\"{escapedCommand}\\\"\" : $\"/c \\\"{escapedCommand}\\\" \u0026 pause\";
+                string escapedCmd = EscapeCmdArgument(command);
+                var arguments = _settings.LeaveShellOpen ? $\"/k \\\"{escapedCmd}\\\"\" : $\"/c \\\"{escapedCmd}\\\" \u0026 pause\";
 
                 info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.Powershell)
             {
+                string escapedPS = EscapePowerShellArgument(command);
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $\"-NoExit \\\"{escapedCommand}\\\"\";
+                    arguments = $\"-NoExit -C \\\"{escapedPS}\\\"\";
                 }
                 else
                 {
-                    arguments = $\"\\\"{escapedCommand} ; Read-Host -Prompt \\\\\\\"{Resources.run_plugin_cmd_wait_message}\\\\\\\"\\\"\";
+                    arguments = $\"-C \\\"{escapedPS} ; Read-Host -Prompt \\\\\\\"{Resources.run_plugin_cmd_wait_message}\\\\\\\"\\\"\";
                 }
 
                 info = ShellCommand.SetProcessStartInfo(\"powershell.exe\", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.PowerShellSeven)
             {
+                string escapedPS = EscapePowerShellArgument(command);
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $\"-NoExit -C \\\"{escapedCommand}\\\"\";
+                    arguments = $\"-NoExit -C \\\"{escapedPS}\\\"\";
                 }
                 else
                 {
-                    arguments = $\"-C \\\"{escapedCommand} ; Read-Host -Prompt \\\\\\\"{Resources.run_plugin_cmd_wait_message}\\\\\\\"\\\"\";
+                    arguments = $\"-C \\\"{escapedPS} ; Read-Host -Prompt \\\\\\\"{Resources.run_plugin_cmd_wait_message}\\\\\\\"\\\"\";
                 }
 
                 info = ShellCommand.SetProcessStartInfo(\"pwsh.exe\", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalCmd)
             {
+                string escapedCmd = EscapeCmdArgument(command);
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $\"cmd.exe /k \\\"{escapedCommand}\\\"\";
+                    arguments = $\"cmd.exe /k \\\"{escapedCmd}\\\"\";
                 }
                 else
                 {
-                    arguments = $\"cmd.exe /c \\\"{escapedCommand}\\\" \u0026 pause\";
+                    arguments = $\"cmd.exe /c \\\"{escapedCmd}\\\" \u0026 pause\";
                 }
 
                 info = ShellCommand.SetProcessStartInfo(\"wt.exe\", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalPowerShell)
             {
+                string escapedPS = EscapePowerShellArgument(command);
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $\"powershell -NoExit -C \\\"{escapedCommand}\\\"\";
+                    arguments = $\"powershell -NoExit -C \\\"{escapedPS}\\\"\";
                 }
                 else
                 {
-                    arguments = $\"powershell -C \\\"{escapedCommand}\\\"\";
+                    arguments = $\"powershell -C \\\"{escapedPS}\\\"\";
                 }
 
                 info = ShellCommand.SetProcessStartInfo(\"wt.exe\", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalPowerShellSeven)
             {
+                string escapedPS = EscapePowerShellArgument(command);
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $\"pwsh.exe -NoExit -C \\\"{escapedCommand}\\\"\";
+                    arguments = $\"pwsh.exe -NoExit -C \\\"{escapedPS}\\\"\";
                 }
                 else
                 {
-                    arguments = $\"pwsh.exe -C \\\"{escapedCommand}\\\"\";
+                    arguments = $\"pwsh.exe -C \\\"{escapedPS}\\\"\";
                 }
 
                 info = ShellCommand.SetProcessStartInfo(\"wt.exe\", workingDirectory, arguments, runAsVerbArg);
@@ -341,10 +335,11 @@ namespace Microsoft.Plugin.Shell
                         }
                         else
                         {
+                            string escapedCmd = EscapeCmdArgument(command);
                             if (_settings.LeaveShellOpen)
                             {
                                 // Wrap the command in a cmd.exe process
-                                info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, $\"/k \\\"{escapedCommand}\\\"\", runAsVerbArg);
+                                info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, $\"/k \\\"{escapedCmd}\\\"\", runAsVerbArg);
                             }
                             else
                             {
@@ -354,10 +349,11 @@ namespace Microsoft.Plugin.Shell
                     }
                     else
                     {
+                        string escapedCmd = EscapeCmdArgument(command);
                         if (_settings.LeaveShellOpen)
                         {
                             // Wrap the command in a cmd.exe process
-                            info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, $\"/k \\\"{escapedCommand}\\\"\", runAsVerbArg);
+                            info = ShellCommand.SetProcessStartInfo(\"cmd.exe\", workingDirectory, $\"/k \\\"{escapedCmd}\\\"\", runAsVerbArg);
                         }
                         else
                         {
