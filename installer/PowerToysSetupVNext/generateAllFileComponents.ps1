@@ -30,6 +30,10 @@ Function Generate-FileList() {
 
     $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri")
 
+    # MFC DLLs leak into the output via WindowsAppSDKSelfContained but no PowerToys binary imports them.
+    # Verified with dumpbin /dependents across all 2176 binaries — zero consumers.
+    $fileExclusionList += @("mfc140.dll", "mfc140u.dll", "mfcm140.dll", "mfcm140u.dll")
+
     $dllsToIgnore = @("System.CodeDom.dll", "WindowsBase.dll")
 
     if ($fileDepsJson -eq [string]::Empty) {

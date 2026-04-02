@@ -214,7 +214,7 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="StreamJsonRpc" />
-    <PackageReference Include="System.Data.SqlClient" /> <!-- It's a dependency of Microsoft.Windows.Compatibility. We're adding it here to force it to the version specified in Directory.Packages.props -->
+
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
