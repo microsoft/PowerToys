@@ -7,9 +7,15 @@ using Microsoft.CmdPal.UI.ViewModels.Settings;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public class TopLevelHotkey(HotkeySettings? hotkey, string commandId)
+public record TopLevelHotkey
 {
-    public string CommandId { get; set; } = commandId;
+    public string CommandId { get; init; }
 
-    public HotkeySettings? Hotkey { get; set; } = hotkey;
+    public HotkeySettings? Hotkey { get; init; }
+
+    public TopLevelHotkey(HotkeySettings? hotkey, string commandId)
+    {
+        Hotkey = hotkey;
+        CommandId = commandId;
+    }
 }
