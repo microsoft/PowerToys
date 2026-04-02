@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -69,6 +70,30 @@ public class SettingsServiceTests
                 It.IsAny<string>(),
                 It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()),
             Times.Once);
+    }
+
+    [TestMethod]
+    public void Constructor_CreatesLegacySettingsBackup_BeforeLoadingSettings()
+    {
+        Directory.CreateDirectory(_testDirectory);
+        var settingsPath = CmdPalLegacySettings.SettingsJsonPath(_testDirectory);
+        var backupPath = CmdPalLegacySettings.LegacySettingsBackupJsonPath(_testDirectory);
+        const string settingsJson = "{\"HotkeyGoesHome\":true}";
+        File.WriteAllText(settingsPath, settingsJson);
+
+        _mockPersistence
+            .Setup(p => p.Load(
+                It.IsAny<string>(),
+                It.IsAny<System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>()))
+            .Callback<string, System.Text.Json.Serialization.Metadata.JsonTypeInfo<SettingsModel>>((path, _) =>
+            {
+                Assert.AreEqual(settingsPath, path);
+                Assert.IsTrue(File.Exists(backupPath));
+                Assert.AreEqual(settingsJson, File.ReadAllText(backupPath));
+            })
+            .Returns(_testSettings);
+
+        _ = new SettingsService(_mockPersistence.Object, _mockAppInfo.Object);
     }
 
     [TestMethod]

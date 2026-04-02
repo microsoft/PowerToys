@@ -125,6 +125,8 @@ public partial class App : Application, IDisposable
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
+        CmdPalLegacySettings.EnsureLegacySettingsBackup(appInfoService.ConfigDirectory);
+
         AddBuiltInCommands(services, appInfoService.ConfigDirectory);
 
         AddCoreServices(services, appInfoService);

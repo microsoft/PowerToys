@@ -92,8 +92,7 @@ public class SettingsManager : BuiltinJsonSettingsManager, ISettingsInterface
 
     private static string LegacySettingsJsonPath()
     {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        return Path.Combine(directory, "settings.json");
+        return CmdPalLegacySettings.LegacySettingsMigrationSourceJsonPath();
     }
 
     private static string HistoryStateJsonPath()

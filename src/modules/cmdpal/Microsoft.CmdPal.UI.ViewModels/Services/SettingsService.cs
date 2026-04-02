@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using ManagedCommon;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Services;
 using Windows.Foundation;
 
@@ -29,6 +30,7 @@ public sealed class SettingsService : ISettingsService
         _persistence = persistence;
         _appInfoService = appInfoService;
         _filePath = SettingsJsonPath();
+        CmdPalLegacySettings.EnsureLegacySettingsBackup(_appInfoService.ConfigDirectory);
         _settings = _persistence.Load(_filePath, JsonSerializationContext.Default.SettingsModel);
         ApplyMigrations();
     }
@@ -66,8 +68,7 @@ public sealed class SettingsService : ISettingsService
 
     private string SettingsJsonPath()
     {
-        var directory = _appInfoService.ConfigDirectory;
-        return Path.Combine(directory, "settings.json");
+        return CmdPalLegacySettings.SettingsJsonPath(_appInfoService.ConfigDirectory);
     }
 
     private void ApplyMigrations()

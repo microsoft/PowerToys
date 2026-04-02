@@ -54,8 +54,7 @@ internal sealed class SettingsManager : BuiltinJsonSettingsManager, ISettingOpti
 
     private static string LegacySettingsJsonPath()
     {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        return Path.Combine(directory, "settings.json");
+        return CmdPalLegacySettings.LegacySettingsMigrationSourceJsonPath();
     }
 
     public SettingsManager()
