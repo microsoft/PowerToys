@@ -12,18 +12,26 @@
     <Page.Resources>
         <!--  Shared item template for error and recycle-failed results. Shows full file path with tooltip.  -->
         <DataTemplate x:Key="ResultTemplate" x:DataType="vm:ResultDisplayModel">
-            <StackPanel Margin="6">
-                <TextBlock
-                    Margin="0,0,0,4"
-                    FontWeight="SemiBold"
-                    Text="{x:Bind FilePath}"
-                    TextTrimming="CharacterEllipsis"
-                    ToolTipService.ToolTip="{x:Bind FilePath}" />
-                <TextBlock
-                    Style="{StaticResource BodyTextBlockStyle}"
-                    Text="{x:Bind ResultMessage}"
-                    TextWrapping="Wrap" />
-            </StackPanel>
+            <ContentControl
+                Padding="6"
+                AutomationProperties.FullDescription="{x:Bind AccessibleDescription}"
+                AutomationProperties.ItemType="{x:Bind AccessibleType}"
+                AutomationProperties.Name="{x:Bind FileName}"
+                IsTabStop="True"
+                UseSystemFocusVisuals="True">
+                <StackPanel>
+                    <TextBlock
+                        Margin="0,0,0,4"
+                        FontWeight="SemiBold"
+                        Text="{x:Bind FilePath}"
+                        TextTrimming="CharacterEllipsis"
+                        ToolTipService.ToolTip="{x:Bind FilePath}" />
+                    <TextBlock
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        Text="{x:Bind ResultMessage}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </ContentControl>
         </DataTemplate>
     </Page.Resources>
 
@@ -44,6 +52,7 @@
             Grid.Row="1"
             Padding="16,0"
             HorizontalAlignment="Stretch"
+            VerticalScrollMode="Enabled"
             VerticalScrollBarVisibility="Auto">
             <StackPanel>
 
@@ -92,21 +101,29 @@
                         <ItemsControl ItemsSource="{x:Bind ViewModel.ReplaceWarnings, Mode=OneWay}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:ResultDisplayModel">
-                                    <StackPanel Margin="6">
-                                        <TextBlock
-                                            Margin="0,0,0,4"
-                                            FontWeight="SemiBold"
-                                            Text="{x:Bind FilePath}"
-                                            TextTrimming="CharacterEllipsis"
-                                            ToolTipService.ToolTip="{x:Bind FilePath}" />
-                                        <TextBlock Margin="0,0,0,4" Style="{StaticResource BodyTextBlockStyle}">
-                                            <Run x:Uid="Results_ResizedAs_Label" /><Run FontWeight="SemiBold" Text="{x:Bind DestinationFileName}" />
-                                        </TextBlock>
-                                        <TextBlock
-                                            Style="{StaticResource BodyTextBlockStyle}"
-                                            Text="{x:Bind ResultMessage}"
-                                            TextWrapping="Wrap" />
-                                    </StackPanel>
+                                    <ContentControl
+                                        Padding="6"
+                                        AutomationProperties.FullDescription="{x:Bind AccessibleDescription}"
+                                        AutomationProperties.ItemType="{x:Bind AccessibleType}"
+                                        AutomationProperties.Name="{x:Bind FileName}"
+                                        IsTabStop="True"
+                                        UseSystemFocusVisuals="True">
+                                        <StackPanel>
+                                            <TextBlock
+                                                Margin="0,0,0,4"
+                                                FontWeight="SemiBold"
+                                                Text="{x:Bind FilePath}"
+                                                TextTrimming="CharacterEllipsis"
+                                                ToolTipService.ToolTip="{x:Bind FilePath}" />
+                                            <TextBlock Margin="0,0,0,4" Style="{StaticResource BodyTextBlockStyle}">
+                                                <Run x:Uid="Results_ResizedAs_Label" /><Run FontWeight="SemiBold" Text="{x:Bind DestinationFileName}" />
+                                            </TextBlock>
+                                            <TextBlock
+                                                Style="{StaticResource BodyTextBlockStyle}"
+                                                Text="{x:Bind ResultMessage}"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </ContentControl>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
