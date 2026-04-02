@@ -601,6 +601,15 @@ opera.exe</value>
   <data name="AdvancedPaste_PythonScripts_GroupSettings.Header" xml:space="preserve">
     <value>Python scripts</value>
   </data>
+  <data name="AdvancedPaste_ScriptsFolder_SettingsCard.Header" xml:space="preserve">
+    <value>Scripts folder</value>
+  </data>
+  <data name="AdvancedPaste_ScriptsFolder_SettingsCard.Description" xml:space="preserve">
+    <value>Folder to scan for Python scripts (.py files). Leave blank to use the default location.</value>
+  </data>
+  <data name="AdvancedPaste_ScriptsFolder_TextBox.PlaceholderText" xml:space="preserve">
+    <value>Default (%LOCALAPPDATA%\Microsoft\PowerToys\AdvancedPaste\Scripts)</value>
+  </data>
   <data name="AdvancedPaste_PythonExecutablePath_SettingsCard.Header" xml:space="preserve">
     <value>Python interpreter</value>
   </data>

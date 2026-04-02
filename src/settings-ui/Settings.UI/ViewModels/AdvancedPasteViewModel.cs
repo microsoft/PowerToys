@@ -308,6 +308,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string ScriptsFolder
+        {
+            get => _advancedPasteSettings.Properties.PythonScripts?.ScriptsFolder ?? string.Empty;
+            set
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
+                if (!string.Equals(scripts.ScriptsFolder, value, StringComparison.OrdinalIgnoreCase))
+                {
+                    scripts.ScriptsFolder = value ?? string.Empty;
+                    OnPropertyChanged(nameof(ScriptsFolder));
+                    SaveAndNotifySettings();
+                }
+            }
+        }
+
         public static IEnumerable<AIServiceTypeMetadata> AvailableProviders => AIServiceTypeRegistry.GetAvailableServiceTypes();
 
         /// <summary>

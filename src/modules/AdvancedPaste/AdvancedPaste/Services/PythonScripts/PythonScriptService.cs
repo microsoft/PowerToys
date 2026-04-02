@@ -86,8 +86,8 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             if (process.ExitCode != 0)
             {
                 var stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
-                var errorMsg = stderr.Length > 1500 ? stderr[..1500] : stderr;
-                throw new PasteActionException(errorMsg, new InvalidOperationException($"Script exited with code {process.ExitCode}."));
+                var (summary, details) = ParsePythonError(stderr);
+                throw new PasteActionException(summary, new InvalidOperationException($"Script exited with code {process.ExitCode}."), aiServiceMessage: details);
             }
         }
         finally
@@ -181,8 +181,8 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
             if (process.ExitCode != 0)
             {
-                var errorMsg = stderr.Length > 1500 ? stderr[..1500] : stderr;
-                throw new PasteActionException(errorMsg, new InvalidOperationException($"WSL script exited with code {process.ExitCode}."));
+                var (summary, details) = ParsePythonError(stderr);
+                throw new PasteActionException(summary, new InvalidOperationException($"WSL script exited with code {process.ExitCode}."), aiServiceMessage: details);
             }
 
             return await ParseWslOutputAsync(stdout, workDir, cancellationToken);
@@ -210,7 +210,8 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             ClipboardFormat.Text | ClipboardFormat.Html |
             ClipboardFormat.Image | ClipboardFormat.Audio |
             ClipboardFormat.Video | ClipboardFormat.File;
-        var requirements = new List<PythonRequirement>();
+        var explicitRequirements = new List<PythonRequirement>();
+        var allLines = new List<string>();
 
         try
         {
@@ -226,54 +227,62 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 }
 
                 lineCount++;
-                line = line.Trim();
+                allLines.Add(line);
+                var trimmed = line.Trim();
 
-                if (!line.StartsWith('#'))
+                if (!trimmed.StartsWith('#'))
                 {
                     continue;
                 }
 
-                var tag = ParseTag(line, "@advancedpaste:name");
+                var tag = ParseTag(trimmed, "@advancedpaste:name");
                 if (tag != null)
                 {
                     name = tag;
                     continue;
                 }
 
-                tag = ParseTag(line, "@advancedpaste:desc");
+                tag = ParseTag(trimmed, "@advancedpaste:desc");
                 if (tag != null)
                 {
                     description = tag;
                     continue;
                 }
 
-                tag = ParseTag(line, "@advancedpaste:platform");
+                tag = ParseTag(trimmed, "@advancedpaste:platform");
                 if (tag != null)
                 {
                     platform = tag.ToLowerInvariant();
                     continue;
                 }
 
-                tag = ParseTag(line, "@advancedpaste:version");
+                tag = ParseTag(trimmed, "@advancedpaste:version");
                 if (tag != null)
                 {
                     version = tag;
                     continue;
                 }
 
-                tag = ParseTag(line, "@advancedpaste:formats");
+                tag = ParseTag(trimmed, "@advancedpaste:formats");
                 if (tag != null)
                 {
                     supportedFormats = ParseFormats(tag);
                     continue;
                 }
 
-                tag = ParseTag(line, "@advancedpaste:requires");
+                tag = ParseTag(trimmed, "@advancedpaste:requires");
                 if (tag != null)
                 {
-                    requirements.AddRange(ParseRequirements(tag));
+                    explicitRequirements.AddRange(ParseRequirements(tag));
                     continue;
                 }
+            }
+
+            // Read remaining lines for import scanning
+            string remainingLine;
+            while ((remainingLine = reader.ReadLine()) is not null)
+            {
+                allLines.Add(remainingLine);
             }
         }
         catch (Exception ex)
@@ -281,7 +290,9 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             Logger.LogError($"Failed to read metadata from {scriptPath}", ex);
         }
 
-        return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version, requirements);
+        var mergedRequirements = MergeWithAutoDetectedImports(allLines, explicitRequirements);
+
+        return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version, mergedRequirements);
     }
 
     /// <summary>
@@ -303,6 +314,193 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 yield return new PythonRequirement(token, token);
             }
         }
+    }
+
+    /// <summary>
+    /// Common mappings from Python import names to pip package names where they differ.
+    /// </summary>
+    private static readonly Dictionary<string, string> WellKnownImportToPip = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["PIL"] = "Pillow",
+        ["cv2"] = "opencv-python",
+        ["sklearn"] = "scikit-learn",
+        ["skimage"] = "scikit-image",
+        ["yaml"] = "PyYAML",
+        ["bs4"] = "beautifulsoup4",
+        ["gi"] = "PyGObject",
+        ["attr"] = "attrs",
+        ["dateutil"] = "python-dateutil",
+        ["dotenv"] = "python-dotenv",
+        ["git"] = "GitPython",
+        ["serial"] = "pyserial",
+        ["usb"] = "pyusb",
+        ["wx"] = "wxPython",
+        ["Crypto"] = "pycryptodome",
+        ["lxml"] = "lxml",
+        ["magic"] = "python-magic",
+        ["docx"] = "python-docx",
+        ["pptx"] = "python-pptx",
+        ["win32clipboard"] = "pywin32",
+        ["win32com"] = "pywin32",
+        ["win32api"] = "pywin32",
+        ["win32gui"] = "pywin32",
+        ["win32con"] = "pywin32",
+        ["win32print"] = "pywin32",
+        ["win32security"] = "pywin32",
+        ["win32service"] = "pywin32",
+        ["win32event"] = "pywin32",
+        ["win32file"] = "pywin32",
+        ["win32pipe"] = "pywin32",
+        ["win32process"] = "pywin32",
+        ["win32ts"] = "pywin32",
+        ["pywintypes"] = "pywin32",
+        ["pythoncom"] = "pywin32",
+        ["wmi"] = "WMI",
+        ["llama_cpp"] = "llama-cpp-python",
+    };
+
+    /// <summary>
+    /// Python standard library module names (CPython 3.12). Imports in this set are never
+    /// treated as third-party requirements.
+    /// </summary>
+    private static readonly HashSet<string> PythonStdlib = new(StringComparer.Ordinal)
+    {
+        "__future__", "_thread", "abc", "aifc", "argparse", "array", "ast", "asynchat",
+        "asyncio", "asyncore", "atexit", "audioop", "base64", "bdb", "binascii", "binhex",
+        "bisect", "builtins", "bz2", "calendar", "cgi", "cgitb", "chunk", "cmath", "cmd",
+        "code", "codecs", "codeop", "collections", "colorsys", "compileall", "concurrent",
+        "configparser", "contextlib", "contextvars", "copy", "copyreg", "cProfile", "crypt",
+        "csv", "ctypes", "curses", "dataclasses", "datetime", "dbm", "decimal", "difflib",
+        "dis", "distutils", "doctest", "email", "encodings", "enum", "errno", "faulthandler",
+        "fcntl", "filecmp", "fileinput", "fnmatch", "fractions", "ftplib", "functools", "gc",
+        "getopt", "getpass", "gettext", "glob", "grp", "gzip", "hashlib", "heapq", "hmac",
+        "html", "http", "idlelib", "imaplib", "imghdr", "imp", "importlib", "inspect", "io",
+        "ipaddress", "itertools", "json", "keyword", "lib2to3", "linecache", "locale",
+        "logging", "lzma", "mailbox", "mailcap", "marshal", "math", "mimetypes", "mmap",
+        "modulefinder", "multiprocessing", "netrc", "nis", "nntplib", "numbers", "operator",
+        "optparse", "os", "ossaudiodev", "pathlib", "pdb", "pickle", "pickletools", "pipes",
+        "pkgutil", "platform", "plistlib", "poplib", "posix", "posixpath", "pprint",
+        "profile", "pstats", "pty", "pwd", "py_compile", "pyclbr", "pydoc", "queue",
+        "quopri", "random", "re", "readline", "reprlib", "resource", "rlcompleter",
+        "runpy", "sched", "secrets", "select", "selectors", "shelve", "shlex", "shutil",
+        "signal", "site", "smtpd", "smtplib", "sndhdr", "socket", "socketserver", "spwd",
+        "sqlite3", "ssl", "stat", "statistics", "string", "stringprep", "struct",
+        "subprocess", "sunau", "symtable", "sys", "sysconfig", "syslog", "tabnanny",
+        "tarfile", "telnetlib", "tempfile", "termios", "test", "textwrap", "threading",
+        "time", "timeit", "tkinter", "token", "tokenize", "tomllib", "trace", "traceback",
+        "tracemalloc", "tty", "turtle", "turtledemo", "types", "typing", "unicodedata",
+        "unittest", "urllib", "uu", "uuid", "venv", "warnings", "wave", "weakref",
+        "webbrowser", "winreg", "winsound", "wsgiref", "xdrlib", "xml", "xmlrpc",
+        "zipapp", "zipfile", "zipimport", "zlib", "_io", "_collections_abc",
+        "typing_extensions", "ntpath", "posixpath", "genericpath", "stat",
+    };
+
+    /// <summary>
+    /// Scans all lines in the script for top-level <c>import X</c> and <c>from X import Y</c>
+    /// statements, then merges auto-detected third-party imports with the explicit
+    /// <c>@advancedpaste:requires</c> entries. Explicit entries always take precedence.
+    /// </summary>
+    internal static IReadOnlyList<PythonRequirement> MergeWithAutoDetectedImports(
+        IReadOnlyList<string> lines,
+        IReadOnlyList<PythonRequirement> explicitRequirements)
+    {
+        // Build a set of import names already covered by explicit requirements.
+        var explicitImports = new HashSet<string>(
+            explicitRequirements.Select(r => r.ImportName),
+            StringComparer.OrdinalIgnoreCase);
+
+        var autoDetected = new Dictionary<string, PythonRequirement>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var rawLine in lines)
+        {
+            var line = rawLine.Trim();
+
+            // Skip comments and blank lines
+            if (line.Length == 0 || line[0] == '#')
+            {
+                continue;
+            }
+
+            // Match "import X", "import X as Y", "import X, Y, Z"
+            if (line.StartsWith("import ", StringComparison.Ordinal))
+            {
+                var rest = line["import ".Length..].Trim();
+
+                // Stop at inline comment
+                var commentIdx = rest.IndexOf('#');
+                if (commentIdx >= 0)
+                {
+                    rest = rest[..commentIdx].Trim();
+                }
+
+                foreach (var segment in rest.Split(','))
+                {
+                    var moduleName = segment.Trim().Split(' ')[0].Split('.')[0]; // "X as Y" → "X"; "X.sub" → "X"
+                    TryAddAutoImport(moduleName, explicitImports, autoDetected);
+                }
+
+                continue;
+            }
+
+            // Match "from X import Y"
+            if (line.StartsWith("from ", StringComparison.Ordinal))
+            {
+                var rest = line["from ".Length..].Trim();
+                var importIdx = rest.IndexOf(" import ", StringComparison.Ordinal);
+                if (importIdx < 0)
+                {
+                    continue;
+                }
+
+                var moduleName = rest[..importIdx].Trim().Split('.')[0]; // "X.sub" → "X"
+                TryAddAutoImport(moduleName, explicitImports, autoDetected);
+                continue;
+            }
+        }
+
+        // Merge: explicit first, then auto-detected
+        var merged = new List<PythonRequirement>(explicitRequirements);
+        merged.AddRange(autoDetected.Values);
+        return merged;
+    }
+
+    private static void TryAddAutoImport(
+        string moduleName,
+        HashSet<string> explicitImports,
+        Dictionary<string, PythonRequirement> autoDetected)
+    {
+        if (string.IsNullOrWhiteSpace(moduleName))
+        {
+            return;
+        }
+
+        // Skip relative imports (leading dot)
+        if (moduleName[0] == '.')
+        {
+            return;
+        }
+
+        // Skip stdlib modules
+        if (PythonStdlib.Contains(moduleName))
+        {
+            return;
+        }
+
+        // Skip if already covered by explicit requires
+        if (explicitImports.Contains(moduleName))
+        {
+            return;
+        }
+
+        // Skip if already auto-detected
+        if (autoDetected.ContainsKey(moduleName))
+        {
+            return;
+        }
+
+        // Look up well-known import→pip mapping
+        var pipPackage = WellKnownImportToPip.TryGetValue(moduleName, out var mapped) ? mapped : moduleName;
+        autoDetected[moduleName] = new PythonRequirement(moduleName, pipPackage);
     }
 
     private static string ParseTag(string line, string tag)
@@ -1069,5 +1267,88 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                     scriptPath),
                 new FileNotFoundException("Script file not found.", scriptPath));
         }
+    }
+
+    /// <summary>
+    /// Parses Python stderr output and returns a user-friendly summary plus the full traceback
+    /// as details. Identifies common error types (ModuleNotFoundError, SyntaxError, etc.)
+    /// for clearer messaging.
+    /// </summary>
+    internal static (string Summary, string Details) ParsePythonError(string stderr)
+    {
+        if (string.IsNullOrWhiteSpace(stderr))
+        {
+            return (ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptFailed"), string.Empty);
+        }
+
+        var fullDetails = stderr.Length > 3000 ? stderr[^3000..] : stderr;
+
+        // Find the last exception line — Python tracebacks end with "ErrorType: message"
+        var lines = stderr.Split('\n');
+        string lastExceptionLine = null;
+
+        for (int i = lines.Length - 1; i >= 0; i--)
+        {
+            var trimmed = lines[i].Trim();
+            if (trimmed.Length == 0)
+            {
+                continue;
+            }
+
+            // Python exception lines look like "ModuleNotFoundError: No module named 'xyz'"
+            // or "SyntaxError: invalid syntax"
+            if (trimmed.Contains("Error:") || trimmed.Contains("Exception:"))
+            {
+                lastExceptionLine = trimmed;
+                break;
+            }
+
+            // If the very last non-blank line doesn't have "Error:", use it anyway
+            // (some scripts just print an error message to stderr)
+            lastExceptionLine ??= trimmed;
+        }
+
+        if (lastExceptionLine is null)
+        {
+            return (ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptFailed"), fullDetails);
+        }
+
+        // Build a user-friendly summary for well-known error types
+        var summary = lastExceptionLine switch
+        {
+            string s when s.StartsWith("ModuleNotFoundError:", StringComparison.Ordinal) =>
+                FormatModuleNotFoundSummary(s),
+            string s when s.StartsWith("SyntaxError:", StringComparison.Ordinal) =>
+                $"Python syntax error: {s["SyntaxError:".Length..].Trim()}",
+            string s when s.StartsWith("FileNotFoundError:", StringComparison.Ordinal) =>
+                $"File not found: {s["FileNotFoundError:".Length..].Trim()}",
+            string s when s.StartsWith("PermissionError:", StringComparison.Ordinal) =>
+                $"Permission denied: {s["PermissionError:".Length..].Trim()}",
+            string s when s.StartsWith("TypeError:", StringComparison.Ordinal) =>
+                $"Type error: {s["TypeError:".Length..].Trim()}",
+            string s when s.StartsWith("ValueError:", StringComparison.Ordinal) =>
+                $"Value error: {s["ValueError:".Length..].Trim()}",
+            string s when s.StartsWith("KeyError:", StringComparison.Ordinal) =>
+                $"Key error: {s["KeyError:".Length..].Trim()}",
+            _ => lastExceptionLine.Length > 200 ? lastExceptionLine[..200] + "…" : lastExceptionLine,
+        };
+
+        return (summary, fullDetails);
+    }
+
+    private static string FormatModuleNotFoundSummary(string errorLine)
+    {
+        // Extract module name from: "ModuleNotFoundError: No module named 'xyz'"
+        var singleQuoteStart = errorLine.IndexOf('\'');
+        var singleQuoteEnd = singleQuoteStart >= 0 ? errorLine.IndexOf('\'', singleQuoteStart + 1) : -1;
+
+        if (singleQuoteStart >= 0 && singleQuoteEnd > singleQuoteStart)
+        {
+            var moduleName = errorLine[(singleQuoteStart + 1)..singleQuoteEnd];
+            var pipHint = WellKnownImportToPip.TryGetValue(moduleName, out var pipName) ? pipName : moduleName;
+            return $"Module '{moduleName}' not found. Try: pip install {pipHint}";
+        }
+
+        return errorLine;
     }
 }

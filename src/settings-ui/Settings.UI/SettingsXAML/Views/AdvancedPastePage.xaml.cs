@@ -280,6 +280,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private void BrowseScriptsFolder_Click(object sender, RoutedEventArgs e)
+        {
+            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
+            string selectedFolder = ShellGetFolder.GetFolderDialogWithFlags(
+                windowHandle,
+                ShellGetFolder.FolderDialogFlags._BIF_NEWDIALOGSTYLE);
+
+            if (!string.IsNullOrEmpty(selectedFolder))
+            {
+                ScriptsFolderTextBox.Text = selectedFolder;
+                if (ViewModel is not null)
+                {
+                    ViewModel.ScriptsFolder = selectedFolder;
+                }
+            }
+        }
+
         private static string PickFileDialog(string filter, string title, string initialDir = null, int initialFilter = 0)
         {
             // Use Win32 OpenFileName dialog as FileOpenPicker doesn't work with elevated permissions

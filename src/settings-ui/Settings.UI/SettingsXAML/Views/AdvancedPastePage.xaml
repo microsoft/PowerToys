@@ -392,6 +392,25 @@
                     </controls:SettingsGroup>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_PythonScripts_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ScriptsFolder_SettingsCard">
+                            <tkcontrols:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8B7;" />
+                            </tkcontrols:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBox
+                                    x:Name="ScriptsFolderTextBox"
+                                    x:Uid="AdvancedPaste_ScriptsFolder_TextBox"
+                                    MinWidth="300"
+                                    HorizontalAlignment="Stretch"
+                                    Text="{x:Bind ViewModel.ScriptsFolder, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                <Button
+                                    VerticalAlignment="Bottom"
+                                    Click="BrowseScriptsFolder_Click"
+                                    Content="{ui:FontIcon Glyph=&#xE8DA;,
+                                                          FontSize=16}"
+                                    Style="{StaticResource SubtleButtonStyle}" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonExecutablePath_SettingsCard">
                             <tkcontrols:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE943;" />
