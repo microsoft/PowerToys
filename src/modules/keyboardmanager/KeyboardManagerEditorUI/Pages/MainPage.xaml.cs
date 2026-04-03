@@ -132,6 +132,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.KeyOrShortcut);
             UnifiedMappingControl.SetActionKeys(remapping.RemappedKeys.ToList());
             UnifiedMappingControl.SetAppSpecific(!remapping.IsAllApps, remapping.AppName);
+            UnifiedMappingControl.SetName(remapping.Name);
             RemappingDialog.Title = "Edit remapping";
             await ShowRemappingDialog();
         }
@@ -158,6 +159,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.Text);
             UnifiedMappingControl.SetTextContent(textMapping.Text);
             UnifiedMappingControl.SetAppSpecific(!textMapping.IsAllApps, textMapping.AppName);
+            UnifiedMappingControl.SetName(textMapping.Name);
             RemappingDialog.Title = "Edit remapping";
             await ShowRemappingDialog();
         }
@@ -196,6 +198,7 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             UnifiedMappingControl.SetAppSpecific(!programShortcut.IsAllApps, programShortcut.AppName);
+            UnifiedMappingControl.SetName(programShortcut.Name);
             RemappingDialog.Title = "Edit remapping";
             await ShowRemappingDialog();
         }
@@ -222,6 +225,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.OpenUrl);
             UnifiedMappingControl.SetUrl(urlShortcut.URL);
             UnifiedMappingControl.SetAppSpecific(!urlShortcut.IsAllApps, urlShortcut.AppName);
+            UnifiedMappingControl.SetName(urlShortcut.Name);
             RemappingDialog.Title = "Edit remapping";
             await ShowRemappingDialog();
         }
@@ -466,7 +470,8 @@ namespace KeyboardManagerEditorUI.Pages
             if (saved)
             {
                 _mappingService.SaveSettings();
-                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
+                string name = UnifiedMappingControl.GetName();
+                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping, name);
             }
 
             return saved;
@@ -492,7 +497,8 @@ namespace KeyboardManagerEditorUI.Pages
             if (saved)
             {
                 _mappingService.SaveSettings();
-                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
+                string name = UnifiedMappingControl.GetName();
+                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping, name);
             }
 
             return saved;
@@ -521,7 +527,8 @@ namespace KeyboardManagerEditorUI.Pages
             if (saved)
             {
                 _mappingService.SaveSettings();
-                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
+                string name = UnifiedMappingControl.GetName();
+                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping, name);
             }
 
             return saved;
@@ -555,7 +562,8 @@ namespace KeyboardManagerEditorUI.Pages
             if (saved)
             {
                 _mappingService.SaveSettings();
-                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
+                string name = UnifiedMappingControl.GetName();
+                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping, name);
             }
 
             return saved;
@@ -761,6 +769,7 @@ namespace KeyboardManagerEditorUI.Pages
                     AppName = mapping.TargetApp ?? string.Empty,
                     Id = shortcutSettings.Id,
                     IsActive = shortcutSettings.IsActive,
+                    Name = shortcutSettings.Name,
                 });
             }
         }
@@ -790,6 +799,7 @@ namespace KeyboardManagerEditorUI.Pages
                     AppName = mapping.TargetApp ?? string.Empty,
                     Id = shortcutSettings.Id,
                     IsActive = shortcutSettings.IsActive,
+                    Name = shortcutSettings.Name,
                 });
             }
         }
@@ -820,6 +830,7 @@ namespace KeyboardManagerEditorUI.Pages
                     Id = shortcutSettings.Id,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
                     AppName = mapping.TargetApp ?? string.Empty,
+                    Name = shortcutSettings.Name,
                     StartInDirectory = mapping.StartInDirectory,
                     Elevation = mapping.Elevation.ToString(),
                     IfRunningAction = mapping.IfRunningAction.ToString(),
@@ -853,6 +864,7 @@ namespace KeyboardManagerEditorUI.Pages
                     IsActive = shortcutSettings.IsActive,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
                     AppName = mapping.TargetApp ?? string.Empty,
+                    Name = shortcutSettings.Name,
                 });
             }
         }

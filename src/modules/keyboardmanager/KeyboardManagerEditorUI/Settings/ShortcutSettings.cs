@@ -17,6 +17,8 @@ namespace KeyboardManagerEditorUI.Settings
 
         public ShortcutKeyMapping Shortcut { get; set; } = new ShortcutKeyMapping();
 
+        public string Name { get; set; } = string.Empty;
+
         public List<string> Profiles { get; set; } = new List<string>();
 
         public bool IsActive { get; set; } = true;

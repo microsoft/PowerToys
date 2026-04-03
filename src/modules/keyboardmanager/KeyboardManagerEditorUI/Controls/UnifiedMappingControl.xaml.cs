@@ -546,6 +546,11 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public ProgramAlreadyRunningAction GetIfRunningAction() => (ProgramAlreadyRunningAction)(IfRunningComboBox?.SelectedIndex ?? 0);
 
+        /// <summary>
+        /// Gets the custom name for the mapping.
+        /// </summary>
+        public string GetName() => NameTextBox?.Text ?? string.Empty;
+
         #endregion
 
         #region Public API - Validation
@@ -731,6 +736,17 @@ namespace KeyboardManagerEditorUI.Controls
             }
         }
 
+        /// <summary>
+        /// Sets the custom name for the mapping.
+        /// </summary>
+        public void SetName(string name)
+        {
+            if (NameTextBox != null)
+            {
+                NameTextBox.Text = name;
+            }
+        }
+
         #endregion
 
         #region Helper Methods
@@ -865,6 +881,11 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 AppNameTextBox.Text = string.Empty;
                 AppNameTextBox.Visibility = Visibility.Collapsed;
+            }
+
+            if (NameTextBox != null)
+            {
+                NameTextBox.Text = string.Empty;
             }
 
             // Reset checkboxes
