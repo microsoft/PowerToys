@@ -24,10 +24,6 @@ public sealed class GalleryExtensionEntry
     [System.Text.Json.Serialization.JsonConverter(typeof(GalleryLocalizedStringConverter))]
     public string? Readme { get; set; }
 
-    public string? Icon { get; set; }
-
-    public string? IconDark { get; set; }
-
     public string? IconUrl { get; set; }
 
     public List<GalleryInstallSource> InstallSources { get; set; } = [];

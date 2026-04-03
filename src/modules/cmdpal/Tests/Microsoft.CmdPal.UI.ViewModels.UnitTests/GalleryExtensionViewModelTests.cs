@@ -19,29 +19,31 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public class GalleryExtensionViewModelTests
 {
+    private static readonly Uri ExpectedIconPlaceholderUri = new Uri("ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png");
+
     [TestMethod]
     public void Constructor_UsesPlaceholderIcon_WhenIconIsMissing()
     {
-        var entry = CreateEntry(icon: null);
+        var entry = CreateEntry(iconUrl: null);
         var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService((_, _) => null));
 
-        Assert.AreEqual(new Uri("ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png"), viewModel.IconUri);
+        Assert.AreEqual(ExpectedIconPlaceholderUri, viewModel.IconUri);
     }
 
     [TestMethod]
     public void Constructor_UsesPlaceholderIcon_WhenIconUriIsInvalid()
     {
-        var entry = CreateEntry(icon: "icon.png");
+        var entry = CreateEntry(iconUrl: "iconUrl.png");
         var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService((_, _) => "not-a-valid-uri"));
 
-        Assert.AreEqual(new Uri("ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png"), viewModel.IconUri);
+        Assert.AreEqual(ExpectedIconPlaceholderUri, viewModel.IconUri);
     }
 
     [TestMethod]
     public void Constructor_UsesResolvedIcon_WhenIconUriIsValid()
     {
-        var expected = new Uri("https://example.com/icon.png");
-        var entry = CreateEntry(icon: "icon.png");
+        var expected = ExpectedIconPlaceholderUri;
+        var entry = CreateEntry(iconUrl: "iconUrl.png");
         var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService((_, _) => expected.AbsoluteUri));
 
         Assert.AreEqual(expected, viewModel.IconUri);
@@ -50,8 +52,8 @@ public class GalleryExtensionViewModelTests
     [TestMethod]
     public void Constructor_UsesAbsoluteIconUri_WhenEntryContainsRemoteIcon()
     {
-        var expected = new Uri("https://example.com/icon.png");
-        var entry = CreateEntry(icon: expected.AbsoluteUri);
+        var expected = new Uri("https://example.com/iconUrl.png");
+        var entry = CreateEntry(iconUrl: expected.AbsoluteUri);
         var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService((_, _) => null));
 
         Assert.AreEqual(expected, viewModel.IconUri);
@@ -260,7 +262,7 @@ public class GalleryExtensionViewModelTests
             PackageUrl: "https://contoso.example/package",
             ReleaseNotes: "Release notes",
             ReleaseNotesUrl: "https://contoso.example/release-notes",
-            IconUrl: "https://contoso.example/icon.png",
+            IconUrl: "https://contoso.example/iconUrl.png",
             DocumentationLinks:
             [
                 new WinGetNamedLink("Docs", "https://contoso.example/docs"),
@@ -391,7 +393,7 @@ public class GalleryExtensionViewModelTests
         tracker.Verify(t => t.TryCancelOperation(operation.OperationId), Times.Once);
     }
 
-    private static GalleryExtensionEntry CreateEntry(string? icon)
+    private static GalleryExtensionEntry CreateEntry(string? iconUrl)
     {
         return new GalleryExtensionEntry
         {
@@ -399,7 +401,7 @@ public class GalleryExtensionViewModelTests
             Title = "Sample",
             Description = "Sample extension",
             Author = new GalleryAuthor { Name = "Sample Author" },
-            Icon = icon,
+            IconUrl = iconUrl,
             InstallSources = new List<GalleryInstallSource>(),
         };
     }

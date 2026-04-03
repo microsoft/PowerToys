@@ -97,7 +97,7 @@ public class ExtensionGalleryServiceTests
         Assert.AreEqual("Test Extension", result.Extensions[0].Title);
         Assert.AreEqual("A test extension", result.Extensions[0].Description);
         Assert.AreEqual("Test Author", result.Extensions[0].Author.Name);
-        Assert.AreEqual("https://example.com/icon.png", result.Extensions[0].Icon);
+        Assert.AreEqual("https://example.com/icon.png", result.Extensions[0].IconUrl);
     }
 
     [TestCleanup]
@@ -141,7 +141,6 @@ public class ExtensionGalleryServiceTests
             Title = title,
             Description = "Sample description",
             Author = new GalleryAuthor { Name = "Sample author" },
-            Icon = iconFileName,
             InstallSources = [],
         };
 

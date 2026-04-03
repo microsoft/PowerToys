@@ -453,28 +453,17 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
 
     private Uri? ResolveIconUri()
     {
-        if (string.IsNullOrWhiteSpace(_entry.Icon))
+        if (!Uri.TryCreate(_entry.IconUrl, UriKind.Absolute, out var absoluteIconUri))
         {
             return null;
         }
 
-        if (Uri.TryCreate(_entry.Icon, UriKind.Absolute, out var absoluteIconUri))
-        {
-            return IsSupportedIconUri(absoluteIconUri) ? absoluteIconUri : null;
-        }
-
-        var iconUrl = _galleryService.GetIconUrl(_entry.Id, _entry.Icon);
-        if (string.IsNullOrWhiteSpace(iconUrl))
+        if (!IsSupportedIconUri(absoluteIconUri))
         {
             return null;
         }
 
-        if (!Uri.TryCreate(iconUrl, UriKind.Absolute, out var iconUri))
-        {
-            return null;
-        }
-
-        return IsSupportedIconUri(iconUri) ? iconUri : null;
+        return absoluteIconUri;
     }
 
     private static bool IsSupportedIconUri(Uri uri)

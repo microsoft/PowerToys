@@ -320,8 +320,7 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
             Author = MergeAuthor(baseManifest.Author, localizedManifest.Author),
             Homepage = !string.IsNullOrWhiteSpace(localizedManifest.Homepage) ? localizedManifest.Homepage : baseManifest.Homepage,
             Readme = !string.IsNullOrWhiteSpace(localizedManifest.Readme) ? localizedManifest.Readme : baseManifest.Readme,
-            Icon = !string.IsNullOrWhiteSpace(localizedManifest.Icon) ? localizedManifest.Icon : baseManifest.Icon,
-            IconDark = !string.IsNullOrWhiteSpace(localizedManifest.IconDark) ? localizedManifest.IconDark : baseManifest.IconDark,
+            IconUrl = !string.IsNullOrWhiteSpace(localizedManifest.IconUrl) ? localizedManifest.IconUrl : baseManifest.IconUrl,
             InstallSources = localizedManifest.InstallSources.Count > 0 ? localizedManifest.InstallSources : baseManifest.InstallSources,
             Detection = localizedManifest.Detection ?? baseManifest.Detection,
             Tags = MergeTags(baseManifest.Tags, localizedManifest.Tags),
@@ -481,12 +480,6 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
             }
 
             entry.Id = entry.Id.Trim();
-
-            // Map iconUrl to icon for downstream compatibility.
-            if (string.IsNullOrWhiteSpace(entry.Icon) && !string.IsNullOrWhiteSpace(entry.IconUrl))
-            {
-                entry.Icon = entry.IconUrl;
-            }
         }
     }
 
