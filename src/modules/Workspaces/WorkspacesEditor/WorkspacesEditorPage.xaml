@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="WorkspacesEditor.ProjectEditor"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,24 +9,15 @@
     xmlns:models="clr-namespace:WorkspacesEditor.Models"
     xmlns:props="clr-namespace:WorkspacesEditor.Properties"
     Title="Workspaces Editor"
-    Background="{DynamicResource PrimaryBackgroundBrush}"
     mc:Ignorable="d">
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
         <Style x:Key="TextBlockEnabledStyle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        <Style x:Key="ButtonEnabledStyle" TargetType="Button">
-            <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}" />
-            <Style.Triggers>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -34,85 +25,69 @@
         <DataTemplate x:Key="headerTemplate">
             <Border HorizontalAlignment="Stretch">
                 <TextBlock
-                    Margin="0,0,20,0"
+                    Margin="0,16,0,8"
                     VerticalAlignment="Center"
                     DockPanel.Dock="Left"
-                    FontSize="14"
-                    FontWeight="Normal"
-                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    FontWeight="SemiBold"
                     Text="{Binding MonitorName}" />
             </Border>
         </DataTemplate>
         <DataTemplate x:Key="appTemplate">
             <Border
-                Margin="1"
-                Background="{DynamicResource SecondaryBackgroundBrush}"
+                Margin="0,4,0,0"
                 MouseEnter="AppBorder_MouseEnter"
                 MouseLeave="AppBorder_MouseLeave">
                 <Expander
-                    Margin="0,0,20,0"
                     AutomationProperties.AutomationId="{Binding AppName}"
                     AutomationProperties.Name="{Binding AppName}"
-                    FlowDirection="RightToLeft"
                     IsEnabled="{Binding IsIncluded, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                     IsExpanded="{Binding IsExpanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <Expander.Header>
                         <Grid HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}" FlowDirection="LeftToRight">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="12" />
                                 <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="60" />
                                 <ColumnDefinition Width="20" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock
-                                Margin="5,0,0,0"
-                                VerticalAlignment="Center"
-                                FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                FontSize="14"
-                                FontWeight="Normal"
-                                Foreground="#EED202"
-                                Text="&#xE7BA;"
-                                ToolTip="{x:Static props:Resources.NotFoundTooltip}"
-                                Visibility="{Binding IsNotFound, Converter={StaticResource BoolToVis}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+
                             <Image
                                 Grid.Column="1"
                                 Width="20"
                                 Height="20"
-                                Margin="10"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Source="{Binding IconBitmapImage, UpdateSourceTrigger=PropertyChanged}" />
-                            <TextBlock
-                                Grid.Column="2"
-                                Width="20"
-                                VerticalAlignment="Center"
-                                FontSize="14"
-                                FontWeight="Normal"
-                                Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                Text="{Binding RepeatIndexString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+
                             <StackPanel Grid.Column="3" VerticalAlignment="Center">
-                                <TextBlock
-                                    FontSize="14"
-                                    FontWeight="Normal"
-                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                    Text="{Binding AppName}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding AppName}" />
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding RepeatIndexString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                        Foreground="#EED202"
+                                        Text="&#xE7BA;"
+                                        ToolTip="{x:Static props:Resources.NotFoundTooltip}"
+                                        Visibility="{Binding IsNotFound, Converter={StaticResource BoolToVis}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
                                 <TextBlock
                                     FontSize="12"
-                                    FontWeight="Normal"
-                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                     Text="{Binding AppMainParams, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                     Visibility="{Binding IsAppMainParamVisible, Converter={StaticResource BoolToVis}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
                             <controls:ResetIsEnabled Grid.Column="4">
                                 <Button
                                     Width="Auto"
-                                    Margin="10,5"
-                                    Padding="24,6"
+                                    Margin="12,4"
                                     AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                                    Background="{DynamicResource TertiaryBackgroundBrush}"
-                                    BorderBrush="{DynamicResource SecondaryBorderBrush}"
-                                    BorderThickness="2"
                                     Click="DeleteButtonClicked"
                                     Content="{Binding DeleteButtonContent, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                     IsEnabled="True" />
@@ -120,146 +95,104 @@
                         </Grid>
                     </Expander.Header>
                     <Grid
-                        Margin="-20,0,0,0"
+                        Margin="52,8,48,8"
                         HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}"
-                        Background="{DynamicResource QuaternaryBackgroundBrush}"
                         FlowDirection="LeftToRight">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <DockPanel Margin="100,5,0,0">
+                        <CheckBox
+                            MinWidth="12"
+                            Content="{x:Static props:Resources.LaunchAsAdmin}"
+                            IsChecked="{Binding IsElevated, Mode=TwoWay}"
+                            IsEnabled="{Binding CanLaunchElevated, Mode=OneWay}" />
+                        <DockPanel Grid.Row="1" Margin="0,16,0,0">
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="14"
-                                FontWeight="Normal"
-                                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                 Text="{x:Static props:Resources.CliArguments}" />
                             <TextBox
                                 x:Name="CommandLineTextBox"
-                                Margin="15,0,50,0"
+                                Margin="12,0,0,0"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
-                                Background="{DynamicResource TertiaryBackgroundBrush}"
-                                BorderThickness="0"
-                                FontSize="14"
-                                FontWeight="Normal"
-                                Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                 Text="{Binding CommandLineArguments, Mode=TwoWay}"
                                 TextChanged="CommandLineTextBox_TextChanged" />
                         </DockPanel>
-                        <StackPanel
-                            Grid.Row="1"
-                            Margin="100,5,0,0"
-                            Orientation="Horizontal">
-                            <CheckBox
-                                MinWidth="10"
-                                Content="{x:Static props:Resources.LaunchAsAdmin}"
-                                IsChecked="{Binding IsElevated, Mode=TwoWay}"
-                                IsEnabled="{Binding CanLaunchElevated, Mode=OneWay}" />
-                        </StackPanel>
+
                         <StackPanel
                             Grid.Row="2"
-                            Margin="100,5,0,0"
+                            Margin="0,16,0,0"
                             Orientation="Horizontal">
                             <TextBlock
                                 VerticalAlignment="Center"
-                                FontSize="14"
-                                FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource TextBlockEnabledStyle}"
                                 Text="{x:Static props:Resources.WindowPosition}" />
                             <ComboBox
-                                Margin="15,0,0,0"
+                                Margin="12,0,0,0"
                                 VerticalAlignment="Center"
-                                Background="{DynamicResource SecondaryBackgroundBrush}"
-                                BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                                BorderThickness="2"
-                                FontSize="14"
-                                FontWeight="Normal"
                                 SelectedIndex="{Binding PositionComboboxIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                                 <ComboBoxItem Content="{x:Static props:Resources.Custom}" />
                                 <ComboBoxItem Content="{x:Static props:Resources.Maximized}" />
                                 <ComboBoxItem Content="{x:Static props:Resources.Minimized}" />
                             </ComboBox>
                             <TextBlock
-                                Margin="15,0,0,0"
+                                Margin="24,0,0,0"
                                 VerticalAlignment="Center"
-                                FontSize="14"
-                                FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource TextBlockEnabledStyle}"
                                 Text="{x:Static props:Resources.Left}" />
                             <TextBox
                                 x:Name="LeftTextBox"
-                                Margin="15,0,0,0"
+                                Margin="8,0,0,0"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
-                                Background="{DynamicResource TertiaryBackgroundBrush}"
-                                BorderThickness="0"
-                                FontSize="14"
-                                FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 Text="{Binding Position.X, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 TextChanged="LeftTextBox_TextChanged" />
                             <TextBlock
-                                Margin="15,0,0,0"
+                                Margin="24,0,0,0"
                                 VerticalAlignment="Center"
-                                FontSize="14"
-                                FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource TextBlockEnabledStyle}"
                                 Text="{x:Static props:Resources.Top}" />
                             <TextBox
                                 x:Name="TopTextBox"
-                                Margin="15,0,0,0"
+                                Margin="8,0,0,0"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
-                                Background="{DynamicResource TertiaryBackgroundBrush}"
-                                BorderThickness="0"
-                                FontSize="14"
-                                FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 Text="{Binding Position.Y, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 TextChanged="TopTextBox_TextChanged" />
                             <TextBlock
-                                Margin="15,0,0,0"
+                                Margin="24,0,0,0"
                                 VerticalAlignment="Center"
-                                FontSize="14"
-                                FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource TextBlockEnabledStyle}"
                                 Text="{x:Static props:Resources.Width}" />
                             <TextBox
                                 x:Name="WidthTextBox"
-                                Margin="15,0,0,0"
+                                Margin="8,0,0,0"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
-                                Background="{DynamicResource TertiaryBackgroundBrush}"
-                                BorderThickness="0"
-                                FontSize="14"
-                                FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 Text="{Binding Position.Width, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 TextChanged="WidthTextBox_TextChanged" />
                             <TextBlock
-                                Margin="15,0,0,0"
+                                Margin="24,0,0,0"
                                 VerticalAlignment="Center"
-                                FontSize="14"
-                                FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 Style="{StaticResource TextBlockEnabledStyle}"
                                 Text="{x:Static props:Resources.Height}" />
                             <TextBox
                                 x:Name="HeightTextBox"
-                                Margin="15,0,0,0"
+                                Margin="8,0,0,0"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
-                                Background="{DynamicResource TertiaryBackgroundBrush}"
-                                BorderThickness="0"
-                                FontSize="14"
-                                FontWeight="Normal"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 Text="{Binding Position.Height, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 TextChanged="HeightTextBox_TextChanged" />
@@ -273,7 +206,7 @@
             AppTemplate="{StaticResource appTemplate}"
             HeaderTemplate="{StaticResource headerTemplate}" />
     </Page.Resources>
-    <Grid Margin="40,0,40,40">
+    <Grid Margin="24,0,24,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -281,40 +214,73 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Button
-                Margin="0,10,0,20"
-                VerticalAlignment="Center"
-                Background="Transparent"
-                Click="CancelButtonClicked">
-                <TextBlock
+        <Grid Grid.Row="0" Margin="-12,0,0,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal">
+                <Button
                     VerticalAlignment="Center"
-                    FontSize="24"
-                    FontWeight="Normal"
-                    Foreground="{DynamicResource PrimaryForegroundBrush}"
-                    Text="{x:Static props:Resources.Workspaces}" />
-            </Button>
-            <TextBlock
-                Margin="10,0,0,0"
-                VerticalAlignment="Center"
-                FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                FontSize="16"
-                Foreground="{DynamicResource PrimaryForegroundBrush}"
-                Text="&#xE76C;" />
-            <TextBlock
-                Margin="10,0,0,0"
-                VerticalAlignment="Center"
-                FontSize="24"
-                FontWeight="SemiBold"
-                Foreground="{DynamicResource PrimaryForegroundBrush}"
-                Text="{Binding EditorWindowTitle}" />
-        </StackPanel>
+                    Click="CancelButtonClicked"
+                    Content="{x:Static props:Resources.Workspaces}"
+                    FontSize="20"
+                    Style="{DynamicResource SubtleButtonStyle}" />
+                <TextBlock
+                    Margin="0,6,0,0"
+                    VerticalAlignment="Center"
+                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="&#xE76C;" />
+                <TextBlock
+                    Margin="8,1,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="20"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                    Text="{Binding EditorWindowTitle}" />
+            </StackPanel>
+            <StackPanel
+                Grid.Row="4"
+                Margin="24,0,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <Button
+                    x:Name="SaveButton"
+                    AutomationProperties.Name="{x:Static props:Resources.Save_Workspace}"
+                    Click="SaveButtonClicked"
+                    IsEnabled="{Binding CanBeSaved, UpdateSourceTrigger=PropertyChanged}"
+                    Style="{DynamicResource AccentButtonStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock
+                            Margin="0,4,0,0"
+                            AutomationProperties.Name="{x:Static props:Resources.CreateWorkspace}"
+                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                            Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                            Text="&#xE74E;" />
+                        <TextBlock
+                            Margin="8,0,0,0"
+                            Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                            Text="{x:Static props:Resources.Save_Workspace}" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    x:Name="CancelButton"
+                    Margin="8,0,0,0"
+                    AutomationProperties.Name="{x:Static props:Resources.Cancel}"
+                    Click="CancelButtonClicked"
+                    Content="{x:Static props:Resources.Cancel}"
+                    Style="{StaticResource SubtleButtonStyle}" />
+
+            </StackPanel>
+        </Grid>
         <Border
             Grid.Row="1"
             HorizontalAlignment="Stretch"
-            Background="{DynamicResource MonitorViewBackgroundBrush}"
-            CornerRadius="5">
-            <DockPanel>
+            Background="{DynamicResource LayerFillColorDefaultBrush}"
+            CornerRadius="8">
+            <DockPanel Margin="16">
                 <Image
                     Width="{Binding PreviewImageWidth, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                     Height="200"
@@ -324,49 +290,37 @@
                     Stretch="Fill" />
                 <Button
                     x:Name="RevertButton"
-                    Height="36"
-                    Margin="0,0,20,10"
-                    Padding="24,0,24,0"
                     HorizontalAlignment="Right"
                     AutomationProperties.Name="{x:Static props:Resources.Revert}"
-                    Background="{DynamicResource SecondaryBackgroundBrush}"
-                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                    BorderThickness="2"
                     Click="RevertButtonClicked"
                     Content="{x:Static props:Resources.Revert}"
                     DockPanel.Dock="Right"
-                    IsEnabled="{Binding IsRevertEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                    IsEnabled="{Binding IsRevertEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                    Style="{StaticResource SubtleButtonStyle}" />
                 <Button
                     x:Name="LaunchEditButton"
-                    Height="36"
-                    Margin="0,0,10,10"
-                    Padding="24,0,24,0"
+                    Margin="0,0,8,0"
                     HorizontalAlignment="Right"
                     AutomationProperties.Name="{x:Static props:Resources.LaunchEdit}"
-                    Background="{DynamicResource SecondaryBackgroundBrush}"
-                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                    BorderThickness="2"
                     Click="LaunchEditButtonClicked"
                     Content="{x:Static props:Resources.LaunchEdit}"
                     DockPanel.Dock="Right" />
             </DockPanel>
         </Border>
-        <DockPanel Grid.Row="2" HorizontalAlignment="Stretch">
+        <DockPanel
+            Grid.Row="2"
+            Margin="0,16,0,0"
+            HorizontalAlignment="Stretch">
             <StackPanel Orientation="Vertical">
                 <TextBlock
-                    Margin="0,10,0,0"
-                    FontSize="14"
-                    FontWeight="Normal"
-                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                    Margin="0,0,0,8"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="{x:Static props:Resources.WorkspaceName}" />
                 <TextBox
                     x:Name="EditNameTextBox"
                     Width="300"
-                    Margin="0,6,0,6"
                     HorizontalAlignment="Left"
-                    Background="{DynamicResource SecondaryBackgroundBrush}"
-                    BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                    BorderThickness="2"
                     GotFocus="EditNameTextBox_GotFocus"
                     KeyDown="EditNameTextBoxKeyDown"
                     Text="{Binding Name, Mode=TwoWay}"
@@ -377,25 +331,24 @@
                 DockPanel.Dock="Right"
                 Orientation="Horizontal">
                 <CheckBox
-                    Margin="20,0,0,0"
+                    Margin="24,0,0,0"
                     VerticalAlignment="Bottom"
                     Content="{x:Static props:Resources.CreateShortcut}"
-                    FontSize="14"
                     IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <CheckBox
-                    Margin="20,0,0,0"
+                    Margin="24,0,0,0"
                     VerticalAlignment="Bottom"
                     Content="{x:Static props:Resources.MoveIfExist}"
-                    FontSize="14"
                     IsChecked="{Binding MoveExistingWindows, Mode=TwoWay}" />
             </StackPanel>
         </DockPanel>
         <ScrollViewer
             Grid.Row="3"
-            Margin="0,10,0,0"
+            Margin="-24,24,-24,-24"
+            Padding="24,0,24,0"
             PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
             VerticalScrollBarVisibility="Auto">
-            <StackPanel Orientation="Vertical">
+            <StackPanel Margin="0,0,0,24" Orientation="Vertical">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -409,32 +362,5 @@
                 </Grid>
             </StackPanel>
         </ScrollViewer>
-        <StackPanel
-            Grid.Row="4"
-            Margin="40,20,0,0"
-            HorizontalAlignment="Right"
-            Orientation="Horizontal">
-            <Button
-                x:Name="CancelButton"
-                Height="36"
-                Margin="20,0,0,0"
-                Padding="24,0,24,0"
-                AutomationProperties.Name="{x:Static props:Resources.Cancel}"
-                Background="{DynamicResource SecondaryBackgroundBrush}"
-                BorderBrush="{DynamicResource PrimaryBorderBrush}"
-                BorderThickness="2"
-                Click="CancelButtonClicked"
-                Content="{x:Static props:Resources.Cancel}" />
-            <Button
-                x:Name="SaveButton"
-                Height="36"
-                Margin="20,0,0,0"
-                Padding="24,0,24,0"
-                AutomationProperties.Name="{x:Static props:Resources.Save_Workspace}"
-                Click="SaveButtonClicked"
-                Content="{x:Static props:Resources.Save_Workspace}"
-                IsEnabled="{Binding CanBeSaved, UpdateSourceTrigger=PropertyChanged}"
-                Style="{StaticResource AccentButtonStyle}" />
-        </StackPanel>
     </Grid>
 </Page>
