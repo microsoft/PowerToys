@@ -94,6 +94,13 @@ public sealed class SettingsService : ISettingsService
             Debug.WriteLine($"Migration check failed: {ex}");
         }
 
+        var normalizedSettings = _settings.NormalizePinnedCommands();
+        if (!ReferenceEquals(normalizedSettings, _settings))
+        {
+            _settings = normalizedSettings;
+            migratedAny = true;
+        }
+
         if (migratedAny)
         {
             Save(hotReload: false);

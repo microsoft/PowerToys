@@ -48,6 +48,8 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private CancellationTokenSource _extensionLoadCts = new();
     private CancellationToken _currentExtensionLoadCancellationToken;
 
+    private HashSet<PinnedCommandSettings> _pinnedCommandSet = [];
+
     public TopLevelCommandManager(IServiceProvider serviceProvider, ICommandProviderCache commandProviderCache)
     {
         _serviceProvider = serviceProvider;
@@ -59,7 +61,10 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
         WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
+        RebuildPinnedCache();
     }
+
+    public ObservableCollection<PinnedCommandSettings> PinnedCommands { get; } = [];
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
 
@@ -77,6 +82,18 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                 return _builtInCommands.Concat(_extensionCommandProviders).ToList();
             }
         }
+    }
+
+    internal bool IsPinned(string providerId, string commandId)
+    {
+        return _pinnedCommandSet.Contains(new PinnedCommandSettings(providerId, commandId));
+    }
+
+    internal void RebuildPinnedCache()
+    {
+        var settings = _serviceProvider.GetRequiredService<ISettingsService>().Settings;
+        _pinnedCommandSet = new(settings.PinnedCommands);
+        ListHelpers.InPlaceUpdateList(PinnedCommands, settings.PinnedCommands);
     }
 
     public async Task<bool> LoadBuiltinsAsync()
@@ -693,12 +710,14 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     {
         var wrapper = LookupProvider(message.ProviderId);
         wrapper?.PinCommand(message.CommandId, _serviceProvider);
+        RebuildPinnedCache();
     }
 
     public void Receive(UnpinCommandItemMessage message)
     {
         var wrapper = LookupProvider(message.ProviderId);
         wrapper?.UnpinCommand(message.CommandId, _serviceProvider);
+        RebuildPinnedCache();
     }
 
     public void Receive(PinToDockMessage message)

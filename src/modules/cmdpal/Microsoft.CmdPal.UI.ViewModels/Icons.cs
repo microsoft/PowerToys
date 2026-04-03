@@ -12,6 +12,12 @@ public static class Icons
 
     public static IconInfo UnpinIcon => new("\uE77A"); // Unpin icon
 
+    public static IconInfo MoveUpIcon => new("\uE74A"); // Up icon
+
+    public static IconInfo MoveDownIcon => new("\uE74B"); // Down icon
+
+    public static IconInfo MoveToTopIcon => new("\uE898"); // Down icon
+
     public static IconInfo SettingsIcon => new("\uE713"); // Settings icon
 
     public static IconInfo EditIcon => new("\uE70F"); // Edit icon
