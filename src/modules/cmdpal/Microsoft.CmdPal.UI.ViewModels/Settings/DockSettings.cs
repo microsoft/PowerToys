@@ -91,19 +91,19 @@ public record DockBandSettings
     public required string CommandId { get; init; }
 
     /// <summary>
-    /// Gets or sets whether titles are shown for items in this band.
+    /// Gets whether titles are shown for items in this band.
     /// If null, falls back to dock-wide ShowLabels setting.
     /// </summary>
     public bool? ShowTitles { get; init; }
 
     /// <summary>
-    /// Gets or sets whether subtitles are shown for items in this band.
+    /// Gets whether subtitles are shown for items in this band.
     /// If null, falls back to dock-wide ShowLabels setting.
     /// </summary>
     public bool? ShowSubtitles { get; init; }
 
     /// <summary>
-    /// Gets or sets a value for backward compatibility. Maps to ShowTitles.
+    /// Gets a value for backward compatibility. Maps to ShowTitles.
     /// </summary>
     [System.Text.Json.Serialization.JsonIgnore]
     public bool? ShowLabels
