@@ -368,5 +368,9 @@ nostdin
 engtype
 Nonpaged
 
+# Spell-check fragments
+traies
+udit
+
 # XAML
 Untargeted
