@@ -48,8 +48,7 @@ internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
-        // now, the state is just next to the exe
-        return Path.Combine(directory, "settings.json");
+        return Path.Combine(directory, $"{Namespace}.settings.json");
     }
 
     public SettingsManager()
@@ -60,7 +59,6 @@ internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
         Settings.Add(_confirmDelete);
         Settings.Add(_primaryAction);
 
-        // Load settings from file upon initialization
         LoadSettings();
 
         Settings.SettingsChanged += (_, _) => SaveSettings();
