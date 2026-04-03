@@ -98,7 +98,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <Grid Padding="16,0">
+                <Grid x:Name="BreadcrumbContainer" Padding="16,0">
                     <BreadcrumbBar
                         x:Name="NavigationBreadcrumbBar"
                         MaxWidth="1000"
@@ -120,6 +120,11 @@
                     </BreadcrumbBar>
                 </Grid>
                 <Grid Grid.Row="1" Grid.Column="0">
+                    <Grid.Transitions>
+                        <TransitionCollection>
+                            <RepositionThemeTransition />
+                        </TransitionCollection>
+                    </Grid.Transitions>
                     <Frame x:Name="NavFrame" Navigated="NavFrame_OnNavigated" />
 
                     <controls:WinGetOperationsButton

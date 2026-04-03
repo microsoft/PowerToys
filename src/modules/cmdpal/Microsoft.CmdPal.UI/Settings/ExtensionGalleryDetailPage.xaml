@@ -169,7 +169,12 @@
             </StackPanel>
         </ContentDialog>
 
-        <Grid Padding="16">
+        <Grid Padding="16,4,16,16">
+            <Grid.Transitions>
+                <TransitionCollection>
+                    <EntranceThemeTransition FromVerticalOffset="50" />
+                </TransitionCollection>
+            </Grid.Transitions>
             <Grid MaxWidth="1000" HorizontalAlignment="Stretch">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />

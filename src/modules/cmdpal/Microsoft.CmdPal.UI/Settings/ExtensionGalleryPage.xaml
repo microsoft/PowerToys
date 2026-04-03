@@ -43,7 +43,7 @@
         </Grid.RowDefinitions>
 
         <ScrollViewer x:Name="RootScrollViewer" Grid.Row="1">
-            <Grid Padding="16">
+            <Grid Padding="16,16,16,16">
                 <StackPanel
                     MaxWidth="1200"
                     HorizontalAlignment="Stretch"
