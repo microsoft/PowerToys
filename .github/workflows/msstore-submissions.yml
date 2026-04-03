@@ -47,7 +47,7 @@ jobs:
       - uses: microsoft/setup-msstore-cli@v1
 
       - name: Fetch Store Credential
-        uses: azure/cli@v2
+        uses: azure/cli@v3
         with:
           azcliversion: latest
           inlineScript: |-
