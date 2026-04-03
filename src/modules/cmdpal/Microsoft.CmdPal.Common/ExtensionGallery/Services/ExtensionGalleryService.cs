@@ -481,6 +481,12 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
             }
 
             entry.Id = entry.Id.Trim();
+
+            // Map iconUrl to icon for downstream compatibility.
+            if (string.IsNullOrWhiteSpace(entry.Icon) && !string.IsNullOrWhiteSpace(entry.IconUrl))
+            {
+                entry.Icon = entry.IconUrl;
+            }
         }
     }
 
