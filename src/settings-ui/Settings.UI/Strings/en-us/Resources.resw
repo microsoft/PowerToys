@@ -5369,9 +5369,6 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_Enable_PowerDisplay.Header" xml:space="preserve">
     <value>Enable Power Display</value>
   </data>
-  <data name="PowerDisplay_Configuration_GroupSettings.Header" xml:space="preserve">
-    <value>Configuration</value>
-  </data>
   <data name="PowerDisplay_ToggleWindow" xml:space="preserve">
     <value>Toggle Power Display</value>
     <comment>Dashboard: Label for the PowerDisplay activation hotkey</comment>
@@ -5383,26 +5380,17 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_LaunchButtonControl.Header" xml:space="preserve">
     <value>Open Power Display</value>
   </data>
+	<data name="PowerDisplay_LaunchButton.Content" xml:space="preserve">
+    <value>Open Power Display</value>
+  </data>
   <data name="PowerDisplay_LaunchButtonControl.Description" xml:space="preserve">
     <value>Launch the Power Display utility</value>
   </data>
-  <data name="PowerDisplay_RestoreSettingsOnStartup.Header" xml:space="preserve">
-    <value>Restore settings on startup</value>
-  </data>
-  <data name="PowerDisplay_RestoreSettingsOnStartup.Description" xml:space="preserve">
+  <data name="PowerDisplay_RestoreSettingsOnStartup.Content" xml:space="preserve">
     <value>Restore monitor brightness and color temperature when Power Display launches</value>
   </data>
-  <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OnContent" xml:space="preserve">
-    <value>On</value>
-  </data>
-  <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OffContent" xml:space="preserve">
-    <value>Off</value>
-  </data>
-  <data name="PowerDisplay_ShowSystemTrayIcon.Header" xml:space="preserve">
+  <data name="PowerDisplay_ShowSystemTrayIcon.Content" xml:space="preserve">
     <value>Show system tray icon</value>
-  </data>
-  <data name="PowerDisplay_ShowSystemTrayIcon.Description" xml:space="preserve">
-    <value>Choose if PowerDisplay is visible in the system tray</value>
   </data>
   <data name="PowerDisplay_MonitorRefreshDelay.Header" xml:space="preserve">
     <value>Monitor refresh delay</value>
@@ -5589,26 +5577,23 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_Monitor_VcpCodes_CopyText.Text" xml:space="preserve">
     <value>Copy</value>
   </data>
-  <data name="PowerDisplay_FlyoutOptions_GroupSettings.Header" xml:space="preserve">
-    <value>Flyout options</value>
+  <data name="PowerDisplay_ShowProfileSwitcher.Content" xml:space="preserve">
+    <value>Show profile switcher button</value>
   </data>
-  <data name="PowerDisplay_ShowProfileSwitcher.Header" xml:space="preserve">
-    <value>Show profile switcher</value>
-  </data>
-  <data name="PowerDisplay_ShowProfileSwitcher.Description" xml:space="preserve">
-    <value>Show or hide the profile switcher button in the Power Display flyout</value>
-  </data>
-  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Header" xml:space="preserve">
+  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Content" xml:space="preserve">
     <value>Show identify monitors button</value>
   </data>
-  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Description" xml:space="preserve">
-    <value>Show or hide the identify monitors button in the Power Display flyout</value>
-  </data>
   <data name="PowerDisplay_CustomVcpMappings_GroupSettings.Header" xml:space="preserve">
-    <value>Custom VCP Name Mappings</value>
+    <value>Custom VCP name mappings</value>
   </data>
   <data name="PowerDisplay_CustomVcpMappings.Header" xml:space="preserve">
     <value>Custom name mappings</value>
+  </data>
+	<data name="PowerDisplayGroupHeader.Text" xml:space="preserve">
+    <value>Power Display</value>
+  </data>
+  <data name="PowerDisplayFlyoutHeader.Header" xml:space="preserve">
+    <value>Power Display flyout</value>
   </data>
   <data name="PowerDisplay_CustomVcpMappings.Description" xml:space="preserve">
     <value>Define custom display names for color temperature presets and input sources</value>
@@ -5626,19 +5611,19 @@ The break timer font matches the text font.</value>
     <value>Add mapping</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_Title" xml:space="preserve">
-    <value>Custom VCP Name Mapping</value>
+    <value>Custom VCP name mapping</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_VcpCode.Header" xml:space="preserve">
-    <value>VCP Code</value>
+    <value>VCP code</value>
   </data>
   <data name="PowerDisplay_VcpCode_Name_0x14" xml:space="preserve">
-    <value>Color Temperature</value>
+    <value>Color temperature</value>
   </data>
   <data name="PowerDisplay_VcpCode_Name_0x60" xml:space="preserve">
-    <value>Input Source</value>
+    <value>Input source</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_CustomName.Header" xml:space="preserve">
-    <value>Custom Name</value>
+    <value>Custom name</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_CustomName.PlaceholderText" xml:space="preserve">
     <value>Enter custom name</value>

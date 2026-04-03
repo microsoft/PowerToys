@@ -8,6 +8,7 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pdmodels="using:PowerDisplay.Models"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -41,42 +42,40 @@
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
 
-                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
-
-                <controls:SettingsGroup x:Uid="PowerDisplay_Configuration_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        x:Uid="PowerDisplay_LaunchButtonControl"
-                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                        Command="{x:Bind ViewModel.LaunchEventHandler}"
+                <controls:SettingsGroup x:Uid="PowerDisplayGroupHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander
+                        x:Uid="PowerDisplayFlyoutHeader"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE770;}"
-                        IsClickEnabled="True" />
-                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_RestoreSettingsOnStartup" HeaderIcon="{ui:FontIcon Glyph=&#xE7B8;}">
-                        <ToggleSwitch x:Uid="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch" IsOn="{x:Bind ViewModel.RestoreSettingsOnStartup, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_ShowSystemTrayIcon" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                        IsExpanded="True">
+                        <Button
+                            x:Uid="PowerDisplay_LaunchButton"
+                            Command="{x:Bind ViewModel.LaunchEventHandler}"
+                            Style="{StaticResource AccentButtonStyle}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="PowerDisplay_ActivationShortcut">
+                                <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_MonitorRefreshDelay" HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
-                        <ComboBox
-                            MinWidth="{StaticResource PowerDisplayCompactActionControlMinWidth}"
-                            ItemsSource="{x:Bind ViewModel.MonitorRefreshDelayOptions}"
-                            SelectedItem="{x:Bind ViewModel.MonitorRefreshDelay, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-
-                </controls:SettingsGroup>
-
-                <controls:SettingsGroup x:Uid="PowerDisplay_FlyoutOptions_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_ShowProfileSwitcher" HeaderIcon="{ui:FontIcon Glyph=&#xE748;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowProfileSwitcher, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_ShowIdentifyMonitorsButton" HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowIdentifyMonitorsButton, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="PowerDisplay_MonitorRefreshDelay">
+                                <ComboBox
+                                    MinWidth="{StaticResource PowerDisplayCompactActionControlMinWidth}"
+                                    ItemsSource="{x:Bind ViewModel.MonitorRefreshDelayOptions}"
+                                    SelectedItem="{x:Bind ViewModel.MonitorRefreshDelay, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="PowerDisplay_RestoreSettingsOnStartup" IsChecked="{x:Bind ViewModel.RestoreSettingsOnStartup, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="PowerDisplay_ShowSystemTrayIcon" IsChecked="{x:Bind ViewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="PowerDisplay_ShowProfileSwitcher" IsChecked="{x:Bind ViewModel.ShowProfileSwitcher, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="PowerDisplay_ShowIdentifyMonitorsButton" IsChecked="{x:Bind ViewModel.ShowIdentifyMonitorsButton, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <!--  Custom VCP Name Mappings  -->
@@ -191,7 +190,7 @@
                                     <tkcontrols:SettingsExpander.HeaderIcon>
                                         <FontIcon Glyph="{x:Bind MonitorIconGlyph, Mode=OneWay}" />
                                     </tkcontrols:SettingsExpander.HeaderIcon>
-                                    <TextBlock Text="{x:Bind CommunicationMethod, Mode=OneWay}" />
+                                    <ptcontrols:IsEnabledTextBlock Text="{x:Bind CommunicationMethod, Mode=OneWay}" />
                                     <tkcontrols:SettingsExpander.ItemsHeader>
                                         <!--  Capabilities warning  -->
                                         <InfoBar
