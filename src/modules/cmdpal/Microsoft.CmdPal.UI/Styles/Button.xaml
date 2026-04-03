@@ -25,15 +25,48 @@
                 <ControlTemplate TargetType="Button">
                     <Grid
                         x:Name="RootGrid"
+                        Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
                         BackgroundSizing="{TemplateBinding BackgroundSizing}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        Padding="{TemplateBinding Padding}">
+                        CornerRadius="{TemplateBinding CornerRadius}">
                         <Grid.BackgroundTransition>
                             <BrushTransition Duration="0:0:0.083" />
                         </Grid.BackgroundTransition>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ContentPresenter
+                            x:Name="ContentPresenter"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}" />
+
+                        <controls:AnimatedIcon
+                            x:Name="ChevronIcon"
+                            Grid.Column="1"
+                            Width="12"
+                            Height="12"
+                            Margin="8,0,0,0"
+                            controls:AnimatedIcon.State="Normal"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Foreground="{ThemeResource AccentButtonForeground}">
+                            <animatedvisuals:AnimatedChevronDownSmallVisualSource />
+                            <controls:AnimatedIcon.FallbackIconSource>
+                                <controls:FontIconSource
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    FontSize="8"
+                                    Glyph="&#xE96E;"
+                                    IsTextScaleFactorEnabled="False" />
+                            </controls:AnimatedIcon.FallbackIconSource>
+                        </controls:AnimatedIcon>
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -97,39 +130,6 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <ContentPresenter
-                            x:Name="ContentPresenter"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            AutomationProperties.AccessibilityView="Raw"
-                            Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            ContentTransitions="{TemplateBinding ContentTransitions}" />
-
-                        <controls:AnimatedIcon
-                            x:Name="ChevronIcon"
-                            Grid.Column="1"
-                            Width="12"
-                            Height="12"
-                            Margin="8,0,0,0"
-                            controls:AnimatedIcon.State="Normal"
-                            AutomationProperties.AccessibilityView="Raw"
-                            Foreground="{ThemeResource AccentButtonForeground}">
-                            <animatedvisuals:AnimatedChevronDownSmallVisualSource />
-                            <controls:AnimatedIcon.FallbackIconSource>
-                                <controls:FontIconSource
-                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                    FontSize="8"
-                                    Glyph="&#xE96E;"
-                                    IsTextScaleFactorEnabled="False" />
-                            </controls:AnimatedIcon.FallbackIconSource>
-                        </controls:AnimatedIcon>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
