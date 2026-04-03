@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Common.ExtensionGallery.Services;
@@ -18,12 +19,15 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
     private const string ManifestLocalizedPrefix = "manifest.";
     private const string CacheDirectoryName = "GalleryCache";
     private const string CacheTimestampFileName = ".last_fetch";
+    private const string IconCacheDirectoryName = "Icons";
     private const int TimeoutSeconds = 15;
     private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(4);
+    private static readonly TimeSpan IconCacheTtl = TimeSpan.FromDays(1);
 
     private readonly HttpClient _httpClient;
     private readonly Func<string?> _galleryFeedUrlProvider;
     private readonly string _cacheDirectory;
+    private readonly HttpResourceCache _httpResourceCache;
     private static readonly HashSet<string> SupportedFeedSchemes =
     [
         Uri.UriSchemeHttp,
@@ -31,20 +35,23 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         Uri.UriSchemeFile,
     ];
 
-    public ExtensionGalleryService(Func<string?>? galleryFeedUrlProvider = null)
-        : this(galleryFeedUrlProvider, cacheDirectory: null, httpClient: null)
+    public ExtensionGalleryService(IApplicationInfoService applicationInfoService, Func<string?>? galleryFeedUrlProvider = null)
+        : this(galleryFeedUrlProvider, applicationInfoService, cacheDirectory: null, httpClient: null)
     {
+        ArgumentNullException.ThrowIfNull(applicationInfoService);
     }
 
-    internal ExtensionGalleryService(Func<string?>? galleryFeedUrlProvider, string? cacheDirectory, HttpClient? httpClient)
+    internal ExtensionGalleryService(Func<string?>? galleryFeedUrlProvider, IApplicationInfoService? applicationInfoService, string? cacheDirectory, HttpClient? httpClient)
     {
         _galleryFeedUrlProvider = galleryFeedUrlProvider ?? (() => null);
         _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(TimeoutSeconds) };
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("PowerToys-CmdPal/1.0");
 
-        var baseDir = cacheDirectory ?? Path.Combine(Utilities.BaseSettingsPath("Microsoft.CmdPal"), CacheDirectoryName);
+        var configDirectory = applicationInfoService?.ConfigDirectory ?? Utilities.BaseSettingsPath("Microsoft.CmdPal");
+        var baseDir = cacheDirectory ?? Path.Combine(configDirectory, CacheDirectoryName);
         _cacheDirectory = baseDir;
         Directory.CreateDirectory(_cacheDirectory);
+        _httpResourceCache = new HttpResourceCache(_httpClient, Path.Combine(_cacheDirectory, IconCacheDirectoryName), IconCacheTtl);
     }
 
     public bool IsCustomFeed => !string.IsNullOrWhiteSpace(_galleryFeedUrlProvider());
@@ -60,23 +67,33 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         return string.IsNullOrWhiteSpace(configuredUrl) ? DefaultFeedUrl : configuredUrl.Trim();
     }
 
-    public string? GetIconUrl(string extensionId, string iconFilename)
+    public async Task<Uri?> GetCachedIconUriAsync(string extensionId, Uri iconUri, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(extensionId) || string.IsNullOrWhiteSpace(iconFilename))
+        ArgumentException.ThrowIfNullOrWhiteSpace(extensionId);
+        ArgumentNullException.ThrowIfNull(iconUri);
+
+        if (iconUri.IsFile || iconUri.Scheme.Equals("ms-appx", StringComparison.OrdinalIgnoreCase))
+        {
+            return iconUri;
+        }
+
+        if (!iconUri.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+            && !iconUri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
 
-        var safeExtensionId = Uri.EscapeDataString(extensionId);
-        var safeIconFilename = Uri.EscapeDataString(iconFilename);
-        return TryBuildUri($"extensions/{safeExtensionId}/{safeIconFilename}", out var iconUri) ? iconUri.AbsoluteUri : null;
+        var cacheKey = $"gallery-icon-{extensionId}";
+        var fileNameHint = Path.GetFileName(Uri.UnescapeDataString(iconUri.AbsolutePath));
+        var cachedResource = await _httpResourceCache.GetOrFetchAsync(cacheKey, iconUri, fileNameHint, cancellationToken);
+        return cachedResource?.ContentUri;
     }
 
     public async Task<GalleryFetchResult> FetchExtensionsAsync(CancellationToken cancellationToken = default)
     {
         if (IsCacheFresh())
         {
-            var cached = TryLoadFromCache(errorMessage: null);
+            var cached = TryLoadFromCache(errorMessage: null, usedFallbackCache: false);
             if (!cached.HasError && cached.Extensions.Count > 0)
             {
                 cached.FromCache = true;
@@ -119,7 +136,7 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
             var index = ParseIndex(json);
             if (index == null || index.Count == 0)
             {
-                return TryLoadFromCache("Empty or null index received.");
+                return TryLoadFromCache("Empty or null index received.", usedFallbackCache: true);
             }
 
             var manifests = await FetchManifestsAsync(index, cancellationToken);
@@ -131,19 +148,8 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException or OperationCanceledException or InvalidOperationException or UriFormatException)
         {
             CoreLogger.LogError("Gallery fetch failed", ex);
-            return TryLoadFromCache(ex.Message);
+            return TryLoadFromCache(ex.Message, usedFallbackCache: true);
         }
-    }
-
-    private async Task<List<GalleryIndexEntry>?> FetchIndexAsync(CancellationToken cancellationToken)
-    {
-        if (!TryGetFeedUri(out var feedUri))
-        {
-            throw new InvalidOperationException($"Invalid gallery feed URL '{GetFeedUrl()}'.");
-        }
-
-        var json = await FetchStringAsync(feedUri, cancellationToken);
-        return ParseIndex(json);
     }
 
     private async Task<List<GalleryExtensionEntry>> FetchManifestsAsync(
@@ -359,7 +365,7 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         }
     }
 
-    private GalleryFetchResult TryLoadFromCache(string? errorMessage)
+    private GalleryFetchResult TryLoadFromCache(string? errorMessage, bool usedFallbackCache)
     {
         try
         {
@@ -404,6 +410,7 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
             {
                 Extensions = manifests,
                 FromCache = true,
+                UsedFallbackCache = usedFallbackCache,
             };
         }
         catch (Exception ex)

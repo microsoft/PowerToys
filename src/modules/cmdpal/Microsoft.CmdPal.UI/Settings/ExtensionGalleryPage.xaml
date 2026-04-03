@@ -199,7 +199,7 @@
                     <InfoBar
                         x:Name="CacheInfoBar"
                         x:Uid="Settings_GalleryPage_Cache_InfoBar"
-                        x:Load="{x:Bind viewModel.FromCache, Mode=OneWay}"
+                        x:Load="{x:Bind viewModel.UsedFallbackCache, Mode=OneWay}"
                         IsClosable="False"
                         IsOpen="True"
                         Severity="Warning" />

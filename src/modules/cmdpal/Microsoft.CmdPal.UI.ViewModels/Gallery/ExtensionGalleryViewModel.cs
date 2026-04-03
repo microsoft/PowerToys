@@ -94,6 +94,9 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
     public partial bool FromCache { get; set; }
 
     [ObservableProperty]
+    public partial bool UsedFallbackCache { get; set; }
+
+    [ObservableProperty]
     public partial ExtensionGallerySortOption SelectedSortOption { get; set; } = ExtensionGallerySortOption.Featured;
 
     public bool ShowNoResultsPanel => !string.IsNullOrWhiteSpace(_searchText) && FilteredEntries.Count == 0;
@@ -180,6 +183,8 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         IsLoading = true;
         HasError = false;
         ErrorMessage = null;
+        FromCache = false;
+        UsedFallbackCache = false;
         NotifyStateChanged();
 
         try
@@ -190,6 +195,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
             HasError = result.HasError;
             ErrorMessage = result.ErrorMessage;
             FromCache = result.FromCache;
+            UsedFallbackCache = result.UsedFallbackCache;
             ApplyFilter();
 
             StartBackgroundRefresh(refreshInstallationStatus, cts.Token);

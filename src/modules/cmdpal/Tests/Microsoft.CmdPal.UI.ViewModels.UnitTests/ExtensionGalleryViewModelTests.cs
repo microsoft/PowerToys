@@ -210,6 +210,82 @@ public class ExtensionGalleryViewModelTests
     }
 
     [TestMethod]
+    public async Task LoadAsync_DoesNotShowFallbackCacheWarning_ForNormalCacheHits()
+    {
+        var galleryService = new Mock<IExtensionGalleryService>();
+        galleryService.Setup(s => s.IsCustomFeed).Returns(false);
+        galleryService.Setup(s => s.GetBaseUrl()).Returns("https://example.com/index.json");
+        galleryService
+            .Setup(s => s.FetchExtensionsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new GalleryFetchResult
+            {
+                Extensions =
+                [
+                    new GalleryExtensionEntry
+                    {
+                        Id = "cached-extension",
+                        Title = "Cached Extension",
+                        Description = "Cached feed entry",
+                        Author = new GalleryAuthor { Name = "Feed Author" },
+                        InstallSources = [],
+                    },
+                ],
+                FromCache = true,
+                UsedFallbackCache = false,
+            });
+
+        var extensionService = new Mock<IExtensionService>();
+        extensionService
+            .Setup(s => s.GetInstalledExtensionsAsync(true))
+            .ReturnsAsync(Array.Empty<IExtensionWrapper>());
+
+        using var viewModel = new ExtensionGalleryViewModel(galleryService.Object, extensionService.Object);
+
+        await viewModel.LoadAsync();
+
+        Assert.IsTrue(viewModel.FromCache);
+        Assert.IsFalse(viewModel.UsedFallbackCache);
+    }
+
+    [TestMethod]
+    public async Task LoadAsync_ShowsFallbackCacheWarning_WhenServiceFallsBackToCache()
+    {
+        var galleryService = new Mock<IExtensionGalleryService>();
+        galleryService.Setup(s => s.IsCustomFeed).Returns(false);
+        galleryService.Setup(s => s.GetBaseUrl()).Returns("https://example.com/index.json");
+        galleryService
+            .Setup(s => s.FetchExtensionsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new GalleryFetchResult
+            {
+                Extensions =
+                [
+                    new GalleryExtensionEntry
+                    {
+                        Id = "cached-extension",
+                        Title = "Cached Extension",
+                        Description = "Cached feed entry",
+                        Author = new GalleryAuthor { Name = "Feed Author" },
+                        InstallSources = [],
+                    },
+                ],
+                FromCache = true,
+                UsedFallbackCache = true,
+            });
+
+        var extensionService = new Mock<IExtensionService>();
+        extensionService
+            .Setup(s => s.GetInstalledExtensionsAsync(true))
+            .ReturnsAsync(Array.Empty<IExtensionWrapper>());
+
+        using var viewModel = new ExtensionGalleryViewModel(galleryService.Object, extensionService.Object);
+
+        await viewModel.LoadAsync();
+
+        Assert.IsTrue(viewModel.FromCache);
+        Assert.IsTrue(viewModel.UsedFallbackCache);
+    }
+
+    [TestMethod]
     public async Task SortByNameCommand_SortsEntriesByTitle()
     {
         var galleryService = CreateGalleryService(

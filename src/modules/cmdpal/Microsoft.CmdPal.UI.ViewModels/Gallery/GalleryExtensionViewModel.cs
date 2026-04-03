@@ -33,7 +33,6 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
     private readonly IWinGetPackageManagerService? _winGetPackageManagerService;
     private readonly IWinGetOperationTrackerService? _winGetOperationTrackerService;
     private readonly IWinGetPackageStatusService? _winGetPackageStatusService;
-    private readonly Lazy<ImageSource> _iconSource;
     private readonly IReadOnlyDictionary<string, GalleryInstallSource> _installSourcesByType;
     private readonly IReadOnlyDictionary<string, GallerySourceInfo> _sourcesByKind;
 
@@ -51,8 +50,14 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
         _winGetOperationTrackerService = winGetOperationTrackerService;
         _installSourcesByType = BuildInstallSourceLookup(entry.InstallSources);
         (Sources, _sourcesByKind) = BuildSourceInfos(_installSourcesByType, entry.Homepage);
-        IconUri = ResolveIconUri() ?? PlaceholderIconUri;
-        _iconSource = new Lazy<ImageSource>(() => CreateImageSource(IconUri));
+
+        var resolvedIconUri = ResolveIconUri();
+        IconUri = resolvedIconUri ?? PlaceholderIconUri;
+
+        if (resolvedIconUri is not null)
+        {
+            _ = LoadIconSourceAsync(resolvedIconUri);
+        }
     }
 
     public string Id => _entry.Id;
@@ -85,7 +90,11 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
 
     public Uri IconUri { get; }
 
-    public ImageSource IconSource => _iconSource.Value;
+    public ImageSource IconSource
+    {
+        get => field ??= CreateImageSource(PlaceholderIconUri);
+        private set => SetProperty(ref field, value);
+    }
 
     public IReadOnlyList<GallerySourceInfo> Sources { get; }
 
@@ -453,17 +462,42 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
 
     private Uri? ResolveIconUri()
     {
-        if (!Uri.TryCreate(_entry.IconUrl, UriKind.Absolute, out var absoluteIconUri))
+        var iconUrl = ToNullIfWhiteSpace(_entry.IconUrl);
+        if (iconUrl is null)
         {
             return null;
         }
 
-        if (!IsSupportedIconUri(absoluteIconUri))
+        if (!Uri.TryCreate(iconUrl, UriKind.Absolute, out var resolvedIconUri))
         {
             return null;
         }
 
-        return absoluteIconUri;
+        return IsSupportedIconUri(resolvedIconUri) ? resolvedIconUri : null;
+    }
+
+    private async Task LoadIconSourceAsync(Uri resolvedIconUri)
+    {
+        try
+        {
+            var cachedIconTask = _galleryService.GetCachedIconUriAsync(_entry.Id, resolvedIconUri);
+
+            var cachedIconUri = await cachedIconTask;
+            if (cachedIconUri is null)
+            {
+                return;
+            }
+
+            IconSource = CreateImageSource(cachedIconUri);
+        }
+        catch (OperationCanceledException)
+        {
+            // Best-effort background icon loading.
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to load icon for gallery extension '{_entry.Id}' from '{resolvedIconUri}'.", ex);
+        }
     }
 
     private static bool IsSupportedIconUri(Uri uri)

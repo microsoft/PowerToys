@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common.ExtensionGallery.Services;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,13 +20,14 @@ internal static class GalleryServiceRegistration
         services.AddSingleton<IExtensionGalleryService>(sp =>
         {
             var settingsService = sp.GetRequiredService<ISettingsService>();
+            var appInfoService = sp.GetRequiredService<IApplicationInfoService>();
 
             // Only allow custom feed overrides in local dev builds
             Func<string?> feedUrlProvider = BuildInfo.IsCiBuild
                 ? () => null
                 : () => settingsService.Settings.GalleryFeedUrl;
 
-            return new ExtensionGalleryService(feedUrlProvider);
+            return new ExtensionGalleryService(appInfoService, feedUrlProvider);
         });
 
         return services;

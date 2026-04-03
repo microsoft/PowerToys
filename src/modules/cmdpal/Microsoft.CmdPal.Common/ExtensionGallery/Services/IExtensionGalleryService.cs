@@ -37,13 +37,18 @@ public interface IExtensionGalleryService
     bool IsCustomFeed { get; }
 
     /// <summary>
-    /// Constructs the full icon URL for an extension.
-    /// Returns null when the feed URL or icon path is invalid.
+    /// Resolves and caches an extension icon for local display.
+    /// HTTP icons are downloaded and revalidated with cache headers when available.
+    /// File and app package URIs are returned as-is.
     /// </summary>
     /// <param name="extensionId">The gallery extension id.</param>
-    /// <param name="iconFilename">The icon file name or relative path from the manifest.</param>
-    /// <returns>The resolved icon URL, or null when it cannot be resolved.</returns>
-    string? GetIconUrl(string extensionId, string iconFilename);
+    /// <param name="iconUri">The absolute icon URI to load.</param>
+    /// <param name="cancellationToken">A token that cancels the icon fetch operation.</param>
+    /// <returns>
+    /// A URI that can be used by the UI, typically a cached local file URI for HTTP resources.
+    /// Returns null when the icon cannot be loaded.
+    /// </returns>
+    Task<Uri?> GetCachedIconUriAsync(string extensionId, Uri iconUri, CancellationToken cancellationToken = default);
 }
 
 public sealed class GalleryFetchResult
@@ -57,6 +62,12 @@ public sealed class GalleryFetchResult
     /// Gets or sets a value indicating whether the result was loaded from cache.
     /// </summary>
     public bool FromCache { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the service had to fall back to cached data
+    /// because a remote refresh could not be completed successfully.
+    /// </summary>
+    public bool UsedFallbackCache { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the fetch operation completed with an error.
