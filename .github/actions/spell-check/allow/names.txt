@@ -223,6 +223,7 @@ Moq
 mozilla
 mspaint
 Newtonsoft
+NVIDIA
 onenote
 openai
 Quickime

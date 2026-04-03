@@ -22,6 +22,12 @@ public interface IAppStateService
     void Save();
 
     /// <summary>
+    /// Atomically applies a transformation to the current state, persists the result,
+    /// and raises <see cref="StateChanged"/>.
+    /// </summary>
+    void UpdateState(Func<AppStateModel, AppStateModel> transform);
+
+    /// <summary>
     /// Raised after state has been saved to disk.
     /// </summary>
     event TypedEventHandler<IAppStateService, AppStateModel> StateChanged;

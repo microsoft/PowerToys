@@ -764,7 +764,7 @@ namespace KeyboardManagerEditorUI.Controls
             return CurrentActionType switch
             {
                 ActionType.KeyOrShortcut => _actionKeys.Count > 0,
-                ActionType.Text => !string.IsNullOrWhiteSpace(TextContentBox?.Text),
+                ActionType.Text => !string.IsNullOrEmpty(TextContentBox?.Text),
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
                 ActionType.Disable => true,
