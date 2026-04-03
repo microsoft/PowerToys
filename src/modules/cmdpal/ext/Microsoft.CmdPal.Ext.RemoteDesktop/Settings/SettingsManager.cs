@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Properties;
@@ -32,24 +31,9 @@ internal class SettingsManager : BuiltinJsonSettingsManager, ISettingsInterface
 
     public IReadOnlyCollection<string> PredefinedConnections => _predefinedConnections.Value?.Split(TEXTBOXNEWLINE).ToList() ?? [];
 
-    internal static string SettingsJsonPath()
-    {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        Directory.CreateDirectory(directory);
-
-        return Path.Combine(directory, $"{_namespace}.settings.json");
-    }
-
-    private static string LegacySettingsJsonPath()
-    {
-        return CmdPalLegacySettings.LegacySettingsMigrationSourceJsonPath();
-    }
-
     public SettingsManager()
+        : base(_namespace)
     {
-        FilePath = SettingsJsonPath();
-        EnableMigration(LegacySettingsJsonPath());
-
         Settings.Add(_predefinedConnections);
 
         LoadSettings();

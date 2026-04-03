@@ -15,12 +15,47 @@ namespace Microsoft.CmdPal.Common;
 /// </summary>
 public abstract class BuiltinJsonSettingsManager : JsonSettingsManager
 {
+    private const string SettingsFolderName = "Microsoft.CmdPal";
+
     private static readonly JsonSerializerOptions _serializerOptions = new()
     {
         WriteIndented = true,
     };
 
     private string? _legacyFilePath;
+
+    protected BuiltinJsonSettingsManager()
+    {
+    }
+
+    protected BuiltinJsonSettingsManager(string settingsNamespace)
+    {
+        if (string.IsNullOrWhiteSpace(settingsNamespace))
+        {
+            throw new ArgumentException($"{nameof(settingsNamespace)} cannot be null or whitespace.", nameof(settingsNamespace));
+        }
+
+        FilePath = SettingsJsonPath(settingsNamespace);
+        EnableMigration(CmdPalLegacySettings.LegacySettingsMigrationSourceJsonPath());
+    }
+
+    protected static string SettingsDirectoryPath()
+    {
+        var directory = Utilities.BaseSettingsPath(SettingsFolderName);
+        Directory.CreateDirectory(directory);
+
+        return directory;
+    }
+
+    protected static string SettingsJsonPath(string settingsNamespace)
+    {
+        if (string.IsNullOrWhiteSpace(settingsNamespace))
+        {
+            throw new ArgumentException($"{nameof(settingsNamespace)} cannot be null or whitespace.", nameof(settingsNamespace));
+        }
+
+        return Path.Combine(SettingsDirectoryPath(), $"{settingsNamespace}.settings.json");
+    }
 
     /// <summary>
     /// Registers the legacy shared settings file path so that

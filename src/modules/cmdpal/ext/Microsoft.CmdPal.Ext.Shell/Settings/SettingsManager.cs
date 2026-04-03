@@ -47,24 +47,9 @@ public class SettingsManager : BuiltinJsonSettingsManager, ISettingsInterface
 
     public void AddCmdHistory(string cmdName) => Count[cmdName] = Count.TryGetValue(cmdName, out var currentCount) ? currentCount + 1 : 1;
 
-    internal static string SettingsJsonPath()
-    {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        Directory.CreateDirectory(directory);
-
-        return Path.Combine(directory, $"{_namespace}.settings.json");
-    }
-
-    private static string LegacySettingsJsonPath()
-    {
-        return CmdPalLegacySettings.LegacySettingsMigrationSourceJsonPath();
-    }
-
     public SettingsManager()
+        : base(_namespace)
     {
-        FilePath = SettingsJsonPath();
-        EnableMigration(LegacySettingsJsonPath());
-
         Settings.Add(_leaveShellOpen);
         Settings.Add(_shellCommandExecution);
 

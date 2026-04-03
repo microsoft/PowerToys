@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.IO;
 using Microsoft.CmdPal.Common;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
@@ -95,24 +94,9 @@ public class SettingsManager : BuiltinJsonSettingsManager, ISettingsInterface
 
     public bool UseWindowIcon => _useWindowIcon.Value;
 
-    internal static string SettingsJsonPath()
-    {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        Directory.CreateDirectory(directory);
-
-        return Path.Combine(directory, $"{Namespace}.settings.json");
-    }
-
-    private static string LegacySettingsJsonPath()
-    {
-        return CmdPalLegacySettings.LegacySettingsMigrationSourceJsonPath();
-    }
-
     public SettingsManager()
+        : base(Namespace)
     {
-        FilePath = SettingsJsonPath();
-        EnableMigration(LegacySettingsJsonPath());
-
         Settings.Add(_resultsFromVisibleDesktopOnly);
         Settings.Add(_subtitleShowPid);
         Settings.Add(_subtitleShowDesktopName);

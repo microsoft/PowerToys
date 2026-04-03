@@ -66,10 +66,8 @@ public class SettingsManager : BuiltinJsonSettingsManager, ISettingsInterface
     public IReadOnlyList<HistoryItem> HistoryItems => _history.HistoryItems;
 
     public SettingsManager()
+        : base(_namespace)
     {
-        FilePath = SettingsJsonPath();
-        EnableMigration(LegacySettingsJsonPath());
-
         Settings.Add(_globalIfURI);
         Settings.Add(_historyItemCount);
         Settings.Add(_customSearchUri);
@@ -82,26 +80,10 @@ public class SettingsManager : BuiltinJsonSettingsManager, ISettingsInterface
         Settings.SettingsChanged += (_, _) => SaveSettings();
     }
 
-    private static string SettingsJsonPath()
-    {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        Directory.CreateDirectory(directory);
-
-        return Path.Combine(directory, $"{_namespace}.settings.json");
-    }
-
-    private static string LegacySettingsJsonPath()
-    {
-        return CmdPalLegacySettings.LegacySettingsMigrationSourceJsonPath();
-    }
-
     private static string HistoryStateJsonPath()
     {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        Directory.CreateDirectory(directory);
-
         // now, the state is just next to the exe
-        return Path.Combine(directory, "websearch_history.json");
+        return Path.Combine(SettingsDirectoryPath(), "websearch_history.json");
     }
 
     public void AddHistoryItem(HistoryItem historyItem)

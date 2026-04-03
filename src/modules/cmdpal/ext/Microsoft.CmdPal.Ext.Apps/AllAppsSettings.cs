@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Text;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
@@ -142,24 +141,9 @@ public class AllAppsSettings : BuiltinJsonSettingsManager, ISettingsInterface
 
     internal const char SuffixSeparator = ';';
 
-    internal static string SettingsJsonPath()
-    {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        Directory.CreateDirectory(directory);
-
-        return Path.Combine(directory, $"{_namespace}.settings.json");
-    }
-
-    private static string LegacySettingsJsonPath()
-    {
-        return CmdPalLegacySettings.LegacySettingsMigrationSourceJsonPath();
-    }
-
     public AllAppsSettings()
+        : base(_namespace)
     {
-        FilePath = SettingsJsonPath();
-        EnableMigration(LegacySettingsJsonPath());
-
         Settings.Add(_enableStartMenuSource);
         Settings.Add(_includeNonAppsInStartMenu);
         Settings.Add(_enableDesktopSource);

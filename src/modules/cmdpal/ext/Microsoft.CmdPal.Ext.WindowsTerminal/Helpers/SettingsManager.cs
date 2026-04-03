@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.IO;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -61,24 +60,9 @@ public class SettingsManager : BuiltinJsonSettingsManager
 
     public ProfileSortOrder ProfileSortOrder => System.Enum.TryParse<ProfileSortOrder>(_profileSortOrder.Value, out var result) ? result : ProfileSortOrder.Default;
 
-    private static string SettingsJsonPath()
-    {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        Directory.CreateDirectory(directory);
-
-        return Path.Combine(directory, $"{_namespace}.settings.json");
-    }
-
-    private static string LegacySettingsJsonPath()
-    {
-        return CmdPalLegacySettings.LegacySettingsMigrationSourceJsonPath();
-    }
-
     public SettingsManager()
+        : base(_namespace)
     {
-        FilePath = SettingsJsonPath();
-        EnableMigration(LegacySettingsJsonPath());
-
         Settings.Add(_showHiddenProfiles);
         Settings.Add(_openNewTab);
         Settings.Add(_openQuake);
