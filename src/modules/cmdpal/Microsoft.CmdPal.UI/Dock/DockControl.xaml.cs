@@ -47,6 +47,15 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         set => SetValue(DockSideProperty, value);
     }
 
+    public static readonly DependencyProperty DockSizeProperty =
+        DependencyProperty.Register(nameof(DockSize), typeof(DockSize), typeof(DockControl), new PropertyMetadata(DockSize.Default));
+
+    public DockSize DockSize
+    {
+        get => (DockSize)GetValue(DockSizeProperty);
+        set => SetValue(DockSizeProperty, value);
+    }
+
     public static readonly DependencyProperty IsEditModeProperty =
         DependencyProperty.Register(nameof(IsEditMode), typeof(bool), typeof(DockControl), new PropertyMetadata(false, OnIsEditModeChanged));
 
@@ -233,10 +242,22 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     internal void UpdateSettings(DockSettings settings)
     {
         DockSide = settings.Side;
+        DockSize = settings.DockSize;
 
         var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
 
         ItemsOrientation = isHorizontal ? Orientation.Horizontal : Orientation.Vertical;
+
+        // Swap the band template to use the appropriate DockItemControl style
+        var templateKey = settings.DockSize == DockSize.Compact
+            ? "CompactDockBandTemplate"
+            : "DockBandTemplate";
+        if (Resources.TryGetValue(templateKey, out var resource) && resource is DataTemplate template)
+        {
+            StartListView.ItemTemplate = template;
+            CenterListView.ItemTemplate = template;
+            EndListView.ItemTemplate = template;
+        }
 
         if (settings.Backdrop == DockBackdrop.Transparent)
         {
@@ -289,6 +310,11 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
                     // Update toggle menu item checked state based on current settings
                     ShowTitlesMenuItem.IsChecked = _editModeContextBand.ShowTitles;
                     ShowSubtitlesMenuItem.IsChecked = _editModeContextBand.ShowSubtitles;
+
+                    // Hide subtitle toggle in compact mode — no subtitle in the template
+                    ShowSubtitlesMenuItem.Visibility = DockSize == DockSize.Compact
+                        ? Visibility.Collapsed
+                        : Visibility.Visible;
 
                     PreparePopupForShow(EditModeContextMenu, dockItem);
                     EditModeContextMenu.ShowAt(

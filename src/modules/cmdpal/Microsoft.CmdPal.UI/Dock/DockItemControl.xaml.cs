@@ -283,7 +283,7 @@ public sealed partial class DockItemControl : Control
     {
         if (sender is DockControl dock)
         {
-            UpdateInnerMarginForDockSide(dock.DockSide);
+            // UpdateInnerMarginForDockSide(dock.DockSide);
             UpdateAlignment();
         }
     }
@@ -296,7 +296,7 @@ public sealed partial class DockItemControl : Control
         // DockControl's ContentGrid on the screen-edge side.
         InnerMargin = side switch
         {
-            DockSide.Top => new Thickness(0, 4, 0, 0),
+            DockSide.Top => new Thickness(0, 0, 0, 0),
             DockSide.Bottom => new Thickness(0, 0, 0, 4),
             DockSide.Left => new Thickness(8, 0, 0, 0),
             DockSide.Right => new Thickness(0, 0, 8, 0),

@@ -939,6 +939,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="DockAppearance_DockPosition_Bottom.Content" xml:space="preserve">
     <value>Bottom</value>
   </data>
+  <data name="DockAppearance_DockSize_SettingsCard.Header" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="DockAppearance_DockSize_SettingsCard.Description" xml:space="preserve">
+    <value>Choose the dock size</value>
+  </data>
+  <data name="DockAppearance_DockSize_Default.Content" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="DockAppearance_DockSize_Compact.Content" xml:space="preserve">
+    <value>Compact</value>
+  </data>
   <data name="top_level_pin_command_name" xml:space="preserve">
     <value>Pin to home</value>
     <comment>Command name for pinning an item to the top level list of commands</comment>

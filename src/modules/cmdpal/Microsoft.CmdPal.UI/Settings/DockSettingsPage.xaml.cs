@@ -42,6 +42,7 @@ public sealed partial class DockSettingsPage : Page
     {
         // Initialize UI controls to match current settings
         DockPositionComboBox.SelectedIndex = SelectedSideIndex;
+        DockSizeComboBox.SelectedIndex = SelectedDockSizeIndex;
         BackdropComboBox.SelectedIndex = SelectedBackdropIndex;
     }
 
@@ -126,18 +127,16 @@ public sealed partial class DockSettingsPage : Page
     // Conversion methods for ComboBox bindings
     private static int DockSizeToSelectedIndex(DockSize size) => size switch
     {
-        DockSize.Small => 0,
-        DockSize.Medium => 1,
-        DockSize.Large => 2,
+        DockSize.Default => 0,
+        DockSize.Compact => 1,
         _ => 0,
     };
 
     private static DockSize SelectedIndexToDockSize(int index) => index switch
     {
-        0 => DockSize.Small,
-        1 => DockSize.Medium,
-        2 => DockSize.Large,
-        _ => DockSize.Small,
+        0 => DockSize.Default,
+        1 => DockSize.Compact,
+        _ => DockSize.Default,
     };
 
     private static int SideToSelectedIndex(DockSide side) => side switch
