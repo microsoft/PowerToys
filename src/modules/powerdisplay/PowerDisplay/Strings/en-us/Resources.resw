@@ -75,8 +75,11 @@
   <data name="ProfilesTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Quick apply profiles</value>
   </data>
-  <data name="IdentifyTooltip.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="IdentifyText.Text" xml:space="preserve">
     <value>Identify monitors</value>
+  </data>
+	<data name="RefreshText.Text" xml:space="preserve">
+    <value>Refresh</value>
   </data>
   <data name="InputSourceHeader.Text" xml:space="preserve">
     <value>Input source</value>

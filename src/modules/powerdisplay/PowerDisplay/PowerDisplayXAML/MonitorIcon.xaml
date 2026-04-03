@@ -18,7 +18,7 @@
 
     <Grid>
         <!--  Decorative badge: keep fixed text scaling for the glyph overlay and rely on adjacent DisplayName text for accessible monitor numbering.  -->
-        <Viewbox>
+        <Viewbox Width="16">
             <Grid>
                 <Grid x:Name="MonitorGrid" x:Uid="ExternalMonitorTooltip">
                     <FontIcon

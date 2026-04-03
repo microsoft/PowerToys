@@ -28,6 +28,8 @@
             <x:Double x:Key="FlyoutSeparatorHeight">1</x:Double>
             <GridLength x:Key="FlyoutSliderIconColumnWidth">20</GridLength>
             <x:Double x:Key="FlyoutActionGlyphFontSize">16</x:Double>
+            <x:Double x:Key="FlyoutActionGlyphSmallFontSize">14</x:Double>
+            <x:Double x:Key="FlyoutActionGlyphExtraSmallFontSize">12</x:Double>
             <x:Double x:Key="FlyoutSecondaryTextFontSize">12</x:Double>
             <x:Double x:Key="FlyoutRotationGlyphFontSize">14</x:Double>
             <x:Double x:Key="FlyoutButtonSize">32</x:Double>
@@ -42,12 +44,12 @@
             <Thickness x:Key="FlyoutListHeaderMargin">16,0,8,0</Thickness>
             <Thickness x:Key="FlyoutListItemPadding">0,4</Thickness>
             <Thickness x:Key="FlyoutSelectionGlyphMargin">8,0,0,0</Thickness>
-            <Thickness x:Key="FlyoutSectionTopMargin">0,8,0,0</Thickness>
-            <Thickness x:Key="FlyoutSectionContainerPadding">8,0,16,8</Thickness>
+            <Thickness x:Key="FlyoutSectionTopMargin">0,4,0,0</Thickness>
+            <Thickness x:Key="FlyoutSectionContainerPadding">8,0,8,8</Thickness>
             <Thickness x:Key="FlyoutSeparatorMargin">8,8</Thickness>
-            <Thickness x:Key="FlyoutStatusBarMargin">0,0,8,8</Thickness>
-            <Thickness x:Key="MonitorHeaderOffsetMargin">2,0,0,0</Thickness>
-            <Thickness x:Key="MonitorNameBaselineMargin">0,0,0,2</Thickness>
+            <Thickness x:Key="FlyoutStatusBarMargin">4,0,4,0</Thickness>
+            <Thickness x:Key="MonitorHeaderOffsetMargin">10,0,0,0</Thickness>
+            <Thickness x:Key="MonitorNameBaselineMargin">2,0,0,2</Thickness>
             <x:Double x:Key="FlyoutContextMenuMinWidth">240</x:Double>
             <x:Double x:Key="FlyoutContextMenuMaxWidth">320</x:Double>
             <Style
@@ -343,7 +345,7 @@
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
                                                         AutomationProperties.AccessibilityView="Raw"
-                                                        FontSize="{StaticResource FlyoutActionGlyphFontSize}"
+                                                        FontSize="{StaticResource FlyoutActionGlyphExtraSmallFontSize}"
                                                         Glyph="&#xE7A1;" />
 
                                                     <Slider
@@ -367,14 +369,14 @@
                                                         <ColumnDefinition Width="{StaticResource FlyoutSliderIconColumnWidth}" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
-
                                                     <FontIcon
                                                         x:Uid="VolumeTooltip"
+                                                        Margin="4,0,0,0"
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
                                                         AutomationProperties.AccessibilityView="Raw"
                                                         FontSize="{StaticResource FlyoutActionGlyphFontSize}"
-                                                        Glyph="&#xE993;" />
+                                                        Glyph="&#xE994;" />
                                                     <Slider
                                                         x:Uid="VolumeAutomation"
                                                         Grid.Column="1"
@@ -403,22 +405,19 @@
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
                                                         AutomationProperties.AccessibilityView="Raw"
-                                                        FontSize="{StaticResource FlyoutActionGlyphFontSize}"
+                                                        FontSize="{StaticResource FlyoutActionGlyphSmallFontSize}"
                                                         Glyph="&#xE7AD;" />
-
-                                                    <Grid
+                                                    <ComboBox
                                                         Grid.Column="1"
-                                                        ColumnSpacing="{StaticResource FlyoutCompactSpacing}"
-                                                        TabFocusNavigation="Local"
-                                                        XYFocusKeyboardNavigation="Enabled">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="*" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <!--  Normal (0°)  -->
-                                                        <ToggleButton
+                                                        HorizontalAlignment="Stretch"
+                                                        SelectedIndex="0">
+                                                        <ComboBoxItem Content="Landscape" />
+                                                        <ComboBoxItem Content="Portrait" />
+                                                        <ComboBoxItem Content="Landscape (flipped)" />
+                                                        <ComboBoxItem Content="Portrait (flipped)" />
+                                                    </ComboBox>
+                                                    <!--  Normal (0°)  -->
+                                                    <!--<ToggleButton
                                                             x:Uid="RotateNormalTooltip"
                                                             HorizontalAlignment="Stretch"
                                                             Click="{x:Bind HandleRotation0Click}"
@@ -427,7 +426,9 @@
                                                             IsTabStop="True">
                                                             <FontIcon FontSize="{StaticResource FlyoutRotationGlyphFontSize}" Glyph="&#xE74A;" />
                                                         </ToggleButton>
-                                                        <!--  Left (270°)  -->
+                                                    -->
+                                                    <!--  Left (270°)  -->
+                                                    <!--
                                                         <ToggleButton
                                                             x:Uid="RotateLeftTooltip"
                                                             Grid.Column="1"
@@ -438,7 +439,9 @@
                                                             IsTabStop="True">
                                                             <FontIcon FontSize="{StaticResource FlyoutRotationGlyphFontSize}" Glyph="&#xE76B;" />
                                                         </ToggleButton>
-                                                        <!--  Right (90°)  -->
+                                                    -->
+                                                    <!--  Right (90°)  -->
+                                                    <!--
                                                         <ToggleButton
                                                             x:Uid="RotateRightTooltip"
                                                             Grid.Column="2"
@@ -449,7 +452,9 @@
                                                             IsTabStop="True">
                                                             <FontIcon FontSize="{StaticResource FlyoutRotationGlyphFontSize}" Glyph="&#xE76C;" />
                                                         </ToggleButton>
-                                                        <!--  Inverted (180°)  -->
+                                                    -->
+                                                    <!--  Inverted (180°)  -->
+                                                    <!--
                                                         <ToggleButton
                                                             x:Uid="RotateInvertedTooltip"
                                                             Grid.Column="3"
@@ -459,8 +464,7 @@
                                                             IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                             IsTabStop="True">
                                                             <FontIcon FontSize="{StaticResource FlyoutRotationGlyphFontSize}" Glyph="&#xE74B;" />
-                                                        </ToggleButton>
-                                                    </Grid>
+                                                        </ToggleButton>-->
                                                 </Grid>
                                             </StackPanel>
                                         </StackPanel>
@@ -471,66 +475,80 @@
                     </Grid>
                 </Border>
 
-                <Grid x:Name="StatusBar" Grid.Row="1">
+                <Grid
+                    x:Name="StatusBar"
+                    Grid.Row="1"
+                    Padding="{StaticResource FlyoutStatusBarMargin}">
                     <!--  Action Buttons  -->
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        x:Name="ProfilesButton"
+                        x:Uid="ProfilesTooltip"
+                        Content="{ui:FontIcon Glyph=&#xE748;,
+                                              FontSize={StaticResource FlyoutActionGlyphFontSize}}"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowProfileSwitcherButton), Mode=OneWay}">
+                        <Button.Flyout>
+                            <Flyout
+                                x:Name="ProfilesFlyout"
+                                Opened="Flyout_Opened"
+                                ShouldConstrainToRootBounds="False">
+                                <ListView
+                                    x:Name="ProfilesListView"
+                                    ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}"
+                                    SelectionChanged="ProfileListView_SelectionChanged"
+                                    SelectionMode="Single">
+                                    <ListView.Header>
+                                        <TextBlock
+                                            x:Uid="ProfilesHeader"
+                                            Margin="{StaticResource FlyoutListHeaderMargin}"
+                                            FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    </ListView.Header>
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="models:PowerDisplayProfile">
+                                            <TextBlock
+                                                Padding="{StaticResource FlyoutListItemPadding}"
+                                                Text="{x:Bind Name}"
+                                                TextTrimming="CharacterEllipsis"
+                                                TextWrapping="NoWrap" />
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
                     <StackPanel
-                        Margin="{StaticResource FlyoutStatusBarMargin}"
+                        Grid.Column="1"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Orientation="Horizontal"
                         Spacing="{StaticResource FlyoutStandardSpacing}">
                         <Button
-                            x:Name="ProfilesButton"
-                            x:Uid="ProfilesTooltip"
-                            Content="{ui:FontIcon Glyph=&#xE748;,
-                                                  FontSize={StaticResource FlyoutActionGlyphFontSize}}"
-                            Style="{StaticResource SubtleButtonStyle}"
-                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowProfileSwitcherButton), Mode=OneWay}">
+                            x:Uid="RefreshTooltip"
+                            Content="{ui:FontIcon Glyph=&#xE777;,
+                                                  FontSize=16}"
+                            Style="{StaticResource SubtleButtonStyle}">
                             <Button.Flyout>
-                                <Flyout
-                                    x:Name="ProfilesFlyout"
-                                    Opened="Flyout_Opened"
-                                    ShouldConstrainToRootBounds="False">
-                                    <ListView
-                                        x:Name="ProfilesListView"
-                                        ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}"
-                                        SelectionChanged="ProfileListView_SelectionChanged"
-                                        SelectionMode="Single">
-                                        <ListView.Header>
-                                            <TextBlock
-                                                x:Uid="ProfilesHeader"
-                                                Margin="{StaticResource FlyoutListHeaderMargin}"
-                                                FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                        </ListView.Header>
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate x:DataType="models:PowerDisplayProfile">
-                                                <TextBlock
-                                                    Padding="{StaticResource FlyoutListItemPadding}"
-                                                    Text="{x:Bind Name}"
-                                                    TextTrimming="CharacterEllipsis"
-                                                    TextWrapping="NoWrap" />
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                    </ListView>
-                                </Flyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem
+                                        x:Name="RefreshButton"
+                                        x:Uid="RefreshText"
+                                        Click="OnRefreshClick"
+                                        Icon="{ui:FontIcon Glyph=&#xE777;,
+                                                           FontSize=16}" />
+                                    <MenuFlyoutItem
+                                        x:Name="IdentifyButton"
+                                        x:Uid="IdentifyText"
+                                        Command="{x:Bind ViewModel.IdentifyMonitorsCommand}"
+                                        Icon="{ui:FontIcon Glyph=&#xE71E;}"
+                                        Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowIdentifyMonitorsButton), Mode=OneWay}" />
+                                </MenuFlyout>
                             </Button.Flyout>
                         </Button>
-                        <Button
-                            x:Name="RefreshButton"
-                            x:Uid="RefreshTooltip"
-                            Click="OnRefreshClick"
-                            Content="{ui:FontIcon Glyph=&#xE72C;,
-                                                  FontSize={StaticResource FlyoutActionGlyphFontSize}}"
-                            Style="{StaticResource SubtleButtonStyle}" />
-                        <Button
-                            x:Name="IdentifyButton"
-                            x:Uid="IdentifyTooltip"
-                            Command="{x:Bind ViewModel.IdentifyMonitorsCommand}"
-                            Content="{ui:FontIcon Glyph=&#xE9D9;,
-                                                  FontSize={StaticResource FlyoutActionGlyphFontSize}}"
-                            Style="{StaticResource SubtleButtonStyle}"
-                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.ShowIdentifyMonitorsButton), Mode=OneWay}" />
                         <Button
                             x:Name="SettingsBtn"
                             x:Uid="SettingsTooltip"
