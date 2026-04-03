@@ -11,7 +11,7 @@ public sealed partial class OpenGallerySettingsCommand : OpenSettingsCommand
             settingsPageTag: "Gallery",
             name: Properties.Resources.builtin_open_gallery_name,
             glyph: "\uE719",
-            id: "com.microsoft.cmdpal.opengallerysettings")
+            id: "com.microsoft.cmdpal.opengallerysettings") /* #no-spell-check-line */
     {
     }
 }

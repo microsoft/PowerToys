@@ -16,7 +16,7 @@ public partial class OpenSettingsCommand : InvokableCommand
             settingsPageTag: string.Empty,
             name: Properties.Resources.builtin_open_settings_name,
             glyph: "\uE713",
-            id: "com.microsoft.cmdpal.opensettings")
+            id: "com.microsoft.cmdpal.opensettings") /* #no-spell-check-line */
     {
     }
 

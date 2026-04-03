@@ -167,8 +167,8 @@ public class GalleryExtensionViewModelTests
         var entry = new GalleryExtensionEntry
         {
             Id = "winget-status-extension",
-            Title = "Winget status extension",
-            Description = "Winget status extension description",
+            Title = "WinGet status extension",
+            Description = "WinGet status extension description",
             Author = new GalleryAuthor { Name = "Author" },
             InstallSources =
             [
@@ -199,8 +199,8 @@ public class GalleryExtensionViewModelTests
         var entry = new GalleryExtensionEntry
         {
             Id = "winget-status-dedup-extension",
-            Title = "Winget status dedup extension",
-            Description = "Winget status dedup extension description",
+            Title = "WinGet status dedup extension",
+            Description = "WinGet status dedup extension description",
             Author = new GalleryAuthor { Name = "Author" },
             InstallSources =
             [
@@ -229,8 +229,8 @@ public class GalleryExtensionViewModelTests
         var entry = new GalleryExtensionEntry
         {
             Id = "winget-details-extension",
-            Title = "Winget details extension",
-            Description = "Winget details extension description",
+            Title = "WinGet details extension",
+            Description = "WinGet details extension description",
             Author = new GalleryAuthor { Name = "Author" },
             InstallSources =
             [
@@ -299,8 +299,8 @@ public class GalleryExtensionViewModelTests
         var entry = new GalleryExtensionEntry
         {
             Id = "winget-progress-extension",
-            Title = "Winget progress extension",
-            Description = "Winget progress extension description",
+            Title = "WinGet progress extension",
+            Description = "WinGet progress extension description",
             Author = new GalleryAuthor { Name = "Author" },
             InstallSources =
             [
@@ -341,8 +341,8 @@ public class GalleryExtensionViewModelTests
         var entry = new GalleryExtensionEntry
         {
             Id = "winget-cancel-extension",
-            Title = "Winget cancel extension",
-            Description = "Winget cancel extension description",
+            Title = "WinGet cancel extension",
+            Description = "WinGet cancel extension description",
             Author = new GalleryAuthor { Name = "Author" },
             InstallSources =
             [
