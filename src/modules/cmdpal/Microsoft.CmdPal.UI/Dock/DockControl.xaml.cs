@@ -238,6 +238,9 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
         ItemsOrientation = isHorizontal ? Orientation.Horizontal : Orientation.Vertical;
 
+        var fontFamily = string.IsNullOrWhiteSpace(settings.FontFamily) ? "Segoe UI" : settings.FontFamily;
+        FontFamily = new Microsoft.UI.Xaml.Media.FontFamily(fontFamily);
+
         if (settings.Backdrop == DockBackdrop.Transparent)
         {
             RootGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);

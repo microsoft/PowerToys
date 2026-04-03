@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -21,6 +22,8 @@ public sealed partial class DockSettingsPage : Page
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
     internal SettingsViewModel ViewModel { get; }
+
+    public List<string> SystemFonts { get; } = SystemFontHelper.GetSystemFontFamilies();
 
     public List<DockBandSettingsViewModel> AllDockBandItems => GetAllBandSettings();
 

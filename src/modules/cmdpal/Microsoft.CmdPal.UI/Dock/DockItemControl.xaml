@@ -50,6 +50,7 @@
         <Style.Setters>
             <Setter Property="Background" Value="{ThemeResource DockItemBackground}" />
             <Setter Property="BorderBrush" Value="{ThemeResource DockItemBorderBrush}" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="Padding" Value="{StaticResource DockItemPadding}" />
             <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
             <Setter Property="CornerRadius" Value="{StaticResource DockItemCornerRadius}" />
@@ -101,7 +102,7 @@
                                             MaxWidth="100"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"
-                                            FontFamily="Segoe UI"
+                                            FontFamily="{TemplateBinding FontFamily}"
                                             FontSize="12"
                                             Text="{TemplateBinding Title}"
                                             TextAlignment="Left"
@@ -113,7 +114,7 @@
                                             Margin="0,-2,0,0"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"
-                                            FontFamily="Segoe UI"
+                                            FontFamily="{TemplateBinding FontFamily}"
                                             FontSize="10"
                                             Foreground="{ThemeResource TextFillColorTertiary}"
                                             Text="{TemplateBinding Subtitle}"

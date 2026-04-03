@@ -817,6 +817,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="DockAppearance_Backdrop_Acrylic.Content" xml:space="preserve">
     <value>Acrylic</value>
   </data>
+  <data name="DockAppearance_FontFamily_SettingsCard.Header" xml:space="preserve">
+    <value>Font</value>
+  </data>
+  <data name="DockAppearance_FontFamily_SettingsCard.Description" xml:space="preserve">
+    <value>Choose the font used for text in the dock</value>
+  </data>
   <data name="DockAppearance_Background_SettingsExpander.Header" xml:space="preserve">
     <value>Background</value>
   </data>

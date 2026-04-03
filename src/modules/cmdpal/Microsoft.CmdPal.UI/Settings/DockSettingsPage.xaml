@@ -104,6 +104,15 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
+                    <!--  Font Family  -->
+                    <controls:SettingsCard x:Uid="DockAppearance_FontFamily_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}">
+                        <ComboBox
+                            x:Name="FontFamilyComboBox"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            ItemsSource="{x:Bind SystemFonts}"
+                            SelectedItem="{x:Bind ViewModel.DockAppearance.FontFamily, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  Background / Colorization Section  -->
                     <controls:SettingsExpander
                         x:Uid="DockAppearance_Background_SettingsExpander"

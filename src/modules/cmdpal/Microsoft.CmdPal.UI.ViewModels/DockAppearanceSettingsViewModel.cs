@@ -76,6 +76,20 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         }
     }
 
+    public string FontFamily
+    {
+        get => _settingsService.Settings.DockSettings.FontFamily;
+        set
+        {
+            if (_settingsService.Settings.DockSettings.FontFamily != value)
+            {
+                _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { FontFamily = value } });
+                OnPropertyChanged();
+                DebouncedReapply();
+            }
+        }
+    }
+
     public ColorizationMode ColorizationMode
     {
         get => _settingsService.Settings.DockSettings.ColorizationMode;
