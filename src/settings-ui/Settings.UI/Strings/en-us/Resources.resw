@@ -5589,7 +5589,7 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_CustomVcpMappings.Header" xml:space="preserve">
     <value>Custom name mappings</value>
   </data>
-	<data name="PowerDisplayGroupHeader.Text" xml:space="preserve">
+	<data name="PowerDisplayGroupHeader.Header" xml:space="preserve">
     <value>Power Display</value>
   </data>
   <data name="PowerDisplayFlyoutHeader.Header" xml:space="preserve">
