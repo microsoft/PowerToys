@@ -86,7 +86,7 @@
                                 x:Uid="Settings_GalleryPage_Banner_SubmitLink"
                                 Padding="0"
                                 Content="Submit your extension"
-                                NavigateUri="https://github.com/microsoft/PowerToys/tree/main/src/modules/cmdpal/extensionGallery" />
+                                NavigateUri="https://github.com/microsoft/CmdPal-Extensions" />
                         </StackPanel>
                     </Grid>
 

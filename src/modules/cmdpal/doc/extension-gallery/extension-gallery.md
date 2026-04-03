@@ -2,79 +2,96 @@
 
 This document describes the JSON feed format consumed by the Command Palette extension gallery.
 
+The live gallery content and extension submission workflow are maintained in the external repository:
+
+- `https://github.com/microsoft/CmdPal-Extensions`
+
 The current gallery implementation lives in:
 
 - `Microsoft.CmdPal.Common/ExtensionGallery/Services/ExtensionGalleryService.cs`
 - `Microsoft.CmdPal.Common/ExtensionGallery/Models/`
 
-The sample gallery content in this repo lives in:
+The local sample gallery content in this repo lives in:
 
-- `extensionGallery/index.json`
-- `extensionGallery/extensions/<extension-id>/manifest.json`
+- `doc/extension-gallery/extensionGallery/extensions.json`
+- `doc/extension-gallery/extensionGallery/extensions/<extension-id>/manifest.json`
 
 ## Feed layout
 
-The gallery feed is a folder with one index file and one subfolder per extension:
+The local sample feed is stored alongside these docs:
 
 ```text
-extensionGallery/
-  index.json
-  extensions/
-    sample-extension/
-      manifest.json
-      icon.png
-      README.md
+doc/extension-gallery/
+  extension-gallery.md
+  gallery-index.schema.json
+  gallery-manifest.schema.json
+  extensionGallery/
+    extensions.json
+    schema.json
+    Validate-GalleryJson.ps1
+    extensions/
+      sample-extension/
+        manifest.json
+        icon.png
+        README.md
 ```
 
 At runtime, the gallery service:
 
-1. Loads `index.json`
-2. Resolves each extension folder from the index entry `id`
-3. Loads `extensions/<id>/manifest.json`
-4. Merges and caches the resulting entries for offline fallback
+1. Loads the configured feed endpoint, typically `extensions.json`
+2. Parses the wrapped `extensions` payload when full extension data is inline
+3. Normalizes icon URIs for local file feeds
+4. Caches the resulting entries for offline fallback
 
-## `index.json`
+## `extensions.json`
 
-Two index formats are supported:
+The preferred feed format is a wrapped compound document with inline extension entries.
 
-### Preferred format
-
-Use an array of objects. This is the format to use for new gallery feeds.
+Example:
 
 ```json
-[
-  {
-    "id": "sample-extension",
-    "tags": ["sample", "reference", "template"]
-  },
-  {
-    "id": "github-extension",
-    "tags": ["github", "repositories", "developer tools"]
-  }
-]
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/main/.github/schemas/gallery.schema.json",
+  "version": "1.0",
+  "generatedAt": "2026-04-01T13:40:15Z",
+  "extensionCount": 1,
+  "extensions": [
+    {
+      "id": "sample-extension",
+      "title": "Sample Extension",
+      "description": "A sample extension demonstrating the gallery feed format.",
+      "author": {
+        "name": "Microsoft",
+        "url": "https://github.com/microsoft"
+      },
+      "homepage": "https://github.com/microsoft/CmdPal-Extensions",
+      "tags": [
+        "sample",
+        "reference",
+        "template"
+      ],
+      "installSources": [
+        {
+          "type": "url",
+          "uri": "https://github.com/microsoft/CmdPal-Extensions/releases/latest"
+        }
+      ],
+      "iconUrl": "extensions/sample-extension/icon.png"
+    }
+  ]
+}
 ```
 
-### Legacy format
+### Compound feed notes
 
-The gallery still accepts a plain string array for back-compat:
-
-```json
-[
-  "sample-extension",
-  "github-extension"
-]
-```
-
-### Index rules
-
-- `id` must match the extension folder name under `extensions/`
-- `tags` are optional
-- tags from the index and manifest are merged and de-duplicated case-insensitively
-- blank ids and duplicate ids are ignored by the loader
+- The production feed typically uses absolute HTTP `iconUrl` values.
+- The checked-in local sample feed can use relative `iconUrl` values.
+- `ExtensionGalleryService` resolves local relative icon paths against the feed location.
 
 ## `manifest.json`
 
-Each extension folder contains a `manifest.json` file with the extension metadata.
+Each local sample extension folder can still contain a `manifest.json` file with source metadata for that entry.
+Those files are useful for authoring and validation, even though the runtime now prefers the wrapped `extensions.json` feed.
 
 Example:
 
@@ -86,9 +103,9 @@ Example:
   "description": "A sample extension demonstrating the gallery manifest format.",
   "author": {
     "name": "Microsoft",
-    "url": "https://github.com/microsoft/PowerToys"
+    "url": "https://github.com/microsoft"
   },
-  "homepage": "https://github.com/microsoft/PowerToys",
+  "homepage": "https://github.com/microsoft/CmdPal-Extensions",
   "readme": "README.md",
   "icon": "icon.png",
   "tags": [
@@ -99,7 +116,7 @@ Example:
   "installSources": [
     {
       "type": "url",
-      "uri": "https://github.com/microsoft/PowerToys/releases"
+      "uri": "https://github.com/microsoft/CmdPal-Extensions/releases/latest"
     }
   ],
   "detection": {
@@ -164,7 +181,7 @@ This folder contains JSON schema files for authoring and validation:
 - `gallery-index.schema.json`
 - `gallery-manifest.schema.json`
 
-The sample feed under `extensionGallery/` also includes:
+The local sample feed under `doc/extension-gallery/extensionGallery/` also includes:
 
 - `extensionGallery/schema.json`
 - `extensionGallery/Validate-GalleryJson.ps1`
@@ -173,7 +190,7 @@ If you are editing the sample gallery feed in this repo, keeping the manifest `$
 
 ## Practical guidance
 
-- Prefer the object-based `index.json` format
+- Prefer the wrapped `extensions.json` format
 - Keep `id` values stable once published
 - Include a `winget` source for extensions that can be installed through App Installer
 - Add `packageFamilyName` when you know the packaged extension identity

@@ -1,0 +1,278 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/main/.github/schemas/gallery.schema.json",
+  "version": "1.0",
+  "generatedAt": "2026-04-03T00:00:00Z",
+  "extensionCount": 14,
+  "extensions": [
+    {
+      "id": "azure-extension",
+      "title": "Azure Extension",
+      "description": "Browse and manage Azure resources directly from Command Palette.",
+      "author": {
+        "name": "Microsoft",
+        "url": "https://github.com/microsoft"
+      },
+      "homepage": "https://github.com/microsoft/CmdPalAzureExtension",
+      "tags": [
+        "cloud",
+        "azure",
+        "developer tools"
+      ],
+      "installSources": [
+        {
+          "type": "winget",
+          "id": "Microsoft.CmdPalAzureExtension"
+        }
+      ]
+    },
+    {
+      "id": "colors-extension",
+      "title": "Colors for Command Palette",
+      "description": "Instant color visualization, conversion, and manipulation directly within Command Palette.",
+      "author": {
+        "name": "Jiri Polasek",
+        "url": "https://jiripolasek.com"
+      },
+      "homepage": "https://github.com/jiripolasek/ColorsExtension",
+      "installSources": [
+        {
+          "type": "winget",
+          "id": "JiriPolasek.ColorsforCommandPalette"
+        }
+      ],
+      "iconUrl": "extensions/colors-extension/icon.png"
+    },
+    {
+      "id": "dev-numbers",
+      "title": "Dev Numbers for Command Palette",
+      "description": "Display and calculate various numerical values including hex, binary, and octal conversions.",
+      "author": {
+        "name": "Jiri Polasek",
+        "url": "https://jiripolasek.com"
+      },
+      "homepage": "https://github.com/jiripolasek/DevNumbersExtension",
+      "installSources": [
+        {
+          "type": "winget",
+          "id": "JiriPolasek.DevNumbersforCommandPalette"
+        }
+      ]
+    },
+    {
+      "id": "edge-favorites",
+      "title": "Edge Favorites for Command Palette",
+      "description": "Open Microsoft Edge favorites in Command Palette.",
+      "author": {
+        "name": "Davide Giacometti",
+        "url": "https://github.com/davidegiacometti"
+      },
+      "homepage": "https://github.com/davidegiacometti/CmdPal-Extensions",
+      "installSources": [
+        {
+          "type": "winget",
+          "id": "davidegiacometti.EdgeFavoritesForCmdPal"
+        }
+      ]
+    },
+    {
+      "id": "everything-cmdpal",
+      "title": "Everything for Command Palette",
+      "description": "Search your computer for files and folders using Everything, a fast file search tool.",
+      "author": {
+        "name": "Yu Chieh (Victor) Lin",
+        "url": "https://github.com/lin-ycv"
+      },
+      "homepage": "https://github.com/lin-ycv/EverythingCommandPalette",
+      "installSources": [
+        {
+          "type": "msstore",
+          "id": "9N2DRHJ970D9"
+        },
+        {
+          "type": "winget",
+          "id": "lin-ycv.EverythingCmdPal"
+        }
+      ]
+    },
+    {
+      "id": "everything-cmdpal-v3",
+      "title": "Everything for Command Palette (SDK3)",
+      "description": "Everything extension using SDK3 with instancing support for faster file search.",
+      "author": {
+        "name": "Yu Chieh (Victor) Lin",
+        "url": "https://github.com/lin-ycv"
+      },
+      "homepage": "https://github.com/lin-ycv/EverythingCommandPalette",
+      "installSources": [
+        {
+          "type": "msstore",
+          "id": "9NCFD86NZVS8"
+        },
+        {
+          "type": "winget",
+          "id": "lin-ycv.EverythingCmdPal3"
+        }
+      ]
+    },
+    {
+      "id": "github-extension",
+      "title": "GitHub Extension",
+      "description": "Browse GitHub repositories, issues, and pull requests from Command Palette.",
+      "author": {
+        "name": "Microsoft",
+        "url": "https://github.com/microsoft"
+      },
+      "homepage": "https://github.com/microsoft/CmdPalGitHubExtension",
+      "tags": [
+        "github",
+        "repositories",
+        "developer tools"
+      ],
+      "installSources": [
+        {
+          "type": "winget",
+          "id": "Microsoft.CmdPalGitHubExtension"
+        }
+      ]
+    },
+    {
+      "id": "media-controls",
+      "title": "Media Controls for Command Palette",
+      "description": "Manage audio or video playback and switch between media apps directly from Command Palette.",
+      "author": {
+        "name": "Jiri Polasek",
+        "url": "https://jiripolasek.com"
+      },
+      "homepage": "https://github.com/jiripolasek/MediaControlsExtension",
+      "installSources": [
+        {
+          "type": "winget",
+          "id": "JiriPolasek.MediaControlsforCommandPalette"
+        },
+        {
+          "type": "msstore",
+          "id": "9n3bq81g19k7"
+        },
+        {
+          "type": "url",
+          "uri": "https://github.com/jiripolasek/MediaControlsExtension?tab=readme-ov-file"
+        }
+      ],
+      "iconUrl": "extensions/media-controls/icon.png"
+    },
+    {
+      "id": "qr-codes",
+      "title": "QR Codes for Command Palette",
+      "description": "Instantly create and manage QR codes right from Command Palette.",
+      "author": {
+        "name": "Jiri Polasek",
+        "url": "https://jiripolasek.com"
+      },
+      "homepage": "https://github.com/jiripolasek/QRCodesExtension",
+      "installSources": [
+        {
+          "type": "winget",
+          "id": "JiriPolasek.QRCodesforCommandPalette"
+        }
+      ],
+      "iconUrl": "extensions/qr-codes/icon.png"
+    },
+    {
+      "id": "recent-files",
+      "title": "Recent Files for Command Palette",
+      "description": "Quick access to recently opened files.",
+      "author": {
+        "name": "Jiri Polasek",
+        "url": "https://jiripolasek.com"
+      },
+      "homepage": "https://github.com/jiripolasek/RecentFilesExtension",
+      "installSources": [
+        {
+          "type": "winget",
+          "id": "JiriPolasek.RecentFilesforCommandPalette"
+        }
+      ],
+      "iconUrl": "extensions/recent-files/icon.png"
+    },
+    {
+      "id": "sample-extension",
+      "title": "Sample Extension",
+      "description": "A sample extension demonstrating the gallery manifest format.",
+      "author": {
+        "name": "Microsoft",
+        "url": "https://github.com/microsoft/PowerToys"
+      },
+      "homepage": "https://github.com/microsoft/PowerToys",
+      "tags": [
+        "sample",
+        "reference",
+        "template"
+      ],
+      "installSources": [
+        {
+          "type": "url",
+          "uri": "https://github.com/microsoft/PowerToys/releases"
+        }
+      ],
+      "iconUrl": "extensions/sample-extension/icon.png"
+    },
+    {
+      "id": "visual-studio-extension",
+      "title": "Visual Studio for Command Palette",
+      "description": "Open Visual Studio recents in Command Palette.",
+      "author": {
+        "name": "Davide Giacometti",
+        "url": "https://github.com/davidegiacometti"
+      },
+      "homepage": "https://github.com/davidegiacometti/CmdPal-Extensions",
+      "tags": [
+        "visual studio",
+        "ide",
+        "developer tools"
+      ],
+      "installSources": [
+        {
+          "type": "winget",
+          "id": "davidegiacometti.VisualStudioForCmdPal"
+        }
+      ]
+    },
+    {
+      "id": "vscode-extension",
+      "title": "VS Code for Command Palette",
+      "description": "Open VS Code workspaces, recent files, and projects from Command Palette.",
+      "author": {
+        "name": "Jonah Fintz",
+        "url": "https://fintz.dev"
+      },
+      "homepage": "https://github.com/JonahFintzDev/CommandPaletteVSCode",
+      "tags": [
+        "vscode",
+        "ide",
+        "developer tools"
+      ],
+      "installSources": [
+        {
+          "type": "winget",
+          "id": "JonahFintzDEV.CommandPalette-VSCode"
+        }
+      ]
+    },
+    {
+      "id": "workspace-launcher",
+      "title": "Visual Studio / Code Workspace Launcher",
+      "description": "Quickly browse and open Visual Studio solutions and VS Code workspaces from a unified interface.",
+      "author": {
+        "name": "UsefulApp",
+        "url": "https://github.com/tanchekwei"
+      },
+      "homepage": "https://github.com/tanchekwei/VisualStudioCodeForCommandPalette",
+      "installSources": [
+        {
+          "type": "winget",
+          "id": "15722UsefulApp.WorkspaceLauncherForVSCode"
+        }
+      ]
+    }
+  ]
+}

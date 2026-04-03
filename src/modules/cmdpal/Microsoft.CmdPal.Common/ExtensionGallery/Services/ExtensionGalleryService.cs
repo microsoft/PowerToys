@@ -12,6 +12,7 @@ namespace Microsoft.CmdPal.Common.ExtensionGallery.Services;
 public sealed partial class ExtensionGalleryService : IExtensionGalleryService, IDisposable
 {
     private const string DefaultFeedUrl = "https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/refs/heads/main/extensions.json";
+    private const string LocalFeedFileName = "extensions.json";
     private const string CachedIndexFileName = "index.json";
     private const string ManifestFileName = "manifest.json";
     private const string CacheDirectoryName = "GalleryCache";
@@ -120,7 +121,8 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
             var inlineExtensions = TryParseWrappedGallery(json);
             if (inlineExtensions is not null && inlineExtensions.Count > 0)
             {
-                NormalizeRemoteEntries(inlineExtensions);
+                TryGetBaseDirectoryUri(feedUri, out var baseDirectoryUri);
+                NormalizeRemoteEntries(inlineExtensions, baseDirectoryUri);
                 var indexEntries = BuildIndexFromExtensions(inlineExtensions);
                 CacheResults(indexEntries, inlineExtensions);
                 TouchCacheTimestamp();
@@ -194,6 +196,11 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
             }
 
             manifest.Tags = MergeTags(indexEntry.Tags, manifest.Tags);
+            if (TryGetBaseDirectoryUri(manifestUri, out var manifestBaseDirectoryUri))
+            {
+                NormalizeEntry(manifest, manifestBaseDirectoryUri);
+            }
+
             return manifest;
         }
         catch (Exception ex)
@@ -351,7 +358,7 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         }
     }
 
-    private static void NormalizeRemoteEntries(List<GalleryExtensionEntry> entries)
+    private static void NormalizeRemoteEntries(List<GalleryExtensionEntry> entries, Uri? baseDirectoryUri)
     {
         for (var i = entries.Count - 1; i >= 0; i--)
         {
@@ -363,7 +370,39 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
             }
 
             entry.Id = entry.Id.Trim();
+            NormalizeEntry(entry, baseDirectoryUri);
         }
+    }
+
+    private static void NormalizeEntry(GalleryExtensionEntry entry, Uri? baseDirectoryUri)
+    {
+        entry.IconUrl = NormalizeOptionalUri(entry.IconUrl, baseDirectoryUri);
+    }
+
+    private static string? NormalizeOptionalUri(string? value, Uri? baseDirectoryUri)
+    {
+        var normalizedValue = ToNullIfWhiteSpace(value);
+        if (normalizedValue is null)
+        {
+            return null;
+        }
+
+        if (Uri.TryCreate(normalizedValue, UriKind.Absolute, out var absoluteUri))
+        {
+            return absoluteUri.AbsoluteUri;
+        }
+
+        if (baseDirectoryUri is null || !Uri.TryCreate(baseDirectoryUri, normalizedValue, out var candidate))
+        {
+            return normalizedValue;
+        }
+
+        if (!candidate.AbsoluteUri.StartsWith(baseDirectoryUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase))
+        {
+            return normalizedValue;
+        }
+
+        return candidate.AbsoluteUri;
     }
 
     private static List<GalleryIndexEntry> BuildIndexFromExtensions(IReadOnlyList<GalleryExtensionEntry> extensions)
@@ -543,6 +582,11 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
             return false;
         }
 
+        if (candidate.IsFile && Directory.Exists(candidate.LocalPath))
+        {
+            candidate = new Uri(Path.Combine(candidate.LocalPath, LocalFeedFileName));
+        }
+
         feedUri = candidate;
         return true;
     }
@@ -555,6 +599,12 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
             return false;
         }
 
+        return TryGetBaseDirectoryUri(feedUri, out baseDirectoryUri);
+    }
+
+    private static bool TryGetBaseDirectoryUri(Uri feedUri, [NotNullWhen(true)] out Uri? baseDirectoryUri)
+    {
+        baseDirectoryUri = null;
         try
         {
             var candidate = new Uri(feedUri, ".");
