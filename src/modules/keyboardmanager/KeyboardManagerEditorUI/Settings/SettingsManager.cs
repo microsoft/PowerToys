@@ -183,9 +183,9 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
-        public static void AddShortcutKeyMappingToSettings(ShortcutKeyMapping shortcutKeyMapping)
+        public static void AddShortcutKeyMappingToSettings(ShortcutKeyMapping shortcutKeyMapping, string name = "")
         {
-            AddShortcutMapping(EditorSettings, shortcutKeyMapping);
+            AddShortcutMapping(EditorSettings, shortcutKeyMapping, name);
             WriteSettings();
         }
 
@@ -211,13 +211,14 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
-        private static void AddShortcutMapping(EditorSettings settings, ShortcutKeyMapping mapping)
+        private static void AddShortcutMapping(EditorSettings settings, ShortcutKeyMapping mapping, string name = "")
         {
             string guid = Guid.NewGuid().ToString();
             var shortcutSettings = new ShortcutSettings
             {
                 Id = guid,
                 Shortcut = mapping,
+                Name = name,
                 IsActive = true,
             };
 

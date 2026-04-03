@@ -27,6 +27,8 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public string AppName { get; set; } = string.Empty;
 
+        public string Name { get; set; } = string.Empty;
+
         public string StartInDirectory { get; set; } = string.Empty;
 
         public string Elevation { get; set; } = string.Empty;

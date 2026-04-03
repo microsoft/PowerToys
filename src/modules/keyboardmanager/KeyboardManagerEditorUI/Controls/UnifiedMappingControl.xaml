@@ -137,6 +137,15 @@
                 BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                 GotFocus="AppNameTextBox_GotFocus"
                 Visibility="Collapsed" />
+            <TextBlock
+                x:Uid="NameLabel"
+                Margin="0,16,0,4"
+                FontWeight="SemiBold" />
+            <TextBox
+                x:Name="NameTextBox"
+                x:Uid="NameTextBox"
+                Background="{ThemeResource TextControlBackgroundFocused}"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" />
         </StackPanel>
         <!--  Arrow Separator  -->
         <Grid

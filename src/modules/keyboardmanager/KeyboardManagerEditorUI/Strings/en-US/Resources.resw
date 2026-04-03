@@ -292,4 +292,16 @@
   <data name="MouseClickPlaceholder.Text" xml:space="preserve">
     <value>Mouse click action - coming soon</value>
   </data>
+  <data name="NameLabel.Text" xml:space="preserve">
+    <value>Name (optional)</value>
+  </data>
+  <data name="NameTextBox.Header" xml:space="preserve">
+    <value>Name (optional)</value>
+  </data>
+  <data name="NameTextBox.PlaceholderText" xml:space="preserve">
+    <value>Enter a name for this shortcut</value>
+  </data>
+  <data name="NameText.Text" xml:space="preserve">
+    <value>Name:</value>
+  </data>
 </root>

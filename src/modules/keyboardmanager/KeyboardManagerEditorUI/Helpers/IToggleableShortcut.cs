@@ -19,5 +19,7 @@ namespace KeyboardManagerEditorUI.Helpers
         string Id { get; set; }
 
         string AppName { get; set; }
+
+        string Name { get; set; }
     }
 }
