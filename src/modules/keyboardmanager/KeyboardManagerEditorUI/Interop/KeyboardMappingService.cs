@@ -145,6 +145,21 @@ namespace KeyboardManagerEditorUI.Interop
             return keyCode;
         }
 
+        public List<KeyNameEntry> GetKeyboardKeysList(bool isShortcut)
+        {
+            const int maxKeys = 512;
+            var buffer = new KeyNamePair[maxKeys];
+            int count = KeyboardManagerInterop.GetKeyboardKeysList(isShortcut, buffer, maxKeys);
+
+            var result = new List<KeyNameEntry>(count);
+            for (int i = 0; i < count; i++)
+            {
+                result.Add(new KeyNameEntry(buffer[i].KeyCode, buffer[i].KeyName));
+            }
+
+            return result;
+        }
+
         public bool AddSingleKeyMapping(int originalKey, int targetKey)
         {
             return KeyboardManagerInterop.AddSingleKeyRemap(_configHandle, originalKey, targetKey);

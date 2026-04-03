@@ -15,6 +15,7 @@ using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
 using KeyboardManagerEditorUI.Settings;
 using ManagedCommon;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using static KeyboardManagerEditorUI.Interop.ShortcutKeyMapping;
@@ -27,11 +28,13 @@ namespace KeyboardManagerEditorUI.Pages
 #pragma warning disable SA1124 // Do not use regions
     public sealed partial class MainPage : Page, IDisposable, INotifyPropertyChanged
     {
+        private DispatcherTimer? _serviceCheckTimer;
         private KeyboardMappingService? _mappingService;
         private bool _disposed;
         private bool _isEditMode;
         private EditingItem? _editingItem;
         private string _mappingState = "Empty";
+        private bool _isServiceRunning = true;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -48,7 +51,23 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
+        public bool IsServiceRunning
+        {
+            get => _isServiceRunning;
+            private set
+            {
+                if (_isServiceRunning != value)
+                {
+                    _isServiceRunning = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsServiceRunning)));
+                    UpdateServiceBannerVisibility();
+                }
+            }
+        }
+
         public ObservableCollection<Remapping> RemappingList { get; } = new();
+
+        public ObservableCollection<Remapping> DisabledList { get; } = new();
 
         public ObservableCollection<TextMapping> TextMappings { get; } = new();
 
@@ -83,21 +102,43 @@ namespace KeyboardManagerEditorUI.Pages
         public MainPage()
         {
             this.InitializeComponent();
-
             try
             {
                 _mappingService = new KeyboardMappingService();
-                LoadAllMappings();
             }
             catch (Exception ex)
             {
-                Logger.LogError("Failed to initialize KeyboardMappingService in MainPage page: " + ex.Message);
+                Logger.LogError("Failed to initialize mapping service: " + ex.Message);
+                IsServiceRunning = false;
+                return;
             }
 
+            LoadAllMappings();
             Unloaded += All_Unloaded;
+
+            CheckServiceStatus();
+
+            // Set up periodic checks every 3 seconds
+            _serviceCheckTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(3),
+            };
+            _serviceCheckTimer.Tick += (s, e) => CheckServiceStatus();
+            _serviceCheckTimer.Start();
         }
 
         private void All_Unloaded(object sender, RoutedEventArgs e) => Dispose();
+
+        private void CheckServiceStatus()
+        {
+            IsServiceRunning = ServiceStatusHelper.IsKeyboardManagerServiceRunning();
+        }
+
+        private void UpdateServiceBannerVisibility()
+        {
+            ServiceDownBanner.Visibility = IsServiceRunning ? Visibility.Collapsed : Visibility.Visible;
+            MainContentControl.IsEnabled = IsServiceRunning;
+        }
 
         #region Dialog Show Methods
 
@@ -132,6 +173,31 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.KeyOrShortcut);
             UnifiedMappingControl.SetActionKeys(remapping.RemappedKeys.ToList());
             UnifiedMappingControl.SetAppSpecific(!remapping.IsAllApps, remapping.AppName);
+            RemappingDialog.Title = "Edit remapping";
+            await ShowRemappingDialog();
+        }
+
+        private async void DisabledList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is not Remapping disabledMapping)
+            {
+                return;
+            }
+
+            _isEditMode = true;
+            _editingItem = new EditingItem
+            {
+                Type = EditingItem.ItemType.Remapping,
+                Item = disabledMapping,
+                OriginalTriggerKeys = disabledMapping.Shortcut.ToList(),
+                AppName = disabledMapping.AppName,
+                IsAllApps = disabledMapping.IsAllApps,
+            };
+
+            UnifiedMappingControl.Reset();
+            UnifiedMappingControl.SetTriggerKeys(disabledMapping.Shortcut.ToList());
+            UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.Disable);
+            UnifiedMappingControl.SetAppSpecific(!disabledMapping.IsAllApps, disabledMapping.AppName);
             RemappingDialog.Title = "Edit remapping";
             await ShowRemappingDialog();
         }
@@ -279,7 +345,7 @@ namespace KeyboardManagerEditorUI.Pages
             if (_mappingService == null)
             {
                 Logger.LogError("Mapping service is null, cannot save mapping");
-                UnifiedMappingControl.ShowValidationError("Error", "Mapping service is not available.");
+                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_MappingServiceUnavailable_Title"), ResourceHelper.GetString("Error_MappingServiceUnavailable_Message"));
                 args.Cancel = true;
                 return;
             }
@@ -290,7 +356,7 @@ namespace KeyboardManagerEditorUI.Pages
 
                 if (triggerKeys == null || triggerKeys.Count == 0)
                 {
-                    UnifiedMappingControl.ShowValidationError("Missing Original Keys", "Please enter at least one original key to create a remapping.");
+                    UnifiedMappingControl.ShowValidationErrorFromType(ValidationErrorType.EmptyOriginalKeys);
                     args.Cancel = true;
                     return;
                 }
@@ -314,6 +380,7 @@ namespace KeyboardManagerEditorUI.Pages
                     UnifiedMappingControl.ActionType.Text => SaveTextMapping(triggerKeys),
                     UnifiedMappingControl.ActionType.OpenUrl => SaveUrlMapping(triggerKeys),
                     UnifiedMappingControl.ActionType.OpenApp => SaveProgramMapping(triggerKeys),
+                    UnifiedMappingControl.ActionType.Disable => SaveDisableMapping(triggerKeys),
                     UnifiedMappingControl.ActionType.MouseClick => throw new NotImplementedException("Mouse click remapping is not yet supported."),
                     _ => false,
                 };
@@ -324,19 +391,19 @@ namespace KeyboardManagerEditorUI.Pages
                 }
                 else
                 {
-                    UnifiedMappingControl.ShowValidationError("Save Failed", "Failed to save the remapping. Please try again.");
+                    UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), ResourceHelper.GetString("Error_SaveFailed_Message"));
                     args.Cancel = true;
                 }
             }
             catch (NotImplementedException ex)
             {
-                UnifiedMappingControl.ShowValidationError("Not Implemented", ex.Message);
+                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_NotImplemented_Title"), ex.Message);
                 args.Cancel = true;
             }
             catch (Exception ex)
             {
                 Logger.LogError("Error saving mapping: " + ex.Message);
-                UnifiedMappingControl.ShowValidationError("Error", "An error occurred while saving: " + ex.Message);
+                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_Generic_Title"), ResourceHelper.GetString("Error_Generic_Message") + ex.Message);
                 args.Cancel = true;
             }
         }
@@ -427,6 +494,48 @@ namespace KeyboardManagerEditorUI.Pages
                 actionKeys,
                 UnifiedMappingControl.GetIsAppSpecific(),
                 UnifiedMappingControl.GetAppName());
+        }
+
+        private bool SaveDisableMapping(List<string> triggerKeys)
+        {
+            // VK_DISABLED = 0x100 (256) — target "256" tells the engine to suppress the key
+            const string vkDisabledCode = "256";
+            bool isAppSpecific = UnifiedMappingControl.GetIsAppSpecific();
+            string appName = UnifiedMappingControl.GetAppName();
+
+            string originalKeysString = string.Join(
+                ";",
+                triggerKeys.Select(k => _mappingService!.GetKeyCodeFromName(k).ToString(System.Globalization.CultureInfo.InvariantCulture)));
+
+            var shortcutKeyMapping = new ShortcutKeyMapping
+            {
+                OperationType = ShortcutOperationType.RemapShortcut,
+                OriginalKeys = originalKeysString,
+                TargetKeys = vkDisabledCode,
+                TargetApp = isAppSpecific ? appName : string.Empty,
+            };
+
+            if (triggerKeys.Count == 1)
+            {
+                int originalKey = _mappingService!.GetKeyCodeFromName(triggerKeys[0]);
+                if (originalKey == 0)
+                {
+                    return false;
+                }
+
+                shortcutKeyMapping.OriginalKeys = originalKey.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                _mappingService.AddSingleKeyMapping(originalKey, 0x100);
+            }
+            else
+            {
+                _mappingService!.AddShortcutMapping(
+                    originalKeysString,
+                    vkDisabledCode,
+                    isAppSpecific ? appName : string.Empty);
+            }
+
+            SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
+            return _mappingService.SaveSettings();
         }
 
         private bool SaveTextMapping(List<string> triggerKeys)
@@ -667,7 +776,16 @@ namespace KeyboardManagerEditorUI.Pages
         {
             if (shortcut is Remapping remapping)
             {
-                RemappingHelper.SaveMapping(_mappingService!, remapping.Shortcut, remapping.RemappedKeys, !remapping.IsAllApps, remapping.AppName, false);
+                if (remapping.RemappedKeys == null || remapping.RemappedKeys.Count == 0)
+                {
+                    // Disabled mapping — re-enable by adding back the VK_DISABLED target
+                    EnableDisabledMapping(remapping);
+                }
+                else
+                {
+                    RemappingHelper.SaveMapping(_mappingService!, remapping.Shortcut, remapping.RemappedKeys, !remapping.IsAllApps, remapping.AppName, false);
+                }
+
                 shortcut.IsActive = true;
                 SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
                 return;
@@ -710,6 +828,31 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
+        private void EnableDisabledMapping(Remapping remapping)
+        {
+            string originalKeysString = string.Join(
+                ";",
+                remapping.Shortcut.Select(k => _mappingService!.GetKeyCodeFromName(k).ToString(System.Globalization.CultureInfo.InvariantCulture)));
+
+            if (remapping.Shortcut.Count == 1)
+            {
+                int originalKey = _mappingService!.GetKeyCodeFromName(remapping.Shortcut[0]);
+                if (originalKey != 0)
+                {
+                    _mappingService.AddSingleKeyMapping(originalKey, 0x100);
+                }
+            }
+            else
+            {
+                _mappingService!.AddShortcutMapping(
+                    originalKeysString,
+                    "256",
+                    !remapping.IsAllApps ? remapping.AppName : string.Empty);
+            }
+
+            _mappingService!.SaveSettings();
+        }
+
         private bool DeleteSingleKeyToTextMapping(string keyName)
         {
             int originalKey = _mappingService!.GetKeyCodeFromName(keyName);
@@ -731,7 +874,7 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void UpdateHasAnyMappings()
         {
-            bool hasAny = RemappingList.Count > 0 || TextMappings.Count > 0 || ProgramShortcuts.Count > 0 || UrlShortcuts.Count > 0;
+            bool hasAny = RemappingList.Count > 0 || DisabledList.Count > 0 || TextMappings.Count > 0 || ProgramShortcuts.Count > 0 || UrlShortcuts.Count > 0;
             MappingState = hasAny ? "HasMappings" : "Empty";
         }
 
@@ -739,29 +882,40 @@ namespace KeyboardManagerEditorUI.Pages
         {
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RemapShortcut, out var remapShortcutIds);
 
-            if (_mappingService == null || remapShortcutIds == null)
+            if (remapShortcutIds == null)
             {
                 return;
             }
 
             RemappingList.Clear();
+            DisabledList.Clear();
 
             foreach (var id in remapShortcutIds)
             {
                 ShortcutSettings shortcutSettings = SettingsManager.EditorSettings.ShortcutSettingsDictionary[id];
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
                 var originalKeyNames = ParseKeyCodes(mapping.OriginalKeys);
-                var remappedKeyNames = ParseKeyCodes(mapping.TargetKeys);
 
-                RemappingList.Add(new Remapping
+                bool isDisabled = mapping.TargetKeys == "256";
+
+                var remapping = new Remapping
                 {
                     Shortcut = originalKeyNames,
-                    RemappedKeys = remappedKeyNames,
+                    RemappedKeys = isDisabled ? new List<string>() : ParseKeyCodes(mapping.TargetKeys),
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
                     AppName = mapping.TargetApp ?? string.Empty,
                     Id = shortcutSettings.Id,
                     IsActive = shortcutSettings.IsActive,
-                });
+                };
+
+                if (isDisabled)
+                {
+                    DisabledList.Add(remapping);
+                }
+                else
+                {
+                    RemappingList.Add(remapping);
+                }
             }
         }
 
@@ -769,7 +923,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RemapText, out var remapShortcutIds);
 
-            if (_mappingService == null || remapShortcutIds == null)
+            if (remapShortcutIds == null)
             {
                 return;
             }
@@ -798,7 +952,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RunProgram, out var remapShortcutIds);
 
-            if (_mappingService == null || remapShortcutIds == null)
+            if (remapShortcutIds == null)
             {
                 return;
             }
@@ -832,7 +986,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.OpenUri, out var remapShortcutIds);
 
-            if (_mappingService == null || remapShortcutIds == null)
+            if (remapShortcutIds == null)
             {
                 return;
             }
@@ -860,8 +1014,12 @@ namespace KeyboardManagerEditorUI.Pages
         private List<string> ParseKeyCodes(string keyCodesString)
         {
             return keyCodesString.Split(';')
-                .Where(keyCode => int.TryParse(keyCode, out int code))
-                .Select(keyCode => _mappingService!.GetKeyDisplayName(int.Parse(keyCode, CultureInfo.InvariantCulture)))
+                .Where(keyCode => int.TryParse(keyCode, out _))
+                .Select(keyCode =>
+                {
+                    int code = int.Parse(keyCode, CultureInfo.InvariantCulture);
+                    return _mappingService?.GetKeyDisplayName(code) ?? $"VK {code}";
+                })
                 .ToList();
         }
 
@@ -884,6 +1042,8 @@ namespace KeyboardManagerEditorUI.Pages
 
             if (disposing)
             {
+                _serviceCheckTimer?.Stop();
+                _serviceCheckTimer = null;
                 _mappingService?.Dispose();
                 _mappingService = null;
             }
@@ -892,6 +1052,29 @@ namespace KeyboardManagerEditorUI.Pages
         }
 
         #endregion
+
+        private void CheckServiceBtn_Click(object sender, RoutedEventArgs e)
+        {
+            bool isServiceRunning = true;
+            if (_mappingService == null)
+            {
+                try
+                {
+                    _mappingService = new KeyboardMappingService();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Error initializing mapping service: " + ex.Message);
+                    isServiceRunning = false;
+                }
+            }
+
+            if (isServiceRunning)
+            {
+                ServiceDownBanner.Visibility = Visibility.Collapsed;
+                MainContentControl.IsEnabled = true;
+            }
+        }
     }
 }
 #pragma warning restore SA1124 // Do not use regions
