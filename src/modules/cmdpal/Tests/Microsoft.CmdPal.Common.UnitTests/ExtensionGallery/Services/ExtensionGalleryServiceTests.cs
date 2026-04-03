@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
 using Microsoft.CmdPal.Common.ExtensionGallery.Services;
+using Microsoft.CmdPal.Common.Services;
 
 namespace Microsoft.CmdPal.Common.UnitTests.ExtensionGallery.Services;
 
@@ -64,6 +65,25 @@ public class ExtensionGalleryServiceTests
         Assert.IsFalse(cachedResult.UsedFallbackCache);
         Assert.IsFalse(cachedResult.HasError);
         Assert.AreEqual(1, cachedResult.Extensions.Count);
+    }
+
+    [TestMethod]
+    public async Task FetchExtensionsAsync_UsesApplicationInfoCacheDirectory_WhenExplicitCacheDirectoryIsNotProvided()
+    {
+        var feedDirectory = CreateTempDirectory("feed");
+        var appCacheDirectory = CreateTempDirectory("app-cache");
+        WriteGalleryFeed(feedDirectory, "sample-extension", "Sample extension");
+
+        var feedUrl = ToFeedUri(feedDirectory);
+        using var service = new ExtensionGalleryService(
+            new TestApplicationInfoService(cacheDirectory: appCacheDirectory),
+            () => feedUrl);
+
+        var result = await service.FetchExtensionsAsync();
+
+        Assert.IsFalse(result.HasError);
+        Assert.AreEqual(1, result.Extensions.Count);
+        Assert.IsTrue(File.Exists(Path.Combine(appCacheDirectory, "GalleryCache", "index.json")));
     }
 
     [TestMethod]
@@ -282,6 +302,30 @@ public class ExtensionGalleryServiceTests
         {
             CallCount++;
             return Task.FromResult(responder(request));
+        }
+    }
+
+    private sealed class TestApplicationInfoService(string cacheDirectory) : IApplicationInfoService
+    {
+        public string AppVersion => "1.0.0.0";
+
+        public AppPackagingFlavor PackagingFlavor => AppPackagingFlavor.Packaged;
+
+        public string LogDirectory => cacheDirectory;
+
+        public string ConfigDirectory => cacheDirectory;
+
+        public string CacheDirectory => cacheDirectory;
+
+        public bool IsElevated => false;
+
+        public string GetApplicationInfoSummary()
+        {
+            return string.Empty;
+        }
+
+        public void SetLogDirectory(Func<string> getLogDirectory)
+        {
         }
     }
 }

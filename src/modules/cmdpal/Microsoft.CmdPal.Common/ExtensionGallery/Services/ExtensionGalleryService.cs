@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Common.ExtensionGallery.Services;
 
@@ -41,15 +40,13 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         ArgumentNullException.ThrowIfNull(applicationInfoService);
     }
 
-    internal ExtensionGalleryService(Func<string?>? galleryFeedUrlProvider, IApplicationInfoService? applicationInfoService, string? cacheDirectory, HttpClient? httpClient)
+    internal ExtensionGalleryService(Func<string?>? galleryFeedUrlProvider, IApplicationInfoService applicationInfoService, string? cacheDirectory, HttpClient? httpClient)
     {
         _galleryFeedUrlProvider = galleryFeedUrlProvider ?? (() => null);
         _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(TimeoutSeconds) };
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("PowerToys-CmdPal/1.0");
 
-        var configDirectory = applicationInfoService?.ConfigDirectory ?? Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        var baseDir = cacheDirectory ?? Path.Combine(configDirectory, CacheDirectoryName);
-        _cacheDirectory = baseDir;
+        _cacheDirectory = cacheDirectory ?? Path.Combine(applicationInfoService.CacheDirectory, CacheDirectoryName);
         Directory.CreateDirectory(_cacheDirectory);
         _httpResourceCache = new HttpResourceCache(_httpClient, Path.Combine(_cacheDirectory, IconCacheDirectoryName), IconCacheTtl);
     }
