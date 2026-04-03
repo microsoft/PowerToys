@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
     /// SearchController: Class tot hold the search method that filter available date time formats
     /// Extra class to simplify code in <see cref="Main"/> class
     /// </summary>
-    internal static class SearchController
+    internal static partial class SearchController
     {
         /// <summary>
         /// Var that holds the delimiter between format and date
@@ -29,6 +29,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// A list of conjunctions that we ignore on search
         /// </summary>
         private static readonly string[] _conjunctionList = Resources.Microsoft_plugin_timedate_Search_ConjunctionList.Split("; ");
+
+        [GeneratedRegex(@"\w+[+-]?\d+.*$")]
+        private static partial Regex RegexWordDigitSuffix();
+
+        [GeneratedRegex(@"\d+[\.:/]\d+")]
+        private static partial Regex RegexDigitSeparatorDigit();
 
         /// <summary>
         /// Searches for results
@@ -125,7 +131,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
 
             // If search term is only a number that can't be parsed return an error message
-            if (!isEmptySearchInput && results.Count == 0 && Regex.IsMatch(searchTerm, @"\w+[+-]?\d+.*$") && !searchTerm.Any(char.IsWhiteSpace) && (TimeAndDateHelper.IsSpecialInputParsing(searchTerm) || !Regex.IsMatch(searchTerm, @"\d+[\.:/]\d+")))
+            if (!isEmptySearchInput && results.Count == 0 && RegexWordDigitSuffix().IsMatch(searchTerm) && !searchTerm.Any(char.IsWhiteSpace) && (TimeAndDateHelper.IsSpecialInputParsing(searchTerm) || !RegexDigitSeparatorDigit().IsMatch(searchTerm)))
             {
                 string title = !string.IsNullOrEmpty(lastInputParsingErrorReason) ? Resources.Microsoft_plugin_timedate_ErrorResultValue : Resources.Microsoft_plugin_timedate_ErrorResultTitle;
                 string message = !string.IsNullOrEmpty(lastInputParsingErrorReason) ? lastInputParsingErrorReason : Resources.Microsoft_plugin_timedate_ErrorResultSubTitle;

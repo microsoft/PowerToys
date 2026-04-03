@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Controls;
 
 using ManagedCommon;
@@ -19,7 +20,7 @@ using BrowserInfo = Wox.Plugin.Common.DefaultBrowserInfo;
 
 namespace Community.PowerToys.Run.Plugin.WebSearch
 {
-    public class Main : IPlugin, IPluginI18n, IContextMenu, ISettingProvider, IReloadable, IDisposable
+    public partial class Main : IPlugin, IPluginI18n, IContextMenu, ISettingProvider, IReloadable, IDisposable
     {
         // Should only be set in Init()
         private Action onPluginError;
@@ -141,7 +142,7 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                     && !input.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                     && !input.Contains('/', StringComparison.OrdinalIgnoreCase)
                     && !input.All(char.IsDigit)
-                    && System.Text.RegularExpressions.Regex.IsMatch(input, @"^([a-z][a-z0-9+\-.]*):"))
+                    && UriSchemeRegex().IsMatch(input))
                 {
                     return true;
                 }
@@ -252,5 +253,8 @@ namespace Community.PowerToys.Run.Plugin.WebSearch
                 _disposed = true;
             }
         }
+
+        [GeneratedRegex(@"^([a-z][a-z0-9+\-.]*):")]
+        private static partial Regex UriSchemeRegex();
     }
 }

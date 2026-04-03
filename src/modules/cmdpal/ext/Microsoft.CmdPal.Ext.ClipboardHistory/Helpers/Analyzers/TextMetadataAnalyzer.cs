@@ -27,9 +27,9 @@ internal partial class TextMetadataAnalyzer
 
     private LineEndingType DetectLineEnding(string text)
     {
-        var crlfCount = Regex.Matches(text, "\r\n").Count;
-        var lfCount = Regex.Matches(text, "(?<!\r)\n").Count;
-        var crCount = Regex.Matches(text, "\r(?!\n)").Count;
+        var crlfCount = CrlfRegex().Matches(text).Count;
+        var lfCount = LfOnlyRegex().Matches(text).Count;
+        var crCount = CrOnlyRegex().Matches(text).Count;
 
         var endingTypes = (crlfCount > 0 ? 1 : 0) + (lfCount > 0 ? 1 : 0) + (crCount > 0 ? 1 : 0);
 
@@ -87,7 +87,7 @@ internal partial class TextMetadataAnalyzer
             return 0;
         }
 
-        return Regex.Matches(text, @"\b\w+\b").Count;
+        return WordBoundaryRegex().Matches(text).Count;
     }
 
     private int CountSentences(string text)
@@ -100,6 +100,18 @@ internal partial class TextMetadataAnalyzer
         var matches = SentencesRegex().Matches(text);
         return matches.Count > 0 ? matches.Count : (text.Trim().Length > 0 ? 1 : 0);
     }
+
+    [GeneratedRegex("\r\n")]
+    private static partial Regex CrlfRegex();
+
+    [GeneratedRegex("(?<!\r)\n")]
+    private static partial Regex LfOnlyRegex();
+
+    [GeneratedRegex("\r(?!\n)")]
+    private static partial Regex CrOnlyRegex();
+
+    [GeneratedRegex(@"\b\w+\b")]
+    private static partial Regex WordBoundaryRegex();
 
     [GeneratedRegex(@"(\r?\n){2,}")]
     private static partial Regex ParagraphsRegex();

@@ -13,21 +13,64 @@ using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
-    internal static class TimeAndDateHelper
+    internal static partial class TimeAndDateHelper
     {
-        private static readonly Regex _regexSpecialInputFormats = new Regex(@"^.*(::)?(u|ums|ft|oa|exc|exf)[+-]\d");
-        private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|DIM|WOM|WOY|EAB|WFT|UXT|UMS|OAD|EXC|EXF)");
-        private static readonly Regex _regexCustomDateTimeDow = new Regex(@"(?<!\\)DOW");
-        private static readonly Regex _regexCustomDateTimeDim = new Regex(@"(?<!\\)DIM");
-        private static readonly Regex _regexCustomDateTimeWom = new Regex(@"(?<!\\)WOM");
-        private static readonly Regex _regexCustomDateTimeWoy = new Regex(@"(?<!\\)WOY");
-        private static readonly Regex _regexCustomDateTimeEab = new Regex(@"(?<!\\)EAB");
-        private static readonly Regex _regexCustomDateTimeWft = new Regex(@"(?<!\\)WFT");
-        private static readonly Regex _regexCustomDateTimeUxt = new Regex(@"(?<!\\)UXT");
-        private static readonly Regex _regexCustomDateTimeUms = new Regex(@"(?<!\\)UMS");
-        private static readonly Regex _regexCustomDateTimeOad = new Regex(@"(?<!\\)OAD");
-        private static readonly Regex _regexCustomDateTimeExc = new Regex(@"(?<!\\)EXC");
-        private static readonly Regex _regexCustomDateTimeExf = new Regex(@"(?<!\\)EXF");
+        [GeneratedRegex(@"^.*(::)?(u|ums|ft|oa|exc|exf)[+-]\d")]
+        private static partial Regex RegexSpecialInputFormats();
+
+        [GeneratedRegex(@"(?<!\\)(DOW|DIM|WOM|WOY|EAB|WFT|UXT|UMS|OAD|EXC|EXF)")]
+        private static partial Regex RegexCustomDateTimeFormats();
+
+        [GeneratedRegex(@"(?<!\\)DOW")]
+        private static partial Regex RegexCustomDateTimeDow();
+
+        [GeneratedRegex(@"(?<!\\)DIM")]
+        private static partial Regex RegexCustomDateTimeDim();
+
+        [GeneratedRegex(@"(?<!\\)WOM")]
+        private static partial Regex RegexCustomDateTimeWom();
+
+        [GeneratedRegex(@"(?<!\\)WOY")]
+        private static partial Regex RegexCustomDateTimeWoy();
+
+        [GeneratedRegex(@"(?<!\\)EAB")]
+        private static partial Regex RegexCustomDateTimeEab();
+
+        [GeneratedRegex(@"(?<!\\)WFT")]
+        private static partial Regex RegexCustomDateTimeWft();
+
+        [GeneratedRegex(@"(?<!\\)UXT")]
+        private static partial Regex RegexCustomDateTimeUxt();
+
+        [GeneratedRegex(@"(?<!\\)UMS")]
+        private static partial Regex RegexCustomDateTimeUms();
+
+        [GeneratedRegex(@"(?<!\\)OAD")]
+        private static partial Regex RegexCustomDateTimeOad();
+
+        [GeneratedRegex(@"(?<!\\)EXC")]
+        private static partial Regex RegexCustomDateTimeExc();
+
+        [GeneratedRegex(@"(?<!\\)EXF")]
+        private static partial Regex RegexCustomDateTimeExf();
+
+        [GeneratedRegex(@"^u[\+-]?\d+$")]
+        private static partial Regex RegexUnixTimestamp();
+
+        [GeneratedRegex(@"^ums[\+-]?\d+$")]
+        private static partial Regex RegexUnixTimestampMs();
+
+        [GeneratedRegex(@"^ft\d+$")]
+        private static partial Regex RegexFileTime();
+
+        [GeneratedRegex(@"^oa[+-]?\d+[,.0-9]*$")]
+        private static partial Regex RegexOADate();
+
+        [GeneratedRegex(@"^exc[+-]?\d+[,.0-9]*$")]
+        private static partial Regex RegexExcel1900Date();
+
+        [GeneratedRegex(@"^exf[+-]?\d+[,.0-9]*$")]
+        private static partial Regex RegexExcel1904Date();
 
         private const long UnixTimeSecondsMin = -62135596800;
         private const long UnixTimeSecondsMax = 253402300799;
@@ -170,7 +213,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // Known date/time format
                 return true;
             }
-            else if (Regex.IsMatch(input, @"^u[\+-]?\d+$"))
+            else if (RegexUnixTimestamp().IsMatch(input))
             {
                 // Unix time stamp
                 // We use long instead of int, because int is too small after 03:14:07 UTC 2038-01-19
@@ -187,7 +230,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 timestamp = DateTimeOffset.FromUnixTimeSeconds(secondsU).LocalDateTime;
                 return true;
             }
-            else if (Regex.IsMatch(input, @"^ums[\+-]?\d+$"))
+            else if (RegexUnixTimestampMs().IsMatch(input))
             {
                 // Unix time stamp in milliseconds
                 // We use long instead of int because int is too small after 03:14:07 UTC 2038-01-19
@@ -204,7 +247,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 timestamp = DateTimeOffset.FromUnixTimeMilliseconds(millisecondsUms).LocalDateTime;
                 return true;
             }
-            else if (Regex.IsMatch(input, @"^ft\d+$"))
+            else if (RegexFileTime().IsMatch(input))
             {
                 var canParse = long.TryParse(input.TrimStart("ft".ToCharArray()), out var secondsFt);
 
@@ -221,7 +264,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 timestamp = DateTime.FromFileTime(secondsFt);
                 return true;
             }
-            else if (Regex.IsMatch(input, @"^oa[+-]?\d+[,.0-9]*$"))
+            else if (RegexOADate().IsMatch(input))
             {
                 var canParse = double.TryParse(input.TrimStart("oa".ToCharArray()), out var oADate);
 
@@ -238,7 +281,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 timestamp = DateTime.FromOADate(oADate);
                 return true;
             }
-            else if (Regex.IsMatch(input, @"^exc[+-]?\d+[,.0-9]*$"))
+            else if (RegexExcel1900Date().IsMatch(input))
             {
                 var canParse = double.TryParse(input.TrimStart("exc".ToCharArray()), out var excDate);
 
@@ -265,7 +308,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 timestamp = DateTime.FromOADate(excDate);
                 return true;
             }
-            else if (Regex.IsMatch(input, @"^exf[+-]?\d+[,.0-9]*$"))
+            else if (RegexExcel1904Date().IsMatch(input))
             {
                 var canParse = double.TryParse(input.TrimStart("exf".ToCharArray()), out var exfDate);
 
@@ -297,7 +340,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <returns>True if yes; otherwise, false</returns>
         internal static bool IsSpecialInputParsing(string input)
         {
-            return _regexSpecialInputFormats.IsMatch(input);
+            return RegexSpecialInputFormats().IsMatch(input);
         }
 
         /// <summary>
@@ -315,48 +358,48 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             string result = format;
 
             // DOW: Number of day in week
-            result = _regexCustomDateTimeDow.Replace(result, GetNumberOfDayInWeek(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));
+            result = RegexCustomDateTimeDow().Replace(result, GetNumberOfDayInWeek(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));
 
             // DIM: Days in Month
-            result = _regexCustomDateTimeDim.Replace(result, DateTime.DaysInMonth(date.Year, date.Month).ToString(CultureInfo.CurrentCulture));
+            result = RegexCustomDateTimeDim().Replace(result, DateTime.DaysInMonth(date.Year, date.Month).ToString(CultureInfo.CurrentCulture));
 
             // WOM: Week of Month
-            result = _regexCustomDateTimeWom.Replace(result, GetWeekOfMonth(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));
+            result = RegexCustomDateTimeWom().Replace(result, GetWeekOfMonth(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));
 
             // WOY: Week of Year
-            result = _regexCustomDateTimeWoy.Replace(result, calWeek.ToString(CultureInfo.CurrentCulture));
+            result = RegexCustomDateTimeWoy().Replace(result, calWeek.ToString(CultureInfo.CurrentCulture));
 
             // EAB: Era abbreviation
-            result = _regexCustomDateTimeEab.Replace(result, eraShortFormat);
+            result = RegexCustomDateTimeEab().Replace(result, eraShortFormat);
 
             // WFT: Week of Month
-            if (_regexCustomDateTimeWft.IsMatch(result))
+            if (RegexCustomDateTimeWft().IsMatch(result))
             {
                 // Special handling as very early dates can't convert.
-                result = _regexCustomDateTimeWft.Replace(result, date.ToFileTime().ToString(CultureInfo.CurrentCulture));
+                result = RegexCustomDateTimeWft().Replace(result, date.ToFileTime().ToString(CultureInfo.CurrentCulture));
             }
 
             // UXT: Unix time stamp
-            result = _regexCustomDateTimeUxt.Replace(result, unix.ToString(CultureInfo.CurrentCulture));
+            result = RegexCustomDateTimeUxt().Replace(result, unix.ToString(CultureInfo.CurrentCulture));
 
             // UMS: Unix time stamp milli seconds
-            result = _regexCustomDateTimeUms.Replace(result, unixMilliseconds.ToString(CultureInfo.CurrentCulture));
+            result = RegexCustomDateTimeUms().Replace(result, unixMilliseconds.ToString(CultureInfo.CurrentCulture));
 
             // OAD: OLE Automation date
-            result = _regexCustomDateTimeOad.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.OLEAutomation).ToString(CultureInfo.CurrentCulture));
+            result = RegexCustomDateTimeOad().Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.OLEAutomation).ToString(CultureInfo.CurrentCulture));
 
             // EXC: Excel date value with base 1900
-            if (_regexCustomDateTimeExc.IsMatch(result))
+            if (RegexCustomDateTimeExc().IsMatch(result))
             {
                 // Special handling as very early dates can't convert.
-                result = _regexCustomDateTimeExc.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.Excel1900).ToString(CultureInfo.CurrentCulture));
+                result = RegexCustomDateTimeExc().Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.Excel1900).ToString(CultureInfo.CurrentCulture));
             }
 
             // EXF: Excel date value with base 1904
-            if (_regexCustomDateTimeExf.IsMatch(result))
+            if (RegexCustomDateTimeExf().IsMatch(result))
             {
                 // Special handling as very early dates can't convert.
-                result = _regexCustomDateTimeExf.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.Excel1904).ToString(CultureInfo.CurrentCulture));
+                result = RegexCustomDateTimeExf().Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.Excel1904).ToString(CultureInfo.CurrentCulture));
             }
 
             return result;
@@ -369,7 +412,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <returns>True if yes and otherwise false</returns>
         internal static bool StringContainsCustomFormatSyntax(string str)
         {
-            return _regexCustomDateTimeFormats.IsMatch(str);
+            return RegexCustomDateTimeFormats().IsMatch(str);
         }
 
         /// <summary>

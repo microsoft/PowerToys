@@ -9,9 +9,10 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program
 {
-    public class InferredProgramArgumentParser : IProgramArgumentParser
+    public partial class InferredProgramArgumentParser : IProgramArgumentParser
     {
-        private static readonly Regex ArgumentPrefixRegex = new Regex("^(-|--|/)[a-zA-Z]+", RegexOptions.Compiled);
+        [GeneratedRegex("^(-|--|/)[a-zA-Z]+")]
+        private static partial Regex ArgumentPrefixRegex();
 
         public bool Enabled { get; } = true;
 
@@ -24,7 +25,7 @@ namespace Microsoft.Plugin.Program
                 {
                     for (var i = 1; i < query.Terms.Count; i++)
                     {
-                        if (!ArgumentPrefixRegex.IsMatch(query.Terms[i]))
+                        if (!ArgumentPrefixRegex().IsMatch(query.Terms[i]))
                         {
                             continue;
                         }

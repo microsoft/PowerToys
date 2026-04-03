@@ -20,7 +20,7 @@ using Windows.Media.Ocr;
 
 namespace PowerOCR.Helpers
 {
-    internal static class OcrExtensions
+    internal static partial class OcrExtensions
     {
         public static void GetTextFromOcrLine(this OcrLine ocrLine, bool isSpaceJoiningOCRLang, StringBuilder text)
         {
@@ -40,13 +40,11 @@ namespace PowerOCR.Helpers
                 bool isFirstWord = true;
                 bool isPrevWordSpaceJoining = false;
 
-                Regex regexSpaceJoiningWord = new(@"(^[\p{L}-[\p{Lo}]]|\p{Nd}$)|.{2,}");
-
                 foreach (OcrWord ocrWord in ocrLine.Words)
                 {
                     string wordString = ocrWord.Text;
 
-                    bool isThisWordSpaceJoining = regexSpaceJoiningWord.IsMatch(wordString);
+                    bool isThisWordSpaceJoining = SpaceJoiningWordRegex().IsMatch(wordString);
 
                     if (isFirstWord || (!isThisWordSpaceJoining && !isPrevWordSpaceJoining))
                     {
@@ -104,5 +102,8 @@ namespace PowerOCR.Helpers
             OcrEngine ocrEngine = OcrEngine.TryCreateFromLanguage(language);
             return await ocrEngine.RecognizeAsync(softwareBmp);
         }
+
+        [GeneratedRegex(@"(^[\p{L}-[\p{Lo}]]|\p{Nd}$)|.{2,}")]
+        private static partial Regex SpaceJoiningWordRegex();
     }
 }

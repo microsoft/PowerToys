@@ -72,7 +72,7 @@ namespace MouseWithoutBorders
         {
             buttonOK.Enabled = false;
 
-            if (!UpdateKey(Regex.Replace(textBoxEnc.Text, @"\s+", string.Empty)))
+            if (!UpdateKey(WhitespaceRegex().Replace(textBoxEnc.Text, string.Empty)))
             {
                 buttonOK.Enabled = true;
                 return;
@@ -1233,5 +1233,8 @@ namespace MouseWithoutBorders
             g2.Dispose();
         }
 #endif
+
+        [GeneratedRegex(@"\s+")]
+        private static partial Regex WhitespaceRegex();
     }
 }

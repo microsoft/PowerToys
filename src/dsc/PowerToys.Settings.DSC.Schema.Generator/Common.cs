@@ -12,12 +12,15 @@ using System.Threading.Tasks;
 
 namespace PowerToys.Settings.DSC.Schema;
 
-internal sealed class Common
+internal sealed partial class Common
 {
     private static string[] TypeParts(string name)
     {
-        return Regex.Split(name.ToLower(CultureInfo.CurrentCulture), @"(?<!^)(?=[A-Z])|\.");
+        return CamelCaseSplitRegex().Split(name.ToLower(CultureInfo.CurrentCulture));
     }
+
+    [GeneratedRegex(@"(?<!^)(?=[A-Z])|\.")]
+    private static partial Regex CamelCaseSplitRegex();
 
     internal static bool InferIsBool(Type propertyInfo)
     {

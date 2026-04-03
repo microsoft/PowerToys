@@ -13,8 +13,17 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Helpers
 {
-    internal static class MarkdownHelper
+    internal static partial class MarkdownHelper
     {
+        [GeneratedRegex(@"<!--StartFragment-->|<!--EndFragment-->")]
+        private static partial Regex FragmentCommentsRegex();
+
+        [GeneratedRegex(@"\s{2,}")]
+        private static partial Regex ExcessiveWhitespaceRegex();
+
+        [GeneratedRegex(@"[\r\n]+")]
+        private static partial Regex LineBreaksRegex();
+
         public static async Task<string> ToMarkdownAsync(DataPackageView clipboardData)
         {
             Logger.LogTrace();
@@ -31,7 +40,7 @@ namespace AdvancedPaste.Helpers
             Logger.LogTrace();
 
             // Remove the "StartFragment" and "EndFragment" comments
-            html = Regex.Replace(html, @"<!--StartFragment-->|<!--EndFragment-->", string.Empty);
+            html = FragmentCommentsRegex().Replace(html, string.Empty);
 
             HtmlDocument document = new HtmlDocument();
             document.LoadHtml(html);
@@ -95,8 +104,8 @@ namespace AdvancedPaste.Helpers
             // Clean up line breaks and excessive whitespace
             if (node.NodeType == HtmlNodeType.Text)
             {
-                node.InnerHtml = Regex.Replace(node.InnerHtml, @"\s{2,}", " ");
-                node.InnerHtml = Regex.Replace(node.InnerHtml, @"[\r\n]+", string.Empty);
+                node.InnerHtml = ExcessiveWhitespaceRegex().Replace(node.InnerHtml, " ");
+                node.InnerHtml = LineBreaksRegex().Replace(node.InnerHtml, string.Empty);
             }
             else
             {

@@ -89,7 +89,7 @@ namespace MouseWithoutBorders
         {
             if (GetSecureKey() != SecurityCodeField.Text)
             {
-                Encryption.MyKey = Regex.Replace(SecurityCodeField.Text, @"\s+", string.Empty);
+                Encryption.MyKey = WhitespaceRegex().Replace(SecurityCodeField.Text, string.Empty);
                 SecurityCode = Encryption.MyKey;
             }
 
@@ -113,5 +113,8 @@ namespace MouseWithoutBorders
             HelpLabel.Hide();
             CollapseHelpButton.Hide();
         }
+
+        [GeneratedRegex(@"\s+")]
+        private static partial Regex WhitespaceRegex();
     }
 }
