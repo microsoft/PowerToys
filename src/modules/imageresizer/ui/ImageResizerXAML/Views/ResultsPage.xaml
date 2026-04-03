@@ -52,8 +52,8 @@
             Grid.Row="1"
             Padding="16,0"
             HorizontalAlignment="Stretch"
-            VerticalScrollMode="Enabled"
-            VerticalScrollBarVisibility="Auto">
+            VerticalScrollBarVisibility="Auto"
+            VerticalScrollMode="Enabled">
             <StackPanel>
 
                 <!--  Errors section  -->
