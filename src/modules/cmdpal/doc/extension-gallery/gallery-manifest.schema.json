@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Command Palette Extension Gallery Manifest",
-  "description": "Localized manifests are stored as full document copies such as manifest.cs-cz.json next to manifest.json.",
+  "description": "Command Palette Extension Gallery manifest.",
   "type": "object",
   "required": [
     "id",
@@ -11,24 +11,6 @@
     "installSources"
   ],
   "definitions": {
-    "localizedString": {
-      "description": "Backward-compatible localization object. New feeds should prefer localized manifest files instead.",
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
-    "localizedStringOrString": {
-      "oneOf": [
-        {
-          "type": "string"
-        },
-        {
-          "$ref": "#/definitions/localizedString"
-        }
-      ]
-    },
     "wingetInstallSource": {
       "type": "object",
       "required": [
@@ -104,10 +86,12 @@
       "description": "Unique extension identifier. Should match the extension folder name."
     },
     "title": {
-      "$ref": "#/definitions/localizedStringOrString"
+      "type": "string",
+      "minLength": 1
     },
     "description": {
-      "$ref": "#/definitions/localizedStringOrString"
+      "type": "string",
+      "minLength": 1
     },
     "author": {
       "type": "object",
@@ -131,7 +115,8 @@
       "format": "uri"
     },
     "readme": {
-      "$ref": "#/definitions/localizedStringOrString"
+      "type": "string",
+      "minLength": 1
     },
     "icon": {
       "type": "string",

@@ -17,7 +17,6 @@ $script:stats = [ordered]@{
     IndexEntriesValidated       = 0
     ExtensionDirectoriesFound   = 0
     ManifestsValidated          = 0
-    LocalizedManifestsValidated = 0
 }
 
 function Add-Issue {
@@ -386,7 +385,6 @@ function Write-ValidationSummary {
     Write-Host ("  Index entries validated        : {0}" -f $script:stats.IndexEntriesValidated)
     Write-Host ("  Extension directories found    : {0}" -f $script:stats.ExtensionDirectoriesFound)
     Write-Host ("  Manifest files validated       : {0}" -f $script:stats.ManifestsValidated)
-    Write-Host ("  Localized manifests validated  : {0}" -f $script:stats.LocalizedManifestsValidated)
     Write-Host ("  Errors                         : {0}" -f $errorCount)
     Write-Host ("  Warnings                       : {0}" -f $warningCount)
 
@@ -510,18 +508,7 @@ for ($i = 0; $i -lt $indexEntries.Count; $i++) {
             continue
         }
 
-        if ($file.Name -notmatch '^manifest\.[a-zA-Z]{2,3}(-[a-zA-Z0-9]+)*\.json$') {
-            Add-ValidationWarning -Scope (Get-DisplayPath -Path $file.FullName) -Message "Unexpected localized manifest naming. Expected manifest.<locale>.json."
-            continue
-        }
-
-        $localizedManifest = Get-JsonDocument -Path $file.FullName -Scope (Get-DisplayPath -Path $file.FullName)
-        if ($null -eq $localizedManifest) {
-            continue
-        }
-
-        Validate-Manifest -Manifest $localizedManifest -ManifestPath $file.FullName -ExpectedId $extensionId -ExtensionDirectory $extensionDirectory
-        $script:stats.LocalizedManifestsValidated++
+        Add-ValidationWarning -Scope (Get-DisplayPath -Path $file.FullName) -Message "Only manifest.json is supported. Remove extra manifest*.json files."
     }
 }
 

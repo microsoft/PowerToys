@@ -28,7 +28,7 @@ public class ExtensionGalleryServiceTests
         WriteGalleryFeed(feedDirectory, "sample-extension", "Sample extension");
 
         var currentFeedUrl = ToFeedUri(feedDirectory);
-        using var service = new ExtensionGalleryService(() => currentFeedUrl, applicationInfoService: null, cacheDirectory, httpClient: null);
+        using var service = CreateService(() => currentFeedUrl, cacheDirectory, httpClient: null);
 
         var initialResult = await service.FetchExtensionsAsync();
 
@@ -54,7 +54,7 @@ public class ExtensionGalleryServiceTests
         WriteGalleryFeed(feedDirectory, "sample-extension", "Sample extension");
 
         var feedUrl = ToFeedUri(feedDirectory);
-        using var service = new ExtensionGalleryService(() => feedUrl, applicationInfoService: null, cacheDirectory, httpClient: null);
+        using var service = CreateService(() => feedUrl, cacheDirectory, httpClient: null);
 
         var initialResult = await service.FetchExtensionsAsync();
         var cachedResult = await service.FetchExtensionsAsync();
@@ -95,7 +95,7 @@ public class ExtensionGalleryServiceTests
         WriteGalleryFeed(feedDirectory, "sample-extension", "Sample extension", iconUrl: iconUrl);
 
         var feedUrl = ToFeedUri(feedDirectory);
-        using var service = new ExtensionGalleryService(() => feedUrl, applicationInfoService: null, cacheDirectory, httpClient: null);
+        using var service = CreateService(() => feedUrl, cacheDirectory, httpClient: null);
 
         var result = await service.FetchExtensionsAsync();
 
@@ -133,7 +133,7 @@ public class ExtensionGalleryServiceTests
         File.WriteAllText(Path.Combine(feedDirectory, "index.json"), wrappedJson);
 
         var feedUrl = ToFeedUri(feedDirectory);
-        using var service = new ExtensionGalleryService(() => feedUrl, applicationInfoService: null, cacheDirectory, httpClient: null);
+        using var service = CreateService(() => feedUrl, cacheDirectory, httpClient: null);
 
         var result = await service.FetchExtensionsAsync();
 
@@ -162,10 +162,11 @@ public class ExtensionGalleryServiceTests
         });
 
         using var httpClient = new HttpClient(handler);
-        using var service = new ExtensionGalleryService(() => null, applicationInfoService: null, cacheDirectory, httpClient);
+        using var service = CreateService(() => null, cacheDirectory, httpClient);
         var iconUri = new Uri("https://example.com/icons/sample.png");
 
         var firstCachedIconUri = await service.GetCachedIconUriAsync("sample-extension", iconUri);
+        await Task.Delay(50);
         var secondCachedIconUri = await service.GetCachedIconUriAsync("sample-extension", iconUri);
 
         Assert.IsNotNull(firstCachedIconUri);
@@ -199,7 +200,7 @@ public class ExtensionGalleryServiceTests
         });
 
         using var httpClient = new HttpClient(handler);
-        using var service = new ExtensionGalleryService(() => null, applicationInfoService: null, cacheDirectory, httpClient);
+        using var service = CreateService(() => null, cacheDirectory, httpClient);
         var iconUri = new Uri("https://example.com/icons/sample.png");
 
         var firstCachedIconUri = await service.GetCachedIconUriAsync("sample-extension", iconUri);
@@ -234,6 +235,11 @@ public class ExtensionGalleryServiceTests
     private static string ToFeedUri(string directory)
     {
         return new Uri(Path.Combine(directory, "index.json")).AbsoluteUri;
+    }
+
+    private static ExtensionGalleryService CreateService(Func<string?> feedUrlProvider, string cacheDirectory, HttpClient? httpClient)
+    {
+        return new ExtensionGalleryService(feedUrlProvider, new TestApplicationInfoService(cacheDirectory), cacheDirectory, httpClient);
     }
 
     private static void WriteGalleryFeed(string rootDirectory, string extensionId, string title, string? iconUrl = null)

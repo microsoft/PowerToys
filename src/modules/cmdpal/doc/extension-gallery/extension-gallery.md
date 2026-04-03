@@ -22,7 +22,6 @@ extensionGallery/
   extensions/
     sample-extension/
       manifest.json
-      manifest.cs-cz.json
       icon.png
       README.md
 ```
@@ -32,8 +31,7 @@ At runtime, the gallery service:
 1. Loads `index.json`
 2. Resolves each extension folder from the index entry `id`
 3. Loads `extensions/<id>/manifest.json`
-4. Tries a localized manifest such as `manifest.cs-cz.json` before falling back to `manifest.json`
-5. Merges and caches the resulting entries for offline fallback
+4. Merges and caches the resulting entries for offline fallback
 
 ## `index.json`
 
@@ -154,38 +152,10 @@ Example:
 }
 ```
 
-## Localization
-
-The preferred localization model is a full localized manifest per culture:
-
-- `manifest.json` is the default manifest, typically English
-- `manifest.<locale>.json` is a full document copy for a specific locale
-- the loader tries `CurrentUICulture`, then parent cultures, then `manifest.json`
-
-Example:
-
-- `manifest.json`
-- `manifest.cs-cz.json`
-- `manifest.fr-fr.json`
-
-The loader also still accepts a legacy per-field localization object for `title`, `description`, and `readme`, for example:
-
-```json
-{
-  "title": {
-    "en": "Sample Extension",
-    "cs-cz": "Ukazkove rozsireni"
-  }
-}
-```
-
-That legacy object form is supported for compatibility, but new feeds should prefer localized manifest files.
-
 ## Icons and companion files
 
 - icon filenames are resolved relative to the extension folder
 - readme filenames are stored as metadata relative to the extension folder
-- keep filenames stable across localized manifests unless a locale truly needs a different asset
 
 ## Validation
 
@@ -207,5 +177,4 @@ If you are editing the sample gallery feed in this repo, keeping the manifest `$
 - Keep `id` values stable once published
 - Include a `winget` source for extensions that can be installed through App Installer
 - Add `packageFamilyName` when you know the packaged extension identity
-- Treat `manifest.<locale>.json` as a full copy of the base manifest, not a partial override
 - Use tags sparingly and consistently so search remains useful

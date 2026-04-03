@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text.Json;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
 using Microsoft.CmdPal.Common.Services;
@@ -15,7 +14,6 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
     private const string DefaultFeedUrl = "https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/refs/heads/main/extensions.json";
     private const string CachedIndexFileName = "index.json";
     private const string ManifestFileName = "manifest.json";
-    private const string ManifestLocalizedPrefix = "manifest.";
     private const string CacheDirectoryName = "GalleryCache";
     private const string CacheTimestampFileName = ".last_fetch";
     private const string IconCacheDirectoryName = "Icons";
@@ -195,12 +193,6 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
                 manifest.Id = extensionId;
             }
 
-            var localizedManifest = await TryFetchLocalizedManifestAsync(safeExtensionId, extensionId, cancellationToken);
-            if (localizedManifest is not null)
-            {
-                manifest = MergeLocalizedManifest(manifest, localizedManifest);
-            }
-
             manifest.Tags = MergeTags(indexEntry.Tags, manifest.Tags);
             return manifest;
         }
@@ -224,119 +216,6 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         }
 
         throw new InvalidOperationException($"Unsupported gallery URI scheme '{uri.Scheme}'.");
-    }
-
-    private async Task<GalleryExtensionEntry?> TryFetchLocalizedManifestAsync(
-        string safeExtensionId,
-        string extensionId,
-        CancellationToken cancellationToken)
-    {
-        var locales = GetPreferredManifestLocales();
-        for (var i = 0; i < locales.Count; i++)
-        {
-            var manifestFileName = $"{ManifestLocalizedPrefix}{locales[i]}.json";
-            if (!TryBuildUri($"extensions/{safeExtensionId}/{manifestFileName}", out var manifestUri))
-            {
-                continue;
-            }
-
-            var json = await TryFetchStringAsync(manifestUri, cancellationToken);
-            if (json is null)
-            {
-                continue;
-            }
-
-            GalleryExtensionEntry? localized;
-            try
-            {
-                localized = JsonSerializer.Deserialize(json, GallerySerializationContext.Default.GalleryExtensionEntry);
-            }
-            catch (JsonException ex)
-            {
-                CoreLogger.LogError($"Ignoring invalid localized manifest for '{extensionId}' ({manifestFileName}).", ex);
-                continue;
-            }
-
-            if (localized is null)
-            {
-                continue;
-            }
-
-            if (string.IsNullOrWhiteSpace(localized.Id))
-            {
-                localized.Id = extensionId;
-            }
-
-            return localized;
-        }
-
-        return null;
-    }
-
-    private async Task<string?> TryFetchStringAsync(Uri uri, CancellationToken cancellationToken)
-    {
-        try
-        {
-            return await FetchStringAsync(uri, cancellationToken);
-        }
-        catch (FileNotFoundException)
-        {
-            return null;
-        }
-        catch (DirectoryNotFoundException)
-        {
-            return null;
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            return null;
-        }
-    }
-
-    private static IReadOnlyList<string> GetPreferredManifestLocales()
-    {
-        List<string> locales = [];
-        HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
-
-        var culture = CultureInfo.CurrentUICulture;
-        while (!culture.Equals(CultureInfo.InvariantCulture))
-        {
-            var normalizedCulture = ToNullIfWhiteSpace(culture.Name)?.ToLowerInvariant();
-            if (normalizedCulture is not null && seen.Add(normalizedCulture))
-            {
-                locales.Add(normalizedCulture);
-            }
-
-            culture = culture.Parent;
-        }
-
-        return locales;
-    }
-
-    private static GalleryExtensionEntry MergeLocalizedManifest(GalleryExtensionEntry baseManifest, GalleryExtensionEntry localizedManifest)
-    {
-        return new GalleryExtensionEntry
-        {
-            Id = !string.IsNullOrWhiteSpace(baseManifest.Id) ? baseManifest.Id : localizedManifest.Id,
-            Title = !string.IsNullOrWhiteSpace(localizedManifest.Title) ? localizedManifest.Title : baseManifest.Title,
-            Description = !string.IsNullOrWhiteSpace(localizedManifest.Description) ? localizedManifest.Description : baseManifest.Description,
-            Author = MergeAuthor(baseManifest.Author, localizedManifest.Author),
-            Homepage = !string.IsNullOrWhiteSpace(localizedManifest.Homepage) ? localizedManifest.Homepage : baseManifest.Homepage,
-            Readme = !string.IsNullOrWhiteSpace(localizedManifest.Readme) ? localizedManifest.Readme : baseManifest.Readme,
-            IconUrl = !string.IsNullOrWhiteSpace(localizedManifest.IconUrl) ? localizedManifest.IconUrl : baseManifest.IconUrl,
-            InstallSources = localizedManifest.InstallSources.Count > 0 ? localizedManifest.InstallSources : baseManifest.InstallSources,
-            Detection = localizedManifest.Detection ?? baseManifest.Detection,
-            Tags = MergeTags(baseManifest.Tags, localizedManifest.Tags),
-        };
-    }
-
-    private static GalleryAuthor MergeAuthor(GalleryAuthor baseAuthor, GalleryAuthor localizedAuthor)
-    {
-        return new GalleryAuthor
-        {
-            Name = !string.IsNullOrWhiteSpace(localizedAuthor.Name) ? localizedAuthor.Name : baseAuthor.Name,
-            Url = !string.IsNullOrWhiteSpace(localizedAuthor.Url) ? localizedAuthor.Url : baseAuthor.Url,
-        };
     }
 
     private void CacheResults(List<GalleryIndexEntry> index, List<GalleryExtensionEntry> manifests)

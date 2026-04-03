@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Command Palette Extension Gallery Manifest",
-  "description": "Localized manifests are stored as full document copies (for example manifest.cs-cz.json) next to manifest.json.",
+  "description": "Command Palette Extension Gallery manifest.",
   "type": "object",
   "required": ["id", "title", "description", "author", "installSources"],
   "properties": {
