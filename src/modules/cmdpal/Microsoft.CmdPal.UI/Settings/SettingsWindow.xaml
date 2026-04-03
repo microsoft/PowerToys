@@ -3,6 +3,7 @@
     x:Class="Microsoft.CmdPal.UI.Settings.SettingsWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI.Settings"
@@ -98,7 +99,35 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <Grid Padding="16,0">
+                <Grid x:Name="BreadcrumbContainer" Padding="16,0">
+                    <animations:Implicit.ShowAnimations>
+                        <animations:OpacityAnimation
+                            EasingMode="EaseOut"
+                            EasingType="Cubic"
+                            From="0"
+                            To="1.0"
+                            Duration="0:0:0.0" />
+                        <animations:TranslationAnimation
+                            EasingMode="EaseOut"
+                            EasingType="Cubic"
+                            From="0,0,0"
+                            To="0,0,0"
+                            Duration="0:0:0.0" />
+                    </animations:Implicit.ShowAnimations>
+                    <animations:Implicit.HideAnimations>
+                        <animations:OpacityAnimation
+                            EasingMode="EaseIn"
+                            EasingType="Cubic"
+                            From="1.0"
+                            To="0"
+                            Duration="0:0:0.200" />
+                        <animations:TranslationAnimation
+                            EasingMode="EaseIn"
+                            EasingType="Cubic"
+                            From="0,0,0"
+                            To="0,-16,0"
+                            Duration="0:0:0.200" />
+                    </animations:Implicit.HideAnimations>
                     <BreadcrumbBar
                         x:Name="NavigationBreadcrumbBar"
                         MaxWidth="1000"
@@ -120,6 +149,11 @@
                     </BreadcrumbBar>
                 </Grid>
                 <Grid Grid.Row="1" Grid.Column="0">
+                    <Grid.Transitions>
+                        <TransitionCollection>
+                            <RepositionThemeTransition />
+                        </TransitionCollection>
+                    </Grid.Transitions>
                     <Frame x:Name="NavFrame" Navigated="NavFrame_OnNavigated" />
 
                     <controls:WinGetOperationsButton
