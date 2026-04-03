@@ -15,6 +15,8 @@ public record SettingsModel
     // SETTINGS HERE
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
+    private static readonly Color DefaultCustomThemeColor = new() { A = 0, R = 255, G = 255, B = 255 }; // Transparent — avoids WinUI3 COM dependency on Colors.Transparent
+
     public HotkeySettings? Hotkey { get; init; } = DefaultActivationShortcut;
 
     public bool UseLowLevelGlobalHotkey { get; init; }
@@ -56,7 +58,22 @@ public record SettingsModel
 
     public WindowPosition? LastWindowPosition { get; init; }
 
-    public TimeSpan AutoGoHomeInterval { get; init; } = Timeout.InfiniteTimeSpan;
+    [JsonPropertyName("AutoGoHomeInterval")]
+    [JsonInclude]
+    internal string? AutoGoHomeIntervalString
+    {
+        get => _autoGoHomeInterval?.ToString();
+        init => _autoGoHomeInterval = TimeSpan.TryParse(value, out var ts) ? ts : null;
+    }
+
+    private TimeSpan? _autoGoHomeInterval;
+
+    [JsonIgnore]
+    public TimeSpan AutoGoHomeInterval
+    {
+        get => _autoGoHomeInterval ?? Timeout.InfiniteTimeSpan;
+        init => _autoGoHomeInterval = value;
+    }
 
     public EscapeKeyBehavior EscapeKeyBehaviorSetting { get; init; } = EscapeKeyBehavior.ClearSearchFirstThenGoBack;
 
@@ -69,7 +86,22 @@ public record SettingsModel
 
     public ColorizationMode ColorizationMode { get; init; }
 
-    public Color CustomThemeColor { get; init; } = new() { A = 0, R = 255, G = 255, B = 255 }; // Transparent — avoids WinUI3 COM dependency on Colors.Transparent
+    private Color? _customThemeColor;
+
+    [JsonPropertyName("CustomThemeColor")]
+    [JsonInclude]
+    internal Color? CustomThemeColorFallback
+    {
+        get => _customThemeColor;
+        init => _customThemeColor = value;
+    }
+
+    [JsonIgnore]
+    public Color CustomThemeColor
+    {
+        get => _customThemeColor ?? DefaultCustomThemeColor;
+        init => _customThemeColor = value;
+    }
 
     public int CustomThemeColorIntensity { get; init; } = 100;
 
@@ -93,6 +125,39 @@ public record SettingsModel
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
+
+    public SettingsModel()
+    {
+    }
+
+    [JsonConstructor]
+    public SettingsModel(
+        ImmutableDictionary<string, ProviderSettings> providerSettings,
+        string[] fallbackRanks,
+        ImmutableDictionary<string, CommandAlias> aliases,
+        ImmutableList<TopLevelHotkey> commandHotkeys,
+        DockSettings dockSettings,
+        bool highlightSearchOnActivate = true,
+        bool showSystemTrayIcon = true,
+        bool ignoreShortcutWhenFullscreen = true,
+        bool disableAnimations = true,
+        int customThemeColorIntensity = 100,
+        int backgroundImageOpacity = 20,
+        int backdropOpacity = 100)
+    {
+        ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
+        FallbackRanks = fallbackRanks ?? [];
+        Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
+        CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
+        DockSettings = dockSettings ?? new();
+        HighlightSearchOnActivate = highlightSearchOnActivate;
+        ShowSystemTrayIcon = showSystemTrayIcon;
+        IgnoreShortcutWhenFullscreen = ignoreShortcutWhenFullscreen;
+        DisableAnimations = disableAnimations;
+        CustomThemeColorIntensity = customThemeColorIntensity;
+        BackgroundImageOpacity = backgroundImageOpacity;
+        BackdropOpacity = backdropOpacity;
+    }
 
     public (SettingsModel Model, ProviderSettings Settings) GetProviderSettings(CommandProviderWrapper provider)
     {
