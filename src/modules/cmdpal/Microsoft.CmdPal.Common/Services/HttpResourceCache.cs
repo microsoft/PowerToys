@@ -18,7 +18,7 @@ internal sealed class HttpResourceCache
     private readonly string _cacheDirectory;
     private readonly TimeSpan _defaultTimeToLive;
     private readonly Lock _lock = new();
-    private readonly Dictionary<string, Task<CachedHttpResource?>> _inflightFetches = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, Task<CachedHttpResourceFetchResult?>> _inflightFetches = new(StringComparer.Ordinal);
 
     public HttpResourceCache(HttpClient httpClient, string cacheDirectory, TimeSpan defaultTimeToLive)
     {
@@ -38,12 +38,33 @@ internal sealed class HttpResourceCache
         string? fileNameHint = null,
         CancellationToken cancellationToken = default)
     {
+        return GetOrFetchAsync(cacheKey, resourceUri, fileNameHint, forceRefresh: false, cancellationToken);
+    }
+
+    public async Task<CachedHttpResource?> GetOrFetchAsync(
+        string cacheKey,
+        Uri resourceUri,
+        string? fileNameHint,
+        bool forceRefresh,
+        CancellationToken cancellationToken = default)
+    {
+        var fetchResult = await GetOrFetchWithStatusAsync(cacheKey, resourceUri, fileNameHint, forceRefresh, cancellationToken);
+        return fetchResult?.Resource;
+    }
+
+    public Task<CachedHttpResourceFetchResult?> GetOrFetchWithStatusAsync(
+        string cacheKey,
+        Uri resourceUri,
+        string? fileNameHint = null,
+        bool forceRefresh = false,
+        CancellationToken cancellationToken = default)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(cacheKey);
         ArgumentNullException.ThrowIfNull(resourceUri);
 
         if (!IsSupportedHttpUri(resourceUri))
         {
-            return Task.FromResult<CachedHttpResource?>(null);
+            return Task.FromResult<CachedHttpResourceFetchResult?>(null);
         }
 
         var inflightKey = $"{cacheKey}|{resourceUri.AbsoluteUri}";
@@ -55,7 +76,7 @@ internal sealed class HttpResourceCache
                 return existingTask;
             }
 
-            var fetchTask = GetOrFetchCoreAsync(cacheKey, resourceUri, fileNameHint, cancellationToken);
+            var fetchTask = GetOrFetchCoreAsync(cacheKey, resourceUri, fileNameHint, forceRefresh, cancellationToken);
             _inflightFetches[inflightKey] = fetchTask;
 
             _ = fetchTask.ContinueWith(
@@ -74,10 +95,11 @@ internal sealed class HttpResourceCache
         }
     }
 
-    private async Task<CachedHttpResource?> GetOrFetchCoreAsync(
+    private async Task<CachedHttpResourceFetchResult?> GetOrFetchCoreAsync(
         string cacheKey,
         Uri resourceUri,
         string? fileNameHint,
+        bool forceRefresh,
         CancellationToken cancellationToken)
     {
         var entryDirectory = GetEntryDirectory(cacheKey, resourceUri);
@@ -88,9 +110,9 @@ internal sealed class HttpResourceCache
         var payloadFileName = ResolvePayloadFileName(resourceUri, fileNameHint, metadata);
         var payloadPath = Path.Combine(entryDirectory, payloadFileName);
 
-        if (File.Exists(payloadPath) && IsFresh(metadata))
+        if (!forceRefresh && File.Exists(payloadPath) && IsFresh(metadata))
         {
-            return CreateCachedResource(payloadPath, metadata, fromCache: true, wasRevalidated: false);
+            return CreateFetchResult(payloadPath, metadata, fromCache: true, wasRevalidated: false, usedFallbackCache: false);
         }
 
         try
@@ -102,7 +124,7 @@ internal sealed class HttpResourceCache
             {
                 var refreshedMetadata = UpdateMetadata(metadata, resourceUri, response, payloadFileName, DateTimeOffset.UtcNow);
                 TrySaveMetadata(metadataPath, refreshedMetadata);
-                return CreateCachedResource(payloadPath, refreshedMetadata, fromCache: true, wasRevalidated: true);
+                return CreateFetchResult(payloadPath, refreshedMetadata, fromCache: true, wasRevalidated: true, usedFallbackCache: false);
             }
 
             response.EnsureSuccessStatusCode();
@@ -128,7 +150,7 @@ internal sealed class HttpResourceCache
 
             var updatedMetadata = UpdateMetadata(metadata, resourceUri, response, payloadFileName, DateTimeOffset.UtcNow);
             TrySaveMetadata(metadataPath, updatedMetadata);
-            return CreateCachedResource(payloadPath, updatedMetadata, fromCache: false, wasRevalidated: metadata is not null);
+            return CreateFetchResult(payloadPath, updatedMetadata, fromCache: false, wasRevalidated: metadata is not null, usedFallbackCache: false);
         }
         catch (OperationCanceledException)
         {
@@ -140,7 +162,7 @@ internal sealed class HttpResourceCache
 
             if (File.Exists(payloadPath))
             {
-                return CreateCachedResource(payloadPath, metadata, fromCache: true, wasRevalidated: false);
+                return CreateFetchResult(payloadPath, metadata, fromCache: true, wasRevalidated: false, usedFallbackCache: true);
             }
 
             return null;
@@ -190,6 +212,18 @@ internal sealed class HttpResourceCache
             metadata?.ContentType,
             fromCache,
             wasRevalidated);
+    }
+
+    private static CachedHttpResourceFetchResult CreateFetchResult(
+        string payloadPath,
+        HttpResourceCacheMetadata? metadata,
+        bool fromCache,
+        bool wasRevalidated,
+        bool usedFallbackCache)
+    {
+        return new CachedHttpResourceFetchResult(
+            CreateCachedResource(payloadPath, metadata, fromCache, wasRevalidated),
+            usedFallbackCache);
     }
 
     private static HttpResourceCacheMetadata UpdateMetadata(
@@ -328,5 +362,12 @@ internal sealed class HttpResourceCache
         public bool FromCache { get; }
 
         public bool WasRevalidated { get; }
+    }
+
+    internal sealed class CachedHttpResourceFetchResult(CachedHttpResource resource, bool usedFallbackCache)
+    {
+        public CachedHttpResource Resource { get; } = resource;
+
+        public bool UsedFallbackCache { get; } = usedFallbackCache;
     }
 }

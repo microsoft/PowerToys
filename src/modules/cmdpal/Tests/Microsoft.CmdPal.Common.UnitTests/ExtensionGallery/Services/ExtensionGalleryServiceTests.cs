@@ -23,20 +23,33 @@ public class ExtensionGalleryServiceTests
     [TestMethod]
     public async Task RefreshAsync_PreservesCachedExtensions_WhenFreshFetchFails()
     {
-        var feedDirectory = CreateTempDirectory("feed");
         var cacheDirectory = CreateTempDirectory("cache");
-        WriteGalleryFeed(feedDirectory, "sample-extension", "Sample extension");
+        var feedUrl = "https://example.com/extensions.json";
+        var requestCount = 0;
+        var handler = new TestHttpMessageHandler(_ =>
+        {
+            requestCount++;
+            if (requestCount == 1)
+            {
+                return CreateHttpResponse(
+                    HttpStatusCode.OK,
+                    System.Text.Encoding.UTF8.GetBytes(CreateGalleryFeedJson("sample-extension", "Sample extension")),
+                    "application/json",
+                    "\"feed-v1\"",
+                    maxAge: TimeSpan.FromHours(1));
+            }
 
-        var currentFeedUrl = ToFeedUri(feedDirectory);
-        using var service = CreateService(() => currentFeedUrl, cacheDirectory, httpClient: null);
+            throw new HttpRequestException("Could not reach an extension gallery.");
+        });
+
+        using var httpClient = new HttpClient(handler);
+        using var service = CreateService(() => feedUrl, cacheDirectory, httpClient);
 
         var initialResult = await service.FetchExtensionsAsync();
 
         Assert.IsFalse(initialResult.FromCache);
         Assert.AreEqual(1, initialResult.Extensions.Count);
         Assert.AreEqual("Sample extension", initialResult.Extensions[0].Title);
-
-        currentFeedUrl = "bogus://invalid-feed/";
         var refreshedResult = await service.RefreshAsync();
 
         Assert.IsTrue(refreshedResult.FromCache);
@@ -44,17 +57,24 @@ public class ExtensionGalleryServiceTests
         Assert.IsFalse(refreshedResult.HasError);
         Assert.AreEqual(1, refreshedResult.Extensions.Count);
         Assert.AreEqual("Sample extension", refreshedResult.Extensions[0].Title);
+        Assert.AreEqual(2, handler.CallCount);
     }
 
     [TestMethod]
     public async Task FetchExtensionsAsync_UsesFreshCacheWithoutFallbackWarning()
     {
-        var feedDirectory = CreateTempDirectory("feed");
         var cacheDirectory = CreateTempDirectory("cache");
-        WriteGalleryFeed(feedDirectory, "sample-extension", "Sample extension");
+        var feedUrl = "https://example.com/extensions.json";
+        var handler = new TestHttpMessageHandler(_ =>
+            CreateHttpResponse(
+                HttpStatusCode.OK,
+                System.Text.Encoding.UTF8.GetBytes(CreateGalleryFeedJson("sample-extension", "Sample extension")),
+                "application/json",
+                "\"feed-v1\"",
+                maxAge: TimeSpan.FromHours(1)));
 
-        var feedUrl = ToFeedUri(feedDirectory);
-        using var service = CreateService(() => feedUrl, cacheDirectory, httpClient: null);
+        using var httpClient = new HttpClient(handler);
+        using var service = CreateService(() => feedUrl, cacheDirectory, httpClient);
 
         var initialResult = await service.FetchExtensionsAsync();
         var cachedResult = await service.FetchExtensionsAsync();
@@ -65,25 +85,35 @@ public class ExtensionGalleryServiceTests
         Assert.IsFalse(cachedResult.UsedFallbackCache);
         Assert.IsFalse(cachedResult.HasError);
         Assert.AreEqual(1, cachedResult.Extensions.Count);
+        Assert.AreEqual(1, handler.CallCount);
     }
 
     [TestMethod]
     public async Task FetchExtensionsAsync_UsesApplicationInfoCacheDirectory_WhenExplicitCacheDirectoryIsNotProvided()
     {
-        var feedDirectory = CreateTempDirectory("feed");
         var appCacheDirectory = CreateTempDirectory("app-cache");
-        WriteGalleryFeed(feedDirectory, "sample-extension", "Sample extension");
+        var feedUrl = "https://example.com/extensions.json";
+        var handler = new TestHttpMessageHandler(_ =>
+            CreateHttpResponse(
+                HttpStatusCode.OK,
+                System.Text.Encoding.UTF8.GetBytes(CreateGalleryFeedJson("sample-extension", "Sample extension")),
+                "application/json",
+                "\"feed-v1\"",
+                maxAge: TimeSpan.FromHours(1)));
 
-        var feedUrl = ToFeedUri(feedDirectory);
+        using var httpClient = new HttpClient(handler);
         using var service = new ExtensionGalleryService(
+            () => feedUrl,
             new TestApplicationInfoService(cacheDirectory: appCacheDirectory),
-            () => feedUrl);
+            cacheDirectory: null,
+            httpClient: httpClient);
 
         var result = await service.FetchExtensionsAsync();
 
         Assert.IsFalse(result.HasError);
         Assert.AreEqual(1, result.Extensions.Count);
-        Assert.IsTrue(File.Exists(Path.Combine(appCacheDirectory, "GalleryCache", "index.json")));
+        var cachedFeedFiles = Directory.GetFiles(Path.Combine(appCacheDirectory, "GalleryCache", "Feed"), "extensions.json", SearchOption.AllDirectories);
+        Assert.AreEqual(1, cachedFeedFiles.Length);
     }
 
     [TestMethod]
@@ -320,6 +350,27 @@ public class ExtensionGalleryServiceTests
                     ],
                 },
                 GallerySerializationContext.Default.GalleryRemoteIndex));
+    }
+
+    private static string CreateGalleryFeedJson(string extensionId, string title, string? iconUrl = null)
+    {
+        return JsonSerializer.Serialize(
+            new GalleryRemoteIndex
+            {
+                Extensions =
+                [
+                    new GalleryExtensionEntry
+                    {
+                        Id = extensionId,
+                        Title = title,
+                        Description = "Sample description",
+                        Author = new GalleryAuthor { Name = "Sample author" },
+                        IconUrl = iconUrl,
+                        InstallSources = [],
+                    },
+                ],
+            },
+            GallerySerializationContext.Default.GalleryRemoteIndex);
     }
 
     private static HttpResponseMessage CreateHttpResponse(
