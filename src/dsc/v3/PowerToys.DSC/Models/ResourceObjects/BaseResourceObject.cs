@@ -37,7 +37,7 @@ public class BaseResourceObject
     /// <summary>
     /// Generates a JSON representation of the resource object.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A JSON representation of the resource object.</returns>
     public JsonNode ToJson()
     {
         return JsonSerializer.SerializeToNode(this, GetType(), _options) ?? new JsonObject();

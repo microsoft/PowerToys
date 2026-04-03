@@ -17,7 +17,7 @@ namespace PowerDisplay.Common.Utils
     public static class VcpNames
     {
         /// <summary>
-        /// Optional delegate to provide localized VCP code names.
+        /// Gets or sets the optional delegate to provide localized VCP code names.
         /// Set this at application startup to enable localization.
         /// The delegate receives a VCP code and should return the localized name, or null to use the default.
         /// </summary>

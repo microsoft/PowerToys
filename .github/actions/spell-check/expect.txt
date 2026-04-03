@@ -35,6 +35,7 @@ Allman
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
+altkey
 AModifier
 amr
 ANDSCANS
@@ -456,6 +457,9 @@ fdx
 FErase
 fesf
 FFFF
+fffffffzzz
+FInc
+FFh
 Figma
 FILEEXPLORER
 FILEFLAGS
@@ -577,6 +581,7 @@ HIBYTE
 hicon
 HIDEWINDOW
 Hif
+highcontrast
 highlightbackground
 highlightthickness
 HIMAGELIST
@@ -850,6 +855,8 @@ MDL
 mdtext
 mdtxt
 mdwn
+measuretool
+mccs
 meme
 memicmp
 MENUITEMINFO
@@ -893,6 +900,7 @@ MONITORINFOEX
 MONITORINFOEXW
 monitorinfof
 MOUSEACTIVATE
+mousecrosshairs
 MOUSEDATA
 MOUSEEVENTF
 MOUSEHWHEEL
@@ -924,6 +932,7 @@ mstsc
 msvcp
 MT
 MTND
+multimonitor
 MULTIPLEUSE
 multizone
 muxc
@@ -1017,6 +1026,9 @@ NORMALDISPLAY
 NORMALUSER
 NOSEARCH
 NOSENDCHANGING
+NOSIZE
+notdefault
+Nosize
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
@@ -1107,6 +1119,7 @@ PCIDLIST
 PCTSTR
 PCWSTR
 PDEVMODE
+PDFs
 pdisp
 PDLL
 pdo
@@ -1155,6 +1168,10 @@ Pokedex
 Popups
 POPUPWINDOW
 POSITIONITEM
+powerocr
+POWERBROADCAST
+powerdisplay
+POWERDISPLAYMODULEINTERFACE
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1518,6 +1535,9 @@ STYLECHANGING
 subkeys
 sublang
 SUBMODULEUPDATE
+subresource
+suntimes
+swp
 sug
 Superbar
 sut
@@ -1736,6 +1756,7 @@ wdm
 wdp
 wdupenv
 webbrowsers
+webdev
 webpage
 websites
 wekyb

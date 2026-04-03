@@ -121,6 +121,14 @@ namespace ImageResizer.Models
                                         {
                                             encoder.BitmapTransform.Bounds = cropBounds.Value;
                                         }
+
+                                        // Apply codec-specific properties (e.g., JPEG quality).
+                                        // Must be set after transforms since re-encoding will occur.
+                                        var encoderProps = GetEncoderPropertySet(encoderGuid);
+                                        if (encoderProps != null)
+                                        {
+                                            await encoder.BitmapProperties.SetPropertiesAsync(encoderProps);
+                                        }
                                     }
                                 }
                                 else
@@ -513,6 +521,25 @@ namespace ImageResizer.Models
                 {
                     { "ImageQuality", new BitmapTypedValue(GetJpegQualityFraction(), PropertyType.Single) },
                 };
+            }
+
+            if (encoderGuid == BitmapEncoder.PngEncoderId)
+            {
+                // Only override when explicitly set; Default lets the WIC encoder decide.
+                if (_settings.PngInterlaceOption == PngInterlaceOption.On)
+                {
+                    return new BitmapPropertySet
+                    {
+                        { "InterlaceOption", new BitmapTypedValue(true, PropertyType.Boolean) },
+                    };
+                }
+                else if (_settings.PngInterlaceOption == PngInterlaceOption.Off)
+                {
+                    return new BitmapPropertySet
+                    {
+                        { "InterlaceOption", new BitmapTypedValue(false, PropertyType.Boolean) },
+                    };
+                }
             }
 
             if (encoderGuid == BitmapEncoder.TiffEncoderId)
