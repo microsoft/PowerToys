@@ -15,6 +15,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
 using WinUIEx;
@@ -31,6 +32,8 @@ public sealed partial class SettingsWindow : WindowEx,
     private readonly LocalKeyboardListener _localKeyboardListener;
 
     private readonly NavigationViewItem? _internalNavItem;
+
+    private Storyboard? _breadcrumbStoryboard;
 
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
@@ -282,6 +285,60 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
+    private void HideBreadcrumb()
+    {
+        _breadcrumbStoryboard?.Stop();
+
+        var fadeOut = new DoubleAnimation
+        {
+            To = 0,
+            Duration = new Duration(TimeSpan.FromMilliseconds(200)),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
+        };
+        Storyboard.SetTarget(fadeOut, BreadcrumbContainer);
+        Storyboard.SetTargetProperty(fadeOut, "Opacity");
+
+        _breadcrumbStoryboard = new Storyboard();
+        _breadcrumbStoryboard.Children.Add(fadeOut);
+        _breadcrumbStoryboard.Completed += (_, _) =>
+        {
+            BreadcrumbContainer.Visibility = Visibility.Collapsed;
+            BreadcrumbContainer.Opacity = 1;
+            _breadcrumbStoryboard = null;
+        };
+        _breadcrumbStoryboard.Begin();
+    }
+
+    private void ShowBreadcrumb()
+    {
+        _breadcrumbStoryboard?.Stop();
+        _breadcrumbStoryboard = null;
+
+        if (BreadcrumbContainer.Visibility == Visibility.Collapsed)
+        {
+            BreadcrumbContainer.Opacity = 0;
+            BreadcrumbContainer.Visibility = Visibility.Visible;
+
+            var fadeIn = new DoubleAnimation
+            {
+                To = 1,
+                Duration = new Duration(TimeSpan.FromMilliseconds(250)),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            };
+            Storyboard.SetTarget(fadeIn, BreadcrumbContainer);
+            Storyboard.SetTargetProperty(fadeIn, "Opacity");
+
+            _breadcrumbStoryboard = new Storyboard();
+            _breadcrumbStoryboard.Children.Add(fadeIn);
+            _breadcrumbStoryboard.Completed += (_, _) => _breadcrumbStoryboard = null;
+            _breadcrumbStoryboard.Begin();
+        }
+        else
+        {
+            BreadcrumbContainer.Opacity = 1;
+        }
+    }
+
     public void Dispose()
     {
         WinGetOperationsButtonControl?.Dispose();
@@ -291,7 +348,7 @@ public sealed partial class SettingsWindow : WindowEx,
     private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
     {
         BreadCrumbs.Clear();
-        BreadcrumbContainer.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+        ShowBreadcrumb();
 
         if (e.SourcePageType == typeof(GeneralPage))
         {
@@ -320,7 +377,7 @@ public sealed partial class SettingsWindow : WindowEx,
         else if (e.SourcePageType == typeof(ExtensionGalleryDetailPage) && e.Parameter is GalleryExtensionViewModel galleryExtension)
         {
             NavView.SelectedItem = GalleryPageNavItem;
-            BreadcrumbContainer.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            HideBreadcrumb();
             var galleryPageType = RS_.GetString("Settings_PageTitles_GalleryPage");
             BreadCrumbs.Add(new(galleryPageType, "Gallery"));
             BreadCrumbs.Add(new(galleryExtension.Title, galleryExtension));
