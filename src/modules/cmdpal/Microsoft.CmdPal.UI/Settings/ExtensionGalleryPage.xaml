@@ -43,7 +43,7 @@
         </Grid.RowDefinitions>
 
         <ScrollViewer x:Name="RootScrollViewer" Grid.Row="1">
-            <Grid Padding="16">
+            <Grid Padding="16,16,16,16">
                 <StackPanel
                     MaxWidth="1200"
                     HorizontalAlignment="Stretch"
@@ -226,42 +226,41 @@
                     </Grid>
 
                     <!--  Extensions list  -->
-                    <ItemsRepeater
-                        x:Name="GalleryRepeater"
+                    <ItemsView
+                        x:Name="GalleryItemsView"
                         x:Load="{x:Bind viewModel.HasResults, Mode=OneWay}"
-                        ItemsSource="{x:Bind viewModel.FilteredEntries, Mode=OneWay}">
-                        <ItemsRepeater.Layout>
-                            <UniformGridLayout
-                                MinColumnSpacing="12"
-                                MinItemHeight="200"
-                                MinItemWidth="268"
-                                MinRowSpacing="12" />
-                        </ItemsRepeater.Layout>
-                        <ItemsRepeater.ItemTemplate>
+                        IsItemInvokedEnabled="True"
+                        ItemInvoked="GalleryItemsView_ItemInvoked"
+                        ItemsSource="{x:Bind viewModel.FilteredEntries, Mode=OneWay}"
+                        SelectionMode="None">
+                        <ItemsView.Layout>
+                            <controls:WrapLayout HorizontalSpacing="12" VerticalSpacing="12" />
+                        </ItemsView.Layout>
+                        <ItemsView.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:GalleryExtensionViewModel">
-                                <Button
-                                    Padding="12"
-                                    HorizontalAlignment="Stretch"
+                                <ItemContainer
                                     VerticalAlignment="Stretch"
-                                    HorizontalContentAlignment="Stretch"
                                     VerticalContentAlignment="Stretch"
-                                    Click="TileButton_Click"
-                                    DataContext="{x:Bind}">
-                                    <Grid RowSpacing="10">
+                                    AutomationProperties.Name="{x:Bind DisplayTitle}">
+                                    <Grid
+                                        Width="364"
+                                        Height="162"
+                                        Padding="12"
+                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource OverlayCornerRadius}"
+                                        RowSpacing="8">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="*" />
-                                            <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
-
                                         <Border
-                                            Width="60"
-                                            Height="60"
-                                            Padding="6"
+                                            Width="64"
+                                            Height="64"
                                             HorizontalAlignment="Left"
-                                            Background="{ThemeResource SystemControlBackgroundBaseLowBrush}"
-                                            CornerRadius="8">
+                                            CornerRadius="{StaticResource OverlayCornerRadius}">
                                             <Grid>
                                                 <Image
                                                     Width="48"
@@ -269,10 +268,8 @@
                                                     Source="{x:Bind IconSource, Mode=OneWay}"
                                                     Stretch="UniformToFill" />
                                                 <ProgressRing
-                                                    Grid.Row="0"
-                                                    Grid.Column="0"
-                                                    Width="18"
-                                                    Height="18"
+                                                    Width="16"
+                                                    Height="16"
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Top"
                                                     IsActive="{x:Bind ShowWinGetActionIndicator, Mode=OneWay}"
@@ -280,6 +277,32 @@
                                             </Grid>
                                         </Border>
 
+                                        <StackPanel
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Top"
+                                            Orientation="Horizontal"
+                                            Spacing="8">
+                                            <Border
+                                                Padding="8,4"
+                                                Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
+                                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                                Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowUpdateBadge), Mode=OneWay, FallbackValue=Collapsed}">
+                                                <TextBlock
+                                                    x:Uid="Settings_GalleryPage_Update_Badge"
+                                                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}" />
+                                            </Border>
+                                            <Border
+                                                Padding="8,4"
+                                                Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
+                                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                                Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowInstalledBadge), Mode=OneWay, FallbackValue=Collapsed}">
+                                                <TextBlock
+                                                    x:Uid="Settings_GalleryPage_Installed_Badge"
+                                                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}" />
+                                            </Border>
+                                        </StackPanel>
                                         <TextBlock
                                             Grid.Row="1"
                                             Grid.Column="0"
@@ -294,7 +317,7 @@
                                             <TextBlock
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Style="{StaticResource CaptionTextBlockStyle}"
-                                                Text="{x:Bind DisplayDescription, Mode=OneWay}"
+                                                Text="{x:Bind DisplayShortDescription, Mode=OneWay}"
                                                 TextWrapping="WrapWholeWords" />
                                             <StackPanel Spacing="6" Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowWinGetActionStatus), Mode=OneWay, FallbackValue=Collapsed}">
                                                 <TextBlock
@@ -309,136 +332,11 @@
                                                     Value="{x:Bind WinGetActionProgressValue, Mode=OneWay}" />
                                             </StackPanel>
                                         </StackPanel>
-
-                                        <controls:DockPanel Grid.Row="3" Grid.Column="0">
-                                            <Button
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Bottom"
-                                                controls:DockPanel.Dock="Right"
-                                                Style="{StaticResource SubtleButtonStyle}"
-                                                ToolTipService.ToolTip="More options">
-                                                <Button.Flyout>
-                                                    <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                                        <MenuFlyoutItem
-                                                            Click="ViewDetailsMenuItem_Click"
-                                                            Tag="{x:Bind}"
-                                                            Text="View details">
-                                                            <MenuFlyoutItem.Icon>
-                                                                <FontIcon Glyph="&#xE946;" />
-                                                            </MenuFlyoutItem.Icon>
-                                                        </MenuFlyoutItem>
-                                                        <MenuFlyoutSeparator />
-                                                        <MenuFlyoutItem
-                                                            IsEnabled="False"
-                                                            Text="{x:Bind StoreMenuText, Mode=OneWay}"
-                                                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasStoreSource), Mode=OneWay, FallbackValue=Collapsed}">
-                                                            <MenuFlyoutItem.Icon>
-                                                                <FontIcon Glyph="&#xE719;" />
-                                                            </MenuFlyoutItem.Icon>
-                                                        </MenuFlyoutItem>
-                                                        <MenuFlyoutItem
-                                                            IsEnabled="False"
-                                                            Text="{x:Bind WinGetMenuText, Mode=OneWay}"
-                                                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasWinGetSource), Mode=OneWay, FallbackValue=Collapsed}">
-                                                            <MenuFlyoutItem.Icon>
-                                                                <FontIcon Glyph="&#xE8B7;" />
-                                                            </MenuFlyoutItem.Icon>
-                                                        </MenuFlyoutItem>
-                                                        <MenuFlyoutItem
-                                                            IsEnabled="False"
-                                                            Text="{x:Bind GitHubMenuText, Mode=OneWay}"
-                                                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasGitHubSource), Mode=OneWay, FallbackValue=Collapsed}">
-                                                            <MenuFlyoutItem.Icon>
-                                                                <FontIcon Glyph="&#xE943;" />
-                                                            </MenuFlyoutItem.Icon>
-                                                        </MenuFlyoutItem>
-                                                        <MenuFlyoutItem
-                                                            IsEnabled="False"
-                                                            Text="{x:Bind WebsiteMenuText, Mode=OneWay}"
-                                                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasWebsiteSource), Mode=OneWay, FallbackValue=Collapsed}">
-                                                            <MenuFlyoutItem.Icon>
-                                                                <FontIcon Glyph="&#xE774;" />
-                                                            </MenuFlyoutItem.Icon>
-                                                        </MenuFlyoutItem>
-                                                        <MenuFlyoutItem
-                                                            IsEnabled="False"
-                                                            Text="{x:Bind NoSourceMenuText, Mode=OneWay}"
-                                                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowUnknownSourceIndicator), Mode=OneWay, FallbackValue=Collapsed}">
-                                                            <MenuFlyoutItem.Icon>
-                                                                <FontIcon Glyph="&#xE946;" />
-                                                            </MenuFlyoutItem.Icon>
-                                                        </MenuFlyoutItem>
-                                                    </MenuFlyout>
-                                                </Button.Flyout>
-                                                <FontIcon
-                                                    AutomationProperties.AccessibilityView="Raw"
-                                                    FontSize="16"
-                                                    Glyph="&#xE712;" />
-                                            </Button>
-
-                                            <StackPanel
-                                                Margin="0,0,40,0"
-                                                VerticalAlignment="Center"
-                                                controls:DockPanel.Dock="Left"
-                                                Orientation="Horizontal"
-                                                Spacing="10">
-                                                <Border
-                                                    Padding="8,4"
-                                                    Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
-                                                    CornerRadius="4"
-                                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowUpdateBadge), Mode=OneWay, FallbackValue=Collapsed}">
-                                                    <TextBlock
-                                                        x:Uid="Settings_GalleryPage_Update_Badge"
-                                                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
-                                                        Style="{StaticResource CaptionTextBlockStyle}" />
-                                                </Border>
-                                                <Border
-                                                    Padding="8,4"
-                                                    Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
-                                                    CornerRadius="4"
-                                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowInstalledBadge), Mode=OneWay, FallbackValue=Collapsed}">
-                                                    <TextBlock
-                                                        x:Uid="Settings_GalleryPage_Installed_Badge"
-                                                        Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                                        Style="{StaticResource CaptionTextBlockStyle}" />
-                                                </Border>
-                                                <FontIcon
-                                                    AutomationProperties.Name="Microsoft Store source"
-                                                    FontSize="14"
-                                                    Glyph="&#xE719;"
-                                                    ToolTipService.ToolTip="{x:Bind StoreTooltip, Mode=OneWay}"
-                                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasStoreSource), Mode=OneWay, FallbackValue=Collapsed}" />
-                                                <FontIcon
-                                                    AutomationProperties.Name="WinGet source"
-                                                    FontSize="14"
-                                                    Glyph="&#xE8B7;"
-                                                    ToolTipService.ToolTip="{x:Bind WinGetTooltip, Mode=OneWay}"
-                                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasWinGetSource), Mode=OneWay, FallbackValue=Collapsed}" />
-                                                <FontIcon
-                                                    AutomationProperties.Name="GitHub source"
-                                                    FontSize="14"
-                                                    Glyph="&#xE943;"
-                                                    ToolTipService.ToolTip="{x:Bind GitHubTooltip, Mode=OneWay}"
-                                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasGitHubSource), Mode=OneWay, FallbackValue=Collapsed}" />
-                                                <FontIcon
-                                                    AutomationProperties.Name="Website source"
-                                                    FontSize="14"
-                                                    Glyph="&#xE774;"
-                                                    ToolTipService.ToolTip="{x:Bind WebsiteTooltip, Mode=OneWay}"
-                                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasWebsiteSource), Mode=OneWay, FallbackValue=Collapsed}" />
-                                                <FontIcon
-                                                    AutomationProperties.Name="Unknown source"
-                                                    FontSize="14"
-                                                    Glyph="&#xE946;"
-                                                    ToolTipService.ToolTip="{x:Bind UnknownSourceTooltip, Mode=OneWay}"
-                                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowUnknownSourceIndicator), Mode=OneWay, FallbackValue=Collapsed}" />
-                                            </StackPanel>
-                                        </controls:DockPanel>
                                     </Grid>
-                                </Button>
+                                </ItemContainer>
                             </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
+                        </ItemsView.ItemTemplate>
+                    </ItemsView>
                 </StackPanel>
             </Grid>
         </ScrollViewer>

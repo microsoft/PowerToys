@@ -61,6 +61,45 @@ public class ExtensionGalleryServiceTests
         Assert.AreEqual(expectedIconUrl, service.GetIconUrl("sample-extension", "icon.png"));
     }
 
+    [TestMethod]
+    public async Task FetchExtensionsAsync_ParsesWrappedGalleryFormat_WithInlineExtensions()
+    {
+        var feedDirectory = CreateTempDirectory("feed");
+        var cacheDirectory = CreateTempDirectory("cache");
+
+        var wrappedJson = """
+            {
+                "version": "1.0",
+                "extensions": [
+                    {
+                        "id": "test-extension",
+                        "title": "Test Extension",
+                        "description": "A test extension",
+                        "author": { "name": "Test Author" },
+                        "tags": ["test"],
+                        "iconUrl": "https://example.com/icon.png",
+                        "installSources": []
+                    }
+                ]
+            }
+            """;
+
+        File.WriteAllText(Path.Combine(feedDirectory, "index.json"), wrappedJson);
+
+        var feedUrl = ToFeedUri(feedDirectory);
+        using var service = new ExtensionGalleryService(() => feedUrl, cacheDirectory, httpClient: null);
+
+        var result = await service.FetchExtensionsAsync();
+
+        Assert.IsFalse(result.HasError);
+        Assert.AreEqual(1, result.Extensions.Count);
+        Assert.AreEqual("test-extension", result.Extensions[0].Id);
+        Assert.AreEqual("Test Extension", result.Extensions[0].Title);
+        Assert.AreEqual("A test extension", result.Extensions[0].Description);
+        Assert.AreEqual("Test Author", result.Extensions[0].Author.Name);
+        Assert.AreEqual("https://example.com/icon.png", result.Extensions[0].Icon);
+    }
+
     [TestCleanup]
     public void Cleanup()
     {

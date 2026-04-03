@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels.Gallery;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -25,5 +26,21 @@ public sealed partial class ExtensionGalleryDetailPage : Page
             ViewModel = vm;
             Bindings.Update();
         }
+    }
+
+    private void StoreMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        ViewModel?.InstallViaStoreCommand.Execute(null);
+    }
+
+    private async void WinGetMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        WinGetDialog.XamlRoot = XamlRoot;
+        await WinGetDialog.ShowAsync();
+    }
+
+    private void WebMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        ViewModel?.OpenInstallUrlCommand.Execute(null);
     }
 }

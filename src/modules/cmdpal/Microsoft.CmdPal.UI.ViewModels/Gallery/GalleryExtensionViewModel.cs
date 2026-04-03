@@ -65,6 +65,10 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
 
     public string DisplayDescription => !string.IsNullOrWhiteSpace(Description) ? Description : "No description available.";
 
+    public string? ShortDescription => _entry.ShortDescription;
+
+    public string DisplayShortDescription => !string.IsNullOrWhiteSpace(ShortDescription) ? ShortDescription : string.Empty;
+
     public string AuthorName => _entry.Author?.Name ?? string.Empty;
 
     public string DisplayAuthorName => !string.IsNullOrWhiteSpace(AuthorName) ? AuthorName : "Unknown author";
