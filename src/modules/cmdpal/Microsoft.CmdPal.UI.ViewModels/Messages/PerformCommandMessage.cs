@@ -20,6 +20,10 @@ public record PerformCommandMessage
 
     public bool TransientPage { get; set; }
 
+    public AppExtensionHost? HostOverride { get; set; }
+
+    public ICommandProviderContext? ProviderContextOverride { get; set; }
+
     public PerformCommandMessage(ExtensionObject<ICommand> command)
     {
         Command = command;

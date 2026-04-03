@@ -46,6 +46,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<SettingsWindowClosedMessage>,
     IRecipient<GoHomeMessage>,
     IRecipient<GoBackMessage>,
+    IRecipient<GoToPageMessage>,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
@@ -98,6 +99,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<GoBackMessage>(this);
+        WeakReferenceMessenger.Default.Register<GoToPageMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
@@ -209,6 +211,26 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         DispatcherQueue.TryEnqueue(() =>
         {
             _toast.ShowToast(message.Message);
+        });
+    }
+
+    public void Receive(GoToPageMessage message)
+    {
+        _ = DispatcherQueue.TryEnqueue(() =>
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            try
+            {
+                HandleGoToPageOnUiThread(message);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to handle GoToPage message", ex);
+            }
         });
     }
 
@@ -471,6 +493,47 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     }
 
     public void Receive(GoBackMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoBack(message.WithAnimation, message.FocusSearch));
+
+    private void HandleGoToPageOnUiThread(GoToPageMessage message)
+    {
+        switch (message.NavigationMode)
+        {
+            case NavigationMode.GoHome:
+                // GoToPage is composite: go home first, then run the target command.
+                // Queue the second step so CurrentPage can update after navigation.
+                GoHome(message.CommandMessage.WithAnimation, focusSearch: false);
+                _ = _queue.TryEnqueue(() => SafeSendGoToPageCommand(message.CommandMessage));
+                return;
+
+            case NavigationMode.GoBack:
+                // Same idea as GoHome: go back first, then run the target command;
+                // TODO: This is consistent with the other modes, but I wonder if we should instead try to be smarter
+                //   and see if the target page is already in the back stack, and if so just go back to it.
+                //   That might be a nicer experience, but it also might be more complex to implement, at least with
+                //   parameterized pages.
+                GoBack(message.CommandMessage.WithAnimation, focusSearch: false);
+                _ = _queue.TryEnqueue(() => SafeSendGoToPageCommand(message.CommandMessage));
+                return;
+
+            case NavigationMode.Push:
+            default:
+                // Push has no rewind step, so we can run the target command now.
+                SafeSendGoToPageCommand(message.CommandMessage);
+                return;
+        }
+
+        void SafeSendGoToPageCommand(PerformCommandMessage commandMessage)
+        {
+            try
+            {
+                WeakReferenceMessenger.Default.Send(commandMessage);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to dispatch deferred GoToPage command", ex);
+            }
+        }
+    }
 
     private void GoBack(bool withAnimation = true, bool focusSearch = true)
     {

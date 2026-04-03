@@ -271,10 +271,10 @@ public partial class ShellViewModel : ObservableObject,
         // the providerContext that is passed to the new page view-model.
         var isMainPage = command == _rootPage;
 
-        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
+        var host = message.HostOverride ?? _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
         var providerContext = isMainPage
             ? CommandProviderContext.Empty
-            : _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
+            : message.ProviderContextOverride ?? _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
 
         _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
 
@@ -338,7 +338,7 @@ public partial class ShellViewModel : ObservableObject,
                 CoreLogger.LogDebug($"Invoking command");
 
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
-                StartInvoke(message, invokable, host);
+                StartInvoke(message, invokable, host, providerContext);
             }
         }
         catch (Exception ex)
@@ -349,7 +349,7 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private void StartInvoke(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
+    private void StartInvoke(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host, ICommandProviderContext providerContext)
     {
         // TODO GH #525 This needs more better locking.
         lock (_invokeLock)
@@ -362,13 +362,13 @@ public partial class ShellViewModel : ObservableObject,
             {
                 _handleInvokeTask = Task.Run(() =>
                 {
-                    SafeHandleInvokeCommandSynchronous(message, invokable, host);
+                    SafeHandleInvokeCommandSynchronous(message, invokable, host, providerContext);
                 });
             }
         }
     }
 
-    private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
+    private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host, ICommandProviderContext providerContext)
     {
         // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -386,7 +386,7 @@ public partial class ShellViewModel : ObservableObject,
             var result = invokable.Invoke(message.Context);
 
             // But if it did succeed, we need to handle the result.
-            UnsafeHandleCommandResult(result);
+            UnsafeHandleCommandResult(result, host, providerContext, message.TransientPage);
 
             success = true;
             _handleInvokeTask = null;
@@ -412,7 +412,7 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private void UnsafeHandleCommandResult(ICommandResult? result)
+    private void UnsafeHandleCommandResult(ICommandResult? result, AppExtensionHost? host = null, ICommandProviderContext? providerContext = null, bool transientPage = false)
     {
         if (result is null)
         {
@@ -447,6 +447,20 @@ public partial class ShellViewModel : ObservableObject,
                     break;
                 }
 
+            case CommandResultKind.GoToPage:
+                {
+                    if (result.Args is IGoToPageArgs a)
+                    {
+                        HandleGoToPage(a, host, providerContext, transientPage);
+                    }
+                    else
+                    {
+                        CoreLogger.LogError("Invalid arguments for CommandResultKind.GoToPage");
+                    }
+
+                    break;
+                }
+
             case CommandResultKind.Hide:
                 {
                     // Keep this page open, but hide the palette.
@@ -475,12 +489,65 @@ public partial class ShellViewModel : ObservableObject,
                     if (result.Args is IToastArgs a)
                     {
                         WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message));
-                        UnsafeHandleCommandResult(a.Result);
+                        UnsafeHandleCommandResult(a.Result, host, providerContext, transientPage);
                     }
 
                     break;
                 }
         }
+    }
+
+    private void HandleGoToPage(IGoToPageArgs args, AppExtensionHost? host, ICommandProviderContext? providerContext, bool transientPage)
+    {
+        if (providerContext is null)
+        {
+            CoreLogger.LogWarning($"Unable to navigate to page '{args.PageId}' because no command provider context was available.");
+            host?.Log($"Unable to navigate to page '{args.PageId}' because no command provider context was available.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(args.PageId))
+        {
+            CoreLogger.LogWarning("Unable to navigate to a page because the requested page id was empty.");
+            host?.Log("Unable to navigate to a page because the requested page id was empty.");
+            return;
+        }
+
+        ICommandItem? targetItem;
+        try
+        {
+            // Resolve the target command item before we hop onto the UI thread.
+            // ICommandProvider4.GetCommandItem may need to materialize a dynamic
+            // command by id, and we do not want that provider work to block frame
+            // navigation or input processing.
+            targetItem = providerContext.GetCommandItem(args.PageId);
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError($"Failed to retrieve page '{args.PageId}' from provider '{providerContext.ProviderId}'.", ex);
+            host?.Log($"Failed to retrieve page '{args.PageId}' from provider '{providerContext.ProviderId}': {ex.Message}");
+            return;
+        }
+
+        if (targetItem?.Command is not { } targetCommand)
+        {
+            CoreLogger.LogWarning($"Provider '{providerContext.ProviderId}' could not supply a command for page '{args.PageId}'.");
+            host?.Log($"Provider '{providerContext.ProviderId}' could not supply a command for page '{args.PageId}'.");
+            return;
+        }
+
+        var performMessage = new PerformCommandMessage(new ExtensionObject<ICommand>(targetCommand), new ExtensionObject<ICommandItem>(targetItem))
+        {
+            // Preserve the original extension identity across the deferred
+            // GoBack/GoHome + follow-up command sequence. By the time the
+            // follow-up PerformCommandMessage runs, CurrentPage may already be
+            // pointing at the page we navigated back to.
+            HostOverride = host,
+            ProviderContextOverride = providerContext,
+            TransientPage = transientPage,
+        };
+
+        WeakReferenceMessenger.Default.Send(new GoToPageMessage(performMessage, args.NavigationMode));
     }
 
     public void GoHome(bool withAnimation = true, bool focusSearch = true)
@@ -496,7 +563,7 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Receive(HandleCommandResultMessage message)
     {
-        UnsafeHandleCommandResult(message.Result.Unsafe);
+        UnsafeHandleCommandResult(message.Result.Unsafe, CurrentPage.ExtensionHost, CurrentPage.ProviderContext, _currentlyTransient);
     }
 
     public void Receive(WindowHiddenMessage message)
@@ -528,6 +595,7 @@ public partial class ShellViewModel : ObservableObject,
 
     public void Dispose()
     {
+        WeakReferenceMessenger.Default.UnregisterAll(this);
         _handleInvokeTask?.Dispose();
         _navigationCts?.Dispose();
 
