@@ -161,7 +161,6 @@ CElems
 CENTERALIGN
 certlm
 certmgr
-Cesky
 cfp
 CHANGECBCHAIN
 changecursor
@@ -296,7 +295,6 @@ DCR
 DDEIf
 Deact
 debugbreak
-dedup
 decryptor
 Dedup
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
@@ -765,7 +763,6 @@ linkid
 LINKOVERLAY
 LINQTo
 listview
-llm
 LLKH
 llkhf
 LMEM
@@ -948,8 +945,6 @@ myrepo
 NAMECHANGE
 namespaceanddescendants
 nao
-nazev
-nba
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1074,8 +1069,6 @@ oleaut
 OLECHAR
 openas
 opencode
-opengallerysettings
-opensettings
 OPENFILENAME
 opensource
 openurl
@@ -1172,7 +1165,6 @@ Podcasts
 POINTERID
 POINTERUPDATE
 Pokedex
-popis
 Popups
 POPUPWINDOW
 POSITIONITEM
@@ -1341,7 +1333,6 @@ RKey
 RNumber
 rollups
 rop
-rozsireni
 ROUNDSMALL
 rpcrt
 RRF
@@ -1663,7 +1654,6 @@ UFlags
 UHash
 UIA
 UIEx
-Ukazkove
 ULONGLONG
 Ultrawide
 UMax
