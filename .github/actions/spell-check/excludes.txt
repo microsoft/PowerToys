@@ -107,7 +107,7 @@
 ^src/common/sysinternals/Eula/
 ^src/modules/cmdpal/doc/initial-sdk-spec/list-elements-mock-002\.pdn$
 ^src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage\.cs$
-^src/modules/cmdpal/extensionGallery/$
+^src/modules/cmdpal/extensionGallery/
 ^src/modules/cmdpal/Microsoft\.CmdPal\.UI/Settings/InternalPage\.SampleData\.cs$
 ^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Common\.UnitTests/.*\.TestData\.cs$
 ^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Common\.UnitTests/Text/.*\.cs$
