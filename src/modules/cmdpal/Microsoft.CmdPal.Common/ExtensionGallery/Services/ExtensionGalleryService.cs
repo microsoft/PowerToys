@@ -14,8 +14,6 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
     private const string DefaultFeedUrl = "https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/refs/heads/main/extensions.json";
     private const string LocalFeedFileName = "extensions.json";
     private const string CacheDirectoryName = "GalleryCache";
-    private const string FeedCacheDirectoryName = "Feed";
-    private const string IconCacheDirectoryName = "Icons";
     private const int TimeoutSeconds = 15;
     private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(4);
     private static readonly TimeSpan IconCacheTtl = TimeSpan.FromDays(1);
@@ -23,8 +21,7 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
     private readonly HttpClient _httpClient;
     private readonly Func<string?> _galleryFeedUrlProvider;
     private readonly string _cacheDirectory;
-    private readonly HttpResourceCache _feedResourceCache;
-    private readonly HttpResourceCache _iconResourceCache;
+    private readonly HttpResourceCache _resourceCache;
     private static readonly HashSet<string> SupportedFeedSchemes =
     [
         Uri.UriSchemeHttp,
@@ -46,8 +43,7 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
 
         _cacheDirectory = cacheDirectory ?? Path.Combine(applicationInfoService.CacheDirectory, CacheDirectoryName);
         Directory.CreateDirectory(_cacheDirectory);
-        _feedResourceCache = new HttpResourceCache(_httpClient, Path.Combine(_cacheDirectory, FeedCacheDirectoryName), CacheTtl);
-        _iconResourceCache = new HttpResourceCache(_httpClient, Path.Combine(_cacheDirectory, IconCacheDirectoryName), IconCacheTtl);
+        _resourceCache = new HttpResourceCache(_httpClient, _cacheDirectory, CacheTtl);
     }
 
     public bool IsCustomFeed => !string.IsNullOrWhiteSpace(_galleryFeedUrlProvider());
@@ -63,9 +59,8 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         return string.IsNullOrWhiteSpace(configuredUrl) ? DefaultFeedUrl : configuredUrl.Trim();
     }
 
-    public async Task<Uri?> GetCachedIconUriAsync(string extensionId, Uri iconUri, CancellationToken cancellationToken = default)
+    public async Task<Uri?> GetCachedIconUriAsync(Uri iconUri, CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(extensionId);
         ArgumentNullException.ThrowIfNull(iconUri);
 
         if (iconUri.IsFile || iconUri.Scheme.Equals("ms-appx", StringComparison.OrdinalIgnoreCase))
@@ -79,9 +74,13 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
             return null;
         }
 
-        var cacheKey = $"gallery-icon-{extensionId}";
         var fileNameHint = Path.GetFileName(Uri.UnescapeDataString(iconUri.AbsolutePath));
-        var cachedResource = await _iconResourceCache.GetOrFetchAsync(cacheKey, iconUri, fileNameHint, cancellationToken);
+        var cachedResource = await _resourceCache.GetOrFetchAsync(
+            iconUri,
+            fileNameHint,
+            forceRefresh: false,
+            timeToLiveOverride: IconCacheTtl,
+            cancellationToken: cancellationToken);
         return cachedResource?.ContentUri;
     }
 
@@ -113,6 +112,11 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
 
             TryGetBaseDirectoryUri(feedUri, out var baseDirectoryUri);
             NormalizeRemoteEntries(extensions, baseDirectoryUri);
+
+            if (forceRefresh && !fetchResult.UsedFallbackCache)
+            {
+                PruneCachedResources(feedUri, extensions);
+            }
 
             return new GalleryFetchResult
             {
@@ -147,11 +151,11 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         }
 
         var fileNameHint = Path.GetFileName(Uri.UnescapeDataString(feedUri.AbsolutePath));
-        var cachedFeed = await _feedResourceCache.GetOrFetchWithStatusAsync(
-            cacheKey: "gallery-feed",
+        var cachedFeed = await _resourceCache.GetOrFetchWithStatusAsync(
             resourceUri: feedUri,
             fileNameHint: string.IsNullOrWhiteSpace(fileNameHint) ? LocalFeedFileName : fileNameHint,
             forceRefresh: forceRefresh,
+            timeToLiveOverride: CacheTtl,
             cancellationToken: cancellationToken);
         if (cachedFeed?.Resource is null)
         {
@@ -235,6 +239,34 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         }
 
         return value.Trim();
+    }
+
+    private void PruneCachedResources(Uri feedUri, IEnumerable<GalleryExtensionEntry> extensions)
+    {
+        List<Uri> retainedResourceUris = [];
+        if (IsCacheableUri(feedUri))
+        {
+            retainedResourceUris.Add(feedUri);
+        }
+
+        foreach (var extension in extensions)
+        {
+            if (!Uri.TryCreate(extension.IconUrl, UriKind.Absolute, out var iconUri)
+                || !IsCacheableUri(iconUri))
+            {
+                continue;
+            }
+
+            retainedResourceUris.Add(iconUri);
+        }
+
+        _resourceCache.Prune(retainedResourceUris);
+    }
+
+    private static bool IsCacheableUri(Uri resourceUri)
+    {
+        return resourceUri.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
+            || resourceUri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
     }
 
     private bool TryGetFeedUri([NotNullWhen(true)] out Uri? feedUri)

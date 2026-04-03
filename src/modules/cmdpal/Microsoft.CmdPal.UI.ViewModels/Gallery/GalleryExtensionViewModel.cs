@@ -480,7 +480,7 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
     {
         try
         {
-            var cachedIconTask = _galleryService.GetCachedIconUriAsync(_entry.Id, resolvedIconUri);
+            var cachedIconTask = _galleryService.GetCachedIconUriAsync(resolvedIconUri);
 
             var cachedIconUri = await cachedIconTask;
             if (cachedIconUri is null)

@@ -397,7 +397,7 @@ public class GalleryExtensionViewModelTests
     }
 
     private sealed class TestGalleryService(
-        Func<string, Uri, CancellationToken, Task<Uri?>>? cachedIconResolver = null) : IExtensionGalleryService
+        Func<Uri, CancellationToken, Task<Uri?>>? cachedIconResolver = null) : IExtensionGalleryService
     {
         public bool IsCustomFeed => false;
 
@@ -413,9 +413,9 @@ public class GalleryExtensionViewModelTests
 
         public string GetBaseUrl() => "https://example.com/";
 
-        public Task<Uri?> GetCachedIconUriAsync(string extensionId, Uri iconUri, CancellationToken cancellationToken = default)
+        public Task<Uri?> GetCachedIconUriAsync(Uri iconUri, CancellationToken cancellationToken = default)
         {
-            return cachedIconResolver?.Invoke(extensionId, iconUri, cancellationToken) ?? Task.FromResult<Uri?>(null);
+            return cachedIconResolver?.Invoke(iconUri, cancellationToken) ?? Task.FromResult<Uri?>(null);
         }
     }
 }

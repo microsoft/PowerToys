@@ -41,14 +41,13 @@ public interface IExtensionGalleryService
     /// HTTP icons are downloaded and revalidated with cache headers when available.
     /// File and app package URIs are returned as-is.
     /// </summary>
-    /// <param name="extensionId">The gallery extension id.</param>
     /// <param name="iconUri">The absolute icon URI to load.</param>
     /// <param name="cancellationToken">A token that cancels the icon fetch operation.</param>
     /// <returns>
     /// A URI that can be used by the UI, typically a cached local file URI for HTTP resources.
     /// Returns null when the icon cannot be loaded.
     /// </returns>
-    Task<Uri?> GetCachedIconUriAsync(string extensionId, Uri iconUri, CancellationToken cancellationToken = default);
+    Task<Uri?> GetCachedIconUriAsync(Uri iconUri, CancellationToken cancellationToken = default);
 }
 
 public sealed class GalleryFetchResult

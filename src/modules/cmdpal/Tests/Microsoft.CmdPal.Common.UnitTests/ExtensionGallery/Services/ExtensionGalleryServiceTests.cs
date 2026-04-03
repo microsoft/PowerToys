@@ -112,7 +112,7 @@ public class ExtensionGalleryServiceTests
 
         Assert.IsFalse(result.HasError);
         Assert.AreEqual(1, result.Extensions.Count);
-        var cachedFeedFiles = Directory.GetFiles(Path.Combine(appCacheDirectory, "GalleryCache", "Feed"), "extensions.json", SearchOption.AllDirectories);
+        var cachedFeedFiles = Directory.GetFiles(Path.Combine(appCacheDirectory, "GalleryCache"), "extensions.json", SearchOption.AllDirectories);
         Assert.AreEqual(1, cachedFeedFiles.Length);
     }
 
@@ -236,9 +236,9 @@ public class ExtensionGalleryServiceTests
         using var service = CreateService(() => null, cacheDirectory, httpClient);
         var iconUri = new Uri("https://example.com/icons/sample.png");
 
-        var firstCachedIconUri = await service.GetCachedIconUriAsync("sample-extension", iconUri);
+        var firstCachedIconUri = await service.GetCachedIconUriAsync(iconUri);
         await Task.Delay(50);
-        var secondCachedIconUri = await service.GetCachedIconUriAsync("sample-extension", iconUri);
+        var secondCachedIconUri = await service.GetCachedIconUriAsync(iconUri);
 
         Assert.IsNotNull(firstCachedIconUri);
         Assert.IsNotNull(secondCachedIconUri);
@@ -274,14 +274,159 @@ public class ExtensionGalleryServiceTests
         using var service = CreateService(() => null, cacheDirectory, httpClient);
         var iconUri = new Uri("https://example.com/icons/sample.png");
 
-        var firstCachedIconUri = await service.GetCachedIconUriAsync("sample-extension", iconUri);
+        var firstCachedIconUri = await service.GetCachedIconUriAsync(iconUri);
         await Task.Delay(50);
-        var secondCachedIconUri = await service.GetCachedIconUriAsync("sample-extension", iconUri);
+        var secondCachedIconUri = await service.GetCachedIconUriAsync(iconUri);
 
         Assert.IsNotNull(firstCachedIconUri);
         Assert.IsNotNull(secondCachedIconUri);
         Assert.AreEqual(firstCachedIconUri, secondCachedIconUri);
         Assert.AreEqual(2, handler.CallCount);
+    }
+
+    [TestMethod]
+    public async Task RefreshAsync_PrunesObsoleteCachedIcons_AfterSuccessfulRefresh()
+    {
+        var cacheDirectory = CreateTempDirectory("cache");
+        var feedUrl = "https://example.com/extensions.json";
+        var retainedIconUrl = "https://example.com/icons/current.png";
+        var obsoleteIconUrl = "https://example.com/icons/obsolete.png";
+        var currentFeedJson = CreateGalleryFeedJson(
+            new GalleryExtensionEntry
+            {
+                Id = "current-extension",
+                Title = "Current extension",
+                Description = "Current extension",
+                Author = new GalleryAuthor { Name = "Sample author" },
+                IconUrl = retainedIconUrl,
+                InstallSources = [],
+            },
+            new GalleryExtensionEntry
+            {
+                Id = "obsolete-extension",
+                Title = "Obsolete extension",
+                Description = "Obsolete extension",
+                Author = new GalleryAuthor { Name = "Sample author" },
+                IconUrl = obsoleteIconUrl,
+                InstallSources = [],
+            });
+
+        var handler = new TestHttpMessageHandler(request =>
+        {
+            var requestUri = request.RequestUri!.AbsoluteUri;
+            if (requestUri.Equals(feedUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateHttpResponse(
+                    HttpStatusCode.OK,
+                    System.Text.Encoding.UTF8.GetBytes(currentFeedJson),
+                    "application/json",
+                    "\"feed-v1\"",
+                    maxAge: TimeSpan.FromHours(1));
+            }
+
+            if (requestUri.Equals(retainedIconUrl, StringComparison.OrdinalIgnoreCase)
+                || requestUri.Equals(obsoleteIconUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateHttpResponse(
+                    HttpStatusCode.OK,
+                    [0x01, 0x02, 0x03],
+                    "image/png",
+                    "\"icon-v1\"",
+                    maxAge: TimeSpan.FromHours(1));
+            }
+
+            throw new InvalidOperationException($"Unexpected request URI '{requestUri}'.");
+        });
+
+        using var httpClient = new HttpClient(handler);
+        using var service = CreateService(() => feedUrl, cacheDirectory, httpClient);
+
+        var initialResult = await service.FetchExtensionsAsync();
+        Assert.IsFalse(initialResult.HasError);
+
+        var retainedCachedIconUri = await service.GetCachedIconUriAsync(new Uri(retainedIconUrl));
+        var obsoleteCachedIconUri = await service.GetCachedIconUriAsync(new Uri(obsoleteIconUrl));
+
+        Assert.IsNotNull(retainedCachedIconUri);
+        Assert.IsNotNull(obsoleteCachedIconUri);
+        Assert.IsTrue(File.Exists(retainedCachedIconUri!.LocalPath));
+        Assert.IsTrue(File.Exists(obsoleteCachedIconUri!.LocalPath));
+
+        currentFeedJson = CreateGalleryFeedJson(
+            new GalleryExtensionEntry
+            {
+                Id = "current-extension",
+                Title = "Current extension",
+                Description = "Current extension",
+                Author = new GalleryAuthor { Name = "Sample author" },
+                IconUrl = retainedIconUrl,
+                InstallSources = [],
+            });
+
+        var refreshedResult = await service.RefreshAsync();
+
+        Assert.IsFalse(refreshedResult.HasError);
+        Assert.IsFalse(refreshedResult.UsedFallbackCache);
+        Assert.AreEqual(1, refreshedResult.Extensions.Count);
+        Assert.IsTrue(File.Exists(retainedCachedIconUri.LocalPath));
+        Assert.IsFalse(File.Exists(obsoleteCachedIconUri.LocalPath));
+        Assert.IsFalse(Directory.Exists(Path.GetDirectoryName(obsoleteCachedIconUri.LocalPath)!));
+    }
+
+    [TestMethod]
+    public async Task RefreshAsync_DoesNotPruneCachedIcons_WhenRefreshFallsBackToCache()
+    {
+        var cacheDirectory = CreateTempDirectory("cache");
+        var feedUrl = "https://example.com/extensions.json";
+        var iconUrl = "https://example.com/icons/sample.png";
+        var requestCount = 0;
+        var handler = new TestHttpMessageHandler(request =>
+        {
+            var requestUri = request.RequestUri!.AbsoluteUri;
+            if (requestUri.Equals(feedUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                requestCount++;
+                if (requestCount == 1)
+                {
+                    return CreateHttpResponse(
+                        HttpStatusCode.OK,
+                        System.Text.Encoding.UTF8.GetBytes(CreateGalleryFeedJson("sample-extension", "Sample extension", iconUrl)),
+                        "application/json",
+                        "\"feed-v1\"",
+                        maxAge: TimeSpan.FromHours(1));
+                }
+
+                throw new HttpRequestException("Could not reach an extension gallery.");
+            }
+
+            if (requestUri.Equals(iconUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateHttpResponse(
+                    HttpStatusCode.OK,
+                    [0x01, 0x02, 0x03],
+                    "image/png",
+                    "\"icon-v1\"",
+                    maxAge: TimeSpan.FromHours(1));
+            }
+
+            throw new InvalidOperationException($"Unexpected request URI '{requestUri}'.");
+        });
+
+        using var httpClient = new HttpClient(handler);
+        using var service = CreateService(() => feedUrl, cacheDirectory, httpClient);
+
+        var initialResult = await service.FetchExtensionsAsync();
+        Assert.IsFalse(initialResult.HasError);
+
+        var cachedIconUri = await service.GetCachedIconUriAsync(new Uri(iconUrl));
+        Assert.IsNotNull(cachedIconUri);
+        Assert.IsTrue(File.Exists(cachedIconUri!.LocalPath));
+
+        var refreshedResult = await service.RefreshAsync();
+
+        Assert.IsFalse(refreshedResult.HasError);
+        Assert.IsTrue(refreshedResult.UsedFallbackCache);
+        Assert.IsTrue(File.Exists(cachedIconUri.LocalPath));
     }
 
     [TestCleanup]
@@ -354,21 +499,24 @@ public class ExtensionGalleryServiceTests
 
     private static string CreateGalleryFeedJson(string extensionId, string title, string? iconUrl = null)
     {
+        return CreateGalleryFeedJson(
+            new GalleryExtensionEntry
+            {
+                Id = extensionId,
+                Title = title,
+                Description = "Sample description",
+                Author = new GalleryAuthor { Name = "Sample author" },
+                IconUrl = iconUrl,
+                InstallSources = [],
+            });
+    }
+
+    private static string CreateGalleryFeedJson(params GalleryExtensionEntry[] entries)
+    {
         return JsonSerializer.Serialize(
             new GalleryRemoteIndex
             {
-                Extensions =
-                [
-                    new GalleryExtensionEntry
-                    {
-                        Id = extensionId,
-                        Title = title,
-                        Description = "Sample description",
-                        Author = new GalleryAuthor { Name = "Sample author" },
-                        IconUrl = iconUrl,
-                        InstallSources = [],
-                    },
-                ],
+                Extensions = [.. entries],
             },
             GallerySerializationContext.Default.GalleryRemoteIndex);
     }

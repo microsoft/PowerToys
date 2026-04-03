@@ -33,33 +33,31 @@ internal sealed class HttpResourceCache
     }
 
     public Task<CachedHttpResource?> GetOrFetchAsync(
-        string cacheKey,
         Uri resourceUri,
         string? fileNameHint = null,
         CancellationToken cancellationToken = default)
     {
-        return GetOrFetchAsync(cacheKey, resourceUri, fileNameHint, forceRefresh: false, cancellationToken);
+        return GetOrFetchAsync(resourceUri, fileNameHint, forceRefresh: false, timeToLiveOverride: null, cancellationToken);
     }
 
     public async Task<CachedHttpResource?> GetOrFetchAsync(
-        string cacheKey,
         Uri resourceUri,
         string? fileNameHint,
         bool forceRefresh,
+        TimeSpan? timeToLiveOverride,
         CancellationToken cancellationToken = default)
     {
-        var fetchResult = await GetOrFetchWithStatusAsync(cacheKey, resourceUri, fileNameHint, forceRefresh, cancellationToken);
+        var fetchResult = await GetOrFetchWithStatusAsync(resourceUri, fileNameHint, forceRefresh, timeToLiveOverride, cancellationToken);
         return fetchResult?.Resource;
     }
 
     public Task<CachedHttpResourceFetchResult?> GetOrFetchWithStatusAsync(
-        string cacheKey,
         Uri resourceUri,
         string? fileNameHint = null,
         bool forceRefresh = false,
+        TimeSpan? timeToLiveOverride = null,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(cacheKey);
         ArgumentNullException.ThrowIfNull(resourceUri);
 
         if (!IsSupportedHttpUri(resourceUri))
@@ -67,7 +65,7 @@ internal sealed class HttpResourceCache
             return Task.FromResult<CachedHttpResourceFetchResult?>(null);
         }
 
-        var inflightKey = $"{cacheKey}|{resourceUri.AbsoluteUri}";
+        var inflightKey = resourceUri.AbsoluteUri;
 
         lock (_lock)
         {
@@ -76,7 +74,7 @@ internal sealed class HttpResourceCache
                 return existingTask;
             }
 
-            var fetchTask = GetOrFetchCoreAsync(cacheKey, resourceUri, fileNameHint, forceRefresh, cancellationToken);
+            var fetchTask = GetOrFetchCoreAsync(resourceUri, fileNameHint, forceRefresh, timeToLiveOverride, cancellationToken);
             _inflightFetches[inflightKey] = fetchTask;
 
             _ = fetchTask.ContinueWith(
@@ -95,14 +93,62 @@ internal sealed class HttpResourceCache
         }
     }
 
+    public void Prune(IEnumerable<Uri> retainedResourceUris)
+    {
+        ArgumentNullException.ThrowIfNull(retainedResourceUris);
+
+        HashSet<string> retainedEntryDirectories = new(StringComparer.OrdinalIgnoreCase);
+        foreach (var retainedResourceUri in retainedResourceUris)
+        {
+            if (!IsSupportedHttpUri(retainedResourceUri))
+            {
+                continue;
+            }
+
+            retainedEntryDirectories.Add(Path.GetFullPath(GetEntryDirectory(retainedResourceUri)));
+        }
+
+        lock (_lock)
+        {
+            foreach (var inflightKey in _inflightFetches.Keys)
+            {
+                if (!Uri.TryCreate(inflightKey, UriKind.Absolute, out var inflightUri)
+                    || !IsSupportedHttpUri(inflightUri))
+                {
+                    continue;
+                }
+
+                retainedEntryDirectories.Add(Path.GetFullPath(GetEntryDirectory(inflightUri)));
+            }
+        }
+
+        try
+        {
+            foreach (var entryDirectory in Directory.EnumerateDirectories(_cacheDirectory))
+            {
+                var fullEntryDirectory = Path.GetFullPath(entryDirectory);
+                if (retainedEntryDirectories.Contains(fullEntryDirectory))
+                {
+                    continue;
+                }
+
+                TryDeleteEntryDirectory(fullEntryDirectory);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
+        {
+            CoreLogger.LogError($"Failed to enumerate HTTP resource cache '{_cacheDirectory}' for pruning.", ex);
+        }
+    }
+
     private async Task<CachedHttpResourceFetchResult?> GetOrFetchCoreAsync(
-        string cacheKey,
         Uri resourceUri,
         string? fileNameHint,
         bool forceRefresh,
+        TimeSpan? timeToLiveOverride,
         CancellationToken cancellationToken)
     {
-        var entryDirectory = GetEntryDirectory(cacheKey, resourceUri);
+        var entryDirectory = GetEntryDirectory(resourceUri);
         Directory.CreateDirectory(entryDirectory);
 
         var metadataPath = Path.Combine(entryDirectory, MetadataFileName);
@@ -110,7 +156,7 @@ internal sealed class HttpResourceCache
         var payloadFileName = ResolvePayloadFileName(resourceUri, fileNameHint, metadata);
         var payloadPath = Path.Combine(entryDirectory, payloadFileName);
 
-        if (!forceRefresh && File.Exists(payloadPath) && IsFresh(metadata))
+        if (!forceRefresh && File.Exists(payloadPath) && IsFresh(metadata, timeToLiveOverride))
         {
             return CreateFetchResult(payloadPath, metadata, fromCache: true, wasRevalidated: false, usedFallbackCache: false);
         }
@@ -185,7 +231,7 @@ internal sealed class HttpResourceCache
         return request;
     }
 
-    private bool IsFresh(HttpResourceCacheMetadata? metadata)
+    private bool IsFresh(HttpResourceCacheMetadata? metadata, TimeSpan? timeToLiveOverride)
     {
         if (metadata is null)
         {
@@ -198,7 +244,8 @@ internal sealed class HttpResourceCache
             return expiresUtc > now;
         }
 
-        return metadata.LastValidatedUtc + _defaultTimeToLive > now;
+        var effectiveTimeToLive = timeToLiveOverride ?? _defaultTimeToLive;
+        return metadata.LastValidatedUtc + effectiveTimeToLive > now;
     }
 
     private static CachedHttpResource CreateCachedResource(
@@ -255,16 +302,34 @@ internal sealed class HttpResourceCache
         return response.Content?.Headers.Expires;
     }
 
-    private string GetEntryDirectory(string cacheKey, Uri resourceUri)
+    private string GetEntryDirectory(Uri resourceUri)
     {
-        var normalizedCacheKey = SanitizeFileName(cacheKey);
-        if (normalizedCacheKey.Length > 48)
+        var normalizedResourceName = BuildEntryName(resourceUri);
+        if (normalizedResourceName.Length > 48)
         {
-            normalizedCacheKey = normalizedCacheKey[..48];
+            normalizedResourceName = normalizedResourceName[..48];
         }
 
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(resourceUri.AbsoluteUri)));
-        return Path.Combine(_cacheDirectory, $"{normalizedCacheKey}_{hash}");
+        return Path.Combine(_cacheDirectory, $"{normalizedResourceName}_{hash}");
+    }
+
+    private static string BuildEntryName(Uri resourceUri)
+    {
+        var host = SanitizeFileName(resourceUri.Host);
+        var fileName = SanitizeFileName(Path.GetFileName(Uri.UnescapeDataString(resourceUri.AbsolutePath)));
+
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            fileName = DefaultPayloadFileName;
+        }
+
+        if (string.IsNullOrWhiteSpace(host))
+        {
+            return fileName;
+        }
+
+        return $"{host}_{fileName}";
     }
 
     private static string ResolvePayloadFileName(Uri resourceUri, string? fileNameHint, HttpResourceCacheMetadata? metadata)
@@ -340,6 +405,18 @@ internal sealed class HttpResourceCache
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             CoreLogger.LogError($"Failed to save cached metadata to '{metadataPath}'.", ex);
+        }
+    }
+
+    private static void TryDeleteEntryDirectory(string entryDirectory)
+    {
+        try
+        {
+            Directory.Delete(entryDirectory, recursive: true);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
+        {
+            CoreLogger.LogError($"Failed to delete cached HTTP resource directory '{entryDirectory}'.", ex);
         }
     }
 
