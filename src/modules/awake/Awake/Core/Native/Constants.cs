@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
 namespace Awake.Core.Native
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Win32 API convention.")]
@@ -58,5 +60,18 @@ namespace Awake.Core.Native
 
         // Attach Console
         internal const int ATTACH_PARENT_PROCESS = -1;
+
+        // Power Settings GUIDs for lid close action
+        // GUID_LIDCLOSE_ACTION: {5CA83367-6E45-459F-A27B-476B1D01C936}
+        internal static readonly Guid GUID_LIDCLOSE_ACTION = new("5CA83367-6E45-459F-A27B-476B1D01C936");
+
+        // GUID_SYSTEM_BUTTON_SUBGROUP: {4F971E89-EEBD-4455-A8DE-9E59040E7347}
+        internal static readonly Guid GUID_SYSTEM_BUTTON_SUBGROUP = new("4F971E89-EEBD-4455-A8DE-9E59040E7347");
+
+        // Lid close action value
+        internal const uint LID_ACTION_DO_NOTHING = 0;
+
+        // Power API error code
+        internal const uint ERROR_SUCCESS = 0;
     }
 }
