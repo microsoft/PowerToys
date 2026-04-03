@@ -48,6 +48,12 @@ namespace ImageResizer.Properties
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
 
+        // Used to synchronize access to the settings.json file (in-process only)
+        private static readonly System.Threading.Lock _jsonSyncLock = new();
+
+        // Lock for debouncing watcher events.
+        private static readonly Lock _debounceLock = new();
+
         // Cached UI thread DispatcherQueue for cross-thread property change notifications
         private static DispatcherQueue _uiDispatcherQueue;
 
@@ -56,24 +62,19 @@ namespace ImageResizer.Properties
         private static CompositeFormat ValueMustBeBetween =>
             _valueMustBeBetween ??= System.Text.CompositeFormat.Parse(ResourceLoaderInstance.GetString("ValueMustBeBetween"));
 
-        // Used to synchronize access to the settings.json file (in-process only)
-        private static readonly System.Threading.Lock _jsonSyncLock = new();
         private static string _settingsPath = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Image Resizer", "settings.json");
-
-        // Lock for debouncing watcher events.
-        private static readonly Lock _debounceLock = new();
 
         // Watches for external changes to settings file.
         private static IFileSystemWatcher _watcher;
         private static bool _isWatcherInitialized;
-
-        private bool _isFirstLoad = true;
 
         // Executed when the watcher detects a file update.
         private static Action _reloadAction;
 
         // Debounce token for watcher events.
         private static CancellationTokenSource _debounceCts;
+
+        private bool _isFirstLoad = true;
 
         private string _fileNameFormat;
         private bool _shrinkOnly;
