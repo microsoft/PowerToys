@@ -28,8 +28,6 @@ public sealed class GalleryExtensionEntry
 
     public string? IconDark { get; set; }
 
-    public string? IconUrl { get; set; }
-
     public List<GalleryInstallSource> InstallSources { get; set; } = [];
 
     public GalleryDetection? Detection { get; set; }
