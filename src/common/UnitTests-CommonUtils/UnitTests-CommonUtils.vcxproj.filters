@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Pure Functions">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Threading">
+      <UniqueIdentifier>{B2C3D4E5-F6A7-4B6C-9D0E-1F2A3B4C5D6E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Process">
+      <UniqueIdentifier>{C3D4E5F6-A7B8-4C7D-0E1F-2A3B4C5D6E7F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Registry">
+      <UniqueIdentifier>{D4E5F6A7-B8C9-4D8E-1F2A-3B4C5D6E7F8A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Integration">
+      <UniqueIdentifier>{E5F6A7B8-C9D0-4E9F-2A3B-4C5D6E7F8A9B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StringUtils.Tests.cpp">
+      <Filter>Source Files\Pure Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorUtils.Tests.cpp">
+      <Filter>Source Files\Pure Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeUtils.Tests.cpp">
+      <Filter>Source Files\Pure Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="WinApiError.Tests.cpp">
+      <Filter>Source Files\Pure Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="Serialized.Tests.cpp">
+      <Filter>Source Files\Pure Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="Json.Tests.cpp">
+      <Filter>Source Files\Pure Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="ExcludedApps.Tests.cpp">
+      <Filter>Source Files\Pure Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="OsDetect.Tests.cpp">
+      <Filter>Source Files\Pure Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="Threading.Tests.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="AppMutex.Tests.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessWaiter.Tests.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessPath.Tests.cpp">
+      <Filter>Source Files\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessApi.Tests.cpp">
+      <Filter>Source Files\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.Tests.cpp">
+      <Filter>Source Files\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="Exec.Tests.cpp">
+      <Filter>Source Files\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="GameMode.Tests.cpp">
+      <Filter>Source Files\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="MsWindowsSettings.Tests.cpp">
+      <Filter>Source Files\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="Registry.Tests.cpp">
+      <Filter>Source Files\Registry</Filter>
+    </ClCompile>
+    <ClCompile Include="Gpo.Tests.cpp">
+      <Filter>Source Files\Registry</Filter>
+    </ClCompile>
+    <ClCompile Include="ModulesRegistry.Tests.cpp">
+      <Filter>Source Files\Registry</Filter>
+    </ClCompile>
+    <ClCompile Include="Elevation.Tests.cpp">
+      <Filter>Source Files\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="Package.Tests.cpp">
+      <Filter>Source Files\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="MsiUtils.Tests.cpp">
+      <Filter>Source Files\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpClient.Tests.cpp">
+      <Filter>Source Files\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="Resources.Tests.cpp">
+      <Filter>Source Files\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="LoggerHelper.Tests.cpp">
+      <Filter>Source Files\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="ComObjectFactory.Tests.cpp">
+      <Filter>Source Files\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="HDropIterator.Tests.cpp">
+      <Filter>Source Files\Integration</Filter>
+    </ClCompile>
+    <ClCompile Include="UnhandledException.Tests.cpp">
+      <Filter>Source Files\Integration</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TestHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="UnitTests-CommonUtils.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

@@ -34,21 +34,21 @@ public sealed class AdvancedPastePasteAsFileAction : Observable, IAdvancedPasteA
     public AdvancedPasteAdditionalAction PasteAsTxtFile
     {
         get => _pasteAsTxtFile;
-        init => Set(ref _pasteAsTxtFile, value);
+        init => Set(ref _pasteAsTxtFile, value ?? new());
     }
 
     [JsonPropertyName(PropertyNames.PasteAsPngFile)]
     public AdvancedPasteAdditionalAction PasteAsPngFile
     {
         get => _pasteAsPngFile;
-        init => Set(ref _pasteAsPngFile, value);
+        init => Set(ref _pasteAsPngFile, value ?? new());
     }
 
     [JsonPropertyName(PropertyNames.PasteAsHtmlFile)]
     public AdvancedPasteAdditionalAction PasteAsHtmlFile
     {
         get => _pasteAsHtmlFile;
-        init => Set(ref _pasteAsHtmlFile, value);
+        init => Set(ref _pasteAsHtmlFile, value ?? new());
     }
 
     [JsonIgnore]

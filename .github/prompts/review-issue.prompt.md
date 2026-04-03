@@ -1,6 +1,5 @@
 ---
 agent: 'agent'
-model: 'GPT-5.1-Codex-Max'
 description: 'Review a GitHub issue, score it (0-100), and generate an implementation plan'
 ---
 

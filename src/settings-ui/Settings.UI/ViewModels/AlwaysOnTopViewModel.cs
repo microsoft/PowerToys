@@ -49,6 +49,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Settings = moduleSettingsRepository.SettingsConfig;
 
             _hotkey = Settings.Properties.Hotkey.Value;
+            _increaseOpacityHotkey = Settings.Properties.IncreaseOpacityHotkey.Value;
+            _decreaseOpacityHotkey = Settings.Properties.DecreaseOpacityHotkey.Value;
+            _showInSystemMenu = Settings.Properties.ShowInSystemMenu.Value;
             _frameEnabled = Settings.Properties.FrameEnabled.Value;
             _frameThickness = Settings.Properties.FrameThickness.Value;
             _frameColor = Settings.Properties.FrameColor.Value;
@@ -83,7 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                [ModuleName] = [Hotkey],
+                [ModuleName] = [Hotkey, IncreaseOpacityHotkey, DecreaseOpacityHotkey],
             };
 
             return hotkeysDict;
@@ -144,6 +147,52 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public HotkeySettings IncreaseOpacityHotkey
+        {
+            get => _increaseOpacityHotkey;
+
+            set
+            {
+                if (value != _increaseOpacityHotkey)
+                {
+                    _increaseOpacityHotkey = value ?? AlwaysOnTopProperties.DefaultIncreaseOpacityHotkeyValue;
+
+                    Settings.Properties.IncreaseOpacityHotkey.Value = _increaseOpacityHotkey;
+                    NotifyPropertyChanged();
+
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            AlwaysOnTopSettings.ModuleName,
+                            JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.AlwaysOnTopSettings)));
+                }
+            }
+        }
+
+        public HotkeySettings DecreaseOpacityHotkey
+        {
+            get => _decreaseOpacityHotkey;
+
+            set
+            {
+                if (value != _decreaseOpacityHotkey)
+                {
+                    _decreaseOpacityHotkey = value ?? AlwaysOnTopProperties.DefaultDecreaseOpacityHotkeyValue;
+
+                    Settings.Properties.DecreaseOpacityHotkey.Value = _decreaseOpacityHotkey;
+                    NotifyPropertyChanged();
+
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            AlwaysOnTopSettings.ModuleName,
+                            JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.AlwaysOnTopSettings)));
+                }
+            }
+        }
+
         public bool FrameEnabled
         {
             get => _frameEnabled;
@@ -154,6 +203,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _frameEnabled = value;
                     Settings.Properties.FrameEnabled.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool ShowInSystemMenu
+        {
+            get => _showInSystemMenu;
+
+            set
+            {
+                if (value != _showInSystemMenu)
+                {
+                    _showInSystemMenu = value;
+                    Settings.Properties.ShowInSystemMenu.Value = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -305,6 +369,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private HotkeySettings _hotkey;
+        private HotkeySettings _increaseOpacityHotkey;
+        private HotkeySettings _decreaseOpacityHotkey;
+        private bool _showInSystemMenu;
         private bool _frameEnabled;
         private int _frameThickness;
         private string _frameColor;

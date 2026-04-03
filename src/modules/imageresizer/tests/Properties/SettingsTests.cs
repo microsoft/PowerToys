@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 
+using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ImageResizer.Test;
 using ManagedCommon;
@@ -27,10 +28,6 @@ namespace ImageResizer.Properties
             WriteIndented = true,
         };
 
-        private static readonly CompositeFormat ValueMustBeBetween = System.Text.CompositeFormat.Parse(Properties.Resources.ValueMustBeBetween);
-
-        private static App _imageResizerApp;
-
         public SettingsTests()
         {
             // Change settings.json path to a temp file
@@ -40,8 +37,7 @@ namespace ImageResizer.Properties
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            // new App() needs to be created since Settings.Reload() uses App.Current to update properties on the UI thread. App() can be created only once otherwise it results in System.InvalidOperationException : Cannot create more than one System.Windows.Application instance in the same AppDomain.
-            _imageResizerApp = new App();
+            ResourceLoaderInstance.GetString = key => key;
         }
 
         [TestMethod]
@@ -195,9 +191,11 @@ namespace ImageResizer.Properties
 
             var result = ((IDataErrorInfo)settings)["JpegQualityLevel"];
 
-            // Using InvariantCulture since this is used internally
+            // With test ResourceLoaderInstance, GetString returns the key itself ("ValueMustBeBetween")
+            // which becomes the CompositeFormat. Format it the same way the production code does.
+            var expectedFormat = CompositeFormat.Parse(ResourceLoaderInstance.GetString("ValueMustBeBetween"));
             Assert.AreEqual(
-                string.Format(CultureInfo.InvariantCulture, ValueMustBeBetween, 1, 100),
+                string.Format(CultureInfo.InvariantCulture, expectedFormat, 1, 100),
                 result);
         }
 
@@ -277,7 +275,11 @@ namespace ImageResizer.Properties
         {
             // Arrange
             var settings = new Settings();
-            settings.Save();    // To create the settings file
+            settings.SelectedSizeIndex = 2;
+            settings.Save();
+
+            // Reset to default so Reload will trigger a real change
+            settings.SelectedSizeIndex = 0;
 
             var shrinkOnlyChanged = false;
             var replaceChanged = false;
@@ -653,8 +655,7 @@ namespace ImageResizer.Properties
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            _imageResizerApp.Dispose();
-            _imageResizerApp = null;
+            // No App instance to dispose in WinUI3 test environment
         }
 
         [TestCleanup]

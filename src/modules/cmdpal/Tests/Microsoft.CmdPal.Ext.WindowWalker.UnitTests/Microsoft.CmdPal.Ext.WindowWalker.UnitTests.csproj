@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Microsoft.CmdPal.Ext.WindowWalker.UnitTests</RootNamespace>
+    <!-- This project currently contains shared test helpers only (no test methods). -->
+    <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\tests\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

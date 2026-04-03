@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ScanningMonitorsText.Text" xml:space="preserve">
+    <value>Scanning monitors..</value>
+  </data>
+  <data name="NoMonitorsText.Message" xml:space="preserve">
+    <value>No monitors detected</value>
+  </data>
+  <data name="RefreshTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Rescan connected monitors</value>
+  </data>
+	<data name="SettingsTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+	<data name="MonitorTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+	<data name="BrightnessTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+	<data name="ContrastTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Contrast</value>
+  </data>
+	<data name="VolumeTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+	<data name="RotationTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Rotation</value>
+  </data>
+	<data name="RotateNormalTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Normal (0°)</value>
+  </data>
+	<data name="RotateLeftTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Rotate left (270°)</value>
+  </data>
+	<data name="RotateRightTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Rotate right (90°)</value>
+  </data>
+	<data name="RotateInvertedTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Inverted (180°)</value>
+  </data>
+	<data name="VolumeAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+	<data name="ContrastAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Contrast</value>
+  </data>
+	<data name="BrightnessAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="AppName" xml:space="preserve">
+    <value>PowerDisplay</value>
+  </data>
+  <data name="TrayMenu_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TrayMenu_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="ProfilesTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Quick apply profiles</value>
+  </data>
+  <data name="IdentifyTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Identify monitors</value>
+  </data>
+  <data name="InputSourceHeader.Text" xml:space="preserve">
+    <value>Input source</value>
+  </data>
+  <data name="PowerStateHeader.Text" xml:space="preserve">
+    <value>Power state</value>
+  </data>
+  <data name="MoreOptionsTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="ProfilesHeader.Text" xml:space="preserve">
+    <value>Profiles</value>
+  </data>
+  <data name="ColorTemperatureTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Color temperature</value>
+  </data>
+  <data name="ColorTemperatureHeader.Text" xml:space="preserve">
+    <value>Color temperature</value>
+  </data>
+</root>

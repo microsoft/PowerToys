@@ -22,7 +22,7 @@ internal sealed class ColorPickerModuleCommandProvider : ModuleCommandProvider
 
         var commands = new List<ListItem>();
 
-        commands.Add(new ListItem(new OpenInSettingsCommand(module, title))
+        commands.Add(new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.colorPicker.openSettings" })
         {
             Title = title,
             Subtitle = Resources.ColorPicker_Settings_Subtitle,
@@ -35,14 +35,14 @@ internal sealed class ColorPickerModuleCommandProvider : ModuleCommandProvider
         }
 
         // Direct entries in the module list.
-        commands.Add(new ListItem(new OpenColorPickerCommand())
+        commands.Add(new ListItem(new OpenColorPickerCommand() { Id = "com.microsoft.powertoys.colorPicker.open" })
         {
             Title = Resources.ColorPicker_Open_Title,
             Subtitle = Resources.ColorPicker_Open_Subtitle,
             Icon = icon,
         });
 
-        commands.Add(new ListItem(new CommandItem(new ColorPickerSavedColorsPage()))
+        commands.Add(new ListItem(new CommandItem(new ColorPickerSavedColorsPage() { Id = "com.microsoft.powertoys.colorPicker.savedColors" }))
         {
             Title = Resources.ColorPicker_SavedColors_Title,
             Subtitle = Resources.ColorPicker_SavedColors_Subtitle,

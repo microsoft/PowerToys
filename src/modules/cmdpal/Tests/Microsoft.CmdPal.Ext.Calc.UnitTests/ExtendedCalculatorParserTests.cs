@@ -65,6 +65,9 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
             ["log10(3)", 0.47712125471966M],
             ["ln(e)", 1M],
             ["cosh(0)", 1M],
+            ["1*10^(-5)", 0.00001M],
+            ["1*10^(-15)", 0.0000000000000001M],
+            ["1*10^(-16)", 0M],
         ];
 
     [DataTestMethod]
@@ -192,9 +195,11 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     private static IEnumerable<object[]> Interpret_MustReturnExpectedResult_WhenCalled_Data =>
         [
 
-            // ["factorial(5)", 120M], ToDo: this don't support now
-            // ["sign(-2)", -1M],
-            // ["sign(2)", +1M],
+            ["factorial(5)", 120M],
+            ["5!", 120M],
+            ["(2+3)!", 120M],
+            ["sign(-2)", -1M],
+            ["sign(2)", +1M],
             ["abs(-2)", 2M],
             ["abs(2)", 2M],
             ["0+(1*2)/(0+1)", 2M], // Validate that division by "(0+1)" is not interpret as division by zero.
@@ -221,6 +226,9 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         [
             ["0.2E1", "en-US", 2M],
             ["0,2E1", "pt-PT", 2M],
+            ["3.5e3 + 2.5E2", "en-US", 3750M],
+            ["3,5e3 + 2,5E2", "fr-FR", 3750M],
+            ["1E3-1E3/1.5", "en-US", 333.333333333333371M],
         ];
 
     [DataTestMethod]
@@ -388,5 +396,18 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(expectedResult, result);
+    }
+
+    [DataTestMethod]
+    [DataRow("171!")]
+    [DataRow("1000!")]
+    public void Interpret_ReturnsError_WhenValueOverflowsDecimal(string input)
+    {
+        var settings = new Settings();
+
+        CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out var error);
+
+        Assert.IsFalse(string.IsNullOrEmpty(error));
+        Assert.AreNotEqual(null, error);
     }
 }

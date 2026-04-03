@@ -288,7 +288,6 @@ internal sealed partial class BlurImageControl : Control
         _effectBrush?.Dispose();
         _effectBrush = effectFactory.CreateBrush();
 
-        // Set initial source
         if (ImageSource is not null)
         {
             _imageBrush ??= _compositor.CreateSurfaceBrush();

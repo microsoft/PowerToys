@@ -105,7 +105,7 @@ PowerToys.Awake.exe --pid 1234
 
 ### Prerequisites
 
-- Visual Studio 2022 with C++ and .NET workloads
+- Visual Studio 2022 or 2026 with C++ and .NET workloads
 - Windows SDK 10.0.26100.0 or later
 
 ### Build Commands

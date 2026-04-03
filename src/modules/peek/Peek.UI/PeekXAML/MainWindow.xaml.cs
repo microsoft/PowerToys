@@ -197,16 +197,10 @@ namespace Peek.UI
 
             ViewModel.Initialize(selectedItem);
 
-            // If no files were found (e.g., in virtual folders like Home/Recent), show an error
+            // If no files were found (e.g., user is typing in rename/search box, or in virtual folders),
+            // don't show anything - just return silently to avoid stealing focus
             if (ViewModel.CurrentItem == null)
             {
-                Logger.LogInfo("Peek: No files found to preview, showing error.");
-                var errorMessage = ResourceLoaderInstance.ResourceLoader.GetString("NoFilesSelected");
-                ViewModel.ShowError(errorMessage);
-
-                // Still show the window so user can see the warning
-                this.Show();
-                WindowHelpers.BringToForeground(this.GetWindowHandle());
                 return;
             }
 

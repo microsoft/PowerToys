@@ -695,6 +695,38 @@ TEST_METHOD(VerifyUnicodeAndWhitespaceNormalizationRegex)
     VerifyNormalizationHelper(UseRegularExpressions);
 }
 
+TEST_METHOD(VerifyRegexMetacharacterDollarSign)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"$") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"_end") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"test.txt", &result, index) == S_OK);
+    Assert::AreEqual(L"test.txt_end", result);
+    CoTaskMemFree(result);
+}
+
+TEST_METHOD(VerifyRegexMetacharacterCaret)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+
+    PWSTR result = nullptr;
+    Assert::IsTrue(renameRegEx->PutSearchTerm(L"^") == S_OK);
+    Assert::IsTrue(renameRegEx->PutReplaceTerm(L"start_") == S_OK);
+    unsigned long index = {};
+    Assert::IsTrue(renameRegEx->Replace(L"test.txt", &result, index) == S_OK);
+    Assert::AreEqual(L"start_test.txt", result);
+    CoTaskMemFree(result);
+}
+
 #ifndef TESTS_PARTIAL
 };
 }

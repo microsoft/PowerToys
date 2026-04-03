@@ -17,15 +17,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobePowerAccent()
         {
             InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.QuickAccent]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.QuickAccent);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(PowerAccentPage));
+                OobeWindow.OpenMainWindowCallback(typeof(PowerAccentPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

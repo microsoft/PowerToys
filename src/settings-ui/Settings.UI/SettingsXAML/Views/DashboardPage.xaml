@@ -9,6 +9,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
@@ -41,7 +42,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <controls:KeyVisual
+                            <ptcontrols:KeyVisual
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Content="{Binding}"

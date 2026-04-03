@@ -1,6 +1,5 @@
 ---
 agent: 'agent'
-model: 'GPT-5.1-Codex-Max'
 description: 'Resolve Code scanning / check-spelling comments on the active PR'
 ---
 

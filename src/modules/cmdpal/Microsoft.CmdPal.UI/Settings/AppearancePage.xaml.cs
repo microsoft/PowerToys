@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +14,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.Windows.Storage.Pickers;
+using Windows.Win32.Foundation;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
@@ -28,10 +31,10 @@ public sealed partial class AppearancePage : Page
     {
         InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
         var themeService = App.Current.Services.GetRequiredService<IThemeService>();
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-        ViewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)
@@ -85,5 +88,10 @@ public sealed partial class AppearancePage : Page
                 Logger.LogError("Failed to open Windows Settings", ex);
             }
         });
+    }
+
+    private void OpenCommandPalette_Click(object sender, RoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(string.Empty, HWND.Null));
     }
 }

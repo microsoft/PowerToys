@@ -3,9 +3,27 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <cmath>
+#include <limits>
 
 namespace ExprtkCalculator::internal
 {
+    static double factorial(const double n)
+    {
+        // Only allow non-negative integers
+        if (n < 0.0 || std::floor(n) != n)
+        {
+            return std::numeric_limits<double>::quiet_NaN();
+        }
+        return std::tgamma(n + 1.0);
+    }
+
+    static double sign(const double n)
+    {
+        if (n > 0.0) return 1.0;
+        if (n < 0.0) return -1.0;
+        return 0.0;
+    }
 
     std::wstring ToWStringFullPrecision(double value)
     {
@@ -24,6 +42,9 @@ namespace ExprtkCalculator::internal
         {
             symbol_table.add_constant(name, value);
         }
+
+        symbol_table.add_function("factorial", factorial);
+        symbol_table.add_function("sign", sign);
 
         exprtk::expression<double> expression;
         expression.register_symbol_table(symbol_table);

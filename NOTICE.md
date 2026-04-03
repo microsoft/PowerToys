@@ -10,13 +10,14 @@ This software incorporates material from third parties.
 - Installer/Runner
 - Measure tool
 - Peek
+- PowerDisplay
 - Registry Preview
 
 ## Utility: Color Picker
 
 ### Martin Chrzan's Color Picker
 
-**Source**: https://github.com/martinchrzan/ColorPicker
+**Source**: <https://github.com/martinchrzan/ColorPicker>
 
 MIT License
 
@@ -48,7 +49,7 @@ We use the WyHash NuGet package for calculating stable hashes for strings.
 
 **Source**: [https://github.com/wangyi-fudan/wyhash](https://github.com/wangyi-fudan/wyhash)
 
-```
+```text
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -81,7 +82,7 @@ We use the ToolGood.Words.Pinyin NuGet package for converting Chinese characters
 
 **Source**: [https://github.com/toolgood/ToolGood.Words.Pinyin](https://github.com/toolgood/ToolGood.Words.Pinyin)
 
-```
+```text
 MIT License
 
 Copyright (c) 2020 ToolGood
@@ -105,8 +106,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-
-## Utility: Command Palette Built-in Extensions
+## Utility: Command palette built-in extensions
 
 ### Calculator
 
@@ -116,7 +116,7 @@ We use the exprtk library (exprtk.hpp) to evaluate mathematical expressions.
 
 **Source**: [https://github.com/ArashPartow/exprtk](https://github.com/ArashPartow/exprtk)
 
-```
+```text
 MIT License
 
 Copyright (c) 1999-2024 Arash Partow
@@ -143,7 +143,7 @@ TORT OR  OTHERWISE, ARISING  FROM, OUT  OF OR  IN CONNECTION  WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-## Utility: PowerToys Run Built-in Extensions
+## Utility: PowerToys Run built-in extensions
 
 ### Calculator
 
@@ -153,7 +153,7 @@ We use the Mages NuGet package for calculating the result of expression.
 
 **Source**: [https://github.com/FlorianRappl/Mages](https://github.com/FlorianRappl/Mages)
 
-```
+```text
 The MIT License (MIT)
 
 Copyright (c) 2016 - 2025 Florian Rappl
@@ -177,13 +177,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## Utility: File Explorer Add-ins
+## Utility: File Explorer add-ins
 
 ### Monaco Editor
 
-**Source**: https://github.com/Microsoft/monaco-editor
+**Source**: <https://github.com/Microsoft/monaco-editor>
 
-**Additional third party notifications:** https://github.com/microsoft/monaco-editor/blob/main/ThirdPartyNotices.txt
+**Additional third party notifications:** <https://github.com/microsoft/monaco-editor/blob/main/ThirdPartyNotices.txt>
 
 The MIT License (MIT)
 
@@ -207,9 +207,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-### The Quite OK Image Format reference decoder
+### The Quite OK image format reference decoder
 
-**Source**: https://github.com/phoboslab/qoi
+**Source**: <https://github.com/phoboslab/qoi>
 
 **Note**: [@pedrolamas](https://github.com/pedrolamas) translated and adapted the reference decoder code to C# that is in PowerToys from the original C++ implementation.
 
@@ -239,9 +239,9 @@ SOFTWARE.
 
 We use the UTF.Unknown NuGet package for detecting encoding in text/code files.
 
-**Source**: https://github.com/CharsetDetector/UTF-unknown
+**Source**: <https://github.com/CharsetDetector/UTF-unknown>
 
-```
+```text
                           MOZILLA PUBLIC LICENSE
                                 Version 1.1
 
@@ -715,9 +715,9 @@ EXHIBIT A -Mozilla Public License.
 
 ## Utility: ImageResizer
 
-### Brice Lams's Image Resizer License
+### Brice Lams's Image Resizer license
 
-**Source**: https://github.com/bricelam/ImageResizer/
+**Source**: <https://github.com/bricelam/ImageResizer/>
 
 The MIT License (MIT)
 
@@ -743,10 +743,10 @@ THE SOFTWARE.
 
 ## Utility: PowerToys Run
 
-### Wox License
+### Wox license
 
-**Fork project source**: https://github.com/jjw24/Wox/
-**Base project source**: https://github.com/Wox-launcher/Wox
+**Fork project source**: <https://github.com/jjw24/Wox/>
+**Base project source**: <https://github.com/Wox-launcher/Wox>
 
 The MIT License (MIT)
 
@@ -769,9 +769,9 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-### Beta Tadele's Window Walker License
+### Beta Tadele's Window Walker license
 
-**Source**: https://github.com/betsegaw/windowwalker
+**Source**: <https://github.com/betsegaw/windowwalker>
 
 The MIT License (MIT)
 
@@ -785,9 +785,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## Utility: PowerRename
 
-### Chris Davis's SmartRename License
+### Chris Davis's SmartRename license
 
-**Source**: https://github.com/chrdavis/SmartRename
+**Source**: <https://github.com/chrdavis/SmartRename>
 
 MIT License
 
@@ -815,7 +815,7 @@ SOFTWARE.
 
 ### spdlog
 
-**Source**: https://github.com/gabime/spdlog
+**Source**: <https://github.com/gabime/spdlog>
 
 The MIT License (MIT)
 
@@ -840,12 +840,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 -- NOTE: Third party dependency used by this software --
-This software depends on the fmt lib (MIT License),
-and users must comply to its license: https://github.com/fmtlib/fmt/blob/master/LICENSE.rst
+This software depends on the fmt lib (MIT License), and users must comply to its license:
+<https://github.com/fmtlib/fmt/blob/master/LICENSE.rst>
 
 ### expected-lite
 
-**Source**: https://github.com/martinmoene/expected-lite
+**Source**: <https://github.com/martinmoene/expected-lite>
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -873,7 +873,7 @@ DEALINGS IN THE SOFTWARE.
 
 ### zip
 
-**Source**: https://github.com/kuba--/zip
+**Source**: <https://github.com/kuba--/zip>
 
 All Rights Reserved.
 
@@ -901,7 +901,7 @@ THE SOFTWARE.
 
 We adopted some functions from it.
 
-**Source**: https://github.com/DLTcollab/sse2neon
+**Source**: <https://github.com/DLTcollab/sse2neon>
 
 sse2neon is freely redistributable under the MIT License.
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -924,9 +924,9 @@ SOFTWARE.
 
 ### Monaco Editor
 
-**Source**: https://github.com/Microsoft/monaco-editor
+**Source**: <https://github.com/Microsoft/monaco-editor>
 
-**Additional third party notifications:** https://github.com/microsoft/monaco-editor/blob/main/ThirdPartyNotices.txt
+**Additional third party notifications:** <https://github.com/microsoft/monaco-editor/blob/main/ThirdPartyNotices.txt>
 
 The MIT License (MIT)
 
@@ -950,11 +950,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-### The Quite OK Image Format reference decoder
+### The Quite OK image format reference decoder
 
-**Source**: https://github.com/phoboslab/qoi
+**Source**: <https://github.com/phoboslab/qoi>
 
-**Note**: [@pedrolamas](https://github.com/pedrolamas) translated and adapted the reference decoder code to C# that is in PowerToys from the original C++ implementation.
+**Note**: [@pedrolamas](https://github.com/pedrolamas) translated and adapted the reference decoder code to C# that is in PowerToys, from the original C++ implementation.
 
 MIT License
 
@@ -978,13 +978,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-### UTF Unknown
+### UTF unknown
 
 We use the UTF.Unknown NuGet package for detecting encoding in text/code files.
 
-**Source**: https://github.com/CharsetDetector/UTF-unknown
+**Source**: <https://github.com/CharsetDetector/UTF-unknown>
 
-```
+```text
                           MOZILLA PUBLIC LICENSE
                                 Version 1.1
 
@@ -1462,9 +1462,9 @@ EXHIBIT A -Mozilla Public License.
 
 We use HexBox.WinUI to show a preview of binary values.
 
-**Source**: https://github.com/hotkidfamily/HexBox.WinUI
+**Source**: <https://github.com/hotkidfamily/HexBox.WinUI>
 
-```
+```text
 MIT License
 
 Copyright (c) 2019 Filip Jeremic
@@ -1491,11 +1491,11 @@ SOFTWARE.
 
 ### Monaco Editor
 
-**Source**: https://github.com/Microsoft/monaco-editor
+**Source**: <https://github.com/Microsoft/monaco-editor>
 
-**Additional third party notifications:** https://github.com/microsoft/monaco-editor/blob/main/ThirdPartyNotices.txt
+**Additional third party notifications:** <https://github.com/microsoft/monaco-editor/blob/main/ThirdPartyNotices.txt>
 
-```
+```text
 The MIT License (MIT)
 
 Copyright (c) 2016 - present Microsoft Corporation
@@ -1519,6 +1519,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## Utility: PowerDisplay
+
+### Twinkle Tray
+
+PowerDisplay's DDC/CI implementation references techniques from Twinkle Tray.
+
+**Source**: <https://github.com/xanderfrangos/twinkle-tray>
+
+MIT License
+
+Copyright © 2020 Xander Frangos
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ## NuGet Packages used by PowerToys
 
@@ -1552,11 +1581,13 @@ SOFTWARE.
 - ModernWpfUI
 - Moq
 - MSTest
+- MSTest.TestFramework
 - NJsonSchema
 - NLog
 - NLog.Extensions.Logging
 - NLog.Schema
 - OpenAI
+- Polly.Core
 - ReverseMarkdown
 - ScipBe.Common.Office.OneNote
 - SharpCompress
@@ -1569,5 +1600,6 @@ SOFTWARE.
 - UnitsNet
 - UTF.Unknown
 - WinUIEx
+- WmiLight
 - WPF-UI
 - WyHash

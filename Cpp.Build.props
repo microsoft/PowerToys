@@ -2,6 +2,12 @@
 <Project ToolsVersion="4.0"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!-- Skip building C++ test projects when BuildTests=false -->
+  <PropertyGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
+    <UsePrecompiledHeaders>false</UsePrecompiledHeaders>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+
   <!-- Project configurations -->
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -51,14 +57,13 @@
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>4679;5271;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4679;4706;4874;5271;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <ConformanceMode>false</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>
-      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
       <!-- TODO: _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING for compatibility with VS 17.8. Check if we can remove. -->
       <PreprocessorDefinitions>_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- CLR + CFG are not compatible >:{ -->
@@ -110,6 +115,7 @@
   <!-- Props that are constant for both Debug and Release configurations -->
   <PropertyGroup Label="Configuration">
     <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '18.0'">v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <DesktopCompatible>true</DesktopCompatible>
     <SpectreMitigation>Spectre</SpectreMitigation>

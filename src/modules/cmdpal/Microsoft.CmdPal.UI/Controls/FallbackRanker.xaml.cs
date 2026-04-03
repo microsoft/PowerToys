@@ -18,10 +18,10 @@ public sealed partial class FallbackRanker : UserControl
     {
         this.InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
-        viewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
     }
 
     private void ListView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)

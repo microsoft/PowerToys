@@ -21,6 +21,7 @@
 
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button
+                        x:Name="LaunchButton"
                         x:Uid="Launch_RegistryPreview"
                         Click="Launch_RegistryPreview_Click"
                         Style="{StaticResource AccentButtonStyle}" />

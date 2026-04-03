@@ -1,6 +1,7 @@
 # COLORS
 
 argb
+Bgr
 bgra
 BLACKONWHITE
 BLUEGRAY
@@ -28,6 +29,7 @@ RUS
 
 AYUV
 bak
+HDP
 Bcl
 bgcode
 Deflatealgorithm
@@ -38,6 +40,7 @@ Gbps
 gcode
 Heatshrink
 Mbits
+Kbits
 MBs
 mkv
 msix
@@ -97,6 +100,7 @@ Yubico
 Perplexity
 Groq
 svgl
+devhome
 
 # KEYS
 
@@ -295,6 +299,8 @@ pwa
 
 AOT
 Aot
+ify
+TFM
 
 # YML
 onefuzz
@@ -313,6 +319,7 @@ xef
 xes
 PACKAGEVERSIONNUMBER
 APPXMANIFESTVERSION
+PROGMAN
 
 # MRU lists
 CACHEWRITE
@@ -322,6 +329,39 @@ REGSTR
 
 # Misc Win32 APIs and PInvokes
 INVOKEIDLIST
+MEMORYSTATUSEX
+ABE
+HTCAPTION
+POSCHANGED
+QUERYPOS
+SETAUTOHIDEBAR
+WINDOWPOS
+WINEVENTPROC
+WORKERW
+FULLSCREENAPP
+
+# COM/WinRT interface prefixes and type fragments
+BAlt
+BShift
+Cmanifest
+Cmodule
+Cuuid
+Dng
+IApplication
+IDisposable
+IEnum
+IFolder
+IInitialize
+IMemory
+IOle
+ipreview
+IProperty
+IShell
+ithumbnail
+IVirtual
+
+# Test frameworks
+MSTEST
 
 # PowerRename metadata pattern abbreviations (used in tests and regex patterns)
 DDDD
@@ -342,3 +382,10 @@ reportbug
 #ffmpeg
 crf
 nostdin
+
+# Performance counter keys
+engtype
+Nonpaged
+
+# XAML
+Untargeted

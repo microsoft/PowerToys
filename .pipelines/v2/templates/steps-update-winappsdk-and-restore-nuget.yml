@@ -5,6 +5,25 @@ parameters:
   - name: useExperimentalVersion
     type: boolean
     default: false
+  # Artifact mode parameters
+  - name: useArtifactSource
+    type: boolean
+    default: false
+  - name: azureDevOpsOrg
+    type: string
+    default: 'https://dev.azure.com/microsoft'
+  - name: azureDevOpsProject
+    type: string
+    default: 'ProjectReunion'
+  - name: buildId
+    type: string
+    default: ''
+  - name: artifactName
+    type: string
+    default: 'WindowsAppSDK_Nuget_And_MSIX'
+  - name: metaPackageName
+    type: string
+    default: 'Microsoft.WindowsAppSDK'
 
 steps:
 - task: NuGetAuthenticate@1
@@ -12,12 +31,20 @@ steps:
 
 - task: PowerShell@2
   displayName: Update WinAppSDK Versions
+  env:
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
   inputs:
     filePath: '$(build.sourcesdirectory)\.pipelines\UpdateVersions.ps1'
     arguments: >
       -winAppSdkVersionNumber ${{ parameters.versionNumber }}
       -useExperimentalVersion $${{ parameters.useExperimentalVersion }}
       -rootPath "$(build.sourcesdirectory)"
+      -useArtifactSource $${{ parameters.useArtifactSource }}
+      -azureDevOpsOrg "${{ parameters.azureDevOpsOrg }}"
+      -azureDevOpsProject "${{ parameters.azureDevOpsProject }}"
+      -buildId "${{ parameters.buildId }}"
+      -artifactName "${{ parameters.artifactName }}"
+      -metaPackageName "${{ parameters.metaPackageName }}"
 
 # - task: NuGetCommand@2
 #   displayName: 'Restore NuGet packages (slnx)'
@@ -36,3 +63,4 @@ steps:
     feedsToUse: 'config'
     nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
     workingDirectory: '$(build.sourcesdirectory)'
+    arguments: '/p:NoWarn=NU1602,NU1604'

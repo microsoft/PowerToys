@@ -13,4 +13,9 @@ public:
     // Auto-update telemetry
     static void UpdateCheckCompleted(bool success, bool updateAvailable, const std::wstring& fromVersion, const std::wstring& toVersion);
     static void UpdateDownloadCompleted(bool success, const std::wstring& version);
+
+    // Tray icon interaction telemetry
+    static void TrayIconLeftClick(bool quickAccessEnabled);
+    static void TrayIconDoubleClick(bool quickAccessEnabled);
+    static void TrayIconRightClick(bool quickAccessEnabled);
 };
