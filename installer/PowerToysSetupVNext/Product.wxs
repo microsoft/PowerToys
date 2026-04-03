@@ -111,6 +111,8 @@
       <Custom Action="SetInstallCmdPalPackageParam" Before="InstallCmdPalPackage" />
       <Custom Action="SetUninstallCommandNotFoundParam" Before="UninstallCommandNotFound" />
       <Custom Action="SetUpgradeCommandNotFoundParam" Before="UpgradeCommandNotFound" />
+      <Custom Action="SetCreateWinAppSDKHardlinksParam" Before="CreateWinAppSDKHardlinks" />
+      <Custom Action="SetDeleteWinAppSDKHardlinksParam" Before="DeleteWinAppSDKHardlinks" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <Custom Action="SetInstallPackageIdentityMSIXParam" Before="InstallPackageIdentityMSIX" />
 
@@ -123,6 +125,7 @@
       <Custom Action="SetBundleInstallLocationData" Before="SetBundleInstallLocation" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
       <Custom Action="SetBundleInstallLocation" After="InstallFiles" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
+      <Custom Action="CreateWinAppSDKHardlinks" After="InstallFiles" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
       <Custom Action="InstallCmdPalPackage" After="InstallFiles" Condition="NOT Installed" />
       <Custom Action="InstallPackageIdentityMSIX" After="InstallFiles" Condition="NOT Installed AND WINDOWSBUILDNUMBER &gt;= 22000" />
       <Custom Action="override Wix4CloseApplications_$(sys.BUILDARCHSHORT)" Before="RemoveFiles" />
@@ -136,6 +139,7 @@
         <?endif?>
         <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize" Condition="NOT Installed" />
       <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize" Condition="Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="DeleteWinAppSDKHardlinks" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UnApplyModulesRegistryChangeSets" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="CleanImageResizerRuntimeRegistry" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
@@ -188,8 +192,10 @@
     <CustomAction Id="SetUpgradeCommandNotFoundParam" Property="UpgradeCommandNotFound" Value="[INSTALLFOLDER]" />
 
     <CustomAction Id="SetCreateWinAppSDKHardlinksParam" Property="CreateWinAppSDKHardlinks" Value="[INSTALLFOLDER]" />
+    <CustomAction Id="CreateWinAppSDKHardlinks" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CreateWinAppSDKHardlinksCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="SetDeleteWinAppSDKHardlinksParam" Property="DeleteWinAppSDKHardlinks" Value="[INSTALLFOLDER]" />
+    <CustomAction Id="DeleteWinAppSDKHardlinks" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="DeleteWinAppSDKHardlinksCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="SetCreatePTInteropHardlinksParam" Property="CreatePTInteropHardlinks" Value="[INSTALLFOLDER]" />
 

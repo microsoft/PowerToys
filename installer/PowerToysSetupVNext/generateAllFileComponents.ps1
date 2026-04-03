@@ -89,9 +89,14 @@ Function Generate-FileComponents() {
             [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'fileList',
             Justification = 'variable is used in another scope')]
 
-            $fileList = $matches[2] -split ';'
+            $fileList = $matches[2] -split ';' | Where-Object { $_ -ne '' }
             return
         }
+    }
+
+    if ($null -eq $fileList -or $fileList.Count -eq 0) {
+        # No files to generate components for — leave placeholder intact
+        return
     }
 
     $componentId = "$($fileListName)_Component"
@@ -158,6 +163,49 @@ Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSSc
 
 #WinUI3Applications
 Generate-FileList -fileDepsJson "" -fileListName WinUI3ApplicationsFiles -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"
+
+# Deduplicate: Remove files from WinUI3Apps that are identical to root (same name + same hash).
+# These will be created as hard-links at install time by CreateWinAppSDKHardlinksCA.
+$rootPath = "$PSScriptRoot..\..\..\$platform\Release"
+$winui3Path = "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"
+$winui3WxsPath = "$PSScriptRoot\WinUI3Applications.wxs"
+$winui3Wxs = Get-Content $winui3WxsPath -Raw
+$manifestPath = Join-Path $winui3Path "hardlinks.txt"
+
+if ($winui3Wxs -match "\<\?define WinUI3ApplicationsFiles=([^?]*)\?\>") {
+    $winui3FileList = $matches[1] -split ';' | Where-Object { $_ -ne '' }
+    $hardlinkFiles = @()
+
+    foreach ($file in $winui3FileList) {
+        $rootFile = Join-Path $rootPath $file
+        $winui3File = Join-Path $winui3Path $file
+        if ((Test-Path $rootFile) -and (Test-Path $winui3File)) {
+            $rootHash = (Get-FileHash $rootFile -Algorithm SHA256).Hash
+            $winui3Hash = (Get-FileHash $winui3File -Algorithm SHA256).Hash
+            if ($rootHash -eq $winui3Hash) {
+                $hardlinkFiles += $file
+            }
+        }
+    }
+
+    if ($hardlinkFiles.Count -gt 0) {
+        # Remove deduplicated files from WinUI3Apps file list
+        $remainingFiles = $winui3FileList | Where-Object { $_ -notin $hardlinkFiles }
+        if ($remainingFiles.Count -eq 0) {
+            # All files are duplicates — keep at least a dummy entry won't be emitted
+            # Generate-FileComponents handles empty defines by producing no <File> entries
+            $winui3Wxs = $winui3Wxs -replace "\<\?define WinUI3ApplicationsFiles=[^?]*\?\>", "<?define WinUI3ApplicationsFiles=?>"
+        } else {
+            $winui3Wxs = $winui3Wxs -replace "\<\?define WinUI3ApplicationsFiles=[^?]*\?\>", "<?define WinUI3ApplicationsFiles=$($remainingFiles -join ';')?>"
+        }
+        Set-Content -Path $winui3WxsPath -Value $winui3Wxs
+        Write-Host "Deduplicated $($hardlinkFiles.Count) files from WinUI3Apps (will be hard-linked at install time)"
+    }
+
+    # Always write hardlinks.txt (may be empty — CA handles that gracefully)
+    $hardlinkFiles | Set-Content -Path $manifestPath
+}
+
 Generate-FileComponents -fileListName "WinUI3ApplicationsFiles" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs
 
 #AdvancedPaste
