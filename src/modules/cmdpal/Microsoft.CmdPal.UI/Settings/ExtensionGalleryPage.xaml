@@ -317,7 +317,7 @@
                                             <TextBlock
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Style="{StaticResource CaptionTextBlockStyle}"
-                                                Text="{x:Bind DisplayDescription, Mode=OneWay}"
+                                                Text="{x:Bind DisplayShortDescription, Mode=OneWay}"
                                                 TextWrapping="WrapWholeWords" />
                                             <StackPanel Spacing="6" Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowWinGetActionStatus), Mode=OneWay, FallbackValue=Collapsed}">
                                                 <TextBlock

@@ -14,6 +14,9 @@ public sealed class GalleryExtensionEntry
     [System.Text.Json.Serialization.JsonConverter(typeof(GalleryLocalizedStringConverter))]
     public string Description { get; set; } = string.Empty;
 
+    [System.Text.Json.Serialization.JsonConverter(typeof(GalleryLocalizedStringConverter))]
+    public string? ShortDescription { get; set; }
+
     public GalleryAuthor Author { get; set; } = new();
 
     public string? Homepage { get; set; }
