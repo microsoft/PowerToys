@@ -291,6 +291,7 @@ public sealed partial class SettingsWindow : WindowEx,
     private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
     {
         BreadCrumbs.Clear();
+        NavigationBreadcrumbBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
 
         if (e.SourcePageType == typeof(GeneralPage))
         {
@@ -319,6 +320,7 @@ public sealed partial class SettingsWindow : WindowEx,
         else if (e.SourcePageType == typeof(ExtensionGalleryDetailPage) && e.Parameter is GalleryExtensionViewModel galleryExtension)
         {
             NavView.SelectedItem = GalleryPageNavItem;
+            NavigationBreadcrumbBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
             var galleryPageType = RS_.GetString("Settings_PageTitles_GalleryPage");
             BreadCrumbs.Add(new(galleryPageType, "Gallery"));
             BreadCrumbs.Add(new(galleryExtension.Title, galleryExtension));

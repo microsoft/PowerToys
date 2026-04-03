@@ -51,9 +51,9 @@ public sealed partial class ExtensionGalleryPage : Page, IDisposable
         await viewModel.LoadAsync();
     }
 
-    private void TileButton_Click(object sender, RoutedEventArgs e)
+    private void GalleryItemsView_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
     {
-        if (sender is Button button && button.DataContext is GalleryExtensionViewModel vm)
+        if (args.InvokedItem is GalleryExtensionViewModel vm)
         {
             NavigateToDetails(vm);
         }
