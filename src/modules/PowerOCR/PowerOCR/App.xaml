@@ -87,7 +87,7 @@
                                     <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
                                 </Trigger>
                                 <Trigger Property="IsChecked" Value="True">
-                                    <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}" />
+                                    <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
                                     <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}" />

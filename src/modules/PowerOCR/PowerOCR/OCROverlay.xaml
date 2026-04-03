@@ -79,7 +79,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             d:Visibility="Visible"
-            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
             CornerRadius="8"
             Visibility="Collapsed">
             <Border.Effect>
