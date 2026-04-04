@@ -50,6 +50,7 @@ resw
 resx
 srt
 Stereolithography
+taskmgr
 terabyte
 UYVY
 xbf
@@ -326,6 +327,10 @@ CACHEWRITE
 MRUCMPPROC
 MRUINFO
 REGSTR
+
+#Xaml
+NVI
+Storyboards
 
 # Misc Win32 APIs and PInvokes
 INVOKEIDLIST

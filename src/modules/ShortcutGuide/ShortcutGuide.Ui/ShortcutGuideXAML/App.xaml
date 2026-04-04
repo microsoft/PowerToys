@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Application
+    x:Class="ShortcutGuide.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:ShortcutGuide.Converters"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="/ShortcutGuideXAML/Styles/CustomNavigationViewStyle.xaml" />
+                <ResourceDictionary Source="/ShortcutGuideXAML/Controls/KeyCharPresenter.xaml" />
+                <ResourceDictionary Source="/ShortcutGuideXAML/Controls/KeyVisual.xaml" />
+                <!--  Other merged dictionaries here  -->
+            </ResourceDictionary.MergedDictionaries>
+            <!--  Other app resources here  -->
+
+            <tkconverters:DoubleToVisibilityConverter
+                x:Name="DoubleToVisibilityConverter"
+                FalseValue="Collapsed"
+                GreaterThan="0"
+                TrueValue="Visible" />
+            <tkconverters:DoubleToVisibilityConverter
+                x:Name="DoubleToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                GreaterThan="0"
+                TrueValue="Collapsed" />
+            <tkconverters:StringVisibilityConverter x:Name="StringVisibilityConverter" />
+            <converters:ShortcutDescriptionToKeysConverter x:Name="ShortcutDescriptionToKeysConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

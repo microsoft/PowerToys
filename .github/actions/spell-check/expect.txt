@@ -731,6 +731,8 @@ jrsoftware
 Jsons
 jsonval
 jxr
+KBSC
+kdc
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -1096,6 +1098,7 @@ osvi
 OUTOFCONTEXT
 Outptr
 outsettings
+outsourced
 OVERLAPPEDWINDOW
 Oversampling
 OVERWRITEPROMPT
@@ -1158,6 +1161,8 @@ phwnd
 pici
 pidl
 PIDLIST
+pii
+pinboard
 pinfo
 pinvoke
 pipename
@@ -1232,6 +1237,7 @@ programdata
 projectname
 PROPERTYKEY
 PROPVARIANT
+Prt
 PRTL
 prvpane
 psapi
@@ -1830,6 +1836,8 @@ WNDCLASSEX
 WNDCLASSEXW
 WNDCLASSW
 wnode
+wom
+workerw
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL

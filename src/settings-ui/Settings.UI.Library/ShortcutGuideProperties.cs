@@ -15,34 +15,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public ShortcutGuideProperties()
         {
-            OverlayOpacity = new IntProperty(90);
-            UseLegacyPressWinKeyBehavior = new BoolProperty(false);
-            PressTimeForGlobalWindowsShortcuts = new IntProperty(900);
-            PressTimeForTaskbarIconShortcuts = new IntProperty(900);
             Theme = new StringProperty("system");
             DisabledApps = new StringProperty();
             OpenShortcutGuide = DefaultOpenShortcutGuide;
+            FirstRun = new BoolProperty(true);
         }
 
         [JsonPropertyName("open_shortcutguide")]
         public HotkeySettings OpenShortcutGuide { get; set; }
-
-        [JsonPropertyName("overlay_opacity")]
-        public IntProperty OverlayOpacity { get; set; }
-
-        [JsonPropertyName("use_legacy_press_win_key_behavior")]
-        public BoolProperty UseLegacyPressWinKeyBehavior { get; set; }
-
-        [JsonPropertyName("press_time")]
-        public IntProperty PressTimeForGlobalWindowsShortcuts { get; set; }
-
-        [JsonPropertyName("press_time_for_taskbar_icon_shortcuts")]
-        public IntProperty PressTimeForTaskbarIconShortcuts { get; set; }
 
         [JsonPropertyName("theme")]
         public StringProperty Theme { get; set; }
 
         [JsonPropertyName("disabled_apps")]
         public StringProperty DisabledApps { get; set; }
+
+        [JsonPropertyName("first_run")]
+        public BoolProperty FirstRun { get; set; }
     }
 }

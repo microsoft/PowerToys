@@ -1603,3 +1603,4 @@ SOFTWARE.
 - WmiLight
 - WPF-UI
 - WyHash
+- YamlDotNet

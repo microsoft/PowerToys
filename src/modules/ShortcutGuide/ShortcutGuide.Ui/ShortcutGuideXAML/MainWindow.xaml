@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<winuiex:WindowEx
+    x:Class="ShortcutGuide.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:ShortcutGuide.Models"
+    xmlns:winuiex="using:WinUIEx"
+    Width="586"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    IsShownInSwitchers="False"
+    mc:Ignorable="d">
+    <winuiex:WindowEx.SystemBackdrop>
+        <DesktopAcrylicBackdrop />
+    </winuiex:WindowEx.SystemBackdrop>
+    <Page x:Name="MainPage">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="48" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TitleBar x:Uid="TitleBar">
+                <!--<TitleBar.Content>
+
+                    <AutoSuggestBox
+                        x:Name="SearchBox"
+                        x:Uid="SearchBox"
+                        Width="300"
+                        VerticalAlignment="Center"
+                        QueryIcon="Find"
+                        TextChanged="SearchBox_TextChanged">
+                        <AutoSuggestBox.KeyboardAccelerators>
+                            <KeyboardAccelerator
+                                Key="F"
+                                Invoked="SearchBox_KeyboardAcceleratorInvoked"
+                                Modifiers="Control" />
+                        </AutoSuggestBox.KeyboardAccelerators>
+                        <AutoSuggestBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:ShortcutEntry">
+                                <Grid>
+                                    <TextBlock Text="{x:Bind Name}" />
+                                     TO DO: Add shortcuts / description
+                                </Grid>
+                            </DataTemplate>
+                        </AutoSuggestBox.ItemTemplate>
+                    </AutoSuggestBox>
+                </TitleBar.Content>-->
+            </TitleBar>
+
+            <NavigationView
+                x:Name="WindowSelector"
+                Grid.Row="1"
+                IsBackButtonVisible="Collapsed"
+                IsPaneToggleButtonVisible="False"
+                IsSettingsVisible="False"
+                SelectionChanged="WindowSelector_SelectionChanged"
+                Style="{StaticResource RailNavigationViewStyle}">
+                <NavigationView.MenuItems />
+                <NavigationView.FooterMenuItems>
+                    <!--  If footer only has one item, a visual bug can occur. This fake settings button will have set height to zero as soon as the content is loaded  -->
+                    <NavigationViewItem
+                        x:Name="FakeSettingsButton"
+                        Icon="Setting"
+                        SelectsOnInvoked="False"
+                        Tag="Settings"
+                        Tapped="Settings_Tapped" />
+                    <NavigationViewItem
+                        x:Uid="SettingsButton"
+                        Icon="Setting"
+                        SelectsOnInvoked="False"
+                        Tag="Settings"
+                        Tapped="Settings_Tapped" />
+                </NavigationView.FooterMenuItems>
+                <NavigationView.Content>
+                    <NavigationView
+                        x:Name="SubNav"
+                        IsBackButtonVisible="Collapsed"
+                        IsSettingsVisible="False"
+                        PaneDisplayMode="Top"
+                        SelectionChanged="SubNav_SelectionChanged">
+                        <Frame
+                            x:Name="ContentFrame"
+                            Margin="4,8,0,0"
+                            Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8,0,0,0" />
+                    </NavigationView>
+                </NavigationView.Content>
+                <NavigationView.Resources>
+                    <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+                    <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+                </NavigationView.Resources>
+            </NavigationView>
+        </Grid>
+    </Page>
+</winuiex:WindowEx>
