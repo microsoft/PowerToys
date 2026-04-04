@@ -269,6 +269,9 @@ jobs:
     - template: .\steps-setup-versioning.yml
       parameters:
         directory: $(build.sourcesdirectory)\src\modules\cmdpal
+    - template: .\steps-setup-versioning.yml
+      parameters:
+        directory: $(build.sourcesdirectory)\src\modules\AdvancedPaste
 
 
 
@@ -485,6 +488,46 @@ jobs:
           !**\obj\**
 
   - pwsh: |-
+      $SearchRoot = "$(Build.SourcesDirectory)/$(BuildPlatform)/$(BuildConfiguration)"
+      Write-Host "Searching for AdvancedPaste MSIX in: $SearchRoot"
+      if (-not (Test-Path $SearchRoot)) {
+          Write-Warning "Search root does not exist: $SearchRoot"
+          $SearchRoot = "$(Build.SourcesDirectory)"
+          Write-Host "Falling back to: $SearchRoot"
+      }
+      # Log the AdvancedPaste output folder structure for diagnostics
+      $apDir = Join-Path $SearchRoot "WinUI3Apps/AdvancedPaste"
+      if (Test-Path $apDir) {
+          Write-Host "AdvancedPaste output folder contents:"
+          Get-ChildItem $apDir -Recurse -Include "*.msix","*.appx" | ForEach-Object { Write-Host "  - $($_.FullName)" }
+      } else {
+          Write-Host "AdvancedPaste output folder not found at: $apDir"
+      }
+      $Packages = Get-ChildItem -Path $SearchRoot -Recurse -Filter "PowerToys.AdvancedPaste*.msix" -ErrorAction SilentlyContinue
+      Write-Host "Found $($Packages.Count) AdvancedPaste MSIX package(s):"
+      foreach ($pkg in $Packages) {
+          Write-Host "  - $($pkg.FullName)"
+      }
+      
+      if ($Packages.Count -gt 0) {
+          $PlatformPackage = $Packages | Where-Object { $_.Name -match "PowerToys\.AdvancedPaste.*_(x64|arm64)\.msix$" } | Select-Object -First 1
+          if ($PlatformPackage) {
+              $Package = $PlatformPackage
+              Write-Host "Using platform-specific package: $($Package.FullName)"
+          } else {
+              $Package = $Packages | Select-Object -First 1
+              Write-Host "Using first available package: $($Package.FullName)"
+          }
+          
+          $PackageFilename = $Package.FullName
+          Write-Host "##vso[task.setvariable variable=AdvancedPastePackagePath]${PackageFilename}"
+      } else {
+          Write-Error "No AdvancedPaste MSIX packages found! The build may have failed to generate the MSIX."
+          exit 1
+      }
+    displayName: Locate the AdvancedPaste MSIX
+
+  - pwsh: |-
       $Packages = Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix"
       Write-Host "Found $($Packages.Count) CmdPal MSIX package(s):"
       foreach ($pkg in $Packages) {
@@ -533,6 +576,29 @@ jobs:
         Remove-Item -Force -Recurse "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
       displayName: Re-pack the new CmdPal package after signing
 
+    - pwsh: |-
+        & "$(MakeAppxPath)" unpack /p "$(AdvancedPastePackagePath)" /d "$(JobOutputDirectory)/AdvancedPastePackageContents"
+      displayName: Unpack the AdvancedPaste MSIX for signing
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign AdvancedPaste MSIX content
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: '$(JobOutputDirectory)/AdvancedPastePackageContents'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_advancedpaste_msix_content.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+    - pwsh: |-
+        $outDir = New-Item -Type Directory "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
+        $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(AdvancedPastePackagePath)")
+        & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(JobOutputDirectory)/AdvancedPastePackageContents"
+        Copy-Item -Force $PackageFilename "$(AdvancedPastePackagePath)"
+        Remove-Item -Force -Recurse "$(JobOutputDirectory)/AdvancedPastePackageContents" -ErrorAction:Ignore
+        Remove-Item -Force -Recurse "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
+      displayName: Re-pack the new AdvancedPaste package after signing
+
     - pwsh: |
         $testsPath = "$(Build.SourcesDirectory)/$(BuildPlatform)/$(BuildConfiguration)/tests"
         if (Test-Path $testsPath) {
@@ -564,6 +630,10 @@ jobs:
   - pwsh: |-
       Copy-Item -Verbose -Force "$(CmdPalPackagePath)" "$(JobOutputDirectory)"
     displayName: Stage the final CmdPal package
+
+  - pwsh: |-
+      Copy-Item -Verbose -Force "$(AdvancedPastePackagePath)" "$(JobOutputDirectory)"
+    displayName: Stage the final AdvancedPaste package
 
 
 

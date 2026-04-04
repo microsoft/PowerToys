@@ -66,6 +66,8 @@ namespace
     const wchar_t JSON_KEY_PROVIDERS[] = L"providers";
     const wchar_t JSON_KEY_SERVICE_TYPE[] = L"service-type";
     const wchar_t JSON_KEY_ENABLE_ADVANCED_AI[] = L"enable-advanced-ai";
+    const wchar_t JSON_KEY_COACHING_SHORTCUT[] = L"coaching-shortcut";
+    const wchar_t JSON_KEY_COACHING_ENABLED[] = L"coaching-enabled";
     const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
@@ -255,6 +257,21 @@ private:
             };
 
             m_additional_actions.push_back(additionalAction);
+
+            // Register coaching shortcut as a separate hotkey with a "-coaching" suffix ID
+            if (action.HasKey(JSON_KEY_COACHING_SHORTCUT) && action.GetNamedBoolean(JSON_KEY_COACHING_ENABLED, false))
+            {
+                auto coachingHotkey = parse_single_hotkey(action.GetNamedObject(JSON_KEY_COACHING_SHORTCUT), actionIsShown);
+                if (coachingHotkey.key != 0)
+                {
+                    const AdditionalAction coachingAction
+                    {
+                        std::wstring(actionName.c_str()) + L"-coaching",
+                        coachingHotkey
+                    };
+                    m_additional_actions.push_back(coachingAction);
+                }
+            }
         }
         else
         {
@@ -407,6 +424,7 @@ private:
                         // Define the expected order to ensure consistent hotkey ID assignment
                         const std::vector<winrt::hstring> expectedOrder = {
                             L"image-to-text",
+                            L"fix-spelling-and-grammar",
                             L"paste-as-file",
                             L"transcode"
                         };
@@ -923,6 +941,12 @@ public:
         m_triggerEventWaiter.start(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_EVENT, [this](DWORD) {
             // Same logic as hotkeyId == 1 (m_advanced_paste_ui_hotkey)
             Logger::trace(L"AdvancedPaste ShowUI event triggered");
+
+            if (m_auto_copy_selection_custom_action)
+            {
+                send_copy_selection(); // best-effort; ignore failure
+            }
+
             m_process_manager.start();
             m_process_manager.bring_to_front();
             m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
@@ -973,12 +997,11 @@ public:
                 }
             }
 
-            if (is_custom_action_hotkey && m_auto_copy_selection_custom_action)
+            // Try to capture selected text for all hotkey actions when the setting is enabled.
+            // If nothing is selected (clipboard unchanged), fall through to use existing clipboard content.
+            if (m_auto_copy_selection_custom_action)
             {
-                if (!send_copy_selection())
-                {
-                    return false;
-                }
+                send_copy_selection(); // best-effort; ignore failure
             }
 
             m_process_manager.start();

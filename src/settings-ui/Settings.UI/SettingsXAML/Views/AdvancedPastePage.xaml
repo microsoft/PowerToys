@@ -116,6 +116,17 @@
                                         Header="{x:Bind ModelName, Mode=OneWay}"
                                         HeaderIcon="{x:Bind ServiceType, Mode=OneWay, Converter={StaticResource ServiceTypeToIconConverter}}">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border
+                                                Padding="6,2"
+                                                VerticalAlignment="Center"
+                                                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                                CornerRadius="4"
+                                                Visibility="{x:Bind IsActive, Mode=OneWay}">
+                                                <TextBlock
+                                                    x:Uid="AdvancedPaste_DefaultBadge"
+                                                    FontSize="12"
+                                                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                                            </Border>
                                             <Button
                                                 Padding="8"
                                                 Background="Transparent"
@@ -124,6 +135,11 @@
                                                 <FontIcon FontSize="16" Glyph="&#xE712;" />
                                                 <Button.Flyout>
                                                     <MenuFlyout>
+                                                        <MenuFlyoutItem
+                                                            x:Uid="AdvancedPaste_SetAsDefault"
+                                                            Click="SetAsDefaultProviderButton_Click"
+                                                            Icon="{ui:FontIcon Glyph=&#xE735;}"
+                                                            Tag="{x:Bind}" />
                                                         <MenuFlyoutItem
                                                             x:Uid="AdvancedPaste_Edit"
                                                             Click="EditPasteAIProviderButton_Click"
@@ -164,7 +180,7 @@
                                     </InfoBar.IconSource>
                                 </InfoBar>
                             </tkcontrols:SettingsExpander.ItemsHeader>
-                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
                                     <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
@@ -195,7 +211,7 @@
                             Name="PasteAsPlainTextShortcut"
                             x:Uid="PasteAsPlainText_Shortcut"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
-                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard
                             Name="PasteAsMarkdownShortcut"
@@ -222,6 +238,109 @@
                             HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
                             <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
                         </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander
+                            x:Name="FixSpellingAndGrammar"
+                            x:Uid="FixSpellingAndGrammar"
+                            DataContext="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar, Mode=OneWay}"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE8E2;}"
+                            IsEnabled="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
+                            IsExpanded="{Binding IsShown, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.Content>
+                                <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                            </tkcontrols:SettingsExpander.Content>
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard Visibility="Collapsed" />
+                                <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ActionProvider" IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <ComboBox
+                                            x:Name="FixSpellingProviderComboBox"
+                                            MinWidth="200"
+                                            DisplayMemberPath="DisplayName"
+                                            ItemsSource="{x:Bind ViewModel.PasteAIConfiguration.Providers, Mode=OneWay}"
+                                            PlaceholderText="{x:Bind GetDefaultProviderLabel()}"
+                                            SelectedValue="{Binding ProviderId, Mode=TwoWay}"
+                                            SelectedValuePath="Id" />
+                                        <Button
+                                            x:Uid="AdvancedPaste_ClearProviderSelection"
+                                            VerticalAlignment="Center"
+                                            Click="ClearProviderSelection_Click"
+                                            Content="{ui:FontIcon Glyph=&#xE894;,
+                                                                  FontSize=12}"
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            Tag="{x:Bind FixSpellingProviderComboBox}" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Uid="FixSpellingAndGrammar_CustomPrompt"
+                                    HorizontalContentAlignment="Stretch"
+                                    ContentAlignment="Vertical"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}">
+                                    <TextBox PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammar}" Text="{Binding Prompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Uid="FixSpellingAndGrammar_SystemPrompt"
+                                    HorizontalContentAlignment="Stretch"
+                                    ContentAlignment="Vertical"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}">
+                                    <TextBox PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammarSystem}" Text="{Binding SystemPrompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </tkcontrols:SettingsCard>
+
+                                <!--  Coaching mode  -->
+                                <tkcontrols:SettingsCard x:Uid="FixSpellingAndGrammar_CoachingSection" IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.IsShown, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            AllowDisable="True"
+                                            HotkeySettings="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingShortcut, Mode=TwoWay}" />
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=TwoWay}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Uid="FixSpellingAndGrammar_CoachingProvider"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}"
+                                    Visibility="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <ComboBox
+                                            x:Name="CoachingProviderComboBox"
+                                            MinWidth="200"
+                                            DisplayMemberPath="DisplayName"
+                                            ItemsSource="{x:Bind ViewModel.PasteAIConfiguration.Providers, Mode=OneWay}"
+                                            PlaceholderText="{x:Bind GetDefaultProviderLabel()}"
+                                            SelectedValue="{Binding CoachingProviderId, Mode=TwoWay}"
+                                            SelectedValuePath="Id" />
+                                        <Button
+                                            x:Uid="AdvancedPaste_ClearProviderSelection"
+                                            VerticalAlignment="Center"
+                                            Click="ClearProviderSelection_Click"
+                                            Content="{ui:FontIcon Glyph=&#xE894;,
+                                                                  FontSize=12}"
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            Tag="{x:Bind CoachingProviderComboBox}" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Uid="FixSpellingAndGrammar_CoachingPrompt"
+                                    HorizontalContentAlignment="Stretch"
+                                    ContentAlignment="Vertical"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}"
+                                    Visibility="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}">
+                                    <TextBox PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoaching}" Text="{Binding CoachingPrompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Uid="FixSpellingAndGrammar_CoachingSystemPrompt"
+                                    HorizontalContentAlignment="Stretch"
+                                    ContentAlignment="Vertical"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}"
+                                    Visibility="{x:Bind ViewModel.AdditionalActions.FixSpellingAndGrammar.CoachingEnabled, Mode=OneWay}">
+                                    <TextBox PlaceholderText="{x:Bind models:AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoachingSystem}" Text="{Binding CoachingSystemPrompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard Visibility="Collapsed" />
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+
                         <tkcontrols:SettingsExpander
                             Name="PasteAsFile"
                             x:Uid="PasteAsFile"
@@ -306,7 +425,7 @@
                     <!--  Custom actions  -->
                     <controls:SettingsGroup x:Uid="AdvancedPaste_Additional_Actions_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander
-                            Name="AdvancedPasteUIActions"
+                            x:Name="AdvancedPasteUIActions"
                             x:Uid="AdvancedPasteUI_Actions"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE792;}"
                             IsEnabled="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
@@ -425,6 +544,28 @@
                     AcceptsReturn="true"
                     Text="{Binding Prompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     TextWrapping="Wrap" />
+                <StackPanel
+                    HorizontalAlignment="Left"
+                    Orientation="Horizontal"
+                    Spacing="4">
+                    <ComboBox
+                        x:Name="CustomActionProviderComboBox"
+                        x:Uid="AdvancedPaste_CustomAction_Provider"
+                        Width="306"
+                        DisplayMemberPath="DisplayName"
+                        ItemsSource="{x:Bind ViewModel.PasteAIConfiguration.Providers, Mode=OneWay}"
+                        PlaceholderText="{x:Bind GetDefaultProviderLabel()}"
+                        SelectedValue="{Binding ProviderId, Mode=TwoWay}"
+                        SelectedValuePath="Id" />
+                    <Button
+                        x:Uid="AdvancedPaste_ClearProviderSelection"
+                        VerticalAlignment="Bottom"
+                        Click="ClearProviderSelection_Click"
+                        Content="{ui:FontIcon Glyph=&#xE894;,
+                                              FontSize=12}"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Tag="{x:Bind CustomActionProviderComboBox}" />
+                </StackPanel>
             </StackPanel>
         </ContentDialog>
 
@@ -540,6 +681,73 @@
                             Margin="0,8,0,0"
                             Visibility="Collapsed">
                             <controls:FoundryLocalModelPicker x:Name="FoundryLocalPicker" />
+                        </Grid>
+
+                        <Grid
+                            x:Name="PhiSilicaPanel"
+                            Margin="0,8,0,0"
+                            Visibility="Collapsed">
+                            <StackPanel
+                                x:Name="PhiSilicaLoadingPanel"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Spacing="12">
+                                <ProgressRing
+                                    Width="36"
+                                    Height="36"
+                                    HorizontalAlignment="Center" />
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="Checking Phi Silica availability..."
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel
+                                x:Name="PhiSilicaAvailablePanel"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Spacing="8"
+                                Visibility="Collapsed">
+                                <FontIcon
+                                    HorizontalAlignment="Center"
+                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                    FontSize="24"
+                                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                    Glyph="&#xE73E;" />
+                                <TextBlock
+                                    x:Name="PhiSilicaAvailableText"
+                                    HorizontalAlignment="Center"
+                                    FontWeight="SemiBold"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel
+                                x:Name="PhiSilicaNotAvailablePanel"
+                                Margin="48,0,48,48"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Spacing="8"
+                                Visibility="Collapsed">
+                                <Image Width="36" Source="ms-appx:///Assets/Settings/Icons/Models/WindowsML.svg" />
+                                <TextBlock
+                                    x:Name="PhiSilicaNotAvailableTitle"
+                                    HorizontalAlignment="Center"
+                                    FontWeight="SemiBold"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                                <TextBlock
+                                    x:Name="PhiSilicaNotAvailableDescription"
+                                    HorizontalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                                <HyperlinkButton
+                                    HorizontalAlignment="Center"
+                                    Content="Learn more about Copilot+ PCs"
+                                    NavigateUri="https://learn.microsoft.com/windows/ai/npu-devices/" />
+                            </StackPanel>
                         </Grid>
 
                         <StackPanel

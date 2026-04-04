@@ -1,29 +1,40 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\CmdPalVersion.props" />
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\AdvancedPaste</OutputPath>
     <UseWinUI>true</UseWinUI>
     <ApplicationIcon>Assets\AdvancedPaste\AdvancedPaste.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <WindowsPackageType>None</WindowsPackageType>
+    <EnableMsixTooling>true</EnableMsixTooling>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <AssemblyName>PowerToys.AdvancedPaste</AssemblyName>
     <AssemblyDescription>PowerToys AdvancedPaste</AssemblyDescription>
     <RootNamespace>AdvancedPaste</RootNamespace>
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
-    <ProjectPriFileName>PowerToys.AdvancedPaste.pri</ProjectPriFileName>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
+    <Version>$(AdvancedPasteVersion)</Version>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CIBuild)'=='true' or '$(GeneratePackageLocally)'=='true'">
+    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <AppxBundle>Never</AppxBundle>
+    <AppxPackageName>PowerToys.AdvancedPaste</AppxPackageName>
+    <AppxPackageTestDir>$(OutputPath)\AppPackages\PowerToys.AdvancedPaste_$(Version)_Test\</AppxPackageTestDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest" Condition="'$(CIBuild)'=='true'" />
+    <AppxManifest Include="Package-Dev.appxmanifest" Condition="'$(CIBuild)'!='true'" />
+  </ItemGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
@@ -31,6 +42,25 @@
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
+
+  <!-- BODGY: XES Versioning and WinAppSDK get into a fight about the app manifest, which breaks WinAppSDK. -->
+  <Target Name="RearrangeXefVersioningAndWinAppSDKResourceGeneration" DependsOnTargets="GetNewAppManifestValues;CreateWinRTRegistration" BeforeTargets="XesWriteVersionInfoResourceFile">
+    <PropertyGroup>
+      <OriginalApplicationManifest>$(ApplicationManifest.Replace("$(MSBuildProjectDirectory)\",""))</OriginalApplicationManifest>
+    </PropertyGroup>
+    <Message Importance="High" Text="Updated final manifest path to $(OriginalApplicationManifest)" />
+  </Target>
+
+  <!-- Generate PhiSilicaLafCredentials from MSBuild properties (PhiSilicaLaf.props / CI overrides). -->
+  <Target Name="GeneratePhiSilicaLafCredentials" BeforeTargets="BeforeCompile;CoreCompile;XamlPreCompile">
+    <PropertyGroup>
+      <PhiSilicaLafCredentialsFile>$(IntermediateOutputPath)PhiSilicaLafCredentials.g.cs</PhiSilicaLafCredentialsFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(PhiSilicaLafCredentialsFile)" Overwrite="true" Lines="// &lt;auto-generated/&gt;;namespace AdvancedPaste%3B;;internal static class PhiSilicaLafCredentials;{;    internal const string Token = &quot;$(PhiSilicaLafToken)&quot;%3B;    internal const string Attestation = &quot;$(PhiSilicaLafAttestation)&quot;%3B;}" />
+    <ItemGroup>
+      <Compile Include="$(PhiSilicaLafCredentialsFile)" Condition="!@(Compile->AnyHaveMetadataValue('Identity', '$(PhiSilicaLafCredentialsFile)'))" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <None Remove="AdvancedPasteXAML\Controls\ClipboardHistoryItemPreviewControl.xaml" />
@@ -66,9 +96,9 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.SemanticKernel" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="System.ClientModel" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="Microsoft.Windows.CsWin32" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="ReverseMarkdown" />
@@ -76,11 +106,6 @@
     <PackageReference Include="WinUIEx" />
     <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
     <PackageReference Include="System.Text.Json" />
-    <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
-    <PackageReference Include="Microsoft.Web.WebView2" />
-    <!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->
-    <PackageReference Include="CommunityToolkit.Common" />
-    <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -100,14 +125,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <SDKReference Include="Microsoft.VCLibs.Desktop, Version=14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>AdvancedPaste.UnitTests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
-    <!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
-    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\LanguageModelProvider\LanguageModelProvider.csproj" />
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
@@ -156,4 +183,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
 </Project>

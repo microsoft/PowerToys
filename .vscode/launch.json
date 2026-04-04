@@ -43,7 +43,7 @@
             "name": "Run AdvancedPaste (managed, no build, ARCH configurable)",
             "type": "coreclr",
             "request": "launch",
-            "program": "${workspaceFolder}\\${input:arch}\\Debug\\WinUI3Apps\\PowerToys.AdvancedPaste.exe",
+            "program": "${workspaceFolder}\\${input:arch}\\Debug\\WinUI3Apps\\AdvancedPaste\\PowerToys.AdvancedPaste.exe",
             "args": [],
             "cwd": "${workspaceFolder}",
             "env": {},

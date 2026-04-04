@@ -41,7 +41,7 @@ public sealed class CustomActionKernelQueryCacheServiceTests
         UpdateUserActions([], []);
 
         _fileSystem = new();
-        _cacheService = new(_userSettings.Object, _fileSystem);
+        _cacheService = new(_userSettings.Object, _fileSystem, resourceId => resourceId);
     }
 
     [TestMethod]
@@ -122,7 +122,7 @@ public sealed class CustomActionKernelQueryCacheServiceTests
         await _cacheService.WriteAsync(JSONTestKey, TestValue);
         await _cacheService.WriteAsync(MarkdownTestKey, TestValue2);
 
-        _cacheService = new(_userSettings.Object, _fileSystem); // recreate using same mock file-system to simulate app restart
+        _cacheService = new(_userSettings.Object, _fileSystem, resourceId => resourceId); // recreate using same mock file-system to simulate app restart
 
         AssertAreEqual(TestValue, _cacheService.ReadOrNull(JSONTestKey));
         AssertAreEqual(TestValue2, _cacheService.ReadOrNull(MarkdownTestKey));

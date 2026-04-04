@@ -3,8 +3,11 @@
 
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
+#include <common/utils/package.h>
+#include <common/utils/process_path.h>
 #include <common/interop/shared_constants.h>
 #include <atlstr.h>
+#include <TlHelp32.h>
 
 namespace
 {
@@ -100,23 +103,110 @@ HRESULT AdvancedPasteProcessManager::start_process(const std::wstring& pipe_name
 {
     const unsigned long powertoys_pid = GetCurrentProcessId();
 
-    const auto executable_args = std::format(L"{} {}", std::to_wstring(powertoys_pid), pipe_name);
+    // Ensure the AdvancedPaste MSIX package is registered
+    static const std::wstring packageName =
+#ifdef _DEBUG
+        L"PowerToys.AdvancedPaste.Dev";
+#else
+        L"PowerToys.AdvancedPaste";
+#endif
+
+    if (!package::GetRegisteredPackage(packageName, false).has_value())
+    {
+        Logger::info(L"AdvancedPaste MSIX not registered. Registering...");
+
+        const auto installationFolder = get_module_folderpath();
+
+#ifdef _DEBUG
+        auto msix = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\AdvancedPaste\\AppPackages\\PowerToys.AdvancedPaste_0.0.1.0_Debug_Test\\", false);
+        auto dependencies = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\AdvancedPaste\\AppPackages\\PowerToys.AdvancedPaste_0.0.1.0_Debug_Test\\Dependencies\\", true);
+#else
+        auto msix = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\AdvancedPaste\\", false);
+        auto dependencies = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\AdvancedPaste\\Dependencies\\", true);
+#endif
+
+        if (!msix.empty())
+        {
+            if (!package::RegisterPackage(msix[0], dependencies))
+            {
+                Logger::error(L"Failed to register AdvancedPaste MSIX package");
+            }
+        }
+        else
+        {
+            Logger::warn(L"No MSIX found for AdvancedPaste, falling back to direct exe launch");
+
+            // Fallback: launch exe directly (dev builds without GenerateAppxPackageOnBuild)
+            const auto executable_args = std::format(L"{} {}", std::to_wstring(powertoys_pid), pipe_name);
+
+            SHELLEXECUTEINFOW sei{ sizeof(sei) };
+            sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+            sei.lpFile = L"WinUI3Apps\\AdvancedPaste\\PowerToys.AdvancedPaste.exe";
+            sei.nShow = SW_SHOWNORMAL;
+            sei.lpParameters = executable_args.data();
+            if (ShellExecuteExW(&sei))
+            {
+                Logger::trace("Successfully started Advanced Paste process (direct)");
+                terminate_process();
+                m_hProcess = sei.hProcess;
+                return S_OK;
+            }
+            else
+            {
+                Logger::error(L"Advanced Paste process failed to start. {}", get_last_error_or_default(GetLastError()));
+                return E_FAIL;
+            }
+        }
+    }
+
+    // Launch via protocol URI, passing PID and pipe name as query parameters
+    const auto protocolUri = std::format(L"x-advancedpaste://launch?pid={}&pipe={}", std::to_wstring(powertoys_pid), pipe_name);
 
     SHELLEXECUTEINFOW sei{ sizeof(sei) };
-    sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-    sei.lpFile = L"WinUI3Apps\\PowerToys.AdvancedPaste.exe";
+    sei.fMask = { SEE_MASK_FLAG_NO_UI };
+    sei.lpFile = protocolUri.c_str();
     sei.nShow = SW_SHOWNORMAL;
-    sei.lpParameters = executable_args.data();
     if (ShellExecuteExW(&sei))
     {
-        Logger::trace("Successfully started Advanced Paste process");
-        terminate_process();
-        m_hProcess = sei.hProcess;
+        Logger::trace("Successfully started Advanced Paste via protocol");
+
+        // Find the AP process by name to track its lifetime
+        // Give it a moment to start up
+        for (int retry = 0; retry < 10; retry++)
+        {
+            Sleep(500);
+            HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+            if (snapshot != INVALID_HANDLE_VALUE)
+            {
+                PROCESSENTRY32W pe{ sizeof(pe) };
+                if (Process32FirstW(snapshot, &pe))
+                {
+                    do
+                    {
+                        if (std::wstring(pe.szExeFile) == L"PowerToys.AdvancedPaste.exe")
+                        {
+                            auto hProc = OpenProcess(PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE, FALSE, pe.th32ProcessID);
+                            if (hProc)
+                            {
+                                terminate_process();
+                                m_hProcess = hProc;
+                                Logger::trace(L"Found Advanced Paste process: PID {}", pe.th32ProcessID);
+                                CloseHandle(snapshot);
+                                return S_OK;
+                            }
+                        }
+                    } while (Process32NextW(snapshot, &pe));
+                }
+                CloseHandle(snapshot);
+            }
+        }
+
+        Logger::warn("Advanced Paste process not found after protocol launch");
         return S_OK;
     }
     else
     {
-        Logger::error(L"Advanced Paste process failed to start. {}", get_last_error_or_default(GetLastError()));
+        Logger::error(L"Advanced Paste protocol launch failed. {}", get_last_error_or_default(GetLastError()));
         return E_FAIL;
     }
 }
@@ -175,8 +265,8 @@ HRESULT AdvancedPasteProcessManager::start_named_pipe_server(const std::wstring&
         }
     }
 
-    // Wait for client.
-    const constexpr DWORD client_timeout_millis = 5000;
+    // Wait for client. Protocol activation takes longer than direct exe launch.
+    const constexpr DWORD client_timeout_millis = 15000;
     switch (WaitForSingleObject(overlapped.hEvent, client_timeout_millis))
     {
         case WAIT_OBJECT_0:

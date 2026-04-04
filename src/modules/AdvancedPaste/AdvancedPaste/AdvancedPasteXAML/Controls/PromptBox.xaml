@@ -382,6 +382,7 @@
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
                                 <Grid
@@ -438,13 +439,32 @@
                                             TextWrapping="Wrap" />
                                     </ScrollViewer>
                                 </Grid>
-                                <Rectangle
+                                <StackPanel
                                     Grid.Row="1"
+                                    Padding="12,8,12,8"
+                                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                    Spacing="4"
+                                    Visibility="{x:Bind ViewModel.HasCoachingExplanation, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock
+                                        x:Uid="CoachingExplanationTitle"
+                                        FontWeight="SemiBold"
+                                        Style="{StaticResource CaptionTextBlockStyle}" />
+                                    <ScrollViewer MaxHeight="200">
+                                        <TextBlock
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            IsTextSelectionEnabled="True"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind ViewModel.CoachingExplanation, Mode=OneWay}"
+                                            TextWrapping="Wrap" />
+                                    </ScrollViewer>
+                                </StackPanel>
+                                <Rectangle
+                                    Grid.Row="2"
                                     Height="1"
                                     Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
 
                                 <Grid
-                                    Grid.Row="2"
+                                    Grid.Row="3"
                                     Margin="12"
                                     ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>

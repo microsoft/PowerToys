@@ -46,7 +46,7 @@ public abstract class KernelServiceBase(
 
     protected abstract IKernelRuntimeConfiguration GetRuntimeConfiguration();
 
-    public async Task<DataPackage> TransformClipboardAsync(string prompt, DataPackageView clipboardData, bool isSavedQuery, CancellationToken cancellationToken, IProgress<double> progress)
+    public async Task<DataPackage> TransformClipboardAsync(string prompt, DataPackageView clipboardData, bool isSavedQuery, CancellationToken cancellationToken, IProgress<double> progress, string providerIdOverride = null)
     {
         Logger.LogTrace();
 

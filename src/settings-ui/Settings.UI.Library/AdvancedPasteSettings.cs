@@ -96,6 +96,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     customAction.Name));
             }
 
+            // Coaching shortcut for Fix Spelling and Grammar
+            var fixSpellingAction = Properties.AdditionalActions.FixSpellingAndGrammar;
+            hotkeyAccessors.Add(new HotkeyAccessor(
+                () => fixSpellingAction.CoachingShortcut,
+                value => fixSpellingAction.CoachingShortcut = value ?? new HotkeySettings(),
+                "FixSpellingAndGrammarCoaching"));
+
             return hotkeyAccessors.ToArray();
         }
 

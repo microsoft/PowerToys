@@ -1921,8 +1921,8 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
 	<data name="KeyboardManager_LaunchEditor_Button.Content" xml:space="preserve">
     <value>Open editor</value>
-  </data>	
-	<data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
+  </data>
+  <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
     <value>Paste as plain text directly</value>
   </data>
   <data name="AdvancedPasteUI_Actions.Header" xml:space="preserve">
@@ -1974,6 +1974,86 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="ImageToText.Header" xml:space="preserve">
     <value>Image to text</value>
+  </data>
+  <data name="FixSpellingAndGrammar.Header" xml:space="preserve">
+    <value>Fix spelling and grammar</value>
+  </data>
+  <data name="FixSpellingAndGrammar_CustomPrompt.Header" xml:space="preserve">
+    <value>Custom prompt</value>
+  </data>
+  <data name="FixSpellingAndGrammar_CustomPrompt.Description" xml:space="preserve">
+    <value>Override the default AI prompt used for fixing spelling and grammar. Leave empty to use the default prompt.</value>
+  </data>
+  <data name="FixSpellingAndGrammar_SystemPrompt.Header" xml:space="preserve">
+    <value>System prompt</value>
+    <comment>Header for the system prompt customization for fix spelling action</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_SystemPrompt.Description" xml:space="preserve">
+    <value>Override the system prompt that sets the AI's role for fixing spelling and grammar. Leave empty to use the default.</value>
+    <comment>Description for the system prompt customization</comment>
+  </data>
+  <data name="AdvancedPaste_ActionProvider.Header" xml:space="preserve">
+    <value>AI model</value>
+    <comment>Label for selecting which AI model provider to use for this action</comment>
+  </data>
+  <data name="AdvancedPaste_ActionProvider.Description" xml:space="preserve">
+    <value>Select the AI model to use for this action. Leave as default to use the globally active provider.</value>
+  </data>
+  <data name="AdvancedPaste_ActionProvider_Default" xml:space="preserve">
+    <value>Default (use active provider)</value>
+    <comment>Option in provider picker that means use the globally configured provider</comment>
+  </data>
+  <data name="AdvancedPaste_CustomAction_Provider.Header" xml:space="preserve">
+    <value>AI model</value>
+    <comment>Label for selecting the AI model provider in the custom action dialog</comment>
+  </data>
+  <data name="AdvancedPaste_ClearProviderSelection.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Reset to default provider</value>
+    <comment>Tooltip for button that clears the provider selection back to default</comment>
+  </data>
+  <data name="AdvancedPaste_ClearProviderSelection.AutomationProperties.Name" xml:space="preserve">
+    <value>Reset to default provider</value>
+    <comment>Accessible name for button that clears the provider selection back to default</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingSection.Header" xml:space="preserve">
+    <value>Coaching mode</value>
+    <comment>Header for the coaching mode collapsible settings section</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingSection.Description" xml:space="preserve">
+    <value>When enabled, shows a preview with an explanation of what was fixed and why.</value>
+    <comment>Description for the coaching mode settings section</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingShortcut.Header" xml:space="preserve">
+    <value>Coaching shortcut</value>
+    <comment>Header for the coaching mode keyboard shortcut</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingShortcut.Description" xml:space="preserve">
+    <value>Optional shortcut that triggers fix spelling with coaching enabled. If not set, uses the main action shortcut.</value>
+    <comment>Description for the coaching shortcut setting</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingPrompt.Header" xml:space="preserve">
+    <value>Coaching prompt</value>
+    <comment>Header for the coaching prompt customization text box</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingProvider.Header" xml:space="preserve">
+    <value>Coaching AI model</value>
+    <comment>Label for selecting which AI model provider to use for coaching explanations</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingProvider.Description" xml:space="preserve">
+    <value>Select the AI model to use for coaching explanations. Leave as default to use the same model as Fix Spelling.</value>
+    <comment>Description for the coaching provider selector</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingPrompt.Description" xml:space="preserve">
+    <value>Override the AI prompt used when generating the coaching explanation. Leave empty to use the default prompt.</value>
+    <comment>Description for the coaching prompt customization</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingSystemPrompt.Header" xml:space="preserve">
+    <value>Coaching system prompt</value>
+    <comment>Header for the coaching system prompt customization text box</comment>
+  </data>
+  <data name="FixSpellingAndGrammar_CoachingSystemPrompt.Description" xml:space="preserve">
+    <value>Override the system prompt that sets the AI's role for coaching explanations. Leave empty to use the default.</value>
+    <comment>Description for the coaching system prompt customization</comment>
   </data>
   <data name="PasteAsFile.Header" xml:space="preserve">
     <value>Paste as file</value>
@@ -2557,7 +2637,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_ActivationMode_HoldingShift.Content" xml:space="preserve">
     <value>Holding Shift</value>
     <comment>CursorWrap: Activation mode - wrap only when Shift held</comment>
-  </data>		
+  </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
@@ -4379,11 +4459,11 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Enables display of clipboard contents preview in the Advanced Paste window</comment>
   </data>
   <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Header" xml:space="preserve">
-    <value>Auto-copy selection for custom action hotkeys</value>
+    <value>Use selected text for all hotkeys</value>
     <comment>Advanced Paste is a product name</comment>
   </data>
   <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Description" xml:space="preserve">
-    <value>Attempts to copy the current selection before running a custom action shortcut</value>
+    <value>Attempts to copy the current text selection before running any Advanced Paste shortcut. Falls back to clipboard contents if nothing is selected.</value>
     <comment>Advanced Paste is a product name</comment>
   </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
@@ -5774,6 +5854,14 @@ The break timer font matches the text font.</value>
   </data>
   <data name="AdvancedPaste_Edit.Text" xml:space="preserve">
     <value>Edit</value>
+  </data>
+  <data name="AdvancedPaste_SetAsDefault.Text" xml:space="preserve">
+    <value>Set as default</value>
+    <comment>Menu item to mark a provider as the default/active one</comment>
+  </data>
+  <data name="AdvancedPaste_DefaultBadge.Text" xml:space="preserve">
+    <value>Default</value>
+    <comment>Badge label shown on the provider that is currently the default/active one</comment>
   </data>
   <data name="AdvancedPaste_Remove.Text" xml:space="preserve">
     <value>Remove</value>
