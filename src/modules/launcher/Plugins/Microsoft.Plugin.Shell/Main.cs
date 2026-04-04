@@ -228,7 +228,7 @@ namespace Microsoft.Plugin.Shell
             if (_settings.Shell == ExecutionShell.Cmd)
             {
                 string escapedCmd = EscapeCmdArgument(command);
-                var arguments = _settings.LeaveShellOpen ? $"/k \"{escapedCmd}\"" : $"/c \"{escapedCmd}\" & pause";
+                var arguments = _settings.LeaveShellOpen ? $"/k {escapedCmd}" : $"/c {escapedCmd} & pause";
 
                 info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, arguments, runAsVerbArg);
             }
@@ -268,11 +268,11 @@ namespace Microsoft.Plugin.Shell
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"cmd.exe /k \"{escapedCmd}\"";
+                    arguments = $"cmd.exe /k {escapedCmd}";
                 }
                 else
                 {
-                    arguments = $"cmd.exe /c \"{escapedCmd}\" & pause";
+                    arguments = $"cmd.exe /c {escapedCmd} & pause";
                 }
 
                 info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
@@ -326,7 +326,7 @@ namespace Microsoft.Plugin.Shell
                             if (_settings.LeaveShellOpen)
                             {
                                 // Wrap the command in a cmd.exe process
-                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{filename} {arguments}\"", runAsVerbArg);
+                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k {filename} {arguments}", runAsVerbArg);
                             }
                             else
                             {
@@ -339,7 +339,7 @@ namespace Microsoft.Plugin.Shell
                             if (_settings.LeaveShellOpen)
                             {
                                 // Wrap the command in a cmd.exe process
-                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{escapedCmd}\"", runAsVerbArg);
+                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k {escapedCmd}", runAsVerbArg);
                             }
                             else
                             {
@@ -353,7 +353,7 @@ namespace Microsoft.Plugin.Shell
                         if (_settings.LeaveShellOpen)
                         {
                             // Wrap the command in a cmd.exe process
-                            info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{escapedCmd}\"", runAsVerbArg);
+                            info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k {escapedCmd}", runAsVerbArg);
                         }
                         else
                         {
