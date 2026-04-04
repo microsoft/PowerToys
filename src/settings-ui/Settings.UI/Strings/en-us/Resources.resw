@@ -3131,6 +3131,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Peek_ConfirmFileDelete.Description" xml:space="preserve">
     <value>You'll be asked to confirm before files are moved to the Recycle Bin</value>
   </data>
+  <data name="Peek_ShowFilePreviewTooltip.Header" xml:space="preserve">
+    <value>Show file preview tooltip</value>
+  </data>
+  <data name="Peek_ShowFilePreviewTooltip.Description" xml:space="preserve">
+    <value>Show file information as a tooltip when hovering over the preview</value>
+  </data>
   <data name="Peek_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
   </data>
