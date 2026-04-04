@@ -85,9 +85,19 @@ public sealed partial class DockViewModel
         ObservableCollection<DockBandViewModel> target)
     {
         List<DockBandViewModel> newBands = new();
+        HashSet<string> seen = new(StringComparer.Ordinal);
         foreach (var band in bands)
         {
             var commandId = band.CommandId;
+
+            // Skip duplicate entries that share the same provider + command id
+            var key = $"{band.ProviderId}\0{commandId}";
+            if (!seen.Add(key))
+            {
+                Logger.LogWarning($"Skipping duplicate dock band entry {commandId} for provider {band.ProviderId}");
+                continue;
+            }
+
             var topLevelCommand = _topLevelCommandManager.LookupDockBand(commandId);
 
             if (topLevelCommand is null)
