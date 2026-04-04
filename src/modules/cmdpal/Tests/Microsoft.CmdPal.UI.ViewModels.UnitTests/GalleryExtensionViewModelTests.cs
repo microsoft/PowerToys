@@ -198,9 +198,9 @@ public class GalleryExtensionViewModelTests
     {
         var entry = new GalleryExtensionEntry
         {
-            Id = "winget-status-dedup-extension",
-            Title = "WinGet status dedup extension",
-            Description = "WinGet status dedup extension description",
+            Id = "winget-status-extension",
+            Title = "WinGet status extension",
+            Description = "WinGet status extension description",
             Author = new GalleryAuthor { Name = "Author" },
             InstallSources =
             [

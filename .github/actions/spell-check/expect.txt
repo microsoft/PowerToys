@@ -1332,7 +1332,7 @@ resmimetype
 RESOURCEID
 RESTORETOMAXIMIZED
 RETURNONLYFSDIRS
-revalidates
+Revalidates
 RGBQUAD
 rgbs
 rgelt
