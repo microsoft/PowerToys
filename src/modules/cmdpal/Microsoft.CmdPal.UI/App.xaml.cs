@@ -5,6 +5,7 @@
 using ManagedCommon;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Logging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
@@ -124,6 +125,8 @@ public partial class App : Application, IDisposable
         // Root services
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+        services.AddCmdPalLogging();
 
         AddBuiltInCommands(services, appInfoService.ConfigDirectory);
 
