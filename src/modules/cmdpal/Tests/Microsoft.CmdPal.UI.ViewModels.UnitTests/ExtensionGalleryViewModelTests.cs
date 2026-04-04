@@ -13,6 +13,7 @@ using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.WinGet.Models;
 using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CmdPal.UI.ViewModels.Gallery;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -58,7 +59,11 @@ public class ExtensionGalleryViewModelTests
                 return Task.FromResult<IEnumerable<IExtensionWrapper>>(Array.Empty<IExtensionWrapper>());
             });
 
-        using var viewModel = new ExtensionGalleryViewModel(galleryService.Object, extensionService.Object);
+        using var viewModel = new ExtensionGalleryViewModel(
+            galleryService.Object,
+            extensionService.Object,
+            NullLogger<ExtensionGalleryViewModel>.Instance,
+            CreateGalleryExtensionViewModelFactory());
 
         var loadTask = viewModel.LoadAsync();
         var completedTask = await Task.WhenAny(loadTask, Task.Delay(TimeSpan.FromSeconds(1)));
@@ -114,6 +119,8 @@ public class ExtensionGalleryViewModelTests
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
             extensionService.Object,
+            NullLogger<ExtensionGalleryViewModel>.Instance,
+            CreateGalleryExtensionViewModelFactory(winGetService.Object, winGetStatusService.Object),
             winGetService.Object,
             winGetStatusService.Object,
             winGetOperationTrackerService: null);
@@ -196,6 +203,8 @@ public class ExtensionGalleryViewModelTests
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
             extensionService.Object,
+            NullLogger<ExtensionGalleryViewModel>.Instance,
+            CreateGalleryExtensionViewModelFactory(winGetService.Object, winGetStatusService.Object),
             winGetService.Object,
             winGetStatusService.Object,
             winGetOperationTrackerService: null);
@@ -239,7 +248,11 @@ public class ExtensionGalleryViewModelTests
             .Setup(s => s.GetInstalledExtensionsAsync(true))
             .ReturnsAsync(Array.Empty<IExtensionWrapper>());
 
-        using var viewModel = new ExtensionGalleryViewModel(galleryService.Object, extensionService.Object);
+        using var viewModel = new ExtensionGalleryViewModel(
+            galleryService.Object,
+            extensionService.Object,
+            NullLogger<ExtensionGalleryViewModel>.Instance,
+            CreateGalleryExtensionViewModelFactory());
 
         await viewModel.LoadAsync();
 
@@ -277,12 +290,88 @@ public class ExtensionGalleryViewModelTests
             .Setup(s => s.GetInstalledExtensionsAsync(true))
             .ReturnsAsync(Array.Empty<IExtensionWrapper>());
 
-        using var viewModel = new ExtensionGalleryViewModel(galleryService.Object, extensionService.Object);
+        using var viewModel = new ExtensionGalleryViewModel(
+            galleryService.Object,
+            extensionService.Object,
+            NullLogger<ExtensionGalleryViewModel>.Instance,
+            CreateGalleryExtensionViewModelFactory());
 
         await viewModel.LoadAsync();
 
         Assert.IsTrue(viewModel.FromCache);
         Assert.IsTrue(viewModel.UsedFallbackCache);
+    }
+
+    [TestMethod]
+    public async Task LoadAsync_ShowsErrorSurface_WhenGalleryIsRateLimited()
+    {
+        var galleryService = new Mock<IExtensionGalleryService>();
+        galleryService.Setup(s => s.IsCustomFeed).Returns(false);
+        galleryService.Setup(s => s.GetBaseUrl()).Returns("https://example.com/index.json");
+        galleryService
+            .Setup(s => s.FetchExtensionsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new GalleryFetchResult
+            {
+                HasError = true,
+                IsRateLimited = true,
+                ErrorMessage = null,
+            });
+
+        var extensionService = new Mock<IExtensionService>();
+        extensionService
+            .Setup(s => s.GetInstalledExtensionsAsync(true))
+            .ReturnsAsync(Array.Empty<IExtensionWrapper>());
+
+        using var viewModel = new ExtensionGalleryViewModel(
+            galleryService.Object,
+            extensionService.Object,
+            NullLogger<ExtensionGalleryViewModel>.Instance,
+            CreateGalleryExtensionViewModelFactory());
+
+        await viewModel.LoadAsync();
+
+        Assert.IsTrue(viewModel.HasError);
+        Assert.IsTrue(viewModel.IsRateLimitedError);
+        Assert.IsTrue(viewModel.ShowErrorSurface);
+        Assert.IsFalse(viewModel.ShowErrorInfoBar);
+        Assert.AreEqual("The gallery is taking a breather", viewModel.ErrorDisplayTitle);
+        Assert.AreEqual(0, viewModel.FilteredEntries.Count);
+    }
+
+    [TestMethod]
+    public async Task LoadAsync_ShowsGenericErrorSurface_WhenGalleryLoadFailsWithoutEntries()
+    {
+        var galleryService = new Mock<IExtensionGalleryService>();
+        galleryService.Setup(s => s.IsCustomFeed).Returns(false);
+        galleryService.Setup(s => s.GetBaseUrl()).Returns("https://example.com/index.json");
+        galleryService
+            .Setup(s => s.FetchExtensionsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new GalleryFetchResult
+            {
+                HasError = true,
+                ErrorMessage = "Service unavailable",
+            });
+
+        var extensionService = new Mock<IExtensionService>();
+        extensionService
+            .Setup(s => s.GetInstalledExtensionsAsync(true))
+            .ReturnsAsync(Array.Empty<IExtensionWrapper>());
+
+        using var viewModel = new ExtensionGalleryViewModel(
+            galleryService.Object,
+            extensionService.Object,
+            NullLogger<ExtensionGalleryViewModel>.Instance,
+            CreateGalleryExtensionViewModelFactory());
+
+        await viewModel.LoadAsync();
+
+        Assert.IsTrue(viewModel.HasError);
+        Assert.IsFalse(viewModel.IsRateLimitedError);
+        Assert.IsTrue(viewModel.ShowErrorSurface);
+        Assert.IsFalse(viewModel.ShowErrorInfoBar);
+        Assert.AreEqual("Failed to load extensions", viewModel.ErrorDisplayTitle);
+        Assert.AreEqual("Service unavailable", viewModel.ErrorDisplayMessage);
+        Assert.AreEqual(0, viewModel.FilteredEntries.Count);
     }
 
     [TestMethod]
@@ -298,7 +387,11 @@ public class ExtensionGalleryViewModelTests
             .Setup(s => s.GetInstalledExtensionsAsync(true))
             .ReturnsAsync(Array.Empty<IExtensionWrapper>());
 
-        using var viewModel = new ExtensionGalleryViewModel(galleryService.Object, extensionService.Object);
+        using var viewModel = new ExtensionGalleryViewModel(
+            galleryService.Object,
+            extensionService.Object,
+            NullLogger<ExtensionGalleryViewModel>.Instance,
+            CreateGalleryExtensionViewModelFactory());
 
         await viewModel.LoadAsync();
 
@@ -326,7 +419,11 @@ public class ExtensionGalleryViewModelTests
             .Setup(s => s.GetInstalledExtensionsAsync(true))
             .ReturnsAsync(Array.Empty<IExtensionWrapper>());
 
-        using var viewModel = new ExtensionGalleryViewModel(galleryService.Object, extensionService.Object);
+        using var viewModel = new ExtensionGalleryViewModel(
+            galleryService.Object,
+            extensionService.Object,
+            NullLogger<ExtensionGalleryViewModel>.Instance,
+            CreateGalleryExtensionViewModelFactory());
 
         await viewModel.LoadAsync();
 
@@ -389,6 +486,8 @@ public class ExtensionGalleryViewModelTests
         using var viewModel = new ExtensionGalleryViewModel(
             galleryService.Object,
             extensionService.Object,
+            NullLogger<ExtensionGalleryViewModel>.Instance,
+            CreateGalleryExtensionViewModelFactory(winGetPackageStatusService: winGetStatusService.Object),
             winGetPackageManagerService: null,
             winGetStatusService.Object,
             winGetOperationTrackerService: null);
@@ -456,6 +555,18 @@ public class ExtensionGalleryViewModelTests
         var wrapper = new Mock<IExtensionWrapper>();
         wrapper.SetupGet(w => w.PackageFamilyName).Returns(packageFamilyName);
         return wrapper.Object;
+    }
+
+    private static ExtensionGalleryItemViewModelFactory CreateGalleryExtensionViewModelFactory(
+        IWinGetPackageManagerService? winGetPackageManagerService = null,
+        IWinGetPackageStatusService? winGetPackageStatusService = null,
+        IWinGetOperationTrackerService? winGetOperationTrackerService = null)
+    {
+        return new ExtensionGalleryItemViewModelFactory(
+            NullLogger<ExtensionGalleryItemViewModel>.Instance,
+            winGetPackageManagerService,
+            winGetPackageStatusService,
+            winGetOperationTrackerService);
     }
 
     private static async Task WaitForConditionAsync(Func<bool> condition, int timeoutMilliseconds = 2000)

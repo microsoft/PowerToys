@@ -5,22 +5,33 @@
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ManagedCommon;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
-using Microsoft.CmdPal.Common.ExtensionGallery.Services;
 using Microsoft.CmdPal.Common.WinGet.Models;
 using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Gallery;
 
-public sealed partial class GalleryExtensionViewModel : ObservableObject
+public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 {
     private static readonly Uri PlaceholderIconUri = new("ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png");
     private static readonly StringComparer OrdinalIgnoreCase = StringComparer.OrdinalIgnoreCase;
     private static readonly IReadOnlyList<string> EmptyTags = [];
+    private static readonly Action<ILogger, Exception?> LogWinGetInstallFailedMessage =
+        LoggerMessage.Define(
+            LogLevel.Error,
+            new EventId(1, nameof(LogWinGetInstallFailed)),
+            "WinGet install/update failed.");
+
+    private static readonly Action<ILogger, string, Exception?> LogIconLoadFailedMessage =
+        LoggerMessage.Define<string>(
+            LogLevel.Error,
+            new EventId(2, nameof(LogIconLoadFailed)),
+            "Failed to load icon from '{IconUri}'.");
+
     private const string SourceTypeWinGet = "winget";
     private const string SourceTypeStore = "msstore";
     private const string SourceTypeUrl = "url";
@@ -29,22 +40,22 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
     private const string SourceTypeUnknown = "unknown";
 
     private readonly GalleryExtensionEntry _entry;
-    private readonly IExtensionGalleryService _galleryService;
+    private readonly ILogger<ExtensionGalleryItemViewModel> _logger;
     private readonly IWinGetPackageManagerService? _winGetPackageManagerService;
     private readonly IWinGetOperationTrackerService? _winGetOperationTrackerService;
     private readonly IWinGetPackageStatusService? _winGetPackageStatusService;
     private readonly IReadOnlyDictionary<string, GalleryInstallSource> _installSourcesByType;
     private readonly IReadOnlyDictionary<string, GallerySourceInfo> _sourcesByKind;
 
-    public GalleryExtensionViewModel(
+    public ExtensionGalleryItemViewModel(
         GalleryExtensionEntry entry,
-        IExtensionGalleryService galleryService,
+        ILogger<ExtensionGalleryItemViewModel> logger,
         IWinGetPackageManagerService? winGetPackageManagerService = null,
         IWinGetPackageStatusService? winGetPackageStatusService = null,
         IWinGetOperationTrackerService? winGetOperationTrackerService = null)
     {
         _entry = entry;
-        _galleryService = galleryService;
+        _logger = logger;
         _winGetPackageManagerService = winGetPackageManagerService;
         _winGetPackageStatusService = winGetPackageStatusService;
         _winGetOperationTrackerService = winGetOperationTrackerService;
@@ -53,11 +64,6 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
 
         var resolvedIconUri = ResolveIconUri();
         IconUri = resolvedIconUri ?? PlaceholderIconUri;
-
-        if (resolvedIconUri is not null)
-        {
-            _ = LoadIconSourceAsync(resolvedIconUri);
-        }
     }
 
     public string Id => _entry.Id;
@@ -92,7 +98,7 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
 
     public ImageSource IconSource
     {
-        get => field ??= CreateImageSource(PlaceholderIconUri);
+        get => field ??= CreateImageSource(IconUri);
         private set => SetProperty(ref field, value);
     }
 
@@ -352,7 +358,7 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Logger.LogError("WinGet install/update failed", ex);
+            LogWinGetInstallFailed(_logger, ex);
             throw;
         }
         finally
@@ -455,8 +461,6 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
                 WinGetActionProgressValue = 0;
                 WinGetActionMessage = operation.ErrorMessage ?? "The WinGet operation failed.";
                 break;
-            default:
-                break;
         }
     }
 
@@ -474,30 +478,6 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
         }
 
         return IsSupportedIconUri(resolvedIconUri) ? resolvedIconUri : null;
-    }
-
-    private async Task LoadIconSourceAsync(Uri resolvedIconUri)
-    {
-        try
-        {
-            var cachedIconTask = _galleryService.GetCachedIconUriAsync(resolvedIconUri);
-
-            var cachedIconUri = await cachedIconTask;
-            if (cachedIconUri is null)
-            {
-                return;
-            }
-
-            IconSource = CreateImageSource(cachedIconUri);
-        }
-        catch (OperationCanceledException)
-        {
-            // Best-effort background icon loading.
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to load icon for gallery extension '{_entry.Id}' from '{resolvedIconUri}'.", ex);
-        }
     }
 
     private static bool IsSupportedIconUri(Uri uri)
@@ -844,7 +824,7 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
         IsUpdateStateKnown = true;
     }
 
-    private static ImageSource CreateImageSource(Uri iconUri)
+    private ImageSource CreateImageSource(Uri iconUri)
     {
         try
         {
@@ -852,9 +832,19 @@ public sealed partial class GalleryExtensionViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to load icon from '{iconUri}'", ex);
+            LogIconLoadFailed(_logger, iconUri.AbsoluteUri, ex);
             return new BitmapImage(PlaceholderIconUri);
         }
+    }
+
+    private static void LogWinGetInstallFailed(ILogger logger, Exception exception)
+    {
+        LogWinGetInstallFailedMessage(logger, exception);
+    }
+
+    private static void LogIconLoadFailed(ILogger logger, string iconUri, Exception exception)
+    {
+        LogIconLoadFailedMessage(logger, iconUri, exception);
     }
 
     partial void OnIsInstalledChanged(bool value)

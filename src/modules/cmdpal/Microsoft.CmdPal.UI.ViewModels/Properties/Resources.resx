@@ -310,6 +310,18 @@
     <value>{0} extensions found</value>
     <comment>{0}=number of extensions matching search</comment>
   </data>
+  <data name="gallery_error_generic_title" xml:space="preserve">
+    <value>Failed to load extensions</value>
+  </data>
+  <data name="gallery_error_generic_message" xml:space="preserve">
+    <value>We couldn't load the extension gallery right now. Please try again in a little while.</value>
+  </data>
+  <data name="gallery_error_rate_limited_title" xml:space="preserve">
+    <value>The gallery is taking a breather</value>
+  </data>
+  <data name="gallery_error_rate_limited_message" xml:space="preserve">
+    <value>We hit the extension gallery rate limit. Please try again in a little while.</value>
+  </data>
   <data name="winget_operation_detail_progress" xml:space="preserve">
     <value>{0} of {1}</value>
     <comment>{0}=downloaded size, {1}=total size</comment>

@@ -1203,6 +1203,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GalleryPage_Error_InfoBar.Title" xml:space="preserve">
     <value>Failed to load extensions</value>
   </data>
+  <data name="Settings_GalleryPage_RateLimit_Primary.Text" xml:space="preserve">
+    <value>The gallery is taking a breather</value>
+  </data>
+  <data name="Settings_GalleryPage_RateLimit_Secondary.Text" xml:space="preserve">
+    <value>We hit the extension gallery rate limit. Please try again in a little while.</value>
+  </data>
   <data name="Settings_GalleryPage_Cache_InfoBar.Title" xml:space="preserve">
     <value>Showing cached data</value>
   </data>

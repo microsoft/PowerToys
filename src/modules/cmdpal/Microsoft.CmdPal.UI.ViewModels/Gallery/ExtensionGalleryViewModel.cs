@@ -7,40 +7,63 @@ using System.Globalization;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ManagedCommon;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
 using Microsoft.CmdPal.Common.ExtensionGallery.Services;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.WinGet.Models;
 using Microsoft.CmdPal.Common.WinGet.Services;
+using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Gallery;
 
 public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDisposable
 {
     private const string WinGetSourceType = "winget";
+    private const string GenericErrorIconGlyph = "\u26A0";
+    private const string RateLimitedErrorIconGlyph = "\U0001F984";
     private static readonly TimeSpan WinGetRefreshTimeout = TimeSpan.FromSeconds(5);
     private static readonly StringComparer SortStringComparer = StringComparer.CurrentCultureIgnoreCase;
     private static readonly CompositeFormat LabelGalleryExtensionsAvailable
-        = CompositeFormat.Parse(Microsoft.CmdPal.UI.ViewModels.Properties.Resources.gallery_n_extensions_available!);
+        = CompositeFormat.Parse(Resources.gallery_n_extensions_available!);
 
     private static readonly CompositeFormat LabelGalleryExtensionsFound
-        = CompositeFormat.Parse(Microsoft.CmdPal.UI.ViewModels.Properties.Resources.gallery_n_extensions_found!);
+        = CompositeFormat.Parse(Resources.gallery_n_extensions_found!);
+
+    private static readonly Action<ILogger, Exception?> LogCheckInstalledExtensionsError =
+        LoggerMessage.Define(
+            LogLevel.Error,
+            new EventId(1, nameof(LogCheckInstalledExtensionsError)),
+            "Failed to check installed extensions");
+
+    private static readonly Action<ILogger, Exception?> LogRefreshWinGetCatalogsError =
+        LoggerMessage.Define(
+            LogLevel.Error,
+            new EventId(2, nameof(LogRefreshWinGetCatalogsError)),
+            "Failed to refresh WinGet catalogs");
+
+    private static readonly Action<ILogger, Exception?> LogCheckWinGetPackageStatusError =
+        LoggerMessage.Define(
+            LogLevel.Error,
+            new EventId(3, nameof(LogCheckWinGetPackageStatusError)),
+            "Failed to check WinGet package status");
 
     private readonly IExtensionGalleryService _galleryService;
     private readonly IExtensionService _extensionService;
+    private readonly ILogger<ExtensionGalleryViewModel> _logger;
+    private readonly ExtensionGalleryItemViewModelFactory _galleryExtensionViewModelFactory;
     private readonly IWinGetPackageManagerService? _winGetPackageManagerService;
     private readonly IWinGetOperationTrackerService? _winGetOperationTrackerService;
     private readonly IWinGetPackageStatusService? _winGetPackageStatusService;
     private readonly TaskScheduler _uiScheduler;
     private readonly Lock _entriesLock = new();
-    private readonly List<GalleryExtensionViewModel> _allEntries = [];
-    private readonly Dictionary<string, List<GalleryExtensionViewModel>> _entriesByWinGetId = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<ExtensionGalleryItemViewModel> _allEntries = [];
+    private readonly Dictionary<string, List<ExtensionGalleryItemViewModel>> _entriesByWinGetId = new(StringComparer.OrdinalIgnoreCase);
     private CancellationTokenSource _cts = new();
     private bool _disposed;
 
-    public ObservableCollection<GalleryExtensionViewModel> FilteredEntries { get; } = [];
+    public ObservableCollection<ExtensionGalleryItemViewModel> FilteredEntries { get; } = [];
 
     private string _searchText = string.Empty;
 
@@ -97,11 +120,30 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
     public partial bool UsedFallbackCache { get; set; }
 
     [ObservableProperty]
+    public partial bool IsRateLimitedError { get; set; }
+
+    [ObservableProperty]
     public partial ExtensionGallerySortOption SelectedSortOption { get; set; } = ExtensionGallerySortOption.Featured;
 
-    public bool ShowNoResultsPanel => !string.IsNullOrWhiteSpace(_searchText) && FilteredEntries.Count == 0;
+    public bool ShowNoResultsPanel => !HasError && !string.IsNullOrWhiteSpace(_searchText) && FilteredEntries.Count == 0;
 
     public bool HasResults => !IsLoading && !ShowNoResultsPanel && FilteredEntries.Count > 0;
+
+    public bool ShowErrorSurface => HasError && FilteredEntries.Count == 0;
+
+    public bool ShowErrorInfoBar => HasError && !ShowErrorSurface;
+
+    public string ErrorDisplayIconGlyph => IsRateLimitedError ? RateLimitedErrorIconGlyph : GenericErrorIconGlyph;
+
+    public string ErrorDisplayTitle => IsRateLimitedError
+        ? Resources.gallery_error_rate_limited_title
+        : Resources.gallery_error_generic_title;
+
+    public string ErrorDisplayMessage => IsRateLimitedError
+        ? Resources.gallery_error_rate_limited_message
+        : !string.IsNullOrWhiteSpace(ErrorMessage)
+            ? ErrorMessage
+            : Resources.gallery_error_generic_message;
 
     public bool IsCustomFeed => _galleryService.IsCustomFeed;
 
@@ -118,6 +160,8 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
     public ExtensionGalleryViewModel(
         IExtensionGalleryService galleryService,
         IExtensionService extensionService,
+        ILogger<ExtensionGalleryViewModel> logger,
+        ExtensionGalleryItemViewModelFactory galleryExtensionViewModelFactory,
         IWinGetPackageManagerService? winGetPackageManagerService = null,
         IWinGetPackageStatusService? winGetPackageStatusService = null,
         IWinGetOperationTrackerService? winGetOperationTrackerService = null,
@@ -125,6 +169,8 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
     {
         _galleryService = galleryService;
         _extensionService = extensionService;
+        _logger = logger;
+        _galleryExtensionViewModelFactory = galleryExtensionViewModelFactory;
         _winGetPackageManagerService = winGetPackageManagerService;
         _winGetPackageStatusService = winGetPackageStatusService;
         _winGetOperationTrackerService = winGetOperationTrackerService;
@@ -185,6 +231,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         ErrorMessage = null;
         FromCache = false;
         UsedFallbackCache = false;
+        IsRateLimitedError = false;
         NotifyStateChanged();
 
         try
@@ -196,6 +243,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
             ErrorMessage = result.ErrorMessage;
             FromCache = result.FromCache;
             UsedFallbackCache = result.UsedFallbackCache;
+            IsRateLimitedError = result.IsRateLimited;
             ApplyFilter();
 
             StartBackgroundRefresh(refreshInstallationStatus, cts.Token);
@@ -208,6 +256,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         {
             HasError = true;
             ErrorMessage = ex.Message;
+            IsRateLimitedError = false;
         }
         finally
         {
@@ -257,7 +306,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         bool refreshInstalledExtensions = false,
         bool refreshWinGetCatalogs = false)
     {
-        List<GalleryExtensionViewModel> snapshot;
+        List<ExtensionGalleryItemViewModel> snapshot;
         try
         {
             var installedExtensions = refreshInstalledExtensions
@@ -298,7 +347,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         catch (Exception ex)
         {
             // Non-critical; leave IsInstalled as false
-            Logger.LogError("Failed to check installed extensions", ex);
+            LogCheckInstalledExtensionsError(_logger, ex);
         }
 
         if (_winGetPackageStatusService is null)
@@ -323,7 +372,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
             }
             catch (Exception ex)
             {
-                Logger.LogError("Failed to refresh WinGet catalogs", ex);
+                LogRefreshWinGetCatalogsError(_logger, ex);
                 return;
             }
         }
@@ -381,23 +430,18 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         catch (Exception ex)
         {
             // Non-critical; keep the gallery visible with its existing state.
-            Logger.LogError("Failed to check WinGet package status", ex);
+            LogCheckWinGetPackageStatusError(_logger, ex);
         }
     }
 
-    private GalleryExtensionViewModel CreateEntryViewModel(GalleryExtensionEntry entry)
+    private ExtensionGalleryItemViewModel CreateEntryViewModel(GalleryExtensionEntry entry)
     {
-        return new GalleryExtensionViewModel(
-            entry,
-            _galleryService,
-            _winGetPackageManagerService,
-            _winGetPackageStatusService,
-            _winGetOperationTrackerService);
+        return _galleryExtensionViewModelFactory.Create(entry);
     }
 
     private void ApplyFilter()
     {
-        List<GalleryExtensionViewModel> snapshot;
+        List<ExtensionGalleryItemViewModel> snapshot;
         lock (_entriesLock)
         {
             snapshot = [.. _allEntries];
@@ -409,7 +453,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         NotifyStateChanged();
     }
 
-    private void SortEntries(List<GalleryExtensionViewModel> entries)
+    private void SortEntries(List<ExtensionGalleryItemViewModel> entries)
     {
         switch (SelectedSortOption)
         {
@@ -422,12 +466,10 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
             case ExtensionGallerySortOption.InstallationStatus:
                 entries.Sort(CompareByInstallationStatus);
                 break;
-            default:
-                break;
         }
     }
 
-    private static int Matches(string query, GalleryExtensionViewModel item)
+    private static int Matches(string query, ExtensionGalleryItemViewModel item)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
@@ -470,6 +512,11 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         OnPropertyChanged(nameof(ItemCounterText));
         OnPropertyChanged(nameof(HasResults));
         OnPropertyChanged(nameof(ShowNoResultsPanel));
+        OnPropertyChanged(nameof(ShowErrorSurface));
+        OnPropertyChanged(nameof(ShowErrorInfoBar));
+        OnPropertyChanged(nameof(ErrorDisplayIconGlyph));
+        OnPropertyChanged(nameof(ErrorDisplayTitle));
+        OnPropertyChanged(nameof(ErrorDisplayMessage));
     }
 
     private void RebuildWinGetEntryIndex()
@@ -500,7 +547,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
             return;
         }
 
-        List<GalleryExtensionViewModel> snapshot;
+        List<ExtensionGalleryItemViewModel> snapshot;
         lock (_entriesLock)
         {
             snapshot = [.. _allEntries];
@@ -547,7 +594,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
 
     private async Task ApplyTrackedOperationAsync(WinGetPackageOperation operation, bool refreshPackageStatus)
     {
-        List<GalleryExtensionViewModel>? entries;
+        List<ExtensionGalleryItemViewModel>? entries;
         lock (_entriesLock)
         {
             if (!_entriesByWinGetId.TryGetValue(operation.PackageId, out entries))
@@ -591,7 +638,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         return Task.Run(operation, cancellationToken);
     }
 
-    private static int CompareByName(GalleryExtensionViewModel left, GalleryExtensionViewModel right)
+    private static int CompareByName(ExtensionGalleryItemViewModel left, ExtensionGalleryItemViewModel right)
     {
         var result = SortStringComparer.Compare(left.DisplayTitle, right.DisplayTitle);
         if (result != 0)
@@ -608,7 +655,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         return SortStringComparer.Compare(left.Id, right.Id);
     }
 
-    private static int CompareByAuthor(GalleryExtensionViewModel left, GalleryExtensionViewModel right)
+    private static int CompareByAuthor(ExtensionGalleryItemViewModel left, ExtensionGalleryItemViewModel right)
     {
         var result = SortStringComparer.Compare(left.DisplayAuthorName, right.DisplayAuthorName);
         if (result != 0)
@@ -619,7 +666,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         return CompareByName(left, right);
     }
 
-    private static int CompareByInstallationStatus(GalleryExtensionViewModel left, GalleryExtensionViewModel right)
+    private static int CompareByInstallationStatus(ExtensionGalleryItemViewModel left, ExtensionGalleryItemViewModel right)
     {
         var result = GetInstallationStatusSortRank(left).CompareTo(GetInstallationStatusSortRank(right));
         if (result != 0)
@@ -630,7 +677,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         return CompareByName(left, right);
     }
 
-    private static int GetInstallationStatusSortRank(GalleryExtensionViewModel entry)
+    private static int GetInstallationStatusSortRank(ExtensionGalleryItemViewModel entry)
     {
         if (entry.IsUpdateAvailable)
         {

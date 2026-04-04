@@ -9,11 +9,11 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class ExtensionGalleryDetailPage : Page
+public sealed partial class ExtensionGalleryItemPage : Page
 {
-    public GalleryExtensionViewModel? ViewModel { get; private set; }
+    public ExtensionGalleryItemViewModel? ViewModel { get; private set; }
 
-    public ExtensionGalleryDetailPage()
+    public ExtensionGalleryItemPage()
     {
         this.InitializeComponent();
     }
@@ -21,7 +21,7 @@ public sealed partial class ExtensionGalleryDetailPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
-        if (e.Parameter is GalleryExtensionViewModel vm)
+        if (e.Parameter is ExtensionGalleryItemViewModel vm)
         {
             ViewModel = vm;
             Bindings.Update();

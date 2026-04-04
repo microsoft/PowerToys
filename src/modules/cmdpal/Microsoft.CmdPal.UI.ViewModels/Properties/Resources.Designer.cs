@@ -538,6 +538,42 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to We couldn&apos;t load the extension gallery right now. Please try again in a little while..
+        /// </summary>
+        public static string gallery_error_generic_message {
+            get {
+                return ResourceManager.GetString("gallery_error_generic_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load extensions.
+        /// </summary>
+        public static string gallery_error_generic_title {
+            get {
+                return ResourceManager.GetString("gallery_error_generic_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to We hit the extension gallery rate limit. Please try again in a little while..
+        /// </summary>
+        public static string gallery_error_rate_limited_message {
+            get {
+                return ResourceManager.GetString("gallery_error_rate_limited_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The gallery is taking a breather.
+        /// </summary>
+        public static string gallery_error_rate_limited_title {
+            get {
+                return ResourceManager.GetString("gallery_error_rate_limited_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} extensions available.
         /// </summary>
         public static string gallery_n_extensions_available {

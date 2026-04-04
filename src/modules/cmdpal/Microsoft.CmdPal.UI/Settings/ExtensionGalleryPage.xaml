@@ -53,10 +53,10 @@
                     <InfoBar
                         x:Name="CustomFeedInfoBar"
                         x:Uid="Settings_GalleryPage_CustomFeed_InfoBar"
-                        x:Load="{x:Bind viewModel.IsCustomFeed}"
+                        x:Load="{x:Bind ViewModel.IsCustomFeed}"
                         IsClosable="False"
                         IsOpen="True"
-                        Message="{x:Bind viewModel.CustomFeedUrl}"
+                        Message="{x:Bind ViewModel.CustomFeedUrl}"
                         Severity="Informational" />
 
                     <!--  Banner  -->
@@ -100,7 +100,7 @@
                             x:Name="SearchBox"
                             x:Uid="Settings_GalleryPage_SearchBox"
                             HorizontalAlignment="Stretch"
-                            Text="{x:Bind viewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                             <AutoSuggestBox.QueryIcon>
                                 <SymbolIcon Symbol="Find" />
                             </AutoSuggestBox.QueryIcon>
@@ -122,10 +122,10 @@
                             <TextBlock
                                 VerticalAlignment="Center"
                                 Style="{StaticResource BodyTextBlockStyle}"
-                                Text="{x:Bind viewModel.ItemCounterText, Mode=OneWay}" />
+                                Text="{x:Bind ViewModel.ItemCounterText, Mode=OneWay}" />
                             <Button
                                 x:Uid="Settings_GalleryPage_Refresh_Button"
-                                Command="{x:Bind viewModel.RefreshCommand}"
+                                Command="{x:Bind ViewModel.RefreshCommand}"
                                 Style="{StaticResource SubtleButtonStyle}">
                                 <FontIcon
                                     AutomationProperties.AccessibilityView="Raw"
@@ -137,24 +137,24 @@
                                     <MenuFlyout Placement="BottomEdgeAlignedRight">
                                         <RadioMenuFlyoutItem
                                             x:Uid="Settings_GalleryPage_Sort_Default"
-                                            Command="{x:Bind viewModel.SortByFeaturedCommand}"
+                                            Command="{x:Bind ViewModel.SortByFeaturedCommand}"
                                             GroupName="GallerySort"
-                                            IsChecked="{x:Bind viewModel.IsSortByFeaturedSelected, Mode=OneWay}" />
+                                            IsChecked="{x:Bind ViewModel.IsSortByFeaturedSelected, Mode=OneWay}" />
                                         <RadioMenuFlyoutItem
                                             x:Uid="Settings_GalleryPage_Sort_Name"
-                                            Command="{x:Bind viewModel.SortByNameCommand}"
+                                            Command="{x:Bind ViewModel.SortByNameCommand}"
                                             GroupName="GallerySort"
-                                            IsChecked="{x:Bind viewModel.IsSortByNameSelected, Mode=OneWay}" />
+                                            IsChecked="{x:Bind ViewModel.IsSortByNameSelected, Mode=OneWay}" />
                                         <RadioMenuFlyoutItem
                                             x:Uid="Settings_GalleryPage_Sort_Author"
-                                            Command="{x:Bind viewModel.SortByAuthorCommand}"
+                                            Command="{x:Bind ViewModel.SortByAuthorCommand}"
                                             GroupName="GallerySort"
-                                            IsChecked="{x:Bind viewModel.IsSortByAuthorSelected, Mode=OneWay}" />
+                                            IsChecked="{x:Bind ViewModel.IsSortByAuthorSelected, Mode=OneWay}" />
                                         <RadioMenuFlyoutItem
                                             x:Uid="Settings_GalleryPage_Sort_InstallationStatus"
-                                            Command="{x:Bind viewModel.SortByInstallationStatusCommand}"
+                                            Command="{x:Bind ViewModel.SortByInstallationStatusCommand}"
                                             GroupName="GallerySort"
-                                            IsChecked="{x:Bind viewModel.IsSortByInstallationStatusSelected, Mode=OneWay}" />
+                                            IsChecked="{x:Bind ViewModel.IsSortByInstallationStatusSelected, Mode=OneWay}" />
                                     </MenuFlyout>
                                 </Button.Flyout>
                                 <FontIcon
@@ -169,7 +169,7 @@
                     <Grid
                         x:Name="LoadingPanel"
                         Padding="48"
-                        x:Load="{x:Bind viewModel.IsLoading, Mode=OneWay}">
+                        x:Load="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
                         <StackPanel
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -187,19 +187,45 @@
 
                     <!--  Error state  -->
                     <InfoBar
-                        x:Name="ErrorInfoBar"
-                        x:Uid="Settings_GalleryPage_Error_InfoBar"
-                        x:Load="{x:Bind viewModel.HasError, Mode=OneWay}"
+                        x:Name="ErrorStateInfoBar"
+                        Title="{x:Bind ViewModel.ErrorDisplayTitle, Mode=OneWay}"
+                        x:Load="{x:Bind ViewModel.ShowErrorInfoBar, Mode=OneWay}"
                         IsClosable="False"
                         IsOpen="True"
-                        Message="{x:Bind viewModel.ErrorMessage, Mode=OneWay}"
+                        Message="{x:Bind ViewModel.ErrorDisplayMessage, Mode=OneWay}"
                         Severity="Error" />
+
+                    <Grid
+                        x:Name="ErrorSurface"
+                        Padding="48"
+                        x:Load="{x:Bind ViewModel.ShowErrorSurface, Mode=OneWay}"
+                        CornerRadius="4">
+                        <StackPanel
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Spacing="8">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontFamily="Segoe UI Emoji"
+                                FontSize="72"
+                                Text="{x:Bind ViewModel.ErrorDisplayIconGlyph, Mode=OneWay}" />
+                            <TextBlock
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="{x:Bind ViewModel.ErrorDisplayTitle, Mode=OneWay}"
+                                TextAlignment="Center" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{x:Bind ViewModel.ErrorDisplayMessage, Mode=OneWay}"
+                                TextAlignment="Center"
+                                TextWrapping="WrapWholeWords" />
+                        </StackPanel>
+                    </Grid>
 
                     <!--  From cache indicator  -->
                     <InfoBar
                         x:Name="CacheInfoBar"
                         x:Uid="Settings_GalleryPage_Cache_InfoBar"
-                        x:Load="{x:Bind viewModel.UsedFallbackCache, Mode=OneWay}"
+                        x:Load="{x:Bind ViewModel.UsedFallbackCache, Mode=OneWay}"
                         IsClosable="False"
                         IsOpen="True"
                         Severity="Warning" />
@@ -208,7 +234,7 @@
                     <Grid
                         x:Name="NoResultsPanel"
                         Padding="48"
-                        x:Load="{x:Bind viewModel.ShowNoResultsPanel, Mode=OneWay}"
+                        x:Load="{x:Bind ViewModel.ShowNoResultsPanel, Mode=OneWay}"
                         CornerRadius="4">
                         <StackPanel
                             HorizontalAlignment="Center"
@@ -228,16 +254,16 @@
                     <!--  Extensions list  -->
                     <ItemsView
                         x:Name="GalleryItemsView"
-                        x:Load="{x:Bind viewModel.HasResults, Mode=OneWay}"
+                        x:Load="{x:Bind ViewModel.HasResults, Mode=OneWay}"
                         IsItemInvokedEnabled="True"
                         ItemInvoked="GalleryItemsView_ItemInvoked"
-                        ItemsSource="{x:Bind viewModel.FilteredEntries, Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.FilteredEntries, Mode=OneWay}"
                         SelectionMode="None">
                         <ItemsView.Layout>
                             <controls:WrapLayout HorizontalSpacing="12" VerticalSpacing="12" />
                         </ItemsView.Layout>
                         <ItemsView.ItemTemplate>
-                            <DataTemplate x:DataType="viewModels:GalleryExtensionViewModel">
+                            <DataTemplate x:DataType="viewModels:ExtensionGalleryItemViewModel">
                                 <ItemContainer
                                     VerticalAlignment="Stretch"
                                     VerticalContentAlignment="Stretch"

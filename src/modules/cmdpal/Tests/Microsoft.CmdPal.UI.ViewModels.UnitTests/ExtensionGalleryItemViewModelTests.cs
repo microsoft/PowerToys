@@ -4,20 +4,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
-using Microsoft.CmdPal.Common.ExtensionGallery.Services;
 using Microsoft.CmdPal.Common.WinGet.Models;
 using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CmdPal.UI.ViewModels.Gallery;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 [TestClass]
-public class GalleryExtensionViewModelTests
+public class ExtensionGalleryItemViewModelTests
 {
     private static readonly Uri ExpectedIconPlaceholderUri = new Uri("ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png");
 
@@ -25,7 +23,7 @@ public class GalleryExtensionViewModelTests
     public void Constructor_UsesPlaceholderIcon_WhenIconIsMissing()
     {
         var entry = CreateEntry(iconUrl: null);
-        var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService());
+        var viewModel = CreateViewModel(entry);
 
         Assert.AreEqual(ExpectedIconPlaceholderUri, viewModel.IconUri);
     }
@@ -34,7 +32,7 @@ public class GalleryExtensionViewModelTests
     public void Constructor_UsesPlaceholderIcon_WhenIconUriIsInvalid()
     {
         var entry = CreateEntry(iconUrl: "iconUrl.png");
-        var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService());
+        var viewModel = CreateViewModel(entry);
 
         Assert.AreEqual(ExpectedIconPlaceholderUri, viewModel.IconUri);
     }
@@ -44,7 +42,7 @@ public class GalleryExtensionViewModelTests
     {
         var expected = new Uri("https://example.com/iconUrl.png");
         var entry = CreateEntry(iconUrl: expected.AbsoluteUri);
-        var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService());
+        var viewModel = CreateViewModel(entry);
 
         Assert.AreEqual(expected, viewModel.IconUri);
     }
@@ -61,7 +59,7 @@ public class GalleryExtensionViewModelTests
             InstallSources = new List<GalleryInstallSource>(),
         };
 
-        var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService());
+        var viewModel = CreateViewModel(entry);
 
         Assert.AreEqual("fallback-extension", viewModel.DisplayTitle);
         Assert.AreEqual("No description available.", viewModel.DisplayDescription);
@@ -87,7 +85,7 @@ public class GalleryExtensionViewModelTests
             ],
         };
 
-        var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService());
+        var viewModel = CreateViewModel(entry);
 
         Assert.IsTrue(viewModel.HasWinGetSource);
         Assert.IsTrue(viewModel.HasStoreSource);
@@ -111,7 +109,7 @@ public class GalleryExtensionViewModelTests
             ],
         };
 
-        var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService());
+        var viewModel = CreateViewModel(entry);
 
         Assert.IsTrue(viewModel.CanCopyWinGetInstallCommand);
         Assert.AreEqual("winget install --id Contoso.Extension", viewModel.WinGetInstallCommand);
@@ -132,7 +130,7 @@ public class GalleryExtensionViewModelTests
             ],
         };
 
-        var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService());
+        var viewModel = CreateViewModel(entry);
 
         Assert.IsFalse(viewModel.CanCopyWinGetInstallCommand);
         Assert.AreEqual(string.Empty, viewModel.WinGetInstallCommand);
@@ -155,7 +153,7 @@ public class GalleryExtensionViewModelTests
             InstallSources = [],
         };
 
-        var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService());
+        var viewModel = CreateViewModel(entry);
 
         Assert.IsTrue(viewModel.HasTags);
         Assert.AreEqual("developer tools, productivity", viewModel.TagsText);
@@ -176,7 +174,7 @@ public class GalleryExtensionViewModelTests
             ],
         };
 
-        var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService());
+        var viewModel = CreateViewModel(entry);
         viewModel.ApplyWinGetPackageInfo(
             new WinGetPackageInfo(
                 new WinGetPackageStatus(
@@ -208,7 +206,7 @@ public class GalleryExtensionViewModelTests
             ],
         };
 
-        var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService());
+        var viewModel = CreateViewModel(entry);
         viewModel.ApplyWinGetPackageInfo(
             new WinGetPackageInfo(
                 new WinGetPackageStatus(
@@ -263,7 +261,7 @@ public class GalleryExtensionViewModelTests
                 "productivity",
             ]);
 
-        var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService());
+        var viewModel = CreateViewModel(entry);
         viewModel.ApplyWinGetPackageInfo(
             new WinGetPackageInfo(
                 new WinGetPackageStatus(
@@ -308,7 +306,7 @@ public class GalleryExtensionViewModelTests
             ],
         };
 
-        var viewModel = new GalleryExtensionViewModel(entry, new TestGalleryService());
+        var viewModel = CreateViewModel(entry);
         viewModel.ApplyTrackedOperation(new WinGetPackageOperation(
             OperationId: Guid.NewGuid(),
             PackageId: "Contoso.Extension",
@@ -370,10 +368,7 @@ public class GalleryExtensionViewModelTests
         tracker.Setup(t => t.GetLatestOperation("Contoso.Extension")).Returns(operation);
         tracker.Setup(t => t.TryCancelOperation(operation.OperationId)).Returns(true);
 
-        var viewModel = new GalleryExtensionViewModel(
-            entry,
-            new TestGalleryService(),
-            winGetOperationTrackerService: tracker.Object);
+        var viewModel = CreateViewModel(entry, winGetOperationTrackerService: tracker.Object);
 
         viewModel.ApplyTrackedOperation(operation);
         Assert.IsTrue(viewModel.CancelWinGetActionCommand.CanExecute(null));
@@ -396,26 +391,17 @@ public class GalleryExtensionViewModelTests
         };
     }
 
-    private sealed class TestGalleryService(
-        Func<Uri, CancellationToken, Task<Uri?>>? cachedIconResolver = null) : IExtensionGalleryService
+    private static ExtensionGalleryItemViewModel CreateViewModel(
+        GalleryExtensionEntry entry,
+        IWinGetPackageManagerService? winGetPackageManagerService = null,
+        IWinGetPackageStatusService? winGetPackageStatusService = null,
+        IWinGetOperationTrackerService? winGetOperationTrackerService = null)
     {
-        public bool IsCustomFeed => false;
-
-        public Task<GalleryFetchResult> FetchExtensionsAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(new GalleryFetchResult());
-        }
-
-        public Task<GalleryFetchResult> RefreshAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(new GalleryFetchResult());
-        }
-
-        public string GetBaseUrl() => "https://example.com/";
-
-        public Task<Uri?> GetCachedIconUriAsync(Uri iconUri, CancellationToken cancellationToken = default)
-        {
-            return cachedIconResolver?.Invoke(iconUri, cancellationToken) ?? Task.FromResult<Uri?>(null);
-        }
+        return new ExtensionGalleryItemViewModel(
+            entry,
+            NullLogger<ExtensionGalleryItemViewModel>.Instance,
+            winGetPackageManagerService,
+            winGetPackageStatusService,
+            winGetOperationTrackerService);
     }
 }

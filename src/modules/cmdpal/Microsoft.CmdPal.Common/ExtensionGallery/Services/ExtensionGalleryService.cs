@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Text.Json;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
 using Microsoft.Extensions.Logging;
@@ -14,16 +15,22 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService
 {
     private const string DefaultFeedUrl = "https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/refs/heads/main/extensions.json";
     private const string LocalFeedFileName = "extensions.json";
-    private static readonly TimeSpan CacheTtl = ExtensionGalleryHttpCache.DefaultTimeToLive;
     private static readonly TimeSpan IconCacheTtl = TimeSpan.FromDays(1);
+    private static readonly TimeSpan CacheTtl = ExtensionGalleryHttpClient.DefaultTimeToLive;
     private static readonly Action<MEL.ILogger, Exception?> LogGalleryFetchFailedMessage = LoggerMessage.Define(
         LogLevel.Error,
         new EventId(0, nameof(LogGalleryFetchFailed)),
         "Gallery fetch failed");
 
+    private static readonly Action<MEL.ILogger, string, Exception?> LogFailedToResolveExtensionGalleryIconMessage = LoggerMessage.Define<string>(
+        LogLevel.Error,
+        new EventId(1, nameof(LogFailedToResolveExtensionGalleryIcon)),
+        "Failed to resolve extension gallery icon '{IconUri}'.");
+
     private readonly ILogger<ExtensionGalleryService> _logger;
-    private readonly Func<string?> _galleryFeedUrlProvider;
-    private readonly ExtensionGalleryHttpCache _galleryHttpCache;
+    private readonly GalleryFeedUrlProvider _galleryFeedUrlProvider;
+    private readonly ExtensionGalleryHttpClient _galleryHttpClient;
+
     private static readonly HashSet<string> SupportedFeedSchemes =
     [
         Uri.UriSchemeHttp,
@@ -31,19 +38,18 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService
         Uri.UriSchemeFile,
     ];
 
-    public ExtensionGalleryService(ExtensionGalleryHttpCache galleryHttpCache, ILogger<ExtensionGalleryService> logger, Func<string?>? galleryFeedUrlProvider = null)
-        : this(galleryFeedUrlProvider, galleryHttpCache, logger)
+    public ExtensionGalleryService(
+        ExtensionGalleryHttpClient galleryHttpClient,
+        ILogger<ExtensionGalleryService> logger,
+        GalleryFeedUrlProvider galleryFeedUrlProvider)
     {
-    }
-
-    internal ExtensionGalleryService(Func<string?>? galleryFeedUrlProvider, ExtensionGalleryHttpCache galleryHttpCache, ILogger<ExtensionGalleryService> logger)
-    {
-        ArgumentNullException.ThrowIfNull(galleryHttpCache);
+        ArgumentNullException.ThrowIfNull(galleryHttpClient);
         ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(galleryFeedUrlProvider);
 
         _logger = logger;
-        _galleryHttpCache = galleryHttpCache;
-        _galleryFeedUrlProvider = galleryFeedUrlProvider ?? (() => null);
+        _galleryHttpClient = galleryHttpClient;
+        _galleryFeedUrlProvider = galleryFeedUrlProvider;
     }
 
     public bool IsCustomFeed => !string.IsNullOrWhiteSpace(_galleryFeedUrlProvider());
@@ -57,31 +63,6 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService
     {
         var configuredUrl = _galleryFeedUrlProvider();
         return string.IsNullOrWhiteSpace(configuredUrl) ? DefaultFeedUrl : configuredUrl.Trim();
-    }
-
-    public async Task<Uri?> GetCachedIconUriAsync(Uri iconUri, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(iconUri);
-
-        if (iconUri.IsFile || iconUri.Scheme.Equals("ms-appx", StringComparison.OrdinalIgnoreCase))
-        {
-            return iconUri;
-        }
-
-        if (!iconUri.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
-            && !iconUri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
-
-        var fileNameHint = Path.GetFileName(Uri.UnescapeDataString(iconUri.AbsolutePath));
-        var cachedResource = await _galleryHttpCache.Cache.GetOrFetchAsync(
-            iconUri,
-            fileNameHint,
-            forceRefresh: false,
-            timeToLiveOverride: IconCacheTtl,
-            cancellationToken: cancellationToken);
-        return cachedResource?.ContentUri;
     }
 
     public Task<GalleryFetchResult> FetchExtensionsAsync(CancellationToken cancellationToken = default)
@@ -112,11 +93,14 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService
 
             TryGetBaseDirectoryUri(feedUri, out var baseDirectoryUri);
             NormalizeRemoteEntries(extensions, baseDirectoryUri);
+            var cacheableIconUris = CollectCacheableIconUris(extensions);
 
             if (forceRefresh && !fetchResult.UsedFallbackCache)
             {
-                PruneCachedResources(feedUri, extensions);
+                PruneCachedResources(feedUri, cacheableIconUris);
             }
+
+            await LocalizeIconUrisAsync(extensions, cancellationToken);
 
             return new GalleryFetchResult
             {
@@ -128,10 +112,12 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService
         catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException or OperationCanceledException or InvalidOperationException or UriFormatException)
         {
             LogGalleryFetchFailed(_logger, ex);
+            var isRateLimited = ex is HttpRequestException { StatusCode: HttpStatusCode.TooManyRequests };
             return new GalleryFetchResult
             {
+                IsRateLimited = isRateLimited,
                 HasError = true,
-                ErrorMessage = ex.Message,
+                ErrorMessage = isRateLimited ? null : ex.Message,
             };
         }
     }
@@ -140,8 +126,8 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService
     {
         if (feedUri.IsFile)
         {
-            var json = await File.ReadAllTextAsync(feedUri.LocalPath, cancellationToken);
-            return new FeedFetchResult(json, FromCache: false, UsedFallbackCache: false);
+            var localJson = await File.ReadAllTextAsync(feedUri.LocalPath, cancellationToken);
+            return new FeedFetchResult(localJson, FromCache: false, UsedFallbackCache: false);
         }
 
         if (!feedUri.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
@@ -150,20 +136,14 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService
             throw new InvalidOperationException($"Unsupported gallery URI scheme '{feedUri.Scheme}'.");
         }
 
-        var fileNameHint = Path.GetFileName(Uri.UnescapeDataString(feedUri.AbsolutePath));
-        var cachedFeed = await _galleryHttpCache.Cache.GetOrFetchWithStatusAsync(
-            resourceUri: feedUri,
-            fileNameHint: string.IsNullOrWhiteSpace(fileNameHint) ? LocalFeedFileName : fileNameHint,
+        var fetchResult = await _galleryHttpClient.Cache.GetResourceAsync(
+            feedUri,
+            fileNameHint: ResolveFeedFileName(feedUri),
             forceRefresh: forceRefresh,
             timeToLiveOverride: CacheTtl,
             cancellationToken: cancellationToken);
-        if (cachedFeed?.Resource is null)
-        {
-            throw new HttpRequestException("Could not reach an extension gallery.");
-        }
-
-        var cachedJson = await File.ReadAllTextAsync(cachedFeed.Resource.ContentPath, cancellationToken);
-        return new FeedFetchResult(cachedJson, cachedFeed.Resource.FromCache, cachedFeed.UsedFallbackCache);
+        var responseJson = await File.ReadAllTextAsync(fetchResult.Resource.ContentPath, cancellationToken);
+        return new FeedFetchResult(responseJson, fetchResult.Resource.FromCache, fetchResult.UsedFallbackCache);
     }
 
     private static List<GalleryExtensionEntry>? TryParseWrappedGallery(string json)
@@ -236,14 +216,69 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService
         return value.Trim();
     }
 
-    private void PruneCachedResources(Uri feedUri, IEnumerable<GalleryExtensionEntry> extensions)
+    private async Task LocalizeIconUrisAsync(IEnumerable<GalleryExtensionEntry> extensions, CancellationToken cancellationToken)
     {
-        List<Uri> retainedResourceUris = [];
-        if (IsCacheableUri(feedUri))
+        List<Task> localizationTasks = [];
+        foreach (var extension in extensions)
         {
-            retainedResourceUris.Add(feedUri);
+            localizationTasks.Add(LocalizeIconUriAsync(extension, cancellationToken));
         }
 
+        await Task.WhenAll(localizationTasks);
+    }
+
+    private async Task LocalizeIconUriAsync(GalleryExtensionEntry extension, CancellationToken cancellationToken)
+    {
+        var iconUrl = ToNullIfWhiteSpace(extension.IconUrl);
+        if (iconUrl is null || !Uri.TryCreate(iconUrl, UriKind.Absolute, out var iconUri))
+        {
+            extension.IconUrl = null;
+            return;
+        }
+
+        var localizedIconUri = await ResolveLocalizedIconUriAsync(iconUri, cancellationToken);
+        extension.IconUrl = localizedIconUri?.AbsoluteUri;
+    }
+
+    private async Task<Uri?> ResolveLocalizedIconUriAsync(Uri iconUri, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(iconUri);
+
+        if (iconUri.IsFile || iconUri.Scheme.Equals("ms-appx", StringComparison.OrdinalIgnoreCase))
+        {
+            return iconUri;
+        }
+
+        if (!IsCacheableUri(iconUri))
+        {
+            return null;
+        }
+
+        try
+        {
+            var fetchResult = await _galleryHttpClient.Cache.GetResourceAsync(
+                iconUri,
+                fileNameHint: Path.GetFileName(Uri.UnescapeDataString(iconUri.AbsolutePath)),
+                forceRefresh: false,
+                timeToLiveOverride: IconCacheTtl,
+                cancellationToken: cancellationToken);
+
+            return fetchResult.Resource.ContentUri;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidOperationException)
+        {
+            LogFailedToResolveExtensionGalleryIcon(_logger, iconUri.AbsoluteUri, ex);
+            return null;
+        }
+    }
+
+    private static List<Uri> CollectCacheableIconUris(IEnumerable<GalleryExtensionEntry> extensions)
+    {
+        List<Uri> retainedResourceUris = [];
         foreach (var extension in extensions)
         {
             if (!Uri.TryCreate(extension.IconUrl, UriKind.Absolute, out var iconUri)
@@ -255,13 +290,35 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService
             retainedResourceUris.Add(iconUri);
         }
 
-        _galleryHttpCache.Cache.Prune(retainedResourceUris);
+        return retainedResourceUris;
+    }
+
+    private void PruneCachedResources(Uri feedUri, IEnumerable<Uri> cacheableIconUris)
+    {
+        List<Uri> retainedResourceUris = [];
+        if (IsCacheableUri(feedUri))
+        {
+            retainedResourceUris.Add(feedUri);
+        }
+
+        foreach (var iconUri in cacheableIconUris)
+        {
+            retainedResourceUris.Add(iconUri);
+        }
+
+        _galleryHttpClient.Cache.Prune(retainedResourceUris);
     }
 
     private static bool IsCacheableUri(Uri resourceUri)
     {
         return resourceUri.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
             || resourceUri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ResolveFeedFileName(Uri feedUri)
+    {
+        var fileNameHint = Path.GetFileName(Uri.UnescapeDataString(feedUri.AbsolutePath));
+        return string.IsNullOrWhiteSpace(fileNameHint) ? LocalFeedFileName : fileNameHint;
     }
 
     private bool TryGetFeedUri([NotNullWhen(true)] out Uri? feedUri)
@@ -315,6 +372,11 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService
     private static void LogGalleryFetchFailed(MEL.ILogger logger, Exception exception)
     {
         LogGalleryFetchFailedMessage(logger, exception);
+    }
+
+    private static void LogFailedToResolveExtensionGalleryIcon(MEL.ILogger logger, string iconUri, Exception exception)
+    {
+        LogFailedToResolveExtensionGalleryIconMessage(logger, iconUri, exception);
     }
 
     private sealed record FeedFetchResult(string Json, bool FromCache, bool UsedFallbackCache);

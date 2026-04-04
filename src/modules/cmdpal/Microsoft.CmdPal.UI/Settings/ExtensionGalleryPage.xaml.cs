@@ -2,10 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Common.ExtensionGallery.Services;
-using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Common.WinGet.Services;
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Gallery;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -16,24 +12,11 @@ namespace Microsoft.CmdPal.UI.Settings;
 
 public sealed partial class ExtensionGalleryPage : Page, IDisposable
 {
-    private readonly ExtensionGalleryViewModel viewModel;
+    public ExtensionGalleryViewModel ViewModel { get; }
 
     public ExtensionGalleryPage()
     {
-        var galleryService = App.Current.Services.GetService<IExtensionGalleryService>()!;
-        var extensionService = App.Current.Services.GetService<IExtensionService>()!;
-        var winGetPackageManagerService = App.Current.Services.GetService<IWinGetPackageManagerService>();
-        var winGetOperationTrackerService = App.Current.Services.GetService<IWinGetOperationTrackerService>();
-        var winGetPackageStatusService = App.Current.Services.GetService<IWinGetPackageStatusService>();
-        var uiScheduler = App.Current.Services.GetService<TaskScheduler>();
-
-        viewModel = new ExtensionGalleryViewModel(
-            galleryService,
-            extensionService,
-            winGetPackageManagerService,
-            winGetPackageStatusService,
-            winGetOperationTrackerService,
-            uiScheduler);
+        ViewModel = App.Current.Services.GetRequiredService<ExtensionGalleryViewModel>();
 
         this.InitializeComponent();
 
@@ -43,17 +26,17 @@ public sealed partial class ExtensionGalleryPage : Page, IDisposable
 
     private void ExtensionGalleryPage_Unloaded(object sender, RoutedEventArgs e)
     {
-        viewModel.Dispose();
+        ViewModel.Dispose();
     }
 
     private async void ExtensionGalleryPage_Loaded(object sender, RoutedEventArgs e)
     {
-        await viewModel.LoadAsync();
+        await ViewModel.LoadAsync();
     }
 
     private void GalleryItemsView_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
     {
-        if (args.InvokedItem is GalleryExtensionViewModel vm)
+        if (args.InvokedItem is ExtensionGalleryItemViewModel vm)
         {
             NavigateToDetails(vm);
         }
@@ -67,16 +50,19 @@ public sealed partial class ExtensionGalleryPage : Page, IDisposable
 
     private void ViewDetailsMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is MenuFlyoutItem item && item.Tag is GalleryExtensionViewModel vm)
+        if (sender is MenuFlyoutItem item && item.Tag is ExtensionGalleryItemViewModel vm)
         {
             NavigateToDetails(vm);
         }
     }
 
-    private void NavigateToDetails(GalleryExtensionViewModel vm)
+    private void NavigateToDetails(ExtensionGalleryItemViewModel vm)
     {
-        Frame?.Navigate(typeof(ExtensionGalleryDetailPage), vm);
+        Frame?.Navigate(typeof(ExtensionGalleryItemPage), vm);
     }
 
-    public void Dispose() => viewModel.Dispose();
+    public void Dispose()
+    {
+        ViewModel.Dispose();
+    }
 }
