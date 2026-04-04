@@ -1709,6 +1709,7 @@ uxtheme
 vabdq
 validmodulename
 valuegenerator
+vbcscompiler
 vcamp
 vcgtq
 VCINSTALLDIR

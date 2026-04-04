@@ -4,7 +4,7 @@
   <Import Project=".\Common.Dotnet.PrepareGeneratedFolder.targets" />
 
   <PropertyGroup>
-    <CoreTargetFramework>net9.0</CoreTargetFramework>
+    <CoreTargetFramework>net10.0</CoreTargetFramework>
     <WindowsSdkPackageVersion>10.0.26100.68-preview</WindowsSdkPackageVersion>
     <TargetFramework>$(CoreTargetFramework)-windows10.0.26100.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
