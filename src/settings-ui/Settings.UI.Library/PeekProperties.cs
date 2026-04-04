@@ -17,6 +17,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             ActivationShortcut = DefaultActivationShortcut;
             AlwaysRunNotElevated = new BoolProperty(true);
+            AlwaysOnTop = new BoolProperty(false);
+            ShowTaskbarIcon = new BoolProperty(true);
             CloseAfterLosingFocus = new BoolProperty(false);
             ConfirmFileDelete = new BoolProperty(true);
             EnableSpaceToActivate = new BoolProperty(true); // Toggle is ON by default for new users. No impact on existing users.
@@ -25,6 +27,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public HotkeySettings ActivationShortcut { get; set; }
 
         public BoolProperty AlwaysRunNotElevated { get; set; }
+
+        public BoolProperty AlwaysOnTop { get; set; }
+
+        public BoolProperty ShowTaskbarIcon { get; set; }
 
         public BoolProperty CloseAfterLosingFocus { get; set; }
 
