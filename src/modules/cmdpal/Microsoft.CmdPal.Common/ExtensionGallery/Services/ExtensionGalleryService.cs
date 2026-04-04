@@ -5,23 +5,25 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.Extensions.Logging;
+using MEL = Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.Common.ExtensionGallery.Services;
 
-public sealed partial class ExtensionGalleryService : IExtensionGalleryService, IDisposable
+public sealed partial class ExtensionGalleryService : IExtensionGalleryService
 {
     private const string DefaultFeedUrl = "https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/refs/heads/main/extensions.json";
     private const string LocalFeedFileName = "extensions.json";
-    private const string CacheDirectoryName = "GalleryCache";
-    private const int TimeoutSeconds = 15;
-    private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(4);
+    private static readonly TimeSpan CacheTtl = ExtensionGalleryHttpCache.DefaultTimeToLive;
     private static readonly TimeSpan IconCacheTtl = TimeSpan.FromDays(1);
+    private static readonly Action<MEL.ILogger, Exception?> LogGalleryFetchFailedMessage = LoggerMessage.Define(
+        LogLevel.Error,
+        new EventId(0, nameof(LogGalleryFetchFailed)),
+        "Gallery fetch failed");
 
-    private readonly HttpClient _httpClient;
+    private readonly ILogger<ExtensionGalleryService> _logger;
     private readonly Func<string?> _galleryFeedUrlProvider;
-    private readonly string _cacheDirectory;
-    private readonly HttpResourceCache _resourceCache;
+    private readonly ExtensionGalleryHttpCache _galleryHttpCache;
     private static readonly HashSet<string> SupportedFeedSchemes =
     [
         Uri.UriSchemeHttp,
@@ -29,21 +31,19 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         Uri.UriSchemeFile,
     ];
 
-    public ExtensionGalleryService(IApplicationInfoService applicationInfoService, Func<string?>? galleryFeedUrlProvider = null)
-        : this(galleryFeedUrlProvider, applicationInfoService, cacheDirectory: null, httpClient: null)
+    public ExtensionGalleryService(ExtensionGalleryHttpCache galleryHttpCache, ILogger<ExtensionGalleryService> logger, Func<string?>? galleryFeedUrlProvider = null)
+        : this(galleryFeedUrlProvider, galleryHttpCache, logger)
     {
-        ArgumentNullException.ThrowIfNull(applicationInfoService);
     }
 
-    internal ExtensionGalleryService(Func<string?>? galleryFeedUrlProvider, IApplicationInfoService applicationInfoService, string? cacheDirectory, HttpClient? httpClient)
+    internal ExtensionGalleryService(Func<string?>? galleryFeedUrlProvider, ExtensionGalleryHttpCache galleryHttpCache, ILogger<ExtensionGalleryService> logger)
     {
-        _galleryFeedUrlProvider = galleryFeedUrlProvider ?? (() => null);
-        _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(TimeoutSeconds) };
-        _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("PowerToys-CmdPal/1.0");
+        ArgumentNullException.ThrowIfNull(galleryHttpCache);
+        ArgumentNullException.ThrowIfNull(logger);
 
-        _cacheDirectory = cacheDirectory ?? Path.Combine(applicationInfoService.CacheDirectory, CacheDirectoryName);
-        Directory.CreateDirectory(_cacheDirectory);
-        _resourceCache = new HttpResourceCache(_httpClient, _cacheDirectory, CacheTtl);
+        _logger = logger;
+        _galleryHttpCache = galleryHttpCache;
+        _galleryFeedUrlProvider = galleryFeedUrlProvider ?? (() => null);
     }
 
     public bool IsCustomFeed => !string.IsNullOrWhiteSpace(_galleryFeedUrlProvider());
@@ -75,7 +75,7 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         }
 
         var fileNameHint = Path.GetFileName(Uri.UnescapeDataString(iconUri.AbsolutePath));
-        var cachedResource = await _resourceCache.GetOrFetchAsync(
+        var cachedResource = await _galleryHttpCache.Cache.GetOrFetchAsync(
             iconUri,
             fileNameHint,
             forceRefresh: false,
@@ -127,7 +127,7 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         }
         catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException or OperationCanceledException or InvalidOperationException or UriFormatException)
         {
-            CoreLogger.LogError("Gallery fetch failed", ex);
+            LogGalleryFetchFailed(_logger, ex);
             return new GalleryFetchResult
             {
                 HasError = true,
@@ -151,7 +151,7 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         }
 
         var fileNameHint = Path.GetFileName(Uri.UnescapeDataString(feedUri.AbsolutePath));
-        var cachedFeed = await _resourceCache.GetOrFetchWithStatusAsync(
+        var cachedFeed = await _galleryHttpCache.Cache.GetOrFetchWithStatusAsync(
             resourceUri: feedUri,
             fileNameHint: string.IsNullOrWhiteSpace(fileNameHint) ? LocalFeedFileName : fileNameHint,
             forceRefresh: forceRefresh,
@@ -164,11 +164,6 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
 
         var cachedJson = await File.ReadAllTextAsync(cachedFeed.Resource.ContentPath, cancellationToken);
         return new FeedFetchResult(cachedJson, cachedFeed.Resource.FromCache, cachedFeed.UsedFallbackCache);
-    }
-
-    public void Dispose()
-    {
-        _httpClient.Dispose();
     }
 
     private static List<GalleryExtensionEntry>? TryParseWrappedGallery(string json)
@@ -260,7 +255,7 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
             retainedResourceUris.Add(iconUri);
         }
 
-        _resourceCache.Prune(retainedResourceUris);
+        _galleryHttpCache.Cache.Prune(retainedResourceUris);
     }
 
     private static bool IsCacheableUri(Uri resourceUri)
@@ -315,6 +310,11 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService, 
         {
             return false;
         }
+    }
+
+    private static void LogGalleryFetchFailed(MEL.ILogger logger, Exception exception)
+    {
+        LogGalleryFetchFailedMessage(logger, exception);
     }
 
     private sealed record FeedFetchResult(string Json, bool FromCache, bool UsedFallbackCache);

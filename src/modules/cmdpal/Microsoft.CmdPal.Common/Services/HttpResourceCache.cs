@@ -6,6 +6,8 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using MEL = Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.Common.Services;
 
@@ -13,21 +15,48 @@ internal sealed class HttpResourceCache
 {
     private const string MetadataFileName = "metadata.json";
     private const string DefaultPayloadFileName = "payload.bin";
+    private static readonly Action<MEL.ILogger, string, Exception?> LogFailedToCacheHttpResourceMessage = LoggerMessage.Define<string>(
+        LogLevel.Error,
+        new EventId(0, nameof(LogFailedToCacheHttpResource)),
+        "Failed to cache HTTP resource '{ResourceUri}'.");
+
+    private static readonly Action<MEL.ILogger, string, Exception?> LogFailedToEnumerateHttpResourceCacheMessage = LoggerMessage.Define<string>(
+        LogLevel.Error,
+        new EventId(1, nameof(LogFailedToEnumerateHttpResourceCache)),
+        "Failed to enumerate HTTP resource cache '{CacheDirectory}' for pruning.");
+
+    private static readonly Action<MEL.ILogger, string, Exception?> LogFailedToLoadCachedMetadataMessage = LoggerMessage.Define<string>(
+        LogLevel.Error,
+        new EventId(2, nameof(LogFailedToLoadCachedMetadata)),
+        "Failed to load cached metadata from '{MetadataPath}'.");
+
+    private static readonly Action<MEL.ILogger, string, Exception?> LogFailedToSaveCachedMetadataMessage = LoggerMessage.Define<string>(
+        LogLevel.Error,
+        new EventId(3, nameof(LogFailedToSaveCachedMetadata)),
+        "Failed to save cached metadata to '{MetadataPath}'.");
+
+    private static readonly Action<MEL.ILogger, string, Exception?> LogFailedToDeleteCachedHttpResourceDirectoryMessage = LoggerMessage.Define<string>(
+        LogLevel.Error,
+        new EventId(4, nameof(LogFailedToDeleteCachedHttpResourceDirectory)),
+        "Failed to delete cached HTTP resource directory '{EntryDirectory}'.");
 
     private readonly HttpClient _httpClient;
     private readonly string _cacheDirectory;
     private readonly TimeSpan _defaultTimeToLive;
+    private readonly MEL.ILogger _logger;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, Task<CachedHttpResourceFetchResult?>> _inflightFetches = new(StringComparer.Ordinal);
 
-    public HttpResourceCache(HttpClient httpClient, string cacheDirectory, TimeSpan defaultTimeToLive)
+    public HttpResourceCache(HttpClient httpClient, string cacheDirectory, TimeSpan defaultTimeToLive, MEL.ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentException.ThrowIfNullOrWhiteSpace(cacheDirectory);
+        ArgumentNullException.ThrowIfNull(logger);
 
         _httpClient = httpClient;
         _cacheDirectory = cacheDirectory;
         _defaultTimeToLive = defaultTimeToLive;
+        _logger = logger;
 
         Directory.CreateDirectory(_cacheDirectory);
     }
@@ -137,7 +166,7 @@ internal sealed class HttpResourceCache
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
         {
-            CoreLogger.LogError($"Failed to enumerate HTTP resource cache '{_cacheDirectory}' for pruning.", ex);
+            LogFailedToEnumerateHttpResourceCache(_logger, _cacheDirectory, ex);
         }
     }
 
@@ -204,7 +233,7 @@ internal sealed class HttpResourceCache
         }
         catch (Exception ex) when (ex is HttpRequestException or IOException)
         {
-            CoreLogger.LogError($"Failed to cache HTTP resource '{resourceUri}'.", ex);
+            LogFailedToCacheHttpResource(_logger, resourceUri.AbsoluteUri, ex);
 
             if (File.Exists(payloadPath))
             {
@@ -223,7 +252,7 @@ internal sealed class HttpResourceCache
             request.Headers.TryAddWithoutValidation("If-None-Match", metadata.ETag);
         }
 
-        if (metadata?.LastModifiedUtc is DateTimeOffset lastModifiedUtc)
+        if (metadata?.LastModifiedUtc is { } lastModifiedUtc)
         {
             request.Headers.IfModifiedSince = lastModifiedUtc;
         }
@@ -239,7 +268,7 @@ internal sealed class HttpResourceCache
         }
 
         var now = DateTimeOffset.UtcNow;
-        if (metadata.ExpiresUtc is DateTimeOffset expiresUtc)
+        if (metadata.ExpiresUtc is { } expiresUtc)
         {
             return expiresUtc > now;
         }
@@ -294,7 +323,7 @@ internal sealed class HttpResourceCache
 
     private static DateTimeOffset? GetExpirationUtc(HttpResponseMessage response, DateTimeOffset now)
     {
-        if (response.Headers.CacheControl?.MaxAge is TimeSpan maxAge)
+        if (response.Headers.CacheControl?.MaxAge is { } maxAge)
         {
             return now + maxAge;
         }
@@ -376,7 +405,7 @@ internal sealed class HttpResourceCache
             || resourceUri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static HttpResourceCacheMetadata? TryLoadMetadata(string metadataPath)
+    private HttpResourceCacheMetadata? TryLoadMetadata(string metadataPath)
     {
         try
         {
@@ -390,12 +419,12 @@ internal sealed class HttpResourceCache
         }
         catch (Exception ex) when (ex is IOException or JsonException)
         {
-            CoreLogger.LogError($"Failed to load cached metadata from '{metadataPath}'.", ex);
+            LogFailedToLoadCachedMetadata(_logger, metadataPath, ex);
             return null;
         }
     }
 
-    private static void TrySaveMetadata(string metadataPath, HttpResourceCacheMetadata metadata)
+    private void TrySaveMetadata(string metadataPath, HttpResourceCacheMetadata metadata)
     {
         try
         {
@@ -404,11 +433,11 @@ internal sealed class HttpResourceCache
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            CoreLogger.LogError($"Failed to save cached metadata to '{metadataPath}'.", ex);
+            LogFailedToSaveCachedMetadata(_logger, metadataPath, ex);
         }
     }
 
-    private static void TryDeleteEntryDirectory(string entryDirectory)
+    private void TryDeleteEntryDirectory(string entryDirectory)
     {
         try
         {
@@ -416,8 +445,33 @@ internal sealed class HttpResourceCache
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DirectoryNotFoundException)
         {
-            CoreLogger.LogError($"Failed to delete cached HTTP resource directory '{entryDirectory}'.", ex);
+            LogFailedToDeleteCachedHttpResourceDirectory(_logger, entryDirectory, ex);
         }
+    }
+
+    private static void LogFailedToCacheHttpResource(MEL.ILogger logger, string resourceUri, Exception exception)
+    {
+        LogFailedToCacheHttpResourceMessage(logger, resourceUri, exception);
+    }
+
+    private static void LogFailedToEnumerateHttpResourceCache(MEL.ILogger logger, string cacheDirectory, Exception exception)
+    {
+        LogFailedToEnumerateHttpResourceCacheMessage(logger, cacheDirectory, exception);
+    }
+
+    private static void LogFailedToLoadCachedMetadata(MEL.ILogger logger, string metadataPath, Exception exception)
+    {
+        LogFailedToLoadCachedMetadataMessage(logger, metadataPath, exception);
+    }
+
+    private static void LogFailedToSaveCachedMetadata(MEL.ILogger logger, string metadataPath, Exception exception)
+    {
+        LogFailedToSaveCachedMetadataMessage(logger, metadataPath, exception);
+    }
+
+    private static void LogFailedToDeleteCachedHttpResourceDirectory(MEL.ILogger logger, string entryDirectory, Exception exception)
+    {
+        LogFailedToDeleteCachedHttpResourceDirectoryMessage(logger, entryDirectory, exception);
     }
 
     internal sealed class CachedHttpResource
