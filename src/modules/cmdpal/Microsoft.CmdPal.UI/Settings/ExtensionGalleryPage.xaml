@@ -308,18 +308,27 @@
                                             Grid.Column="0"
                                             Style="{StaticResource BodyStrongTextBlockStyle}"
                                             Text="{x:Bind DisplayTitle}"
+                                            TextTrimming="CharacterEllipsis"
                                             TextWrapping="WrapWholeWords" />
 
-                                        <StackPanel
-                                            Grid.Row="2"
-                                            Grid.Column="0"
-                                            Spacing="8">
+                                        <Grid Grid.Row="2" Grid.Column="0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
                                             <TextBlock
+                                                Grid.Row="0"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                MaxLines="2"
                                                 Style="{StaticResource CaptionTextBlockStyle}"
                                                 Text="{x:Bind DisplayShortDescription, Mode=OneWay}"
+                                                TextTrimming="CharacterEllipsis"
                                                 TextWrapping="WrapWholeWords" />
-                                            <StackPanel Spacing="6" Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowWinGetActionStatus), Mode=OneWay, FallbackValue=Collapsed}">
+                                            <StackPanel
+                                                Grid.Row="1"
+                                                Margin="0,8,0,0"
+                                                Spacing="6"
+                                                Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowWinGetActionStatus), Mode=OneWay, FallbackValue=Collapsed}">
                                                 <TextBlock
                                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                     Style="{StaticResource CaptionTextBlockStyle}"
@@ -331,7 +340,7 @@
                                                     Maximum="100"
                                                     Value="{x:Bind WinGetActionProgressValue, Mode=OneWay}" />
                                             </StackPanel>
-                                        </StackPanel>
+                                        </Grid>
                                     </Grid>
                                 </ItemContainer>
                             </DataTemplate>
