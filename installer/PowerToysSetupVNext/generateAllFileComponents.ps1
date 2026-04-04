@@ -178,6 +178,10 @@ Generate-FileList -fileDepsJson "" -fileListName MonacoPreviewHandlerCustomLangu
 Generate-FileComponents -fileListName "MonacoPreviewHandlerMonacoAssetsFiles" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs
 Generate-FileComponents -fileListName "MonacoPreviewHandlerCustomLanguagesFiles" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs
 
+#CopyAsUNC
+Generate-FileList -fileDepsJson "" -fileListName CopyAsUNCAssetsFiles -wxsFilePath $PSScriptRoot\CopyAsUNC.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\CopyAsUNC"
+Generate-FileComponents -fileListName "CopyAsUNCAssetsFiles" -wxsFilePath $PSScriptRoot\CopyAsUNC.wxs
+
 #FileLocksmith
 Generate-FileList -fileDepsJson "" -fileListName FileLocksmithAssetsFiles -wxsFilePath $PSScriptRoot\FileLocksmith.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\FileLocksmith"
 Generate-FileComponents -fileListName "FileLocksmithAssetsFiles" -wxsFilePath $PSScriptRoot\FileLocksmith.wxs

@@ -3766,6 +3766,14 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Press duration before showing taskbar icon shortcuts (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
+  <data name="FileExplorerPreview_ShellIntegration.Header" xml:space="preserve">
+    <value>Shell integration</value>
+    <comment>This refers to directly integrating in with the Windows shell</comment>
+  </data>
+  <data name="FileExplorerPreview_CopyAsUNC_Enable.Header" xml:space="preserve">
+    <value>Copy as UNC</value>
+    <comment>Copy as UNC is the name of the utility; do not loc</comment>
+  </data>
   <data name="FileLocksmith.ModuleDescription" xml:space="preserve">
     <value>A Windows shell extension to find out which processes are using the selected files and directories.</value>
     <comment>{Locked="Windows"}</comment>

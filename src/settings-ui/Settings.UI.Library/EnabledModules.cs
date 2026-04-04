@@ -366,6 +366,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool copyAsUNC = true;
+
+        [JsonPropertyName("Copy as UNC")]
+        public bool CopyAsUNC
+        {
+            get => copyAsUNC;
+            set
+            {
+                if (copyAsUNC != value)
+                {
+                    LogTelemetryEvent(value);
+                    copyAsUNC = value;
+                }
+            }
+        }
+
         private bool fileLocksmith = true;
 
         [JsonPropertyName("File Locksmith")]

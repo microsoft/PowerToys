@@ -9,11 +9,11 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/common/Common.UI/Common.UI.csproj">
+    <Project Path="src/common/Common.UI.Controls/Common.UI.Controls.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/common/Common.UI.Controls/Common.UI.Controls.csproj">
+    <Project Path="src/common/Common.UI/Common.UI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -376,6 +376,11 @@
     </Project>
     <Project Path="src/modules/cmdpal/Microsoft.Terminal.UI/Microsoft.Terminal.UI.vcxproj" Id="6515f03f-e56d-4db4-b23d-ac4fb80db36f" />
   </Folder>
+  <Folder Name="/modules/CopyAsUNC/">
+    <Project Path="src/modules/CopyAsUNC/CopyAsUNCContextMenu/CopyAsUNCContextMenu.vcxproj" Id="caa90eba-0776-4e3a-9d71-7e2c95a3c221" />
+    <Project Path="src/modules/CopyAsUNC/CopyAsUNCExt/CopyAsUNCExt.vcxproj" Id="7d462a53-6ec3-44eb-ae6f-b86ac892c9e3" />
+    <Project Path="src/modules/CopyAsUNC/CopyAsUNCLib/CopyAsUNCLib.vcxproj" Id="ddb485b8-e771-4b9e-a9b5-bff587daf5ab" />
+  </Folder>
   <Folder Name="/modules/CropAndLock/">
     <Project Path="src/modules/CropAndLock/CropAndLock/CropAndLock.vcxproj" Id="f5e1146e-b7b3-4e11-85fd-270a500bd78c" />
     <Project Path="src/modules/CropAndLock/CropAndLockModuleInterface/CropAndLockModuleInterface.vcxproj" Id="3157fa75-86cf-4ee2-8f62-c43f776493c6" />
@@ -713,13 +718,6 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <!-- TEMPORARILY_DISABLED: PowerDisplay
-    <Project Path="src/modules/powerdisplay/PowerDisplay/PowerDisplay.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
-    <Project Path="src/modules/powerdisplay/PowerDisplayModuleInterface/PowerDisplayModuleInterface.vcxproj" Id="d1234567-8901-2345-6789-abcdef012345" />
-    -->
   </Folder>
   <Folder Name="/modules/PowerDisplay/Tests/">
     <Project Path="src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/PowerDisplay.Lib.UnitTests.csproj">
@@ -1072,6 +1070,7 @@
     <File Path="src/Common.Dotnet.AotCompatibility.props" />
     <File Path="src/Common.Dotnet.CsWinRT.props" />
     <File Path="src/Common.SelfContained.props" />
+    <File Path="src/modules/CopyAsUNC/CopyAsUNCLib/CopyAsUNCLib.vcxproj" />
     <File Path="src/Monaco.props" />
     <File Path="src/Solution.props" />
     <File Path="src/Version.props" />
