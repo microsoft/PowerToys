@@ -194,17 +194,20 @@ public partial class ExtensionService : IExtensionService, IDisposable
         await _getInstalledExtensionsLock.WaitAsync();
         try
         {
-            if (_installedExtensions.Count == 0)
-            {
-                var extensions = await GetInstalledAppExtensionsAsync();
-                foreach (var extension in extensions)
-                {
-                    var wrappers = await CreateWrappersForExtension(extension);
-                    UpdateExtensionsListsFromWrappers(wrappers);
-                }
-            }
+            return await GetInstalledExtensionsAsyncUnderLock(includeDisabledExtensions, refresh: false);
+        }
+        finally
+        {
+            _getInstalledExtensionsLock.Release();
+        }
+    }
 
-            return includeDisabledExtensions ? _installedExtensions : _enabledExtensions;
+    public async Task<IEnumerable<IExtensionWrapper>> RefreshInstalledExtensionsAsync(bool includeDisabledExtensions = false)
+    {
+        await _getInstalledExtensionsLock.WaitAsync();
+        try
+        {
+            return await GetInstalledExtensionsAsyncUnderLock(includeDisabledExtensions, refresh: true);
         }
         finally
         {
@@ -230,6 +233,58 @@ public partial class ExtensionService : IExtensionService, IDisposable
             //    "Extension_ReportInstalled",
             //    LogLevel.Critical,
             //    new ReportInstalledExtensionEvent(extensionUniqueId, isEnabled: !isExtensionDisabled));
+        }
+    }
+
+    private static async Task<IEnumerable<IExtensionWrapper>> GetInstalledExtensionsAsyncUnderLock(bool includeDisabledExtensions, bool refresh)
+    {
+        if (refresh)
+        {
+            await RebuildInstalledExtensionsCacheAsync();
+        }
+        else if (_installedExtensions.Count == 0)
+        {
+            var extensions = await GetInstalledAppExtensionsAsync();
+            foreach (var extension in extensions)
+            {
+                var wrappers = await CreateWrappersForExtension(extension);
+                UpdateExtensionsListsFromWrappers(wrappers);
+            }
+        }
+
+        return includeDisabledExtensions ? _installedExtensions : _enabledExtensions;
+    }
+
+    private static async Task RebuildInstalledExtensionsCacheAsync()
+    {
+        var previouslyEnabledExtensionIds = new HashSet<string>(
+            _enabledExtensions.Select(static extension => extension.ExtensionUniqueId),
+            StringComparer.Ordinal);
+        var previouslyInstalledExtensionIds = new HashSet<string>(
+            _installedExtensions.Select(static extension => extension.ExtensionUniqueId),
+            StringComparer.Ordinal);
+
+        var extensions = await GetInstalledAppExtensionsAsync();
+        List<ExtensionWrapper> refreshedWrappers = [];
+        foreach (var extension in extensions)
+        {
+            var wrappers = await CreateWrappersForExtension(extension);
+            refreshedWrappers.AddRange(wrappers);
+        }
+
+        _installedExtensions.Clear();
+        _enabledExtensions.Clear();
+
+        foreach (var extensionWrapper in refreshedWrappers)
+        {
+            _installedExtensions.Add(extensionWrapper);
+
+            var wasPreviouslyInstalled = previouslyInstalledExtensionIds.Contains(extensionWrapper.ExtensionUniqueId);
+            var shouldBeEnabled = !wasPreviouslyInstalled || previouslyEnabledExtensionIds.Contains(extensionWrapper.ExtensionUniqueId);
+            if (shouldBeEnabled)
+            {
+                _enabledExtensions.Add(extensionWrapper);
+            }
         }
     }
 

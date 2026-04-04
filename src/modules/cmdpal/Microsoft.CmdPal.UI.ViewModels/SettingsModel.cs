@@ -91,6 +91,11 @@ public record SettingsModel
 
     // </Theme settings>
 
+    // Extension Gallery settings
+    public string? GalleryFeedUrl { get; init; }
+
+    // </Gallery settings>
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 

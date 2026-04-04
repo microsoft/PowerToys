@@ -1,0 +1,18 @@
+{
+  "$schema": "../../schema.json",
+  "id": "recent-files",
+  "title": "Recent Files for Command Palette",
+  "description": "Quick access to recently opened files.",
+  "author": {
+    "name": "Jiri Polasek",
+    "url": "https://jiripolasek.com"
+  },
+  "icon": "icon.png",
+  "homepage": "https://github.com/jiripolasek/RecentFilesExtension",
+  "installSources": [
+    {
+      "type": "winget",
+      "id": "JiriPolasek.RecentFilesforCommandPalette"
+    }
+  ]
+}

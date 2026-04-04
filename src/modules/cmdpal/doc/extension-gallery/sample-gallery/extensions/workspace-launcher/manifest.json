@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schema.json",
+  "id": "workspace-launcher",
+  "title": "Visual Studio / Code Workspace Launcher",
+  "description": "Quickly browse and open Visual Studio solutions and VS Code workspaces from a unified interface.",
+  "author": {
+    "name": "UsefulApp",
+    "url": "https://github.com/tanchekwei"
+  },
+  "homepage": "https://github.com/tanchekwei/VisualStudioCodeForCommandPalette",
+  "installSources": [
+    {
+      "type": "winget",
+      "id": "15722UsefulApp.WorkspaceLauncherForVSCode"
+    }
+  ]
+}

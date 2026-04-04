@@ -1,0 +1,22 @@
+{
+  "$schema": "../../schema.json",
+  "id": "azure-extension",
+  "title": "Azure Extension",
+  "description": "Browse and manage Azure resources directly from Command Palette.",
+  "author": {
+    "name": "Microsoft",
+    "url": "https://github.com/microsoft"
+  },
+  "homepage": "https://github.com/microsoft/CmdPalAzureExtension",
+  "tags": [
+    "cloud",
+    "azure",
+    "developer tools"
+  ],
+  "installSources": [
+    {
+      "type": "winget",
+      "id": "Microsoft.CmdPalAzureExtension"
+    }
+  ]
+}

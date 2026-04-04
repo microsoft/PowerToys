@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schema.json",
+  "id": "edge-favorites",
+  "title": "Edge Favorites for Command Palette",
+  "description": "Open Microsoft Edge favorites in Command Palette.",
+  "author": {
+    "name": "Davide Giacometti",
+    "url": "https://github.com/davidegiacometti"
+  },
+  "homepage": "https://github.com/davidegiacometti/CmdPal-Extensions",
+  "installSources": [
+    {
+      "type": "winget",
+      "id": "davidegiacometti.EdgeFavoritesForCmdPal"
+    }
+  ]
+}

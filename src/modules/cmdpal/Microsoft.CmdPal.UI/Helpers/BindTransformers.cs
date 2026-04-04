@@ -8,6 +8,10 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 internal static class BindTransformers
 {
+    public static Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+
+    public static Visibility BoolToInvertedVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
+
     public static bool Negate(bool value) => !value;
 
     public static Visibility NegateVisibility(Visibility value) => value == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;

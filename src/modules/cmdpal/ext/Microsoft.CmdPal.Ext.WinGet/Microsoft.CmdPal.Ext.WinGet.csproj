@@ -13,11 +13,6 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <CsWinRTIncludes>Microsoft.Management.Deployment</CsWinRTIncludes>
-    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Remove="Assets\Extension.png" />
     <None Remove="Assets\Extension.svg" />
@@ -52,12 +47,6 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
 
-  <ItemGroup>
-    <CsWinRTInputs Include="$(PkgMicrosoft_WindowsPackageManager_ComInterop)\lib\uap10.0\Microsoft.Management.Deployment.winmd" />
-
-    <!-- Before v1.10 of this package, it wasn't in the uap10.0 dir  -->
-    <Content Include="$(PkgMicrosoft_WindowsPackageManager_ComInterop)\lib\uap10.0\Microsoft.Management.Deployment.winmd" Link="Microsoft.Management.Deployment.winmd" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>

@@ -174,6 +174,9 @@
   <data name="builtin_open_settings_name" xml:space="preserve">
     <value>Open Command Palette settings</value>
   </data>
+  <data name="builtin_open_gallery_name" xml:space="preserve">
+    <value>Open Command Palette extension gallery</value>
+  </data>
   <data name="builtin_create_extension_success" xml:space="preserve">
     <value>Successfully created your new extension!</value>
   </data>
@@ -298,5 +301,96 @@
   </data>
   <data name="home_sections_commands_title" xml:space="preserve">
     <value>Commands</value>
+  </data>
+  <data name="gallery_n_extensions_available" xml:space="preserve">
+    <value>{0} extensions available</value>
+    <comment>{0}=number of extensions</comment>
+  </data>
+  <data name="gallery_n_extensions_found" xml:space="preserve">
+    <value>{0} extensions found</value>
+    <comment>{0}=number of extensions matching search</comment>
+  </data>
+  <data name="gallery_error_generic_title" xml:space="preserve">
+    <value>Failed to load extensions</value>
+  </data>
+  <data name="gallery_error_generic_message" xml:space="preserve">
+    <value>We couldn't load the extension gallery right now. Please try again in a little while.</value>
+  </data>
+  <data name="gallery_error_rate_limited_title" xml:space="preserve">
+    <value>The gallery is taking a breather</value>
+  </data>
+  <data name="gallery_error_rate_limited_message" xml:space="preserve">
+    <value>We hit the extension gallery rate limit. Please try again in a little while.</value>
+  </data>
+  <data name="winget_operation_detail_progress" xml:space="preserve">
+    <value>{0} of {1}</value>
+    <comment>{0}=downloaded size, {1}=total size</comment>
+  </data>
+  <data name="winget_operation_detail_updated" xml:space="preserve">
+    <value>Updated {0:t}</value>
+    <comment>{0}=local completion time</comment>
+  </data>
+  <data name="winget_operation_size_bytes" xml:space="preserve">
+    <value>{0} B</value>
+    <comment>{0}=byte count</comment>
+  </data>
+  <data name="winget_operation_size_gigabytes" xml:space="preserve">
+    <value>{0:F1} GB</value>
+    <comment>{0}=gigabyte count</comment>
+  </data>
+  <data name="winget_operation_size_kilobytes" xml:space="preserve">
+    <value>{0:F1} KB</value>
+    <comment>{0}=kilobyte count</comment>
+  </data>
+  <data name="winget_operation_size_megabytes" xml:space="preserve">
+    <value>{0:F1} MB</value>
+    <comment>{0}=megabyte count</comment>
+  </data>
+  <data name="winget_operation_status_canceled" xml:space="preserve">
+    <value>Canceled</value>
+  </data>
+  <data name="winget_operation_status_downloading" xml:space="preserve">
+    <value>Downloading</value>
+  </data>
+  <data name="winget_operation_status_downloading_percent" xml:space="preserve">
+    <value>Downloading {0}%</value>
+    <comment>{0}=download percent</comment>
+  </data>
+  <data name="winget_operation_status_failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="winget_operation_status_installing" xml:space="preserve">
+    <value>Installing</value>
+  </data>
+  <data name="winget_operation_status_post_processing" xml:space="preserve">
+    <value>Finalizing</value>
+  </data>
+  <data name="winget_operation_status_queued_install" xml:space="preserve">
+    <value>Queued to install</value>
+  </data>
+  <data name="winget_operation_status_queued_uninstall" xml:space="preserve">
+    <value>Queued to uninstall</value>
+  </data>
+  <data name="winget_operation_status_succeeded_install" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="winget_operation_status_succeeded_uninstall" xml:space="preserve">
+    <value>Uninstalled</value>
+  </data>
+  <data name="winget_operation_status_uninstalling" xml:space="preserve">
+    <value>Uninstalling</value>
+  </data>
+  <data name="winget_operations_flyout_active_header" xml:space="preserve">
+    <value>Downloads and installs</value>
+  </data>
+  <data name="winget_operations_in_progress_plural" xml:space="preserve">
+    <value>{0} WinGet operations in progress</value>
+    <comment>{0}=active operation count</comment>
+  </data>
+  <data name="winget_operations_in_progress_single" xml:space="preserve">
+    <value>1 WinGet operation in progress</value>
+  </data>
+  <data name="winget_operations_recent_activity" xml:space="preserve">
+    <value>Recent WinGet activity</value>
   </data>
 </root>

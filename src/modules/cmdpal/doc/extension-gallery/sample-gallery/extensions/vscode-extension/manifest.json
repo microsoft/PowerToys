@@ -1,0 +1,22 @@
+{
+  "$schema": "../../schema.json",
+  "id": "vscode-extension",
+  "title": "VS Code for Command Palette",
+  "description": "Open VS Code workspaces, recent files, and projects from Command Palette.",
+  "author": {
+    "name": "Jonah Fintz",
+    "url": "https://fintz.dev"
+  },
+  "homepage": "https://github.com/JonahFintzDev/CommandPaletteVSCode",
+  "tags": [
+    "vscode",
+    "ide",
+    "developer tools"
+  ],
+  "installSources": [
+    {
+      "type": "winget",
+      "id": "JonahFintzDEV.CommandPalette-VSCode"
+    }
+  ]
+}

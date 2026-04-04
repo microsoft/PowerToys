@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Command Palette Extension Gallery Index",
+  "description": "Supports both the preferred object-based index format and the legacy string-array format.",
+  "oneOf": [
+    {
+      "title": "Preferred object-based index format",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "minLength": 1,
+            "description": "Unique extension identifier. Should match the extension folder name."
+          },
+          "tags": {
+            "type": "array",
+            "description": "Optional discoverability tags merged with manifest tags.",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "title": "Legacy string-array index format",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$",
+        "minLength": 1
+      }
+    }
+  ]
+}

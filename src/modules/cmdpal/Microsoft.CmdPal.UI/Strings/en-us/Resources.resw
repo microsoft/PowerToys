@@ -682,6 +682,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_PageTitles_DockPage" xml:space="preserve">
     <value>Dock</value>
   </data>
+  <data name="Settings_PageTitles_GalleryPage" xml:space="preserve">
+    <value>Extension Gallery</value>
+  </data>
   <data name="Settings_GeneralPage_EscapeKeyBehavior_Option_DismissEmptySearchOrGoBack.Content" xml:space="preserve">
     <value>Clear search first, then go back</value>
   </data>
@@ -1157,5 +1160,96 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="PinToDock_RightLabel" xml:space="preserve">
     <value>Right</value>
     <comment>Right section label in pin to dock dialog (code access, horizontal end)</comment>
+  </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Gallery.Content" xml:space="preserve">
+    <value>Extension Gallery</value>
+  </data>
+  <data name="Settings_GalleryPage_Banner_Header.Text" xml:space="preserve">
+    <value>Extension Gallery</value>
+  </data>
+  <data name="Settings_GalleryPage_Banner_Description.Text" xml:space="preserve">
+    <value>Discover extensions for Command Palette built by the community.</value>
+  </data>
+  <data name="Settings_GalleryPage_Banner_SubmitLink.Content" xml:space="preserve">
+    <value>Submit your extension</value>
+  </data>
+  <data name="Settings_GalleryPage_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search extensions...</value>
+  </data>
+  <data name="Settings_GalleryPage_Refresh_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Settings_GalleryPage_Sort_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Sort extensions</value>
+  </data>
+  <data name="Settings_GalleryPage_Sort_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Sort extensions</value>
+  </data>
+  <data name="Settings_GalleryPage_Sort_Default.Text" xml:space="preserve">
+    <value>Gallery order</value>
+  </data>
+  <data name="Settings_GalleryPage_Sort_Name.Text" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Settings_GalleryPage_Sort_Author.Text" xml:space="preserve">
+    <value>Author</value>
+  </data>
+  <data name="Settings_GalleryPage_Sort_InstallationStatus.Text" xml:space="preserve">
+    <value>Installation status</value>
+  </data>
+  <data name="Settings_GalleryPage_Loading_Text.Text" xml:space="preserve">
+    <value>Loading extensions...</value>
+  </data>
+  <data name="Settings_GalleryPage_Error_InfoBar.Title" xml:space="preserve">
+    <value>Failed to load extensions</value>
+  </data>
+  <data name="Settings_GalleryPage_RateLimit_Primary.Text" xml:space="preserve">
+    <value>The gallery is taking a breather</value>
+  </data>
+  <data name="Settings_GalleryPage_RateLimit_Secondary.Text" xml:space="preserve">
+    <value>We hit the extension gallery rate limit. Please try again in a little while.</value>
+  </data>
+  <data name="Settings_GalleryPage_Cache_InfoBar.Title" xml:space="preserve">
+    <value>Showing cached data</value>
+  </data>
+  <data name="Settings_GalleryPage_Cache_InfoBar.Message" xml:space="preserve">
+    <value>Could not reach the extension gallery. Showing previously cached data.</value>
+  </data>
+  <data name="Settings_GalleryPage_CustomFeed_InfoBar.Title" xml:space="preserve">
+    <value>Using custom extension gallery feed</value>
+  </data>
+  <data name="Settings_GalleryPage_NoResults_Primary.Text" xml:space="preserve">
+    <value>No extensions found</value>
+  </data>
+  <data name="Settings_GalleryPage_NoResults_Secondary.Text" xml:space="preserve">
+    <value>Try a different search term.</value>
+  </data>
+  <data name="Settings_GalleryPage_Installed_Badge.Text" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="Settings_GalleryPage_Update_Badge.Text" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="Settings_GalleryPage_StoreButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Install from Microsoft Store</value>
+  </data>
+  <data name="Settings_GalleryPage_StoreButton_Text.Text" xml:space="preserve">
+    <value>Store</value>
+  </data>
+  <data name="Settings_GalleryPage_DownloadButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="Settings_GalleryPage_DownloadButton_Text.Text" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="Settings_GalleryPage_ByAuthor.Text" xml:space="preserve">
+    <value>by </value>
+    <comment>Prefix before author name, e.g. "by Microsoft"</comment>
+  </data>
+  <data name="WinGetOperationsButton_Root.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show WinGet download and install progress</value>
+  </data>
+  <data name="WinGetOperationsButton_CancelOperation.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Cancel WinGet operation</value>
   </data>
 </root>

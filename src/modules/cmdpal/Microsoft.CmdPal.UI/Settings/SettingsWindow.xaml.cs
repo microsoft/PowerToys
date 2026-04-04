@@ -8,12 +8,14 @@ using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Gallery;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
 using WinUIEx;
@@ -30,6 +32,8 @@ public sealed partial class SettingsWindow : WindowEx,
     private readonly LocalKeyboardListener _localKeyboardListener;
 
     private readonly NavigationViewItem? _internalNavItem;
+
+    private Storyboard? _breadcrumbStoryboard;
 
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
@@ -63,7 +67,7 @@ public sealed partial class SettingsWindow : WindowEx,
                 Icon = new FontIcon { Glyph = "\uEC7A" },
                 Tag = "Internal",
             };
-            NavView.MenuItems.Add(_internalNavItem);
+            NavView.FooterMenuItems.Add(_internalNavItem);
         }
         else
         {
@@ -123,6 +127,9 @@ public sealed partial class SettingsWindow : WindowEx,
                 break;
             case "Extensions":
                 pageType = typeof(ExtensionsPage);
+                break;
+            case "Gallery":
+                pageType = typeof(ExtensionGalleryPage);
                 break;
             case "Dock":
                 pageType = typeof(DockSettingsPage);
@@ -278,14 +285,70 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
+    private void HideBreadcrumb()
+    {
+        _breadcrumbStoryboard?.Stop();
+
+        var fadeOut = new DoubleAnimation
+        {
+            To = 0,
+            Duration = new Duration(TimeSpan.FromMilliseconds(200)),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
+        };
+        Storyboard.SetTarget(fadeOut, BreadcrumbContainer);
+        Storyboard.SetTargetProperty(fadeOut, "Opacity");
+
+        _breadcrumbStoryboard = new Storyboard();
+        _breadcrumbStoryboard.Children.Add(fadeOut);
+        _breadcrumbStoryboard.Completed += (_, _) =>
+        {
+            BreadcrumbContainer.Visibility = Visibility.Collapsed;
+            BreadcrumbContainer.Opacity = 1;
+            _breadcrumbStoryboard = null;
+        };
+        _breadcrumbStoryboard.Begin();
+    }
+
+    private void ShowBreadcrumb()
+    {
+        _breadcrumbStoryboard?.Stop();
+        _breadcrumbStoryboard = null;
+
+        if (BreadcrumbContainer.Visibility == Visibility.Collapsed)
+        {
+            BreadcrumbContainer.Opacity = 0;
+            BreadcrumbContainer.Visibility = Visibility.Visible;
+
+            var fadeIn = new DoubleAnimation
+            {
+                To = 1,
+                Duration = new Duration(TimeSpan.FromMilliseconds(250)),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            };
+            Storyboard.SetTarget(fadeIn, BreadcrumbContainer);
+            Storyboard.SetTargetProperty(fadeIn, "Opacity");
+
+            _breadcrumbStoryboard = new Storyboard();
+            _breadcrumbStoryboard.Children.Add(fadeIn);
+            _breadcrumbStoryboard.Completed += (_, _) => _breadcrumbStoryboard = null;
+            _breadcrumbStoryboard.Begin();
+        }
+        else
+        {
+            BreadcrumbContainer.Opacity = 1;
+        }
+    }
+
     public void Dispose()
     {
+        WinGetOperationsButtonControl?.Dispose();
         _localKeyboardListener?.Dispose();
     }
 
     private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
     {
         BreadCrumbs.Clear();
+        ShowBreadcrumb();
 
         if (e.SourcePageType == typeof(GeneralPage))
         {
@@ -304,6 +367,20 @@ public sealed partial class SettingsWindow : WindowEx,
             NavView.SelectedItem = ExtensionPageNavItem;
             var pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
             BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(ExtensionGalleryPage))
+        {
+            NavView.SelectedItem = GalleryPageNavItem;
+            var pageType = RS_.GetString("Settings_PageTitles_GalleryPage");
+            BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(ExtensionGalleryItemPage) && e.Parameter is ExtensionGalleryItemViewModel galleryExtension)
+        {
+            NavView.SelectedItem = GalleryPageNavItem;
+            HideBreadcrumb();
+            var galleryPageType = RS_.GetString("Settings_PageTitles_GalleryPage");
+            BreadCrumbs.Add(new(galleryPageType, "Gallery"));
+            BreadCrumbs.Add(new(galleryExtension.Title, galleryExtension));
         }
         else if (e.SourcePageType == typeof(DockSettingsPage))
         {

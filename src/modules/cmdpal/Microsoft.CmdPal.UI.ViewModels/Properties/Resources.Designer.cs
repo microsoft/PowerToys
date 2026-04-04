@@ -412,6 +412,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open Command Palette extension gallery.
+        /// </summary>
+        public static string builtin_open_gallery_name {
+            get {
+                return ResourceManager.GetString("builtin_open_gallery_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open Command Palette settings.
         /// </summary>
         public static string builtin_open_settings_name {
@@ -529,6 +538,60 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to We couldn&apos;t load the extension gallery right now. Please try again in a little while..
+        /// </summary>
+        public static string gallery_error_generic_message {
+            get {
+                return ResourceManager.GetString("gallery_error_generic_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load extensions.
+        /// </summary>
+        public static string gallery_error_generic_title {
+            get {
+                return ResourceManager.GetString("gallery_error_generic_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to We hit the extension gallery rate limit. Please try again in a little while..
+        /// </summary>
+        public static string gallery_error_rate_limited_message {
+            get {
+                return ResourceManager.GetString("gallery_error_rate_limited_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The gallery is taking a breather.
+        /// </summary>
+        public static string gallery_error_rate_limited_title {
+            get {
+                return ResourceManager.GetString("gallery_error_rate_limited_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} extensions available.
+        /// </summary>
+        public static string gallery_n_extensions_available {
+            get {
+                return ResourceManager.GetString("gallery_n_extensions_available", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} extensions found.
+        /// </summary>
+        public static string gallery_n_extensions_found {
+            get {
+                return ResourceManager.GetString("gallery_n_extensions_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Commands.
         /// </summary>
         public static string home_sections_commands_title {
@@ -561,6 +624,195 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string ShowDetailsCommand {
             get {
                 return ResourceManager.GetString("ShowDetailsCommand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} of {1}.
+        /// </summary>
+        public static string winget_operation_detail_progress {
+            get {
+                return ResourceManager.GetString("winget_operation_detail_progress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updated {0:t}.
+        /// </summary>
+        public static string winget_operation_detail_updated {
+            get {
+                return ResourceManager.GetString("winget_operation_detail_updated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} B.
+        /// </summary>
+        public static string winget_operation_size_bytes {
+            get {
+                return ResourceManager.GetString("winget_operation_size_bytes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0:F1} GB.
+        /// </summary>
+        public static string winget_operation_size_gigabytes {
+            get {
+                return ResourceManager.GetString("winget_operation_size_gigabytes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0:F1} KB.
+        /// </summary>
+        public static string winget_operation_size_kilobytes {
+            get {
+                return ResourceManager.GetString("winget_operation_size_kilobytes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0:F1} MB.
+        /// </summary>
+        public static string winget_operation_size_megabytes {
+            get {
+                return ResourceManager.GetString("winget_operation_size_megabytes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Canceled.
+        /// </summary>
+        public static string winget_operation_status_canceled {
+            get {
+                return ResourceManager.GetString("winget_operation_status_canceled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Downloading.
+        /// </summary>
+        public static string winget_operation_status_downloading {
+            get {
+                return ResourceManager.GetString("winget_operation_status_downloading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Downloading {0}%.
+        /// </summary>
+        public static string winget_operation_status_downloading_percent {
+            get {
+                return ResourceManager.GetString("winget_operation_status_downloading_percent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed.
+        /// </summary>
+        public static string winget_operation_status_failed {
+            get {
+                return ResourceManager.GetString("winget_operation_status_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installing.
+        /// </summary>
+        public static string winget_operation_status_installing {
+            get {
+                return ResourceManager.GetString("winget_operation_status_installing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finalizing.
+        /// </summary>
+        public static string winget_operation_status_post_processing {
+            get {
+                return ResourceManager.GetString("winget_operation_status_post_processing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Queued to install.
+        /// </summary>
+        public static string winget_operation_status_queued_install {
+            get {
+                return ResourceManager.GetString("winget_operation_status_queued_install", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Queued to uninstall.
+        /// </summary>
+        public static string winget_operation_status_queued_uninstall {
+            get {
+                return ResourceManager.GetString("winget_operation_status_queued_uninstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installed.
+        /// </summary>
+        public static string winget_operation_status_succeeded_install {
+            get {
+                return ResourceManager.GetString("winget_operation_status_succeeded_install", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstalled.
+        /// </summary>
+        public static string winget_operation_status_succeeded_uninstall {
+            get {
+                return ResourceManager.GetString("winget_operation_status_succeeded_uninstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstalling.
+        /// </summary>
+        public static string winget_operation_status_uninstalling {
+            get {
+                return ResourceManager.GetString("winget_operation_status_uninstalling", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Downloads and installs.
+        /// </summary>
+        public static string winget_operations_flyout_active_header {
+            get {
+                return ResourceManager.GetString("winget_operations_flyout_active_header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} WinGet operations in progress.
+        /// </summary>
+        public static string winget_operations_in_progress_plural {
+            get {
+                return ResourceManager.GetString("winget_operations_in_progress_plural", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 1 WinGet operation in progress.
+        /// </summary>
+        public static string winget_operations_in_progress_single {
+            get {
+                return ResourceManager.GetString("winget_operations_in_progress_single", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recent WinGet activity.
+        /// </summary>
+        public static string winget_operations_recent_activity {
+            get {
+                return ResourceManager.GetString("winget_operations_recent_activity", resourceCulture);
             }
         }
     }

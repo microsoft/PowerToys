@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Logging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
@@ -121,14 +122,19 @@ public partial class App : Application, IDisposable
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
+        var uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
         // Root services
-        services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
+        services.AddSingleton(uiScheduler);
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
         services.AddCmdPalLogging();
 
-        AddBuiltInCommands(services, appInfoService.ConfigDirectory);
+        var winGet = services.AddWinGetServices();
+
+        services.AddGalleryServices();
+
+        AddBuiltInCommands(services, appInfoService.ConfigDirectory, winGet?.PackageManager, winGet?.OperationTracker, uiScheduler);
 
         AddCoreServices(services, appInfoService);
 
@@ -137,7 +143,12 @@ public partial class App : Application, IDisposable
         return services.BuildServiceProvider();
     }
 
-    private static void AddBuiltInCommands(ServiceCollection services, string configDirectory)
+    private static void AddBuiltInCommands(
+        ServiceCollection services,
+        string configDirectory,
+        IWinGetPackageManagerService? winGetPackageManagerService,
+        IWinGetOperationTrackerService? winGetOperationTrackerService,
+        TaskScheduler uiScheduler)
     {
         var providerLoadGuard = new ProviderLoadGuard(configDirectory);
 
@@ -158,20 +169,20 @@ public partial class App : Application, IDisposable
 
         // GH #38440: Users might not have WinGet installed! Or they might have
         // a ridiculously old version. Or might be running as admin.
-        // We shouldn't explode in the App ctor if we fail to instantiate an
-        // instance of PackageManager, which will happen in the static ctor
-        // for WinGetStatics
-        try
+        if (winGetPackageManagerService is not null && winGetOperationTrackerService is not null)
         {
-            var winget = new WinGetExtensionCommandsProvider();
-            winget.SetAllLookup(
-                query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
-                query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
-            services.AddSingleton<ICommandProvider>(winget);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Couldn't load winget", ex);
+            try
+            {
+                var winget = new WinGetExtensionCommandsProvider(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler);
+                winget.SetAllLookup(
+                    query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
+                    query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
+                services.AddSingleton<ICommandProvider>(winget);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Couldn't load winget", ex);
+            }
         }
 
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
@@ -237,7 +248,9 @@ public partial class App : Application, IDisposable
         services.AddIconServices(dispatcherQueue);
     }
 
-    private static void AddCoreServices(ServiceCollection services, IApplicationInfoService appInfoService)
+    private static void AddCoreServices(
+        ServiceCollection services,
+        IApplicationInfoService appInfoService)
     {
         // Core services
         services.AddSingleton(appInfoService);
@@ -261,6 +274,7 @@ public partial class App : Application, IDisposable
 
     public void Dispose()
     {
+        (Services as IDisposable)?.Dispose();
         _globalErrorHandler.Dispose();
         EtwTrace.Dispose();
         GC.SuppressFinalize(this);

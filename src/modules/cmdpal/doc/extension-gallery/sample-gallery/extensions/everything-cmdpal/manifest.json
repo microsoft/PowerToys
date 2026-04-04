@@ -1,0 +1,21 @@
+{
+  "$schema": "../../schema.json",
+  "id": "everything-cmdpal",
+  "title": "Everything for Command Palette",
+  "description": "Search your computer for files and folders using Everything, a fast file search tool.",
+  "author": {
+    "name": "Yu Chieh (Victor) Lin",
+    "url": "https://github.com/lin-ycv"
+  },
+  "homepage": "https://github.com/lin-ycv/EverythingCommandPalette",
+  "installSources": [
+    {
+      "type": "msstore",
+      "id": "9N2DRHJ970D9"
+    },
+    {
+      "type": "winget",
+      "id": "lin-ycv.EverythingCmdPal"
+    }
+  ]
+}

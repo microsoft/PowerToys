@@ -1,0 +1,18 @@
+{
+  "$schema": "../../schema.json",
+  "id": "qr-codes",
+  "title": "QR Codes for Command Palette",
+  "description": "Instantly create and manage QR codes right from Command Palette.",
+  "author": {
+    "name": "Jiri Polasek",
+    "url": "https://jiripolasek.com"
+  },
+  "icon": "icon.png",
+  "homepage": "https://github.com/jiripolasek/QRCodesExtension",
+  "installSources": [
+    {
+      "type": "winget",
+      "id": "JiriPolasek.QRCodesforCommandPalette"
+    }
+  ]
+}

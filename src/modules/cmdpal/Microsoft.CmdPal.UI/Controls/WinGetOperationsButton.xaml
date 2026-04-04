@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.WinGetOperationsButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winGet="using:Microsoft.CmdPal.UI.ViewModels.WinGet"
+    mc:Ignorable="d">
+
+    <Button
+        x:Uid="WinGetOperationsButton_Root"
+        Padding="14,10"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Bottom"
+        Style="{StaticResource AccentButtonStyle}"
+        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasVisibleOperations), Mode=OneWay, FallbackValue=Collapsed}">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <FontIcon FontSize="14" Glyph="&#xE8B7;" />
+            <ProgressRing
+                Width="16"
+                Height="16"
+                IsActive="{x:Bind HasActiveOperations, Mode=OneWay}"
+                Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasActiveOperations), Mode=OneWay, FallbackValue=Collapsed}" />
+            <TextBlock Text="{x:Bind SummaryText, Mode=OneWay}" />
+        </StackPanel>
+        <Button.Flyout>
+            <Flyout Placement="TopEdgeAlignedRight">
+                <Border
+                    Width="400"
+                    MaxHeight="420"
+                    Padding="16">
+                    <StackPanel Spacing="12">
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind FlyoutHeaderText, Mode=OneWay}" />
+                        <ScrollViewer MaxHeight="320">
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.Operations, Mode=OneWay}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="winGet:WinGetOperationViewModel">
+                                        <Border
+                                            Margin="0,0,0,8"
+                                            Padding="12"
+                                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="8">
+                                            <Grid RowSpacing="8">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock
+                                                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                    Text="{x:Bind PackageName, Mode=OneWay}"
+                                                    TextTrimming="CharacterEllipsis" />
+
+                                                <Button
+                                                    x:Uid="WinGetOperationsButton_CancelOperation"
+                                                    Grid.Row="0"
+                                                    Grid.Column="1"
+                                                    Width="32"
+                                                    Height="32"
+                                                    Padding="0"
+                                                    Command="{x:Bind CancelCommand}"
+                                                    Style="{StaticResource SubtleButtonStyle}"
+                                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(CanCancel), Mode=OneWay, FallbackValue=Collapsed}">
+                                                    <FontIcon FontSize="12" Glyph="&#xE711;" />
+                                                </Button>
+
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Grid.Column="0"
+                                                    Grid.ColumnSpan="2"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind StatusText, Mode=OneWay}" />
+
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    Grid.Column="0"
+                                                    Grid.ColumnSpan="2"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind DetailText, Mode=OneWay}"
+                                                    TextWrapping="WrapWholeWords"
+                                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasDetailText), Mode=OneWay, FallbackValue=Collapsed}" />
+
+                                                <ProgressBar
+                                                    Grid.Row="3"
+                                                    Grid.Column="0"
+                                                    Grid.ColumnSpan="2"
+                                                    Height="4"
+                                                    IsIndeterminate="{x:Bind IsIndeterminate, Mode=OneWay}"
+                                                    Maximum="100"
+                                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowProgressBar), Mode=OneWay, FallbackValue=Collapsed}"
+                                                    Value="{x:Bind ProgressValue, Mode=OneWay}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </StackPanel>
+                </Border>
+            </Flyout>
+        </Button.Flyout>
+    </Button>
+</UserControl>

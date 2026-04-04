@@ -1,0 +1,22 @@
+{
+  "$schema": "../../schema.json",
+  "id": "visual-studio-extension",
+  "title": "Visual Studio for Command Palette",
+  "description": "Open Visual Studio recents in Command Palette.",
+  "author": {
+    "name": "Davide Giacometti",
+    "url": "https://github.com/davidegiacometti"
+  },
+  "homepage": "https://github.com/davidegiacometti/CmdPal-Extensions",
+  "tags": [
+    "visual studio",
+    "ide",
+    "developer tools"
+  ],
+  "installSources": [
+    {
+      "type": "winget",
+      "id": "davidegiacometti.VisualStudioForCmdPal"
+    }
+  ]
+}
