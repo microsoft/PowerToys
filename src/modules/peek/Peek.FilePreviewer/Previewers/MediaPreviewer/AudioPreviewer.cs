@@ -202,6 +202,7 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
             ".m4a",
             ".mp3",
             ".ogg",
+            ".opus",
             ".wav",
             ".wma",
         };
