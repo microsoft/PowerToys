@@ -114,7 +114,6 @@
                     QuerySubmitted="SearchBox_QuerySubmitted"
                     SuggestionChosen="SearchBox_SuggestionChosen"
                     TextChanged="SearchBox_TextChanged"
-                    TextMemberPath="Header"
                     UpdateTextOnSelect="False">
                     <AutoSuggestBox.KeyboardAccelerators>
                         <KeyboardAccelerator
@@ -137,6 +136,7 @@
             IsPaneToggleButtonVisible="False"
             IsSettingsVisible="False"
             IsTitleBarAutoPaddingEnabled="False"
+            ItemInvoked="NavigationView_ItemInvoked"
             PaneClosed="NavigationView_PaneClosed"
             PaneOpened="NavigationView_PaneOpened"
             SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
@@ -443,11 +443,7 @@
                         Visibility="{x:Bind ViewModel.ShowCloseMenu, Mode=OneWay}" />
                 </StackPanel>
             </NavigationView.PaneFooter>
-            <i:Interaction.Behaviors>
-                <ic:EventTriggerBehavior EventName="ItemInvoked">
-                    <ic:InvokeCommandAction Command="{x:Bind ViewModel.ItemInvokedCommand}" />
-                </ic:EventTriggerBehavior>
-            </i:Interaction.Behaviors>
+            <!--  Direct event handler instead of InvokeCommandAction for AOT compatibility  -->
             <Frame x:Name="shellFrame" />
         </NavigationView>
         <ContentDialog

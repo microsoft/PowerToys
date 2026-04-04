@@ -80,6 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        // AOT-compatible type lookup using switch expression instead of reflection (IL2026)
         private Type GetPageTypeFromName(string pageTypeName)
         {
             if (string.IsNullOrEmpty(pageTypeName))
@@ -87,8 +88,41 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return null;
             }
 
-            var assembly = typeof(GeneralPage).Assembly;
-            return assembly.GetType($"Microsoft.PowerToys.Settings.UI.Views.{pageTypeName}");
+            return pageTypeName switch
+            {
+                nameof(DashboardPage) => typeof(DashboardPage),
+                nameof(GeneralPage) => typeof(GeneralPage),
+                nameof(AdvancedPastePage) => typeof(AdvancedPastePage),
+                nameof(AlwaysOnTopPage) => typeof(AlwaysOnTopPage),
+                nameof(AwakePage) => typeof(AwakePage),
+                nameof(CmdNotFoundPage) => typeof(CmdNotFoundPage),
+                nameof(CmdPalPage) => typeof(CmdPalPage),
+                nameof(ColorPickerPage) => typeof(ColorPickerPage),
+                nameof(CropAndLockPage) => typeof(CropAndLockPage),
+                nameof(EnvironmentVariablesPage) => typeof(EnvironmentVariablesPage),
+                nameof(FancyZonesPage) => typeof(FancyZonesPage),
+                nameof(FileLocksmithPage) => typeof(FileLocksmithPage),
+                nameof(HostsPage) => typeof(HostsPage),
+                nameof(ImageResizerPage) => typeof(ImageResizerPage),
+                nameof(KeyboardManagerPage) => typeof(KeyboardManagerPage),
+                nameof(LightSwitchPage) => typeof(LightSwitchPage),
+                nameof(MeasureToolPage) => typeof(MeasureToolPage),
+                nameof(MouseUtilsPage) => typeof(MouseUtilsPage),
+                nameof(MouseWithoutBordersPage) => typeof(MouseWithoutBordersPage),
+                nameof(NewPlusPage) => typeof(NewPlusPage),
+                nameof(PeekPage) => typeof(PeekPage),
+                nameof(PowerAccentPage) => typeof(PowerAccentPage),
+                nameof(PowerLauncherPage) => typeof(PowerLauncherPage),
+                nameof(PowerOcrPage) => typeof(PowerOcrPage),
+                nameof(PowerPreviewPage) => typeof(PowerPreviewPage),
+                nameof(PowerRenamePage) => typeof(PowerRenamePage),
+                nameof(PowerDisplayPage) => typeof(PowerDisplayPage),
+                nameof(RegistryPreviewPage) => typeof(RegistryPreviewPage),
+                nameof(ShortcutGuidePage) => typeof(ShortcutGuidePage),
+                nameof(WorkspacesPage) => typeof(WorkspacesPage),
+                nameof(ZoomItPage) => typeof(ZoomItPage),
+                _ => null,
+            };
         }
     }
 

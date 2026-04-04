@@ -23,7 +23,7 @@ using Windows.Management.Deployment;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class CmdPalViewModel : PageViewModelBase
+    public partial class CmdPalViewModel : PageViewModelBase
     {
         protected override string ModuleName => "CmdPal";
 

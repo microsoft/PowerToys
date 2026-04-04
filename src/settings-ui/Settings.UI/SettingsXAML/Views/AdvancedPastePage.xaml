@@ -225,12 +225,11 @@
                         <tkcontrols:SettingsExpander
                             Name="PasteAsFile"
                             x:Uid="PasteAsFile"
-                            DataContext="{x:Bind ViewModel.AdditionalActions.PasteAsFile, Mode=OneWay}"
                             HeaderIcon="{ui:FontIcon Glyph=&#xEC50;}"
-                            IsExpanded="{Binding IsShown, Mode=OneWay}">
+                            IsExpanded="{x:Bind ViewModel.AdditionalActions.PasteAsFile.IsShown, Mode=OneWay}">
                             <tkcontrols:SettingsExpander.Content>
                                 <ToggleSwitch
-                                    IsOn="{Binding IsShown, Mode=TwoWay}"
+                                    IsOn="{x:Bind ViewModel.AdditionalActions.PasteAsFile.IsShown, Mode=TwoWay}"
                                     OffContent=""
                                     OnContent="" />
                             </tkcontrols:SettingsExpander.Content>
@@ -240,21 +239,21 @@
                                 <tkcontrols:SettingsCard
                                     Name="PasteAsTxtFile"
                                     x:Uid="PasteAsTxtFile"
-                                    DataContext="{Binding PasteAsTxtFile, Mode=TwoWay}"
+                                    DataContext="{x:Bind ViewModel.AdditionalActions.PasteAsFile.PasteAsTxtFile, Mode=OneWay}"
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.PasteAsFile.IsShown, Mode=OneWay}">
                                     <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     Name="PasteAsPngFile"
                                     x:Uid="PasteAsPngFile"
-                                    DataContext="{Binding PasteAsPngFile, Mode=TwoWay}"
+                                    DataContext="{x:Bind ViewModel.AdditionalActions.PasteAsFile.PasteAsPngFile, Mode=OneWay}"
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.PasteAsFile.IsShown, Mode=OneWay}">
                                     <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     Name="PasteAsHtmlFile"
                                     x:Uid="PasteAsHtmlFile"
-                                    DataContext="{Binding PasteAsHtmlFile, Mode=TwoWay}"
+                                    DataContext="{x:Bind ViewModel.AdditionalActions.PasteAsFile.PasteAsHtmlFile, Mode=OneWay}"
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.PasteAsFile.IsShown, Mode=OneWay}">
                                     <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
                                 </tkcontrols:SettingsCard>
@@ -265,12 +264,11 @@
                         <tkcontrols:SettingsExpander
                             Name="Transcode"
                             x:Uid="Transcode"
-                            DataContext="{x:Bind ViewModel.AdditionalActions.Transcode, Mode=OneWay}"
                             HeaderIcon="{ui:FontIcon Glyph=&#xEA69;}"
-                            IsExpanded="{Binding IsShown, Mode=OneWay}">
+                            IsExpanded="{x:Bind ViewModel.AdditionalActions.Transcode.IsShown, Mode=OneWay}">
                             <tkcontrols:SettingsExpander.Content>
                                 <ToggleSwitch
-                                    IsOn="{Binding IsShown, Mode=TwoWay}"
+                                    IsOn="{x:Bind ViewModel.AdditionalActions.Transcode.IsShown, Mode=TwoWay}"
                                     OffContent=""
                                     OnContent="" />
                             </tkcontrols:SettingsExpander.Content>
@@ -280,14 +278,14 @@
                                 <tkcontrols:SettingsCard
                                     Name="TranscodeToMp3"
                                     x:Uid="TranscodeToMp3"
-                                    DataContext="{Binding TranscodeToMp3, Mode=TwoWay}"
+                                    DataContext="{x:Bind ViewModel.AdditionalActions.Transcode.TranscodeToMp3, Mode=OneWay}"
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.Transcode.IsShown, Mode=OneWay}">
                                     <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     Name="TranscodeToMp4"
                                     x:Uid="TranscodeToMp4"
-                                    DataContext="{Binding TranscodeToMp4, Mode=TwoWay}"
+                                    DataContext="{x:Bind ViewModel.AdditionalActions.Transcode.TranscodeToMp4, Mode=OneWay}"
                                     IsEnabled="{x:Bind ViewModel.AdditionalActions.Transcode.IsShown, Mode=OneWay}">
                                     <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
                                 </tkcontrols:SettingsCard>
@@ -400,6 +398,7 @@
             x:Name="CustomActionDialog"
             x:Uid="CustomActionDialog"
             Closed="CustomActionDialog_Closed"
+            x:DataType="models:AdvancedPasteCustomAction"
             IsPrimaryButtonEnabled="{Binding IsValid, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
             IsSecondaryButtonEnabled="True"
             PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">

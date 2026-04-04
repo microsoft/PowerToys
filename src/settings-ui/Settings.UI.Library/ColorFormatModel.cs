@@ -9,7 +9,8 @@ using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class ColorFormatModel : INotifyPropertyChanged
+    [WinRT.GeneratedBindableCustomProperty]
+    public partial class ColorFormatModel : INotifyPropertyChanged
     {
         private string _name;
         private string _format;

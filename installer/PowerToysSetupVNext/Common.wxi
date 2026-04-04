@@ -24,14 +24,22 @@
         <?define PowerToysPlatform="x64"?>
         <?define PlatformProgramFiles="[ProgramFiles64Folder]"?>
         <?define PlatformLK="x64" ?>
-        <?define BinDir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
+        <?if $(var.InstallerBinDir) != ""?>
+              <?define BinDir="$(var.InstallerBinDir)\" ?>
+        <?else?>
+              <?define BinDir="$(var.RepoDir)x64\$(var.Configuration)\" ?>
+        <?endif?>
   <?else?>
         <!-- stable WIX 3 doesn't support ARM64, so we build installers as x86 -->
         <?define PowerToysPlatform="ARM64"?>
         <!--TODO: define to ARM64 Program files once it's available-->
         <?define PlatformProgramFiles="[ProgramFiles6432Folder]"?> 
         <?define PlatformLK="arm64" ?>
-        <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
+        <?if $(var.InstallerBinDir) != ""?>
+              <?define BinDir="$(var.InstallerBinDir)\" ?>
+        <?else?>
+              <?define BinDir="$(var.RepoDir)ARM64\$(var.Configuration)\" ?>
+        <?endif?>
   <?endif?>
 
   <?if $(var.PerUser) = "true"?>

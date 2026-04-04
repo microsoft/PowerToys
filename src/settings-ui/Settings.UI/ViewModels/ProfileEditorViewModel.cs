@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     /// <summary>
     /// ViewModel for Profile Editor Dialog
     /// </summary>
-    public class ProfileEditorViewModel : INotifyPropertyChanged
+    public partial class ProfileEditorViewModel : INotifyPropertyChanged
     {
         private string _profileName = string.Empty;
         private ObservableCollection<MonitorSelectionItem> _monitors;

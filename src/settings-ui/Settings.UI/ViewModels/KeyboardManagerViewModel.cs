@@ -11,17 +11,18 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
-using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.Utilities;
 using Microsoft.PowerToys.Telemetry;
+using NativeMethods = Microsoft.PowerToys.Settings.Utilities.NativeMethods;
+using RelayCommand = Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands.RelayCommand;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {

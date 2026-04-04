@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Windows;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml.Data;
 
@@ -38,7 +37,7 @@ public sealed partial class ImageResizerSizeToAccessibleTextConverter : IValueCo
         {
             (string presetName, string nameId) => FormatNameText(presetName, nameId),
             (ImageSize preset, string _) => FormatDescriptionText(preset),
-            _ => DependencyProperty.UnsetValue,
+            _ => Microsoft.UI.Xaml.DependencyProperty.UnsetValue,
         };
     }
 
@@ -46,14 +45,14 @@ public sealed partial class ImageResizerSizeToAccessibleTextConverter : IValueCo
     {
         return AccessibilityFormats.TryGetValue(nameId, out string format) ?
             string.Format(CultureInfo.CurrentCulture, format, presetName) :
-            DependencyProperty.UnsetValue;
+            Microsoft.UI.Xaml.DependencyProperty.UnsetValue;
     }
 
     private object FormatDescriptionText(ImageSize preset)
     {
         if (preset == null)
         {
-            return DependencyProperty.UnsetValue;
+            return Microsoft.UI.Xaml.DependencyProperty.UnsetValue;
         }
 
         string fitText = _fitConverter.Convert(preset.Fit, typeof(string), null, null) as string;

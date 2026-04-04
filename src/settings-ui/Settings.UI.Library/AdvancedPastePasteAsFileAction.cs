@@ -9,7 +9,8 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.Library;
 
-public sealed class AdvancedPastePasteAsFileAction : Observable, IAdvancedPasteAction
+[WinRT.GeneratedBindableCustomProperty]
+public sealed partial class AdvancedPastePasteAsFileAction : Observable, IAdvancedPasteAction
 {
     public static class PropertyNames
     {
