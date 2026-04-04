@@ -74,7 +74,7 @@ namespace ImageResizer.Cli
             bool useLineBasedProgress = cliOptions.ProgressLines ?? false;
             int lastReportedMilestone = -1;
 
-            var errors = await batch.ProcessAsync(
+            var results = await batch.ProcessAsync(
                 (completed, total) =>
                 {
                     var progress = (int)((completed / total) * 100);
@@ -103,15 +103,24 @@ namespace ImageResizer.Cli
                 Console.WriteLine();
             }
 
-            var errorList = errors.ToList();
-            if (errorList.Count > 0)
+            // ProcessAsync returns all results including successes; only report problems.
+            var problemResults = results.Where(r => r is not SuccessResult).ToList();
+            if (problemResults.Count > 0)
             {
-                Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Resources.CLI_CompletedWithErrors, errorList.Count));
-                CliLogger.Error($"Processing completed with {errorList.Count} error(s)");
-                foreach (var error in errorList)
+                Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, Resources.CLI_CompletedWithErrors, problemResults.Count));
+                CliLogger.Error($"Processing completed with {problemResults.Count} problem(s)");
+                foreach (var result in problemResults)
                 {
-                    Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, "  {0}: {1}", error.File, error.Error));
-                    CliLogger.Error($"  {error.File}: {error.Error}");
+                    var fileName = Path.GetFileName(result.FilePath);
+                    var message = result switch
+                    {
+                        ErrorResult e => e.Exception.Message,
+                        FileReplaceFailedResult r => r.Exception.Message,
+                        FileRecycleFailedResult r => r.Exception.Message,
+                        _ => string.Empty,
+                    };
+                    Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture, "  {0}: {1}", fileName, message));
+                    CliLogger.Error($"  {fileName}: {message}");
                 }
 
                 return 1;

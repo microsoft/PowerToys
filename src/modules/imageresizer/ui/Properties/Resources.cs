@@ -71,5 +71,7 @@ namespace ImageResizer.Properties
         public static string CLI_WarningInvalidSizeIndex => ResourceLoaderInstance.GetString("CLI_WarningInvalidSizeIndex");
 
         public static string CLI_NoInputFiles => ResourceLoaderInstance.GetString("CLI_NoInputFiles");
+
+        public static string NoRecycleBin_ExceptionMessage => ResourceLoaderInstance.GetString("NoRecycleBin_ExceptionMessage");
     }
 }

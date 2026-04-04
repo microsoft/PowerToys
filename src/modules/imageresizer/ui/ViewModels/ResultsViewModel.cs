@@ -23,6 +23,12 @@ namespace ImageResizer.ViewModels
 
         public IEnumerable<ResizeError> Errors { get; }
 
+        public bool HasErrors => _allResults.OfType<ErrorResult>().Any();
+
+        public bool HasReplaceWarnings => _allResults.OfType<FileReplaceFailedResult>().Any();
+
+        public bool HasRecycleFailedWarnings => _allResults.OfType<FileRecycleFailedResult>().Any();
+
         [RelayCommand]
         public void Close() => _mainView.Close();
     }
