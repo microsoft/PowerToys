@@ -327,6 +327,9 @@ MRUCMPPROC
 MRUINFO
 REGSTR
 
+# Quick Accent
+Ene
+
 # Misc Win32 APIs and PInvokes
 INVOKEIDLIST
 MEMORYSTATUSEX
@@ -386,6 +389,10 @@ nostdin
 # Performance counter keys
 engtype
 Nonpaged
+
+# Spell-check fragments
+traies
+udit
 
 # XAML
 Untargeted
