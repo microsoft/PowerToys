@@ -44248,6 +44248,11 @@ namespace exprtk
          const std::size_t fd_size    = sizeof(details::file_descriptor*);
          details::file_descriptor* fd = reinterpret_cast<file_descriptor*>(0);
 
+         if (sizeof(T) < fd_size)
+         {
+            throw std::runtime_error("exprtk::rtl::io::file - Error - pointer size larger than holder.");
+         }
+
          std::memcpy(reinterpret_cast<char_ptr >(&fd),
                      reinterpret_cast<char_cptr>(&v ),
                      fd_size);
