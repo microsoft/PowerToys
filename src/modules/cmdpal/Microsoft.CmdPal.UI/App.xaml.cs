@@ -5,6 +5,7 @@
 using ManagedCommon;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Logging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Common.WinGet.Services;
@@ -127,7 +128,10 @@ public partial class App : Application, IDisposable
         services.AddSingleton(uiScheduler);
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
+        services.AddCmdPalLogging();
+
         var winGet = services.AddWinGetServices();
+
         services.AddGalleryServices();
 
         AddBuiltInCommands(services, appInfoService.ConfigDirectory, winGet?.PackageManager, winGet?.OperationTracker, uiScheduler);
