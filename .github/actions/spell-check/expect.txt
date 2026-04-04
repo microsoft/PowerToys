@@ -1063,9 +1063,11 @@ NULLCURSOR
 nullonfailure
 numberbox
 nwc
+ocid
 ocr
 Ocrsettings
 odbccp
+odotocodot
 OEMCONVERT
 officehubintl
 OFN
@@ -1134,6 +1136,7 @@ PDFs
 pdisp
 PDLL
 pdo
+pdpshare
 pdto
 pdtobj
 pdw
@@ -1866,6 +1869,7 @@ XDocument
 XElement
 xfd
 XFile
+XIn
 XIncrement
 XNamespace
 Xoshiro
