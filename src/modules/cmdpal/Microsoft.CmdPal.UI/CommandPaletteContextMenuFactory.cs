@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -147,12 +148,13 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
     public void AddMoreCommandsToTopLevel(
         TopLevelViewModel topLevelItem,
         ICommandProviderContext providerContext,
-        List<IContextItem?> contextItems)
+        List<IContextItemViewModel> contextItems)
     {
         var itemId = topLevelItem.Id;
-        var supportsPinning = providerContext.SupportsPinning;
-        List<IContextItem> moreCommands = [];
+        List<IContextItemViewModel> settingsCommands = [];
+        List<IContextItemViewModel> pinningCommands = [];
         var commandItem = topLevelItem.ItemViewModel;
+        var hasPrimaryCommand = !string.IsNullOrEmpty(commandItem.Command.Name);
 
         // Add pin/unpin commands for pinning items to the top-level or to
         // the dock.
@@ -160,6 +162,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
         {
             var (_, providerSettings) = _settingsService.Settings.GetProviderSettings(provider);
+            AddSettingsCommandsToTopLevel(topLevelItem, provider, _settingsService, itemId, contextItems, settingsCommands);
 
             var isPinnedSubCommand = providerSettings.PinnedCommandIds.Contains(itemId);
             if (isPinnedSubCommand)
@@ -173,19 +176,187 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                        _topLevelCommandManager);
 
                 var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
-                moreCommands.Add(contextItem);
+                pinningCommands.Add(CreateContextItemViewModel(contextItem, commandItem.PageContext));
             }
 
-            TryAddPinToDockCommand(providerSettings, itemId, providerId, moreCommands, commandItem);
+            TryAddPinToDockCommand(providerSettings, itemId, providerId, pinningCommands, commandItem);
         }
 
-        if (moreCommands.Count > 0)
+        AppendContextItemGroup(contextItems, settingsCommands, hasPrimaryCommand);
+        AppendContextItemGroup(contextItems, pinningCommands, hasPrimaryCommand);
+    }
+
+    private static void AddSettingsCommandsToTopLevel(
+        TopLevelViewModel topLevelItem,
+        CommandProviderWrapper provider,
+        ISettingsService settingsService,
+        string itemId,
+        List<IContextItemViewModel> contextItems,
+        List<IContextItemViewModel> settingsCommands)
+    {
+        var replacedLegacySettingsCommand = TryReplaceLegacySettingsCommands(provider, settingsService, contextItems);
+        if (!replacedLegacySettingsCommand &&
+            provider.Settings?.HasOrMayHaveSettings == true)
         {
-            moreCommands.Insert(0, new Separator());
-
-            // var moreResults = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(moreCommands.ToArray(), commandItem);
-            contextItems.AddRange(moreCommands);
+            settingsCommands.Add(CreateContextItemViewModel(
+                new OpenExtensionSettingsPageCommand(provider, settingsService),
+                topLevelItem));
         }
+
+        if (topLevelItem.IsFallback || topLevelItem.IsDockBand)
+        {
+            return;
+        }
+
+        settingsCommands.Add(CreateContextItemViewModel(
+            new OpenCommandAliasSettingsCommand(provider, settingsService, itemId),
+            topLevelItem));
+        settingsCommands.Add(CreateContextItemViewModel(
+            new OpenCommandGlobalHotkeySettingsCommand(provider, settingsService, itemId),
+            topLevelItem));
+    }
+
+    private static bool TryReplaceLegacySettingsCommands(
+        CommandProviderWrapper provider,
+        ISettingsService settingsService,
+        List<IContextItemViewModel> contextItems)
+    {
+        if (provider.Settings?.HasOrMayHaveSettings != true)
+        {
+            return false;
+        }
+
+        if (!contextItems.OfType<CommandContextItemViewModel>().Any())
+        {
+            return false;
+        }
+
+        // RPC: first access may fetch provider.Settings.SettingsPage and snapshot
+        // its Id/Name/type for the rest of this menu-build pass.
+        var settingsPageMetadata = provider.Settings?.CachedSettingsPageMetadata;
+        if (settingsPageMetadata is null)
+        {
+            return false;
+        }
+
+        return ReplaceMatchingSettingsCommands(contextItems, settingsPageMetadata, provider, settingsService);
+    }
+
+    private static bool ReplaceMatchingSettingsCommands(
+        List<IContextItemViewModel> contextItems,
+        SettingsPageMetadata settingsPageMetadata,
+        CommandProviderWrapper provider,
+        ISettingsService settingsService)
+    {
+        var replacedAny = false;
+
+        for (var i = 0; i < contextItems.Count; i++)
+        {
+            if (contextItems[i] is not CommandContextItemViewModel commandViewModel)
+            {
+                continue;
+            }
+
+            try
+            {
+                if (!MatchesLegacySettingsCommandSignature(commandViewModel, settingsPageMetadata))
+                {
+                    continue;
+                }
+
+                // RPC: only touch the raw extension command after the cheap local
+                // Id/Name prefilter says this might be the legacy settings item.
+                var existingCommand = commandViewModel.Command.Model.Unsafe;
+                if (existingCommand is null ||
+                    !IsLegacySettingsPageCommand(existingCommand, settingsPageMetadata))
+                {
+                    continue;
+                }
+
+                contextItems[i] = CreateReplacementSettingsContextItemViewModel(provider, settingsService, commandViewModel);
+                replacedAny = true;
+            }
+            catch (Exception ex)
+            {
+                // Extension object may be unavailable.
+                Logger.LogError("Failed to check settings page for replacement", ex);
+            }
+        }
+
+        return replacedAny;
+    }
+
+    private static CommandContextItemViewModel CreateReplacementSettingsContextItemViewModel(
+        CommandProviderWrapper provider,
+        ISettingsService settingsService,
+        CommandContextItemViewModel source)
+    {
+        var replacement = new CommandContextItem(new OpenExtensionSettingsPageCommand(provider, settingsService))
+        {
+            IsCritical = source.IsCritical,
+            Title = source.Title,
+            Subtitle = source.Subtitle,
+            Icon = source.Icon,
+        };
+
+        if (source.RequestedShortcut is KeyChord requestedShortcut)
+        {
+            replacement.RequestedShortcut = requestedShortcut;
+        }
+
+        return CreateContextItemViewModel(replacement, source.PageContext);
+    }
+
+    private static bool MatchesLegacySettingsCommandSignature(
+        CommandContextItemViewModel commandViewModel,
+        SettingsPageMetadata settingsPageMetadata)
+    {
+        if (!string.IsNullOrEmpty(settingsPageMetadata.PageId))
+        {
+            return commandViewModel.Command.Id == settingsPageMetadata.PageId;
+        }
+
+        // Toolkit settings pages usually inherit the default empty Command.Id, so
+        // Name is the only cheap local prefilter we can use before touching the
+        // raw extension object.
+        return !string.IsNullOrEmpty(settingsPageMetadata.PageName) &&
+               commandViewModel.Command.Name == settingsPageMetadata.PageName;
+    }
+
+    private static bool IsLegacySettingsPageCommand(
+        ICommand existingCommand,
+        SettingsPageMetadata settingsPageMetadata)
+    {
+        if (ReferenceEquals(existingCommand, settingsPageMetadata.SettingsPageCommand))
+        {
+            return true;
+        }
+
+        // Settings.SettingsPage may return a brand-new page object on each call,
+        // so after the cheap local Id/Name prefilter we compare the runtime type
+        // of the current settings page snapshot before paying for the IContentPage
+        // interface check on the candidate command.
+        // QI: confirm the candidate command actually exposes IContentPage.
+        return existingCommand.GetType() == settingsPageMetadata.SettingsPageType &&
+               existingCommand is IContentPage;
+    }
+
+    private static void AppendContextItemGroup(List<IContextItemViewModel> contextItems, List<IContextItemViewModel> group, bool hasPrimaryCommand)
+    {
+        if (group.Count == 0)
+        {
+            return;
+        }
+
+        var hasExistingMenuItems = hasPrimaryCommand || contextItems.Count > 0;
+        if (hasExistingMenuItems &&
+            (contextItems.Count == 0 ||
+             contextItems[^1] is not ISeparatorContextItem))
+        {
+            contextItems.Add(new SeparatorViewModel());
+        }
+
+        contextItems.AddRange(group);
     }
 
     private void TryAddPinToDockCommand(
@@ -216,6 +387,45 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
         moreCommands.Add(contextItem);
+    }
+
+    private void TryAddPinToDockCommand(
+        ProviderSettings providerSettings,
+        string itemId,
+        string providerId,
+        List<IContextItemViewModel> moreCommands,
+        CommandItemViewModel commandItem)
+    {
+        if (!_settingsService.Settings.EnableDock)
+        {
+            return;
+        }
+
+        var inStartBands = _settingsService.Settings.DockSettings.StartBands.Any(band => MatchesBand(band, itemId, providerId));
+        var inCenterBands = _settingsService.Settings.DockSettings.CenterBands.Any(band => MatchesBand(band, itemId, providerId));
+        var inEndBands = _settingsService.Settings.DockSettings.EndBands.Any(band => MatchesBand(band, itemId, providerId));
+        var alreadyPinned = inStartBands || inCenterBands || inEndBands; /** &&
+                            _settingsService.Settings.DockSettings.PinnedCommands.Contains(this.Id)**/
+        var pinToTopLevelCommand = new PinToCommand(
+            commandId: itemId,
+            providerId: providerId,
+            pin: !alreadyPinned,
+            PinLocation.Dock,
+            _settingsService,
+            _topLevelCommandManager,
+            commandItemViewModel: commandItem);
+
+        moreCommands.Add(CreateContextItemViewModel(new PinToContextItem(pinToTopLevelCommand, commandItem), commandItem.PageContext));
+    }
+
+    private static CommandContextItemViewModel CreateContextItemViewModel(ICommand command, TopLevelViewModel topLevelItem)
+        => CreateContextItemViewModel(new CommandContextItem(command), topLevelItem.ItemViewModel.PageContext);
+
+    private static CommandContextItemViewModel CreateContextItemViewModel(ICommandContextItem contextItem, WeakReference<IPageContext> pageContext)
+    {
+        var viewModel = new CommandContextItemViewModel(contextItem, pageContext);
+        viewModel.SlowInitializeProperties();
+        return viewModel;
     }
 
     internal static bool MatchesBand(DockBandSettings bandSettings, string commandId, string providerId)
@@ -354,6 +564,77 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         {
             PinToDockMessage message = new(_providerId, _commandId, false);
             WeakReferenceMessenger.Default.Send(message);
+        }
+    }
+
+    private abstract partial class OpenExtensionSettingsCommand : InvokableCommand
+    {
+        private readonly CommandProviderWrapper _provider;
+        private readonly ISettingsService _settingsService;
+        private readonly string? _commandId;
+
+        protected abstract string NameResource { get; }
+
+        protected abstract ExtensionSettingsFocusTarget FocusTarget { get; }
+
+        public override string Name => RS_.GetString(NameResource);
+
+        protected OpenExtensionSettingsCommand(CommandProviderWrapper provider, ISettingsService settingsService, string? commandId)
+        {
+            _provider = provider;
+            _settingsService = settingsService;
+            _commandId = commandId;
+        }
+
+        public override CommandResult Invoke()
+        {
+            var (_, settings) = _settingsService.Settings.GetProviderSettings(_provider);
+            var providerSettingsViewModel = new ProviderSettingsViewModel(_provider, settings, _settingsService);
+            var extensionSettingsRequest = new ExtensionSettingsNavigationRequest(providerSettingsViewModel, _commandId, FocusTarget);
+            WeakReferenceMessenger.Default.Send(new OpenSettingsMessage(ExtensionSettingsRequest: extensionSettingsRequest));
+            return CommandResult.KeepOpen();
+        }
+    }
+
+    private sealed partial class OpenExtensionSettingsPageCommand : OpenExtensionSettingsCommand
+    {
+        protected override string NameResource => "open_extension_settings_command_name";
+
+        protected override ExtensionSettingsFocusTarget FocusTarget => ExtensionSettingsFocusTarget.SettingsPage;
+
+        public override IconInfo Icon => Icons.SettingsIcon;
+
+        public OpenExtensionSettingsPageCommand(CommandProviderWrapper provider, ISettingsService settingsService)
+            : base(provider, settingsService, commandId: null)
+        {
+        }
+    }
+
+    private sealed partial class OpenCommandAliasSettingsCommand : OpenExtensionSettingsCommand
+    {
+        protected override string NameResource => "change_alias_command_name";
+
+        protected override ExtensionSettingsFocusTarget FocusTarget => ExtensionSettingsFocusTarget.Alias;
+
+        public override IconInfo Icon => Icons.AliasIcon;
+
+        public OpenCommandAliasSettingsCommand(CommandProviderWrapper provider, ISettingsService settingsService, string commandId)
+            : base(provider, settingsService, commandId)
+        {
+        }
+    }
+
+    private sealed partial class OpenCommandGlobalHotkeySettingsCommand : OpenExtensionSettingsCommand
+    {
+        protected override string NameResource => "change_global_hotkey_command_name";
+
+        protected override ExtensionSettingsFocusTarget FocusTarget => ExtensionSettingsFocusTarget.GlobalHotkey;
+
+        public override IconInfo Icon => Icons.GlobalHotkeyIcon;
+
+        public OpenCommandGlobalHotkeySettingsCommand(CommandProviderWrapper provider, ISettingsService settingsService, string commandId)
+            : base(provider, settingsService, commandId)
+        {
         }
     }
 }

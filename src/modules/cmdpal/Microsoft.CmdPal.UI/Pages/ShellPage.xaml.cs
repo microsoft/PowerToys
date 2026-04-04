@@ -313,11 +313,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 return;
             }
 
-            OpenSettings(message.SettingsPageTag);
+            OpenSettings(message);
         });
     }
 
     public void OpenSettings(string pageTag)
+        => OpenSettings(new OpenSettingsMessage(pageTag));
+
+    private void OpenSettings(OpenSettingsMessage message)
     {
         if (_settingsWindow is null)
         {
@@ -326,7 +329,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _settingsWindow.Activate();
         _settingsWindow.BringToFront();
-        _settingsWindow.Navigate(pageTag);
+
+        if (message.ExtensionSettingsRequest is not null)
+        {
+            _settingsWindow.Navigate(message.ExtensionSettingsRequest);
+        }
+        else
+        {
+            _settingsWindow.Navigate(message.SettingsPageTag);
+        }
     }
 
     public void Receive(ShowDetailsMessage message)

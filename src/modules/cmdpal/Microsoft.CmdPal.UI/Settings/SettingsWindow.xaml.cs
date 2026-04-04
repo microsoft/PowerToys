@@ -9,6 +9,7 @@ using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -159,9 +160,14 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
-    private void Navigate(ProviderSettingsViewModel extension)
+    internal void Navigate(ProviderSettingsViewModel extension)
     {
-        NavFrame.Navigate(typeof(ExtensionPage), extension);
+        Navigate(new ExtensionSettingsNavigationRequest(extension));
+    }
+
+    internal void Navigate(ExtensionSettingsNavigationRequest request)
+    {
+        NavFrame.Navigate(typeof(ExtensionPage), request);
     }
 
     private void PositionCentered()
@@ -176,7 +182,7 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
-    public void Receive(NavigateToExtensionSettingsMessage message) => Navigate(message.ProviderSettingsVM);
+    public void Receive(NavigateToExtensionSettingsMessage message) => Navigate(message.ExtensionSettingsRequest);
 
     private void NavigationBreadcrumbBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
     {
@@ -311,8 +317,22 @@ public sealed partial class SettingsWindow : WindowEx,
             var pageType = RS_.GetString("Settings_PageTitles_DockPage");
             BreadCrumbs.Add(new(pageType, pageType));
         }
-        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
+        else if (e.SourcePageType == typeof(ExtensionPage))
         {
+            var vm = e.Parameter switch
+            {
+                ExtensionSettingsNavigationRequest request => request.ProviderSettingsViewModel,
+                ProviderSettingsViewModel providerSettingsViewModel => providerSettingsViewModel,
+                _ => null,
+            };
+
+            if (vm is null)
+            {
+                BreadCrumbs.Add(new($"[{e.SourcePageType?.Name}]", string.Empty));
+                Logger.LogError($"Unknown breadcrumb parameter for page type '{e.SourcePageType}'");
+                return;
+            }
+
             NavView.SelectedItem = ExtensionPageNavItem;
             var extensionsPageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
             BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));

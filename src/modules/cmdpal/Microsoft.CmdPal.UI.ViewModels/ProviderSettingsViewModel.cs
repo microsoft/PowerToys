@@ -38,10 +38,12 @@ public partial class ProviderSettingsViewModel : ObservableObject
         _providerSettings = providerSettings;
         _settingsService = settingsService;
 
-        LoadingSettings = _provider.Settings?.HasSettings ?? false;
+        LoadingSettings = _provider.Settings?.HasOrMayHaveSettings ?? false;
 
         BuildFallbackViewModels();
     }
+
+    public string ProviderId => _provider.ProviderId;
 
     public string DisplayName => _provider.DisplayName;
 
@@ -94,10 +96,9 @@ public partial class ProviderSettingsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Gets a value indicating whether returns true if we have a settings page
-    /// that's initialized, or we are still working on initializing that
-    /// settings page. If we don't have a settings object, or that settings
-    /// object doesn't have a settings page, then we'll return false.
+    /// Gets a value indicating whether the settings section should stay visible.
+    /// This remains true while we're still loading a potential settings page,
+    /// and collapses once we know there isn't one.
     /// </summary>
     public bool HasSettings
     {
@@ -113,7 +114,7 @@ public partial class ProviderSettingsViewModel : ObservableObject
                 return _provider.Settings.HasSettings;
             }
 
-            // settings still need to be loaded.
+            // Settings may still resolve to a page once initialization finishes.
             return LoadingSettings;
         }
     }
