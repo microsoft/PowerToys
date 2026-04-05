@@ -257,6 +257,5 @@ namespace PowerAccent.Core.UnitTests
             // Y: screen.Y + offset = 0 + 24 = 24
             Assert.AreEqual(24.0, result.Y);
         }
-
     }
 }

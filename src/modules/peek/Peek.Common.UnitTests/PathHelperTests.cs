@@ -82,6 +82,5 @@ namespace Peek.Common.UnitTests
         {
             Assert.IsFalse(PathHelper.IsUncPath(@"\server\share"));
         }
-
     }
 }

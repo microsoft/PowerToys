@@ -148,6 +148,5 @@ namespace Peek.Common.UnitTests
             Assert.AreEqual(2, MathHelper.NumberOfDigits(99));
             Assert.AreEqual(3, MathHelper.NumberOfDigits(100));
         }
-
     }
 }

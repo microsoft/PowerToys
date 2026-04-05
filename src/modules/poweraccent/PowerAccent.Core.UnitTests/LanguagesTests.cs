@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -181,6 +182,5 @@ namespace PowerAccent.Core.UnitTests
                 Assert.AreEqual(result.Length, result.Distinct().Count(), $"Result for {letterKey} should have no duplicates");
             }
         }
-
     }
 }
