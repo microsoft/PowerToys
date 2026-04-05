@@ -256,6 +256,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         std::vector<std::wstring_view> knownModules = {
             L"PowerToys.FancyZonesModuleInterface.dll",
             L"PowerToys.powerpreview.dll",
+            L"PowerToys.FileConverterModuleInterface.dll",
             L"WinUI3Apps/PowerToys.ImageResizerExt.dll",
             L"PowerToys.KeyboardManager.dll",
             L"PowerToys.Launcher.dll",

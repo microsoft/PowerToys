@@ -5,6 +5,8 @@
 #include <common/logger/logger.h>
 #include <common/utils/winapi_error.h>
 
+#include <filesystem>
+
 std::map<std::wstring, PowertoyModule>& modules()
 {
     static std::map<std::wstring, PowertoyModule> modules;
@@ -13,7 +15,21 @@ std::map<std::wstring, PowertoyModule>& modules()
 
 PowertoyModule load_powertoy(const std::wstring_view filename)
 {
-    auto handle = winrt::check_pointer(LoadLibraryW(filename.data()));
+    HMODULE handle = LoadLibraryW(filename.data());
+
+    // In local debug workflows, current directory may differ from the runner folder.
+    // Retry with an executable-relative full path to make module loading deterministic.
+    if (!handle)
+    {
+        wchar_t executable_path[MAX_PATH]{};
+        if (GetModuleFileNameW(nullptr, executable_path, MAX_PATH) > 0)
+        {
+            const std::filesystem::path module_path = std::filesystem::path(executable_path).parent_path() / std::filesystem::path(filename);
+            handle = LoadLibraryExW(module_path.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
+        }
+    }
+
+    handle = winrt::check_pointer(handle);
     auto create = reinterpret_cast<powertoy_create_func>(GetProcAddress(handle, "powertoy_create"));
     if (!create)
     {

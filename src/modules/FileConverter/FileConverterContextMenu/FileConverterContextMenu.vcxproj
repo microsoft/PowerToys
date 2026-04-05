@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Globals">
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{f3610647-6f9f-45ee-987f-c9a89c23f7f0}</ProjectGuid>
+    <RootNamespace>FileConverterContextMenu</RootNamespace>
+    <ProjectName>FileConverterContextMenu</ProjectName>
+    <TargetName>PowerToys.FileConverterContextMenu</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\TemporaryBuild\obj\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\FileConverterLib;$(RepoRoot)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+      <AdditionalDependencies>runtimeobject.lib;shell32.lib;shlwapi.lib;windowscodecs.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FileConverterLib\FileConverterLib.vcxproj">
+      <Project>{2d6e2c29-43ce-4be9-b0fd-2f6240d04ef4}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AppxManifest.xml" />
+    <None Include="..\Strings\en-us\Resources.resw" />
+    <None Include="Source.def" />
+    <None Include="Assets\FileConverter\LargeTile.png" />
+    <None Include="Assets\FileConverter\SmallTile.png" />
+    <None Include="Assets\FileConverter\SplashScreen.png" />
+    <None Include="Assets\FileConverter\Square150x150Logo.png" />
+    <None Include="Assets\FileConverter\Square44x44Logo.png" />
+    <None Include="Assets\FileConverter\storelogo.png" />
+    <None Include="Assets\FileConverter\Wide310x150Logo.png" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

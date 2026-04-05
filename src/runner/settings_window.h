@@ -37,6 +37,7 @@ enum class ESettingsWindowNames
     CmdPal,
     ZoomIt,
     PowerDisplay,
+    FileConverter,
 };
 
 std::string ESettingsWindowNames_to_string(ESettingsWindowNames value);

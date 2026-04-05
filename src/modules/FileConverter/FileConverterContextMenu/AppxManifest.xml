@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+  xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
+  xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  IgnorableNamespaces="uap uap2 uap3 rescap desktop desktop4 desktop5 uap10 com">
+  <Identity Name="Microsoft.PowerToys.FileConverterContextMenu" ProcessorArchitecture="neutral" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" Version="1.0.0.0" />
+  <Properties>
+    <DisplayName>PowerToys File Converter Context Menu</DisplayName>
+    <PublisherDisplayName>Microsoft</PublisherDisplayName>
+    <Logo>Assets\FileConverter\storelogo.png</Logo>
+    <uap10:AllowExternalContent>true</uap10:AllowExternalContent>
+  </Properties>
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.18950.0" MaxVersionTested="10.0.19000.0" />
+  </Dependencies>
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <rescap:Capability Name="unvirtualizedResources"/>
+  </Capabilities>
+  <Applications>
+    <Application Id="Microsoft.PowerToys.FileConverterContextMenu" Executable="FileConverter.exe" uap10:TrustLevel="mediumIL" uap10:RuntimeBehavior="win32App">
+      <uap:VisualElements AppListEntry="none" DisplayName="PowerToys File Converter Context Menu" Description="FileConverterContextMenu" BackgroundColor="transparent" Square150x150Logo="Assets\FileConverter\Square150x150Logo.png" Square44x44Logo="Assets\FileConverter\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\FileConverter\Wide310x150Logo.png" Square310x310Logo="Assets\FileConverter\LargeTile.png" Square71x71Logo="Assets\FileConverter\SmallTile.png"></uap:DefaultTile>
+        <uap:SplashScreen Image="Assets\FileConverter\SplashScreen.png" />
+      </uap:VisualElements>
+      <Extensions>
+        <desktop4:Extension Category="windows.fileExplorerContextMenus">
+          <desktop4:FileExplorerContextMenus>
+            <desktop5:ItemType Type=".bmp">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".dib">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".gif">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".jfif">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".jpe">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".jpeg">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".jpg">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".jxr">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".png">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".tif">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".tiff">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".wdp">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".heic">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".heif">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+            <desktop5:ItemType Type=".webp">
+              <desktop5:Verb Id="FileConverterCommand" Clsid="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" />
+            </desktop5:ItemType>
+          </desktop4:FileExplorerContextMenus>
+        </desktop4:Extension>
+        <com:Extension Category="windows.comServer" uap10:RuntimeBehavior="packagedClassicApp">
+          <com:ComServer>
+            <com:SurrogateServer DisplayName="Context menu verb handler">
+              <com:Class Id="57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA" Path="PowerToys.FileConverterContextMenu.dll" ThreadingModel="STA"/>
+            </com:SurrogateServer>
+          </com:ComServer>
+        </com:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+</Package>

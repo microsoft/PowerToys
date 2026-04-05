@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="FileConverter_App_Name" xml:space="preserve">
+    <value>File Converter</value>
+  </data>
+  <data name="FileConverter_Settings_Description" xml:space="preserve">
+    <value>Convert image files to common formats.</value>
+  </data>
+
+  <data name="FileConverter_ContextMenu_Entry" xml:space="preserve">
+    <value>Convert to...</value>
+  </data>
+  <data name="FileConverter_ContextMenu_Format_Png" xml:space="preserve">
+    <value>PNG</value>
+  </data>
+  <data name="FileConverter_ContextMenu_Format_Jpg" xml:space="preserve">
+    <value>JPG</value>
+  </data>
+  <data name="FileConverter_ContextMenu_Format_Jpeg" xml:space="preserve">
+    <value>JPEG</value>
+  </data>
+  <data name="FileConverter_ContextMenu_Format_Bmp" xml:space="preserve">
+    <value>BMP</value>
+  </data>
+  <data name="FileConverter_ContextMenu_Format_Tiff" xml:space="preserve">
+    <value>TIFF</value>
+  </data>
+  <data name="FileConverter_ContextMenu_Format_Heic" xml:space="preserve">
+    <value>HEIC</value>
+  </data>
+  <data name="FileConverter_ContextMenu_Format_Heif" xml:space="preserve">
+    <value>HEIF</value>
+  </data>
+  <data name="FileConverter_ContextMenu_Format_Webp" xml:space="preserve">
+    <value>WebP</value>
+  </data>
+
+  <data name="FileConverter_Error_EmptyPayload" xml:space="preserve">
+    <value>empty payload</value>
+  </data>
+  <data name="FileConverter_Error_InvalidJson" xml:space="preserve">
+    <value>invalid JSON</value>
+  </data>
+  <data name="FileConverter_Error_MissingAction" xml:space="preserve">
+    <value>missing action</value>
+  </data>
+  <data name="FileConverter_Error_ActionNotString" xml:space="preserve">
+    <value>action is not a string</value>
+  </data>
+  <data name="FileConverter_Error_UnsupportedAction" xml:space="preserve">
+    <value>unsupported action</value>
+  </data>
+  <data name="FileConverter_Error_MissingFilesArray" xml:space="preserve">
+    <value>missing files array</value>
+  </data>
+  <data name="FileConverter_Error_FilesNotArray" xml:space="preserve">
+    <value>files is not an array</value>
+  </data>
+  <data name="FileConverter_Error_NoValidPaths" xml:space="preserve">
+    <value>no valid file paths</value>
+  </data>
+  <data name="FileConverter_Error_UnsupportedDestination" xml:space="preserve">
+    <value>unsupported destination format</value>
+  </data>
+  <data name="FileConverter_Error_DestinationUnavailable" xml:space="preserve">
+    <value>requested destination format is unavailable</value>
+  </data>
+
+  <data name="FileConverter_Engine_WicFactoryNull" xml:space="preserve">
+    <value>WIC factory is null.</value>
+  </data>
+  <data name="FileConverter_Engine_NoEncoderInstalled" xml:space="preserve">
+    <value>No WIC encoder is installed for destination format '</value>
+  </data>
+  <data name="FileConverter_Engine_CoInitializeFailed" xml:space="preserve">
+    <value>CoInitializeEx failed.</value>
+  </data>
+  <data name="FileConverter_Engine_CreateWicFactoryFailed" xml:space="preserve">
+    <value>Failed creating WIC factory.</value>
+  </data>
+  <data name="FileConverter_Engine_InputUnsupported" xml:space="preserve">
+    <value>Input image format is not supported by installed WIC decoders.</value>
+  </data>
+  <data name="FileConverter_Engine_OpenInputFailed" xml:space="preserve">
+    <value>Failed opening input image.</value>
+  </data>
+  <data name="FileConverter_Engine_ReadFirstFrameFailed" xml:space="preserve">
+    <value>Failed reading first image frame.</value>
+  </data>
+  <data name="FileConverter_Engine_ReadImageSizeFailed" xml:space="preserve">
+    <value>Failed reading image size.</value>
+  </data>
+  <data name="FileConverter_Engine_ReadPixelFormatFailed" xml:space="preserve">
+    <value>Failed reading source pixel format.</value>
+  </data>
+  <data name="FileConverter_Engine_CreateStreamFailed" xml:space="preserve">
+    <value>Failed creating WIC stream.</value>
+  </data>
+  <data name="FileConverter_Engine_OpenOutputFailed" xml:space="preserve">
+    <value>Failed opening output path.</value>
+  </data>
+  <data name="FileConverter_Engine_CreateEncoderFailed" xml:space="preserve">
+    <value>Failed creating image encoder.</value>
+  </data>
+  <data name="FileConverter_Engine_InitEncoderFailed" xml:space="preserve">
+    <value>Failed initializing encoder.</value>
+  </data>
+  <data name="FileConverter_Engine_CreateTargetFrameFailed" xml:space="preserve">
+    <value>Failed creating target frame.</value>
+  </data>
+  <data name="FileConverter_Engine_InitTargetFrameFailed" xml:space="preserve">
+    <value>Failed initializing target frame.</value>
+  </data>
+  <data name="FileConverter_Engine_SetTargetSizeFailed" xml:space="preserve">
+    <value>Failed setting target size.</value>
+  </data>
+  <data name="FileConverter_Engine_SetTargetPixelFormatFailed" xml:space="preserve">
+    <value>Failed setting target pixel format.</value>
+  </data>
+  <data name="FileConverter_Engine_WriteTargetFrameFailed" xml:space="preserve">
+    <value>Failed writing target frame.</value>
+  </data>
+  <data name="FileConverter_Engine_CommitTargetFrameFailed" xml:space="preserve">
+    <value>Failed committing target frame.</value>
+  </data>
+  <data name="FileConverter_Engine_CommitEncoderFailed" xml:space="preserve">
+    <value>Failed committing encoder.</value>
+  </data>
+</root>

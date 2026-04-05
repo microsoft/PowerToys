@@ -33,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.Workspaces => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
                 ModuleType.PowerOCR => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
                 ModuleType.PowerAccent => "ms-appx:///Assets/Settings/Icons/QuickAccent.png",
+                ModuleType.FileConverter => "ms-appx:///Assets/Settings/Icons/FileManagement.png",
                 ModuleType.MousePointerCrosshairs => "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png",
                 ModuleType.MeasureTool => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
                 ModuleType.PowerLauncher => "ms-appx:///Assets/Settings/Icons/PowerToysRun.png",
@@ -54,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.CursorWrap => generalSettingsConfig.Enabled.CursorWrap,
                 ModuleType.EnvironmentVariables => generalSettingsConfig.Enabled.EnvironmentVariables,
                 ModuleType.FancyZones => generalSettingsConfig.Enabled.FancyZones,
+                ModuleType.FileConverter => generalSettingsConfig.Enabled.FileConverter,
                 ModuleType.FileLocksmith => generalSettingsConfig.Enabled.FileLocksmith,
                 ModuleType.FindMyMouse => generalSettingsConfig.Enabled.FindMyMouse,
                 ModuleType.Hosts => generalSettingsConfig.Enabled.Hosts,
@@ -94,6 +96,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.CursorWrap: generalSettingsConfig.Enabled.CursorWrap = isEnabled; break;
                 case ModuleType.EnvironmentVariables: generalSettingsConfig.Enabled.EnvironmentVariables = isEnabled; break;
                 case ModuleType.FancyZones: generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
+                case ModuleType.FileConverter: generalSettingsConfig.Enabled.FileConverter = isEnabled; break;
                 case ModuleType.FileLocksmith: generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
                 case ModuleType.FindMyMouse: generalSettingsConfig.Enabled.FindMyMouse = isEnabled; break;
                 case ModuleType.Hosts: generalSettingsConfig.Enabled.Hosts = isEnabled; break;
@@ -137,6 +140,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.CursorWrap => CursorWrapSettings.ModuleName,
                 ModuleType.EnvironmentVariables => EnvironmentVariablesSettings.ModuleName,
                 ModuleType.FancyZones => FancyZonesSettings.ModuleName,
+                ModuleType.FileConverter => "FileConverter",
                 ModuleType.FileLocksmith => FileLocksmithSettings.ModuleName,
                 ModuleType.FindMyMouse => FindMyMouseSettings.ModuleName,
                 ModuleType.Hosts => HostsSettings.ModuleName,

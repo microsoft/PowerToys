@@ -382,6 +382,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool fileConverter; // defaulting to off
+
+        [JsonPropertyName("FileConverter")]
+        public bool FileConverter
+        {
+            get => fileConverter;
+            set
+            {
+                if (fileConverter != value)
+                {
+                    LogTelemetryEvent(value);
+                    fileConverter = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private bool peek = true;
 
         [JsonPropertyName("Peek")]
