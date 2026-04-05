@@ -1,14 +1,12 @@
-﻿<Window
+<Window
     x:Class="PowerOCR.OCROverlay"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:PowerOCR.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     x:Name="TextExtractorWindow"
     Title="TextExtractor"
-    ui:Design.Background="Transparent"
     AllowsTransparency="True"
     Background="Transparent"
     Loaded="Window_Loaded"
@@ -21,26 +19,6 @@
     WindowState="Normal"
     WindowStyle="None"
     mc:Ignorable="d">
-
-    <Window.Resources>
-        <Style BasedOn="{StaticResource DefaultToggleButtonStyle}" TargetType="{x:Type ToggleButton}">
-            <Setter Property="Margin" Value="4,0" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Width" Value="32" />
-            <Setter Property="Height" Value="32" />
-            <Setter Property="Background" Value="Transparent" />
-        </Style>
-
-        <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="{x:Type Button}">
-            <Setter Property="Margin" Value="4,0" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Width" Value="32" />
-            <Setter Property="Height" Value="32" />
-            <Setter Property="Background" Value="Transparent" />
-        </Style>
-    </Window.Resources>
 
     <Grid>
         <Viewbox>
@@ -101,7 +79,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             d:Visibility="Visible"
-            Background="{DynamicResource ApplicationBackgroundBrush}"
+            Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
             CornerRadius="8"
             Visibility="Collapsed">
             <Border.Effect>
@@ -133,35 +111,67 @@
                 </ComboBox>
                 <ToggleButton
                     x:Name="SingleLineToggleButton"
+                    Width="32"
+                    Height="32"
+                    Margin="4,0"
+                    Padding="0"
                     d:IsChecked="True"
                     AutomationProperties.Name="{x:Static p:Resources.ResultTextSingleLine}"
                     Click="SingleLineMenuItem_Click"
                     IsChecked="{Binding IsChecked, ElementName=SingleLineMenuItem, Mode=TwoWay}"
+                    Style="{DynamicResource SubtleToggleButtonStyle}"
                     ToolTip="{x:Static p:Resources.ResultTextSingleLineShortcut}">
-                    <ui:SymbolIcon FontSize="18" Symbol="SubtractSquare24" />
+                    <TextBlock
+                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                        FontSize="16"
+                        Text="&#xF16E;" />
                 </ToggleButton>
                 <ToggleButton
                     x:Name="TableToggleButton"
+                    Width="32"
+                    Height="32"
+                    Margin="4,0"
+                    Padding="0"
                     d:IsChecked="True"
                     AutomationProperties.Name="{x:Static p:Resources.ResultTextTable}"
                     Click="TableToggleButton_Click"
                     IsChecked="{Binding IsChecked, ElementName=TableMenuItem, Mode=TwoWay}"
+                    Style="{DynamicResource SubtleToggleButtonStyle}"
                     ToolTip="{x:Static p:Resources.ResultTextTableShortcut}">
-                    <ui:SymbolIcon FontSize="18" Symbol="Table24" />
+                    <TextBlock
+                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                        FontSize="16"
+                        Text="&#xE80A;" />
                 </ToggleButton>
                 <Button
                     x:Name="SettingsButton"
+                    Width="32"
+                    Height="32"
+                    Margin="4,0"
+                    Padding="0"
                     AutomationProperties.Name="{x:Static p:Resources.Settings}"
                     Click="SettingsMenuItem_Click"
+                    Style="{DynamicResource SubtleButtonStyle}"
                     ToolTip="{x:Static p:Resources.Settings}">
-                    <ui:SymbolIcon FontSize="18" Symbol="Settings24" />
+                    <TextBlock
+                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                        FontSize="16"
+                        Text="&#xE713;" />
                 </Button>
                 <Button
                     x:Name="CancelButton"
+                    Width="32"
+                    Height="32"
+                    Margin="4,0"
+                    Padding="0"
                     AutomationProperties.Name="{x:Static p:Resources.Cancel}"
                     Click="CancelMenuItem_Click"
+                    Style="{DynamicResource SubtleButtonStyle}"
                     ToolTip="{x:Static p:Resources.CancelShortcut}">
-                    <ui:SymbolIcon FontSize="18" Symbol="Dismiss24" />
+                    <TextBlock
+                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                        FontSize="16"
+                        Text="&#xE711;" />
                 </Button>
             </StackPanel>
         </Border>
