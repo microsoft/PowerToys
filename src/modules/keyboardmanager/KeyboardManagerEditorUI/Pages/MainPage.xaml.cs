@@ -87,13 +87,13 @@ namespace KeyboardManagerEditorUI.Pages
             try
             {
                 _mappingService = new KeyboardMappingService();
-                LoadAllMappings();
             }
             catch (Exception ex)
             {
                 Logger.LogError("Failed to initialize KeyboardMappingService in MainPage page: " + ex.Message);
             }
 
+            LoadAllMappings();
             Unloaded += All_Unloaded;
         }
 
@@ -739,7 +739,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RemapShortcut, out var remapShortcutIds);
 
-            if (_mappingService == null || remapShortcutIds == null)
+            if (remapShortcutIds == null)
             {
                 return;
             }
@@ -769,7 +769,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RemapText, out var remapShortcutIds);
 
-            if (_mappingService == null || remapShortcutIds == null)
+            if (remapShortcutIds == null)
             {
                 return;
             }
@@ -798,7 +798,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RunProgram, out var remapShortcutIds);
 
-            if (_mappingService == null || remapShortcutIds == null)
+            if (remapShortcutIds == null)
             {
                 return;
             }
@@ -832,7 +832,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.OpenUri, out var remapShortcutIds);
 
-            if (_mappingService == null || remapShortcutIds == null)
+            if (remapShortcutIds == null)
             {
                 return;
             }
@@ -860,8 +860,12 @@ namespace KeyboardManagerEditorUI.Pages
         private List<string> ParseKeyCodes(string keyCodesString)
         {
             return keyCodesString.Split(';')
-                .Where(keyCode => int.TryParse(keyCode, out int code))
-                .Select(keyCode => _mappingService!.GetKeyDisplayName(int.Parse(keyCode, CultureInfo.InvariantCulture)))
+                .Where(keyCode => int.TryParse(keyCode, out _))
+                .Select(keyCode =>
+                {
+                    int code = int.Parse(keyCode, CultureInfo.InvariantCulture);
+                    return _mappingService?.GetKeyDisplayName(code) ?? $"VK {code}";
+                })
                 .ToList();
         }
 

@@ -24,12 +24,28 @@ namespace KeyboardManagerEditorUI.Settings
 
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { WriteIndented = true };
 
-        private static readonly KeyboardMappingService _mappingService = new KeyboardMappingService();
+        private static readonly KeyboardMappingService? _mappingService;
+
+        /// <summary>
+        /// Gets a value indicating whether the native C++ wrapper DLL is available.
+        /// When false the editor runs in read-only / XAML-preview mode using JSON settings only.
+        /// </summary>
+        internal static bool IsNativeServiceAvailable => _mappingService is not null;
 
         public static EditorSettings EditorSettings { get; set; }
 
         static SettingsManager()
         {
+            try
+            {
+                _mappingService = new KeyboardMappingService();
+            }
+            catch (Exception ex) when (ex is DllNotFoundException or InvalidOperationException)
+            {
+                ManagedCommon.Logger.LogWarning($"Native KBM library unavailable, running in standalone mode: {ex.Message}");
+                _mappingService = null;
+            }
+
             EditorSettings = LoadSettings();
         }
 
@@ -39,9 +55,14 @@ namespace KeyboardManagerEditorUI.Settings
             {
                 if (!File.Exists(_settingsFilePath))
                 {
-                    EditorSettings createdSettings = CreateSettingsFromKeyboardManagerService();
-                    WriteSettings(createdSettings);
-                    return createdSettings;
+                    if (_mappingService is not null)
+                    {
+                        EditorSettings createdSettings = CreateSettingsFromKeyboardManagerService();
+                        WriteSettings(createdSettings);
+                        return createdSettings;
+                    }
+
+                    return new EditorSettings();
                 }
 
                 string json = File.ReadAllText(_settingsFilePath);
@@ -75,13 +96,13 @@ namespace KeyboardManagerEditorUI.Settings
             EditorSettings settings = new EditorSettings();
 
             // Process all shortcut mappings (RunProgram, OpenUri, RemapShortcut, RemapText)
-            foreach (ShortcutKeyMapping mapping in _mappingService.GetShortcutMappings())
+            foreach (ShortcutKeyMapping mapping in _mappingService!.GetShortcutMappings())
             {
                 AddShortcutMapping(settings, mapping);
             }
 
             // Process single key to key mappings
-            foreach (var mapping in _mappingService.GetSingleKeyMappings())
+            foreach (var mapping in _mappingService!.GetSingleKeyMappings())
             {
                 var shortcutMapping = new ShortcutKeyMapping
                 {
@@ -110,10 +131,15 @@ namespace KeyboardManagerEditorUI.Settings
 
         public static void CorrelateServiceAndEditorMappings()
         {
+            if (_mappingService is not { } service)
+            {
+                return;
+            }
+
             bool shortcutSettingsChanged = false;
 
             // Process all shortcut mappings
-            foreach (ShortcutKeyMapping mapping in _mappingService.GetShortcutMappings())
+            foreach (ShortcutKeyMapping mapping in service.GetShortcutMappings())
             {
                 if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(s => s.Shortcut.OriginalKeys == mapping.OriginalKeys))
                 {
@@ -123,7 +149,7 @@ namespace KeyboardManagerEditorUI.Settings
             }
 
             // Process single key to key mappings
-            foreach (var mapping in _mappingService.GetSingleKeyMappings())
+            foreach (var mapping in service.GetSingleKeyMappings())
             {
                 var shortcutMapping = new ShortcutKeyMapping
                 {
@@ -140,7 +166,7 @@ namespace KeyboardManagerEditorUI.Settings
             }
 
             // Process single key to text mappings
-            foreach (var mapping in _mappingService.GetKeyToTextMappings())
+            foreach (var mapping in service.GetKeyToTextMappings())
             {
                 var shortcutMapping = new ShortcutKeyMapping
                 {
@@ -158,9 +184,9 @@ namespace KeyboardManagerEditorUI.Settings
             }
 
             // Mark inactive mappings
-            var singleKeyMappings = _mappingService.GetSingleKeyMappings();
-            var keyToTextMappings = _mappingService.GetKeyToTextMappings();
-            var shortcutKeyMappings = _mappingService.GetShortcutMappings();
+            var singleKeyMappings = service.GetSingleKeyMappings();
+            var keyToTextMappings = service.GetKeyToTextMappings();
+            var shortcutKeyMappings = service.GetShortcutMappings();
 
             foreach (ShortcutSettings shortcutSettings in EditorSettings.ShortcutSettingsDictionary.Values.ToList())
             {
