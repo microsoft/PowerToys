@@ -65,4 +65,19 @@
   <!-- Note: For C++ skipped test projects, build is effectively skipped by removing all compile items above.
        We don't define empty Build/Rebuild/Clean targets here because MSBuild Target definitions with Condition
        on the Target element still override the default targets even when condition is false. -->
+
+  <!-- Clean up unused VC++ runtime DLLs that CopyCppRuntimeToOutputDir copies from the full
+       VCRedist tree (MFC, C++ AMP, OpenMP). No PowerToys binary links against these — verified
+       with dumpbin /dependents across all installed binaries. -->
+  <Target Name="RemoveUnusedVCRuntimeDlls"
+          AfterTargets="Build"
+          Condition="'$(CopyCppRuntimeToOutputDir)' == 'true' and '$(MSBuildProjectExtension)' == '.vcxproj'">
+    <ItemGroup>
+      <_UnusedVCRuntimeDlls Include="$(OutDir)mfc140*.dll" />
+      <_UnusedVCRuntimeDlls Include="$(OutDir)mfcm140*.dll" />
+      <_UnusedVCRuntimeDlls Include="$(OutDir)vcamp140*.dll" />
+    </ItemGroup>
+    <Delete Files="@(_UnusedVCRuntimeDlls)" Condition="'@(_UnusedVCRuntimeDlls)' != ''" />
+    <Message Importance="normal" Text="Cleaned up unused VC runtime DLLs: @(_UnusedVCRuntimeDlls)" Condition="'@(_UnusedVCRuntimeDlls)' != ''" />
+  </Target>
 </Project>

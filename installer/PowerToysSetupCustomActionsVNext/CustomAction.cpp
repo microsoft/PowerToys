@@ -4,6 +4,7 @@
 #include <ProjectTelemetry.h>
 #include <spdlog/sinks/base_sink.h>
 #include <filesystem>
+#include <fstream>
 #include <string_view>
 
 #include "../../src/common/logger/logger.h"
@@ -1804,6 +1805,126 @@ void initSystemLogger()
             {
                 Logger::init("PowerToysMSI", std::wstring{ temp_path } + L"\\PowerToysMSIInstaller", L"");
             } });
+}
+
+UINT __stdcall CreateWinAppSDKHardlinksCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+
+    hr = WcaInitialize(hInstall, "CreateWinAppSDKHardlinks");
+    ExitOnFailure(hr, "Failed to initialize");
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    {
+        namespace fs = std::filesystem;
+        const fs::path installDir(installationFolder);
+        const fs::path winui3Dir = installDir / L"WinUI3Apps";
+        const fs::path manifestPath = winui3Dir / L"hardlinks.txt";
+
+        if (!fs::exists(manifestPath))
+        {
+            WcaLog(LOGMSG_STANDARD, "CreateWinAppSDKHardlinks: No hardlinks.txt manifest found, skipping.");
+            goto LExit;
+        }
+
+        std::wifstream manifestFile(manifestPath);
+        std::wstring fileName;
+        int created = 0;
+        int failed = 0;
+
+        while (std::getline(manifestFile, fileName))
+        {
+            if (fileName.empty())
+            {
+                continue;
+            }
+
+            const fs::path source = installDir / fileName;
+            const fs::path target = winui3Dir / fileName;
+
+            if (!fs::exists(source))
+            {
+                WcaLog(LOGMSG_STANDARD, "CreateWinAppSDKHardlinks: Source not found: %ls", source.c_str());
+                failed++;
+                continue;
+            }
+
+            // Remove existing file if present (leftover from previous install)
+            std::error_code ec;
+            fs::remove(target, ec);
+
+            if (CreateHardLinkW(target.c_str(), source.c_str(), nullptr))
+            {
+                created++;
+            }
+            else
+            {
+                // Hard-link failed (e.g. cross-volume). Copy as fallback.
+                fs::copy_file(source, target, fs::copy_options::overwrite_existing, ec);
+                if (ec)
+                {
+                    WcaLog(LOGMSG_STANDARD, "CreateWinAppSDKHardlinks: Failed to link or copy: %ls", fileName.c_str());
+                    failed++;
+                }
+                else
+                {
+                    created++;
+                }
+            }
+        }
+
+        WcaLog(LOGMSG_STANDARD, "CreateWinAppSDKHardlinks: Created %d links, %d failures", created, failed);
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall DeleteWinAppSDKHardlinksCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+
+    hr = WcaInitialize(hInstall, "DeleteWinAppSDKHardlinks");
+    ExitOnFailure(hr, "Failed to initialize");
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    {
+        namespace fs = std::filesystem;
+        const fs::path winui3Dir = fs::path(installationFolder) / L"WinUI3Apps";
+        const fs::path manifestPath = winui3Dir / L"hardlinks.txt";
+
+        if (!fs::exists(manifestPath))
+        {
+            goto LExit;
+        }
+
+        std::wifstream manifestFile(manifestPath);
+        std::wstring fileName;
+
+        while (std::getline(manifestFile, fileName))
+        {
+            if (fileName.empty())
+            {
+                continue;
+            }
+
+            std::error_code ec;
+            fs::remove(winui3Dir / fileName, ec);
+        }
+
+        WcaLog(LOGMSG_STANDARD, "DeleteWinAppSDKHardlinks: Cleaned up hard-linked files");
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
 }
 
 // DllMain - Initialize and cleanup WiX custom action utils.
