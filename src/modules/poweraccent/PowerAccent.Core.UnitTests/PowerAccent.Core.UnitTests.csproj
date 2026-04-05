@@ -2,6 +2,8 @@
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
