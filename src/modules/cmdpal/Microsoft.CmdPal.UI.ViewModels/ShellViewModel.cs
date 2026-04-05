@@ -6,11 +6,11 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -24,6 +24,7 @@ public partial class ShellViewModel : ObservableObject,
     private readonly IAppHostService _appHostService;
     private readonly TaskScheduler _scheduler;
     private readonly IPageViewModelFactoryService _pageViewModelFactory;
+    private readonly ILogger<ShellViewModel> _logger;
     private readonly Lock _invokeLock = new();
     private Task? _handleInvokeTask;
 
@@ -63,7 +64,7 @@ public partial class ShellViewModel : ObservableObject,
                     }
                     catch (Exception ex)
                     {
-                        CoreLogger.LogError(ex.ToString());
+                        _logger.LogError(ex, "Failed to dispose previous page ViewModel");
                     }
                 }
             }
@@ -91,12 +92,14 @@ public partial class ShellViewModel : ObservableObject,
         TaskScheduler scheduler,
         IRootPageService rootPageService,
         IPageViewModelFactoryService pageViewModelFactory,
-        IAppHostService appHostService)
+        IAppHostService appHostService,
+        ILogger<ShellViewModel> logger)
     {
         _pageViewModelFactory = pageViewModelFactory;
         _scheduler = scheduler;
         _rootPageService = rootPageService;
         _appHostService = appHostService;
+        _logger = logger;
 
         NullPage = new NullPageViewModel(_scheduler, appHostService.GetDefaultHost());
         _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
@@ -167,7 +170,7 @@ public partial class ShellViewModel : ObservableObject,
                     {
                         if (viewModel.InitializeCommand.ExecutionTask.Exception is AggregateException ex)
                         {
-                            CoreLogger.LogError(ex.ToString());
+                            _logger.LogError(ex, "Failed to initialize page ViewModel");
                         }
                     }
                     else
@@ -185,7 +188,7 @@ public partial class ShellViewModel : ObservableObject,
                                         }
                                         catch (Exception ex)
                                         {
-                                            CoreLogger.LogError(ex.ToString());
+                                            _logger.LogError(ex, "Failed to dispose page ViewModel after navigation cancellation");
                                         }
                                     }
 
@@ -215,7 +218,7 @@ public partial class ShellViewModel : ObservableObject,
                     }
                     catch (Exception ex)
                     {
-                        CoreLogger.LogError(ex.ToString());
+                        _logger.LogError(ex, "Failed to dispose page ViewModel after navigation cancellation");
                     }
                 }
 
@@ -245,7 +248,7 @@ public partial class ShellViewModel : ObservableObject,
             }
             catch (Exception ex)
             {
-                CoreLogger.LogError(ex.ToString());
+                _logger.LogError(ex, "Failed to cancel previous navigation");
             }
             finally
             {
@@ -282,7 +285,7 @@ public partial class ShellViewModel : ObservableObject,
         {
             if (command is IPage page)
             {
-                CoreLogger.LogDebug($"Navigating to page");
+                _logger.LogDebug("Navigating to page");
 
                 _isNested = !isMainPage;
                 _currentlyTransient = message.TransientPage;
@@ -301,7 +304,7 @@ public partial class ShellViewModel : ObservableObject,
                 var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host!, providerContext);
                 if (pageViewModel is null)
                 {
-                    CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
+                    _logger.LogError("Failed to create ViewModel for page {PageType}", page.GetType().Name);
                     throw new NotSupportedException();
                 }
 
@@ -335,7 +338,7 @@ public partial class ShellViewModel : ObservableObject,
             }
             else if (command is IInvokableCommand invokable)
             {
-                CoreLogger.LogDebug($"Invoking command");
+                _logger.LogDebug("Invoking command");
 
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
                 StartInvoke(message, invokable, host);
@@ -421,7 +424,7 @@ public partial class ShellViewModel : ObservableObject,
         }
 
         var kind = result.Kind;
-        CoreLogger.LogDebug($"handling {kind.ToString()}");
+        _logger.LogDebug("Handling command result {Kind}", kind);
 
         WeakReferenceMessenger.Default.Send<TelemetryInvokeResultMessage>(new(kind));
         switch (kind)

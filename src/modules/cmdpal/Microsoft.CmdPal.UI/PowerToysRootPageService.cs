@@ -4,13 +4,13 @@
 
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.Logging;
 using WinRT;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -20,13 +20,15 @@ namespace Microsoft.CmdPal.UI;
 internal sealed class PowerToysRootPageService : IRootPageService
 {
     private readonly TopLevelCommandManager _tlcManager;
+    private readonly ILogger<PowerToysRootPageService> _logger;
 
     private IExtensionWrapper? _activeExtension;
     private Lazy<MainListPage> _mainListPage;
 
-    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, AliasManager aliasManager, IFuzzyMatcherProvider fuzzyMatcherProvider, ISettingsService settingsService, IAppStateService appStateService)
+    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, AliasManager aliasManager, IFuzzyMatcherProvider fuzzyMatcherProvider, ISettingsService settingsService, IAppStateService appStateService, ILogger<PowerToysRootPageService> logger)
     {
         _tlcManager = topLevelCommandManager;
+        _logger = logger;
 
         _mainListPage = new Lazy<MainListPage>(() =>
         {
@@ -67,8 +69,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to update history in PowerToysRootPageService");
-            Logger.LogError(ex.ToString());
+            _logger.LogError(ex, "Failed to update history in PowerToysRootPageService");
         }
     }
 
@@ -109,13 +110,13 @@ internal sealed class PowerToysRootPageService : IRootPageService
                         var hr = Native.CoAllowSetForegroundWindow(intPtr);
                         if (hr != 0)
                         {
-                            Logger.LogWarning($"Error giving foreground rights: 0x{hr.Value:X8}");
+                            _logger.LogWarning("Error giving foreground rights: 0x{HRESULT:X8}", hr.Value);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    ManagedCommon.Logger.LogError(ex.ToString());
+                    _logger.LogError(ex, "Failed to grant foreground window rights to extension");
                 }
             }
         }
