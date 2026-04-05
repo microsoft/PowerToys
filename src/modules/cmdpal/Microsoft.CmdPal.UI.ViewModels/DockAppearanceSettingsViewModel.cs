@@ -262,8 +262,7 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
 
     public ImageSource? EffectiveBackgroundImageSource =>
         ColorizationMode is ColorizationMode.Image
-        && !string.IsNullOrWhiteSpace(BackgroundImagePath)
-        && Uri.TryCreate(BackgroundImagePath, UriKind.RelativeOrAbsolute, out var uri)
+        && BackgroundImagePathResolver.CreateImageUri(BackgroundImagePathResolver.ResolvePreviewImagePath(BackgroundImagePath)) is Uri uri
             ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
             : null;
 

@@ -85,6 +85,12 @@ public record SettingsModel
 
     public string? BackgroundImagePath { get; init; }
 
+    public string? BackgroundImageSlideshowFolderPath { get; set; }
+
+    public int BackgroundImageChangeIntervalMinutes { get; set; }
+
+    public bool BackgroundImageShuffle { get; set; } = true;
+
     public BackdropStyle BackdropStyle { get; init; }
 
     public int BackdropOpacity { get; init; } = 100;
