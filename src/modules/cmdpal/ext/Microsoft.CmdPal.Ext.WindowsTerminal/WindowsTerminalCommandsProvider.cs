@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
+#nullable enable
+
+using Microsoft.CmdPal.Ext.WindowsTerminal.Commands;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -31,4 +33,18 @@ public partial class WindowsTerminalCommandsProvider : CommandProvider
     }
 
     public override ICommandItem[] TopLevelCommands() => [_terminalCommand];
+
+    public override ICommandItem? GetCommandItem(string id)
+    {
+        var items = _terminalCommand.Command is Pages.ProfilesListPage page ? page.GetItems() : [];
+        foreach (var item in items)
+        {
+            if (item.Command.Id == id)
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
 }
