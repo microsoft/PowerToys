@@ -115,18 +115,25 @@ foreach ($case in $cases) {
     }
 }
 
-$unsupportedOutput = Join-Path $sampleDir ($baseName + ".png")
-Remove-Item -LiteralPath $unsupportedOutput -ErrorAction SilentlyContinue
+$preUnsupportedFiles = @(
+    Get-ChildItem -LiteralPath $sampleDir -Filter ($baseName + ".*") -File -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty Name
+)
 $unsupportedPayload = ('{{"action":"FormatConvert","destination":"gif","files":["{0}"]}}' -f $escapedInput)
 Send-PipePayload -PipeSimpleName $pipeSimpleName -Payload $unsupportedPayload -ConnectTimeoutMs $PipeConnectTimeoutMs
-$unexpectedCreated = Wait-ForFile -Path $unsupportedOutput -TimeoutMs 1500
+Start-Sleep -Milliseconds 1500
+$postUnsupportedFiles = @(
+    Get-ChildItem -LiteralPath $sampleDir -Filter ($baseName + ".*") -File -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty Name
+)
+$newUnsupportedFiles = @($postUnsupportedFiles | Where-Object { $_ -notin $preUnsupportedFiles })
 
 if (-not $LeavePowerToysRunning) {
     Stop-PowerToysProcesses
 }
 
-if ($unexpectedCreated) {
-    throw "Phase 6 matrix smoke failed. Unsupported destination 'gif' unexpectedly created PNG output."
+if ($newUnsupportedFiles.Count -gt 0) {
+    throw "Phase 6 matrix smoke failed. Unsupported destination 'gif' unexpectedly created output: $($newUnsupportedFiles -join ', ')."
 }
 
 $requiredPassed = ($results | Where-Object { $_.Required -and $_.Created }).Count

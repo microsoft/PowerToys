@@ -115,6 +115,7 @@ foreach ($case in $cases) {
 
     $deadline = [DateTime]::UtcNow.AddSeconds(2)
     while ([DateTime]::UtcNow -lt $deadline -and -not (Test-Path $outputFile)) {
+        Start-Sleep -Milliseconds 50
     }
 
     $createdOutput = Test-Path $outputFile

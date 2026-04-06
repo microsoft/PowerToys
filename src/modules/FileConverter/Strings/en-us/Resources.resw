@@ -130,6 +130,15 @@
   <data name="FileConverter_Engine_SetTargetPixelFormatFailed" xml:space="preserve">
     <value>Failed setting target pixel format.</value>
   </data>
+  <data name="FileConverter_Engine_CreateFormatConverterFailed" xml:space="preserve">
+    <value>Failed creating format converter.</value>
+  </data>
+  <data name="FileConverter_Engine_UnsupportedPixelConversion" xml:space="preserve">
+    <value>Source pixel format cannot be converted to target pixel format.</value>
+  </data>
+  <data name="FileConverter_Engine_InitFormatConverterFailed" xml:space="preserve">
+    <value>Failed initializing format converter.</value>
+  </data>
   <data name="FileConverter_Engine_WriteTargetFrameFailed" xml:space="preserve">
     <value>Failed writing target frame.</value>
   </data>

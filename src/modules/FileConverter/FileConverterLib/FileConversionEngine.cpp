@@ -272,13 +272,41 @@ namespace file_converter
             return { hr, HrMessage(LoadLocalizedString(L"FileConverter_Engine_SetTargetSizeFailed", L"Failed setting target size."), hr) };
         }
 
-        hr = target_frame->SetPixelFormat(&pixel_format);
+        WICPixelFormatGUID target_pixel_format = pixel_format;
+        hr = target_frame->SetPixelFormat(&target_pixel_format);
         if (FAILED(hr))
         {
             return { hr, HrMessage(LoadLocalizedString(L"FileConverter_Engine_SetTargetPixelFormatFailed", L"Failed setting target pixel format."), hr) };
         }
 
-        hr = target_frame->WriteSource(source_frame.Get(), nullptr);
+        Microsoft::WRL::ComPtr<IWICBitmapSource> source_for_write = source_frame;
+        Microsoft::WRL::ComPtr<IWICFormatConverter> format_converter;
+
+        if (!InlineIsEqualGUID(pixel_format, target_pixel_format))
+        {
+            hr = factory->CreateFormatConverter(&format_converter);
+            if (FAILED(hr))
+            {
+                return { hr, HrMessage(LoadLocalizedString(L"FileConverter_Engine_CreateFormatConverterFailed", L"Failed creating format converter."), hr) };
+            }
+
+            BOOL can_convert = FALSE;
+            hr = format_converter->CanConvert(pixel_format, target_pixel_format, &can_convert);
+            if (FAILED(hr) || !can_convert)
+            {
+                return { hr, HrMessage(LoadLocalizedString(L"FileConverter_Engine_UnsupportedPixelConversion", L"Source pixel format cannot be converted to target pixel format."), FAILED(hr) ? hr : E_FAIL) };
+            }
+
+            hr = format_converter->Initialize(source_frame.Get(), target_pixel_format, WICBitmapDitherTypeNone, nullptr, 0.0f, WICBitmapPaletteTypeCustom);
+            if (FAILED(hr))
+            {
+                return { hr, HrMessage(LoadLocalizedString(L"FileConverter_Engine_InitFormatConverterFailed", L"Failed initializing format converter."), hr) };
+            }
+
+            source_for_write = format_converter;
+        }
+
+        hr = target_frame->WriteSource(source_for_write.Get(), nullptr);
         if (FAILED(hr))
         {
             return { hr, HrMessage(LoadLocalizedString(L"FileConverter_Engine_WriteTargetFrameFailed", L"Failed writing target frame."), hr) };

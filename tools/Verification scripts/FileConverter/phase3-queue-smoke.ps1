@@ -76,6 +76,8 @@ while ([DateTime]::UtcNow -lt $deadline) {
     if ((Test-Path $output1) -and (Test-Path $output2)) {
         break
     }
+
+    Start-Sleep -Milliseconds 100
 }
 
 $ok1 = Test-Path $output1

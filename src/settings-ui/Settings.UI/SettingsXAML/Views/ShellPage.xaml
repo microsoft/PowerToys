@@ -360,8 +360,8 @@
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ImageResizer.png}" />
                         <NavigationViewItem
                             x:Name="FileConverterNavigationItem"
+                            x:Uid="Shell_FileConverter"
                             AutomationProperties.AutomationId="FileConverterNavItem"
-                            Content="File Converter"
                             helpers:NavHelper.NavigateTo="views:FileConverterPage"
                             Icon="{ui:FontIcon Glyph=&#xE8C3;}" />
                         <NavigationViewItem

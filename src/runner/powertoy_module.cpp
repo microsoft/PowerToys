@@ -15,7 +15,8 @@ std::map<std::wstring, PowertoyModule>& modules()
 
 PowertoyModule load_powertoy(const std::wstring_view filename)
 {
-    HMODULE handle = LoadLibraryW(filename.data());
+    const std::wstring module_name(filename);
+    HMODULE handle = LoadLibraryW(module_name.c_str());
 
     // In local debug workflows, current directory may differ from the runner folder.
     // Retry with an executable-relative full path to make module loading deterministic.
@@ -24,7 +25,7 @@ PowertoyModule load_powertoy(const std::wstring_view filename)
         wchar_t executable_path[MAX_PATH]{};
         if (GetModuleFileNameW(nullptr, executable_path, MAX_PATH) > 0)
         {
-            const std::filesystem::path module_path = std::filesystem::path(executable_path).parent_path() / std::filesystem::path(filename);
+            const std::filesystem::path module_path = std::filesystem::path(executable_path).parent_path() / std::filesystem::path(module_name);
             handle = LoadLibraryExW(module_path.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR);
         }
     }

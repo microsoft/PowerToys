@@ -25,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
             ArgumentNullException.ThrowIfNull(settingsRepository);
+            ArgumentNullException.ThrowIfNull(ipcMessageCallback);
 
             _generalSettingsConfig = settingsRepository.SettingsConfig;
             _sendConfigMessage = ipcMessageCallback;
@@ -43,7 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _generalSettingsConfig.Enabled.FileConverter = value;
 
                     OutGoingGeneralSettings outgoing = new(_generalSettingsConfig);
-                    _sendConfigMessage?.Invoke(outgoing.ToString());
+                    _sendConfigMessage(outgoing.ToString());
 
                     OnPropertyChanged(nameof(IsEnabled));
                 }

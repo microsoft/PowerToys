@@ -15,8 +15,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
-                    Header="Enable File Converter"
-                    Description="Turn on File Converter in PowerToys Runner."
+                    x:Uid="FileConverter_EnableCard"
                     HeaderIcon="{ui:FontIcon Glyph=&#xE8C3;}">
                     <ToggleSwitch
                         x:Uid="ToggleSwitch"
