@@ -5922,4 +5922,24 @@ Text uses the current drawing color.</value>
   <data name="ZoomIt_Type_DemoSample.Text" xml:space="preserve">
     <value>Sample</value>
   </data>
+  <data name="WinPos.ModuleDescription" xml:space="preserve">
+    <value>Move and resize windows with Alt+Drag. Left-click to move, right-click to resize.</value>
+    <comment>"WinPos" is the name of the utility</comment>
+  </data>
+  <data name="WinPos.ModuleTitle" xml:space="preserve">
+    <value>WinPos</value>
+    <comment>"WinPos" is the name of the utility</comment>
+  </data>
+  <data name="Shell_WinPos.Content" xml:space="preserve">
+    <value>WinPos</value>
+    <comment>"WinPos" is the name of the utility</comment>
+  </data>
+  <data name="WinPos_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>WinPos</value>
+    <comment>"WinPos" is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_WinPos.Text" xml:space="preserve">
+    <value>Learn more about WinPos</value>
+    <comment>"WinPos" is the name of the utility</comment>
+  </data>
 </root>

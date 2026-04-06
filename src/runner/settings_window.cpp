@@ -807,6 +807,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "ZoomIt";
     case ESettingsWindowNames::PowerDisplay:
         return "PowerDisplay";
+    case ESettingsWindowNames::WinPos:
+        return "WinPos";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -949,6 +951,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "PowerDisplay")
     {
         return ESettingsWindowNames::PowerDisplay;
+    }
+    else if (value == "WinPos")
+    {
+        return ESettingsWindowNames::WinPos;
     }
     else
     {

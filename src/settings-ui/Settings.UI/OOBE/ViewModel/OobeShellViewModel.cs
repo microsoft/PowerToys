@@ -45,6 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             (PowerToysModules.MeasureTool, false),
             (PowerToysModules.Hosts, false),
             (PowerToysModules.Workspaces, false),
+            (PowerToysModules.WinPos, false),
             (PowerToysModules.RegistryPreview, false),
             (PowerToysModules.NewPlus, false),
             (PowerToysModules.ZoomIt, false),

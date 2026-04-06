@@ -1034,6 +1034,10 @@
     <Project Path="src/modules/ZoomIt/ZoomItModuleInterface/ZoomItModuleInterface.vcxproj" Id="e4585179-2ac1-4d5f-a3ff-cfc5392f694c" />
     <Project Path="src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettingsInterop.vcxproj" Id="ca7d8106-30b9-4aec-9d05-b69b31b8c461" />
   </Folder>
+  <Folder Name="/modules/WinPos/">
+    <Project Path="src/modules/WinPos/WinPos/WinPos.vcxproj" Id="568c4c30-2e3c-4c2c-a691-007362073765" />
+    <Project Path="src/modules/WinPos/WinPosModuleInterface/WinPosModuleInterface.vcxproj" Id="2c3f7770-4e57-46b7-8dc1-7428a383d0db" />
+  </Folder>
   <Folder Name="/settings-ui/">
     <Project Path="src/settings-ui/QuickAccess.UI/PowerToys.QuickAccess.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -1098,6 +1102,8 @@
     <BuildDependency Project="src/modules/launcher/Microsoft.Launcher/Microsoft.Launcher.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" />
+    <BuildDependency Project="src/modules/WinPos/WinPosModuleInterface/WinPosModuleInterface.vcxproj" />
+    <BuildDependency Project="src/modules/WinPos/WinPos/WinPos.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
     <BuildDependency Project="src/modules/previewpane/Common/PreviewHandlerCommon.csproj" />

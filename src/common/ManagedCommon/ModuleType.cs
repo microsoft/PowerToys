@@ -36,6 +36,7 @@ namespace ManagedCommon
         ShortcutGuide,
         PowerOCR,
         Workspaces,
+        WinPos,
         ZoomIt,
         GeneralSettings,
     }
