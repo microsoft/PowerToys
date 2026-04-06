@@ -3776,6 +3776,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="FileConverter.ModuleTitle" xml:space="preserve">
     <value>File Converter</value>
   </data>
+  <data name="FileConverter.ModuleDescription" xml:space="preserve">
+    <value>A Windows shell extension to convert selected files to another image format.</value>
+  </data>
   <data name="FileConverter_EnableCard.Header" xml:space="preserve">
     <value>Enable File Converter</value>
   </data>

@@ -11,7 +11,9 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl ModuleImageSource="ms-appx:///Assets/Settings/Modules/PT.png">
+    <controls:SettingsPageControl
+        x:Uid="FileConverter"
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/PT.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard

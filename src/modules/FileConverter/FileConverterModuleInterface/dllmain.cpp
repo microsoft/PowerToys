@@ -680,7 +680,8 @@ namespace
 
                 const std::string payload = ReadPipeMessage(pipe_handle);
 
-                FlushFileBuffers(pipe_handle);
+                // Inbound-only server pipes have no outbound data to flush.
+                // Skipping FlushFileBuffers avoids reconnect stalls on malformed-request sequences.
                 DisconnectNamedPipe(pipe_handle);
                 CloseHandle(pipe_handle);
 

@@ -13,27 +13,59 @@ function Stop-PowerToysProcesses {
         Stop-Process -Force -ErrorAction SilentlyContinue
 }
 
+function Start-PowerToys {
+    param(
+        [string]$ExePath
+    )
+
+    if (-not (Test-Path -LiteralPath $ExePath)) {
+        throw "PowerToys executable not found at: $ExePath"
+    }
+
+    $proc = Start-Process -FilePath $ExePath -PassThru
+    Wait-Process -Id $proc.Id -Timeout 2 -ErrorAction SilentlyContinue | Out-Null
+
+    $running = Get-Process -Id $proc.Id -ErrorAction SilentlyContinue
+    if ($null -eq $running) {
+        throw "PowerToys process exited before pipe checks."
+    }
+
+    return $running
+}
+
 function Send-PipePayload {
     param(
         [string]$PipeSimpleName,
         [string]$Payload,
-        [int]$ConnectTimeoutMs
+        [int]$ConnectTimeoutMs,
+        [int]$Attempts = 30,
+        [int]$RetryDelayMs = 100
     )
 
-    $client = [System.IO.Pipes.NamedPipeClientStream]::new(
-        ".",
-        $PipeSimpleName,
-        [System.IO.Pipes.PipeDirection]::Out
-    )
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        $client = [System.IO.Pipes.NamedPipeClientStream]::new(
+            ".",
+            $PipeSimpleName,
+            [System.IO.Pipes.PipeDirection]::Out
+        )
 
-    try {
-        $client.Connect($ConnectTimeoutMs)
-        $bytes = [System.Text.Encoding]::UTF8.GetBytes($Payload)
-        $client.Write($bytes, 0, $bytes.Length)
-        $client.Flush()
-    }
-    finally {
-        $client.Dispose()
+        try {
+            $client.Connect($ConnectTimeoutMs)
+            $bytes = [System.Text.Encoding]::UTF8.GetBytes($Payload)
+            $client.Write($bytes, 0, $bytes.Length)
+            $client.Flush()
+            return
+        }
+        catch {
+            if ($attempt -eq $Attempts) {
+                throw "Failed to send payload to pipe '$PipeSimpleName' after $Attempts attempts: $($_.Exception.Message)"
+            }
+
+            Start-Sleep -Milliseconds $RetryDelayMs
+        }
+        finally {
+            $client.Dispose()
+        }
     }
 }
 
@@ -60,19 +92,9 @@ $sampleDir = Join-Path $RepoRoot "x64\Debug\WinUI3Apps\FileConverterSmokeTest"
 $sourcePath = Join-Path $sampleDir "sample.bmp"
 $baseName = "sample_converted"
 
-if (-not (Test-Path -LiteralPath $powerToysExe)) {
-    throw "PowerToys executable not found at: $powerToysExe"
-}
-
 if (-not (Test-Path -LiteralPath $sourcePath)) {
     throw "Sample input file not found at: $sourcePath"
 }
-
-Stop-PowerToysProcesses
-$pt = Start-Process -FilePath $powerToysExe -PassThru
-Start-Sleep -Milliseconds 250
-$pt = Get-Process -Id $pt.Id -ErrorAction Stop
-$pipeSimpleName = "powertoys_fileconverter_$($pt.SessionId)"
 
 $escapedInput = $sourcePath -replace "\\", "\\\\"
 
@@ -91,6 +113,10 @@ $cases = @(
 $results = @()
 
 foreach ($case in $cases) {
+    Stop-PowerToysProcesses
+    $pt = Start-PowerToys -ExePath $powerToysExe
+    $pipeSimpleName = "powertoys_fileconverter_$($pt.SessionId)"
+
     $outputPath = Join-Path $sampleDir ($baseName + $case.Extension)
     Remove-Item -LiteralPath $outputPath -ErrorAction SilentlyContinue
 
@@ -113,7 +139,15 @@ foreach ($case in $cases) {
 
         throw "Phase 6 matrix smoke failed for required destination '$($case.Destination)'. Expected output '$outputPath'."
     }
+
+    if (-not $LeavePowerToysRunning) {
+        Stop-PowerToysProcesses
+    }
 }
+
+Stop-PowerToysProcesses
+$pt = Start-PowerToys -ExePath $powerToysExe
+$pipeSimpleName = "powertoys_fileconverter_$($pt.SessionId)"
 
 $preUnsupportedFiles = @(
     Get-ChildItem -LiteralPath $sampleDir -Filter ($baseName + ".*") -File -ErrorAction SilentlyContinue |

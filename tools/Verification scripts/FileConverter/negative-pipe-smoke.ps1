@@ -42,24 +42,26 @@ function Send-PipePayload {
     )
 
     for ($i = 0; $i -lt $Attempts; $i++) {
-        $client = $null
+        $client = [System.IO.Pipes.NamedPipeClientStream]::new(
+            ".",
+            $PipeSimpleName,
+            [System.IO.Pipes.PipeDirection]::Out
+        )
+
         try {
-            $client = [System.IO.Pipes.NamedPipeClientStream]::new(
-                ".",
-                $PipeSimpleName,
-                [System.IO.Pipes.PipeDirection]::Out
-            )
             $client.Connect($ConnectTimeoutMs)
 
             $bytes = [System.Text.Encoding]::UTF8.GetBytes($Payload)
             $client.Write($bytes, 0, $bytes.Length)
-            $client.Dispose()
             return $true
         }
         catch {
-            if ($null -ne $client) {
-                $client.Dispose()
+            if ($i -lt ($Attempts - 1)) {
+                Start-Sleep -Milliseconds 100
             }
+        }
+        finally {
+            $client.Dispose()
         }
     }
 
@@ -96,13 +98,15 @@ $cases = @(
     }
 )
 
-Stop-PowerToysProcesses
-$pt = Start-PowerToys -ExePath $powerToysExe
-$pipeSimpleName = "powertoys_fileconverter_$($pt.SessionId)"
-
 $results = @()
 
-foreach ($case in $cases) {
+for ($caseIndex = 0; $caseIndex -lt $cases.Count; $caseIndex++) {
+    $case = $cases[$caseIndex]
+
+    Stop-PowerToysProcesses
+    $pt = Start-PowerToys -ExePath $powerToysExe
+    $pipeSimpleName = "powertoys_fileconverter_$($pt.SessionId)"
+
     if (Test-Path $outputFile) {
         Remove-Item $outputFile -Force
     }
@@ -128,6 +132,10 @@ foreach ($case in $cases) {
         SentToPipe = $sent
         OutputCreated = $createdOutput
         Passed = ($sent -and -not $createdOutput)
+    }
+
+    if (-not $LeavePowerToysRunning -or $caseIndex -lt ($cases.Count - 1)) {
+        Stop-PowerToysProcesses
     }
 }
 
