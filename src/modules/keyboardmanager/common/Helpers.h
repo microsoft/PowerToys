@@ -41,9 +41,6 @@ namespace Helpers
     // Function to set key events for remapping text.
     void SetTextKeyEvents(std::vector<INPUT>& keyEventArray, const std::wstring& remapping);
 
-    // Function to send text via clipboard paste (Ctrl+V). Saves and restores previous clipboard content.
-    bool SendTextViaClipboard(const std::wstring& text) noexcept;
-
     // Function to return window handle for a full screen UWP app
     HWND GetFullscreenUWPWindowHandle();
 

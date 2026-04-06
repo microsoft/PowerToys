@@ -538,10 +538,7 @@ namespace KeyboardEventHandlers
                         // Release original shortcut state (release in reverse order of shortcut to be accurate)
                         Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
-                        // Send modifier release events first, then paste text via clipboard
-                        ii.SendVirtualInput(keyEventList);
-                        keyEventList.clear();
-                        Helpers::SendTextViaClipboard(remapping);
+                        Helpers::SetTextKeyEvents(keyEventList, remapping);
                     }
 
                     it->second.isShortcutInvoked = true;
@@ -722,8 +719,7 @@ namespace KeyboardEventHandlers
                         else if (remapToText)
                         {
                             auto& remapping = std::get<std::wstring>(it->second.targetShortcut);
-                            Helpers::SendTextViaClipboard(remapping);
-                            return 1;
+                            Helpers::SetTextKeyEvents(keyEventList, remapping);
                         }
 
                         ii.SendVirtualInput(keyEventList);
@@ -1797,7 +1793,9 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
-        Helpers::SendTextViaClipboard(*remapping);
+        std::vector<INPUT> keyEventList;
+        Helpers::SetTextKeyEvents(keyEventList, *remapping);
+        ii.SendVirtualInput(keyEventList);
 
         return 1;
     }
