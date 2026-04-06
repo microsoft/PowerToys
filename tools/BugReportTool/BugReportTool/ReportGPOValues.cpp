@@ -51,6 +51,7 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredFancyZonesEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFancyZonesEnabledValue()) << std::endl;
     report << "getConfiguredFileLocksmithEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFileLocksmithEnabledValue()) << std::endl;
     report << "getConfiguredLightSwitchEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredLightSwitchEnabledValue()) << std::endl;
+    report << "getConfiguredWinPosEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredWinPosEnabledValue()) << std::endl;
     report << "getConfiguredSvgPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredSvgPreviewEnabledValue()) << std::endl;
     report << "getConfiguredMarkdownPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMarkdownPreviewEnabledValue()) << std::endl;
     report << "getConfiguredMonacoPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMonacoPreviewEnabledValue()) << std::endl;

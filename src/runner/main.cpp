@@ -287,6 +287,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.ZoomItModuleInterface.dll",
             L"PowerToys.LightSwitchModuleInterface.dll",
             L"PowerToys.PowerDisplayModuleInterface.dll",
+            L"PowerToys.WinPosModuleInterface.dll",
         };
 
         for (auto moduleSubdir : knownModules)

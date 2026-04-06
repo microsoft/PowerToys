@@ -41,6 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 [JsonSerializable(typeof(ShortcutGuideSettings))]
 [JsonSerializable(typeof(WINDOWPLACEMENT))]
 [JsonSerializable(typeof(WorkspacesSettings))]
+[JsonSerializable(typeof(WinPosSettings))]
 [JsonSerializable(typeof(ZoomItSettings))]
 [JsonSerializable(typeof(PasteAIConfiguration))]
 [JsonSerializable(typeof(PasteAIProviderDefinition))]

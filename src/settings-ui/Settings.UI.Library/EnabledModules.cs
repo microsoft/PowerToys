@@ -563,6 +563,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool winPos;
+
+        [JsonPropertyName("WinPos")]
+        public bool WinPos
+        {
+            get => winPos;
+            set
+            {
+                if (winPos != value)
+                {
+                    LogTelemetryEvent(value);
+                    winPos = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

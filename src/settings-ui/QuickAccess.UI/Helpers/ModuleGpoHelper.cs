@@ -44,6 +44,7 @@ internal static class ModuleGpoHelper
             ModuleType.ShortcutGuide => GPOWrapper.GetConfiguredShortcutGuideEnabledValue(),
             ModuleType.PowerOCR => GPOWrapper.GetConfiguredTextExtractorEnabledValue(),
             ModuleType.ZoomIt => GPOWrapper.GetConfiguredZoomItEnabledValue(),
+            ModuleType.WinPos => GPOWrapper.GetConfiguredWinPosEnabledValue(),
             _ => GpoRuleConfigured.Unavailable,
         };
     }

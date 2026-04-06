@@ -47,6 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.PowerOCR: return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
                 case ModuleType.PowerDisplay: return GPOWrapper.GetConfiguredPowerDisplayEnabledValue();
                 case ModuleType.ZoomIt: return GPOWrapper.GetConfiguredZoomItEnabledValue();
+                case ModuleType.WinPos: return GPOWrapper.GetConfiguredWinPosEnabledValue();
                 default: return GpoRuleConfigured.Unavailable;
             }
         }
@@ -87,6 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.PowerOCR => typeof(PowerOcrPage),
                 ModuleType.PowerDisplay => typeof(PowerDisplayPage),
                 ModuleType.ZoomIt => typeof(ZoomItPage),
+                ModuleType.WinPos => typeof(WinPosPage),
                 _ => typeof(DashboardPage), // never called, all values listed above
             };
         }
