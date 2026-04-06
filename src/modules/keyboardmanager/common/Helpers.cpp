@@ -309,19 +309,72 @@ namespace Helpers
         }
     }
 
-    void SetTextKeyEvents(std::vector<INPUT>& keyEventArray, const std::wstring& remapping)
+    // Sends text input directly via SendInput, handling newlines by sending
+    // Shift+Enter. Each character is sent individually to
+    // avoid key-down/key-up desync that causes repeated or dropped characters
+    // when large batches of KEYEVENTF_UNICODE events are sent at once.
+    void SendTextInput(const std::wstring& text)
     {
-        for (wchar_t c : remapping)
+        for (size_t i = 0; i < text.size(); ++i)
         {
-            for (DWORD flag : { 0, KEYEVENTF_KEYUP })
+            wchar_t c = text[i];
+
+            // Handle \r\n as a single newline
+            if (c == L'\r' && i + 1 < text.size() && text[i + 1] == L'\n')
             {
-                INPUT input{};
-                input.type = INPUT_KEYBOARD;
-                input.ki.dwFlags = KEYEVENTF_UNICODE | flag;
-                input.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-                input.ki.wScan = c;
-                keyEventArray.push_back(input);
+                ++i;
             }
+
+            if (c == L'\r' || c == L'\n')
+            {
+                // Send Shift+Enter instead of bare Enter so that chat apps
+                // (Teams, Slack, Discord, etc.) insert a new line rather than
+                // submitting the message. In plain text editors both behave
+                // the same.
+                INPUT returnInputs[4]{};
+
+                // Shift down
+                returnInputs[0].type = INPUT_KEYBOARD;
+                returnInputs[0].ki.wVk = VK_SHIFT;
+                returnInputs[0].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_SHIFT, MAPVK_VK_TO_VSC));
+                returnInputs[0].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+
+                // Return down
+                returnInputs[1].type = INPUT_KEYBOARD;
+                returnInputs[1].ki.wVk = VK_RETURN;
+                returnInputs[1].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_RETURN, MAPVK_VK_TO_VSC));
+                returnInputs[1].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+
+                // Return up
+                returnInputs[2].type = INPUT_KEYBOARD;
+                returnInputs[2].ki.wVk = VK_RETURN;
+                returnInputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+                returnInputs[2].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_RETURN, MAPVK_VK_TO_VSC));
+                returnInputs[2].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+
+                // Shift up
+                returnInputs[3].type = INPUT_KEYBOARD;
+                returnInputs[3].ki.wVk = VK_SHIFT;
+                returnInputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+                returnInputs[3].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_SHIFT, MAPVK_VK_TO_VSC));
+                returnInputs[3].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+
+                SendInput(ARRAYSIZE(returnInputs), returnInputs, sizeof(INPUT));
+                continue;
+            }
+
+            INPUT charInputs[2]{};
+            charInputs[0].type = INPUT_KEYBOARD;
+            charInputs[0].ki.dwFlags = KEYEVENTF_UNICODE;
+            charInputs[0].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+            charInputs[0].ki.wScan = c;
+
+            charInputs[1].type = INPUT_KEYBOARD;
+            charInputs[1].ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
+            charInputs[1].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+            charInputs[1].ki.wScan = c;
+
+            SendInput(ARRAYSIZE(charInputs), charInputs, sizeof(INPUT));
         }
     }
 
