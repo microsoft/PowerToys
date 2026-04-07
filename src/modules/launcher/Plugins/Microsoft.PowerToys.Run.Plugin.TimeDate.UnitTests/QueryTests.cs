@@ -56,9 +56,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(time", 18)]
         [DataRow("(date", 28)]
         [DataRow("(year", 8)]
-        [DataRow("(now", 34)]
-        [DataRow("(current", 34)]
-        [DataRow("(", 34)]
+        [DataRow("(now", 35)]
+        [DataRow("(current", 35)]
+        [DataRow("(", 35)]
         [DataRow("(now::10:10:10", 1)] // Windows file time
         [DataRow("(current::10:10:10", 0)]
         public void CountWithPluginKeyword(string typedString, int expectedResultCount)

@@ -417,6 +417,72 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     return DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek;
             }
         }
+
+        /// <summary>
+        /// Returns a friendly human-readable representation of a timestamp relative to a reference "now".
+        /// Uses local date boundaries for Today / Yesterday / Tomorrow.
+        /// </summary>
+        internal static string GetFriendlyDateTime(DateTime target, DateTime referenceNow)
+        {
+            // Use local date boundaries. If the input carries UTC kind, convert for comparison/display purposes.
+            DateTime localTarget = target.Kind == DateTimeKind.Utc ? target.ToLocalTime() : target;
+            DateTime localNow = referenceNow.Kind == DateTimeKind.Utc ? referenceNow.ToLocalTime() : referenceNow;
+
+            int dayDiff = (localTarget.Date - localNow.Date).Days;
+            if (dayDiff == 0)
+            {
+                return Resources.Microsoft_plugin_timedate_Friendly_Today;
+            }
+
+            if (dayDiff == -1)
+            {
+                return Resources.Microsoft_plugin_timedate_Friendly_Yesterday;
+            }
+
+            if (dayDiff == 1)
+            {
+                return Resources.Microsoft_plugin_timedate_Friendly_Tomorrow;
+            }
+
+            TimeSpan span = localTarget - localNow;
+            bool isFuture = span.Ticks > 0;
+            TimeSpan abs = span.Duration();
+
+            if (abs.TotalSeconds < 10)
+            {
+                return Resources.Microsoft_plugin_timedate_Friendly_JustNow;
+            }
+
+            if (abs.TotalMinutes < 60)
+            {
+                int minutes = (int)Math.Round(abs.TotalMinutes, MidpointRounding.AwayFromZero);
+                if (minutes <= 1)
+                {
+                    return isFuture ? Resources.Microsoft_plugin_timedate_Friendly_InMinute : Resources.Microsoft_plugin_timedate_Friendly_MinuteAgo;
+                }
+
+                return string.Format(CultureInfo.CurrentCulture, isFuture ? Resources.Microsoft_plugin_timedate_Friendly_InMinutes : Resources.Microsoft_plugin_timedate_Friendly_MinutesAgo, minutes);
+            }
+
+            if (abs.TotalHours < 24)
+            {
+                int hours = (int)Math.Round(abs.TotalHours, MidpointRounding.AwayFromZero);
+                if (hours <= 1)
+                {
+                    return isFuture ? Resources.Microsoft_plugin_timedate_Friendly_InHour : Resources.Microsoft_plugin_timedate_Friendly_HourAgo;
+                }
+
+                return string.Format(CultureInfo.CurrentCulture, isFuture ? Resources.Microsoft_plugin_timedate_Friendly_InHours : Resources.Microsoft_plugin_timedate_Friendly_HoursAgo, hours);
+            }
+
+            int days = (int)Math.Round(abs.TotalDays, MidpointRounding.AwayFromZero);
+            if (days <= 1)
+            {
+                return isFuture ? Resources.Microsoft_plugin_timedate_Friendly_InDay : Resources.Microsoft_plugin_timedate_Friendly_DayAgo;
+            }
+
+            return string.Format(CultureInfo.CurrentCulture, isFuture ? Resources.Microsoft_plugin_timedate_Friendly_InDays : Resources.Microsoft_plugin_timedate_Friendly_DaysAgo, days);
+        }
     }
 
     /// <summary>

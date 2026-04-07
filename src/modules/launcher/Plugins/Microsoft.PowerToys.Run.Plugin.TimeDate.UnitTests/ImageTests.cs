@@ -62,6 +62,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("iso zone", "ISO 8601 with time zone - ", "Images\\timeDate.dark.png")]
         [DataRow("iso utc zone", "ISO 8601 UTC with time zone - ", "Images\\timeDate.dark.png")]
         [DataRow("rfc", "RFC1123 -", "Images\\timeDate.dark.png")]
+        [DataRow("friendly", "Friendly -", "Images\\timeDate.dark.png")]
         [DataRow("compatible", "Date and time in filename-compatible format", "Images\\timeDate.dark.png")]
         public void IconThemeDarkTest(string typedString, string subTitleMatch, string expectedResult)
         {
@@ -109,6 +110,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("iso zone", "ISO 8601 with time zone - ", "Images\\timeDate.light.png")]
         [DataRow("iso utc zone", "ISO 8601 UTC with time zone - ", "Images\\timeDate.light.png")]
         [DataRow("rfc", "RFC1123 -", "Images\\timeDate.light.png")]
+        [DataRow("friendly", "Friendly -", "Images\\timeDate.light.png")]
         [DataRow("compatible", "Date and time in filename-compatible format", "Images\\timeDate.light.png")]
         public void IconThemeLightTest(string typedString, string subTitleMatch, string expectedResult)
         {
