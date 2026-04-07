@@ -73,7 +73,6 @@ namespace KeyboardManagerEditorUI.Controls
             if (e.ClickedItem is KeyNameEntry entry)
             {
                 string oldKeyName = KeyName;
-                KeyName = entry.DisplayName;
                 KeyListFlyout.Hide();
                 KeyChanged?.Invoke(this, new KeyChangedEventArgs(oldKeyName, entry.DisplayName, entry.KeyCode));
             }
