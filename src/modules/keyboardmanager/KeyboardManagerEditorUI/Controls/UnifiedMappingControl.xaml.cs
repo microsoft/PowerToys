@@ -304,14 +304,22 @@ namespace KeyboardManagerEditorUI.Controls
         {
             if (sender is KeyDropDownButton dropDown)
             {
+                // Ensure we do not accumulate multiple subscriptions when Loaded fires repeatedly.
+                dropDown.KeyChanged -= TriggerKeyDropDown_KeyChanged;
                 dropDown.KeyChanged += TriggerKeyDropDown_KeyChanged;
-                dropDown.Unloaded += (s, _) =>
-                {
-                    if (s is KeyDropDownButton dd)
-                    {
-                        dd.KeyChanged -= TriggerKeyDropDown_KeyChanged;
-                    }
-                };
+
+                // Use a named Unloaded handler so we can detach it and avoid accumulating handlers.
+                dropDown.Unloaded -= TriggerKeyDropDown_Unloaded;
+                dropDown.Unloaded += TriggerKeyDropDown_Unloaded;
+            }
+        }
+
+        private void TriggerKeyDropDown_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                dropDown.KeyChanged -= TriggerKeyDropDown_KeyChanged;
+                dropDown.Unloaded -= TriggerKeyDropDown_Unloaded;
             }
         }
 
@@ -319,17 +327,24 @@ namespace KeyboardManagerEditorUI.Controls
         {
             if (sender is KeyDropDownButton dropDown)
             {
+                // Ensure we do not accumulate multiple subscriptions when Loaded fires repeatedly.
+                dropDown.KeyChanged -= ActionKeyDropDown_KeyChanged;
                 dropDown.KeyChanged += ActionKeyDropDown_KeyChanged;
-                dropDown.Unloaded += (s, _) =>
-                {
-                    if (s is KeyDropDownButton dd)
-                    {
-                        dd.KeyChanged -= ActionKeyDropDown_KeyChanged;
-                    }
-                };
+
+                // Use a named Unloaded handler so we can detach it and avoid accumulating handlers.
+                dropDown.Unloaded -= ActionKeyDropDown_Unloaded;
+                dropDown.Unloaded += ActionKeyDropDown_Unloaded;
             }
         }
 
+        private void ActionKeyDropDown_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                dropDown.KeyChanged -= ActionKeyDropDown_KeyChanged;
+                dropDown.Unloaded -= ActionKeyDropDown_Unloaded;
+            }
+        }
         private void TriggerKeyDropDown_KeyChanged(object? sender, KeyChangedEventArgs e)
         {
             if (sender is KeyDropDownButton dropDown)
