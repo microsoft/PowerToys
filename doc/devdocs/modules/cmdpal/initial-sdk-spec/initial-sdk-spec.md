@@ -2006,7 +2006,7 @@ class CommandWithOnlyProperties : IExtendedAttributesProvider { ... }
 
 will populate the WinRT type cache in Command Palette with the type information
 for `ICommandWithProperties`. In fact, if Command Palette has the
-`IExtendedAttributesProvider` type info in it's cache, and then later receives a new
+`IExtendedAttributesProvider` type info in its cache, and then later receives a new
 `MyCommandWithProperties` object, it'll actually be able to know that
 `MyCommandWithProperties` is an `IExtendedAttributesProvider`. WinRT is just weird
 like that some times.
