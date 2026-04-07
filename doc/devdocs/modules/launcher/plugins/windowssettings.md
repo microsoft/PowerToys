@@ -75,7 +75,7 @@ There are three different score types with different start values.
 | Medium score       |  5000        |
 | Low score          |  1000        |
 
-Each score will decreased by one when a condition match.
+Each score will be decreased by one when a condition match.
 
 | Priority | Condition                                                         | Score type   |
 | -------- | ----------------------------------------------------------------- | ------------ |
