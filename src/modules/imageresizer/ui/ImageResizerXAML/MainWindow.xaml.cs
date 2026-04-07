@@ -131,7 +131,6 @@ namespace ImageResizer
 
         private void AdjustWindowForInputPage(InputViewModel inputVM, InputPage inputPage)
         {
-            // UnsubscribeSelectedSizeHandler() has already been called by UpdateCurrentPage.
             _currentInputViewModel = inputVM;
 
             // Create and store handler reference for future cleanup
