@@ -518,14 +518,4 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         // In handling this, a call will be made to `LoadTopLevelCommands` to
         // retrieve the new items.
         this.CommandsChanged?.Invoke(this, args);
-
-    internal void PinDockBand(TopLevelViewModel bandVm)
-    {
-        Logger.LogDebug($"CommandProviderWrapper.PinDockBand: {ProviderId} - {bandVm.Id}");
-
-        var bands = this.DockBandItems.ToList();
-        bands.Add(bandVm);
-        this.DockBandItems = bands.ToArray();
-        this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs());
-    }
 }

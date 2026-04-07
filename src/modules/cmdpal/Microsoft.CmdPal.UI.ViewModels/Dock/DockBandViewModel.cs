@@ -15,10 +15,16 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 {
     private readonly CommandItemViewModel _rootItem;
-    private readonly DockBandSettings _bandSettings;
-    private readonly DockSettings _dockSettings;
+
+    internal CommandItemViewModel RootItem => _rootItem;
+
+    internal string ProviderId => _bandSettings.ProviderId;
+
     private readonly Action _saveSettings;
     private readonly IContextMenuFactory _contextMenuFactory;
+
+    private DockBandSettings _bandSettings;
+    private DockSettings _dockSettings;
 
     public ObservableCollection<DockItemViewModel> Items { get; } = new();
 
@@ -27,7 +33,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
     private bool? _showTitlesSnapshot;
     private bool? _showSubtitlesSnapshot;
 
-    public string Id => _rootItem.Command.Id;
+    public string Id => _bandSettings.CommandId;
 
     /// <summary>
     /// Gets or sets a value indicating whether titles are shown for items in this band.
@@ -102,9 +108,15 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
     /// Saves the current label settings to settings.
     /// </summary>
     internal void SaveShowLabels()
+        => SaveShowLabels(_bandSettings);
+
+    /// <summary>
+    /// Saves the current label settings to the provided settings object.
+    /// </summary>
+    internal void SaveShowLabels(DockBandSettings settings)
     {
-        _bandSettings.ShowTitles = _showTitles;
-        _bandSettings.ShowSubtitles = _showSubtitles;
+        settings.ShowTitles = _showTitles;
+        settings.ShowSubtitles = _showSubtitles;
         _showTitlesSnapshot = null;
         _showSubtitlesSnapshot = null;
     }
@@ -124,6 +136,24 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         {
             ShowSubtitles = _showSubtitlesSnapshot.Value;
             _showSubtitlesSnapshot = null;
+        }
+    }
+
+    internal void RefreshSettings(DockBandSettings settings, DockSettings dockSettings)
+    {
+        _bandSettings = settings;
+        _dockSettings = dockSettings;
+
+        // Preserve the current preview state while editing, but otherwise
+        // refresh the effective label visibility from the latest settings.
+        if (!_showTitlesSnapshot.HasValue)
+        {
+            ShowTitles = settings.ResolveShowTitles(dockSettings.ShowLabels);
+        }
+
+        if (!_showSubtitlesSnapshot.HasValue)
+        {
+            ShowSubtitles = settings.ResolveShowSubtitles(dockSettings.ShowLabels);
         }
     }
 

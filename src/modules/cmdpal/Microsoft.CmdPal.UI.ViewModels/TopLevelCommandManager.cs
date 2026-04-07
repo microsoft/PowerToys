@@ -734,53 +734,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    internal void PinDockBand(TopLevelViewModel bandVm)
-    {
-        lock (_dockBandsLock)
-        {
-            foreach (var existing in DockBands)
-            {
-                if (existing.Id == bandVm.Id)
-                {
-                    // already pinned
-                    Logger.LogDebug($"Dock band '{bandVm.Id}' is already pinned.");
-                    return;
-                }
-            }
-
-            Logger.LogDebug($"Attempting to pin dock band '{bandVm.Id}' from provider '{bandVm.CommandProviderId}'.");
-            var providerId = bandVm.CommandProviderId;
-            var foundProvider = false;
-
-            // WATCH OUT: This locks CommandProviders. If you add code that
-            // locks CommandProviders first, before locking DockBands, you will
-            // cause a deadlock.
-            foreach (var provider in CommandProviders)
-            {
-                if (provider.Id == providerId)
-                {
-                    Logger.LogDebug($"Found provider '{providerId}' to pin dock band '{bandVm.Id}'.");
-                    provider.PinDockBand(bandVm);
-                    foundProvider = true;
-                    break;
-                }
-            }
-
-            if (!foundProvider)
-            {
-                Logger.LogWarning($"Could not find provider '{providerId}' to pin dock band '{bandVm.Id}'.");
-            }
-            else
-            {
-                // Add the band to DockBands if not already present
-                if (!DockBands.Any(b => b.Id == bandVm.Id))
-                {
-                    DockBands.Add(bandVm);
-                }
-            }
-        }
-    }
-
     public void Dispose()
     {
         _extensionLoadCts.Cancel();
