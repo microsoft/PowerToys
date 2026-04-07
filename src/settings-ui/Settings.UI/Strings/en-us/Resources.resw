@@ -4612,7 +4612,7 @@ Press **Shift + a color key** for a translucent highlighter, **X** for blur, or 
 Press **Shift** for a line, **Ctrl** for a rectangle, **Tab** for an ellipse, or **Shift + Ctrl** for an arrow.
 
 **Screen**
-Press **W** or **K** for a white or black sketch pad.
+Press **K** or **W** for a black or white sketch pad.
 Press **Ctrl + C** to copy or **Ctrl + S** to save, and **Ctrl + Shift** to crop.
     </value>
   </data>
