@@ -458,9 +458,12 @@ namespace ImageResizer.Properties
             settings.Reload();
 
             // Assert: id=1 (Medium) no longer exists → fall back to CustomSize.
-            Assert.AreEqual(settings.Sizes.Count, settings.SelectedSizeIndex,
+            Assert.AreEqual(
+                settings.Sizes.Count,
+                settings.SelectedSizeIndex,
                 "Should fall back to CustomSize when the selected preset is deleted during an active session.");
-            Assert.IsInstanceOfType<CustomSize>(settings.SelectedSize,
+            Assert.IsInstanceOfType<CustomSize>(
+                settings.SelectedSize,
                 "SelectedSize should be CustomSize after the selected preset is deleted.");
         }
 
