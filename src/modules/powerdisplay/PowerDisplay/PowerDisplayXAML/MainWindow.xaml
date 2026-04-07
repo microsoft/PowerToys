@@ -410,11 +410,12 @@
                                                     <ComboBox
                                                         Grid.Column="1"
                                                         HorizontalAlignment="Stretch"
-                                                        SelectedIndex="0">
-                                                        <ComboBoxItem Content="Landscape" />
-                                                        <ComboBoxItem Content="Portrait" />
-                                                        <ComboBoxItem Content="Landscape (flipped)" />
-                                                        <ComboBoxItem Content="Portrait (flipped)" />
+                                                        IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                        SelectedIndex="{x:Bind SelectedRotationIndex, Mode=TwoWay}">
+                                                        <ComboBoxItem x:Uid="RotationOptionLandscape" />
+                                                        <ComboBoxItem x:Uid="RotationOptionPortrait" />
+                                                        <ComboBoxItem x:Uid="RotationOptionLandscapeFlipped" />
+                                                        <ComboBoxItem x:Uid="RotationOptionPortraitFlipped" />
                                                     </ComboBox>
                                                     <!--  Normal (0°)  -->
                                                     <!--<ToggleButton

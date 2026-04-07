@@ -1,4 +1,4 @@
-<ContentDialog
+﻿<ContentDialog
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ProfileEditorDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -50,7 +50,10 @@
                                 </tkcontrols:SettingsExpander.HeaderIcon>
                                 <ToggleSwitch IsOn="{x:Bind IsSelected, Mode=TwoWay}" />
                                 <tkcontrols:SettingsExpander.Items>
-                                    <tkcontrols:SettingsCard Padding="16,8,16,8" Visibility="{x:Bind Monitor.SupportsBrightness, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <tkcontrols:SettingsCard
+                                        Padding="16,8,16,8"
+                                        IsEnabled="{x:Bind IsSelected, Mode=OneWay}"
+                                        Visibility="{x:Bind Monitor.SupportsBrightness, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <tkcontrols:SettingsCard.Header>
                                             <CheckBox IsChecked="{x:Bind IncludeBrightness, Mode=TwoWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -70,7 +73,10 @@
                                         </tkcontrols:SettingsCard.Resources>
                                     </tkcontrols:SettingsCard>
 
-                                    <tkcontrols:SettingsCard Padding="16,8,16,8" Visibility="{x:Bind Monitor.SupportsContrast, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <tkcontrols:SettingsCard
+                                        Padding="16,8,16,8"
+                                        IsEnabled="{x:Bind IsSelected, Mode=OneWay}"
+                                        Visibility="{x:Bind Monitor.SupportsContrast, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <tkcontrols:SettingsCard.Header>
                                             <CheckBox IsChecked="{x:Bind IncludeContrast, Mode=TwoWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -86,7 +92,10 @@
                                             Minimum="0"
                                             Value="{x:Bind Contrast, Mode=TwoWay}" />
                                     </tkcontrols:SettingsCard>
-                                    <tkcontrols:SettingsCard Padding="16,8,16,8" Visibility="{x:Bind Monitor.SupportsVolume, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <tkcontrols:SettingsCard
+                                        Padding="16,8,16,8"
+                                        IsEnabled="{x:Bind IsSelected, Mode=OneWay}"
+                                        Visibility="{x:Bind Monitor.SupportsVolume, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <tkcontrols:SettingsCard.Header>
                                             <CheckBox IsChecked="{x:Bind IncludeVolume, Mode=TwoWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -102,7 +111,10 @@
                                             Minimum="0"
                                             Value="{x:Bind Volume, Mode=TwoWay}" />
                                     </tkcontrols:SettingsCard>
-                                    <tkcontrols:SettingsCard Padding="16,8,16,8" Visibility="{x:Bind Monitor.SupportsColorTemperature, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <tkcontrols:SettingsCard
+                                        Padding="16,8,16,8"
+                                        IsEnabled="{x:Bind IsSelected, Mode=OneWay}"
+                                        Visibility="{x:Bind Monitor.SupportsColorTemperature, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <tkcontrols:SettingsCard.Header>
                                             <CheckBox IsChecked="{x:Bind IncludeColorTemperature, Mode=TwoWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">

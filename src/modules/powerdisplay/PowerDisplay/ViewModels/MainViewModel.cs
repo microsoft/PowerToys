@@ -52,18 +52,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(HasMonitors))]
     [NotifyPropertyChangedFor(nameof(ShowNoMonitorsMessage))]
     [NotifyPropertyChangedFor(nameof(IsInteractionEnabled))]
-    private bool _isScanning;
+    public partial bool IsScanning { get; set; }
 
     private bool _isInitialized;
     private bool _isLoading;
 
     [ObservableProperty]
-    private ObservableCollection<MonitorViewModel> _monitors;
+    public partial ObservableCollection<MonitorViewModel> Monitors { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasProfiles))]
     [NotifyPropertyChangedFor(nameof(ShowProfileSwitcherButton))]
-    private ObservableCollection<PowerDisplayProfile> _profiles;
+    public partial ObservableCollection<PowerDisplayProfile> Profiles { get; set; }
 
     /// <summary>
     /// Event triggered when UI refresh is requested due to settings changes
@@ -80,9 +80,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         _cancellationTokenSource = new CancellationTokenSource();
-        _monitors = new ObservableCollection<MonitorViewModel>();
-        _profiles = new ObservableCollection<PowerDisplayProfile>();
-        _isScanning = true;
+        Monitors = new ObservableCollection<MonitorViewModel>();
+        Profiles = new ObservableCollection<PowerDisplayProfile>();
+        IsScanning = true;
+        ShowProfileSwitcher = true;
+        ShowIdentifyMonitorsButton = true;
 
         // Initialize settings utils
         _settingsUtils = SettingsUtils.Default;
@@ -113,10 +115,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     // UI display control properties - loaded from settings
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowProfileSwitcherButton))]
-    private bool _showProfileSwitcher = true;
+    public partial bool ShowProfileSwitcher { get; set; }
 
     [ObservableProperty]
-    private bool _showIdentifyMonitorsButton = true;
+    public partial bool ShowIdentifyMonitorsButton { get; set; }
 
     /// <summary>
     /// Gets a value indicating whether to show the profile switcher button.

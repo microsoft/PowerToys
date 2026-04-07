@@ -54,6 +54,18 @@
 	<data name="RotateInvertedTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Inverted (180°)</value>
   </data>
+	<data name="RotationOptionLandscape.Content" xml:space="preserve">
+    <value>Landscape</value>
+  </data>
+	<data name="RotationOptionPortrait.Content" xml:space="preserve">
+    <value>Portrait</value>
+  </data>
+	<data name="RotationOptionLandscapeFlipped.Content" xml:space="preserve">
+    <value>Landscape (flipped)</value>
+  </data>
+	<data name="RotationOptionPortraitFlipped.Content" xml:space="preserve">
+    <value>Portrait (flipped)</value>
+  </data>
 	<data name="VolumeAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Volume</value>
   </data>

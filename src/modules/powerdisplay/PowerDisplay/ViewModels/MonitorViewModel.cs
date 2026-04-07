@@ -38,24 +38,24 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     private int _volume;
 
     [ObservableProperty]
-    private bool _isAvailable;
+    public partial bool IsAvailable { get; set; }
 
     // Visibility settings (controlled by Settings UI)
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAdvancedControls))]
-    private bool _showContrast;
+    public partial bool ShowContrast { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAdvancedControls))]
-    private bool _showVolume;
+    public partial bool ShowVolume { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowMoreButton))]
     [NotifyPropertyChangedFor(nameof(ShowSeparatorAfterInputSource))]
-    private bool _showInputSource;
+    public partial bool ShowInputSource { get; set; }
 
     [ObservableProperty]
-    private bool _showRotation;
+    public partial bool ShowRotation { get; set; }
 
     private bool _showPowerState;
 
@@ -223,9 +223,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         _monitor.PropertyChanged += OnMonitorPropertyChanged;
 
         // Initialize Show properties based on hardware capabilities
-        _showContrast = monitor.SupportsContrast;
-        _showVolume = monitor.SupportsVolume;
-        _showInputSource = monitor.SupportsInputSource;
+        ShowContrast = monitor.SupportsContrast;
+        ShowVolume = monitor.SupportsVolume;
+        ShowInputSource = monitor.SupportsInputSource;
         _showPowerState = monitor.SupportsPowerState;
         _showColorTemperature = monitor.SupportsColorTemperature;
 
@@ -233,7 +233,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         _brightness = monitor.CurrentBrightness;
         _contrast = monitor.CurrentContrast;
         _volume = monitor.CurrentVolume;
-        _isAvailable = monitor.IsAvailable;
+        IsAvailable = monitor.IsAvailable;
     }
 
     public string Id => _monitor.Id;
@@ -369,6 +369,16 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// Gets a value indicating whether the current rotation is 270° (rotated left).
     /// </summary>
     public bool IsRotation3 => CurrentRotation == 3;
+
+    /// <summary>
+    /// Gets or sets the selected rotation index for binding to a ComboBox.
+    /// Maps directly to <see cref="CurrentRotation"/>: 0=Landscape, 1=Portrait, 2=Landscape (flipped), 3=Portrait (flipped).
+    /// </summary>
+    public int SelectedRotationIndex
+    {
+        get => CurrentRotation;
+        set => _ = SetRotationAsync(value);
+    }
 
     /// <summary>
     /// Set rotation/orientation for this monitor.
@@ -831,6 +841,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(IsRotation1));
             OnPropertyChanged(nameof(IsRotation2));
             OnPropertyChanged(nameof(IsRotation3));
+            OnPropertyChanged(nameof(SelectedRotationIndex));
         }
     }
 

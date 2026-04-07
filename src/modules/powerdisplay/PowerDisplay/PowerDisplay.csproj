@@ -22,6 +22,7 @@
     <ProjectPriFileName>PowerToys.PowerDisplay.pri</ProjectPriFileName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <LangVersion>preview</LangVersion>
     <!-- Disable XAML-generated Main method, use custom Program.cs -->
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>

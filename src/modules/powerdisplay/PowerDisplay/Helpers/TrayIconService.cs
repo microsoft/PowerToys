@@ -249,7 +249,7 @@ namespace PowerDisplay.Helpers
                                 }
 
                                 break;
-                            case PInvoke.WM_LBUTTONDBLCLK:
+                            case PInvoke.WM_LBUTTONUP:
                                 _toggleWindowAction?.Invoke();
                                 break;
                         }
