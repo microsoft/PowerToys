@@ -113,7 +113,14 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            LoadAllMappings();
+            if (_mappingService != null)
+            {
+                LoadAllMappings();
+            }
+            else
+            {
+                MappingState = "Error";
+            }
             Unloaded += All_Unloaded;
 
             CheckServiceStatus();
