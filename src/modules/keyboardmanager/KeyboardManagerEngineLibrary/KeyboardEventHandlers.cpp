@@ -1569,7 +1569,7 @@ namespace KeyboardEventHandlers
 
             if (hwnd == GetForegroundWindow())
             {
-                // only hide if this was a call from a already open program, don't make small if we just opened it.
+                // only hide if this was a call from an already open program, don't make small if we just opened it.
                 if (!isNewProcess && minimizeIfVisible)
                 {
                     Logger::trace(L"ChordKeyboardHandler:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);

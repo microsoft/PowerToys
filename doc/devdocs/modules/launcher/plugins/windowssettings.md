@@ -134,7 +134,7 @@ The plugin use only these interfaces (all inside the `Main.cs`):
 | `plugin.json`                         | All meta-data for this plugin                                           |
 
 1. We need this extra wrapper class to make it possible that the JSON file can have and use a JSON schema file.
-Because the JSON file must have a object as root type, instead of a array.
+Because the JSON file must have an object as root type, instead of an array.
 
 ### Important project values (*.csproj)
 

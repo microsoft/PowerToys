@@ -157,7 +157,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
             {
                 _infoBarAdded = false;
 
-                // Add a info bar on top of the Preview if any blocked element is present.
+                // Add an info bar on top of the Preview if any blocked element is present.
                 if (blocked)
                 {
                     _infoBarAdded = true;
