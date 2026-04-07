@@ -1,0 +1,181 @@
+name: Squad Label Enforce
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  enforce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enforce mutual exclusivity
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const appliedLabel = context.payload.label.name;
+
+            // Namespaces with mutual exclusivity rules
+            const EXCLUSIVE_PREFIXES = ['go:', 'release:', 'type:', 'priority:'];
+
+            // Skip if not a managed namespace label
+            if (!EXCLUSIVE_PREFIXES.some(p => appliedLabel.startsWith(p))) {
+              core.info(`Label ${appliedLabel} is not in a managed namespace — skipping`);
+              return;
+            }
+
+            const allLabels = issue.labels.map(l => l.name);
+
+            // Handle go: namespace (mutual exclusivity)
+            if (appliedLabel.startsWith('go:')) {
+              const otherGoLabels = allLabels.filter(l => 
+                l.startsWith('go:') && l !== appliedLabel
+              );
+
+              if (otherGoLabels.length > 0) {
+                // Remove conflicting go: labels
+                for (const label of otherGoLabels) {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    name: label
+                  });
+                  core.info(`Removed conflicting label: ${label}`);
+                }
+
+                // Post update comment
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `🏷️ Triage verdict updated → \`${appliedLabel}\``
+                });
+              }
+
+              // Auto-apply release:backlog if go:yes and no release target
+              if (appliedLabel === 'go:yes') {
+                const hasReleaseLabel = allLabels.some(l => l.startsWith('release:'));
+                if (!hasReleaseLabel) {
+                  await github.rest.issues.addLabels({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    labels: ['release:backlog']
+                  });
+
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    body: `📋 Marked as \`release:backlog\` — assign a release target when ready.`
+                  });
+
+                  core.info('Applied release:backlog for go:yes issue');
+                }
+              }
+
+              // Remove release: labels if go:no
+              if (appliedLabel === 'go:no') {
+                const releaseLabels = allLabels.filter(l => l.startsWith('release:'));
+                if (releaseLabels.length > 0) {
+                  for (const label of releaseLabels) {
+                    await github.rest.issues.removeLabel({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issue.number,
+                      name: label
+                    });
+                    core.info(`Removed release label from go:no issue: ${label}`);
+                  }
+                }
+              }
+            }
+
+            // Handle release: namespace (mutual exclusivity)
+            if (appliedLabel.startsWith('release:')) {
+              const otherReleaseLabels = allLabels.filter(l => 
+                l.startsWith('release:') && l !== appliedLabel
+              );
+
+              if (otherReleaseLabels.length > 0) {
+                // Remove conflicting release: labels
+                for (const label of otherReleaseLabels) {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    name: label
+                  });
+                  core.info(`Removed conflicting label: ${label}`);
+                }
+
+                // Post update comment
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `🏷️ Release target updated → \`${appliedLabel}\``
+                });
+              }
+            }
+
+            // Handle type: namespace (mutual exclusivity)
+            if (appliedLabel.startsWith('type:')) {
+              const otherTypeLabels = allLabels.filter(l => 
+                l.startsWith('type:') && l !== appliedLabel
+              );
+
+              if (otherTypeLabels.length > 0) {
+                for (const label of otherTypeLabels) {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    name: label
+                  });
+                  core.info(`Removed conflicting label: ${label}`);
+                }
+
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `🏷️ Issue type updated → \`${appliedLabel}\``
+                });
+              }
+            }
+
+            // Handle priority: namespace (mutual exclusivity)
+            if (appliedLabel.startsWith('priority:')) {
+              const otherPriorityLabels = allLabels.filter(l => 
+                l.startsWith('priority:') && l !== appliedLabel
+              );
+
+              if (otherPriorityLabels.length > 0) {
+                for (const label of otherPriorityLabels) {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    name: label
+                  });
+                  core.info(`Removed conflicting label: ${label}`);
+                }
+
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `🏷️ Priority updated → \`${appliedLabel}\``
+                });
+              }
+            }
+
+            core.info(`Label enforcement complete for ${appliedLabel}`);

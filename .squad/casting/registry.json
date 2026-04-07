@@ -1,0 +1,68 @@
+{
+  "agents": {
+    "duke": {
+      "persistent_name": "Duke",
+      "universe": "GI Joe",
+      "role": "Lead / Architect",
+      "created_at": "2026-03-19T20:08:56Z",
+      "legacy_named": false,
+      "status": "retired"
+    },
+    "scarlett": {
+      "persistent_name": "Scarlett",
+      "universe": "GI Joe",
+      "role": "UI Dev",
+      "created_at": "2026-03-19T20:08:56Z",
+      "legacy_named": false,
+      "status": "retired"
+    },
+    "snake-eyes": {
+      "persistent_name": "Snake Eyes",
+      "universe": "GI Joe",
+      "role": "Extensions Dev",
+      "created_at": "2026-03-19T20:08:56Z",
+      "legacy_named": false,
+      "status": "retired"
+    },
+    "hawk": {
+      "persistent_name": "Hawk",
+      "universe": "GI Joe",
+      "role": "Tester / QA",
+      "created_at": "2026-03-19T20:08:56Z",
+      "legacy_named": false,
+      "status": "retired"
+    },
+    "oneill": {
+      "persistent_name": "O'Neill",
+      "universe": "Stargate SG-1",
+      "role": "Lead / Architect",
+      "created_at": "2026-04-07T14:41:55Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "carter": {
+      "persistent_name": "Carter",
+      "universe": "Stargate SG-1",
+      "role": "UI Dev",
+      "created_at": "2026-04-07T14:41:55Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "tealc": {
+      "persistent_name": "Teal'c",
+      "universe": "Stargate SG-1",
+      "role": "Core Dev",
+      "created_at": "2026-04-07T14:41:55Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "jackson": {
+      "persistent_name": "Jackson",
+      "universe": "Stargate SG-1",
+      "role": "Tester / QA",
+      "created_at": "2026-04-07T14:41:55Z",
+      "legacy_named": false,
+      "status": "active"
+    }
+  }
+}
