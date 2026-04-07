@@ -81,21 +81,29 @@
                             Style="{StaticResource CustomShortcutToggleButtonStyle}"
                             Unchecked="TriggerKeyToggleBtn_Unchecked">
                             <ToggleButton.Content>
-                                <ItemsControl x:Name="TriggerKeys" IsTabStop="False">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <controls:WrapPanel
-                                                HorizontalSpacing="4"
-                                                Orientation="Horizontal"
-                                                VerticalSpacing="4" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <local:KeyDropDownButton KeyName="{Binding}" Loaded="TriggerKeyDropDown_Loaded" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <Grid>
+                                    <TextBlock
+                                        x:Name="TriggerKeyPlaceholder"
+                                        x:Uid="TriggerKeyPlaceholder"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+                                    <ItemsControl x:Name="TriggerKeys" IsTabStop="False">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <controls:WrapPanel
+                                                    HorizontalSpacing="4"
+                                                    Orientation="Horizontal"
+                                                    VerticalSpacing="4" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <local:KeyDropDownButton KeyName="{Binding}" Loaded="TriggerKeyDropDown_Loaded" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
                             </ToggleButton.Content>
                         </ToggleButton>
                         <CheckBox
@@ -235,24 +243,32 @@
                         Style="{StaticResource CustomShortcutToggleButtonStyle}"
                         Unchecked="ActionKeyToggleBtn_Unchecked">
                         <ToggleButton.Content>
-                            <ItemsControl x:Name="ActionKeys" IsTabStop="False">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <controls:WrapPanel
-                                            HorizontalSpacing="4"
-                                            Orientation="Horizontal"
-                                            VerticalSpacing="4" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <local:KeyDropDownButton
-                                            KeyName="{Binding}"
-                                            Loaded="ActionKeyDropDown_Loaded"
-                                            UseAccentStyle="True" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                            <Grid>
+                                <TextBlock
+                                    x:Name="ActionKeyPlaceholder"
+                                    x:Uid="ActionKeyPlaceholder"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+                                <ItemsControl x:Name="ActionKeys" IsTabStop="False">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <controls:WrapPanel
+                                                HorizontalSpacing="4"
+                                                Orientation="Horizontal"
+                                                VerticalSpacing="4" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <local:KeyDropDownButton
+                                                KeyName="{Binding}"
+                                                Loaded="ActionKeyDropDown_Loaded"
+                                                UseAccentStyle="True" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
                         </ToggleButton.Content>
                     </ToggleButton>
                 </tkcontrols:Case>

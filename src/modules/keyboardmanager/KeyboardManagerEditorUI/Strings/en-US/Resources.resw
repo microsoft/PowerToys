@@ -210,6 +210,12 @@
   <data name="AllowChordsCheckBox.Content" xml:space="preserve">
     <value>Allow chords</value>
   </data>
+  <data name="TriggerKeyPlaceholder.Text" xml:space="preserve">
+    <value>Press to start recording keys</value>
+  </data>
+  <data name="ActionKeyPlaceholder.Text" xml:space="preserve">
+    <value>Press to start recording keys</value>
+  </data>
   <data name="ExactMatchCheckBox.Content" xml:space="preserve">
     <value>Exact match</value>
   </data>

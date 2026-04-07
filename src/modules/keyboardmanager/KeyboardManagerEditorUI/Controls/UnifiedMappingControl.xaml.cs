@@ -151,8 +151,17 @@ namespace KeyboardManagerEditorUI.Controls
             TriggerKeys.ItemsSource = _triggerKeys;
             ActionKeys.ItemsSource = _actionKeys;
 
-            _triggerKeys.CollectionChanged += (_, _) => RaiseValidationStateChanged();
-            _actionKeys.CollectionChanged += (_, _) => RaiseValidationStateChanged();
+            _triggerKeys.CollectionChanged += (_, _) =>
+            {
+                UpdatePlaceholderVisibility();
+                RaiseValidationStateChanged();
+            };
+
+            _actionKeys.CollectionChanged += (_, _) =>
+            {
+                UpdatePlaceholderVisibility();
+                RaiseValidationStateChanged();
+            };
 
             this.Unloaded += UnifiedMappingControl_Unloaded;
         }
@@ -969,6 +978,23 @@ namespace KeyboardManagerEditorUI.Controls
         private void CleanupKeyboardHook()
         {
             KeyboardHookHelper.Instance.CleanupHook();
+        }
+
+        private void UpdatePlaceholderVisibility()
+        {
+            if (TriggerKeyPlaceholder != null)
+            {
+                TriggerKeyPlaceholder.Visibility = _triggerKeys.Count == 0
+                    ? Microsoft.UI.Xaml.Visibility.Visible
+                    : Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
+
+            if (ActionKeyPlaceholder != null)
+            {
+                ActionKeyPlaceholder.Visibility = _actionKeys.Count == 0
+                    ? Microsoft.UI.Xaml.Visibility.Visible
+                    : Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
         }
 
         private void RaiseValidationStateChanged()
