@@ -190,6 +190,11 @@ namespace ImageResizer
         /// </summary>
         private void SizeToContent()
         {
+            if (AppWindow == null)
+            {
+                return;
+            }
+
             var pageContentRoot = GetCurrentPageContentRoot();
             if (pageContentRoot == null)
             {
@@ -253,6 +258,11 @@ namespace ImageResizer
 
         private void ApplyWindowSizeForClientContent(double desiredClientHeight)
         {
+            if (AppWindow == null)
+            {
+                return;
+            }
+
             var scale = this.GetDpiForWindow() / 96.0;
             var frameHeight = Math.Max(0, AppWindow.Size.Height - AppWindow.ClientSize.Height) / scale;
             var outerHeight = desiredClientHeight + frameHeight;
