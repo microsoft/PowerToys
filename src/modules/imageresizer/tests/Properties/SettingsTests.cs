@@ -429,6 +429,41 @@ namespace ImageResizer.Properties
             Assert.AreEqual(0, settings.SelectedSizeIndex, "Selection should fall back to first preset after deletion.");
         }
 
+        /// <summary>
+        /// Verifies the dynamic fallback path (_isFirstLoad == false): when the currently-selected
+        /// preset is deleted by an external save while the app is running, a subsequent reload
+        /// should fall back to CustomSize rather than using the stale index from the file.
+        /// </summary>
+        [TestMethod]
+        public void ReloadFallsBackToCustomSizeWhenSelectedPresetDeletedDuringSession()
+        {
+            // Arrange: perform the first load to transition _isFirstLoad → false.
+            var settings = new Settings();
+            settings.Sizes.Clear();
+            settings.Sizes.Add(new ResizeSize(0, "Small", ResizeFit.Fit, 640, 480, ResizeUnit.Pixel));
+            settings.Sizes.Add(new ResizeSize(1, "Medium", ResizeFit.Fit, 1280, 720, ResizeUnit.Pixel));
+            settings.Save();
+            settings.Reload(); // first load: _isFirstLoad true → false
+
+            // Select "Medium" after first load (simulates user interaction).
+            settings.SelectedSizeIndex = 1;
+
+            // Simulate an external save that removes the "Medium" preset.
+            var json = System.IO.File.ReadAllText(Settings.SettingsPath);
+            var wrapper = JsonSerializer.Deserialize<SettingsWrapper>(json);
+            wrapper.Properties.Sizes.RemoveAt(1);
+            System.IO.File.WriteAllText(Settings.SettingsPath, JsonSerializer.Serialize(wrapper, _serializerOptions));
+
+            // Act: second reload (_isFirstLoad == false) – ID-based matching path.
+            settings.Reload();
+
+            // Assert: id=1 (Medium) no longer exists → fall back to CustomSize.
+            Assert.AreEqual(settings.Sizes.Count, settings.SelectedSizeIndex,
+                "Should fall back to CustomSize when the selected preset is deleted during an active session.");
+            Assert.IsInstanceOfType<CustomSize>(settings.SelectedSize,
+                "SelectedSize should be CustomSize after the selected preset is deleted.");
+        }
+
         [TestMethod]
         public void ReloadPreservesCustomSizeSelection()
         {

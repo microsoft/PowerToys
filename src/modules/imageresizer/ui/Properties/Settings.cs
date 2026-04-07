@@ -114,8 +114,6 @@ namespace ImageResizer.Properties
             CustomSize = new CustomSize(ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel);
             AiSize = new AiSize(2);
             AllSizes = new AllSizesCollection(this);
-
-            InitializeWatcher(Reload);
         }
 
         public static string SettingsPath { get => _settingsPath; set => _settingsPath = value; }
@@ -161,7 +159,7 @@ namespace ImageResizer.Properties
             catch (Exception ex)
             {
                 Logger.LogError(
-                    $"Failed to initialize settings file watcher.", ex);
+                    "Failed to initialize settings file watcher.", ex);
             }
         }
 
@@ -176,7 +174,7 @@ namespace ImageResizer.Properties
                 // All expected exceptions are handled in the async method, e.g.
                 // TaskCanceledException.
                 Logger.LogError(
-                    $"Error reloading settings from watcher.", ex);
+                    "Error reloading settings from watcher.", ex);
             }
         }
 
@@ -415,22 +413,19 @@ namespace ImageResizer.Properties
             }
         }
 
-        private static Settings defaultInstance;
+        // Lazy<T> guarantees thread-safe single initialization without explicit locking.
+        // Reload() is called before InitializeWatcher() so the settings directory is
+        // created (if absent) before the watcher attempts to observe it.
+        private static readonly Lazy<Settings> _defaultLazy = new(() =>
+        {
+            var s = new Settings();
+            s.Reload();
+            InitializeWatcher(s.Reload);
+            return s;
+        });
 
         [JsonIgnore]
-        public static Settings Default
-        {
-            get
-            {
-                if (defaultInstance == null)
-                {
-                    defaultInstance = new Settings();
-                    defaultInstance.Reload();
-                }
-
-                return defaultInstance;
-            }
-        }
+        public static Settings Default => _defaultLazy.Value;
 
         [JsonConverter(typeof(WrappedJsonValueConverter))]
         [JsonPropertyName("imageresizer_selectedSizeIndex")]
@@ -674,7 +669,10 @@ namespace ImageResizer.Properties
                 }
                 else
                 {
-                    _uiDispatcherQueue.TryEnqueue(() => ReloadCore(jsonSettings));
+                    if (!_uiDispatcherQueue.TryEnqueue(() => ReloadCore(jsonSettings)))
+                    {
+                        Logger.LogWarning("Settings reload skipped: dispatcher queue is unavailable.");
+                    }
                 }
             }
             else
