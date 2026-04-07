@@ -461,7 +461,7 @@ Editor read/write config data handler is in FancyZonesEditorCommon project.
 FancyZones cpp project read/write config data handler is in FancyZonesLib project.
 
 ![Debug Step Image](../images/fancyzones/19.png)
-However, the files write and read those are C:\Users\“xxxxxx”\AppData\Local\Microsoft\PowerToys\FancyZones
+However, the files read and write those are C:\Users\“xxxxxx”\AppData\Local\Microsoft\PowerToys\FancyZones
 
 You can think of the editor as a visual config editor, which is most of its functionality. Another feature is used to set the layout for the monitor displays.
 
