@@ -5952,4 +5952,14 @@ Text uses the current drawing color.</value>
   <data name="WinPos_ShouldAbsorbAlt.Description" xml:space="preserve">
     <value>Prevent Alt from activating the window menu after a drag or resize operation</value>
   </data>
+  <data name="WinPos_ExcludeApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="WinPos_ExcludeApps.Description" xml:space="preserve">
+    <value>Excludes an application from being moved or resized with Alt+Drag - add one application name per line</value>
+  </data>
+  <data name="WinPos_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
+    <comment>{Locked="outlook.exe"}</comment>
+  </data>
 </root>

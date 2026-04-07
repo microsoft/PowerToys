@@ -98,6 +98,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string ExcludedApps
+        {
+            get => _moduleSettings.Properties.ExcludedApps.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.ExcludedApps.Value != value)
+                {
+                    _moduleSettings.Properties.ExcludedApps.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(ExcludedApps));
+                }
+            }
+        }
+
         private void NotifyModuleSettingsChanged()
         {
             SndWinPosSettings outSettings = new(_moduleSettings);
