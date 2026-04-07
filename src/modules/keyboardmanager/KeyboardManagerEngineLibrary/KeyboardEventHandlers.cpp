@@ -1723,7 +1723,7 @@ namespace KeyboardEventHandlers
                 return 0;
             }
 
-            // Convert process name to lower case
+            // Convert process name to lowercase
             std::transform(process_name.begin(), process_name.end(), process_name.begin(), towlower);
 
             std::wstring query_string;
