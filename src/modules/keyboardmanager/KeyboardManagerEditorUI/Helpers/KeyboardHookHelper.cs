@@ -125,6 +125,17 @@ namespace KeyboardManagerEditorUI.Helpers
             {
                 _keyPressOrder.Add(virtualKey);
 
+                // When building chords, cap at 2 action keys: if a third action key arrives,
+                // remove the oldest (shift behavior matching old editor).
+                if (_activeTarget.AllowChords && !RemappingHelper.IsModifierKey(virtualKey))
+                {
+                    var actionKeysInOrder = _keyPressOrder.Where(k => !RemappingHelper.IsModifierKey(k)).ToList();
+                    if (actionKeysInOrder.Count > 2)
+                    {
+                        _keyPressOrder.Remove(actionKeysInOrder[0]);
+                    }
+                }
+
                 // Notify the target page
                 _activeTarget.OnKeyDown(virtualKey, GetFormattedKeyList());
             }
@@ -141,7 +152,13 @@ namespace KeyboardManagerEditorUI.Helpers
 
             if (_currentlyPressedKeys.Remove(virtualKey))
             {
-                _keyPressOrder.Remove(virtualKey);
+                // When building chords, preserve released action keys in _keyPressOrder
+                // so the next action key press is recognized as the chord's second key.
+                // Only modifier releases clear from _keyPressOrder (matching old editor behavior).
+                if (!_activeTarget.AllowChords || RemappingHelper.IsModifierKey(virtualKey))
+                {
+                    _keyPressOrder.Remove(virtualKey);
+                }
 
                 _activeTarget.OnKeyUp(virtualKey, GetFormattedKeyList());
             }
@@ -167,9 +184,15 @@ namespace KeyboardManagerEditorUI.Helpers
 
             foreach (var key in _keyPressOrder)
             {
+                // For modifiers, only include if currently pressed.
+                // For action keys when building chords, also include released keys
+                // so the chord's first key stays visible while waiting for the second.
                 if (!_currentlyPressedKeys.Contains(key))
                 {
-                    continue;
+                    if (RemappingHelper.IsModifierKey(key) || !_activeTarget.AllowChords)
+                    {
+                        continue;
+                    }
                 }
 
                 if (RemappingHelper.IsModifierKey(key))
