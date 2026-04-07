@@ -368,3 +368,5 @@ installer/*/*.wxs.bk
 .squad/
 .squad-workstream
 .github/agents/
+.github/workflows/squad-*.yml
+.github/workflows/sync-squad-labels.yml
