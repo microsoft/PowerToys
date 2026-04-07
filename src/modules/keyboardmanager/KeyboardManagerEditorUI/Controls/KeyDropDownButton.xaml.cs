@@ -98,9 +98,10 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 try
                 {
-                    var service = new KeyboardMappingService();
-                    cached = service.GetKeyboardKeysList(isShortcut);
-                    service.Dispose();
+                    using (var service = new KeyboardMappingService())
+                    {
+                        cached = service.GetKeyboardKeysList(isShortcut);
+                    }
                 }
                 catch
                 {
