@@ -69,6 +69,12 @@ namespace ImageResizer
 
         private void UpdateCurrentPage()
         {
+            // Unsubscribe before every page transition. Without this, the handler
+            // remains active on the detached InputPage. Because WinUI 3 LayoutUpdated
+            // is a global compositor event, the stale handler would fire on every
+            // subsequent layout pass and invoke SizeToContent() in an invalid context.
+            UnsubscribeSelectedSizeHandler();
+
             var page = ViewModel.CurrentPage;
             if (page == null)
             {
@@ -99,6 +105,15 @@ namespace ImageResizer
             }
         }
 
+        private void UnsubscribeSelectedSizeHandler()
+        {
+            if (_selectedSizeChangedHandler != null && _currentInputViewModel?.Settings != null)
+            {
+                _currentInputViewModel.Settings.PropertyChanged -= _selectedSizeChangedHandler;
+                _selectedSizeChangedHandler = null;
+            }
+        }
+
         /// <summary>
         /// After the element completes layout, size the window to fit and show it.
         /// </summary>
@@ -116,12 +131,7 @@ namespace ImageResizer
 
         private void AdjustWindowForInputPage(InputViewModel inputVM, InputPage inputPage)
         {
-            // Unsubscribe previous handler to prevent memory leak
-            if (_selectedSizeChangedHandler != null && _currentInputViewModel?.Settings != null)
-            {
-                _currentInputViewModel.Settings.PropertyChanged -= _selectedSizeChangedHandler;
-            }
-
+            // UnsubscribeSelectedSizeHandler() has already been called by UpdateCurrentPage.
             _currentInputViewModel = inputVM;
 
             // Create and store handler reference for future cleanup
