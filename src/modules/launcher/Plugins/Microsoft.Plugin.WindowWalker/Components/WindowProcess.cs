@@ -220,7 +220,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         }
 
         /// <summary>
-        /// Gets a boolean value indicating whether the access to a process using the AllAccess flag is denied or not.
+        /// Gets a boolean value indicating whether or not the access to a process using the AllAccess flag is denied.
         /// </summary>
         /// <param name="pid">The process ID of the process</param>
         /// <returns>True if denied and false if not.</returns>
