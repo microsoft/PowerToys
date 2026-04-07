@@ -137,7 +137,6 @@ namespace KeyboardManagerEditorUI.Pages
         private void UpdateServiceBannerVisibility()
         {
             ServiceDownBanner.Visibility = IsServiceRunning ? Visibility.Collapsed : Visibility.Visible;
-            MainContentControl.IsEnabled = IsServiceRunning;
         }
 
         #region Dialog Show Methods

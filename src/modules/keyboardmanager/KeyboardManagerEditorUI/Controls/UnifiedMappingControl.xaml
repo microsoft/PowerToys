@@ -81,7 +81,7 @@
                             Style="{StaticResource CustomShortcutToggleButtonStyle}"
                             Unchecked="TriggerKeyToggleBtn_Unchecked">
                             <ToggleButton.Content>
-                                <ItemsControl x:Name="TriggerKeys">
+                                <ItemsControl x:Name="TriggerKeys" IsTabStop="False">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <controls:WrapPanel
@@ -235,7 +235,7 @@
                         Style="{StaticResource CustomShortcutToggleButtonStyle}"
                         Unchecked="ActionKeyToggleBtn_Unchecked">
                         <ToggleButton.Content>
-                            <ItemsControl x:Name="ActionKeys">
+                            <ItemsControl x:Name="ActionKeys" IsTabStop="False">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <controls:WrapPanel
