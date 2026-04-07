@@ -5942,4 +5942,14 @@ Text uses the current drawing color.</value>
     <value>Learn more about WinPos</value>
     <comment>"WinPos" is the name of the utility</comment>
   </data>
+  <data name="WinPos_BehaviorSettingsGroup.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="WinPos_ShouldAbsorbAlt.Header" xml:space="preserve">
+    <value>Absorb Alt presses</value>
+    <comment>When enabled, WinPos absorbs the Alt keypress so it does not activate the window menu after a drag/resize.</comment>
+  </data>
+  <data name="WinPos_ShouldAbsorbAlt.Description" xml:space="preserve">
+    <value>Prevent Alt from activating the window menu after a drag or resize operation</value>
+  </data>
 </root>

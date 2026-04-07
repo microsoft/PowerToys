@@ -8,6 +8,11 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <commctrl.h>
+#include <string>
+#include <thread>
+
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/SettingsAPI/settings_helpers.h>
 
 #include "resource.h"
 
@@ -66,6 +71,43 @@ static DWORD       g_lastMoveTick       = 0;  // tick of last applied move/resiz
 static const wchar_t* const CLASS_NAME         = L"AltGeometry_MsgWnd";
 static const wchar_t* const OVERLAY_CLASS_NAME  = L"AltGeometry_Overlay";
 static const wchar_t* const APP_TITLE           = L"AltGeometry";
+
+// Must match CommonSharedConstants::WINPOS_REFRESH_SETTINGS_EVENT in shared_constants.h
+static const wchar_t* const WINPOS_REFRESH_SETTINGS_EVENT = L"Local\\PowerToysWinPos-RefreshSettingsEvent-a7b3c1d2-4e5f-6a7b-8c9d-0e1f2a3b4c5d";
+
+static HANDLE g_hReloadSettingsEvent = nullptr;
+static std::thread g_settingsThread;
+static bool g_running = true;
+
+// ---------------------------------------------------------------------------
+// Settings file helpers
+// ---------------------------------------------------------------------------
+static void LoadSettingsFromFile() {
+    try
+    {
+        PowerToysSettings::PowerToyValues values =
+            PowerToysSettings::PowerToyValues::load_from_settings_file(L"WinPos");
+
+        if (auto v = values.get_bool_value(L"shouldAbsorbAlt"))
+        {
+            g_shouldAbsorbAlt = *v;
+        }
+    }
+    catch (...)
+    {
+        // Keep defaults on error
+    }
+}
+
+static void SettingsWatcherThread() {
+    while (g_running) {
+        DWORD wait = WaitForSingleObject(g_hReloadSettingsEvent, 1000);
+        if (!g_running) break;
+        if (wait == WAIT_OBJECT_0) {
+            LoadSettingsFromFile();
+        }
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Overlay window helpers
@@ -566,6 +608,15 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     g_hInstance = hInstance;
 
+    // Load initial settings from JSON before anything else
+    LoadSettingsFromFile();
+
+    // Open the named event for settings reload notifications
+    g_hReloadSettingsEvent = CreateEventW(nullptr, FALSE, FALSE, WINPOS_REFRESH_SETTINGS_EVENT);
+    if (g_hReloadSettingsEvent) {
+        g_settingsThread = std::thread(SettingsWatcherThread);
+    }
+
     // Ensure common controls are initialised (for Shell_NotifyIcon)
     INITCOMMONCONTROLSEX icc = { sizeof(icc), ICC_STANDARD_CLASSES };
     InitCommonControlsEx(&icc);
@@ -619,6 +670,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     }
 
     // Cleanup
+    g_running = false;
+    if (g_hReloadSettingsEvent) {
+        SetEvent(g_hReloadSettingsEvent); // wake the thread so it exits
+    }
+    if (g_settingsThread.joinable()) {
+        g_settingsThread.join();
+    }
+    if (g_hReloadSettingsEvent) {
+        CloseHandle(g_hReloadSettingsEvent);
+    }
     UnhookWindowsHookEx(g_hhkKeyboard);
     UnhookWindowsHookEx(g_hhkMouse);
     RemoveTrayIcon();

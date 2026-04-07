@@ -25,6 +25,14 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
+
+                <controls:SettingsGroup x:Uid="WinPos_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="WinPos_ShouldAbsorbAlt"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShouldAbsorbAlt, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 

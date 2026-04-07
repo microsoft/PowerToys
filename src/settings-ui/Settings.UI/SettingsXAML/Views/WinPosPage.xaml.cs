@@ -14,7 +14,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public WinPosPage()
         {
-            ViewModel = new WinPosViewModel(SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default), ShellPage.SendDefaultIPCMessage);
+            var moduleSettingsRepository = SettingsRepository<WinPosSettings>.GetInstance(SettingsUtils.Default);
+            ViewModel = new WinPosViewModel(
+                SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default),
+                moduleSettingsRepository.SettingsConfig,
+                ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
 

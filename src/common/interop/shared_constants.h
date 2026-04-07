@@ -145,6 +145,9 @@ namespace CommonSharedConstants
 
     // Path to the events used by ZoomIt
     const wchar_t ZOOMIT_REFRESH_SETTINGS_EVENT[] = L"Local\\PowerToysZoomIt-RefreshSettingsEvent-f053a563-d519-4b0d-8152-a54489c13324";
+
+    // Path to the events used by WinPos
+    const wchar_t WINPOS_REFRESH_SETTINGS_EVENT[] = L"Local\\PowerToysWinPos-RefreshSettingsEvent-a7b3c1d2-4e5f-6a7b-8c9d-0e1f2a3b4c5d";
     const wchar_t ZOOMIT_EXIT_EVENT[] = L"Local\\PowerToysZoomIt-ExitEvent-36641ce6-df02-4eac-abea-a3fbf9138220";
     const wchar_t ZOOMIT_ZOOM_EVENT[] = L"Local\\PowerToysZoomIt-ZoomEvent-1e4190d7-94bc-4ad5-adc0-9a8fd07cb393";
     const wchar_t ZOOMIT_DRAW_EVENT[] = L"Local\\PowerToysZoomIt-DrawEvent-56338997-404d-4549-bd9a-d132b6766975";

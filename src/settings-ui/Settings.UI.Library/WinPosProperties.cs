@@ -10,6 +10,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public WinPosProperties()
         {
+            ShouldAbsorbAlt = new BoolProperty(true);
         }
+
+        [JsonPropertyName("shouldAbsorbAlt")]
+        public BoolProperty ShouldAbsorbAlt { get; set; }
     }
 }
