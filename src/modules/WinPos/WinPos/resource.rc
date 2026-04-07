@@ -1,4 +1,6 @@
 #include "resource.h"
 #include <winres.h>
 
+1 RT_MANIFEST "WinPos.manifest"
+
 IDI_APP_ICON ICON "app.ico"
