@@ -189,7 +189,7 @@ namespace PowerLauncher.Helper
                     string uVarKey = (string)uVar.Key;
                     string uVarValue = (string)uVar.Value;
 
-                    // The variable name of the path variable can be upper case, lowercase or mixed case. So we have to compare case-insensitive.
+                    // The variable name of the path variable can be uppercase, lowercase or mixed case. So we have to compare case-insensitive.
                     if (!uVarKey.Equals(PathVariableName, StringComparison.OrdinalIgnoreCase))
                     {
                         environment[uVarKey] = uVarValue;
