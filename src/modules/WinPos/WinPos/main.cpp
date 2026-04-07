@@ -37,6 +37,10 @@ static POINT     g_dragStart   = {};     // cursor pos at drag start
 static RECT      g_dragWndRect = {};     // window rect at drag start
 static HWND      g_hOverlay    = nullptr; // semi-transparent overlay during drag
 
+// Current target window rect for overlay info display
+static int       g_overlayInfoX = 0, g_overlayInfoY = 0;
+static int       g_overlayInfoW = 0, g_overlayInfoH = 0;
+
 static bool      g_shouldAbsorbAlt = false; // true if we want to absorb Alt on the next keydown (set when Alt is pressed without dragging, cleared on next non-Alt key or Alt keyup)
 static bool      g_altAbsorbed     = false; // true if we absorbed an Alt keydown
 static bool      g_dragConsumedAlt = false; // true if a drag consumed the absorbed Alt
@@ -67,7 +71,7 @@ static ResizeHandle g_currentHandle   = RESIZE_NONE;
 static const int MIN_WINDOW_WIDTH  = 150;
 static const int MIN_WINDOW_HEIGHT = 50;
 
-static const DWORD THROTTLE_INTERVAL_MS = 8; // min ms between SetWindowPos calls, aim for 125 fps
+static const DWORD THROTTLE_INTERVAL_MS = 16; // min ms between SetWindowPos calls, aim for 125 fps
 static DWORD       g_lastMoveTick       = 0;  // tick of last applied move/resize
 
 static const wchar_t* const CLASS_NAME         = L"WinPos_MsgWnd";
@@ -150,6 +154,51 @@ static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
     // cursor do the work – the hook swallows the clicks anyway.
     if (msg == WM_NCHITTEST)
         return HTCLIENT;
+
+    if (msg == WM_PAINT) {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+
+        RECT clientRect;
+        GetClientRect(hwnd, &clientRect);
+
+        wchar_t text[128];
+        wsprintfW(text, L"X: %d  Y: %d\nW: %d  H: %d",
+                  g_overlayInfoX, g_overlayInfoY,
+                  g_overlayInfoW, g_overlayInfoH);
+
+        HFONT hFont = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
+        HFONT hOldFont = static_cast<HFONT>(SelectObject(hdc, hFont));
+
+        // Measure the text
+        RECT textRect = {};
+        DrawTextW(hdc, text, -1, &textRect, DT_CALCRECT | DT_CENTER | DT_NOPREFIX);
+        int textW = textRect.right - textRect.left;
+        int textH = textRect.bottom - textRect.top;
+
+        // Center a padded box on the overlay
+        int pad = 10;
+        int boxW = textW + pad * 2;
+        int boxH = textH + pad * 2;
+        int cx = clientRect.right / 2;
+        int cy = clientRect.bottom / 2;
+        RECT boxRect = { cx - boxW / 2, cy - boxH / 2, cx + boxW / 2, cy + boxH / 2 };
+
+        HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 0));
+        FillRect(hdc, &boxRect, hBrush);
+        DeleteObject(hBrush);
+
+        RECT textDrawRect = { boxRect.left + pad, boxRect.top + pad,
+                              boxRect.right - pad, boxRect.bottom - pad };
+        SetTextColor(hdc, RGB(255, 255, 255));
+        SetBkMode(hdc, TRANSPARENT);
+        DrawTextW(hdc, text, -1, &textDrawRect, DT_CENTER | DT_NOPREFIX);
+
+        SelectObject(hdc, hOldFont);
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
@@ -174,15 +223,24 @@ static void CreateOverlay(const RECT& rc, LPCWSTR cursorName) {
     
 
     if (g_hOverlay) {
-        // White background at 30 % opacity  (255 * 0.30 ≈ 76)
-        SetLayeredWindowAttributes(g_hOverlay, 0, 76, LWA_ALPHA);
+        g_overlayInfoX = rc.left;
+        g_overlayInfoY = rc.top;
+        g_overlayInfoW = w;
+        g_overlayInfoH = h;
+        // White background at 40 % opacity  (255 * 0.40 ≈ 102)
+        SetLayeredWindowAttributes(g_hOverlay, 0, 102, LWA_ALPHA);
     }
 }
 
 static void MoveOverlay(int x, int y, int w, int h) {
     if (g_hOverlay) {
+        g_overlayInfoX = x;
+        g_overlayInfoY = y;
+        g_overlayInfoW = w;
+        g_overlayInfoH = h;
         SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h,
                      SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        InvalidateRect(g_hOverlay, nullptr, TRUE);
     }
 }
 
