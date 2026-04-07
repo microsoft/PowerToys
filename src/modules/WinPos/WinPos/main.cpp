@@ -13,6 +13,8 @@
 
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
+#include <common/utils/process_path.h>
+#include <common/utils/excluded_apps.h>
 
 #include "resource.h"
 
@@ -68,12 +70,14 @@ static const int MIN_WINDOW_HEIGHT = 50;
 static const DWORD THROTTLE_INTERVAL_MS = 8; // min ms between SetWindowPos calls, aim for 125 fps
 static DWORD       g_lastMoveTick       = 0;  // tick of last applied move/resize
 
-static const wchar_t* const CLASS_NAME         = L"AltGeometry_MsgWnd";
-static const wchar_t* const OVERLAY_CLASS_NAME  = L"AltGeometry_Overlay";
-static const wchar_t* const APP_TITLE           = L"AltGeometry";
+static const wchar_t* const CLASS_NAME         = L"WinPos_MsgWnd";
+static const wchar_t* const OVERLAY_CLASS_NAME  = L"WinPos_Overlay";
+static const wchar_t* const APP_TITLE           = L"WinPos";
 
 // Must match CommonSharedConstants::WINPOS_REFRESH_SETTINGS_EVENT in shared_constants.h
 static const wchar_t* const WINPOS_REFRESH_SETTINGS_EVENT = L"Local\\PowerToysWinPos-RefreshSettingsEvent-a7b3c1d2-4e5f-6a7b-8c9d-0e1f2a3b4c5d";
+
+static std::vector<std::wstring> g_excludedApps;
 
 static HANDLE g_hReloadSettingsEvent = nullptr;
 static std::thread g_settingsThread;
@@ -91,6 +95,32 @@ static void LoadSettingsFromFile() {
         if (auto v = values.get_bool_value(L"shouldAbsorbAlt"))
         {
             g_shouldAbsorbAlt = *v;
+        }
+
+        if (auto v = values.get_string_value(L"excluded_apps"))
+        {
+            std::vector<std::wstring> apps;
+            std::wstring upper = *v;
+            CharUpperBuffW(upper.data(), static_cast<DWORD>(upper.length()));
+            std::wstring_view view(upper);
+
+            while (!view.empty())
+            {
+                // skip leading whitespace / newlines
+                auto start = view.find_first_not_of(L" \t\r\n");
+                if (start == std::wstring_view::npos)
+                    break;
+                view.remove_prefix(start);
+
+                auto pos = view.find_first_of(L"\r\n");
+                if (pos == std::wstring_view::npos)
+                    pos = view.length();
+
+                apps.emplace_back(view.substr(0, pos));
+                view.remove_prefix(pos);
+            }
+
+            g_excludedApps = std::move(apps);
         }
     }
     catch (...)
@@ -321,6 +351,31 @@ forward:
     return CallNextHookEx(g_hhkKeyboard, nCode, wParam, lParam);
 }
 
+static bool IsSystemClass(HWND hwnd) {
+    wchar_t cls[64] = {};
+    GetClassNameW(hwnd, cls, 64);
+    return (wcscmp(cls, L"Progman") == 0 || wcscmp(cls, L"Shell_TrayWnd") == 0);
+}
+
+static bool IsExcluded(HWND hwnd) {
+    if (IsSystemClass(hwnd))
+        return true;
+
+    if (g_excludedApps.empty())
+        return false;
+
+    std::wstring processPath = get_process_path(hwnd);
+    CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
+
+    if (find_app_name_in_path(processPath, g_excludedApps))
+        return true;
+
+    if (check_excluded_app_with_title(hwnd, g_excludedApps))
+        return true;
+
+    return false;
+}
+
 static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode >= 0) {
         auto* ms = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
@@ -338,10 +393,8 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 HWND root = GetAncestor(hwnd, GA_ROOT);
                 if (root) hwnd = root;
 
-                // Don't drag the desktop or the taskbar (optional safeguard)
-                wchar_t cls[64] = {};
-                GetClassNameW(hwnd, cls, 64);
-                if (wcscmp(cls, L"Progman") == 0 || wcscmp(cls, L"Shell_TrayWnd") == 0)
+                // Don't drag excluded windows (desktop, taskbar, user-excluded apps)
+                if (IsExcluded(hwnd))
                     goto forward;
 
                 g_dragging      = true;
@@ -443,9 +496,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 HWND root = GetAncestor(hwnd, GA_ROOT);
                 if (root) hwnd = root;
 
-                wchar_t cls[64] = {};
-                GetClassNameW(hwnd, cls, 64);
-                if (wcscmp(cls, L"Progman") == 0 || wcscmp(cls, L"Shell_TrayWnd") == 0)
+                if (IsExcluded(hwnd))
                     goto forward;
 
                 g_resizing        = true;
