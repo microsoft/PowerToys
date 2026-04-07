@@ -299,7 +299,7 @@
                 <!--  Open App Action  -->
                 <tkcontrols:Case Value="OpenApp">
                     <StackPanel Orientation="Vertical" Spacing="16">
-                        <Grid ColumnSpacing="8">
+                        <Grid ColumnSpacing="4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -318,13 +318,17 @@
                                 Click="ProgramPathSelectButton_Click"
                                 Content="{ui:FontIcon Glyph=&#xE8DA;,
                                                       FontSize=16}"
-                                Style="{StaticResource SubtleButtonStyle}" />
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="ProgramPathSelectButtonTooltip" />
+                                </ToolTipService.ToolTip>
+                            </Button>
                         </Grid>
                         <TextBox
                             x:Name="ProgramArgsInput"
                             x:Uid="ProgramArgsInput"
                             GotFocus="ProgramArgsInput_GotFocus" />
-                        <Grid ColumnSpacing="8">
+                        <Grid ColumnSpacing="4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -342,7 +346,11 @@
                                 Click="StartInSelectButton_Click"
                                 Content="{ui:FontIcon Glyph=&#xE8DA;,
                                                       FontSize=16}"
-                                Style="{StaticResource SubtleButtonStyle}" />
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="StartInSelectButtonTooltip" />
+                                </ToolTipService.ToolTip>
+                            </Button>
                         </Grid>
                         <ComboBox
                             x:Name="ElevationComboBox"

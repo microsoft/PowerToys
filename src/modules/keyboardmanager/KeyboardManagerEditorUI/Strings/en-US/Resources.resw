@@ -306,6 +306,9 @@
   <data name="ProgramPathSelectButton.AutomationProperties.Name" xml:space="preserve">
     <value>Select program path</value>
   </data>
+  <data name="ProgramPathSelectButtonTooltip.Text" xml:space="preserve">
+    <value>Select program path</value>
+  </data>	
   <data name="ProgramArgsInput.Header" xml:space="preserve">
     <value>Arguments (optional)</value>
   </data>
@@ -319,6 +322,9 @@
     <value>C:\Users\...</value>
   </data>
   <data name="StartInSelectButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Select start directory</value>
+  </data>
+	<data name="StartInSelectButtonTooltip.Text" xml:space="preserve">
     <value>Select start directory</value>
   </data>
   <data name="ElevationComboBox.Header" xml:space="preserve">
