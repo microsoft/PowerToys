@@ -45,18 +45,62 @@ Save the PR's head commit SHA as `originalHeadSha` — this is the baseline for 
 $originalHeadSha = (gh pr view {{pr_number}} --json headRefOid --jq .headRefOid)
 ```
 
-### 1.5 Checkout and Initial Build
+### 1.5 Create Worktree and Initial Build
+
+> **Worktree isolation**: Do NOT use `gh pr checkout` — it would overwrite the current branch.
+> Instead, create an ISOLATED worktree for the PR's branch using the existing scripts in
+> `tools/build/`. All file reads, edits, and builds happen in the new worktree.
+> Output files go to the original worktree's `Generated Files/`.
+
+#### Step 1: Determine fork vs same-repo
 ```powershell
-gh pr checkout {{pr_number}}
+$prMeta = gh pr view {{pr_number}} --json isCrossRepository,headRepositoryOwner,headRefName,headRepository | ConvertFrom-Json
+```
+
+#### Step 2: Create the worktree
+```powershell
+# Fork PR:
+if ($prMeta.isCrossRepository) {
+    $forkSpec = "$($prMeta.headRepositoryOwner.login):$($prMeta.headRefName)"
+    tools/build/New-WorktreeFromFork.ps1 -Spec $forkSpec -ForkRepo $prMeta.headRepository.name
+}
+# Same-repo PR:
+else {
+    git fetch origin $prMeta.headRefName
+    tools/build/New-WorktreeFromBranch.ps1 -Branch $prMeta.headRefName
+}
+```
+
+#### Step 3: Find the new worktree path
+```powershell
+# Parse git worktree list to find the newly created worktree
+git worktree list
+# The new worktree is a sibling directory, e.g., Q:\PowerToys-<hash>
+# Save it as $prWorktree
+```
+
+#### Step 4: Initialize and build
+```powershell
+Push-Location $prWorktree
 git submodule update --init --recursive
 tools\build\build-essentials.cmd
 tools\build\build.cmd
+Pop-Location
 ```
-If the initial build fails, try merging main:
+
+**IMPORTANT**: From this point on, ALL file operations on PR code use `$prWorktree` paths:
+- Reading files: `$prWorktree\src\modules\...`
+- Editing fixes: edit files at `$prWorktree\...`
+- Building: run `build.cmd` from `$prWorktree`
+- Git operations: `git -C $prWorktree ...`
+
+If the initial build fails, try merging main in the worktree:
 ```powershell
+Push-Location $prWorktree
 git fetch origin main
 git merge origin/main --no-edit
 tools\build\build.cmd
+Pop-Location
 ```
 Record the build result. Even if it fails, proceed to code review.
 
@@ -178,12 +222,12 @@ If exiting → go to Phase 3.
 ### Step 2d: Apply Fixes
 
 For each **high** and **medium** finding from Step 2b:
-1. Open the file at the referenced line range
+1. Open the file at the referenced line range **in `$prWorktree`**
 2. Apply the fix from the ` ```suggestion ` block (or implement the intent if suggestion is conceptual)
 3. Keep fixes minimal — only what's needed
 
 After all fixes:
-- Run `tools\build\build.cmd`
+- Run `tools\build\build.cmd` **from `$prWorktree`**
 - If build fails, read `build.*.errors.log` and fix build errors (max 3 attempts)
 - Record all fixes in `fix-summary.md`
 
@@ -199,7 +243,7 @@ After the review→fix loop completes, generate GitHub suggested changes from th
 
 ```powershell
 # Compare worktree (with fixes) against original PR head
-git diff <originalHeadSha> HEAD
+git -C $prWorktree diff <originalHeadSha> HEAD
 ```
 
 For each changed hunk, write a suggested change using GitHub's native format.

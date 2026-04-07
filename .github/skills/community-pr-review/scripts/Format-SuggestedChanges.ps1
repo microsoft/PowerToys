@@ -17,6 +17,9 @@
 .PARAMETER OutputDir
     Directory containing review outputs. Default: Generated Files/communityPrReview/<PR>
 
+.PARAMETER WorktreeDir
+    Path to the PR worktree. If provided, runs git commands there instead of the current repo.
+
 .PARAMETER MinContextLines
     Number of context lines around each change. Default: 3.
 
@@ -30,6 +33,7 @@ param(
     [int]$PRNumber,
     [string]$OriginalSha,
     [string]$OutputDir,
+    [string]$WorktreeDir,
     [int]$MinContextLines = 3,
     [switch]$Help
 )
@@ -52,6 +56,9 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 $repoRoot = Get-RepoRoot
 
+# Use WorktreeDir for git operations if provided, otherwise the current repo
+$gitDir = if (-not [string]::IsNullOrWhiteSpace($WorktreeDir)) { $WorktreeDir } else { $repoRoot }
+
 if ([string]::IsNullOrWhiteSpace($OutputDir)) {
     $OutputDir = Join-Path $repoRoot "Generated Files/communityPrReview/$PRNumber"
 }
@@ -71,10 +78,11 @@ if ([string]::IsNullOrWhiteSpace($OriginalSha)) {
 
 Info "Generating suggested changes for PR #$PRNumber"
 Info "Original SHA: $OriginalSha"
-Info "Current HEAD: $(git rev-parse HEAD)"
+Info "Current HEAD: $(git -C $gitDir rev-parse HEAD)"
+Info "Git dir: $gitDir"
 
 # Get the diff between original PR and current state
-$diffOutput = git diff $OriginalSha HEAD --unified=$MinContextLines --no-color 2>&1
+$diffOutput = git -C $gitDir diff $OriginalSha HEAD --unified=$MinContextLines --no-color 2>&1
 if (-not $diffOutput) {
     Info "No changes between original PR and current state."
     $noChangesReport = @"

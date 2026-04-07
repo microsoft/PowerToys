@@ -68,14 +68,37 @@ Read `{skills_root}/community-pr-review/SKILL.md` for full documentation and wor
 3. Fetch the full diff and changed files
 4. Record the original PR head SHA (`originalHeadSha`) — this is the baseline for suggested changes
 
-### Phase 2: Checkout and Initial Build
-5. Checkout the PR branch: `gh pr checkout {{pr_number}}`
-6. Initialize submodules: `git submodule update --init --recursive`
-7. Try the initial build:
+### Phase 2: Create Worktree and Initial Build
+
+> **Worktree isolation**: The PR code is checked out into an ISOLATED worktree — the current
+> worktree (`user/muyuanli/prreview`) is never modified. All build/review operations happen
+> in the new worktree; all output files are written back to THIS worktree's `Generated Files/`.
+
+5. Determine if the PR is from a fork or same repo:
    ```powershell
-   {skills_root}/community-pr-review/scripts/Build-PRBranch.ps1 -PRNumber {{pr_number}}
+   $prMeta = gh pr view {{pr_number}} --json isCrossRepository,headRepositoryOwner,headRefName,headRepository | ConvertFrom-Json
    ```
-8. If build fails and merge with main helps, that's fine — record it in build-report.md
+6. Create an isolated worktree:
+   ```powershell
+   # Fork PR:
+   tools/build/New-WorktreeFromFork.ps1 -Spec "$($prMeta.headRepositoryOwner.login):$($prMeta.headRefName)" -ForkRepo $prMeta.headRepository.name
+
+   # Same-repo PR:
+   tools/build/New-WorktreeFromBranch.ps1 -Branch $prMeta.headRefName
+   ```
+   The new worktree is created as a sibling directory (e.g., `Q:\PowerToys-<hash>`).
+   Find it via `git worktree list`.
+7. In the new worktree, initialize submodules and build:
+   ```powershell
+   Push-Location $prWorktree
+   git submodule update --init --recursive
+   tools\build\build-essentials.cmd
+   tools\build\build.cmd
+   Pop-Location
+   ```
+8. If build fails, try merging main in the worktree and rebuilding.
+   Save `$prWorktree` — all subsequent file reads, edits, and builds use this path.
+9. **CLI note**: If running in Copilot CLI, use `--yolo` or `/add-dir $prWorktree` for cross-directory access
 
 ### Phase 3: Review→Fix Loop (max 3 iterations)
 
@@ -103,9 +126,13 @@ Read `{skills_root}/community-pr-review/SKILL.md` for full documentation and wor
 - Fix agent reports it cannot fix remaining issues
 
 ### Phase 4: Generate Suggested Changes
-16. Compare current worktree state against `originalHeadSha`:
+16. Compare current worktree state against `originalHeadSha` (run in the PR worktree):
     ```powershell
-    {skills_root}/community-pr-review/scripts/Format-SuggestedChanges.ps1 -PRNumber {{pr_number}} -OriginalSha <originalHeadSha>
+    git -C $prWorktree diff <originalHeadSha> HEAD
+    ```
+    Or use:
+    ```powershell
+    {skills_root}/community-pr-review/scripts/Format-SuggestedChanges.ps1 -PRNumber {{pr_number}} -OriginalSha <originalHeadSha> -WorktreeDir $prWorktree
     ```
 17. This produces `suggested-changes.md` with GitHub ` ```suggestion ` blocks for each fix
 
@@ -126,6 +153,10 @@ Read `{skills_root}/community-pr-review/SKILL.md` for full documentation and wor
     - **Build status**: Final build report
     - **Verification instructions**: How to verify end-to-end
     - **What the human needs to do**: Post suggested changes on GitHub, verify E2E
+21. **Cleanup note**: The PR worktree at `$prWorktree` can be removed with:
+    ```powershell
+    tools/build/Delete-Worktree.ps1 -Pattern "<branch>" -Force
+    ```
 
 ## Output Format for Review Comments
 

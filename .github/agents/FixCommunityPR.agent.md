@@ -46,35 +46,46 @@ Read `Generated Files/communityPrReview/{{pr_number}}/review-comments.md` and id
 - The specific files, line numbers, and suggested fixes
 - Skip **low** and **info** findings (leave as comments for the author)
 
-### Step 2: Snapshot the Starting Point
+### Step 2: Identify the PR Worktree
+
+The PR code lives in an isolated worktree (a sibling directory like `Q:\PowerToys-<hash>`),
+NOT in the current directory. Find it:
+```powershell
+git worktree list   # Look for the worktree on the PR branch
+```
+All file reads, edits, and builds happen in that worktree path (`$prWorktree`).
+
+### Step 3: Snapshot the Starting Point
 
 Before making any changes, record the current state:
 ```powershell
-git rev-parse HEAD   # Save the starting SHA
-git diff --stat      # Record any existing uncommitted changes
+git -C $prWorktree rev-parse HEAD   # Save the starting SHA
+git -C $prWorktree diff --stat      # Record any existing uncommitted changes
 ```
 
-### Step 3: Apply Fixes
+### Step 4: Apply Fixes
 
 For each high/medium finding:
-1. Open the file referenced in the finding
+1. Open the file referenced in the finding **at `$prWorktree`**
 2. Read the surrounding context to understand the code
 3. Apply the fix as described in the review comment's suggestion
 4. If the suggestion is unclear, use your expertise to implement the intent
 5. Keep fixes minimal — change only what's needed to address the finding
 
-### Step 4: Build Verification
+### Step 5: Build Verification
 
-After applying all fixes:
+After applying all fixes, build in the worktree:
 ```powershell
+Push-Location $prWorktree
 tools\build\build.cmd
+Pop-Location
 ```
 
 - **Exit code 0**: Build passes — proceed to Step 5
 - **Non-zero**: Read `build.*.errors.log`, fix build errors, retry (max 3 attempts)
 - If build cannot be fixed, revert the last change that broke it and note the issue
 
-### Step 5: Record Changes
+### Step 6: Record Changes
 
 Write `Generated Files/communityPrReview/{{pr_number}}/fix-summary.md`:
 
@@ -100,7 +111,7 @@ Write `Generated Files/communityPrReview/{{pr_number}}/fix-summary.md`:
 - <any findings that could not be fixed, with explanation>
 ```
 
-### Step 6: Signal Completion
+### Step 7: Signal Completion
 
 Write/update `.signal`:
 ```json

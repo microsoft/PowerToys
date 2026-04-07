@@ -16,7 +16,6 @@ license: Complete terms in LICENSE.txt
 ├── LICENSE.txt                           # MIT License
 ├── scripts/
 │   ├── Start-CommunityPRReview.ps1       # Main orchestrator (loop-aware)
-│   ├── Build-PRBranch.ps1                # Build verification helper
 │   ├── Format-SuggestedChanges.ps1       # Generate GitHub suggestion blocks from diff
 │   └── ReviewLib.ps1                     # Shared helpers
 └── references/
@@ -76,10 +75,12 @@ Run `.github/prompts/review-community-pr.prompt.md` with a PR number.
 3. Fetch full diff and changed file list
 4. Record original PR head SHA as baseline
 
-### Phase 2: Checkout and Initial Build
-1. `gh pr checkout <PR>`
-2. `tools/build/build-essentials.cmd` → `tools/build/build.cmd`
-3. If build fails, try merging main and rebuilding
+### Phase 2: Create Worktree and Initial Build
+1. Determine fork vs same-repo: `gh pr view <PR> --json isCrossRepository,...`
+2. Fork: `tools/build/New-WorktreeFromFork.ps1 -Spec <user>:<branch>`
+3. Same-repo: `tools/build/New-WorktreeFromBranch.ps1 -Branch <branch>`
+4. In new worktree: `tools/build/build-essentials.cmd` → `tools/build/build.cmd`
+5. If build fails, try merging main and rebuilding
 
 ### Phase 3: Review→Fix Loop (max 3 iterations)
 
