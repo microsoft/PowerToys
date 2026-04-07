@@ -5,6 +5,7 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/logger_helper.h>
+#include <common/interop/shared_constants.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -35,11 +36,13 @@ class WinPosInterface : public PowertoyModuleIface
 private:
     bool m_enabled = false;
     HANDLE m_process{ nullptr };
+    HANDLE m_reload_settings_event_handle{ nullptr };
 
 public:
     WinPosInterface()
     {
         LoggerHelpers::init_logger(L"WinPos", L"ModuleInterface", LogSettings::winPosLoggerName);
+        m_reload_settings_event_handle = CreateDefaultEvent(CommonSharedConstants::WINPOS_REFRESH_SETTINGS_EVENT);
     }
 
     virtual const wchar_t* get_key() override
@@ -80,6 +83,12 @@ public:
         {
             auto values = PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
             values.save_to_settings_file();
+
+            // Signal the WinPos process to reload settings
+            if (m_reload_settings_event_handle)
+            {
+                SetEvent(m_reload_settings_event_handle);
+            }
         }
         catch (const std::exception&)
         {

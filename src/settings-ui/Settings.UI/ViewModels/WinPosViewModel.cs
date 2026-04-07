@@ -26,11 +26,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
 
-        public WinPosViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        private WinPosSettings _moduleSettings;
+
+        public WinPosSettings ModuleSettings => _moduleSettings;
+
+        public WinPosViewModel(ISettingsRepository<GeneralSettings> settingsRepository, WinPosSettings moduleSettings, Func<string, int> ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
+            _moduleSettings = moduleSettings ?? new WinPosSettings();
 
             InitializeEnabledValue();
 
@@ -76,6 +81,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+        }
+
+        public bool ShouldAbsorbAlt
+        {
+            get => _moduleSettings.Properties.ShouldAbsorbAlt.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.ShouldAbsorbAlt.Value != value)
+                {
+                    _moduleSettings.Properties.ShouldAbsorbAlt.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(ShouldAbsorbAlt));
+                }
+            }
+        }
+
+        private void NotifyModuleSettingsChanged()
+        {
+            SndWinPosSettings outSettings = new(_moduleSettings);
+            SndModuleSettings<SndWinPosSettings> outIpcMessage = new(outSettings);
+            SendConfigMSG(outIpcMessage.ToJsonString());
         }
 
         public void RefreshEnabledState()
