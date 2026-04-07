@@ -2,12 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Numerics;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
@@ -17,6 +20,28 @@ namespace Microsoft.CmdPal.UI.Dock;
 [ContentProperty(Name = nameof(Icon))]
 public sealed partial class DockItemControl : Control
 {
+    private const string IconPresenterName = "IconPresenter";
+    private const string FrontContentName = "FrontContent";
+    private const string BackContentName = "BackContent";
+
+    private const int FlipHalfDurationMs = 150;
+
+    private FrameworkElement? _iconPresenter;
+    private FrameworkElement? _frontContentElement;
+    private FrameworkElement? _backContentElement;
+    private DockControl? _parentDock;
+    private ToolTip? _toolTip;
+    private long _dockSideCallbackToken = -1;
+
+    // Live tile flip animation state
+    private Visual? _frontVisual;
+    private Visual? _backVisual;
+    private Compositor? _compositor;
+    private CubicBezierEasingFunction? _easing;
+    private DispatcherTimer? _flipTimer;
+    private bool _showingBack;
+    private bool _isFlipping;
+
     public DockItemControl()
     {
         DefaultStyleKey = typeof(DockItemControl);
@@ -84,12 +109,49 @@ public sealed partial class DockItemControl : Control
         set => SetValue(TextVisibilityProperty, value);
     }
 
-    private const string IconPresenterName = "IconPresenter";
+    public static readonly DependencyProperty LiveTileTitleProperty =
+        DependencyProperty.Register(nameof(LiveTileTitle), typeof(string), typeof(DockItemControl), new PropertyMetadata(null));
 
-    private FrameworkElement? _iconPresenter;
-    private DockControl? _parentDock;
-    private ToolTip? _toolTip;
-    private long _dockSideCallbackToken = -1;
+    public string LiveTileTitle
+    {
+        get => (string)GetValue(LiveTileTitleProperty);
+        set => SetValue(LiveTileTitleProperty, value);
+    }
+
+    public static readonly DependencyProperty LiveTileSubtitleProperty =
+        DependencyProperty.Register(nameof(LiveTileSubtitle), typeof(string), typeof(DockItemControl), new PropertyMetadata(null));
+
+    public string LiveTileSubtitle
+    {
+        get => (string)GetValue(LiveTileSubtitleProperty);
+        set => SetValue(LiveTileSubtitleProperty, value);
+    }
+
+    public static readonly DependencyProperty LiveTileIconProperty =
+        DependencyProperty.Register(nameof(LiveTileIcon), typeof(object), typeof(DockItemControl), new PropertyMetadata(null));
+
+    public object LiveTileIcon
+    {
+        get => GetValue(LiveTileIconProperty);
+        set => SetValue(LiveTileIconProperty, value);
+    }
+
+    public static readonly DependencyProperty FlipIntervalMsProperty =
+        DependencyProperty.Register(nameof(FlipIntervalMs), typeof(int), typeof(DockItemControl), new PropertyMetadata(0, OnFlipIntervalMsChanged));
+
+    public int FlipIntervalMs
+    {
+        get => (int)GetValue(FlipIntervalMsProperty);
+        set => SetValue(FlipIntervalMsProperty, value);
+    }
+
+    private static void OnFlipIntervalMsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateFlipTimer();
+        }
+    }
 
     private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -122,7 +184,6 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateTextVisibilityState()
     {
-        // Determine which visual state to use based on title/subtitle presence
         var stateName = (HasTitle, HasSubtitle) switch
         {
             (true, true) => "TextVisible",
@@ -196,8 +257,6 @@ public sealed partial class DockItemControl : Control
             return;
         }
 
-        // Wait until the control is connected to a XamlRoot before creating
-        // the tooltip popup; dock items are materialized very early in startup.
         if (XamlRoot is null)
         {
             return;
@@ -228,17 +287,15 @@ public sealed partial class DockItemControl : Control
 
         IsEnabledChanged += OnIsEnabledChanged;
 
-        // Get template children for visibility updates
         _iconPresenter = GetTemplateChild(IconPresenterName) as FrameworkElement;
+        _frontContentElement = GetTemplateChild(FrontContentName) as FrameworkElement;
+        _backContentElement = GetTemplateChild(BackContentName) as FrameworkElement;
 
-        // Set initial visibility
         UpdateAllVisibility();
     }
 
     private void DockItemControl_Loaded(object sender, RoutedEventArgs e)
     {
-        // Walk the visual tree to find our parent DockControl and watch its DockSide.
-        // This lets us extend the hit-test area toward the screen edge.
         DependencyObject? parent = VisualTreeHelper.GetParent(this);
         while (parent is not null and not DockControl)
         {
@@ -256,6 +313,7 @@ public sealed partial class DockItemControl : Control
         }
 
         UpdateToolTip();
+        InitializeFlipAnimation();
     }
 
     private void DockItemControl_ActualThemeChanged(FrameworkElement sender, object args)
@@ -277,6 +335,8 @@ public sealed partial class DockItemControl : Control
 
         ToolTipService.SetToolTip(this, null);
         _toolTip = null;
+
+        StopFlipAnimation();
     }
 
     private void OnParentDockSideChanged(DependencyObject sender, DependencyProperty dp)
@@ -290,10 +350,6 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateInnerMarginForDockSide(DockSide side)
     {
-        // Push the visual (PART_RootGrid) inward on the screen-edge side so
-        // the transparent hit-test area extends all the way to the edge.
-        // The values here compensate for the margin/padding removed from the
-        // DockControl's ContentGrid on the screen-edge side.
         InnerMargin = side switch
         {
             DockSide.Top => new Thickness(0, 4, 0, 0),
@@ -307,11 +363,16 @@ public sealed partial class DockItemControl : Control
     private void Control_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
         VisualStateManager.GoToState(this, "PointerOver", true);
+        _flipTimer?.Stop();
     }
 
     private void Control_PointerExited(object sender, PointerRoutedEventArgs e)
     {
         VisualStateManager.GoToState(this, "Normal", true);
+        if (FlipIntervalMs > 0 && _flipTimer is not null)
+        {
+            _flipTimer.Start();
+        }
     }
 
     protected override void OnPointerPressed(PointerRoutedEventArgs e)
@@ -326,5 +387,208 @@ public sealed partial class DockItemControl : Control
     private void OnIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         VisualStateManager.GoToState(this, IsEnabled ? "Normal" : "Disabled", true);
+    }
+
+    // Live Tile Flip Animation
+    private void InitializeFlipAnimation()
+    {
+        if (_frontContentElement is null || _backContentElement is null)
+        {
+            return;
+        }
+
+        _frontVisual = ElementCompositionPreview.GetElementVisual(_frontContentElement);
+        _backVisual = ElementCompositionPreview.GetElementVisual(_backContentElement);
+        _compositor = _frontVisual.Compositor;
+
+        // Back starts hidden
+        _backVisual.Opacity = 0f;
+
+        // Fast-in / slow-out easing matching Windows shell motion language
+        _easing = _compositor.CreateCubicBezierEasingFunction(
+            new Vector2(0.8f, 0f),
+            new Vector2(0.2f, 1f));
+
+        UpdateFlipTimer();
+    }
+
+    private void UpdateFlipTimer()
+    {
+        var interval = FlipIntervalMs;
+        if (interval <= 0)
+        {
+            _flipTimer?.Stop();
+            _flipTimer = null;
+
+            // Reset to front if we were showing back
+            if (_showingBack)
+            {
+                ResetToFront();
+            }
+
+            return;
+        }
+
+        if (_compositor is null)
+        {
+            return;
+        }
+
+        if (_flipTimer is null)
+        {
+            _flipTimer = new DispatcherTimer();
+            _flipTimer.Tick += OnFlipTimerTick;
+        }
+
+        _flipTimer.Interval = TimeSpan.FromMilliseconds(interval);
+        _flipTimer.Start();
+    }
+
+    private void OnFlipTimerTick(object? sender, object e)
+    {
+        if (_isFlipping || _compositor is null || _frontVisual is null || _backVisual is null)
+        {
+            return;
+        }
+
+        _isFlipping = true;
+
+        if (_showingBack)
+        {
+            AnimateFlip(_backVisual, _frontVisual);
+        }
+        else
+        {
+            AnimateFlip(_frontVisual, _backVisual);
+        }
+
+        _showingBack = !_showingBack;
+    }
+
+    private void AnimateFlip(Visual outVisual, Visual inVisual)
+    {
+        if (_compositor is null || _easing is null)
+        {
+            return;
+        }
+
+        UpdateVisualCenterPoints();
+
+        var isVerticalDock = _parentDock?.DockSide is DockSide.Left or DockSide.Right;
+
+        // Phase 1: Squash the outgoing face
+        var scaleOut = _compositor.CreateVector3KeyFrameAnimation();
+        if (isVerticalDock)
+        {
+            scaleOut.InsertKeyFrame(0.0f, new Vector3(1f, 1f, 1f));
+            scaleOut.InsertKeyFrame(0.4f, new Vector3(0.92f, 1f, 1f), _easing);
+            scaleOut.InsertKeyFrame(1.0f, new Vector3(0f, 1f, 1f), _easing);
+        }
+        else
+        {
+            scaleOut.InsertKeyFrame(0.0f, new Vector3(1f, 1f, 1f));
+            scaleOut.InsertKeyFrame(0.4f, new Vector3(1f, 0.92f, 1f), _easing);
+            scaleOut.InsertKeyFrame(1.0f, new Vector3(1f, 0f, 1f), _easing);
+        }
+
+        scaleOut.Duration = TimeSpan.FromMilliseconds(FlipHalfDurationMs);
+
+        var fadeOut = _compositor.CreateScalarKeyFrameAnimation();
+        fadeOut.InsertKeyFrame(0.0f, 1f);
+        fadeOut.InsertKeyFrame(0.6f, 1f);
+        fadeOut.InsertKeyFrame(1.0f, 0f);
+        fadeOut.Duration = TimeSpan.FromMilliseconds(FlipHalfDurationMs);
+
+        // Phase 2: Expand the incoming face
+        var scaleIn = _compositor.CreateVector3KeyFrameAnimation();
+        if (isVerticalDock)
+        {
+            scaleIn.InsertKeyFrame(0.0f, new Vector3(0f, 1f, 1f));
+            scaleIn.InsertKeyFrame(0.6f, new Vector3(0.92f, 1f, 1f), _easing);
+            scaleIn.InsertKeyFrame(1.0f, new Vector3(1f, 1f, 1f), _easing);
+        }
+        else
+        {
+            scaleIn.InsertKeyFrame(0.0f, new Vector3(1f, 0f, 1f));
+            scaleIn.InsertKeyFrame(0.6f, new Vector3(1f, 0.92f, 1f), _easing);
+            scaleIn.InsertKeyFrame(1.0f, new Vector3(1f, 1f, 1f), _easing);
+        }
+
+        scaleIn.Duration = TimeSpan.FromMilliseconds(FlipHalfDurationMs);
+        scaleIn.DelayTime = TimeSpan.FromMilliseconds(FlipHalfDurationMs);
+
+        var fadeIn = _compositor.CreateScalarKeyFrameAnimation();
+        fadeIn.InsertKeyFrame(0.0f, 0f);
+        fadeIn.InsertKeyFrame(0.4f, 1f);
+        fadeIn.InsertKeyFrame(1.0f, 1f);
+        fadeIn.Duration = TimeSpan.FromMilliseconds(FlipHalfDurationMs);
+        fadeIn.DelayTime = TimeSpan.FromMilliseconds(FlipHalfDurationMs);
+
+        // Create a scoped batch to know when the full animation completes
+        var batch = _compositor.CreateScopedBatch(CompositionBatchTypes.Animation);
+
+        outVisual.StartAnimation("Scale", scaleOut);
+        outVisual.StartAnimation("Opacity", fadeOut);
+        inVisual.StartAnimation("Scale", scaleIn);
+        inVisual.StartAnimation("Opacity", fadeIn);
+
+        batch.End();
+        batch.Completed += (_, _) => _isFlipping = false;
+    }
+
+    private void UpdateVisualCenterPoints()
+    {
+        if (_frontContentElement is null || _backContentElement is null ||
+            _frontVisual is null || _backVisual is null)
+        {
+            return;
+        }
+
+        var center = new Vector3(
+            (float)_frontContentElement.ActualWidth / 2f,
+            (float)_frontContentElement.ActualHeight / 2f,
+            0);
+        _frontVisual.CenterPoint = center;
+
+        var backCenter = new Vector3(
+            (float)_backContentElement.ActualWidth / 2f,
+            (float)_backContentElement.ActualHeight / 2f,
+            0);
+        _backVisual.CenterPoint = backCenter;
+    }
+
+    private void ResetToFront()
+    {
+        if (_frontVisual is not null)
+        {
+            _frontVisual.Scale = new Vector3(1f, 1f, 1f);
+            _frontVisual.Opacity = 1f;
+        }
+
+        if (_backVisual is not null)
+        {
+            _backVisual.Scale = new Vector3(1f, 1f, 1f);
+            _backVisual.Opacity = 0f;
+        }
+
+        _showingBack = false;
+        _isFlipping = false;
+    }
+
+    private void StopFlipAnimation()
+    {
+        _flipTimer?.Stop();
+        _flipTimer = null;
+
+        _frontVisual?.StopAnimation("Scale");
+        _frontVisual?.StopAnimation("Opacity");
+        _backVisual?.StopAnimation("Scale");
+        _backVisual?.StopAnimation("Opacity");
+
+        _frontVisual = null;
+        _backVisual = null;
+        _compositor = null;
+        _easing = null;
+        _isFlipping = false;
     }
 }

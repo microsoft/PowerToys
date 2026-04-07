@@ -283,6 +283,20 @@ namespace Microsoft.CommandPalette.Extensions
         String TextToSuggest { get; };
     }
 
+    [uuid("0e29b766-5593-44d1-9355-646f396eb28b")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ILiveTileContent requires INotifyPropChanged {
+        IIconInfo Icon { get; };
+        String Title { get; };
+        String Subtitle { get; };
+        Int32 FlipIntervalMs { get; };
+    }
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IListItem2 requires IListItem {
+        ILiveTileContent LiveTileContent { get; };
+    }
+
     [uuid("50C6F080-1CBE-4CE4-B92F-DA2F116ED524")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IGridProperties requires INotifyPropChanged { }

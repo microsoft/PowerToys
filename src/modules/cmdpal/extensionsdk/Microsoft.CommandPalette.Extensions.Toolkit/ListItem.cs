@@ -4,7 +4,7 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class ListItem : CommandItem, IListItem, IExtendedAttributesProvider
+public partial class ListItem : CommandItem, IListItem, IListItem2, IExtendedAttributesProvider
 {
     public virtual ITag[] Tags { get; set => SetProperty(ref field, value); } = [];
 
@@ -13,6 +13,8 @@ public partial class ListItem : CommandItem, IListItem, IExtendedAttributesProvi
     public virtual string Section { get; set => SetProperty(ref field, value); } = string.Empty;
 
     public virtual string TextToSuggest { get; set => SetProperty(ref field, value); } = string.Empty;
+
+    public virtual ILiveTileContent? LiveTileContent { get; set => SetProperty(ref field, value); }
 
     public ListItem(ICommand command)
         : base(command)

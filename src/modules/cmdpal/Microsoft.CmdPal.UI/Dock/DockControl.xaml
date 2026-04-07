@@ -40,6 +40,9 @@
                         <DataTemplate x:DataType="dockVm:DockItemViewModel">
                             <local:DockItemControl
                                 Title="{x:Bind Title, Mode=OneWay}"
+                                FlipIntervalMs="{x:Bind FlipIntervalMs, Mode=OneWay}"
+                                LiveTileSubtitle="{x:Bind LiveTileSubtitle, Mode=OneWay}"
+                                LiveTileTitle="{x:Bind LiveTileTitle, Mode=OneWay}"
                                 RightTapped="BandItem_RightTapped"
                                 Subtitle="{x:Bind Subtitle, Mode=OneWay}"
                                 Tag="{x:Bind}"
@@ -55,6 +58,16 @@
                                         SourceKey="{x:Bind Icon, Mode=OneWay}"
                                         SourceRequested="{x:Bind help:IconProvider.SourceRequested16}" />
                                 </local:DockItemControl.Icon>
+                                <local:DockItemControl.LiveTileIcon>
+                                    <cpcontrols:IconBox
+                                        x:Name="LiveTileIconBorder"
+                                        Width="16"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        SourceKey="{x:Bind LiveTileIcon, Mode=OneWay}"
+                                        SourceRequested="{x:Bind help:IconProvider.SourceRequested16}" />
+                                </local:DockItemControl.LiveTileIcon>
                             </local:DockItemControl>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>

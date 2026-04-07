@@ -253,6 +253,12 @@ public partial class DockItemViewModel : CommandItemViewModel
     private bool _showTitle = true;
     private bool _showSubtitle = true;
 
+    private string _liveTileTitle = string.Empty;
+    private string _liveTileSubtitle = string.Empty;
+    private IconInfoViewModel _liveTileIcon = new(null);
+    private int _flipIntervalMs;
+    private ILiveTileContent? _liveTileModel;
+
     public bool ShowTitle
     {
         get => _showTitle;
@@ -317,6 +323,31 @@ public partial class DockItemViewModel : CommandItemViewModel
             $"{ItemTitle}\n{base.Subtitle}" :
             ItemTitle + base.Subtitle;
 
+    /// <summary>
+    /// Gets the title displayed on the back face of the live tile flip.
+    /// </summary>
+    public string LiveTileTitle => _liveTileTitle;
+
+    /// <summary>
+    /// Gets the subtitle displayed on the back face of the live tile flip.
+    /// </summary>
+    public string LiveTileSubtitle => _liveTileSubtitle;
+
+    /// <summary>
+    /// Gets the icon displayed on the back face of the live tile flip.
+    /// </summary>
+    public IconInfoViewModel LiveTileIcon => _liveTileIcon;
+
+    /// <summary>
+    /// Gets a value indicating whether this dock item has live tile content configured.
+    /// </summary>
+    public bool HasLiveTile => _flipIntervalMs > 0 && _liveTileModel is not null;
+
+    /// <summary>
+    /// Gets the interval in milliseconds between live tile flips. 0 = no flip.
+    /// </summary>
+    public int FlipIntervalMs => _flipIntervalMs;
+
     public DockItemViewModel(CommandItemViewModel root, bool showTitle, bool showSubtitle, IContextMenuFactory contextMenuFactory)
         : this(root.Model, root.PageContext, showTitle, showSubtitle, contextMenuFactory)
     {
@@ -327,6 +358,93 @@ public partial class DockItemViewModel : CommandItemViewModel
     {
         _showTitle = showTitle;
         _showSubtitle = showSubtitle;
+    }
+
+    public override void InitializeProperties()
+    {
+        base.InitializeProperties();
+        InitializeLiveTile();
+    }
+
+    private void InitializeLiveTile()
+    {
+        var model = Model.Unsafe;
+        if (model is not IListItem2 listItem2)
+        {
+            return;
+        }
+
+        var liveTile = listItem2.LiveTileContent;
+        if (liveTile is null)
+        {
+            return;
+        }
+
+        _liveTileModel = liveTile;
+        _liveTileTitle = liveTile.Title;
+        _liveTileSubtitle = liveTile.Subtitle;
+        _flipIntervalMs = liveTile.FlipIntervalMs;
+
+        var icon = liveTile.Icon;
+        if (icon is not null)
+        {
+            _liveTileIcon = new(icon);
+            _liveTileIcon.InitializeProperties();
+        }
+
+        liveTile.PropChanged += LiveTile_PropChanged;
+
+        UpdateProperty(nameof(LiveTileTitle));
+        UpdateProperty(nameof(LiveTileSubtitle));
+        UpdateProperty(nameof(LiveTileIcon));
+        UpdateProperty(nameof(FlipIntervalMs));
+        UpdateProperty(nameof(HasLiveTile));
+    }
+
+    private void LiveTile_PropChanged(object sender, IPropChangedEventArgs args)
+    {
+        if (_liveTileModel is null)
+        {
+            return;
+        }
+
+        switch (args.PropertyName)
+        {
+            case nameof(ILiveTileContent.Title):
+                _liveTileTitle = _liveTileModel.Title;
+                UpdateProperty(nameof(LiveTileTitle));
+                break;
+            case nameof(ILiveTileContent.Subtitle):
+                _liveTileSubtitle = _liveTileModel.Subtitle;
+                UpdateProperty(nameof(LiveTileSubtitle));
+                break;
+            case nameof(ILiveTileContent.Icon):
+                var icon = _liveTileModel.Icon;
+                if (icon is not null)
+                {
+                    _liveTileIcon = new(icon);
+                    _liveTileIcon.InitializeProperties();
+                }
+
+                UpdateProperty(nameof(LiveTileIcon));
+                break;
+            case nameof(ILiveTileContent.FlipIntervalMs):
+                _flipIntervalMs = _liveTileModel.FlipIntervalMs;
+                UpdateProperty(nameof(FlipIntervalMs));
+                UpdateProperty(nameof(HasLiveTile));
+                break;
+        }
+    }
+
+    protected override void UnsafeCleanup()
+    {
+        if (_liveTileModel is not null)
+        {
+            _liveTileModel.PropChanged -= LiveTile_PropChanged;
+            _liveTileModel = null;
+        }
+
+        base.UnsafeCleanup();
     }
 }
 
