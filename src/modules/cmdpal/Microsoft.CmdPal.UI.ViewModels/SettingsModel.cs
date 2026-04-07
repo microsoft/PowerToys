@@ -89,6 +89,8 @@ public record SettingsModel
 
     public int BackdropOpacity { get; init; } = 100;
 
+    public ShaderEffectType ShaderEffect { get; init; }
+
     // </Theme settings>
 
     // END SETTINGS
@@ -170,6 +172,7 @@ public record SettingsModel
 [JsonSerializable(typeof(ImmutableDictionary<string, CommandAlias>), TypeInfoPropertyName = "ImmutableAliasDictionary")]
 [JsonSerializable(typeof(ImmutableList<TopLevelHotkey>), TypeInfoPropertyName = "ImmutableTopLevelHotkeyList")]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
+[JsonSerializable(typeof(ShaderEffectType))]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Just used here")]
 internal sealed partial class JsonSerializationContext : JsonSerializerContext

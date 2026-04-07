@@ -340,6 +340,21 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
         }
     }
 
+    public int ShaderEffectIndex
+    {
+        get => (int)_settingsService.Settings.ShaderEffect;
+        set
+        {
+            var newEffect = (ShaderEffectType)value;
+            if (_settingsService.Settings.ShaderEffect != newEffect)
+            {
+                _settingsService.UpdateSettings(s => s with { ShaderEffect = newEffect });
+                OnPropertyChanged();
+                DebouncedReapply();
+            }
+        }
+    }
+
     /// <summary>
     /// Gets a value indicating whether the backdrop opacity slider should be visible.
     /// </summary>

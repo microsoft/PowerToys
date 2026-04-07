@@ -1,0 +1,59 @@
+<!-- Copyright (c) Microsoft Corporation -->
+<!-- The Microsoft Corporation licenses this file to you under the MIT license. -->
+<!-- See the LICENSE file in the project root for more information. -->
+<Page
+    x:Class="Microsoft.CmdPal.UI.Settings.ShaderEffectsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <StackPanel Margin="16" Spacing="{StaticResource SettingsCardSpacing}">
+
+            <!--  Command Palette Shader  -->
+            <controls:SettingsCard
+                Header="Command Palette"
+                Description="Shader effect for the main Command Palette window"
+                HeaderIcon="{ui:FontIcon Glyph=&#xE2B1;}">
+                <ComboBox
+                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                    SelectedIndex="{x:Bind ViewModel.Appearance.ShaderEffectIndex, Mode=TwoWay}">
+                    <ComboBoxItem Content="Off" />
+                    <ComboBoxItem Content="Audio Glow" />
+                    <ComboBoxItem Content="Alchemy" />
+                    <ComboBoxItem Content="MilkDrop" />
+                    <ComboBoxItem Content="Waveform Tunnel" />
+                    <ComboBoxItem Content="Radial Spectrum" />
+                    <ComboBoxItem Content="Kaleidoscope" />
+                    <ComboBoxItem Content="Kaleido Tunnel" />
+                    <ComboBoxItem Content="Waveform Space" />
+                </ComboBox>
+            </controls:SettingsCard>
+
+            <!--  Dock Shader  -->
+            <controls:SettingsCard
+                Header="Dock"
+                Description="Shader effect for the Dock bar"
+                HeaderIcon="{ui:FontIcon Glyph=&#xF596;}">
+                <ComboBox
+                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                    SelectedIndex="{x:Bind ViewModel.DockAppearance.ShaderEffectIndex, Mode=TwoWay}">
+                    <ComboBoxItem Content="Off" />
+                    <ComboBoxItem Content="Audio Glow" />
+                    <ComboBoxItem Content="Alchemy" />
+                    <ComboBoxItem Content="MilkDrop" />
+                    <ComboBoxItem Content="Waveform Tunnel" />
+                    <ComboBoxItem Content="Radial Spectrum" />
+                    <ComboBoxItem Content="Kaleidoscope" />
+                    <ComboBoxItem Content="Kaleido Tunnel" />
+                    <ComboBoxItem Content="Waveform Space" />
+                </ComboBox>
+            </controls:SettingsCard>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

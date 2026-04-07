@@ -32,6 +32,12 @@
             </Border.Background>
         </Border>
 
+        <cpcontrols:ShaderEffectControl
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            EffectType="{x:Bind WindowViewModel.ShaderEffect, Mode=OneWay}"
+            IsHitTestVisible="False" />
+
         <cpcontrols:BlurImageControl
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"

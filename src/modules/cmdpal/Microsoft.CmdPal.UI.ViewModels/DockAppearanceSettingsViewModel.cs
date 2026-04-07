@@ -61,6 +61,21 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         set => Backdrop = (DockBackdrop)value;
     }
 
+    public int ShaderEffectIndex
+    {
+        get => (int)_settingsService.Settings.DockSettings.ShaderEffect;
+        set
+        {
+            var newEffect = (ShaderEffectType)value;
+            if (_settingsService.Settings.DockSettings.ShaderEffect != newEffect)
+            {
+                _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { ShaderEffect = newEffect } });
+                OnPropertyChanged();
+                DebouncedReapply();
+            }
+        }
+    }
+
     public DockBackdrop Backdrop
     {
         get => _settingsService.Settings.DockSettings.Backdrop;

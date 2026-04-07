@@ -45,6 +45,8 @@ public record DockSettings
 
     public string? BackgroundImagePath { get; init; }
 
+    public ShaderEffectType ShaderEffect { get; init; }
+
     // </Theme settings>
     public ImmutableList<DockBandSettings> StartBands { get; init; } = ImmutableList.Create(
         new DockBandSettings

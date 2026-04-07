@@ -13,6 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class MainWindowViewModel : ObservableObject, IDisposable
 {
     private readonly IThemeService _themeService;
+    private readonly ISettingsService _settingsService;
     private readonly DispatcherQueue _uiDispatcherQueue = DispatcherQueue.GetForCurrentThread()!;
 
     [ObservableProperty]
@@ -50,6 +51,9 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(EffectiveImageOpacity))]
     public partial float BackdropOpacity { get; private set; } = 1.0f;
 
+    [ObservableProperty]
+    public partial ShaderEffectType ShaderEffect { get; private set; }
+
     // Returns null when no transparency needed (BlurImageControl uses this to decide source type)
     public BackdropStyle? EffectiveBackdropStyle =>
         BackdropStyle == BackdropStyle.Clear ||
@@ -64,9 +68,10 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             ? BackgroundImageOpacity * Math.Sqrt(BackdropOpacity)
             : BackgroundImageOpacity;
 
-    public MainWindowViewModel(IThemeService themeService)
+    public MainWindowViewModel(IThemeService themeService, ISettingsService settingsService)
     {
         _themeService = themeService;
+        _settingsService = settingsService;
         _themeService.ThemeChanged += ThemeService_ThemeChanged;
     }
 
@@ -85,6 +90,8 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
             BackdropStyle = _themeService.Current.BackdropParameters.Style;
             BackdropOpacity = _themeService.Current.BackdropOpacity;
+
+            ShaderEffect = _settingsService.Settings.ShaderEffect;
 
             ShowBackgroundImage = BackgroundImageSource != null;
         });

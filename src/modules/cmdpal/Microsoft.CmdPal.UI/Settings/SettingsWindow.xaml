@@ -81,6 +81,11 @@
                         <InfoBadge Style="{StaticResource NewInfoBadge}" />
                     </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
+                <NavigationViewItem
+                    x:Name="ShaderEffectsPageNavItem"
+                    Content="Shader Effects"
+                    Icon="{ui:FontIcon Glyph=&#xE2B1;}"
+                    Tag="ShaderEffects" />
                 <!--  "Internal Tools" page item is added dynamically from code  -->
             </NavigationView.MenuItems>
             <Grid>

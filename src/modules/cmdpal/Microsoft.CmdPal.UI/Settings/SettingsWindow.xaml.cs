@@ -127,6 +127,9 @@ public sealed partial class SettingsWindow : WindowEx,
             case "Dock":
                 pageType = typeof(DockSettingsPage);
                 break;
+            case "ShaderEffects":
+                pageType = typeof(ShaderEffectsPage);
+                break;
             case "Internal":
                 pageType = typeof(InternalPage);
                 break;
@@ -310,6 +313,11 @@ public sealed partial class SettingsWindow : WindowEx,
             NavView.SelectedItem = DockSettingsPageNavItem;
             var pageType = RS_.GetString("Settings_PageTitles_DockPage");
             BreadCrumbs.Add(new(pageType, pageType));
+        }
+        else if (e.SourcePageType == typeof(ShaderEffectsPage))
+        {
+            NavView.SelectedItem = ShaderEffectsPageNavItem;
+            BreadCrumbs.Add(new("Shader Effects", "Shader Effects"));
         }
         else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
         {

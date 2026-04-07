@@ -17,6 +17,12 @@
     mc:Ignorable="d">
     <Grid x:Name="RootElement">
 
+        <controls:ShaderEffectControl
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            EffectType="{x:Bind ViewModel.ShaderEffect, Mode=OneWay}"
+            IsHitTestVisible="False" />
+
         <controls:BlurImageControl
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"

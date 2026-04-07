@@ -14,6 +14,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Dock;
 public partial class DockWindowViewModel : ObservableObject, IDisposable
 {
     private readonly IThemeService _themeService;
+    private readonly ISettingsService _settingsService;
     private readonly DispatcherQueue _uiDispatcherQueue = DispatcherQueue.GetForCurrentThread()!;
 
     [ObservableProperty]
@@ -49,9 +50,13 @@ public partial class DockWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial double ColorizationOpacity { get; private set; }
 
-    public DockWindowViewModel(IThemeService themeService)
+    [ObservableProperty]
+    public partial ShaderEffectType ShaderEffect { get; private set; }
+
+    public DockWindowViewModel(IThemeService themeService, ISettingsService settingsService)
     {
         _themeService = themeService;
+        _settingsService = settingsService;
         _themeService.ThemeChanged += ThemeService_ThemeChanged;
         UpdateFromThemeSnapshot();
     }
@@ -80,6 +85,8 @@ public partial class DockWindowViewModel : ObservableObject, IDisposable
         ShowColorizationOverlay = snapshot.Backdrop == DockBackdrop.Transparent && snapshot.TintIntensity > 0;
         ColorizationColor = snapshot.Tint;
         ColorizationOpacity = snapshot.TintIntensity;
+
+        ShaderEffect = _settingsService.Settings.DockSettings.ShaderEffect;
     }
 
     public void Dispose()
