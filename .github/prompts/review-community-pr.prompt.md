@@ -1,6 +1,6 @@
 ---
 agent: 'ReviewCommunityPR'
-description: 'Review a community bug-fix PR with code review, build verification, and verification guide'
+description: 'Review a community bug-fix PR with review→fix loop, build verification, and GitHub suggested changes'
 tools: ['execute', 'read', 'edit', 'search', 'web', 'github/*']
 argument-hint: 'PR number (e.g., #45234 or 45234)'
 ---
@@ -15,9 +15,12 @@ Given a PR number, this workflow:
 
 1. **Understands the bug** — reads the PR and linked issue
 2. **Reviews the code** across 7 dimensions: correctness, security, performance, reliability, design, compatibility, and repo patterns
-3. **Verifies the build** — checks out, builds, and tries to fix build failures (including merging main)
-4. **Generates outputs**:
-   - `review-comments.md` — GitHub-ready review comments in markdown
+3. **Fixes issues** — applies fixes for high/medium findings, verifies build, re-reviews (up to 3 iterations)
+4. **Generates suggested changes** — diffs the fixed code against the original PR and formats as GitHub ` ```suggestion ` blocks
+5. **Generates outputs**:
+   - `suggested-changes.md` — GitHub suggested changes ready to post as PR review comments
+   - `review-comments.md` — Full review findings per iteration
+   - `fix-summary.md` — Record of all fixes applied
    - `build-report.md` — Build status and actions taken
    - `verification-guide.md` — Step-by-step E2E verification instructions
 

@@ -40,6 +40,7 @@ param(
     [int]$PRNumber,
     [string]$CLIType = 'copilot',
     [string]$Model,
+    [int]$MaxIterations = 3,
     [switch]$SkipBuild,
     [string]$OutputRoot = 'Generated Files/communityPrReview',
     [string]$LogPath,
@@ -133,6 +134,7 @@ Info "=" * 80
 Info "Repository root: $repoRoot"
 Info "Output directory: $reviewDir"
 Info "CLI type: $CLIType"
+Info "Max iterations: $MaxIterations"
 Info "Skip build: $SkipBuild"
 
 $reviewPromptPath = Join-Path $repoRoot "$_cfgDir/skills/community-pr-review/references/review-community-pr.prompt.md"
@@ -141,29 +143,30 @@ $reviewDirForPrompt = ($reviewDir -replace '\\', '/')
 if (Test-Path $reviewPromptPath) {
     $rawPrompt = Get-Content $reviewPromptPath -Raw
     $rawPrompt = $rawPrompt -replace '\{\{pr_number\}\}', [string]$PRNumber
+    $rawPrompt = $rawPrompt -replace '\{\{iteration\}\}', '1'
     $rawPrompt = $rawPrompt -replace 'Generated Files/communityPrReview/\{\{pr_number\}\}', $reviewDirForPrompt
 }
 else {
     Warn "Review prompt not found at $reviewPromptPath, using inline prompt."
     $rawPrompt = @"
-Review community bug-fix PR #$PRNumber.
-1. Fetch PR data and linked issue with gh CLI
-2. Review across 7 dimensions: correctness, security, performance, reliability, design, compatibility, repo patterns
-3. Write review-comments.md with GitHub-ready markdown comments
-4. Run build verification (unless told to skip)
-5. Write build-report.md
-6. Write verification-guide.md with E2E test instructions
-7. Write .signal file
+Review community bug-fix PR #$PRNumber with a review-fix loop (max $MaxIterations iterations).
+1. Fetch PR data and linked issue. Record original head SHA.
+2. Checkout and build. If build fails, try merging main.
+3. Review-fix loop: review 7 dimensions, fix high/medium issues, re-review until clean.
+4. Generate suggested-changes.md with GitHub suggestion blocks from diff.
+5. Write build-report.md and verification-guide.md.
+6. Write .signal file.
 Output to: $reviewDirForPrompt/
 "@
 }
 
 $skipBuildNote = if ($SkipBuild) { "`n`nIMPORTANT: Skip the build verification phase. Set buildStatus to 'skipped' in the signal file." } else { '' }
+$loopNote = "`n`nReview-fix loop: max $MaxIterations iterations. Exit when no high/medium findings remain or max iterations reached."
 
 $prompt = @"
 You are running a community PR review workflow for PR #$PRNumber.
 Execute the workflow below exactly and write all outputs to $reviewDirForPrompt/.
-$skipBuildNote
+$skipBuildNote$loopNote
 
 $rawPrompt
 "@
@@ -218,6 +221,8 @@ else {
 $hasReview = Test-Path (Join-Path $reviewDir 'review-comments.md')
 $hasBuild = Test-Path (Join-Path $reviewDir 'build-report.md')
 $hasVerification = Test-Path (Join-Path $reviewDir 'verification-guide.md')
+$hasSuggestions = Test-Path (Join-Path $reviewDir 'suggested-changes.md')
+$hasFixSummary = Test-Path (Join-Path $reviewDir 'fix-summary.md')
 
 $status = if ($hasReview -and ($hasBuild -or $SkipBuild) -and $hasVerification) {
     'success'
@@ -228,12 +233,14 @@ $status = if ($hasReview -and ($hasBuild -or $SkipBuild) -and $hasVerification) 
 }
 
 Write-Signal -OutputDir $reviewDir -Data @{
-    status    = $status
-    prNumber  = $PRNumber
-    exitCode  = $exitCode
-    hasReview = $hasReview
-    hasBuild  = $hasBuild
+    status          = $status
+    prNumber        = $PRNumber
+    exitCode        = $exitCode
+    hasReview       = $hasReview
+    hasBuild        = $hasBuild
     hasVerification = $hasVerification
+    hasSuggestions  = $hasSuggestions
+    hasFixSummary   = $hasFixSummary
 }
 
 Info "`n$("=" * 80)"
@@ -242,6 +249,8 @@ Info "=" * 80
 Info "PR:              #$PRNumber"
 Info "Status:          $status"
 Info "Review comments: $(if ($hasReview) { 'YES' } else { 'NO' })"
+Info "Suggested changes: $(if ($hasSuggestions) { 'YES' } else { 'NO' })"
+Info "Fix summary:     $(if ($hasFixSummary) { 'YES' } else { 'NO' })"
 Info "Build report:    $(if ($hasBuild) { 'YES' } else { 'NO' })"
 Info "Verification:    $(if ($hasVerification) { 'YES' } else { 'NO' })"
 Info "Output:          $reviewDir"
