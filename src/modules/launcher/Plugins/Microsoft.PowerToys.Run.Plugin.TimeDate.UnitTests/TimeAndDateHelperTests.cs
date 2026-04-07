@@ -166,6 +166,22 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(result, week);
         }
 
+        [DataTestMethod]
+        [DataRow("2026-04-07T12:00:00", "2026-04-07T08:00:00", "4 hours ago")]
+        [DataRow("2026-04-07T12:00:00", "2026-04-07T15:00:00", "in 3 hours")]
+        [DataRow("2026-04-07T12:00:00", "2026-04-07T12:00:05", "Today")]
+        [DataRow("2026-04-07T12:00:00", "2026-04-06T12:00:00", "Yesterday")]
+        [DataRow("2026-04-07T12:00:00", "2026-04-08T12:00:00", "Tomorrow")]
+        public void FriendlyDateTimeFormats(string now, string target, string expected)
+        {
+            DateTime referenceNow = DateTime.Parse(now, CultureInfo.InvariantCulture);
+            DateTime targetTime = DateTime.Parse(target, CultureInfo.InvariantCulture);
+
+            var result = TimeAndDateHelper.GetFriendlyDateTime(targetTime, referenceNow);
+
+            Assert.AreEqual(expected, result);
+        }
+
         [TestCleanup]
         public void CleanUp()
         {

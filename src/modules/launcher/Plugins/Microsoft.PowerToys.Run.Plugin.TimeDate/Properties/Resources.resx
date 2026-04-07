@@ -140,6 +140,57 @@
   <data name="Microsoft_plugin_timedate_DayMonth" xml:space="preserve">
     <value>Month and day</value>
   </data>
+  <data name="Microsoft_plugin_timedate_Friendly" xml:space="preserve">
+    <value>Friendly</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_Yesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_Tomorrow" xml:space="preserve">
+    <value>Tomorrow</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_JustNow" xml:space="preserve">
+    <value>just now</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_MinuteAgo" xml:space="preserve">
+    <value>1 minute ago</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_MinutesAgo" xml:space="preserve">
+    <value>{0} minutes ago</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_InMinute" xml:space="preserve">
+    <value>in 1 minute</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_InMinutes" xml:space="preserve">
+    <value>in {0} minutes</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_HourAgo" xml:space="preserve">
+    <value>1 hour ago</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_HoursAgo" xml:space="preserve">
+    <value>{0} hours ago</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_InHour" xml:space="preserve">
+    <value>in 1 hour</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_InHours" xml:space="preserve">
+    <value>in {0} hours</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_DayAgo" xml:space="preserve">
+    <value>1 day ago</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_DaysAgo" xml:space="preserve">
+    <value>{0} days ago</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_InDay" xml:space="preserve">
+    <value>in 1 day</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Friendly_InDays" xml:space="preserve">
+    <value>in {0} days</value>
+  </data>
   <data name="Microsoft_plugin_timedate_DayOfMonth" xml:space="preserve">
     <value>Day of the month</value>
   </data>
@@ -244,6 +295,10 @@
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagFormat" xml:space="preserve">
     <value>Date and time; Time and Date</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagFriendly" xml:space="preserve">
+    <value>friendly; relative; ago; yesterday; today; tomorrow</value>
     <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagCustom" xml:space="preserve">

@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void LocalFormatsWithShortTimeAndShortDate(string formatLabel, string expectedResult)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, false, false, GetDateTimeForTest(), CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, false, false, GetDateTimeForTest(), now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -101,7 +101,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void LocalFormatsWithShortTimeAndLongDate(string formatLabel, string expectedResult)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, false, true, GetDateTimeForTest(), CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, false, true, GetDateTimeForTest(), now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -136,7 +136,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void LocalFormatsWithLongTimeAndShortDate(string formatLabel, string expectedResult)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, true, false, GetDateTimeForTest(), CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, true, false, GetDateTimeForTest(), now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -171,7 +171,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void LocalFormatsWithLongTimeAndLongDate(string formatLabel, string expectedResult)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, true, true, GetDateTimeForTest(), CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, true, true, GetDateTimeForTest(), now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
 
             // Act
             var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
@@ -190,7 +190,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void UtcFormatsWithShortTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, false, false, GetDateTimeForTest(true), CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, false, false, GetDateTimeForTest(true), now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
             var expectedResult = GetDateTimeForTest().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
@@ -210,7 +210,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void UtcFormatsWithShortTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, false, true, GetDateTimeForTest(true), CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, false, true, GetDateTimeForTest(true), now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
             var expectedResult = GetDateTimeForTest().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
@@ -230,7 +230,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void UtcFormatsWithLongTimeAndShortDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, true, false, GetDateTimeForTest(true), CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, true, false, GetDateTimeForTest(true), now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
             var expectedResult = GetDateTimeForTest().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
@@ -250,7 +250,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void UtcFormatsWithLongTimeAndLongDate(string formatLabel, string expectedFormat)
         {
             // Setup
-            var helperResults = AvailableResultsList.GetList(true, true, true, GetDateTimeForTest(true), CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, true, true, GetDateTimeForTest(true), now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
             var expectedResult = GetDateTimeForTest().ToString(expectedFormat, CultureInfo.CurrentCulture);
 
             // Act
@@ -266,7 +266,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             string formatLabel = "Unix epoch time";
             DateTime timeValue = DateTime.Now.ToUniversalTime();
-            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
             var expectedResult = (long)timeValue.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
             // Act
@@ -282,7 +282,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             string formatLabel = "Unix epoch time in milliseconds";
             DateTime timeValue = DateTime.Now.ToUniversalTime();
-            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
             var expectedResult = (long)timeValue.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
 
             // Act
@@ -298,7 +298,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             string formatLabel = "Windows file time (Int64 number)";
             DateTime timeValue = DateTime.Now;
-            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
             var expectedResult = timeValue.ToFileTime().ToString(CultureInfo.CurrentCulture);
 
             // Act
@@ -314,7 +314,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             string formatLabel = "Era";
             DateTime timeValue = DateTime.Now;
-            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
             var expectedResult = DateTimeFormatInfo.CurrentInfo.GetEraName(CultureInfo.CurrentCulture.Calendar.GetEra(timeValue));
 
             // Act
@@ -330,7 +330,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             // Setup
             string formatLabel = "Era abbreviation";
             DateTime timeValue = DateTime.Now;
-            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, now: null, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
             var expectedResult = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(CultureInfo.CurrentCulture.Calendar.GetEra(timeValue));
 
             // Act
@@ -348,7 +348,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         {
             // Setup
             DateTime timeValue = new DateTime(2021, 1, 12);
-            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, weekRule, DayOfWeek.Sunday);
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, now: null, weekRule, DayOfWeek.Sunday);
 
             // Act
             var resultWeekOfYear = helperResults.FirstOrDefault(x => x.Label.Equals("week of the year (calendar week, week number)", StringComparison.OrdinalIgnoreCase));
@@ -369,7 +369,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         {
             // Setup
             DateTime timeValue = new DateTime(2024, 1, 12); // Friday
-            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, CalendarWeekRule.FirstDay, dayOfWeek);
+            var helperResults = AvailableResultsList.GetList(true, false, false, timeValue, now: null, CalendarWeekRule.FirstDay, dayOfWeek);
 
             // Act
             var resultWeekOfYear = helperResults.FirstOrDefault(x => x.Label.Equals("week of the year (calendar week, week number)", StringComparison.OrdinalIgnoreCase));
