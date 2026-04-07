@@ -514,7 +514,7 @@ namespace RegistryPreviewUILib
                             {
                                 try
                                 {
-                                    // Hexes are usually two characters (00), it's invalid if less or more than 2
+                                    // Hexes are usually two characters (00), it's invalid if more or less than 2
                                     var bytes = value.Split(',').Select(
                                         c => c.Length == 2 ? byte.Parse(c, NumberStyles.HexNumber, CultureInfo.InvariantCulture) : throw null);
                                     value = string.Join(' ', bytes.Select(b => b.ToString("x2", CultureInfo.CurrentCulture)));
@@ -561,7 +561,7 @@ namespace RegistryPreviewUILib
                             {
                                 try
                                 {
-                                    // Hexes are usually two characters (00), it's invalid if less or more than 2
+                                    // Hexes are usually two characters (00), it's invalid if more or less than 2
                                     var bytes = value.Split(',').Select(
                                         c => c.Length == 2 ? byte.Parse(c, NumberStyles.HexNumber, CultureInfo.InvariantCulture) : throw null).ToArray();
                                     ulong qword = BitConverter.ToUInt64(bytes);
@@ -580,7 +580,7 @@ namespace RegistryPreviewUILib
                         case "REG_MULTI_SZ":
                             try
                             {
-                                // Hexes are usually two characters (00), it's invalid if less or more than 2
+                                // Hexes are usually two characters (00), it's invalid if more or less than 2
                                 var bytes = value.Split(',').Select(
                                     c => c.Length == 2 ? byte.Parse(c, NumberStyles.HexNumber, CultureInfo.InvariantCulture) : throw null).ToArray();
 
