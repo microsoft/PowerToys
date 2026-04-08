@@ -12,15 +12,17 @@ internal sealed class IconSourceProvider : IIconSourceProvider
 {
     private readonly IconLoaderService _loader;
     private readonly Size _iconSize;
+    private readonly bool _isPriority;
 
-    public IconSourceProvider(IconLoaderService loader, Size iconSize)
+    public IconSourceProvider(IconLoaderService loader, Size iconSize, bool isPriority = false)
     {
         _loader = loader;
         _iconSize = iconSize;
+        _isPriority = isPriority;
     }
 
-    public IconSourceProvider(IconLoaderService loader, int iconSize)
-        : this(loader, new Size(iconSize, iconSize))
+    public IconSourceProvider(IconLoaderService loader, int iconSize, bool isPriority = false)
+        : this(loader, new Size(iconSize, iconSize), isPriority)
     {
     }
 
@@ -34,7 +36,8 @@ internal sealed class IconSourceProvider : IIconSourceProvider
             icon.Data?.Unsafe,
             _iconSize,
             scale,
-            tcs);
+            tcs,
+            _isPriority ? IconLoadPriority.High : IconLoadPriority.Low);
 
         return tcs.Task;
     }

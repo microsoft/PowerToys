@@ -37,6 +37,8 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
     public bool HasMoreCommands => _snapshot.SecondaryCommand is not null;
 
+    public bool CanOpenContextMenu => _snapshot.AllCommands.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible);
+
     public string SecondaryCommandName => _snapshot.SecondaryCommand?.Name ?? string.Empty;
 
     public CommandItemViewModel? PrimaryCommand => _snapshot.PrimaryCommand;
@@ -184,6 +186,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 UpdateProperty(nameof(SecondaryCommandName));
                 UpdateProperty(nameof(HasCommands));
                 UpdateProperty(nameof(HasMoreCommands));
+                UpdateProperty(nameof(CanOpenContextMenu));
                 UpdateProperty(nameof(MoreCommands));
                 UpdateProperty(nameof(AllCommands));
                 DoOnUiThread(

@@ -131,7 +131,25 @@ if ($platform -ceq "arm64") {
 }
 
 #BaseApplications
+# WORKAROUND: Exclude ImageResizer files that leak into the root output directory.
+# ImageResizerCLI (Exe, SelfContained) has a ProjectReference to ImageResizerUI (WinExe, SelfContained).
+# MSBuild copies the referenced WinExe's apphost (.exe, .deps.json, .runtimeconfig.json) to the root
+# output directory as a side effect. These files are incomplete (missing the managed .dll) and should
+# not be included in the installer. The complete ImageResizer files are in WinUI3Apps/ and are handled
+# by WinUI3ApplicationsFiles. TODO: Refactor ImageResizer to use a shared Library project instead.
 Generate-FileList -fileDepsJson "" -fileListName BaseApplicationsFiles -wxsFilePath $PSScriptRoot\BaseApplications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release"
+
+# Remove leaked ImageResizer artifacts from BaseApplications
+$baseAppWxsPath = "$PSScriptRoot\BaseApplications.wxs"
+$baseAppWxs = Get-Content $baseAppWxsPath -Raw
+$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ImageResizer\.exe;?', ''
+$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ImageResizer\.deps\.json;?', ''
+$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ImageResizer\.runtimeconfig\.json;?', ''
+# Clean up trailing/double semicolons left after removal
+$baseAppWxs = $baseAppWxs -replace ';;+', ';'
+$baseAppWxs = $baseAppWxs -replace '=;', '='
+$baseAppWxs = $baseAppWxs -replace ';"', '"'
+Set-Content -Path $baseAppWxsPath -Value $baseAppWxs
 Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSScriptRoot\BaseApplications.wxs
 
 #WinUI3Applications
