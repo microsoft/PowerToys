@@ -14,7 +14,11 @@ namespace MouseWithoutBorders.Core;
 
 internal static class IpcChannelHelper
 {
-    internal static bool IpcChannelCreated { get; set; }
+    internal static bool IpcChannelCreated
+    {
+        get;
+        set;
+    }
 
     internal static T Retry<T>(string name, Func<T> func, Action<string> log, Action preRetry = null)
     {
