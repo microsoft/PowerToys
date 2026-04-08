@@ -28,6 +28,12 @@ namespace KeyboardManagerEditorUI.Pages
 #pragma warning disable SA1124 // Do not use regions
     public sealed partial class MainPage : Page, IDisposable, INotifyPropertyChanged
     {
+        /// <summary>VK_DISABLED sentinel: target key code that tells the engine to suppress the key.</summary>
+        private const int VkDisabled = 0x100;
+
+        /// <summary>String form of <see cref="VkDisabled"/> used in shortcut key mapping serialization.</summary>
+        private const string VkDisabledString = "256";
+
         private DispatcherTimer? _serviceCheckTimer;
         private KeyboardMappingService? _mappingService;
         private bool _disposed;
@@ -153,7 +159,7 @@ namespace KeyboardManagerEditorUI.Pages
             _isEditMode = false;
             _editingItem = null;
             UnifiedMappingControl.Reset();
-            RemappingDialog.Title = "New remapping";
+            RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleNew");
             await ShowRemappingDialog();
         }
 
@@ -179,7 +185,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.KeyOrShortcut);
             UnifiedMappingControl.SetActionKeys(remapping.RemappedKeys.ToList());
             UnifiedMappingControl.SetAppSpecific(!remapping.IsAllApps, remapping.AppName);
-            RemappingDialog.Title = "Edit remapping";
+            RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
         }
 
@@ -204,7 +210,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetTriggerKeys(disabledMapping.Shortcut.ToList());
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.Disable);
             UnifiedMappingControl.SetAppSpecific(!disabledMapping.IsAllApps, disabledMapping.AppName);
-            RemappingDialog.Title = "Edit remapping";
+            RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
         }
 
@@ -230,7 +236,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.Text);
             UnifiedMappingControl.SetTextContent(textMapping.Text);
             UnifiedMappingControl.SetAppSpecific(!textMapping.IsAllApps, textMapping.AppName);
-            RemappingDialog.Title = "Edit remapping";
+            RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
         }
 
@@ -268,7 +274,7 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             UnifiedMappingControl.SetAppSpecific(!programShortcut.IsAllApps, programShortcut.AppName);
-            RemappingDialog.Title = "Edit remapping";
+            RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
         }
 
@@ -294,7 +300,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.OpenUrl);
             UnifiedMappingControl.SetUrl(urlShortcut.URL);
             UnifiedMappingControl.SetAppSpecific(!urlShortcut.IsAllApps, urlShortcut.AppName);
-            RemappingDialog.Title = "Edit remapping";
+            RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
         }
 
@@ -430,6 +436,8 @@ namespace KeyboardManagerEditorUI.Pages
                     triggerKeys, UnifiedMappingControl.GetUrl(), isAppSpecific, appName, _mappingService!, _isEditMode),
                 UnifiedMappingControl.ActionType.OpenApp => ValidationHelper.ValidateAppMapping(
                     triggerKeys, UnifiedMappingControl.GetProgramPath(), isAppSpecific, appName, _mappingService!, _isEditMode),
+                UnifiedMappingControl.ActionType.Disable => ValidationHelper.ValidateDisableMapping(
+                    triggerKeys, isAppSpecific, appName, _mappingService!, _isEditMode, editingRemapping),
                 _ => ValidationErrorType.NoError,
             };
         }
@@ -504,8 +512,6 @@ namespace KeyboardManagerEditorUI.Pages
 
         private bool SaveDisableMapping(List<string> triggerKeys)
         {
-            // VK_DISABLED = 0x100 (256) — target "256" tells the engine to suppress the key
-            const string vkDisabledCode = "256";
             bool isAppSpecific = UnifiedMappingControl.GetIsAppSpecific();
             string appName = UnifiedMappingControl.GetAppName();
 
@@ -517,7 +523,7 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 OperationType = ShortcutOperationType.RemapShortcut,
                 OriginalKeys = originalKeysString,
-                TargetKeys = vkDisabledCode,
+                TargetKeys = VkDisabledString,
                 TargetApp = isAppSpecific ? appName : string.Empty,
             };
 
@@ -530,13 +536,13 @@ namespace KeyboardManagerEditorUI.Pages
                 }
 
                 shortcutKeyMapping.OriginalKeys = originalKey.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                _mappingService.AddSingleKeyMapping(originalKey, 0x100);
+                _mappingService.AddSingleKeyMapping(originalKey, VkDisabled);
             }
             else
             {
                 _mappingService!.AddShortcutMapping(
                     originalKeysString,
-                    vkDisabledCode,
+                    VkDisabledString,
                     isAppSpecific ? appName : string.Empty);
             }
 
@@ -845,14 +851,14 @@ namespace KeyboardManagerEditorUI.Pages
                 int originalKey = _mappingService!.GetKeyCodeFromName(remapping.Shortcut[0]);
                 if (originalKey != 0)
                 {
-                    _mappingService.AddSingleKeyMapping(originalKey, 0x100);
+                    _mappingService.AddSingleKeyMapping(originalKey, VkDisabled);
                 }
             }
             else
             {
                 _mappingService!.AddShortcutMapping(
                     originalKeysString,
-                    "256",
+                    VkDisabledString,
                     !remapping.IsAllApps ? remapping.AppName : string.Empty);
             }
 
@@ -902,7 +908,7 @@ namespace KeyboardManagerEditorUI.Pages
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
                 var originalKeyNames = ParseKeyCodes(mapping.OriginalKeys);
 
-                bool isDisabled = mapping.TargetKeys == "256";
+                bool isDisabled = mapping.TargetKeys == VkDisabledString;
 
                 var remapping = new Remapping
                 {

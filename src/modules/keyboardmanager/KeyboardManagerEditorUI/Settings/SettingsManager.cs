@@ -114,7 +114,7 @@ namespace KeyboardManagerEditorUI.Settings
             }
 
             // Process single key to text mappings
-            foreach (var mapping in _mappingService.GetKeyToTextMappings())
+            foreach (var mapping in _mappingService!.GetKeyToTextMappings())
             {
                 var shortcutMapping = new ShortcutKeyMapping
                 {

@@ -171,6 +171,12 @@
   <data name="RemappingDialog.Title" xml:space="preserve">
     <value>Add new remapping</value>
   </data>
+  <data name="RemappingDialog_TitleNew" xml:space="preserve">
+    <value>Add new remapping</value>
+  </data>
+  <data name="RemappingDialog_TitleEdit" xml:space="preserve">
+    <value>Edit remapping</value>
+  </data>
   <data name="RemappingDialog.PrimaryButtonText" xml:space="preserve">
     <value>Save</value>
   </data>

@@ -352,11 +352,23 @@ namespace KeyboardManagerEditorUI.Controls
                 int index = GetDropDownIndex(TriggerKeys, dropDown);
                 if (index >= 0 && index < _triggerKeys.Count)
                 {
+                    // KeyCode 0 means "None" — treat as invalid selection and do not update.
+                    if (e.NewKeyCode == 0)
+                    {
+                        // Revert via the bound collection so the binding expression is not broken.
+                        string current = _triggerKeys[index];
+                        _triggerKeys.RemoveAt(index);
+                        _triggerKeys.Insert(index, current);
+                        return;
+                    }
+
                     string? validationError = ValidateDropDownSelection(_triggerKeys, index, e.NewKeyCode, e.NewKeyName);
                     if (validationError != null)
                     {
-                        // Revert the selection
-                        dropDown.KeyName = e.OldKeyName;
+                        // Revert via the bound collection so the binding expression is not broken.
+                        string current = _triggerKeys[index];
+                        _triggerKeys.RemoveAt(index);
+                        _triggerKeys.Insert(index, current);
                         ShowNotificationTip(validationError);
                         return;
                     }
@@ -374,10 +386,23 @@ namespace KeyboardManagerEditorUI.Controls
                 int index = GetDropDownIndex(ActionKeys, dropDown);
                 if (index >= 0 && index < _actionKeys.Count)
                 {
+                    // KeyCode 0 means "None" — treat as invalid selection and do not update.
+                    if (e.NewKeyCode == 0)
+                    {
+                        // Revert via the bound collection so the binding expression is not broken.
+                        string current = _actionKeys[index];
+                        _actionKeys.RemoveAt(index);
+                        _actionKeys.Insert(index, current);
+                        return;
+                    }
+
                     string? validationError = ValidateDropDownSelection(_actionKeys, index, e.NewKeyCode, e.NewKeyName);
                     if (validationError != null)
                     {
-                        dropDown.KeyName = e.OldKeyName;
+                        // Revert via the bound collection so the binding expression is not broken.
+                        string current = _actionKeys[index];
+                        _actionKeys.RemoveAt(index);
+                        _actionKeys.Insert(index, current);
                         ShowNotificationTip(validationError);
                         return;
                     }
@@ -441,18 +466,21 @@ namespace KeyboardManagerEditorUI.Controls
             int newKeyType = KeyboardManagerInterop.GetKeyType(newKeyCode);
             bool isModifier = newKeyType < 4;
 
+            // Count only non-empty (real) entries to determine effective shortcut size.
+            int nonEmptyCount = keys.Count(k => !string.IsNullOrEmpty(k));
+
             // Rule: action key at position 0 in multi-key shortcut (shortcut must start with modifier)
-            if (!isModifier && changedIndex == 0 && keys.Count > 1)
+            if (!isModifier && changedIndex == 0 && nonEmptyCount > 1)
             {
                 return ResourceHelper.GetString("Warning_ShortcutStartWithModifier");
             }
 
-            // Rule: no repeated modifier types
+            // Rule: no repeated modifier types (skip empty placeholder slots)
             if (isModifier)
             {
                 for (int i = 0; i < keys.Count; i++)
                 {
-                    if (i == changedIndex)
+                    if (i == changedIndex || string.IsNullOrEmpty(keys[i]))
                     {
                         continue;
                     }
@@ -468,7 +496,7 @@ namespace KeyboardManagerEditorUI.Controls
             }
 
             // Rule: modifier at last position when already at max size
-            if (isModifier && changedIndex == keys.Count - 1 && keys.Count >= maxShortcutSize)
+            if (isModifier && changedIndex == keys.Count - 1 && nonEmptyCount >= maxShortcutSize)
             {
                 return ResourceHelper.GetString("Warning_MaxShortcutSize");
             }
@@ -837,19 +865,28 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void SetActionType(ActionType actionType)
         {
-            int index = actionType switch
+            if (ActionTypeComboBox == null)
             {
-                ActionType.Text => 1,
-                ActionType.OpenUrl => 2,
-                ActionType.OpenApp => 3,
-                ActionType.Disable => 4,
-                ActionType.MouseClick => 5,
-                _ => 0,
+                return;
+            }
+
+            string tag = actionType switch
+            {
+                ActionType.Text => "Text",
+                ActionType.OpenUrl => "OpenUrl",
+                ActionType.OpenApp => "OpenApp",
+                ActionType.Disable => "Disable",
+                ActionType.MouseClick => "MouseClick",
+                _ => "KeyOrShortcut",
             };
 
-            if (ActionTypeComboBox != null)
+            foreach (var item in ActionTypeComboBox.Items)
             {
-                ActionTypeComboBox.SelectedIndex = index;
+                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string itemTag && itemTag == tag)
+                {
+                    ActionTypeComboBox.SelectedItem = comboBoxItem;
+                    return;
+                }
             }
         }
 

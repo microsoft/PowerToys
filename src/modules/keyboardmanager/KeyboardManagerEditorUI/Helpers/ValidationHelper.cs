@@ -83,6 +83,47 @@ namespace KeyboardManagerEditorUI.Helpers
             return ValidationErrorType.NoError;
         }
 
+        public static ValidationErrorType ValidateDisableMapping(
+            List<string> originalKeys,
+            bool isAppSpecific,
+            string appName,
+            KeyboardMappingService mappingService,
+            bool isEditMode = false,
+            Remapping? editingRemapping = null)
+        {
+            if (originalKeys == null || originalKeys.Count == 0)
+            {
+                return ValidationErrorType.EmptyOriginalKeys;
+            }
+
+            if (originalKeys.Count > 1 && ContainsOnlyModifierKeys(originalKeys))
+            {
+                return ValidationErrorType.ModifierOnly;
+            }
+
+            if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
+            {
+                return ValidationErrorType.EmptyAppName;
+            }
+
+            if (originalKeys.Count > 1 && IsIllegalShortcut(originalKeys, mappingService))
+            {
+                return ValidationErrorType.IllegalShortcut;
+            }
+
+            if (IsDuplicateMapping(originalKeys, isEditMode, mappingService, appName))
+            {
+                return ValidationErrorType.DuplicateMapping;
+            }
+
+            if (originalKeys.Count == 1 && HasConflictingModifierMapping(originalKeys[0], isEditMode, mappingService))
+            {
+                return ValidationErrorType.ConflictingModifier;
+            }
+
+            return ValidationErrorType.NoError;
+        }
+
         public static ValidationErrorType ValidateTextMapping(
             List<string> keys,
             string textContent,

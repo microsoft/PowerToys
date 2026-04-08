@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using KeyboardManagerEditorUI.Interop;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -100,7 +101,11 @@ namespace KeyboardManagerEditorUI.Controls
                 {
                     using (var service = new KeyboardMappingService())
                     {
-                        cached = service.GetKeyboardKeysList(isShortcut);
+                        var list = service.GetKeyboardKeysList(isShortcut);
+
+                        // Filter out the synthetic "None" entry (keycode 0) that the native layer
+                        // injects for shortcut lists; selecting it would store an invalid key code.
+                        cached = list.Where(e => e.KeyCode != 0).ToList();
                     }
                 }
                 catch

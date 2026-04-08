@@ -39,7 +39,7 @@ namespace KeyboardManagerEditorUI.Helpers
             {
                 _mappingService = new KeyboardMappingService();
             }
-            catch (Exception ex) when (ex is DllNotFoundException or InvalidOperationException)
+            catch (Exception ex)
             {
                 Logger.LogWarning($"Native KBM library unavailable for keyboard hook: {ex.Message}");
             }
