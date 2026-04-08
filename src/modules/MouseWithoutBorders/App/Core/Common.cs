@@ -913,7 +913,7 @@ internal static class Common
 
             try
             {
-                data.Id = Interlocked.Increment(ref Package.PackageID);
+                data.Id = Package.IncrementPackageID();
 
                 bool updateClientSockets = false;
 

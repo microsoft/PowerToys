@@ -225,7 +225,7 @@ namespace MouseWithoutBorders.Class
                 }
 
                 Encryption.MagicNumber = Encryption.Get24BitHash(Encryption.MyKey);
-                Package.PackageID = Setting.Values.PackageID;
+                Package.SetPackageID(Setting.Values.PackageID);
 
                 TcpPort = bASE_PORT;
 
