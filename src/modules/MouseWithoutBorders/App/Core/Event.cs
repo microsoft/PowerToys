@@ -25,10 +25,6 @@ internal static class Event
 {
     private static readonly DATA KeybdPackage = new();
     private static readonly DATA MousePackage = new();
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
-    internal static ulong inputEventCount;
-    internal static ulong invalidPackageCount;
-#pragma warning restore SA1307
     internal static int MOVE_MOUSE_RELATIVE = 100000;
     internal static int XY_BY_PIXEL = 300000;
 
@@ -38,14 +34,14 @@ internal static class Event
 
     internal static ulong InvalidPackageCount
     {
-        get => Event.invalidPackageCount;
-        set => Event.invalidPackageCount = value;
+        get;
+        set;
     }
 
     internal static ulong InputEventCount
     {
-        get => Event.inputEventCount;
-        set => Event.inputEventCount = value;
+        get;
+        set;
     }
 
     internal static ulong RealInputEventCount
