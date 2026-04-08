@@ -127,6 +127,7 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 MappingState = "Error";
             }
+            
             Unloaded += All_Unloaded;
 
             CheckServiceStatus();
