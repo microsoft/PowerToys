@@ -80,16 +80,10 @@
             VerticalAlignment="Top"
             d:Visibility="Visible"
             Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+            BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+            BorderThickness="1"
             CornerRadius="8"
             Visibility="Collapsed">
-            <Border.Effect>
-                <DropShadowEffect
-                    BlurRadius="32"
-                    Opacity="0.28"
-                    RenderingBias="Performance"
-                    ShadowDepth="1" />
-            </Border.Effect>
-
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
