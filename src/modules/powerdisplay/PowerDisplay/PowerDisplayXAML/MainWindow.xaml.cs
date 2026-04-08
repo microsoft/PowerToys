@@ -374,7 +374,7 @@ namespace PowerDisplay
 
                 // Apply min/max height limits and reposition using DIP values.
                 // Min height ensures window is visible even if content hasn't loaded yet
-                var finalHeightDip = Math.Max(AppConstants.UI.WindowMinHeightDip, Math.Min(contentHeight, maxHeightDip));
+                var finalHeightDip = Math.Min(contentHeight, maxHeightDip);
                 Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, maxHeightDip={maxHeightDip}, finalHeightDip={finalHeightDip}");
 
                 // Suppress WM_DPICHANGED during MoveAndResize to prevent double-scaling
@@ -404,11 +404,7 @@ namespace PowerDisplay
 
             double dpiScale = WindowHelper.GetDpiScale(displayArea);
             int workAreaHeightDip = WindowHelper.ScaleToDip(displayArea.WorkArea.Height, dpiScale);
-            int adaptiveMaxHeightDip = (int)Math.Floor(workAreaHeightDip * AppConstants.UI.WindowMaxWorkAreaHeightRatio);
-
-            return Math.Max(
-                AppConstants.UI.WindowMinHeightDip,
-                Math.Min(AppConstants.UI.WindowMaxHeightDip, adaptiveMaxHeightDip));
+            return (int)Math.Floor(workAreaHeightDip * AppConstants.UI.WindowMaxWorkAreaHeightRatio);
         }
 
         private static double GetAdaptiveFlyoutMaxWidthDip()
