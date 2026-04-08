@@ -169,14 +169,14 @@ internal static class InitAndCleanup
 
     private static void AskHelperThreadsToExit(int waitTime)
     {
-        Helper.signalHelperToExit = true;
-        Helper.signalWatchDogToExit = true;
+        Helper.SignalHelperToExit = true;
+        Helper.SignalWatchDogToExit = true;
         _ = Common.EvSwitch.Set();
 
         int c = 0;
         if (Common.helper != null && c < waitTime)
         {
-            while (Helper.signalHelperToExit)
+            while (Helper.SignalHelperToExit)
             {
                 Thread.Sleep(1);
             }
