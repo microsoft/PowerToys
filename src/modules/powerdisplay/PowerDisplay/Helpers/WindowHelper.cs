@@ -189,7 +189,16 @@ namespace PowerDisplay.Helpers
             int physicalWidth = ScaleToPhysicalPixels(widthDip, dpiScale);
             int physicalHeight = ScaleToPhysicalPixels(heightDip, dpiScale);
 
-            window.AppWindow.MoveAndResize(CreateCenteredRect(displayArea, physicalWidth, physicalHeight), displayArea);
+            // MoveAndResize(rect, displayArea) expects coordinates RELATIVE to the DisplayArea.
+            // WorkArea is in absolute screen coords, so subtract OuterBounds origin to get relative coords.
+            var outerBounds = displayArea.OuterBounds;
+            var workArea = displayArea.WorkArea;
+            int relWorkX = workArea.X - outerBounds.X;
+            int relWorkY = workArea.Y - outerBounds.Y;
+            int physicalX = relWorkX + ((workArea.Width - physicalWidth) / 2);
+            int physicalY = relWorkY + ((workArea.Height - physicalHeight) / 2);
+
+            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight), displayArea);
         }
 
         private static void MoveWindowBottomRight(
@@ -200,26 +209,21 @@ namespace PowerDisplay.Helpers
             int rightMarginDip,
             int bottomMarginDip)
         {
+            // MoveAndResize(rect, displayArea) expects coordinates RELATIVE to the DisplayArea.
+            // WorkArea is in absolute screen coords, so subtract OuterBounds origin to get relative coords.
+            var outerBounds = displayArea.OuterBounds;
             var workArea = displayArea.WorkArea;
             double dpiScale = GetDpiScale(displayArea);
+
+            int relWorkX = workArea.X - outerBounds.X;
+            int relWorkY = workArea.Y - outerBounds.Y;
+
             int physicalWidth = ScaleToPhysicalPixels(widthDip, dpiScale);
             int physicalHeight = ScaleToPhysicalPixels(heightDip, dpiScale);
-            int physicalX = (workArea.X + workArea.Width) - ScaleToPhysicalPixels(widthDip + rightMarginDip, dpiScale);
-            int physicalY = (workArea.Y + workArea.Height) - ScaleToPhysicalPixels(heightDip + bottomMarginDip, dpiScale);
+            int physicalX = (relWorkX + workArea.Width) - ScaleToPhysicalPixels(widthDip + rightMarginDip, dpiScale);
+            int physicalY = (relWorkY + workArea.Height) - ScaleToPhysicalPixels(heightDip + bottomMarginDip, dpiScale);
 
             window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight), displayArea);
-        }
-
-        private static Windows.Graphics.RectInt32 CreateCenteredRect(
-            DisplayArea displayArea,
-            int physicalWidth,
-            int physicalHeight)
-        {
-            var workArea = displayArea.WorkArea;
-            int physicalX = workArea.X + ((workArea.Width - physicalWidth) / 2);
-            int physicalY = workArea.Y + ((workArea.Height - physicalHeight) / 2);
-
-            return new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight);
         }
 
         internal static bool TryGetDisplayAreaAtCursor(out DisplayArea? displayArea)

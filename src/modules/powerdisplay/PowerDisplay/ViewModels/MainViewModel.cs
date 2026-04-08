@@ -230,8 +230,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
                 // Create and position identify window
                 var identifyWindow = new IdentifyWindow(displayText);
-                identifyWindow.PositionOnDisplay(displayArea);
                 identifyWindow.Activate();
+                identifyWindow.PositionOnDisplay(displayArea);
                 windowsCreated++;
             }
         }

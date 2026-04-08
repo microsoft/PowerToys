@@ -116,6 +116,7 @@ namespace PowerDisplay
         }
 
         private bool _hasInitialized;
+        private bool _isShowingWindow;
 
         private void ShowError(string message)
         {
@@ -124,10 +125,12 @@ namespace PowerDisplay
 
         private void OnWindowActivated(object sender, WindowActivatedEventArgs args)
         {
-            Logger.LogTrace($"OnWindowActivated: WindowActivationState={args.WindowActivationState}");
+            Logger.LogTrace($"OnWindowActivated: WindowActivationState={args.WindowActivationState}, _isShowingWindow={_isShowingWindow}");
 
             // Auto-hide window when it loses focus (deactivated)
-            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            // But NOT during ShowWindow() sequence — the first Activate() for positioning
+            // may briefly deactivate before the final Activate()/Show() brings it back.
+            if (args.WindowActivationState == WindowActivationState.Deactivated && !_isShowingWindow)
             {
                 Logger.LogInfo("OnWindowActivated: Window deactivated, hiding window");
                 HideWindow();
@@ -144,6 +147,7 @@ namespace PowerDisplay
         public void ShowWindow()
         {
             Logger.LogInfo($"ShowWindow: Called, _hasInitialized={_hasInitialized}");
+            _isShowingWindow = true;
             try
             {
                 // If not initialized, log warning but continue showing
@@ -152,8 +156,7 @@ namespace PowerDisplay
                     Logger.LogWarning("ShowWindow: Window not fully initialized yet, showing anyway");
                 }
 
-                // Adjust size BEFORE showing to prevent flicker
-                // This measures content and positions window at correct size
+                // Adjust size and position on the correct monitor
                 Logger.LogTrace("ShowWindow: Adjusting window size to content");
                 AdjustWindowSizeToContent();
 
@@ -163,7 +166,6 @@ namespace PowerDisplay
                 Logger.LogTrace("ShowWindow: Calling this.Activate()");
                 this.Activate();
 
-                // Now show the window - it should appear at the correct size
                 Logger.LogTrace("ShowWindow: Calling this.Show()");
                 this.Show();
 
@@ -180,26 +182,16 @@ namespace PowerDisplay
                 // showing the value tooltip when the window opens
                 RootGrid.Focus(FocusState.Programmatic);
 
-                // Verify window is visible
-                bool isVisible = IsWindowVisible();
-                Logger.LogInfo($"ShowWindow: Window visibility after show: {isVisible}");
-                if (!isVisible)
-                {
-                    Logger.LogError("ShowWindow: Window not visible after show attempt, forcing visibility");
-                    this.Activate();
-                    this.Show();
-                    this.BringToFront();
-                    Logger.LogInfo($"ShowWindow: After forced show, visibility: {IsWindowVisible()}");
-                }
-                else
-                {
-                    Logger.LogInfo("ShowWindow: Window shown successfully");
-                }
+                Logger.LogInfo($"ShowWindow: Window shown successfully, visibility={IsWindowVisible()}");
             }
             catch (Exception ex)
             {
                 Logger.LogError($"ShowWindow: Failed to show window: {ex.Message}\n{ex.StackTrace}");
                 throw;
+            }
+            finally
+            {
+                _isShowingWindow = false;
             }
         }
 
