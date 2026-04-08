@@ -11,7 +11,7 @@ namespace PowerDisplay.Helpers
     /// <summary>
     /// Subclasses a window's WndProc to suppress WM_DPICHANGED messages during
     /// cross-monitor MoveAndResize calls. Without suppression, the framework
-    /// auto-scales the window a second time, causing double-scaling artifacts.
+    /// auto-scales it a second time, causing double-scaling artifacts.
     ///
     /// Usage:
     ///   var suppressor = new DpiSuppressor(window);
