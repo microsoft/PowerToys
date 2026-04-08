@@ -25,9 +25,6 @@ internal static class Encryption
 #pragma warning disable SYSLIB0021
     private static AesCryptoServiceProvider symAl;
 #pragma warning restore SYSLIB0021
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
-    internal static string myKey;
-#pragma warning restore SA1307
     private static uint magicNumber;
     private static Random ran = new(); // Used for non encryption related functionality.
     internal const int SymAlBlockSize = 16;
@@ -51,6 +48,10 @@ internal static class Encryption
         get => Encryption.magicNumber;
         set => Encryption.magicNumber = value;
     }
+
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+    private static string myKey;
+#pragma warning restore SA1307
 
     internal static string MyKey
     {

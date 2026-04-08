@@ -134,7 +134,7 @@ internal static class Logger
                 $"Dr{Package.PackageSent.ClipboardDragDrop}," +
                 $"De{Package.PackageSent.ClipboardDragDropEnd}," +
                 $"Ed{Package.PackageSent.ExplorerDragDrop}," +
-                $"Ie{Event.inputEventCount}," +
+                $"Ie{Event.InputEventCount}," +
                 $"Ni{Package.PackageSent.Nil}";
             Logger.Log(log);
             lastPackageSent = Package.PackageSent;
@@ -156,7 +156,7 @@ internal static class Logger
                 $"Dr{Package.PackageReceived.ClipboardDragDrop}," +
                 $"De{Package.PackageReceived.ClipboardDragDropEnd}," +
                 $"Ed{Package.PackageReceived.ExplorerDragDrop}," +
-                $"Ie{Event.invalidPackageCount}," +
+                $"Ie{Event.InvalidPackageCount}," +
                 $"Ni{Package.PackageReceived.Nil}" +
                 $"Pc{Receiver.processedPackageCount}/{Receiver.skippedPackageCount}";
             Logger.Log(log);
@@ -183,7 +183,7 @@ internal static class Logger
             $"{sb}\r\n";
 
         // obfuscate the current encryption key
-        if (!string.IsNullOrEmpty(Encryption.myKey))
+        if (!string.IsNullOrEmpty(Encryption.MyKey))
         {
             log = log.Replace(Encryption.MyKey, Logger.GetChecksum(Encryption.MyKey));
         }
@@ -277,7 +277,7 @@ internal static class Logger
         /* values[2] = " "; */
         /* values[3] = t.FullName; */
         values[4] = " = ";
-        values[5] = objName.Equals(nameof(Encryption.myKey), StringComparison.OrdinalIgnoreCase)
+        values[5] = objName.Equals(nameof(Encryption.MyKey), StringComparison.OrdinalIgnoreCase)
             ? Logger.GetChecksum(objString)
             : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
                 ? string.Empty
