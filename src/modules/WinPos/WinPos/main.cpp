@@ -18,9 +18,6 @@
 
 #include "resource.h"
 
-// Disable compiler warning 26451
-#pragma warning(disable : 26451)
-
 // ---------------------------------------------------------------------------
 // Globals
 // ---------------------------------------------------------------------------
@@ -47,6 +44,8 @@ static bool      g_dragConsumedAlt = false; // true if a drag consumed the absor
 static DWORD     g_absorbedVk      = 0;     // VK code of absorbed Alt key
 static DWORD     g_absorbedScanCode = 0;    // scan code for replay
 static DWORD     g_absorbedFlags   = 0;     // flags for replay (extended key, etc.)
+
+static bool      g_showGeometry = true; // true if we want to draw the X, Y, W and H on the overlay on move and resize
 
 // Resize handle identifiers
 enum ResizeHandle {
@@ -111,6 +110,11 @@ static void LoadSettingsFromFile() {
             g_shouldAbsorbAlt = *v;
         }
 
+        if (auto v = values.get_bool_value(L"showGeometry"))
+        {
+            g_showGeometry = *v;
+        }
+
         if (auto v = values.get_string_value(L"excluded_apps"))
         {
             std::vector<std::wstring> apps;
@@ -165,7 +169,7 @@ static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
     if (msg == WM_NCHITTEST)
         return HTCLIENT;
 
-    if (msg == WM_PAINT) {
+    if (msg == WM_PAINT && g_showGeometry) {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
 

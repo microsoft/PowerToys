@@ -11,11 +11,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public WinPosProperties()
         {
             ShouldAbsorbAlt = new BoolProperty(true);
+            ShowGeometry = new BoolProperty(true);
             ExcludedApps = new StringProperty();
         }
 
         [JsonPropertyName("shouldAbsorbAlt")]
         public BoolProperty ShouldAbsorbAlt { get; set; }
+
+        [JsonPropertyName("showGeometry")]
+        public BoolProperty ShowGeometry { get; set; }
 
         [JsonPropertyName("excluded_apps")]
         public StringProperty ExcludedApps { get; set; }

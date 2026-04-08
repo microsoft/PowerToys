@@ -5952,6 +5952,13 @@ Text uses the current drawing color.</value>
   <data name="WinPos_ShouldAbsorbAlt.Description" xml:space="preserve">
     <value>Prevent Alt from activating the window menu after a drag or resize operation</value>
   </data>
+  <data name="WinPos_ShowGeometry.Header" xml:space="preserve">
+    <value>Show window geometry</value>
+    <comment>When enabled, WinPos displays the window position (X, Y) and size (W, H) on the overlay during move and resize.</comment>
+  </data>
+  <data name="WinPos_ShowGeometry.Description" xml:space="preserve">
+    <value>Display the window position and size on the overlay during drag and resize operations</value>
+  </data>
   <data name="WinPos_ExcludeApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
   </data>
