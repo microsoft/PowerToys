@@ -23,9 +23,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Exceptions;
 
-using Clipboard = MouseWithoutBorders.Core.Clipboard;
-using Thread = MouseWithoutBorders.Core.Thread;
-
 // Log is enough
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Common.#CheckClipboard()", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Common.#CheckForDesktopSwitchEvent(System.Boolean)", Justification = "Dotnet port with style preservation")]

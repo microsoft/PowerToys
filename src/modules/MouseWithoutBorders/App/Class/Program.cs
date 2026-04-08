@@ -14,26 +14,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing.Printing;
 using System.Globalization;
 using System.IO;
-using System.IO.Pipes;
 using System.Linq;
-using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
-using System.ServiceModel.Channels;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml.Linq;
 
-using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Telemetry;
 using MouseWithoutBorders.Core;
 using Newtonsoft.Json;
-using StreamJsonRpc;
 
 using Logger = MouseWithoutBorders.Core.Logger;
 using SettingsHelper = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper;

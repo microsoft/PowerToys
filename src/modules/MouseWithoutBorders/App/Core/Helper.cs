@@ -8,9 +8,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.Windows.Forms;
 
 using Microsoft.Win32;

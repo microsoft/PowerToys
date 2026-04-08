@@ -6,7 +6,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Globalization;
-using System.Threading;
 using System.Threading.Tasks;
 
 using MouseWithoutBorders.Class;
