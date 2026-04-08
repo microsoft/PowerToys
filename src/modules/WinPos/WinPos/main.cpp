@@ -165,9 +165,6 @@ static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
     if (msg == WM_NCHITTEST)
         return HTCLIENT;
 
-    if (msg == WM_ERASEBKGND)
-        return 1; // suppress erase; we paint the entire client area ourselves
-
     if (msg == WM_PAINT) {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
