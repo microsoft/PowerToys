@@ -14,8 +14,10 @@ namespace PowerDisplay.PowerDisplayXAML
     /// <summary>
     /// Interaction logic for IdentifyWindow.xaml
     /// </summary>
-    public sealed partial class IdentifyWindow : WindowEx
+    public sealed partial class IdentifyWindow : WindowEx, IDisposable
     {
+        private DpiSuppressor? _dpiSuppressor;
+
         public IdentifyWindow(string displayText)
         {
             InitializeComponent();
@@ -31,6 +33,9 @@ namespace PowerDisplay.PowerDisplayXAML
 
             // Configure window style
             ConfigureWindow();
+
+            // Subclass WndProc to suppress WM_DPICHANGED during cross-DPI positioning
+            _dpiSuppressor = new DpiSuppressor(this);
 
             // Auto close after 3 seconds
             Task.Delay(3000).ContinueWith(_ =>
@@ -56,7 +61,12 @@ namespace PowerDisplay.PowerDisplayXAML
         {
             var (windowWidthDip, windowHeightDip) = GetAdaptiveWindowSizeDip(displayArea);
 
-            WindowHelper.CenterWindowOnDisplay(this, displayArea, windowWidthDip, windowHeightDip);
+            // Suppress WM_DPICHANGED during MoveAndResize to prevent double-scaling
+            // when positioning on a monitor with different DPI than the primary.
+            using (_dpiSuppressor?.Suppress() ?? default)
+            {
+                WindowHelper.CenterWindowOnDisplay(this, displayArea, windowWidthDip, windowHeightDip);
+            }
         }
 
         private static (int WidthDip, int HeightDip) GetAdaptiveWindowSizeDip(DisplayArea displayArea)
@@ -79,6 +89,11 @@ namespace PowerDisplay.PowerDisplayXAML
                 Math.Min(AppConstants.UI.IdentifyWindowPreferredHeightDip, maxHeightDip));
 
             return (widthDip, heightDip);
+        }
+
+        public void Dispose()
+        {
+            _dpiSuppressor?.Dispose();
         }
     }
 }

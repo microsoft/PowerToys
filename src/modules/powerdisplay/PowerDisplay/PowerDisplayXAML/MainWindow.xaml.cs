@@ -30,6 +30,7 @@ namespace PowerDisplay
         private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
         private MainViewModel? _viewModel;
         private HotkeyService? _hotkeyService;
+        private DpiSuppressor? _dpiSuppressor;
 
         // Expose ViewModel as property for x:Bind
         public MainViewModel ViewModel => _viewModel ?? throw new InvalidOperationException("ViewModel not initialized");
@@ -63,10 +64,15 @@ namespace PowerDisplay
                 Logger.LogTrace("MainWindow constructor: Event handlers registered");
 
                 // 5. Initialize HotkeyService for in-process hotkey handling (CmdPal pattern)
-                // This avoids IPC timing issues with Runner's centralized hotkey mechanism
                 Logger.LogTrace("MainWindow constructor: Initializing HotkeyService");
+                var hwnd = this.GetWindowHandle();
                 _hotkeyService = new HotkeyService(_settingsUtils, ToggleWindow);
-                _hotkeyService.Initialize(this);
+                _hotkeyService.Initialize(hwnd);
+
+                // 6. Subclass WndProc for hotkey handling and DPI change suppression
+                Logger.LogTrace("MainWindow constructor: Setting up DpiSuppressor");
+                _dpiSuppressor = new DpiSuppressor(this, (uMsg, wParam, _) =>
+                    _hotkeyService?.HandleMessage(uMsg, wParam) == true);
                 Logger.LogTrace("MainWindow constructor: HotkeyService initialized");
 
                 Logger.LogTrace("MainWindow constructor: Setting IsShownInSwitchers property");
@@ -157,26 +163,19 @@ namespace PowerDisplay
                 }
 
                 // Adjust size and position on the correct monitor
-                Logger.LogTrace("ShowWindow: Adjusting window size to content");
+                // (DPI change suppression is handled inside AdjustWindowSizeToContent)
                 AdjustWindowSizeToContent();
 
                 // CRITICAL: WinUI3 windows must be Activated at least once to display properly.
                 // In PowerToys mode, window is created but never activated until first show.
-                // Without Activate(), Show() may not actually render the window on screen.
-                Logger.LogTrace("ShowWindow: Calling this.Activate()");
                 this.Activate();
-
-                Logger.LogTrace("ShowWindow: Calling this.Show()");
                 this.Show();
 
                 // Ensure window stays on top of other windows
                 this.IsAlwaysOnTop = true;
-                Logger.LogTrace("ShowWindow: IsAlwaysOnTop set to true");
 
-                // Ensure window gets keyboard focus using WinUIEx's BringToFront
-                // This is necessary for Tab navigation to work without clicking first
+                // Ensure window gets keyboard focus
                 this.BringToFront();
-                Logger.LogTrace("ShowWindow: BringToFront called");
 
                 // Clear focus from any interactive element (e.g., Slider) to prevent
                 // showing the value tooltip when the window opens
@@ -377,12 +376,18 @@ namespace PowerDisplay
                 // Min height ensures window is visible even if content hasn't loaded yet
                 var finalHeightDip = Math.Max(AppConstants.UI.WindowMinHeightDip, Math.Min(contentHeight, maxHeightDip));
                 Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, maxHeightDip={maxHeightDip}, finalHeightDip={finalHeightDip}");
-                WindowHelper.PositionWindowBottomRight(
-                    this,
-                    AppConstants.UI.WindowWidthDip,
-                    finalHeightDip,
-                    AppConstants.UI.WindowRightMarginDip,
-                    AppConstants.UI.WindowBottomMarginDip);
+
+                // Suppress WM_DPICHANGED during MoveAndResize to prevent double-scaling
+                // when moving across monitors with different DPI settings.
+                using (_dpiSuppressor?.Suppress() ?? default)
+                {
+                    WindowHelper.PositionWindowBottomRight(
+                        this,
+                        AppConstants.UI.WindowWidthDip,
+                        finalHeightDip,
+                        AppConstants.UI.WindowRightMarginDip,
+                        AppConstants.UI.WindowBottomMarginDip);
+                }
             }
             catch (Exception ex)
             {
@@ -499,6 +504,7 @@ namespace PowerDisplay
         public void Dispose()
         {
             _hotkeyService?.Dispose();
+            _dpiSuppressor?.Dispose();
             _viewModel?.Dispose();
             GC.SuppressFinalize(this);
         }

@@ -175,10 +175,6 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Center a window within the specified display area's work area.
         /// </summary>
-        /// <param name="window">WinUIEx window to position</param>
-        /// <param name="displayArea">Target display area</param>
-        /// <param name="widthDip">Window width in device-independent pixels (DIP)</param>
-        /// <param name="heightDip">Window height in device-independent pixels (DIP)</param>
         public static void CenterWindowOnDisplay(
             WindowEx window,
             DisplayArea displayArea,
@@ -186,19 +182,15 @@ namespace PowerDisplay.Helpers
             int heightDip)
         {
             double dpiScale = GetDpiScale(displayArea);
-            int physicalWidth = ScaleToPhysicalPixels(widthDip, dpiScale);
-            int physicalHeight = ScaleToPhysicalPixels(heightDip, dpiScale);
+            int w = ScaleToPhysicalPixels(widthDip, dpiScale);
+            int h = ScaleToPhysicalPixels(heightDip, dpiScale);
 
-            // MoveAndResize(rect, displayArea) expects coordinates RELATIVE to the DisplayArea.
-            // WorkArea is in absolute screen coords, so subtract OuterBounds origin to get relative coords.
-            var outerBounds = displayArea.OuterBounds;
-            var workArea = displayArea.WorkArea;
-            int relWorkX = workArea.X - outerBounds.X;
-            int relWorkY = workArea.Y - outerBounds.Y;
-            int physicalX = relWorkX + ((workArea.Width - physicalWidth) / 2);
-            int physicalY = relWorkY + ((workArea.Height - physicalHeight) / 2);
+            // WorkArea relative to DisplayArea (accounts for taskbar position)
+            var rel = GetWorkAreaRelativeToDisplay(displayArea);
+            int x = rel.X + ((rel.Width - w) / 2);
+            int y = rel.Y + ((rel.Height - h) / 2);
 
-            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight), displayArea);
+            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(x, y, w, h), displayArea);
         }
 
         private static void MoveWindowBottomRight(
@@ -209,21 +201,35 @@ namespace PowerDisplay.Helpers
             int rightMarginDip,
             int bottomMarginDip)
         {
-            // MoveAndResize(rect, displayArea) expects coordinates RELATIVE to the DisplayArea.
-            // WorkArea is in absolute screen coords, so subtract OuterBounds origin to get relative coords.
-            var outerBounds = displayArea.OuterBounds;
-            var workArea = displayArea.WorkArea;
             double dpiScale = GetDpiScale(displayArea);
+            int w = ScaleToPhysicalPixels(widthDip, dpiScale);
+            int h = ScaleToPhysicalPixels(heightDip, dpiScale);
+            int marginRight = ScaleToPhysicalPixels(rightMarginDip, dpiScale);
+            int marginBottom = ScaleToPhysicalPixels(bottomMarginDip, dpiScale);
 
-            int relWorkX = workArea.X - outerBounds.X;
-            int relWorkY = workArea.Y - outerBounds.Y;
+            // WorkArea relative to DisplayArea (accounts for taskbar position)
+            var rel = GetWorkAreaRelativeToDisplay(displayArea);
+            int x = rel.X + rel.Width - w - marginRight;
+            int y = rel.Y + rel.Height - h - marginBottom;
 
-            int physicalWidth = ScaleToPhysicalPixels(widthDip, dpiScale);
-            int physicalHeight = ScaleToPhysicalPixels(heightDip, dpiScale);
-            int physicalX = (relWorkX + workArea.Width) - ScaleToPhysicalPixels(widthDip + rightMarginDip, dpiScale);
-            int physicalY = (relWorkY + workArea.Height) - ScaleToPhysicalPixels(heightDip + bottomMarginDip, dpiScale);
+            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(x, y, w, h), displayArea);
+        }
 
-            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(physicalX, physicalY, physicalWidth, physicalHeight), displayArea);
+        /// <summary>
+        /// Get the work area rectangle relative to the display area's origin.
+        /// MoveAndResize(rect, displayArea) expects coordinates relative to the DisplayArea,
+        /// but WorkArea.X/Y are in absolute screen coordinates, so we subtract the DisplayArea origin.
+        /// The resulting rect describes where the usable area is within the display (e.g., offset by taskbar).
+        /// </summary>
+        private static Windows.Graphics.RectInt32 GetWorkAreaRelativeToDisplay(DisplayArea displayArea)
+        {
+            var outer = displayArea.OuterBounds;
+            var work = displayArea.WorkArea;
+            return new Windows.Graphics.RectInt32(
+                work.X - outer.X,
+                work.Y - outer.Y,
+                work.Width,
+                work.Height);
         }
 
         internal static bool TryGetDisplayAreaAtCursor(out DisplayArea? displayArea)
