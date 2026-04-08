@@ -52,12 +52,28 @@ namespace MouseWithoutBorders.Core;
 
 internal static class DragDrop
 {
-    private static bool isDragging;
-
     internal static bool IsDragging
     {
-        get => DragDrop.isDragging;
-        set => DragDrop.isDragging = value;
+        get;
+        set;
+    }
+
+    internal static bool IsDropping
+    {
+        get;
+        set;
+    }
+
+    internal static ID DragMachine
+    {
+        get;
+        set;
+    }
+
+    internal static bool MouseDown
+    {
+        get;
+        private set;
     }
 
     internal static void DragDropStep01(int wParam)
@@ -384,21 +400,4 @@ internal static class DragDrop
             Common.SendPackage(MachineStuff.desMachineID, PackageType.ClipboardDragDropEnd);
         }
     }
-
-    private static bool isDropping;
-    private static ID dragMachine;
-
-    internal static ID DragMachine
-    {
-        get => DragDrop.dragMachine;
-        set => DragDrop.dragMachine = value;
-    }
-
-    internal static bool IsDropping
-    {
-        get => DragDrop.isDropping;
-        set => DragDrop.isDropping = value;
-    }
-
-    internal static bool MouseDown { get; set; }
 }
