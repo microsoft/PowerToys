@@ -345,7 +345,7 @@ namespace KeyboardManagerEditorUI.Controls
                 dropDown.Unloaded -= ActionKeyDropDown_Unloaded;
             }
         }
-        
+
         private void TriggerKeyDropDown_KeyChanged(object? sender, KeyChangedEventArgs e)
         {
             if (sender is KeyDropDownButton dropDown)
