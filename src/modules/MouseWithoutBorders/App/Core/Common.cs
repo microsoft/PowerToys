@@ -81,26 +81,12 @@ namespace MouseWithoutBorders.Core;
 
 internal static class Common
 {
-    private static InputHook hook;
-    private static FrmMatrix matrixForm;
-    private static FrmInputCallback inputCallbackForm;
-    private static FrmAbout aboutForm;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
     internal static Thread helper;
     internal static int screenWidth;
     internal static int screenHeight;
 #pragma warning restore SA1307
-    private static int lastX;
-    private static int lastY;
 
-    private static bool mainFormVisible = true;
-    private static bool runOnLogonDesktop;
-    private static bool runOnScrSaverDesktop;
-
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
-    internal static int[] toggleIcons;
-    internal static int toggleIconsIndex;
-#pragma warning restore SA1307
     internal const int TOGGLE_ICONS_SIZE = 4;
     internal const int ICON_ONE = 0;
     internal const int ICON_ALL = 1;
@@ -115,12 +101,9 @@ internal static class Common
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case names
     internal static int switchCount;
 #pragma warning restore SA1307
-    private static long lastReconnectByHotKeyTime;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case names
     internal static int tcpPort;
 #pragma warning restore SA1307
-    private static bool secondOpenSocketTry;
-    private static string binaryName;
 
     internal static Process CurrentProcess { get; set; }
 
@@ -131,26 +114,26 @@ internal static class Common
 
     internal static string BinaryName
     {
-        get => Common.binaryName;
-        set => Common.binaryName = value;
+        get;
+        set;
     }
 
     internal static bool SecondOpenSocketTry
     {
-        get => Common.secondOpenSocketTry;
-        set => Common.secondOpenSocketTry = value;
+        get;
+        set;
     }
 
     internal static long LastReconnectByHotKeyTime
     {
-        get => Common.lastReconnectByHotKeyTime;
-        set => Common.lastReconnectByHotKeyTime = value;
+        get;
+        set;
     }
 
     internal static int SwitchCount
     {
         get => Common.switchCount;
-        set => Common.switchCount = value;
+        private set => Common.switchCount = value;
     }
 
     internal static Point LastPos
@@ -161,45 +144,57 @@ internal static class Common
 
     internal static FrmAbout AboutForm
     {
-        get => Common.aboutForm;
-        set => Common.aboutForm = value;
+        get;
+        set;
     }
 
     internal static FrmInputCallback InputCallbackForm
     {
-        get => Common.inputCallbackForm;
-        set => Common.inputCallbackForm = value;
+        get;
+        set;
     }
 
-    internal static int PaintCount { get; set; }
+    internal static int PaintCount
+    {
+        get;
+        set;
+    }
 
     internal static bool RunOnScrSaverDesktop
     {
-        get => Common.runOnScrSaverDesktop;
-        set => Common.runOnScrSaverDesktop = value;
+        get;
+        set;
     }
 
     internal static bool RunOnLogonDesktop
     {
-        get => Common.runOnLogonDesktop;
-        set => Common.runOnLogonDesktop = value;
+        get;
+        set;
     }
 
-    internal static bool RunWithNoAdminRight { get; set; }
+    internal static bool RunWithNoAdminRight
+    {
+        get;
+        set;
+    }
 
     internal static int LastX
     {
-        get => Common.lastX;
-        set => Common.lastX = value;
+        get;
+        set;
     }
 
     internal static int LastY
     {
-        get => Common.lastY;
-        set => Common.lastY = value;
+        get;
+        set;
     }
 
-    internal static int[] ToggleIcons => Common.toggleIcons;
+    internal static int[] ToggleIcons
+    {
+        get;
+        set;
+    }
 
     internal static int ScreenHeight => Common.screenHeight;
 
@@ -207,33 +202,44 @@ internal static class Common
 
     internal static bool Is64bitOS
     {
-        get; set;
-
-        // set { Common.is64bitOS = value; }
+        get;
+        set;
     }
 
     internal static int ToggleIconsIndex
     {
-        // get { return Common.toggleIconsIndex; }
-        set => Common.toggleIconsIndex = value;
+        get;
+        set;
     }
 
     internal static InputHook Hook
     {
-        get => Common.hook;
-        set => Common.hook = value;
+        get;
+        set;
     }
 
-    internal static SocketStuff Sk { get; set; }
+    internal static SocketStuff Sk
+    {
+        get;
+        set;
+    }
 
-    internal static FrmScreen MainForm { get; set; }
+    internal static FrmScreen MainForm
+    {
+        get;
+        set;
+    }
 
-    internal static FrmMouseCursor MouseCursorForm { get; set; }
+    internal static FrmMouseCursor MouseCursorForm
+    {
+        get;
+        set;
+    }
 
     internal static FrmMatrix MatrixForm
     {
-        get => Common.matrixForm;
-        set => Common.matrixForm = value;
+        get;
+        set;
     }
 
     internal static ID DesMachineID
@@ -249,15 +255,26 @@ internal static class Common
 
     internal static ID MachineID => (ID)Setting.Values.MachineId;
 
-    internal static string MachineName { get; set; }
+    internal static string MachineName
+    {
+        get;
+        set;
+    }
 
     internal static bool MainFormVisible
     {
-        get => Common.mainFormVisible;
-        set => Common.mainFormVisible = value;
+        get;
+        set;
     }
 
-    internal static Mutex SocketMutex { get; set; } // Synchronization between MouseWithoutBorders running in different desktops
+    /// <remarks>
+    /// Synchronization between MouseWithoutBorders running in different desktops
+    /// </remarks>
+    internal static Mutex SocketMutex
+    {
+        get;
+        set;
+    }
 
     // TODO: For telemetry only, to be removed.
     private static int socketMutexBalance;
@@ -637,8 +654,8 @@ internal static class Common
     internal static void SetToggleIcon(int[] toggleIcons)
     {
         Logger.LogDebug($"{nameof(SetToggleIcon)}: {toggleIcons?.FirstOrDefault()}");
-        Common.toggleIcons = toggleIcons;
-        toggleIconsIndex = 0;
+        Common.ToggleIcons = toggleIcons;
+        Common.ToggleIconsIndex = 0;
     }
 
     internal static string CaptureScreen()

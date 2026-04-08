@@ -261,14 +261,14 @@ internal static class Helper
     {
         try
         {
-            if (Common.toggleIconsIndex < Common.TOGGLE_ICONS_SIZE)
+            if (Common.ToggleIconsIndex < Common.TOGGLE_ICONS_SIZE)
             {
-                Common.DoSomethingInUIThread(() => Common.MainForm.ChangeIcon(Common.toggleIcons[Common.toggleIconsIndex++]));
+                Common.DoSomethingInUIThread(() => Common.MainForm.ChangeIcon(Common.ToggleIcons[Common.ToggleIconsIndex++]));
             }
             else
             {
-                Common.toggleIconsIndex = 0;
-                Common.toggleIcons = null;
+                Common.ToggleIconsIndex = 0;
+                Common.ToggleIcons = null;
             }
         }
         catch (Exception e)
