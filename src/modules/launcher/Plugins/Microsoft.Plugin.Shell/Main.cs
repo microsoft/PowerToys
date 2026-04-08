@@ -227,8 +227,7 @@ namespace Microsoft.Plugin.Shell
             ProcessStartInfo info;
             if (_settings.Shell == ExecutionShell.Cmd)
             {
-                string escapedCmd = EscapeCmdArgument(command);
-                var arguments = _settings.LeaveShellOpen ? $"/k {escapedCmd}" : $"/c {escapedCmd} & pause";
+                var arguments = _settings.LeaveShellOpen ? $"/k {command}" : $"/c {command} & pause";
 
                 info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, arguments, runAsVerbArg);
             }
@@ -264,15 +263,14 @@ namespace Microsoft.Plugin.Shell
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalCmd)
             {
-                string escapedCmd = EscapeCmdArgument(command);
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"cmd.exe /k {escapedCmd}";
+                    arguments = $"cmd.exe /k {command}";
                 }
                 else
                 {
-                    arguments = $"cmd.exe /c {escapedCmd} & pause";
+                    arguments = $"cmd.exe /c {command} & pause";
                 }
 
                 info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
