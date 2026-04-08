@@ -529,8 +529,8 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
                     int newX = g_dragStart.x - static_cast<int>(restoredW * ratio);
                     int newY = g_dragStart.y - (GetSystemMetrics(SM_CYFRAME)
                                                 + GetSystemMetrics(SM_CYCAPTION) / 2);
-                    SetWindowPos(g_dragTarget, nullptr, newX, newY,
-                                 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+                    SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
+                                 SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
 
                     // Reset drag baseline to current cursor / new window rect
                     g_dragStart = ms->pt;
@@ -551,9 +551,8 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
             ULONGLONG now = QpcMs();
             if (now - g_lastMoveTick >= THROTTLE_INTERVAL_MS) {
                 g_lastMoveTick = now;
-                SetWindowPos(g_dragTarget, nullptr,
-                             newX, newY, 0, 0,
-                             SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+                SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
+                             SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
                 MoveOverlay(newX, newY, w, h);
             }
 
@@ -570,9 +569,8 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
             int newY = g_dragWndRect.top  + dy;
             int w    = g_dragWndRect.right  - g_dragWndRect.left;
             int h    = g_dragWndRect.bottom - g_dragWndRect.top;
-            SetWindowPos(g_dragTarget, nullptr,
-                         newX, newY, 0, 0,
-                         SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+            SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
+                         SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
             StopDragging();
             return 1;  // swallow the release
         }
@@ -627,8 +625,8 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
                     int newLeft = cur.x - static_cast<int>(ratioL * newW);
                     int newTop  = cur.y - static_cast<int>(ratioT * newH);
                     SetWindowPos(g_resizeTarget, nullptr, newLeft, newTop, newW, newH,
-                                 SWP_NOZORDER | SWP_NOACTIVATE);
-                    GetWindowRect(g_resizeTarget, &g_resizeWndRect);
+                                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+                    g_resizeWndRect = { newLeft, newTop, newLeft + newW, newTop + newH };
 
                     g_resizeLast = cur;
                     g_currentHandle = GetClosestHandle(cur, g_resizeWndRect);
@@ -689,9 +687,8 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 g_lastMoveTick = now;
                 int w = nr.right  - nr.left;
                 int h = nr.bottom - nr.top;
-                SetWindowPos(g_resizeTarget, nullptr,
-                             nr.left, nr.top, w, h,
-                             SWP_NOZORDER | SWP_NOACTIVATE);
+                SetWindowPos(g_resizeTarget, nullptr, nr.left, nr.top, w, h,
+                             SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
                 MoveOverlay(nr.left, nr.top, w, h);
             }
 
@@ -704,9 +701,8 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
             RECT nr = g_resizeWndRect;
             int w = nr.right  - nr.left;
             int h = nr.bottom - nr.top;
-            SetWindowPos(g_resizeTarget, nullptr,
-                         nr.left, nr.top, w, h,
-                         SWP_NOZORDER | SWP_NOACTIVATE);
+            SetWindowPos(g_resizeTarget, nullptr, nr.left, nr.top, w, h,
+                         SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
             StopResizing();
             return 1;   // swallow the right button release
         }
