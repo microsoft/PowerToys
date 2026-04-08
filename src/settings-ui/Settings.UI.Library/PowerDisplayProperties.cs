@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowSystemTrayIcon { get; set; }
 
         /// <summary>
-        /// Gets or sets whether to show the profile switcher button in the flyout UI.
+        /// Gets or sets a value indicating whether to show the profile switcher button in the flyout UI.
         /// Default is true. When false, the profile switcher is hidden (but profiles still work via Settings).
         /// Note: Also hidden when no profiles exist.
         /// </summary>
@@ -57,7 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowProfileSwitcher { get; set; }
 
         /// <summary>
-        /// Gets or sets whether to show the identify monitors button in the flyout UI.
+        /// Gets or sets a value indicating whether to show the identify monitors button in the flyout UI.
         /// Default is true.
         /// </summary>
         [JsonPropertyName("show_identify_monitors_button")]

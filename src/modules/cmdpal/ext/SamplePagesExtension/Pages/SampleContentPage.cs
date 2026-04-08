@@ -40,6 +40,62 @@ internal sealed partial class SampleContentPage : ContentPage
 }
 
 [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Sample code")]
+internal sealed partial class SamplePlainTextContentPage : ContentPage
+{
+    private readonly PlainTextContent _samplePlainText = new()
+    {
+        Text = """
+               # Sample Plain Text Content
+               This is a sample plain text content page.
+               
+               You can right-click the content and switch wrap mode on or off, or change the font.
+               
+               Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+               """,
+    };
+
+    private readonly PlainTextContent _samplePlainText2 = new()
+    {
+        Text = """
+               # Sample Plain Text Content
+               This is a sample plain text content page. This one is monospace and wraps by default.
+
+               You can right-click the content and switch wrap mode on or off, or change the font.
+
+               Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+               """,
+        FontFamily = FontFamily.Monospace,
+        WrapWords = true,
+    };
+
+    public override IContent[] GetContent() => [_samplePlainText, _samplePlainText2];
+
+    public SamplePlainTextContentPage()
+    {
+        Name = "Plain Text";
+        Title = "Sample Plain Text Content";
+        Icon = new IconInfo("\uE8D2"); // Text Document
+    }
+}
+
+[SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Sample code")]
+internal sealed partial class SampleImageContentPage : ContentPage
+{
+    private readonly ImageContent _sampleImage = new(IconHelpers.FromRelativePath("Assets/Images/win-11-bloom-6k.jpg"));
+    private readonly ImageContent _sampleImage2 = new(IconHelpers.FromRelativePath("Assets/Images/win-11-bloom-6k.jpg")) { MaxWidth = 200, MaxHeight = 200 };
+    private readonly ImageContent _sampleImage3 = new(IconHelpers.FromRelativePath("Assets/Images/FluentEmojiChipmunk.svg")) { MaxWidth = 200, MaxHeight = 200 };
+
+    public override IContent[] GetContent() => [_sampleImage, _sampleImage2, _sampleImage3];
+
+    public SampleImageContentPage()
+    {
+        Name = "Image";
+        Title = "Sample Image Content";
+        Icon = new IconInfo("\uE722"); // Picture
+    }
+}
+
+[SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Sample code")]
 internal sealed partial class SampleContentForm : FormContent
 {
     public SampleContentForm()

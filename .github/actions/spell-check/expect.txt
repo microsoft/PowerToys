@@ -35,6 +35,7 @@ Allman
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
+altkey
 AModifier
 amr
 ANDSCANS
@@ -52,6 +53,7 @@ Apm
 APPBARDATA
 APPEXECLINK
 APPLICATIONFRAMEHOST
+apphost
 appmanifest
 APPMODEL
 APPNAME
@@ -85,6 +87,7 @@ AUTOCHECKBOX
 AUTOHIDE
 AUTOHSCROLL
 AUTOMATIONPROPERTIES
+autopf
 AUTORADIOBUTTON
 Autorun
 AUTOTICKS
@@ -239,6 +242,7 @@ CPower
 cpptools
 cppvsdbg
 cppwinrt
+createallsubdirs
 createdump
 CREATEPROCESS
 CREATESCHEDULEDTASK
@@ -275,6 +279,7 @@ CYSMICON
 CYVIRTUALSCREEN
 Dac
 dacl
+DArchitectures
 datareader
 datatracker
 Dayof
@@ -351,6 +356,7 @@ dlib
 dllhost
 dllmain
 Dmdo
+DMy
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
@@ -455,6 +461,9 @@ fdx
 FErase
 fesf
 FFFF
+fffffffzzz
+FInc
+FFh
 Figma
 FILEEXPLORER
 FILEFLAGS
@@ -467,6 +476,7 @@ FILEMUSTEXIST
 FILEOP
 FILEOPENDIALOGOPTIONS
 FILEOS
+filesandordirs
 FILESUBTYPE
 FILESYSPATH
 Filetime
@@ -576,6 +586,7 @@ HIBYTE
 hicon
 HIDEWINDOW
 Hif
+highcontrast
 highlightbackground
 highlightthickness
 HIMAGELIST
@@ -649,6 +660,7 @@ IEXPLORE
 IFACEMETHOD
 IFACEMETHODIMP
 IGNOREUNKNOWN
+ignoreversion
 IGo
 iid
 Iindex
@@ -699,6 +711,8 @@ ipcmanager
 IPREVIEW
 irprops
 isbi
+ISCC
+isdl
 iss
 issecret
 ISSEPARATOR
@@ -713,6 +727,7 @@ jobject
 JOBOBJECT
 jpe
 jpnime
+jrsoftware
 Jsons
 jsonval
 jxr
@@ -849,6 +864,8 @@ MDL
 mdtext
 mdtxt
 mdwn
+measuretool
+mccs
 meme
 memicmp
 MENUITEMINFO
@@ -892,6 +909,7 @@ MONITORINFOEX
 MONITORINFOEXW
 monitorinfof
 MOUSEACTIVATE
+mousecrosshairs
 MOUSEDATA
 MOUSEEVENTF
 MOUSEHWHEEL
@@ -923,12 +941,15 @@ mstsc
 msvcp
 MT
 MTND
+multimonitor
 MULTIPLEUSE
 multizone
 muxc
 mvvm
 MVVMTK
 MWBEx
+mycompany
+myextension
 MYICON
 myorg
 myrepo
@@ -1016,6 +1037,9 @@ NORMALDISPLAY
 NORMALUSER
 NOSEARCH
 NOSENDCHANGING
+NOSIZE
+notdefault
+Nosize
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
@@ -1106,6 +1130,7 @@ PCIDLIST
 PCTSTR
 PCWSTR
 PDEVMODE
+PDFs
 pdisp
 PDLL
 pdo
@@ -1154,6 +1179,10 @@ Pokedex
 Popups
 POPUPWINDOW
 POSITIONITEM
+powerocr
+POWERBROADCAST
+powerdisplay
+POWERDISPLAYMODULEINTERFACE
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1242,6 +1271,7 @@ Quarternary
 QUERYENDSESSION
 QUERYOPEN
 QUEUESYNC
+quicklinks
 QUNS
 RAII
 RAlt
@@ -1262,6 +1292,7 @@ recents
 RECTDESTINATION
 rectp
 RECTSOURCE
+recursesubdirs
 recyclebin
 Redist
 Reencode
@@ -1329,6 +1360,7 @@ rundll
 rungameid
 RUNLEVEL
 runtimeclass
+runtimeconfig
 runtimepack
 ruuid
 rvm
@@ -1516,8 +1548,12 @@ STYLECHANGING
 subkeys
 sublang
 SUBMODULEUPDATE
+subresource
+suntimes
+swp
 sug
 Superbar
+SUPPRESSMSGBOXES
 sut
 svchost
 SVGIn
@@ -1548,6 +1584,7 @@ sysmenu
 systemai
 SYSTEMAPPS
 SYSTEMMODAL
+systemroot
 SYSTEMTIME
 TARGETAPPHEADER
 targetentrypoint
@@ -1583,6 +1620,7 @@ TILEDWINDOW
 TILLSON
 timedate
 timediff
+timespan
 timeutil
 TITLEBARINFO
 Titlecase
@@ -1640,6 +1678,7 @@ uncompilable
 UNCPRIORITY
 UNDNAME
 UNICODETEXT
+uninsdeletekey
 uninstalls
 Uniquifies
 unitconverter
@@ -1686,6 +1725,7 @@ VERIFYCONTEXT
 VERSIONINFO
 VERTRES
 VERTSIZE
+VERYSILENT
 VFT
 vget
 vgetq
@@ -1734,6 +1774,7 @@ wdm
 wdp
 wdupenv
 webbrowsers
+webdev
 webpage
 websites
 wekyb

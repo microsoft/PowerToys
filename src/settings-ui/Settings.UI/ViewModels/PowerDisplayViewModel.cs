@@ -473,7 +473,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ObservableCollection<CustomVcpValueMapping> CustomVcpMappings => _customVcpMappings;
 
         /// <summary>
-        /// Gets whether there are any custom VCP mappings (for UI binding)
+        /// Gets a value indicating whether there are any custom VCP mappings (for UI binding).
         /// </summary>
         public bool HasCustomVcpMappings => _customVcpMappings?.Count > 0;
 
@@ -483,7 +483,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ObservableCollection<PowerDisplayProfile> Profiles => _profiles;
 
         /// <summary>
-        /// Gets whether there are any profiles (for UI binding)
+        /// Gets a value indicating whether there are any profiles (for UI binding).
         /// </summary>
         public bool HasProfiles => _profiles?.Count > 0;
 
