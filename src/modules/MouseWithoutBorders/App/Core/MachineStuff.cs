@@ -33,18 +33,6 @@ internal static class MachineStuff
     private const int SKIP_PIXELS = 1;
     private const int JUMP_PIXELS = 2;
 
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
-    internal static ID desMachineID;
-#pragma warning restore SA1307
-#pragma warning disable SA1306 // Field should begin with a lower-case letter
-    internal static string DesMachineName = string.Empty;
-#pragma warning restore SA1306
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
-    internal static ID newDesMachineID;
-    internal static ID newDesMachineIdEx;
-    internal static ID dropMachineID;
-    internal static long lastJump = Common.GetTick();
-#pragma warning restore SA1307
     private static MachinePool _machinePool;
 
     internal static MachinePool MachinePool
@@ -76,15 +64,59 @@ internal static class MachineStuff
         return Interlocked.Exchange(ref _primaryScreenBounds, value);
     }
 
-#pragma warning disable SA1306 // Field should begin with a lower-case letter
-    internal static MouseLocation SwitchLocation = new();
-#pragma warning restore SA1306
+#pragma warning disable SA1500 // Braces for multi line statements must not share line
+#pragma warning disable SA1513 // Closing brace must be followed by blank line
+    internal static MouseLocation SwitchLocation
+    {
+        get;
+        set;
+    } = new();
+#pragma warning restore SA1513
+#pragma warning restore SA1500
+
+    internal static ID DesMachineID
+    {
+        get;
+        set;
+    }
+
+#pragma warning disable SA1500 // Braces for multi line statements must not share line
+#pragma warning disable SA1513 // Closing brace must be followed by blank line
+    internal static string DesMachineName
+    {
+        get;
+        set;
+    } = string.Empty;
+#pragma warning restore SA1513
+#pragma warning restore SA1500
 
     internal static ID NewDesMachineID
     {
-        get => MachineStuff.newDesMachineID;
-        set => MachineStuff.newDesMachineID = value;
+        get;
+        set;
     }
+
+    internal static ID NewDesMachineIdEx
+    {
+        get;
+        private set;
+    }
+
+    internal static ID DropMachineID
+    {
+        get;
+        set;
+    }
+
+#pragma warning disable SA1500 // Braces for multi line statements must not share line
+#pragma warning disable SA1513 // Closing brace must be followed by blank line
+    internal static long LastJump
+    {
+        get;
+        set;
+    } = Common.GetTick();
+#pragma warning restore SA1513
+#pragma warning restore SA1500
 
 #if OLD_VERSION
     static bool MoveToMyNeighbourIfNeeded(int x, int y)
@@ -216,7 +248,7 @@ internal static class MachineStuff
 
     internal static Point MoveToMyNeighbourIfNeeded(int x, int y, ID desMachineID)
     {
-        newDesMachineIdEx = desMachineID;
+        MachineStuff.NewDesMachineIdEx = desMachineID;
 
         if (Math.Abs(x) > 10)
         {
@@ -228,7 +260,7 @@ internal static class MachineStuff
             Common.LastY = y;
         }
 
-        if ((Common.GetTick() - lastJump < 100) || desMachineID == ID.ALL)
+        if ((Common.GetTick() - MachineStuff.LastJump < 100) || desMachineID == ID.ALL)
         {
             return Point.Empty;
         }
@@ -309,7 +341,7 @@ internal static class MachineStuff
 
         bool oneRow = Setting.Values.MatrixOneRow;
 
-        string currentMachine = NameFromID(desMachineID);
+        string currentMachine = NameFromID(MachineStuff.DesMachineID);
         if (currentMachine == null)
         {
             return Point.Empty;
@@ -329,7 +361,7 @@ internal static class MachineStuff
                         {
                             if ((newID = IdFromName(mc[j + 1])) > 0)
                             {
-                                newDesMachineIdEx = newID;
+                                MachineStuff.NewDesMachineIdEx = newID;
                                 found = true;
                                 break;
                             }
@@ -344,7 +376,7 @@ internal static class MachineStuff
                             {
                                 if ((newID = IdFromName(mc[j])) > 0)
                                 {
-                                    newDesMachineIdEx = newID;
+                                    MachineStuff.NewDesMachineIdEx = newID;
                                     break;
                                 }
                             }
@@ -362,7 +394,7 @@ internal static class MachineStuff
             {
                 if ((newID = IdFromName(mc[1])) > 0)
                 {
-                    newDesMachineIdEx = newID;
+                    MachineStuff.NewDesMachineIdEx = newID;
                 }
             }
             else if (currentMachine.Trim().Equals(mc[2], StringComparison.OrdinalIgnoreCase) && (mc[3] != null)
@@ -370,7 +402,7 @@ internal static class MachineStuff
             {
                 if ((newID = IdFromName(mc[3])) > 0)
                 {
-                    newDesMachineIdEx = newID;
+                    MachineStuff.NewDesMachineIdEx = newID;
                 }
             }
             else if (Setting.Values.MatrixCircle && currentMachine.Trim().Equals(mc[1], StringComparison.OrdinalIgnoreCase) && (mc[0] != null)
@@ -378,7 +410,7 @@ internal static class MachineStuff
             {
                 if ((newID = IdFromName(mc[0])) > 0)
                 {
-                    newDesMachineIdEx = newID;
+                    MachineStuff.NewDesMachineIdEx = newID;
                 }
             }
             else if (Setting.Values.MatrixCircle && currentMachine.Trim().Equals(mc[3], StringComparison.OrdinalIgnoreCase) && (mc[2] != null)
@@ -386,19 +418,19 @@ internal static class MachineStuff
             {
                 if ((newID = IdFromName(mc[2])) > 0)
                 {
-                    newDesMachineIdEx = newID;
+                    MachineStuff.NewDesMachineIdEx = newID;
                 }
             }
         }
 
         // THIS LOGIC IS THE SAME FOR Move*(int x, int y) METHODS.
-        if (newDesMachineIdEx != desMachineID)
+        if (MachineStuff.NewDesMachineIdEx != MachineStuff.DesMachineID)
         {
             Logger.LogDebug("Move Right");
 
             if (!Setting.Values.MoveMouseRelatively)
             {
-                if (newDesMachineIdEx == Common.MachineID)
+                if (MachineStuff.NewDesMachineIdEx == Common.MachineID)
                 {
                     /* Switching back to the controller machine, we need to scale up to the desktopBounds from primaryScreenBounds (sine !Setting.Values.MoveMouseRelatively).
                      * primaryScreenBounds => 65535 => desktopBounds, so that the Mouse position is mapped to the right position when the controller machine has multiple monitors.
@@ -407,7 +439,7 @@ internal static class MachineStuff
                 }
                 else
                 {
-                    if (desMachineID == Common.MachineID)
+                    if (MachineStuff.DesMachineID == Common.MachineID)
                     {
                         /* Switching FROM the controller machine, since Mouse was not bounded/locked to the primary screen,
                          * Mouse position can just be mapped from desktopBounds to desktopBounds
@@ -449,7 +481,7 @@ internal static class MachineStuff
 
         bool oneRow = Setting.Values.MatrixOneRow;
 
-        string currentMachine = NameFromID(desMachineID);
+        string currentMachine = NameFromID(MachineStuff.DesMachineID);
         if (currentMachine == null)
         {
             return Point.Empty;
@@ -469,7 +501,7 @@ internal static class MachineStuff
                         {
                             if ((newID = IdFromName(mc[j - 1])) != ID.NONE)
                             {
-                                newDesMachineIdEx = newID;
+                                MachineStuff.NewDesMachineIdEx = newID;
                                 found = true;
                                 break;
                             }
@@ -484,7 +516,7 @@ internal static class MachineStuff
                             {
                                 if ((newID = IdFromName(mc[j])) != ID.NONE)
                                 {
-                                    newDesMachineIdEx = newID;
+                                    MachineStuff.NewDesMachineIdEx = newID;
                                     break;
                                 }
                             }
@@ -502,7 +534,7 @@ internal static class MachineStuff
             {
                 if ((newID = IdFromName(mc[0])) != ID.NONE)
                 {
-                    newDesMachineIdEx = newID;
+                    MachineStuff.NewDesMachineIdEx = newID;
                 }
             }
             else if (currentMachine.Trim().Equals(mc[3], StringComparison.OrdinalIgnoreCase) && (mc[2] != null)
@@ -510,7 +542,7 @@ internal static class MachineStuff
             {
                 if ((newID = IdFromName(mc[2])) != ID.NONE)
                 {
-                    newDesMachineIdEx = newID;
+                    MachineStuff.NewDesMachineIdEx = newID;
                 }
             }
             else if (Setting.Values.MatrixCircle && currentMachine.Trim().Equals(mc[0], StringComparison.OrdinalIgnoreCase) && (mc[1] != null)
@@ -518,7 +550,7 @@ internal static class MachineStuff
             {
                 if ((newID = IdFromName(mc[1])) != ID.NONE)
                 {
-                    newDesMachineIdEx = newID;
+                    MachineStuff.NewDesMachineIdEx = newID;
                 }
             }
             else if (Setting.Values.MatrixCircle && currentMachine.Trim().Equals(mc[2], StringComparison.OrdinalIgnoreCase) && (mc[3] != null)
@@ -526,19 +558,19 @@ internal static class MachineStuff
             {
                 if ((newID = IdFromName(mc[3])) != ID.NONE)
                 {
-                    newDesMachineIdEx = newID;
+                    MachineStuff.NewDesMachineIdEx = newID;
                 }
             }
         }
 
-        if (newDesMachineIdEx != desMachineID)
+        if (MachineStuff.NewDesMachineIdEx != MachineStuff.DesMachineID)
         {
             Logger.LogDebug("Move Left");
 
             return !Setting.Values.MoveMouseRelatively
-                ? newDesMachineIdEx == Common.MachineID
+                ? MachineStuff.NewDesMachineIdEx == Common.MachineID
                     ? ConvertToUniversalValue(new Point(MachineStuff.PrimaryScreenBounds.Right - JUMP_PIXELS, y), MachineStuff.PrimaryScreenBounds)
-                    : desMachineID == Common.MachineID
+                    : MachineStuff.DesMachineID == Common.MachineID
                         ? ConvertToUniversalValue(new Point(MachineStuff.DesktopBounds.Right - JUMP_PIXELS, y), MachineStuff.DesktopBounds)
                         : ConvertToUniversalValue(new Point(MachineStuff.PrimaryScreenBounds.Right - JUMP_PIXELS, y), MachineStuff.PrimaryScreenBounds)
                 : ConvertToUniversalValue(new Point(MachineStuff.DesktopBounds.Right - JUMP_PIXELS, y), MachineStuff.DesktopBounds);
@@ -560,7 +592,7 @@ internal static class MachineStuff
             return Point.Empty;
         }
 
-        string currentMachine = NameFromID(desMachineID);
+        string currentMachine = NameFromID(MachineStuff.DesMachineID);
         if (currentMachine == null)
         {
             return Point.Empty;
@@ -572,7 +604,7 @@ internal static class MachineStuff
         {
             if ((newID = IdFromName(mc[0])) != ID.NONE)
             {
-                newDesMachineIdEx = newID;
+                MachineStuff.NewDesMachineIdEx = newID;
             }
         }
         else if (currentMachine.Trim().Equals(mc[3], StringComparison.OrdinalIgnoreCase) && (mc[1] != null)
@@ -580,7 +612,7 @@ internal static class MachineStuff
         {
             if ((newID = IdFromName(mc[1])) != ID.NONE)
             {
-                newDesMachineIdEx = newID;
+                MachineStuff.NewDesMachineIdEx = newID;
             }
         }
         else if (Setting.Values.MatrixCircle && currentMachine.Trim().Equals(mc[0], StringComparison.OrdinalIgnoreCase) && (mc[2] != null)
@@ -588,7 +620,7 @@ internal static class MachineStuff
         {
             if ((newID = IdFromName(mc[2])) != ID.NONE)
             {
-                newDesMachineIdEx = newID;
+                MachineStuff.NewDesMachineIdEx = newID;
             }
         }
         else if (Setting.Values.MatrixCircle && currentMachine.Trim().Equals(mc[1], StringComparison.OrdinalIgnoreCase) && (mc[3] != null)
@@ -596,18 +628,18 @@ internal static class MachineStuff
         {
             if ((newID = IdFromName(mc[3])) != ID.NONE)
             {
-                newDesMachineIdEx = newID;
+                MachineStuff.NewDesMachineIdEx = newID;
             }
         }
 
-        if (newDesMachineIdEx != desMachineID)
+        if (MachineStuff.NewDesMachineIdEx != MachineStuff.DesMachineID)
         {
             Logger.LogDebug("Move Up");
 
             return !Setting.Values.MoveMouseRelatively
-                ? newDesMachineIdEx == Common.MachineID
+                ? MachineStuff.NewDesMachineIdEx == Common.MachineID
                     ? ConvertToUniversalValue(new Point(x, MachineStuff.PrimaryScreenBounds.Bottom - JUMP_PIXELS), MachineStuff.PrimaryScreenBounds)
-                    : desMachineID == Common.MachineID
+                    : MachineStuff.DesMachineID == Common.MachineID
                         ? ConvertToUniversalValue(new Point(x, MachineStuff.DesktopBounds.Bottom - JUMP_PIXELS), MachineStuff.DesktopBounds)
                         : ConvertToUniversalValue(new Point(x, MachineStuff.PrimaryScreenBounds.Bottom - JUMP_PIXELS), MachineStuff.PrimaryScreenBounds)
                 : ConvertToUniversalValue(new Point(x, MachineStuff.DesktopBounds.Bottom - JUMP_PIXELS), MachineStuff.DesktopBounds);
@@ -629,7 +661,7 @@ internal static class MachineStuff
             return Point.Empty;
         }
 
-        string currentMachine = NameFromID(desMachineID);
+        string currentMachine = NameFromID(MachineStuff.DesMachineID);
         if (currentMachine == null)
         {
             return Point.Empty;
@@ -641,7 +673,7 @@ internal static class MachineStuff
         {
             if ((newID = IdFromName(mc[2])) != ID.NONE)
             {
-                newDesMachineIdEx = newID;
+                MachineStuff.NewDesMachineIdEx = newID;
             }
         }
         else if (currentMachine.Trim().Equals(mc[1], StringComparison.OrdinalIgnoreCase) && (mc[3] != null)
@@ -649,7 +681,7 @@ internal static class MachineStuff
         {
             if ((newID = IdFromName(mc[3])) != ID.NONE)
             {
-                newDesMachineIdEx = newID;
+                MachineStuff.NewDesMachineIdEx = newID;
             }
         }
 
@@ -658,7 +690,7 @@ internal static class MachineStuff
         {
             if ((newID = IdFromName(mc[0])) != ID.NONE)
             {
-                newDesMachineIdEx = newID;
+                MachineStuff.NewDesMachineIdEx = newID;
             }
         }
         else if (Setting.Values.MatrixCircle && currentMachine.Trim().Equals(mc[3], StringComparison.OrdinalIgnoreCase) && (mc[1] != null)
@@ -666,18 +698,18 @@ internal static class MachineStuff
         {
             if ((newID = IdFromName(mc[1])) != ID.NONE)
             {
-                newDesMachineIdEx = newID;
+                MachineStuff.NewDesMachineIdEx = newID;
             }
         }
 
-        if (newDesMachineIdEx != desMachineID)
+        if (MachineStuff.NewDesMachineIdEx != MachineStuff.DesMachineID)
         {
             Logger.LogDebug("Move Down");
 
             return !Setting.Values.MoveMouseRelatively
-                ? newDesMachineIdEx == Common.MachineID
+                ? MachineStuff.NewDesMachineIdEx == Common.MachineID
                     ? ConvertToUniversalValue(new Point(x, MachineStuff.PrimaryScreenBounds.Top + JUMP_PIXELS), MachineStuff.PrimaryScreenBounds)
-                    : desMachineID == Common.MachineID
+                    : MachineStuff.DesMachineID == Common.MachineID
                         ? ConvertToUniversalValue(new Point(x, MachineStuff.DesktopBounds.Top + JUMP_PIXELS), MachineStuff.DesktopBounds)
                         : ConvertToUniversalValue(new Point(x, MachineStuff.PrimaryScreenBounds.Top + JUMP_PIXELS), MachineStuff.PrimaryScreenBounds)
                 : ConvertToUniversalValue(new Point(x, MachineStuff.DesktopBounds.Top + JUMP_PIXELS), MachineStuff.DesktopBounds);
@@ -745,7 +777,7 @@ internal static class MachineStuff
             if (machineInfo.Name.Equals(DesMachineName, StringComparison.OrdinalIgnoreCase))
             {
                 Logger.LogDebug("AddToMachinePool: Des ID updated: " + Common.DesMachineID.ToString() + "/" + package.Src.ToString());
-                newDesMachineID = desMachineID = package.Src;
+                MachineStuff.NewDesMachineID = MachineStuff.DesMachineID = package.Src;
             }
 
             return machineInfo.Name;
@@ -1026,9 +1058,9 @@ internal static class MachineStuff
         if (id != ID.NONE)
         {
             // Ask current machine to hide the Mouse cursor
-            if (desMachineID != Common.MachineID)
+            if (MachineStuff.DesMachineID != Common.MachineID)
             {
-                Common.SendPackage(desMachineID, PackageType.HideMouse);
+                Common.SendPackage(MachineStuff.DesMachineID, PackageType.HideMouse);
             }
 
             NewDesMachineID = Common.DesMachineID = id;

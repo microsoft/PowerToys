@@ -135,7 +135,7 @@ internal static class Receiver
 
                 if (package.Des == Common.MachineID || package.Des == ID.ALL)
                 {
-                    if (MachineStuff.desMachineID != Common.MachineID)
+                    if (MachineStuff.DesMachineID != Common.MachineID)
                     {
                         MachineStuff.NewDesMachineID = Common.DesMachineID = Common.MachineID;
                     }
@@ -177,11 +177,11 @@ internal static class Receiver
                                 Logger.LogDebug(string.Format(
                                     CultureInfo.CurrentCulture,
                                     "***** Controlled Machine: newDesMachineIdEx set = [{0}]. Mouse is now at ({1},{2})",
-                                    MachineStuff.newDesMachineIdEx,
+                                    MachineStuff.NewDesMachineIdEx,
                                     Receiver.LastXY.X,
                                     Receiver.LastXY.Y));
 
-                                Common.SendNextMachine(package.Src, MachineStuff.newDesMachineIdEx, p);
+                                Common.SendNextMachine(package.Src, MachineStuff.NewDesMachineIdEx, p);
                             }
                         }
                         else

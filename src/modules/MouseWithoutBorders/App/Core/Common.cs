@@ -278,12 +278,12 @@ internal static class Common
 
     internal static ID DesMachineID
     {
-        get => MachineStuff.desMachineID;
+        get => MachineStuff.DesMachineID;
 
         set
         {
-            MachineStuff.desMachineID = value;
-            MachineStuff.DesMachineName = MachineStuff.NameFromID(MachineStuff.desMachineID);
+            MachineStuff.DesMachineID = value;
+            MachineStuff.DesMachineName = MachineStuff.NameFromID(MachineStuff.DesMachineID);
         }
     }
 
@@ -678,7 +678,7 @@ internal static class Common
 
     internal static void ProcessByeByeMessage(DATA package)
     {
-        if (package.Src == MachineStuff.desMachineID)
+        if (package.Src == MachineStuff.DesMachineID)
         {
             MachineStuff.SwitchToMachine(MachineName.Trim());
         }
@@ -1542,7 +1542,7 @@ internal static class Common
             MachineStuff.PrimaryScreenBounds.Left + ((MachineStuff.PrimaryScreenBounds.Right - MachineStuff.PrimaryScreenBounds.Left) / 2),
             Setting.Values.HideMouse ? 4 : MachineStuff.PrimaryScreenBounds.Top + ((MachineStuff.PrimaryScreenBounds.Bottom - MachineStuff.PrimaryScreenBounds.Top) / 2));
 
-        if ((MachineStuff.desMachineID != MachineID && MachineStuff.desMachineID != ID.ALL) || byHideMouseMessage)
+        if ((MachineStuff.DesMachineID != MachineID && MachineStuff.DesMachineID != ID.ALL) || byHideMouseMessage)
         {
             _ = NativeMethods.SetCursorPos(Common.LastPos.X, Common.LastPos.Y);
             Common.RefreshLastPos();
