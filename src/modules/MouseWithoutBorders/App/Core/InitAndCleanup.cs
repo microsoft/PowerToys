@@ -24,18 +24,35 @@ namespace MouseWithoutBorders.Core;
 
 internal static class InitAndCleanup
 {
-    private static bool initDone;
     internal static int REOPEN_WHEN_WSAECONNRESET = -10054;
     internal static int REOPEN_WHEN_HOTKEY = -10055;
-    internal static int PleaseReopenSocket;
-    internal static bool ReopenSocketDueToReadError;
 
-    private static DateTime LastResumeSuspendTime { get; set; } = DateTime.UtcNow;
+#pragma warning disable SA1500 // Braces for multi line statements must not share line
+#pragma warning disable SA1513 // Closing brace must be followed by blank line
+    private static DateTime LastResumeSuspendTime
+    {
+        get;
+        set;
+    } = DateTime.UtcNow;
+#pragma warning restore SA1513
+#pragma warning restore SA1500
 
     internal static bool InitDone
     {
-        get => InitAndCleanup.initDone;
-        set => InitAndCleanup.initDone = value;
+        get;
+        set;
+    }
+
+    internal static int PleaseReopenSocket
+    {
+        get;
+        set;
+    }
+
+    internal static bool ReopenSocketDueToReadError
+    {
+        get;
+        set;
     }
 
     internal static void UpdateMachineTimeAndID()
