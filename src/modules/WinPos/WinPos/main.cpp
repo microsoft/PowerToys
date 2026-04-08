@@ -41,7 +41,7 @@ static HWND      g_hOverlay    = nullptr; // semi-transparent overlay during dra
 static int       g_overlayInfoX = 0, g_overlayInfoY = 0;
 static int       g_overlayInfoW = 0, g_overlayInfoH = 0;
 
-static bool      g_shouldAbsorbAlt = false; // true if we want to absorb Alt on the next keydown (set when Alt is pressed without dragging, cleared on next non-Alt key or Alt keyup)
+static bool      g_shouldAbsorbAlt = true; // true if we want to absorb Alt on the next keydown (set when Alt is pressed without dragging, cleared on next non-Alt key or Alt keyup)
 static bool      g_altAbsorbed     = false; // true if we absorbed an Alt keydown
 static bool      g_dragConsumedAlt = false; // true if a drag consumed the absorbed Alt
 static DWORD     g_absorbedVk      = 0;     // VK code of absorbed Alt key
