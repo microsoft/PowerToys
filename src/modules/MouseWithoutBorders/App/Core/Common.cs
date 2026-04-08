@@ -81,10 +81,6 @@ namespace MouseWithoutBorders.Core;
 
 internal static class Common
 {
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
-    internal static Thread helper;
-#pragma warning restore SA1307
-
     internal const int TOGGLE_ICONS_SIZE = 4;
     internal const int ICON_ONE = 0;
     internal const int ICON_ALL = 1;
@@ -93,11 +89,14 @@ internal static class Common
     internal const int ICON_ERROR = 4;
     internal const int JUST_GOT_BACK_FROM_SCREEN_SAVER = 9999;
     internal const int NETWORK_STREAM_BUF_SIZE = 1024 * 1024;
+
     internal static readonly EventWaitHandle EvSwitch = new(false, EventResetMode.AutoReset);
-    private static Point lastPos;
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
-    internal static int tcpPort;
-#pragma warning restore SA1307
+
+    internal static Thread HelperThread
+    {
+        get;
+        set;
+    }
 
     internal static Process CurrentProcess
     {
@@ -148,8 +147,15 @@ internal static class Common
 
     internal static Point LastPos
     {
-        get => Common.lastPos;
-        set => Common.lastPos = value;
+        get;
+        set;
+    }
+
+    private static void RefreshLastPos()
+    {
+        Point cursorPos = default;
+        _ = NativeMethods.GetCursorPos(ref cursorPos);
+        Common.LastPos = cursorPos;
     }
 
     internal static FrmAbout AboutForm
@@ -299,6 +305,12 @@ internal static class Common
     /// Synchronization between MouseWithoutBorders running in different desktops
     /// </remarks>
     internal static Mutex SocketMutex
+    {
+        get;
+        set;
+    }
+
+    internal static int TcpPort
     {
         get;
         set;
@@ -1287,7 +1299,7 @@ internal static class Common
                     tmpSk.Close(byUser);
                 }
 
-                Sk = new SocketStuff(tcpPort, byUser);
+                Sk = new SocketStuff(Common.TcpPort, byUser);
             }
             catch (Exception e)
             {
@@ -1533,7 +1545,7 @@ internal static class Common
         if ((MachineStuff.desMachineID != MachineID && MachineStuff.desMachineID != ID.ALL) || byHideMouseMessage)
         {
             _ = NativeMethods.SetCursorPos(Common.LastPos.X, Common.LastPos.Y);
-            _ = NativeMethods.GetCursorPos(ref Common.lastPos);
+            Common.RefreshLastPos();
             Logger.LogDebug($"+++++ HideMouseCursor, byHideMouseMessage = {byHideMouseMessage}");
         }
 

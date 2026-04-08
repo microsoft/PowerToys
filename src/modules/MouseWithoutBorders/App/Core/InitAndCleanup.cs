@@ -143,7 +143,7 @@ internal static class InitAndCleanup
 
         bool dummy = Setting.Values.DrawMouseEx;
         Common.Is64bitOS = IntPtr.Size == 8;
-        Common.tcpPort = Setting.Values.TcpPort;
+        Common.TcpPort = Setting.Values.TcpPort;
         WinAPI.GetScreenConfig();
         Package.PackageSent = new PackageMonitor(0);
         Package.PackageReceived = new PackageMonitor(0);
@@ -179,9 +179,9 @@ internal static class InitAndCleanup
         watchDogThread.Start();
         */
 
-        Common.helper = new Thread(new ThreadStart(Helper.HelperThread), "Helper Thread");
-        Common.helper.SetApartmentState(ApartmentState.STA);
-        Common.helper.Start();
+        Common.HelperThread = new Thread(new ThreadStart(Helper.HelperThread), "Helper Thread");
+        Common.HelperThread.SetApartmentState(ApartmentState.STA);
+        Common.HelperThread.Start();
     }
 
     private static void AskHelperThreadsToExit(int waitTime)
@@ -191,14 +191,14 @@ internal static class InitAndCleanup
         _ = Common.EvSwitch.Set();
 
         int c = 0;
-        if (Common.helper != null && c < waitTime)
+        if (Common.HelperThread != null && c < waitTime)
         {
             while (Helper.SignalHelperToExit)
             {
                 Thread.Sleep(1);
             }
 
-            Common.helper = null;
+            Common.HelperThread = null;
         }
     }
 
