@@ -587,6 +587,10 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 if (IsExcluded(hwnd))
                     goto forward;
 
+                // Only allow resize if the window style permits resizing
+                if (!(GetWindowLongW(hwnd, GWL_STYLE) & WS_THICKFRAME))
+                    goto forward;
+
                 g_resizing        = true;
                 g_resizeFirstMove = true;
                 g_dragConsumedAlt = true;
