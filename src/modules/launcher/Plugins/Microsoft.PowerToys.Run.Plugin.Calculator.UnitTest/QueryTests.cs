@@ -76,7 +76,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var result = _main.Object.Query(expectedQuery).Count;
 
             // Assert
-            Assert.AreEqual(result, 0);
+            Assert.AreEqual(0, result);
         }
 
         [DataTestMethod]
@@ -101,12 +101,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var resultWithKeyword = _main.Object.Query(expectedQueryWithKeyword).Count;
 
             // Assert
-            Assert.AreEqual(result, 0);
-            Assert.AreEqual(resultWithKeyword, 0);
+            Assert.AreEqual(0, result);
+            Assert.AreEqual(0, resultWithKeyword);
         }
 
         [DataTestMethod]
-        [DataRow("10+(8*9)/0,5")] // German decimal digit separator
+        [DataRow("10+(8*9)/0,5")]// German decimal digit separator
         [DataRow("10+(8*9)/0.5")]
         [DataRow("10+(8*9)/1,5")] // German decimal digit separator
         [DataRow("10+(8*9)/1.5")]
@@ -121,8 +121,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var resultWithKeyword = _main.Object.Query(expectedQueryWithKeyword).FirstOrDefault().SubTitle;
 
             // Assert
-            Assert.AreEqual(result, "Copy this number to the clipboard");
-            Assert.AreEqual(resultWithKeyword, "Copy this number to the clipboard");
+            Assert.AreEqual("Copy this number to the clipboard", result);
+            Assert.AreEqual("Copy this number to the clipboard", resultWithKeyword);
         }
 
         [DataTestMethod]

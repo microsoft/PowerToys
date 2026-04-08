@@ -8,6 +8,6 @@ public sealed class PinyinFuzzyMatcherOptions
 {
     public PinyinMode Mode { get; init; } = PinyinMode.AutoSimplifiedChineseUi;
 
-    /// <summary>Remove IME syllable separators (') for query secondary variant.</summary>
+    /// <summary>Gets a value indicating whether IME syllable separators (') are removed for query secondary variant.</summary>
     public bool RemoveApostrophesForQuery { get; init; } = true;
 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
@@ -29,11 +30,12 @@ namespace PowerOCR;
 
 internal sealed class ImageMethods
 {
-    internal static Bitmap PadImage(Bitmap image, int minW = 64, int minH = 64)
+    internal static bool PadImage(Bitmap image, [NotNullWhen(true)] out Bitmap? paddedBitmap, int minW = 64, int minH = 64)
     {
         if (image.Height >= minH && image.Width >= minW)
         {
-            return image;
+            paddedBitmap = null;
+            return false;
         }
 
         int width = Math.Max(image.Width + 16, minW + 16);
@@ -45,8 +47,9 @@ internal sealed class ImageMethods
 
         gd.Clear(image.GetPixel(0, 0));
         gd.DrawImageUnscaled(image, 8, 8);
+        paddedBitmap = destination;
 
-        return destination;
+        return true;
     }
 
     internal static ImageSource GetWindowBoundsImage(OCROverlay passedWindow)
@@ -77,8 +80,15 @@ internal sealed class ImageMethods
             bmp.Size,
             CopyPixelOperation.SourceCopy);
 
-        bmp = PadImage(bmp);
-        return bmp;
+        if (PadImage(bmp, out var paddedBmp))
+        {
+            bmp.Dispose();
+            return paddedBmp;
+        }
+        else
+        {
+            return bmp;
+        }
     }
 
     internal static async Task<string> GetRegionsText(OCROverlay? passedWindow, Rectangle selectedRegion, Language? preferredLanguage)
