@@ -71,8 +71,18 @@ static ResizeHandle g_currentHandle   = RESIZE_NONE;
 static const int MIN_WINDOW_WIDTH  = 150;
 static const int MIN_WINDOW_HEIGHT = 50;
 
-static const DWORD THROTTLE_INTERVAL_MS = 16; // min ms between SetWindowPos calls, aim for 125 fps
-static DWORD       g_lastMoveTick       = 0;  // tick of last applied move/resize
+static const ULONGLONG THROTTLE_INTERVAL_MS = 16; // min ms between SetWindowPos calls
+static ULONGLONG       g_lastMoveTick     = 0;  // tick of last applied move/resize
+
+// High-resolution millisecond timer using QueryPerformanceCounter
+static ULONGLONG QpcMs() {
+    static LARGE_INTEGER freq = {};
+    if (freq.QuadPart == 0)
+        QueryPerformanceFrequency(&freq);
+    LARGE_INTEGER now;
+    QueryPerformanceCounter(&now);
+    return static_cast<ULONGLONG>(now.QuadPart * 1000 / freq.QuadPart);
+}
 
 static const wchar_t* const CLASS_NAME         = L"WinPos_MsgWnd";
 static const wchar_t* const OVERLAY_CLASS_NAME  = L"WinPos_Overlay";
@@ -517,7 +527,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
             int h    = g_dragWndRect.bottom - g_dragWndRect.top;
 
             // Throttle: skip expensive window ops if < THROTTLE_INTERVAL_MS
-            DWORD now = GetTickCount();
+            ULONGLONG now = QpcMs();
             if (now - g_lastMoveTick >= THROTTLE_INTERVAL_MS) {
                 g_lastMoveTick = now;
                 SetWindowPos(g_dragTarget, nullptr,
@@ -653,7 +663,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
             g_resizeLast = pt;
 
             // Throttle: skip expensive window ops if < THROTTLE_INTERVAL_MS
-            DWORD now = GetTickCount();
+            ULONGLONG now = QpcMs();
             if (now - g_lastMoveTick >= THROTTLE_INTERVAL_MS) {
                 g_lastMoveTick = now;
                 int w = nr.right  - nr.left;
