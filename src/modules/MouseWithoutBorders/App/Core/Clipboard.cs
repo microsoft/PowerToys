@@ -777,11 +777,8 @@ internal static class Clipboard
             Logger.Log("The current thread is being aborted (3).");
             s.Close();
 
-            if (m != null)
-            {
-                m.Close();
-                m = null;
-            }
+            m?.Close();
+            m = null;
 
             return;
         }
@@ -804,11 +801,8 @@ internal static class Clipboard
             });
             Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Info, Setting.Values.ShowClipNetStatus);
 
-            if (m != null)
-            {
-                m.Close();
-                m = null;
-            }
+            m?.Close();
+            m = null;
 
             return;
         }
@@ -919,11 +913,8 @@ internal static class Clipboard
             Common.MainForm.UpdateNotifyIcon();
             Common.ShowToolTip(e.Message + "\r\n\r\nMake sure you run the same version in all machines.", 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
 
-            if (m != null)
-            {
-                m.Close();
-                m = null;
-            }
+            m?.Close();
+            m = null;
         }
 
         return handShaken;

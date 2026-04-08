@@ -1323,11 +1323,8 @@ internal static class Common
 
         Common.DoSomethingInTheInputCallbackThread(() =>
         {
-            if (Common.Hook != null)
-            {
-                Common.Hook.Stop();
-                Common.Hook = null;
-            }
+            Common.Hook?.Stop();
+            Common.Hook = null;
 
             if (byUser)
             {
@@ -1506,23 +1503,14 @@ internal static class Common
             }
         }
 
-        if (MainForm != null)
-        {
-            MainForm.Destroy();
-            MainForm = null;
-        }
+        Common.MainForm?.Destroy();
+        Common.MainForm = null;
 
-        if (MatrixForm != null)
-        {
-            MatrixForm.Close();
-            MatrixForm = null;
-        }
+        Common.MatrixForm?.Close();
+        Common.MatrixForm = null;
 
-        if (AboutForm != null)
-        {
-            AboutForm.Close();
-            AboutForm = null;
-        }
+        Common.AboutForm?.Close();
+        Common.AboutForm = null;
     }
 
     internal static void MoveMouseToCenter()

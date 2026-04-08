@@ -874,11 +874,8 @@ internal static class MachineStuff
 
     internal static void CloseSetupForm()
     {
-        if (settings != null)
-        {
-            settings.Close();
-            settings = null;
-        }
+        settings?.Close();
+        settings = null;
     }
 
     internal static void ShowMachineMatrix()
