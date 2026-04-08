@@ -355,20 +355,14 @@ namespace KeyboardManagerEditorUI.Controls
                     // KeyCode 0 means "None" — treat as invalid selection and do not update.
                     if (e.NewKeyCode == 0)
                     {
-                        // Revert via the bound collection so the binding expression is not broken.
-                        string current = _triggerKeys[index];
-                        _triggerKeys.RemoveAt(index);
-                        _triggerKeys.Insert(index, current);
+                        RevertKeySelection(_triggerKeys, index);
                         return;
                     }
 
                     string? validationError = ValidateDropDownSelection(_triggerKeys, index, e.NewKeyCode, e.NewKeyName);
                     if (validationError != null)
                     {
-                        // Revert via the bound collection so the binding expression is not broken.
-                        string current = _triggerKeys[index];
-                        _triggerKeys.RemoveAt(index);
-                        _triggerKeys.Insert(index, current);
+                        RevertKeySelection(_triggerKeys, index);
                         ShowNotificationTip(validationError);
                         return;
                     }
@@ -389,20 +383,14 @@ namespace KeyboardManagerEditorUI.Controls
                     // KeyCode 0 means "None" — treat as invalid selection and do not update.
                     if (e.NewKeyCode == 0)
                     {
-                        // Revert via the bound collection so the binding expression is not broken.
-                        string current = _actionKeys[index];
-                        _actionKeys.RemoveAt(index);
-                        _actionKeys.Insert(index, current);
+                        RevertKeySelection(_actionKeys, index);
                         return;
                     }
 
                     string? validationError = ValidateDropDownSelection(_actionKeys, index, e.NewKeyCode, e.NewKeyName);
                     if (validationError != null)
                     {
-                        // Revert via the bound collection so the binding expression is not broken.
-                        string current = _actionKeys[index];
-                        _actionKeys.RemoveAt(index);
-                        _actionKeys.Insert(index, current);
+                        RevertKeySelection(_actionKeys, index);
                         ShowNotificationTip(validationError);
                         return;
                     }
@@ -411,6 +399,17 @@ namespace KeyboardManagerEditorUI.Controls
                     HandleAutoGrowShrink(_actionKeys, index, e.NewKeyCode);
                 }
             }
+        }
+
+        /// <summary>
+        /// Reverts a key selection by re-inserting the current value via the bound ObservableCollection,
+        /// which forces the binding to refresh without breaking the binding expression.
+        /// </summary>
+        private static void RevertKeySelection(ObservableCollection<string> keys, int index)
+        {
+            string current = keys[index];
+            keys.RemoveAt(index);
+            keys.Insert(index, current);
         }
 
         private static int GetDropDownIndex(ItemsControl itemsControl, KeyDropDownButton dropDown)

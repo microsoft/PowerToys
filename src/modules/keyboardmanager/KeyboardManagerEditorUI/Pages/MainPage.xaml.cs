@@ -159,7 +159,7 @@ namespace KeyboardManagerEditorUI.Pages
             _isEditMode = false;
             _editingItem = null;
             UnifiedMappingControl.Reset();
-            RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleNew");
+            RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog.Title");
             await ShowRemappingDialog();
         }
 
