@@ -165,12 +165,25 @@ static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
     if (msg == WM_NCHITTEST)
         return HTCLIENT;
 
+    if (msg == WM_ERASEBKGND)
+        return 1; // suppress erase; we paint the entire client area ourselves
+
     if (msg == WM_PAINT) {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
 
         RECT clientRect;
         GetClientRect(hwnd, &clientRect);
+        int cw = clientRect.right - clientRect.left;
+        int ch = clientRect.bottom - clientRect.top;
+
+        // Double-buffer: paint to an off-screen bitmap, then blit once
+        HDC memDC = CreateCompatibleDC(hdc);
+        HBITMAP memBmp = CreateCompatibleBitmap(hdc, cw, ch);
+        HBITMAP oldBmp = static_cast<HBITMAP>(SelectObject(memDC, memBmp));
+
+        // Fill background (white, matching the overlay class brush)
+        FillRect(memDC, &clientRect, static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
 
         wchar_t text[128];
         wsprintfW(text, L"X: %d  Y: %d\nW: %d  H: %d",
@@ -178,11 +191,11 @@ static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
                   g_overlayInfoW, g_overlayInfoH);
 
         HFONT hFont = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
-        HFONT hOldFont = static_cast<HFONT>(SelectObject(hdc, hFont));
+        HFONT hOldFont = static_cast<HFONT>(SelectObject(memDC, hFont));
 
         // Measure the text
         RECT textRect = {};
-        DrawTextW(hdc, text, -1, &textRect, DT_CALCRECT | DT_CENTER | DT_NOPREFIX);
+        DrawTextW(memDC, text, -1, &textRect, DT_CALCRECT | DT_CENTER | DT_NOPREFIX);
         int textW = textRect.right - textRect.left;
         int textH = textRect.bottom - textRect.top;
 
@@ -190,21 +203,29 @@ static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
         int pad = 10;
         int boxW = textW + pad * 2;
         int boxH = textH + pad * 2;
-        int cx = clientRect.right / 2;
-        int cy = clientRect.bottom / 2;
+        int cx = cw / 2;
+        int cy = ch / 2;
         RECT boxRect = { cx - boxW / 2, cy - boxH / 2, cx + boxW / 2, cy + boxH / 2 };
 
         HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 0));
-        FillRect(hdc, &boxRect, hBrush);
+        FillRect(memDC, &boxRect, hBrush);
         DeleteObject(hBrush);
 
         RECT textDrawRect = { boxRect.left + pad, boxRect.top + pad,
                               boxRect.right - pad, boxRect.bottom - pad };
-        SetTextColor(hdc, RGB(255, 255, 255));
-        SetBkMode(hdc, TRANSPARENT);
-        DrawTextW(hdc, text, -1, &textDrawRect, DT_CENTER | DT_NOPREFIX);
+        SetTextColor(memDC, RGB(255, 255, 255));
+        SetBkMode(memDC, TRANSPARENT);
+        DrawTextW(memDC, text, -1, &textDrawRect, DT_CENTER | DT_NOPREFIX);
 
-        SelectObject(hdc, hOldFont);
+        SelectObject(memDC, hOldFont);
+
+        // Single blit to screen
+        BitBlt(hdc, 0, 0, cw, ch, memDC, 0, 0, SRCCOPY);
+
+        SelectObject(memDC, oldBmp);
+        DeleteObject(memBmp);
+        DeleteDC(memDC);
+
         EndPaint(hwnd, &ps);
         return 0;
     }
@@ -250,7 +271,7 @@ static void MoveOverlay(int x, int y, int w, int h) {
         g_overlayInfoH = h;
         SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h,
                      SWP_NOACTIVATE | SWP_SHOWWINDOW);
-        InvalidateRect(g_hOverlay, nullptr, TRUE);
+        InvalidateRect(g_hOverlay, nullptr, FALSE);
     }
 }
 
