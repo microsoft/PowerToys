@@ -70,8 +70,8 @@ internal static class WinAPI
         if (mi.rcMonitor.Left == 0 && mi.rcMonitor.Top == 0 && mi.rcMonitor.Right != 0 && mi.rcMonitor.Bottom != 0)
         {
             // Primary screen
-            _ = Interlocked.Exchange(ref Common.screenWidth, mi.rcMonitor.Right - mi.rcMonitor.Left);
-            _ = Interlocked.Exchange(ref Common.screenHeight, mi.rcMonitor.Bottom - mi.rcMonitor.Top);
+            _ = Common.SetScreenWidth(mi.rcMonitor.Right - mi.rcMonitor.Left);
+            _ = Common.SetScreenHeight(mi.rcMonitor.Bottom - mi.rcMonitor.Top);
 
             newPrimaryScreenBounds.Left = mi.rcMonitor.Left;
             newPrimaryScreenBounds.Top = mi.rcMonitor.Top;

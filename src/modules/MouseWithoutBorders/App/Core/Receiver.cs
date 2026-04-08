@@ -187,8 +187,8 @@ internal static class Receiver
                         else
                         {
                             Receiver.RefreshLastXY();
-                            package.Md.X = Receiver.LastXY.X * 65535 / Common.screenWidth;
-                            package.Md.Y = Receiver.LastXY.Y * 65535 / Common.screenHeight;
+                            package.Md.X = Receiver.LastXY.X * 65535 / Common.ScreenWidth;
+                            package.Md.Y = Receiver.LastXY.Y * 65535 / Common.ScreenHeight;
                             _ = InputSimulation.SendMouse(package.Md);
                         }
                     }

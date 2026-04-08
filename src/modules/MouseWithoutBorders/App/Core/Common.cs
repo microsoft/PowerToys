@@ -83,8 +83,6 @@ internal static class Common
 {
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
     internal static Thread helper;
-    internal static int screenWidth;
-    internal static int screenHeight;
 #pragma warning restore SA1307
 
     internal const int TOGGLE_ICONS_SIZE = 4;
@@ -94,18 +92,18 @@ internal static class Common
     internal const int ICON_BIG_CLIPBOARD = 3;
     internal const int ICON_ERROR = 4;
     internal const int JUST_GOT_BACK_FROM_SCREEN_SAVER = 9999;
-
     internal const int NETWORK_STREAM_BUF_SIZE = 1024 * 1024;
     internal static readonly EventWaitHandle EvSwitch = new(false, EventResetMode.AutoReset);
     private static Point lastPos;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case names
-    internal static int switchCount;
-#pragma warning restore SA1307
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
     internal static int tcpPort;
 #pragma warning restore SA1307
 
-    internal static Process CurrentProcess { get; set; }
+    internal static Process CurrentProcess
+    {
+        get;
+        set;
+    }
 
     internal static bool HotkeyMatched(int vkCode, bool winDown, bool ctrlDown, bool altDown, bool shiftDown, HotkeySettings hotkey)
     {
@@ -130,10 +128,22 @@ internal static class Common
         set;
     }
 
+#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value 0
+    // value is only ever set via Interlocked methods, so only *appears* not be assigned to
+    private static int _switchCount;
+#pragma warning restore CS0649
+
     internal static int SwitchCount
+        => _switchCount;
+
+    internal static int IncrementSwitchCount()
     {
-        get => Common.switchCount;
-        private set => Common.switchCount = value;
+        return Interlocked.Increment(ref _switchCount);
+    }
+
+    internal static int SetSwitchCount(int value)
+    {
+        return Interlocked.Exchange(ref _switchCount, value);
     }
 
     internal static Point LastPos
@@ -196,9 +206,27 @@ internal static class Common
         set;
     }
 
-    internal static int ScreenHeight => Common.screenHeight;
+    private static int _screenHeight;
 
-    internal static int ScreenWidth => Common.screenWidth;
+    internal static int ScreenHeight
+        => _screenHeight;
+
+    internal static int SetScreenHeight(int value)
+    {
+        return Interlocked.Exchange(ref _screenHeight, value);
+    }
+
+    private static int _screenWidth;
+
+    internal static int ScreenWidth
+    {
+        get;
+    }
+
+    internal static int SetScreenWidth(int value)
+    {
+        return Interlocked.Exchange(ref _screenWidth, value);
+    }
 
     internal static bool Is64bitOS
     {

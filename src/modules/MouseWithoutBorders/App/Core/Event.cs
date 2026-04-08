@@ -105,8 +105,8 @@ internal static class Event
                 }
                 else
                 {
-                    MousePackage.Md.X = (e.X - MachineStuff.primaryScreenBounds.Left) * 65535 / Common.screenWidth;
-                    MousePackage.Md.Y = (e.Y - MachineStuff.primaryScreenBounds.Top) * 65535 / Common.screenHeight;
+                    MousePackage.Md.X = (e.X - MachineStuff.primaryScreenBounds.Left) * 65535 / Common.ScreenWidth;
+                    MousePackage.Md.Y = (e.Y - MachineStuff.primaryScreenBounds.Top) * 65535 / Common.ScreenHeight;
                 }
 
                 Common.SkSend(MousePackage, null, false);
@@ -226,7 +226,7 @@ internal static class Event
                     Common.SendPackage(MachineStuff.desMachineID, PackageType.MachineSwitched);
                 }
 
-                _ = Interlocked.Increment(ref Common.switchCount);
+                _ = Common.IncrementSwitchCount();
             }
         }
     }
@@ -238,7 +238,7 @@ internal static class Event
             _ = Task.Run(() =>
             {
                 Setting.Values.SwitchCount += Common.SwitchCount;
-                _ = Interlocked.Exchange(ref Common.switchCount, 0);
+                _ = Common.SetSwitchCount(0);
             });
         }
     }
