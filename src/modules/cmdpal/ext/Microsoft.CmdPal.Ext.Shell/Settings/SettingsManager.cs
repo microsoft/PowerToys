@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
-using System.IO;
 using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -53,8 +51,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
-        // now, the state is just next to the exe
-        return Path.Combine(directory, "settings.json");
+        return Path.Combine(directory, $"{_namespace}.settings.json");
     }
 
     public SettingsManager()
@@ -64,7 +61,6 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_leaveShellOpen);
         Settings.Add(_shellCommandExecution);
 
-        // Load settings from file upon initialization
         LoadSettings();
 
         Settings.SettingsChanged += (s, a) => this.SaveSettings();

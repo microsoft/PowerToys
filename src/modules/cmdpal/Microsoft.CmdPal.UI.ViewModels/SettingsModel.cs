@@ -31,7 +31,11 @@ public record SettingsModel
 
     public bool ShowSystemTrayIcon { get; init; } = true;
 
-    public bool IgnoreShortcutWhenFullscreen { get; init; }
+    public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
+
+    public bool IgnoreShortcutWhenBusy { get; init; }
+
+    public bool AllowBreakthroughShortcut { get; init; }
 
     public bool AllowExternalReload { get; init; }
 
