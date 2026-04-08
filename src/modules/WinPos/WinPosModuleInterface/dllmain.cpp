@@ -104,7 +104,7 @@ public:
 
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring args = L"--pid " + std::to_wstring(powertoys_pid);
-        std::wstring exe_name = L"WinPos\\PowerToys.WinPos.exe";
+        std::wstring exe_name = L"PowerToys.WinPos.exe";
 
         std::wstring resolved_path(MAX_PATH, L'\0');
         DWORD result = SearchPathW(
