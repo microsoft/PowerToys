@@ -32,6 +32,11 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShouldAbsorbAlt, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        x:Uid="WinPos_ShowGeometry"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE809;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowGeometry, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

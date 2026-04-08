@@ -98,6 +98,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowGeometry
+        {
+            get => _moduleSettings.Properties.ShowGeometry.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.ShowGeometry.Value != value)
+                {
+                    _moduleSettings.Properties.ShowGeometry.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(ShowGeometry));
+                }
+            }
+        }
+
         public string ExcludedApps
         {
             get => _moduleSettings.Properties.ExcludedApps.Value;
