@@ -35,7 +35,24 @@ internal static class Receiver
     internal static long skippedPackageCount;
 #pragma warning restore SA1307
 
-    private static long JustGotAKey { get; set; }
+    private static long JustGotAKey
+    {
+        get;
+        set;
+    }
+
+    private static Point LastXY
+    {
+        get;
+        set;
+    }
+
+    private static void RefreshLastXY()
+    {
+        Point cursorPos = default;
+        _ = NativeMethods.GetCursorPos(ref cursorPos);
+        Receiver.LastXY = cursorPos;
+    }
 
     private static bool PreProcess(DATA package)
     {
@@ -80,8 +97,6 @@ internal static class Receiver
 
         return true;
     }
-
-    private static System.Drawing.Point lastXY;
 
     internal static void ProcessPackage(DATA package, TcpSk tcp)
     {
@@ -151,9 +166,9 @@ internal static class Receiver
                             InputSimulation.MoveMouseRelative(
                                 package.Md.X < 0 ? package.Md.X + Event.MOVE_MOUSE_RELATIVE : package.Md.X - Event.MOVE_MOUSE_RELATIVE,
                                 package.Md.Y < 0 ? package.Md.Y + Event.MOVE_MOUSE_RELATIVE : package.Md.Y - Event.MOVE_MOUSE_RELATIVE);
-                            _ = NativeMethods.GetCursorPos(ref lastXY);
+                            Receiver.RefreshLastXY();
 
-                            Point p = MachineStuff.MoveToMyNeighbourIfNeeded(lastXY.X, lastXY.Y, Common.MachineID);
+                            Point p = MachineStuff.MoveToMyNeighbourIfNeeded(Receiver.LastXY.X, Receiver.LastXY.Y, Common.MachineID);
 
                             if (!p.IsEmpty)
                             {
@@ -163,28 +178,28 @@ internal static class Receiver
                                     CultureInfo.CurrentCulture,
                                     "***** Controlled Machine: newDesMachineIdEx set = [{0}]. Mouse is now at ({1},{2})",
                                     MachineStuff.newDesMachineIdEx,
-                                    lastXY.X,
-                                    lastXY.Y));
+                                    Receiver.LastXY.X,
+                                    Receiver.LastXY.Y));
 
                                 Common.SendNextMachine(package.Src, MachineStuff.newDesMachineIdEx, p);
                             }
                         }
                         else
                         {
-                            _ = NativeMethods.GetCursorPos(ref lastXY);
-                            package.Md.X = lastXY.X * 65535 / Common.screenWidth;
-                            package.Md.Y = lastXY.Y * 65535 / Common.screenHeight;
+                            Receiver.RefreshLastXY();
+                            package.Md.X = Receiver.LastXY.X * 65535 / Common.screenWidth;
+                            package.Md.Y = Receiver.LastXY.Y * 65535 / Common.screenHeight;
                             _ = InputSimulation.SendMouse(package.Md);
                         }
                     }
                     else
                     {
                         _ = InputSimulation.SendMouse(package.Md);
-                        _ = NativeMethods.GetCursorPos(ref lastXY);
+                        Receiver.RefreshLastXY();
                     }
 
-                    Common.LastX = lastXY.X;
-                    Common.LastY = lastXY.Y;
+                    Common.LastX = Receiver.LastXY.X;
+                    Common.LastY = Receiver.LastXY.Y;
                     CustomCursor.ShowFakeMouseCursor(Common.LastX, Common.LastY);
                 }
 
