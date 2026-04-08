@@ -1,4 +1,4 @@
-<local:NavigablePage
+﻿<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.WinPosPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -27,14 +27,10 @@
                 </controls:GPOInfoControl>
 
                 <controls:SettingsGroup x:Uid="WinPos_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        x:Uid="WinPos_ShouldAbsorbAlt"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                    <tkcontrols:SettingsCard x:Uid="WinPos_ShouldAbsorbAlt" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShouldAbsorbAlt, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard
-                        x:Uid="WinPos_ShowGeometry"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE809;}">
+                    <tkcontrols:SettingsCard x:Uid="WinPos_ShowGeometry" HeaderIcon="{ui:FontIcon Glyph=&#xE809;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShowGeometry, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
