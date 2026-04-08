@@ -218,9 +218,9 @@ internal static class Event
 
                 if (MachineStuff.desMachineID == Common.MachineID)
                 {
-                    if (Common.GetTick() - Clipboard.clipboardCopiedTime < Clipboard.BIG_CLIPBOARD_DATA_TIMEOUT)
+                    if (Common.GetTick() - Clipboard.ClipboardCopiedTime < Clipboard.BIG_CLIPBOARD_DATA_TIMEOUT)
                     {
-                        Clipboard.clipboardCopiedTime = 0;
+                        Clipboard.ClipboardCopiedTime = 0;
                         Clipboard.GetRemoteClipboard("PrepareToSwitchToMachine");
                     }
                 }

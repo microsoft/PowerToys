@@ -274,7 +274,7 @@ internal static class Receiver
                 Package.PackageReceived.Clipboard++;
                 if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                 {
-                    Clipboard.clipboardCopiedTime = Common.GetTick();
+                    Clipboard.ClipboardCopiedTime = Common.GetTick();
                     GetNameOfMachineWithClipboardData(package);
                     SignalBigClipboardData();
                 }
@@ -282,9 +282,9 @@ internal static class Receiver
                 break;
 
             case PackageType.MachineSwitched:
-                if (Common.GetTick() - Clipboard.clipboardCopiedTime < Clipboard.BIG_CLIPBOARD_DATA_TIMEOUT && (package.Des == Common.MachineID))
+                if (Common.GetTick() - Clipboard.ClipboardCopiedTime < Clipboard.BIG_CLIPBOARD_DATA_TIMEOUT && (package.Des == Common.MachineID))
                 {
-                    Clipboard.clipboardCopiedTime = 0;
+                    Clipboard.ClipboardCopiedTime = 0;
                     Clipboard.GetRemoteClipboard("PackageType.MachineSwitched");
                 }
 
@@ -360,7 +360,7 @@ internal static class Receiver
 
             case PackageType.ClipboardText:
             case PackageType.ClipboardImage:
-                Clipboard.clipboardCopiedTime = 0;
+                Clipboard.ClipboardCopiedTime = 0;
                 if (package.Type == PackageType.ClipboardImage)
                 {
                     Package.PackageReceived.ClipboardImage++;

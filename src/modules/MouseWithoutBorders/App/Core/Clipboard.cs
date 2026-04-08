@@ -45,42 +45,70 @@ internal static class Clipboard
     private const int TEXT_HEADER_SIZE = 12;
     private const int DATA_SIZE = 48;
     private const string TEXT_TYPE_SEP = "{4CFF57F7-BEDD-43d5-AE8F-27A61E886F2F}";
-    private static long lastClipboardEventTime;
-    private static string lastMachineWithClipboardData;
-    private static string lastDragDropFile;
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
-    internal static long clipboardCopiedTime;
-#pragma warning restore SA1307
 
-    internal static ID LastIDWithClipboardData { get; set; }
+    internal static long ClipboardCopiedTime
+    {
+        get;
+        set;
+    }
+
+    internal static ID LastIDWithClipboardData
+    {
+        get;
+        set;
+    }
 
     internal static string LastDragDropFile
     {
-        get => Clipboard.lastDragDropFile;
-        set => Clipboard.lastDragDropFile = value;
+        get;
+        set;
     }
 
     internal static string LastMachineWithClipboardData
     {
-        get => Clipboard.lastMachineWithClipboardData;
-        set => Clipboard.lastMachineWithClipboardData = value;
+        get;
+        set;
     }
 
     private static long LastClipboardEventTime
     {
-        get => Clipboard.lastClipboardEventTime;
-        set => Clipboard.lastClipboardEventTime = value;
+        get;
+        set;
     }
 
-    private static IntPtr NextClipboardViewer { get; set; }
+    private static IntPtr NextClipboardViewer
+    {
+        get;
+        set;
+    }
 
-    internal static bool IsClipboardDataImage { get; private set; }
+    internal static bool IsClipboardDataImage
+    {
+        get;
+        private set;
+    }
 
-    internal static byte[] LastClipboardData { get; private set; }
+    internal static byte[] LastClipboardData
+    {
+        get;
+        private set;
+    }
 
-    private static object lastClipboardObject = string.Empty;
+#pragma warning disable SA1500 // Braces for multi line statements must not share line
+#pragma warning disable SA1513 // Closing brace must be followed by blank line
+    private static object LastClipboardObject
+    {
+        get;
+        set;
+    } = string.Empty;
+#pragma warning restore SA1513
+#pragma warning restore SA1500
 
-    internal static bool HasSwitchedMachineSinceLastCopy { get; set; }
+    internal static bool HasSwitchedMachineSinceLastCopy
+    {
+        get;
+        set;
+    }
 
     internal static bool CheckClipboardEx(ByteArrayOrString data, bool isFilePath)
     {
@@ -129,7 +157,7 @@ internal static class Clipboard
             {
                 if (!HasSwitchedMachineSinceLastCopy)
                 {
-                    if (lastClipboardObject is string lastStringData && lastStringData.Equals(stringData, StringComparison.OrdinalIgnoreCase))
+                    if (Clipboard.LastClipboardObject is string lastStringData && lastStringData.Equals(stringData, StringComparison.OrdinalIgnoreCase))
                     {
                         Logger.LogDebug("CheckClipboardEx: Same string data.");
                         return false;
@@ -205,7 +233,7 @@ internal static class Clipboard
             {
                 if (!HasSwitchedMachineSinceLastCopy)
                 {
-                    if (lastClipboardObject is byte[] lastByteData && Enumerable.SequenceEqual(lastByteData, byteData))
+                    if (Clipboard.LastClipboardObject is byte[] lastByteData && Enumerable.SequenceEqual(lastByteData, byteData))
                     {
                         Logger.LogDebug("CheckClipboardEx: Same byte[] data.");
                         return false;
@@ -224,7 +252,7 @@ internal static class Clipboard
                 return false;
             }
 
-            lastClipboardObject = data;
+            Clipboard.LastClipboardObject = data;
 
             if (LastClipboardData != null && LastClipboardData.Length > 0)
             {
