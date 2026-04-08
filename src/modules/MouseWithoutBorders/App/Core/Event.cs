@@ -105,8 +105,8 @@ internal static class Event
                 }
                 else
                 {
-                    MousePackage.Md.X = (e.X - MachineStuff.primaryScreenBounds.Left) * 65535 / Common.ScreenWidth;
-                    MousePackage.Md.Y = (e.Y - MachineStuff.primaryScreenBounds.Top) * 65535 / Common.ScreenHeight;
+                    MousePackage.Md.X = (e.X - MachineStuff.PrimaryScreenBounds.Left) * 65535 / Common.ScreenWidth;
+                    MousePackage.Md.Y = (e.Y - MachineStuff.PrimaryScreenBounds.Top) * 65535 / Common.ScreenHeight;
                 }
 
                 Common.SkSend(MousePackage, null, false);

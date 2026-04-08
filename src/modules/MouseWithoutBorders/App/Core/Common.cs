@@ -703,12 +703,12 @@ internal static class Common
         try
         {
             string fileName = GetMyStorageDir() + @"ScreenCaptureByMouseWithoutBorders.png";
-            int w = MachineStuff.desktopBounds.Right - MachineStuff.desktopBounds.Left;
-            int h = MachineStuff.desktopBounds.Bottom - MachineStuff.desktopBounds.Top;
+            int w = MachineStuff.DesktopBounds.Right - MachineStuff.DesktopBounds.Left;
+            int h = MachineStuff.DesktopBounds.Bottom - MachineStuff.DesktopBounds.Top;
             Bitmap bm = new(w, h);
             Graphics g = Graphics.FromImage(bm);
             Size s = new(w, h);
-            g.CopyFromScreen(MachineStuff.desktopBounds.Left, MachineStuff.desktopBounds.Top, 0, 0, s);
+            g.CopyFromScreen(MachineStuff.DesktopBounds.Left, MachineStuff.DesktopBounds.Top, 0, 0, s);
             bm.Save(fileName, ImageFormat.Png);
             bm.Dispose();
             return fileName;

@@ -44,8 +44,6 @@ internal static class MachineStuff
     internal static ID newDesMachineIdEx;
     internal static ID dropMachineID;
     internal static long lastJump = Common.GetTick();
-    internal static MyRectangle desktopBounds = new();
-    internal static MyRectangle primaryScreenBounds = new();
 #pragma warning restore SA1307
     private static MachinePool _machinePool;
 
@@ -58,7 +56,25 @@ internal static class MachineStuff
         }
     }
 
-    internal static MyRectangle PrimaryScreenBounds => MachineStuff.primaryScreenBounds;
+    private static MyRectangle _desktopBounds = new();
+
+    internal static MyRectangle DesktopBounds
+        => _desktopBounds;
+
+    internal static MyRectangle SetDesktopBounds(MyRectangle value)
+    {
+        return Interlocked.Exchange(ref _desktopBounds, value);
+    }
+
+    private static MyRectangle _primaryScreenBounds = new();
+
+    internal static MyRectangle PrimaryScreenBounds
+        => _primaryScreenBounds;
+
+    internal static MyRectangle SetPrimaryScreenBounds(MyRectangle value)
+    {
+        return Interlocked.Exchange(ref _primaryScreenBounds, value);
+    }
 
 #pragma warning disable SA1306 // Field should begin with a lower-case letter
     internal static MouseLocation SwitchLocation = new();
@@ -69,8 +85,6 @@ internal static class MachineStuff
         get => MachineStuff.newDesMachineID;
         set => MachineStuff.newDesMachineID = value;
     }
-
-    internal static MyRectangle DesktopBounds => MachineStuff.desktopBounds;
 
 #if OLD_VERSION
     static bool MoveToMyNeighbourIfNeeded(int x, int y)
@@ -238,19 +252,19 @@ internal static class MachineStuff
          * */
         if (desMachineID == Common.MachineID)
         {
-            if (x < desktopBounds.Left + SKIP_PIXELS)
+            if (x < MachineStuff.DesktopBounds.Left + SKIP_PIXELS)
             {
                 return MoveLeft(x, y);
             }
-            else if (x >= desktopBounds.Right - SKIP_PIXELS)
+            else if (x >= MachineStuff.DesktopBounds.Right - SKIP_PIXELS)
             {
                 return MoveRight(x, y);
             }
-            else if (y < desktopBounds.Top + SKIP_PIXELS)
+            else if (y < MachineStuff.DesktopBounds.Top + SKIP_PIXELS)
             {
                 return MoveUp(x, y);
             }
-            else if (y >= desktopBounds.Bottom - SKIP_PIXELS)
+            else if (y >= MachineStuff.DesktopBounds.Bottom - SKIP_PIXELS)
             {
                 return MoveDown(x, y);
             }
@@ -261,19 +275,19 @@ internal static class MachineStuff
          * */
         else
         {
-            if (x < primaryScreenBounds.Left + SKIP_PIXELS)
+            if (x < MachineStuff.PrimaryScreenBounds.Left + SKIP_PIXELS)
             {
                 return MoveLeft(x, y);
             }
-            else if (x >= primaryScreenBounds.Right - SKIP_PIXELS)
+            else if (x >= MachineStuff.PrimaryScreenBounds.Right - SKIP_PIXELS)
             {
                 return MoveRight(x, y);
             }
-            else if (y < primaryScreenBounds.Top + SKIP_PIXELS)
+            else if (y < MachineStuff.PrimaryScreenBounds.Top + SKIP_PIXELS)
             {
                 return MoveUp(x, y);
             }
-            else if (y >= primaryScreenBounds.Bottom - SKIP_PIXELS)
+            else if (y >= MachineStuff.PrimaryScreenBounds.Bottom - SKIP_PIXELS)
             {
                 return MoveDown(x, y);
             }
@@ -389,7 +403,7 @@ internal static class MachineStuff
                     /* Switching back to the controller machine, we need to scale up to the desktopBounds from primaryScreenBounds (sine !Setting.Values.MoveMouseRelatively).
                      * primaryScreenBounds => 65535 => desktopBounds, so that the Mouse position is mapped to the right position when the controller machine has multiple monitors.
                      * */
-                    return ConvertToUniversalValue(new Point(primaryScreenBounds.Left + JUMP_PIXELS, y), primaryScreenBounds);
+                    return ConvertToUniversalValue(new Point(MachineStuff.PrimaryScreenBounds.Left + JUMP_PIXELS, y), MachineStuff.PrimaryScreenBounds);
                 }
                 else
                 {
@@ -399,7 +413,7 @@ internal static class MachineStuff
                          * Mouse position can just be mapped from desktopBounds to desktopBounds
                          * desktopBounds => 65535 => desktopBounds.
                          * */
-                        return ConvertToUniversalValue(new Point(desktopBounds.Left + JUMP_PIXELS, y), desktopBounds);
+                        return ConvertToUniversalValue(new Point(MachineStuff.DesktopBounds.Left + JUMP_PIXELS, y), MachineStuff.DesktopBounds);
                     }
                     else
                     {
@@ -408,7 +422,7 @@ internal static class MachineStuff
                          * new Mouse position for the new controlled machine needs to be calculated from this as well.
                          * primaryScreenBounds => 65535 => desktopBounds
                          * */
-                        return ConvertToUniversalValue(new Point(primaryScreenBounds.Left + JUMP_PIXELS, y), primaryScreenBounds);
+                        return ConvertToUniversalValue(new Point(MachineStuff.PrimaryScreenBounds.Left + JUMP_PIXELS, y), MachineStuff.PrimaryScreenBounds);
                     }
                 }
             }
@@ -417,7 +431,7 @@ internal static class MachineStuff
                 /* In the case where Mouse is moved relatively, Mouse position is simply mapped from desktopBounds to desktopBounds.
                  * desktopBounds => 65535 => desktopBounds.
                  * */
-                return ConvertToUniversalValue(new Point(desktopBounds.Left + JUMP_PIXELS, y), desktopBounds);
+                return ConvertToUniversalValue(new Point(MachineStuff.DesktopBounds.Left + JUMP_PIXELS, y), MachineStuff.DesktopBounds);
             }
         }
 
@@ -523,11 +537,11 @@ internal static class MachineStuff
 
             return !Setting.Values.MoveMouseRelatively
                 ? newDesMachineIdEx == Common.MachineID
-                    ? ConvertToUniversalValue(new Point(primaryScreenBounds.Right - JUMP_PIXELS, y), primaryScreenBounds)
+                    ? ConvertToUniversalValue(new Point(MachineStuff.PrimaryScreenBounds.Right - JUMP_PIXELS, y), MachineStuff.PrimaryScreenBounds)
                     : desMachineID == Common.MachineID
-                        ? ConvertToUniversalValue(new Point(desktopBounds.Right - JUMP_PIXELS, y), desktopBounds)
-                        : ConvertToUniversalValue(new Point(primaryScreenBounds.Right - JUMP_PIXELS, y), primaryScreenBounds)
-                : ConvertToUniversalValue(new Point(desktopBounds.Right - JUMP_PIXELS, y), desktopBounds);
+                        ? ConvertToUniversalValue(new Point(MachineStuff.DesktopBounds.Right - JUMP_PIXELS, y), MachineStuff.DesktopBounds)
+                        : ConvertToUniversalValue(new Point(MachineStuff.PrimaryScreenBounds.Right - JUMP_PIXELS, y), MachineStuff.PrimaryScreenBounds)
+                : ConvertToUniversalValue(new Point(MachineStuff.DesktopBounds.Right - JUMP_PIXELS, y), MachineStuff.DesktopBounds);
         }
 
         return Point.Empty;
@@ -592,11 +606,11 @@ internal static class MachineStuff
 
             return !Setting.Values.MoveMouseRelatively
                 ? newDesMachineIdEx == Common.MachineID
-                    ? ConvertToUniversalValue(new Point(x, primaryScreenBounds.Bottom - JUMP_PIXELS), primaryScreenBounds)
+                    ? ConvertToUniversalValue(new Point(x, MachineStuff.PrimaryScreenBounds.Bottom - JUMP_PIXELS), MachineStuff.PrimaryScreenBounds)
                     : desMachineID == Common.MachineID
-                        ? ConvertToUniversalValue(new Point(x, desktopBounds.Bottom - JUMP_PIXELS), desktopBounds)
-                        : ConvertToUniversalValue(new Point(x, primaryScreenBounds.Bottom - JUMP_PIXELS), primaryScreenBounds)
-                : ConvertToUniversalValue(new Point(x, desktopBounds.Bottom - JUMP_PIXELS), desktopBounds);
+                        ? ConvertToUniversalValue(new Point(x, MachineStuff.DesktopBounds.Bottom - JUMP_PIXELS), MachineStuff.DesktopBounds)
+                        : ConvertToUniversalValue(new Point(x, MachineStuff.PrimaryScreenBounds.Bottom - JUMP_PIXELS), MachineStuff.PrimaryScreenBounds)
+                : ConvertToUniversalValue(new Point(x, MachineStuff.DesktopBounds.Bottom - JUMP_PIXELS), MachineStuff.DesktopBounds);
         }
 
         return Point.Empty;
@@ -662,11 +676,11 @@ internal static class MachineStuff
 
             return !Setting.Values.MoveMouseRelatively
                 ? newDesMachineIdEx == Common.MachineID
-                    ? ConvertToUniversalValue(new Point(x, primaryScreenBounds.Top + JUMP_PIXELS), primaryScreenBounds)
+                    ? ConvertToUniversalValue(new Point(x, MachineStuff.PrimaryScreenBounds.Top + JUMP_PIXELS), MachineStuff.PrimaryScreenBounds)
                     : desMachineID == Common.MachineID
-                        ? ConvertToUniversalValue(new Point(x, desktopBounds.Top + JUMP_PIXELS), desktopBounds)
-                        : ConvertToUniversalValue(new Point(x, primaryScreenBounds.Top + JUMP_PIXELS), primaryScreenBounds)
-                : ConvertToUniversalValue(new Point(x, desktopBounds.Top + JUMP_PIXELS), desktopBounds);
+                        ? ConvertToUniversalValue(new Point(x, MachineStuff.DesktopBounds.Top + JUMP_PIXELS), MachineStuff.DesktopBounds)
+                        : ConvertToUniversalValue(new Point(x, MachineStuff.PrimaryScreenBounds.Top + JUMP_PIXELS), MachineStuff.PrimaryScreenBounds)
+                : ConvertToUniversalValue(new Point(x, MachineStuff.DesktopBounds.Top + JUMP_PIXELS), MachineStuff.DesktopBounds);
         }
 
         return Point.Empty;
@@ -1018,8 +1032,8 @@ internal static class MachineStuff
             }
 
             NewDesMachineID = Common.DesMachineID = id;
-            SwitchLocation.X = Event.XY_BY_PIXEL + primaryScreenBounds.Left + ((primaryScreenBounds.Right - primaryScreenBounds.Left) / 2);
-            SwitchLocation.Y = Event.XY_BY_PIXEL + primaryScreenBounds.Top + ((primaryScreenBounds.Bottom - primaryScreenBounds.Top) / 2);
+            SwitchLocation.X = Event.XY_BY_PIXEL + MachineStuff.PrimaryScreenBounds.Left + ((MachineStuff.PrimaryScreenBounds.Right - MachineStuff.PrimaryScreenBounds.Left) / 2);
+            SwitchLocation.Y = Event.XY_BY_PIXEL + MachineStuff.PrimaryScreenBounds.Top + ((MachineStuff.PrimaryScreenBounds.Bottom - MachineStuff.PrimaryScreenBounds.Top) / 2);
             SwitchLocation.ResetCount();
             Common.UpdateMultipleModeIconAndMenu();
             Common.HideMouseCursor(false);

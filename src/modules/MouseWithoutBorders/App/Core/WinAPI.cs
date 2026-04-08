@@ -159,8 +159,8 @@ internal static class WinAPI
 
             // 1000 calls to EnumDisplayMonitors cost a dozen of milliseconds
 #endif
-            Interlocked.Exchange(ref MachineStuff.desktopBounds, newDesktopBounds);
-            Interlocked.Exchange(ref MachineStuff.primaryScreenBounds, newPrimaryScreenBounds);
+            _ = MachineStuff.SetDesktopBounds(newDesktopBounds);
+            _ = MachineStuff.SetPrimaryScreenBounds(newPrimaryScreenBounds);
 
             Logger.Log(string.Format(
                 CultureInfo.CurrentCulture,
