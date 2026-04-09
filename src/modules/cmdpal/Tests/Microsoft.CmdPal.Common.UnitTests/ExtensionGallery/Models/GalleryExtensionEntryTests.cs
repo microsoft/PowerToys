@@ -10,6 +10,12 @@ namespace Microsoft.CmdPal.Common.UnitTests.ExtensionGallery.Models;
 [TestClass]
 public class GalleryExtensionEntryTests
 {
+    private static readonly string[] ExpectedScreenshotUrls =
+    [
+        "https://example.com/screenshots/1.png",
+        "https://example.com/screenshots/2.png",
+    ];
+
     [TestMethod]
     public void Deserialize_UsesPlainStringManifestFields()
     {
@@ -19,6 +25,10 @@ public class GalleryExtensionEntryTests
               "title": "Sample title",
               "description": "Sample description",
               "readme": "README.md",
+              "screenshotUrls": [
+                "https://example.com/screenshots/1.png",
+                "https://example.com/screenshots/2.png"
+              ],
               "author": { "name": "Author" },
               "installSources": [{ "type": "url", "uri": "https://example.com" }]
             }
@@ -30,6 +40,7 @@ public class GalleryExtensionEntryTests
         Assert.AreEqual("Sample title", entry.Title);
         Assert.AreEqual("Sample description", entry.Description);
         Assert.AreEqual("README.md", entry.Readme);
+        CollectionAssert.AreEqual(ExpectedScreenshotUrls, entry.ScreenshotUrls);
     }
 
     [TestMethod]

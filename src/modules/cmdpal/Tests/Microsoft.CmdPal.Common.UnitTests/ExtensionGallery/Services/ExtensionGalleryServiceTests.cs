@@ -207,6 +207,40 @@ public class ExtensionGalleryServiceTests
     }
 
     [TestMethod]
+    public async Task FetchExtensionsAsync_ResolvesRelativeScreenshotUrlsFromWrappedFileFeed()
+    {
+        var feedDirectory = CreateTempDirectory("feed");
+        var cacheDirectory = CreateTempDirectory("cache");
+        var expectedFirstScreenshotPath = Path.Combine(feedDirectory, "extensions", "sample-extension", "screenshots", "1.png");
+        var expectedSecondScreenshotPath = Path.Combine(feedDirectory, "extensions", "sample-extension", "screenshots", "2.png");
+        WriteGalleryFeed(
+            feedDirectory,
+            "sample-extension",
+            "Sample extension",
+            screenshotUrls:
+            [
+                "extensions/sample-extension/screenshots/1.png",
+                "extensions/sample-extension/screenshots/2.png",
+            ],
+            createLocalScreenshots: true);
+
+        var feedUrl = ToFeedUri(feedDirectory);
+        using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, innerHandler: null);
+
+        var result = await serviceHandle.Service.FetchExtensionsAsync();
+
+        Assert.IsFalse(result.HasError);
+        Assert.AreEqual(1, result.Extensions.Count);
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                new Uri(expectedFirstScreenshotPath).AbsoluteUri,
+                new Uri(expectedSecondScreenshotPath).AbsoluteUri,
+            },
+            result.Extensions[0].ScreenshotUrls);
+    }
+
+    [TestMethod]
     public async Task FetchExtensionsAsync_ParsesWrappedGalleryFormat_WithInlineExtensions()
     {
         var feedDirectory = CreateTempDirectory("feed");
@@ -517,7 +551,9 @@ public class ExtensionGalleryServiceTests
         string extensionId,
         string title,
         string? iconUrl = null,
-        bool createLocalIcon = false)
+        bool createLocalIcon = false,
+        IReadOnlyList<string>? screenshotUrls = null,
+        bool createLocalScreenshots = false)
     {
         var extensionDirectory = Path.Combine(rootDirectory, "extensions", extensionId);
         Directory.CreateDirectory(extensionDirectory);
@@ -527,6 +563,17 @@ public class ExtensionGalleryServiceTests
             File.WriteAllBytes(Path.Combine(extensionDirectory, "icon.png"), [0x01, 0x02, 0x03]);
         }
 
+        if (createLocalScreenshots && screenshotUrls is not null)
+        {
+            for (var i = 0; i < screenshotUrls.Count; i++)
+            {
+                var relativePath = screenshotUrls[i].Replace('/', Path.DirectorySeparatorChar);
+                var screenshotPath = Path.Combine(rootDirectory, relativePath);
+                Directory.CreateDirectory(Path.GetDirectoryName(screenshotPath)!);
+                File.WriteAllBytes(screenshotPath, [0x01, 0x02, 0x03]);
+            }
+        }
+
         var entry = new GalleryExtensionEntry
         {
             Id = extensionId,
@@ -534,6 +581,7 @@ public class ExtensionGalleryServiceTests
             Description = "Sample description",
             Author = new GalleryAuthor { Name = "Sample author" },
             IconUrl = iconUrl,
+            ScreenshotUrls = screenshotUrls?.ToList() ?? [],
             InstallSources = [],
         };
 

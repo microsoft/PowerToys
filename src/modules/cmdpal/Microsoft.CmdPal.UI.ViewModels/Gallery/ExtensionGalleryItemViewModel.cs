@@ -61,6 +61,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         _winGetOperationTrackerService = winGetOperationTrackerService;
         _installSourcesByType = BuildInstallSourceLookup(entry.InstallSources);
         (Sources, _sourcesByKind) = BuildSourceInfos(_installSourcesByType, entry.Homepage);
+        Screenshots = BuildScreenshots(entry.ScreenshotUrls);
 
         var resolvedIconUri = ResolveIconUri();
         IconUri = resolvedIconUri ?? PlaceholderIconUri;
@@ -101,6 +102,10 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         get => field ??= CreateImageSource(IconUri);
         private set => SetProperty(ref field, value);
     }
+
+    public IReadOnlyList<ExtensionGalleryScreenshotViewModel> Screenshots { get; }
+
+    public bool HasScreenshots => Screenshots.Count > 0;
 
     public IReadOnlyList<GallerySourceInfo> Sources { get; }
 
@@ -486,6 +491,32 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
             || uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
             || uri.Scheme.Equals(Uri.UriSchemeFile, StringComparison.OrdinalIgnoreCase)
             || uri.Scheme.Equals("ms-appx", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static IReadOnlyList<ExtensionGalleryScreenshotViewModel> BuildScreenshots(List<string>? screenshotUrls)
+    {
+        if (screenshotUrls is null || screenshotUrls.Count == 0)
+        {
+            return [];
+        }
+
+        List<ExtensionGalleryScreenshotViewModel> screenshots = [];
+        HashSet<string> seenUris = new(OrdinalIgnoreCase);
+        for (var i = 0; i < screenshotUrls.Count; i++)
+        {
+            var screenshotUrl = ToNullIfWhiteSpace(screenshotUrls[i]);
+            if (screenshotUrl is null
+                || !Uri.TryCreate(screenshotUrl, UriKind.Absolute, out var screenshotUri)
+                || !IsSupportedIconUri(screenshotUri)
+                || !seenUris.Add(screenshotUri.AbsoluteUri))
+            {
+                continue;
+            }
+
+            screenshots.Add(new ExtensionGalleryScreenshotViewModel(screenshotUri, screenshots.Count));
+        }
+
+        return screenshots;
     }
 
     private GallerySourceInfo? GetSource(string sourceKind)

@@ -178,6 +178,7 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService
     private static void NormalizeEntry(GalleryExtensionEntry entry, Uri? baseDirectoryUri)
     {
         entry.IconUrl = NormalizeOptionalUri(entry.IconUrl, baseDirectoryUri);
+        entry.ScreenshotUrls = NormalizeOptionalUris(entry.ScreenshotUrls, baseDirectoryUri);
     }
 
     private static string? NormalizeOptionalUri(string? value, Uri? baseDirectoryUri)
@@ -204,6 +205,26 @@ public sealed partial class ExtensionGalleryService : IExtensionGalleryService
         }
 
         return candidate.AbsoluteUri;
+    }
+
+    private static List<string> NormalizeOptionalUris(List<string>? values, Uri? baseDirectoryUri)
+    {
+        if (values is null || values.Count == 0)
+        {
+            return [];
+        }
+
+        List<string> normalizedValues = [];
+        for (var i = 0; i < values.Count; i++)
+        {
+            var normalizedValue = NormalizeOptionalUri(values[i], baseDirectoryUri);
+            if (normalizedValue is not null)
+            {
+                normalizedValues.Add(normalizedValue);
+            }
+        }
+
+        return normalizedValues;
     }
 
     private static string? ToNullIfWhiteSpace(string? value)

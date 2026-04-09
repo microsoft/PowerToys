@@ -306,6 +306,71 @@
                 </StackPanel>
                 <ScrollViewer Grid.Row="4">
                     <StackPanel Spacing="16">
+                        <Grid
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource OverlayCornerRadius}"
+                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasScreenshots), Mode=OneWay, FallbackValue=Collapsed}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock
+                                Margin="16,12,16,12"
+                                FontWeight="SemiBold"
+                                Text="Screenshots" />
+                            <Rectangle
+                                Grid.Row="1"
+                                Height="1"
+                                HorizontalAlignment="Stretch"
+                                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+                            <ScrollViewer
+                                Grid.Row="2"
+                                HorizontalScrollBarVisibility="Auto"
+                                HorizontalScrollMode="Enabled"
+                                VerticalScrollBarVisibility="Disabled"
+                                VerticalScrollMode="Disabled"
+                                ZoomMode="Disabled">
+                                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Screenshots, Mode=OneWay}">
+                                    <ItemsRepeater.Layout>
+                                        <StackLayout Orientation="Horizontal" Spacing="12" />
+                                    </ItemsRepeater.Layout>
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate x:DataType="viewModels:ExtensionGalleryScreenshotViewModel">
+                                            <Button
+                                                Padding="0"
+                                                Margin="16"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Click="ScreenshotThumbnail_Click"
+                                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                                ElementSoundMode="FocusOnly"
+                                                HorizontalAlignment="Left"
+                                                Tag="{x:Bind}"
+                                                ToolTipService.ToolTip="{x:Bind DisplayName}">
+                                                <Border
+                                                    Width="320"
+                                                    Height="200"
+                                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource OverlayCornerRadius}">
+                                                    <Image
+                                                        AutomationProperties.Name="{x:Bind DisplayName}"
+                                                        Source="{x:Bind ImageSource}"
+                                                        Stretch="Uniform" />
+                                                </Border>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+                            </ScrollViewer>
+                        </Grid>
+
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -375,6 +440,115 @@
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
+        </Grid>
+
+        <Grid
+            x:Name="ScreenshotViewerOverlay"
+            IsTabStop="True"
+            KeyDown="ScreenshotViewerOverlay_KeyDown"
+            PointerWheelChanged="ScreenshotViewerOverlay_PointerWheelChanged"
+            Visibility="{x:Bind ScreenshotViewerVisibility, Mode=OneWay}">
+            <Grid.Background>
+                <AcrylicBrush
+                    AlwaysUseFallback="False"
+                    FallbackColor="#CC202020"
+                    TintColor="Black"
+                    TintLuminosityOpacity="0.5"
+                    TintOpacity="0.7" />
+            </Grid.Background>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="16,16,16,0">
+                <Button
+                    Width="40"
+                    Height="40"
+                    HorizontalAlignment="Right"
+                    Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}"
+                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    Click="CloseScreenshotViewerButton_Click"
+                    CornerRadius="20"
+                    Style="{StaticResource SubtleButtonStyle}"
+                    ToolTipService.ToolTip="Close screenshot viewer">
+                    <FontIcon FontSize="14" Glyph="&#xE711;" />
+                </Button>
+            </Grid>
+
+            <Grid Grid.Row="1" Margin="24,16,24,24">
+                <Button
+                    Width="48"
+                    Height="48"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}"
+                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    Click="PreviousScreenshotButton_Click"
+                    CornerRadius="24"
+                    Style="{StaticResource SubtleButtonStyle}"
+                    ToolTipService.ToolTip="Previous screenshot"
+                    Visibility="{x:Bind ScreenshotViewerNavigationVisibility, Mode=OneWay}">
+                    <FontIcon FontSize="18" Glyph="&#xE76B;" />
+                </Button>
+
+                <Border
+                    x:Name="ScreenshotViewerImageHost"
+                    Margin="72,0"
+                    Padding="16"
+                    Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
+                    BorderBrush="{ThemeResource ControlStrokeColorSecondaryBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource OverlayCornerRadius}">
+                    <Image
+                        x:Name="ScreenshotViewerImage"
+                        AutomationProperties.Name="{x:Bind CurrentScreenshotDisplayName, Mode=OneWay}"
+                        Source="{x:Bind CurrentScreenshotViewerSource, Mode=OneWay}"
+                        Stretch="Uniform" />
+                </Border>
+
+                <Button
+                    Width="48"
+                    Height="48"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}"
+                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    Click="NextScreenshotButton_Click"
+                    CornerRadius="24"
+                    Style="{StaticResource SubtleButtonStyle}"
+                    ToolTipService.ToolTip="Next screenshot"
+                    Visibility="{x:Bind ScreenshotViewerNavigationVisibility, Mode=OneWay}">
+                    <FontIcon FontSize="18" Glyph="&#xE76C;" />
+                </Button>
+            </Grid>
+
+            <Border
+                Grid.Row="2"
+                Margin="0,0,0,24"
+                Padding="20,12"
+                HorizontalAlignment="Center"
+                Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="12">
+                <StackPanel HorizontalAlignment="Center" Spacing="2">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="{x:Bind CurrentScreenshotDisplayName, Mode=OneWay}" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind CurrentScreenshotPositionText, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
         </Grid>
     </Grid>
 </Page>
