@@ -16,7 +16,13 @@ namespace KeyboardManagerEditorUI.Helpers
             try
             {
                 var processes = Process.GetProcessesByName(KeyboardManagerEngineProcessName);
-                return processes.Length > 0;
+                bool running = processes.Length > 0;
+                foreach (var process in processes)
+                {
+                    process.Dispose();
+                }
+
+                return running;
             }
             catch (Exception)
             {
@@ -29,7 +35,13 @@ namespace KeyboardManagerEditorUI.Helpers
             try
             {
                 var processes = Process.GetProcessesByName("PowerToys");
-                return processes.Length > 0;
+                bool running = processes.Length > 0;
+                foreach (var process in processes)
+                {
+                    process.Dispose();
+                }
+
+                return running;
             }
             catch (Exception)
             {
