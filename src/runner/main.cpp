@@ -550,20 +550,31 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         modules();
 
         std::thread{ [] {
-            auto state = UpdateState::read();
-            if (state.state == UpdateState::readyToInstall && !state.downloadedInstallerFilename.empty())
+            try
             {
-                // Preserve the pending installer but clean up all other old update files
-                updating::cleanup_updates(state.downloadedInstallerFilename);
-            }
-            else
-            {
-                if (state.state == UpdateState::readyToInstall)
+                auto state = UpdateState::read();
+                if (state.state == UpdateState::readyToInstall && !state.downloadedInstallerFilename.empty())
                 {
-                    Logger::warn("Update state is readyToInstall but downloadedInstallerFilename is empty");
+                    // Preserve the pending installer but clean up all other old update files
+                    updating::cleanup_updates(state.downloadedInstallerFilename);
                 }
+                else
+                {
+                    if (state.state == UpdateState::readyToInstall)
+                    {
+                        Logger::warn("Update state is readyToInstall but downloadedInstallerFilename is empty");
+                    }
 
-                updating::cleanup_updates();
+                    updating::cleanup_updates();
+                }
+            }
+            catch (const std::exception& e)
+            {
+                Logger::error("Failed to clean up old update files: {}", e.what());
+            }
+            catch (...)
+            {
+                Logger::error("Failed to clean up old update files: unknown exception");
             }
         } }.detach();
 

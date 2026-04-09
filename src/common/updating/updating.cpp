@@ -197,13 +197,14 @@ namespace updating
     void cleanup_updates(const std::wstring& preserveFileName)
     {
         auto update_dir = updating::get_pending_updates_path();
-        if (std::filesystem::exists(update_dir))
+        std::error_code ec;
+        if (std::filesystem::exists(update_dir, ec) && !ec)
         {
             std::wstring preserveLower = preserveFileName;
             std::transform(preserveLower.begin(), preserveLower.end(), preserveLower.begin(), ::towlower);
 
             // Msi and exe files
-            for (const auto& entry : std::filesystem::directory_iterator(update_dir))
+            for (const auto& entry : std::filesystem::directory_iterator(update_dir, ec))
             {
                 auto entryPath = entry.path().wstring();
                 std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
