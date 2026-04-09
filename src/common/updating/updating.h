@@ -41,7 +41,7 @@ namespace updating
     wil::task<github_version_result> get_github_version_info_async(bool prerelease = false);
     wil::task<std::optional<std::filesystem::path>> download_new_version_async(new_version_download_info new_version);
     std::filesystem::path get_pending_updates_path();
-    void cleanup_updates();
+    void cleanup_updates(const std::wstring& preserveFileName = {});
 
     // non-localized
     constexpr inline std::wstring_view INSTALLER_FILENAME_PATTERN = L"powertoyssetup";

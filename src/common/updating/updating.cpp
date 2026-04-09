@@ -194,11 +194,14 @@ namespace updating
         co_return download_success ? installer_download_path : std::nullopt;
     }
 
-    void cleanup_updates()
+    void cleanup_updates(const std::wstring& preserveFileName)
     {
         auto update_dir = updating::get_pending_updates_path();
         if (std::filesystem::exists(update_dir))
         {
+            std::wstring preserveLower = preserveFileName;
+            std::transform(preserveLower.begin(), preserveLower.end(), preserveLower.begin(), ::towlower);
+
             // Msi and exe files
             for (const auto& entry : std::filesystem::directory_iterator(update_dir))
             {
@@ -207,6 +210,16 @@ namespace updating
 
                 if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
                 {
+                    if (!preserveLower.empty())
+                    {
+                        auto entryFilename = entry.path().filename().wstring();
+                        std::transform(entryFilename.begin(), entryFilename.end(), entryFilename.begin(), ::towlower);
+                        if (entryFilename == preserveLower)
+                        {
+                            continue;
+                        }
+                    }
+
                     std::error_code err;
                     std::filesystem::remove(entry, err);
                     if (err.value())
