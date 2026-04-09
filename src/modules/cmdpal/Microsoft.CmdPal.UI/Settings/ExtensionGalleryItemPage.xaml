@@ -257,7 +257,6 @@
                     <DropDownButton
                         x:Name="InstallBtn"
                         MinWidth="172"
-                        Padding="12,16"
                         HorizontalContentAlignment="Left"
                         Content="Install"
                         FontWeight="SemiBold"
@@ -328,47 +327,35 @@
                                 HorizontalAlignment="Stretch"
                                 Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
 
-                            <ScrollViewer
+                            <ItemsView
+                                x:Name="ScreenshotsItemsView"
                                 Grid.Row="2"
-                                HorizontalScrollBarVisibility="Auto"
-                                HorizontalScrollMode="Enabled"
-                                VerticalScrollBarVisibility="Disabled"
-                                VerticalScrollMode="Disabled"
-                                ZoomMode="Disabled">
-                                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Screenshots, Mode=OneWay}">
-                                    <ItemsRepeater.Layout>
-                                        <StackLayout Orientation="Horizontal" Spacing="12" />
-                                    </ItemsRepeater.Layout>
-                                    <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="viewModels:ExtensionGalleryScreenshotViewModel">
-                                            <Button
-                                                Padding="0"
-                                                Margin="16"
-                                                Background="Transparent"
-                                                BorderThickness="0"
-                                                Click="ScreenshotThumbnail_Click"
-                                                CornerRadius="{StaticResource OverlayCornerRadius}"
-                                                ElementSoundMode="FocusOnly"
-                                                HorizontalAlignment="Left"
-                                                Tag="{x:Bind}"
-                                                ToolTipService.ToolTip="{x:Bind DisplayName}">
-                                                <Border
-                                                    Width="320"
-                                                    Height="200"
-                                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                                    BorderThickness="1"
-                                                    CornerRadius="{StaticResource OverlayCornerRadius}">
-                                                    <Image
-                                                        AutomationProperties.Name="{x:Bind DisplayName}"
-                                                        Source="{x:Bind ImageSource}"
-                                                        Stretch="Uniform" />
-                                                </Border>
-                                            </Button>
-                                        </DataTemplate>
-                                    </ItemsRepeater.ItemTemplate>
-                                </ItemsRepeater>
-                            </ScrollViewer>
+                                Padding="16"
+                                IsItemInvokedEnabled="True"
+                                ItemInvoked="ScreenshotsItemsView_ItemInvoked"
+                                ItemsSource="{x:Bind ViewModel.Screenshots, Mode=OneWay}"
+                                SelectionMode="None">
+                                <ItemsView.Layout>
+                                    <StackLayout Orientation="Horizontal" Spacing="12" />
+                                </ItemsView.Layout>
+                                <ItemsView.ItemTemplate>
+                                    <DataTemplate x:DataType="viewModels:ExtensionGalleryScreenshotViewModel">
+                                        <ItemContainer AutomationProperties.Name="{x:Bind DisplayName}" ToolTipService.ToolTip="{x:Bind DisplayName}">
+                                            <Border
+                                                Height="200"
+                                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource OverlayCornerRadius}">
+                                                <Image
+                                                    AutomationProperties.Name="{x:Bind DisplayName}"
+                                                    Source="{x:Bind ImageSource}"
+                                                    Stretch="Uniform" />
+                                            </Border>
+                                        </ItemContainer>
+                                    </DataTemplate>
+                                </ItemsView.ItemTemplate>
+                            </ItemsView>
                         </Grid>
 
                         <Grid>

@@ -7,6 +7,7 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Gallery;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -47,12 +48,11 @@ public sealed partial class ExtensionGalleryItemPage : Page
         ViewModel?.OpenInstallUrlCommand.Execute(null);
     }
 
-    private void ScreenshotThumbnail_Click(object sender, RoutedEventArgs e)
+    private void ScreenshotsItemsView_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
     {
-        if (sender is Button button
-            && button.Tag is ExtensionGalleryScreenshotViewModel screenshot)
+        if (args.InvokedItem is ExtensionGalleryScreenshotViewModel screenshot)
         {
-            PrepareScreenshotOpenAnimation(button.Content as UIElement);
+            PrepareScreenshotOpenAnimation(sender, screenshot);
             WeakReferenceMessenger.Default.Send(
                 new OpenExtensionGalleryScreenshotViewerMessage(
                     ViewModel?.Screenshots ?? [],
@@ -60,13 +60,35 @@ public sealed partial class ExtensionGalleryItemPage : Page
         }
     }
 
-    private static void PrepareScreenshotOpenAnimation(UIElement? sourceElement)
+    private static void PrepareScreenshotOpenAnimation(ItemsView itemsView, ExtensionGalleryScreenshotViewModel screenshot)
     {
-        if (sourceElement is null)
+        var repeater = FindDescendant<ItemsRepeater>(itemsView);
+        var element = repeater?.TryGetElement(screenshot.Index);
+        if (element is UIElement sourceElement)
         {
-            return;
+            ConnectedAnimationService.GetForCurrentView().PrepareToAnimate(OpenExtensionGalleryScreenshotViewerMessage.ConnectedAnimationKey, sourceElement);
+        }
+    }
+
+    private static T? FindDescendant<T>(DependencyObject parent)
+        where T : DependencyObject
+    {
+        var count = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T found)
+            {
+                return found;
+            }
+
+            var result = FindDescendant<T>(child);
+            if (result is not null)
+            {
+                return result;
+            }
         }
 
-        ConnectedAnimationService.GetForCurrentView().PrepareToAnimate(OpenExtensionGalleryScreenshotViewerMessage.ConnectedAnimationKey, sourceElement);
+        return null;
     }
 }
