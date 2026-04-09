@@ -1037,9 +1037,7 @@ NORMALDISPLAY
 NORMALUSER
 NOSEARCH
 NOSENDCHANGING
-NOSIZE
 notdefault
-Nosize
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
@@ -1778,7 +1776,6 @@ webpage
 websites
 wekyb
 wgpocpl
-WIC
 wic
 wifi
 winapi
