@@ -383,6 +383,31 @@ static void ShowTrayMenu(HWND hwnd) {
     DestroyMenu(hMenu);
 }
 
+static bool IsSystemClass(HWND hwnd) {
+    wchar_t cls[64] = {};
+    GetClassNameW(hwnd, cls, 64);
+    return (wcscmp(cls, L"Progman") == 0 || wcscmp(cls, L"Shell_TrayWnd") == 0);
+}
+
+static bool IsExcluded(HWND hwnd) {
+    if (IsSystemClass(hwnd))
+        return true;
+
+    if (g_excludedApps.empty())
+        return false;
+
+    std::wstring processPath = get_process_path(hwnd);
+    CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
+
+    if (find_app_name_in_path(processPath, g_excludedApps))
+        return true;
+
+    if (check_excluded_app_with_title(hwnd, g_excludedApps))
+        return true;
+
+    return false;
+}
+
 // ---------------------------------------------------------------------------
 // Hook callbacks
 // ---------------------------------------------------------------------------
@@ -393,6 +418,13 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         // Ignore injected events (includes our own replayed keys)
         if (kb->flags & LLKHF_INJECTED)
             goto forward;
+
+        // Skip processing if the foreground window is excluded
+        {
+            HWND fg = GetForegroundWindow();
+            if (fg && IsExcluded(fg))
+                goto forward;
+        }
 
         bool isAltKey = (kb->vkCode == VK_MENU || kb->vkCode == VK_LMENU || kb->vkCode == VK_RMENU);
 
@@ -441,31 +473,6 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
 forward:
     return CallNextHookEx(g_hhkKeyboard, nCode, wParam, lParam);
-}
-
-static bool IsSystemClass(HWND hwnd) {
-    wchar_t cls[64] = {};
-    GetClassNameW(hwnd, cls, 64);
-    return (wcscmp(cls, L"Progman") == 0 || wcscmp(cls, L"Shell_TrayWnd") == 0);
-}
-
-static bool IsExcluded(HWND hwnd) {
-    if (IsSystemClass(hwnd))
-        return true;
-
-    if (g_excludedApps.empty())
-        return false;
-
-    std::wstring processPath = get_process_path(hwnd);
-    CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
-
-    if (find_app_name_in_path(processPath, g_excludedApps))
-        return true;
-
-    if (check_excluded_app_with_title(hwnd, g_excludedApps))
-        return true;
-
-    return false;
 }
 
 static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
