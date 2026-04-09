@@ -1,11 +1,6 @@
 #include "pch.h"
 #include "Helpers.h"
-#include <atomic>
-#include <condition_variable>
-#include <queue>
 #include <sstream>
-#include <mutex>
-#include <thread>
 
 #include <common/interop/shared_constants.h>
 #include <common/utils/process_path.h>
@@ -314,238 +309,72 @@ namespace Helpers
         }
     }
 
-    void SetTextKeyEvents(std::vector<INPUT>& keyEventArray, const std::wstring& remapping)
+    // Sends text input directly via SendInput, handling newlines by sending
+    // Shift+Enter. Each character is sent individually to
+    // avoid key-down/key-up desync that causes repeated or dropped characters
+    // when large batches of KEYEVENTF_UNICODE events are sent at once.
+    void SendTextInput(const std::wstring& text)
     {
-        for (wchar_t c : remapping)
+        for (size_t i = 0; i < text.size(); ++i)
         {
-            for (DWORD flag : { 0, KEYEVENTF_KEYUP })
+            wchar_t c = text[i];
+
+            // Handle \r\n as a single newline
+            if (c == L'\r' && i + 1 < text.size() && text[i + 1] == L'\n')
             {
-                INPUT input{};
-                input.type = INPUT_KEYBOARD;
-                input.ki.dwFlags = KEYEVENTF_UNICODE | flag;
-                input.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-                input.ki.wScan = c;
-                keyEventArray.push_back(input);
+                ++i;
             }
-        }
-    }
 
-    // Helper to set clipboard text. Returns true on success.
-    static bool SetClipboardText(const std::wstring& text)
-    {
-        if (!OpenClipboard(nullptr))
-        {
-            return false;
-        }
-
-        EmptyClipboard();
-
-        size_t byteSize = (text.size() + 1) * sizeof(wchar_t);
-        HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, byteSize);
-        if (!hMem)
-        {
-            CloseClipboard();
-            return false;
-        }
-
-        wchar_t* pMem = static_cast<wchar_t*>(GlobalLock(hMem));
-        if (!pMem)
-        {
-            GlobalFree(hMem);
-            CloseClipboard();
-            return false;
-        }
-
-        wcscpy_s(pMem, text.size() + 1, text.c_str());
-        GlobalUnlock(hMem);
-
-        if (!SetClipboardData(CF_UNICODETEXT, hMem))
-        {
-            GlobalFree(hMem);
-            CloseClipboard();
-            return false;
-        }
-
-        // Exclude this entry from clipboard history and cloud clipboard so the
-        // temporary paste text does not pollute the user's clipboard history.
-        static const UINT excludeFromHistory = RegisterClipboardFormat(L"ExcludeClipboardContentFromMonitorProcessing");
-        if (excludeFromHistory != 0)
-        {
-            HGLOBAL hExclude = GlobalAlloc(GMEM_MOVEABLE, sizeof(DWORD));
-            if (hExclude)
+            if (c == L'\r' || c == L'\n')
             {
-                SetClipboardData(excludeFromHistory, hExclude);
+                // Send Shift+Enter instead of bare Enter so that chat apps
+                // (Teams, Slack, Discord, etc.) insert a new line rather than
+                // submitting the message. In plain text editors both behave
+                // the same.
+                INPUT returnInputs[4]{};
+
+                // Shift down
+                returnInputs[0].type = INPUT_KEYBOARD;
+                returnInputs[0].ki.wVk = VK_SHIFT;
+                returnInputs[0].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_SHIFT, MAPVK_VK_TO_VSC));
+                returnInputs[0].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+
+                // Return down
+                returnInputs[1].type = INPUT_KEYBOARD;
+                returnInputs[1].ki.wVk = VK_RETURN;
+                returnInputs[1].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_RETURN, MAPVK_VK_TO_VSC));
+                returnInputs[1].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+
+                // Return up
+                returnInputs[2].type = INPUT_KEYBOARD;
+                returnInputs[2].ki.wVk = VK_RETURN;
+                returnInputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+                returnInputs[2].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_RETURN, MAPVK_VK_TO_VSC));
+                returnInputs[2].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+
+                // Shift up
+                returnInputs[3].type = INPUT_KEYBOARD;
+                returnInputs[3].ki.wVk = VK_SHIFT;
+                returnInputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+                returnInputs[3].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_SHIFT, MAPVK_VK_TO_VSC));
+                returnInputs[3].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+
+                SendInput(ARRAYSIZE(returnInputs), returnInputs, sizeof(INPUT));
+                continue;
             }
-        }
 
-        CloseClipboard();
-        return true;
-    }
+            INPUT charInputs[2]{};
+            charInputs[0].type = INPUT_KEYBOARD;
+            charInputs[0].ki.dwFlags = KEYEVENTF_UNICODE;
+            charInputs[0].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+            charInputs[0].ki.wScan = c;
 
-    // Simulate Ctrl+V paste keystroke, tagged with KBM flag so our own hook
-    // passes it through without re-intercepting.
-    static void SendPasteKeystroke()
-    {
-        INPUT pasteInputs[4]{};
+            charInputs[1].type = INPUT_KEYBOARD;
+            charInputs[1].ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
+            charInputs[1].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+            charInputs[1].ki.wScan = c;
 
-        pasteInputs[0].type = INPUT_KEYBOARD;
-        pasteInputs[0].ki.wVk = VK_CONTROL;
-        pasteInputs[0].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_CONTROL, MAPVK_VK_TO_VSC));
-        pasteInputs[0].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-
-        pasteInputs[1].type = INPUT_KEYBOARD;
-        pasteInputs[1].ki.wVk = 'V';
-        pasteInputs[1].ki.wScan = static_cast<WORD>(MapVirtualKey('V', MAPVK_VK_TO_VSC));
-        pasteInputs[1].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-
-        pasteInputs[2].type = INPUT_KEYBOARD;
-        pasteInputs[2].ki.wVk = 'V';
-        pasteInputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
-        pasteInputs[2].ki.wScan = static_cast<WORD>(MapVirtualKey('V', MAPVK_VK_TO_VSC));
-        pasteInputs[2].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-
-        pasteInputs[3].type = INPUT_KEYBOARD;
-        pasteInputs[3].ki.wVk = VK_CONTROL;
-        pasteInputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
-        pasteInputs[3].ki.wScan = static_cast<WORD>(MapVirtualKey(VK_CONTROL, MAPVK_VK_TO_VSC));
-        pasteInputs[3].ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
-
-        SendInput(ARRAYSIZE(pasteInputs), pasteInputs, sizeof(INPUT));
-    }
-
-    // Single background worker that processes clipboard-paste requests
-    // sequentially.  Keeping one thread avoids creating/tearing-down a
-    // thread on every keypress and naturally serializes clipboard access
-    // without a separate mutex.
-    static std::queue<std::wstring> s_clipboardQueue;
-    static std::mutex s_queueMutex;
-    static std::condition_variable s_queueCV;
-    static std::once_flag s_workerInitFlag;
-    static std::atomic<bool> s_shutdown{ false };
-    static std::thread s_workerThread;
-
-    static void ClipboardWorkerLoop()
-    {
-        while (true)
-        {
-            try
-            {
-                std::wstring text;
-                {
-                    std::unique_lock<std::mutex> lock(s_queueMutex);
-                    s_queueCV.wait(lock, [] { return !s_clipboardQueue.empty() || s_shutdown.load(); });
-                    if (s_shutdown.load())
-                    {
-                        break;
-                    }
-                    text = std::move(s_clipboardQueue.front());
-                    s_clipboardQueue.pop();
-                }
-
-                // Snapshot current clipboard state
-                bool hadOriginalText = false;
-                std::wstring originalClipboardText;
-                if (OpenClipboard(nullptr))
-                {
-                    if (IsClipboardFormatAvailable(CF_UNICODETEXT))
-                    {
-                        HANDLE hData = GetClipboardData(CF_UNICODETEXT);
-                        if (hData)
-                        {
-                            wchar_t* pText = static_cast<wchar_t*>(GlobalLock(hData));
-                            if (pText)
-                            {
-                                originalClipboardText = pText;
-                                hadOriginalText = true;
-                                GlobalUnlock(hData);
-                            }
-                        }
-                    }
-                    CloseClipboard();
-                }
-
-                // Place our text on the clipboard (with history exclusion)
-                if (!SetClipboardText(text))
-                {
-                    continue;
-                }
-
-                SendPasteKeystroke();
-
-                // Ctrl+V is asynchronous (SendInput queues the input), so the
-                // target app needs time to process the keystroke and read the
-                // clipboard before we restore the original content.
-                Sleep(100);
-
-                if (hadOriginalText)
-                {
-                    SetClipboardText(originalClipboardText);
-                }
-                else
-                {
-                    if (OpenClipboard(nullptr))
-                    {
-                        EmptyClipboard();
-                        CloseClipboard();
-                    }
-                }
-            }
-            catch (...)
-            {
-                OutputDebugStringA("KBM ClipboardWorker exception caught, continuing\n");
-            }
-        }
-    }
-
-    // Inner implementation that may throw C++ exceptions.
-    static bool SendTextViaClipboardImpl(const std::wstring& text)
-    {
-        // Lazily start the worker on first use.
-        std::call_once(s_workerInitFlag, [] {
-            s_workerThread = std::thread(ClipboardWorkerLoop);
-            std::atexit([] {
-                {
-                    std::lock_guard<std::mutex> lock(s_queueMutex);
-                    s_shutdown.store(true);
-                }
-                s_queueCV.notify_one();
-                if (s_workerThread.joinable())
-                {
-                    s_workerThread.join();
-                }
-            });
-        });
-
-        // Enqueue the text and return immediately so we never block the
-        // low-level keyboard hook (WH_KEYBOARD_LL).
-        {
-            std::lock_guard<std::mutex> lock(s_queueMutex);
-            if (!s_clipboardQueue.empty())
-            {
-                return true;
-            }
-            s_clipboardQueue.push(text);
-        }
-        s_queueCV.notify_one();
-
-        return true;
-    }
-
-    // Function to send text via clipboard paste (Ctrl+V).
-    // Saves the previous clipboard content and restores it asynchronously.
-    // This function MUST NOT throw — it's called from noexcept hook handlers.
-    // We use __try/__except (SEH) because C++ try/catch may be optimized away
-    // in Release builds when the caller is noexcept.
-    bool SendTextViaClipboard(const std::wstring& text) noexcept
-    {
-        __try
-        {
-            return SendTextViaClipboardImpl(text);
-        }
-        __except (EXCEPTION_EXECUTE_HANDLER)
-        {
-            OutputDebugStringA("KBM SendTextViaClipboard SEH exception caught\n");
-            return false;
+            SendInput(ARRAYSIZE(charInputs), charInputs, sizeof(INPUT));
         }
     }
 
