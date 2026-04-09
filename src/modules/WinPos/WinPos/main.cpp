@@ -399,12 +399,14 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         if (isAltKey) {
             if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
                 g_altPressed = true;
-                if (g_shouldAbsorbAlt && !g_altAbsorbed) {
-                    g_altAbsorbed      = true;
-                    g_dragConsumedAlt  = false;
-                    g_absorbedVk       = kb->vkCode;
-                    g_absorbedScanCode = kb->scanCode;
-                    g_absorbedFlags    = kb->flags;
+                if (g_shouldAbsorbAlt) {
+                    if (!g_altAbsorbed) {
+                        g_altAbsorbed      = true;
+                        g_dragConsumedAlt  = false;
+                        g_absorbedVk       = kb->vkCode;
+                        g_absorbedScanCode = kb->scanCode;
+                        g_absorbedFlags    = kb->flags;
+                    }
                     return 1; // swallow the Alt keydown
                 }
             } else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP) {
