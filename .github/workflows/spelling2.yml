@@ -135,6 +135,7 @@ jobs:
             cspell:cpp/compiler-msvc.txt
             cspell:python/common/extra.txt
             cspell:scala/scala.txt
+          ignored: ignored-expect-variant
 
   comment-push:
     name: Report (Push)
