@@ -407,6 +407,60 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
     return result;
 }
 
+bool MappingConfiguration::LoadExpandMappings(const json::JsonObject& jsonData)
+{
+    bool result = true;
+
+    try
+    {
+        expandMappings.clear();
+
+        if (!jsonData.HasKey(KeyboardManagerConstants::ExpandMappingsSettingName))
+        {
+            return result;
+        }
+
+        auto expandArray = jsonData.GetNamedArray(KeyboardManagerConstants::ExpandMappingsSettingName);
+        for (const auto& it : expandArray)
+        {
+            try
+            {
+                auto obj = it.GetObjectW();
+                ExpandMapping mapping;
+                mapping.abbreviation = obj.GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName).c_str();
+                mapping.expandedText = obj.GetNamedString(KeyboardManagerConstants::ExpandedTextSettingName).c_str();
+
+                if (obj.HasKey(KeyboardManagerConstants::ExpandTriggerKeySettingName))
+                {
+                    mapping.triggerKey = static_cast<DWORD>(obj.GetNamedNumber(KeyboardManagerConstants::ExpandTriggerKeySettingName));
+                }
+
+                if (obj.HasKey(KeyboardManagerConstants::TargetAppSettingName))
+                {
+                    mapping.appName = obj.GetNamedString(KeyboardManagerConstants::TargetAppSettingName).c_str();
+                }
+
+                if (!mapping.abbreviation.empty() && !mapping.expandedText.empty())
+                {
+                    expandMappings.push_back(std::move(mapping));
+                }
+            }
+            catch (...)
+            {
+                Logger::error(L"Improper expand mapping JSON. Try the next mapping.");
+                result = false;
+            }
+        }
+    }
+    catch (...)
+    {
+        Logger::error(L"Improper JSON format for expand mappings. Skip.");
+        result = false;
+    }
+
+    return result;
+}
+
 bool MappingConfiguration::LoadSettings()
 {
     Logger::trace(L"SettingsHelper::LoadSettings()");
@@ -435,6 +489,7 @@ bool MappingConfiguration::LoadSettings()
         result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsSettingName) && result;
         result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsToTextSettingName) && result;
         result = LoadSingleKeyToTextRemaps(*configFile) && result;
+        result = LoadExpandMappings(*configFile) && result;
 
         return result;
     }
@@ -632,10 +687,25 @@ bool MappingConfiguration::SaveSettingsToFile()
 
     remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysArray);
     remapKeysToText.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysToTextArray);
+    json::JsonArray expandMappingsArray;
+    for (const auto& em : expandMappings)
+    {
+        json::JsonObject obj;
+        obj.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(em.abbreviation));
+        obj.SetNamedValue(KeyboardManagerConstants::ExpandedTextSettingName, json::value(em.expandedText));
+        obj.SetNamedValue(KeyboardManagerConstants::ExpandTriggerKeySettingName, json::JsonValue::CreateNumberValue(static_cast<double>(em.triggerKey)));
+        if (!em.appName.empty())
+        {
+            obj.SetNamedValue(KeyboardManagerConstants::TargetAppSettingName, json::value(em.appName));
+        }
+        expandMappingsArray.Append(obj);
+    }
+
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysToTextSettingName, remapKeysToText);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsToTextSettingName, remapShortcutsToText);
+    configJson.SetNamedValue(KeyboardManagerConstants::ExpandMappingsSettingName, expandMappingsArray);
 
     try
     {

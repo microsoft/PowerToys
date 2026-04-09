@@ -169,6 +169,12 @@ namespace KeyboardManagerEditorUI.Controls
             _triggerKeys.CollectionChanged += (_, _) => RaiseValidationStateChanged();
             _actionKeys.CollectionChanged += (_, _) => RaiseValidationStateChanged();
 
+            // Disable Text Expand option when TSF4 API is not available on this OS
+            if (!ManagedCommon.OSVersionHelper.IsTsf4Supported())
+            {
+                TriggerType_ExpandItem.IsEnabled = false;
+            }
+
             this.Unloaded += UnifiedMappingControl_Unloaded;
         }
 

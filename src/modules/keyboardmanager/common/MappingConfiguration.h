@@ -11,6 +11,17 @@ using SingleKeyToTextRemapTable = SingleKeyRemapTable;
 using ShortcutRemapTable = std::map<Shortcut, RemapShortcut>;
 using AppSpecificShortcutRemapTable = std::map<std::wstring, ShortcutRemapTable>;
 
+// A single expand mapping: abbreviation + trigger key → expanded text
+struct ExpandMapping
+{
+    std::wstring abbreviation;
+    DWORD triggerKey = VK_SPACE; // Virtual key code of the trigger key
+    std::wstring expandedText;
+    std::wstring appName; // Empty = all apps
+};
+
+using ExpandMappingTable = std::vector<ExpandMapping>;
+
 class MappingConfiguration
 {
 public:
@@ -66,6 +77,9 @@ public:
     AppSpecificShortcutRemapTable appSpecificShortcutReMap;
     std::map<std::wstring, std::vector<Shortcut>> appSpecificShortcutReMapSortedKeys;
 
+    // Stores expand (abbreviation → text) mappings
+    ExpandMappingTable expandMappings;
+
     // Stores the current configuration name.
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
 
@@ -74,4 +88,5 @@ private:
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
     bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);
     bool LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData);
+    bool LoadExpandMappings(const json::JsonObject& jsonData);
 };

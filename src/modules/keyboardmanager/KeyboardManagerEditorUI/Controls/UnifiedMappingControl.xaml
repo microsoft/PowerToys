@@ -46,7 +46,7 @@
                         <TextBlock x:Uid="TriggerType_KeyOrShortcut_Text" />
                     </StackPanel>
                 </ComboBoxItem>
-                <ComboBoxItem x:Uid="TriggerType_Expand" Tag="Expand">
+                <ComboBoxItem x:Name="TriggerType_ExpandItem" x:Uid="TriggerType_Expand" Tag="Expand">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="14" Glyph="&#xE8C8;" />
                         <TextBlock x:Uid="TriggerType_Expand_Text" />

@@ -79,6 +79,8 @@ extern "C"
     __declspec(dllexport) bool IsShortcutIllegal(const wchar_t* shortcutKeys);
     __declspec(dllexport) bool AreShortcutsEqual(const wchar_t* lShort, const wchar_t* rShort);
 
+    __declspec(dllexport) bool AddExpandMapping(void* config, const wchar_t* abbreviation, int triggerKey, const wchar_t* expandedText, const wchar_t* targetApp);
+
     __declspec(dllexport) bool DeleteSingleKeyRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteSingleKeyToTextRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp);

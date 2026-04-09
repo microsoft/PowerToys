@@ -678,6 +678,24 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         return false;
     }
 
+    bool AddExpandMapping(void* config, const wchar_t* abbreviation, int triggerKey, const wchar_t* expandedText, const wchar_t* targetApp)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+        if (!abbreviation || !expandedText)
+        {
+            return false;
+        }
+
+        ExpandMapping mapping;
+        mapping.abbreviation = abbreviation;
+        mapping.triggerKey = static_cast<DWORD>(triggerKey);
+        mapping.expandedText = expandedText;
+        mapping.appName = targetApp ? targetApp : L"";
+
+        mappingConfig->expandMappings.push_back(std::move(mapping));
+        return true;
+    }
+
     // Function to delete a shortcut remapping
     bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp)
     {

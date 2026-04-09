@@ -608,16 +608,29 @@ namespace KeyboardManagerEditorUI.Pages
                 return false;
             }
 
+            string targetApp = UnifiedMappingControl.GetIsAppSpecific() ? UnifiedMappingControl.GetAppName() : string.Empty;
+
             var shortcutKeyMapping = new ShortcutKeyMapping
             {
                 OperationType = ShortcutOperationType.ExpandText,
                 OriginalKeys = abbreviation,
                 TargetKeys = triggerKey,
                 TargetText = expandedText,
-                TargetApp = UnifiedMappingControl.GetIsAppSpecific() ? UnifiedMappingControl.GetAppName() : string.Empty,
+                TargetApp = targetApp,
             };
 
-            // For now, only persist to editor settings (backend logic will be added later)
+            // Resolve trigger key name to VK code (e.g., "Space" → 0x20)
+            int triggerKeyVk = KeyboardManagerInterop.GetKeyCodeFromName(triggerKey);
+            if (triggerKeyVk == 0)
+            {
+                triggerKeyVk = 0x20; // Default to VK_SPACE
+            }
+
+            // Persist to engine config (default.json) via C++ interop
+            _mappingService?.AddExpandMapping(abbreviation, triggerKeyVk, expandedText, targetApp);
+            _mappingService?.SaveSettings();
+
+            // Also persist to editor settings for UI state
             SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
             return true;
         }

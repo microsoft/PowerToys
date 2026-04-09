@@ -280,6 +280,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsTsf4Supported => OSVersionHelper.IsTsf4Supported();
+
+        public ICommand OpenWindowsUpdateCommand => new RelayCommand(() =>
+        {
+            Process.Start(new ProcessStartInfo("ms-settings:windowsupdate") { UseShellExecute = true });
+        });
+
         public ICommand RemapKeyboardCommand => _remapKeyboardCommand ?? (_remapKeyboardCommand = new RelayCommand(OnRemapKeyboard));
 
         public ICommand EditShortcutCommand => _editShortcutCommand ?? (_editShortcutCommand = new RelayCommand(OnEditShortcut));

@@ -85,6 +85,15 @@ namespace KeyboardManagerEditorUI.Interop
             int ifRunningAction = 0,
             int visibility = 0);
 
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AddExpandMapping(
+            IntPtr config,
+            [MarshalAs(UnmanagedType.LPWStr)] string abbreviation,
+            int triggerKey,
+            [MarshalAs(UnmanagedType.LPWStr)] string expandedText,
+            [MarshalAs(UnmanagedType.LPWStr)] string targetApp);
+
         // Delete Mapping Functions
         [DllImport(DllName, CallingConvention = Convention)]
         [return: MarshalAs(UnmanagedType.Bool)]

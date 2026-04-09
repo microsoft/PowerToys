@@ -566,6 +566,38 @@ opera.exe</value>
     <value>Keys</value>
     <comment>Keyboard Manager remap keyboard header</comment>
   </data>
+  <data name="KeyboardManager_Tsf4Status.Header" xml:space="preserve">
+    <value>Text Expand</value>
+    <comment>Keyboard Manager TSF4 status section header</comment>
+  </data>
+  <data name="KeyboardManager_Tsf4Api.Header" xml:space="preserve">
+    <value>Text Services Framework 4 (TSF4) API</value>
+    <comment>TSF4 API availability status card header</comment>
+  </data>
+  <data name="KeyboardManager_Tsf4Api.Description" xml:space="preserve">
+    <value>Text Expand requires TSF4 API support from the operating system</value>
+    <comment>TSF4 API availability status card description</comment>
+  </data>
+  <data name="KeyboardManager_Tsf4Api_Supported.Text" xml:space="preserve">
+    <value>Supported</value>
+    <comment>TSF4 API is supported on this OS version</comment>
+  </data>
+  <data name="KeyboardManager_Tsf4Api_InfoButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>View requirements</value>
+    <comment>Tooltip for the TSF4 unsupported info button</comment>
+  </data>
+  <data name="KeyboardManager_Tsf4Api_Unsupported_Title.Text" xml:space="preserve">
+    <value>Windows update required</value>
+    <comment>Title shown in TSF4 unsupported flyout</comment>
+  </data>
+  <data name="KeyboardManager_Tsf4Api_Unsupported_Description.Text" xml:space="preserve">
+    <value>Text Expand requires Windows 11 build 20099 or higher. This update may not yet be available on your device due to your update rollout schedule.</value>
+    <comment>Description shown in TSF4 unsupported flyout explaining the OS requirement</comment>
+  </data>
+  <data name="KeyboardManager_Tsf4Api_Update.Content" xml:space="preserve">
+    <value>Update Windows</value>
+    <comment>Button to open Windows Update when TSF4 is not supported</comment>
+  </data>
   <data name="KeyboardManager_RemapShortcutsButton.Header" xml:space="preserve">
     <value>Remap a shortcut</value>
     <comment>Keyboard Manager remap shortcuts button</comment>

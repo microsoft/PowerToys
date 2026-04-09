@@ -269,6 +269,52 @@
                         </controls:SettingsGroup>
                     </tkcontrols:Case>
                 </tkcontrols:SwitchPresenter>
+
+                <!--  TSF4 (Text Expand) API support status  -->
+                <controls:SettingsGroup x:Uid="KeyboardManager_Tsf4Status" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="KeyboardManager_Tsf4Api"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8C8;}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <!--  Supported  -->
+                            <FontIcon
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                Glyph="&#xEC61;"
+                                Visibility="{x:Bind ViewModel.IsTsf4Supported, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <TextBlock
+                                x:Uid="KeyboardManager_Tsf4Api_Supported"
+                                VerticalAlignment="Center"
+                                Visibility="{x:Bind ViewModel.IsTsf4Supported, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <!--  Not supported: info button with flyout + update button  -->
+                            <Button
+                                x:Uid="KeyboardManager_Tsf4Api_InfoButton"
+                                Content="&#xE946;"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                Style="{StaticResource SubtleButtonStyle}"
+                                Visibility="{x:Bind ViewModel.IsTsf4Supported, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                                <Button.Flyout>
+                                    <Flyout ShouldConstrainToRootBounds="False">
+                                        <StackPanel Width="360" Spacing="12">
+                                            <TextBlock
+                                                x:Uid="KeyboardManager_Tsf4Api_Unsupported_Title"
+                                                FontWeight="SemiBold"
+                                                TextWrapping="Wrap" />
+                                            <TextBlock
+                                                x:Uid="KeyboardManager_Tsf4Api_Unsupported_Description"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                            <Button
+                                x:Uid="KeyboardManager_Tsf4Api_Update"
+                                Command="{x:Bind ViewModel.OpenWindowsUpdateCommand}"
+                                Visibility="{x:Bind ViewModel.IsTsf4Supported, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
