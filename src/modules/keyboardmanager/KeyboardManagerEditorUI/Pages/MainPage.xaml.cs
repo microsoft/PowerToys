@@ -1065,29 +1065,6 @@ namespace KeyboardManagerEditorUI.Pages
         }
 
         #endregion
-
-        private void CheckServiceBtn_Click(object sender, RoutedEventArgs e)
-        {
-            bool isServiceRunning = true;
-            if (_mappingService == null)
-            {
-                try
-                {
-                    _mappingService = new KeyboardMappingService();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError("Error initializing mapping service: " + ex.Message);
-                    isServiceRunning = false;
-                }
-            }
-
-            if (isServiceRunning)
-            {
-                ServiceDownBanner.Visibility = Visibility.Collapsed;
-                MainContentControl.IsEnabled = true;
-            }
-        }
     }
 }
 #pragma warning restore SA1124 // Do not use regions
