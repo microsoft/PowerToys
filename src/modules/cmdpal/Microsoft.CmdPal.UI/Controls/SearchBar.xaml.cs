@@ -9,6 +9,7 @@ using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
@@ -49,7 +50,7 @@ public sealed partial class SearchBar : UserControl,
     // 0.6+ suggestions
     private string? _textToSuggest;
 
-    private SettingsModel Settings => App.Current.Services.GetRequiredService<SettingsModel>();
+    private SettingsModel Settings => App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -156,26 +157,12 @@ public sealed partial class SearchBar : UserControl,
                     {
                         // Clear the search box
                         FilterBox.Text = string.Empty;
-
-                        // hack TODO GH #245
-                        if (CurrentPageViewModel is not null)
-                        {
-                            CurrentPageViewModel.SearchTextBox = FilterBox.Text;
-                        }
                     }
 
                     break;
             }
 
             e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Back)
-        {
-            // hack TODO GH #245
-            if (CurrentPageViewModel is not null)
-            {
-                CurrentPageViewModel.SearchTextBox = FilterBox.Text;
-            }
         }
     }
 
@@ -331,19 +318,6 @@ public sealed partial class SearchBar : UserControl,
     private void FilterBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         // Logger.LogInfo($"FilterBox_TextChanged: {FilterBox.Text}");
-
-        // TERRIBLE HACK TODO GH #245
-        // There's weird wacky bugs with debounce currently. We're trying
-        // to get them ingested, but while we wait for the toolkit feeds to
-        // bubble, just manually send the first character, always
-        // (otherwise aliases just stop working)
-        if (FilterBox.Text.Length == 1)
-        {
-            DoFilterBoxUpdate();
-
-            return;
-        }
-
         if (InSuggestion)
         {
             // Logger.LogInfo($"-- skipping, in suggestion --");

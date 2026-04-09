@@ -22,6 +22,8 @@ public interface IContextMenuContext : INotifyPropertyChanged
 
     public bool HasMoreCommands { get; }
 
+    public bool CanOpenContextMenu { get; }
+
     public IReadOnlyList<IContextItemViewModel> AllCommands { get; }
 
     /// <summary>

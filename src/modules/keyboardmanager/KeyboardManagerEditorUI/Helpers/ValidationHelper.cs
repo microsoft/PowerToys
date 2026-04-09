@@ -93,7 +93,7 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.EmptyOriginalKeys;
             }
 
-            if (string.IsNullOrWhiteSpace(textContent))
+            if (string.IsNullOrEmpty(textContent))
             {
                 return ValidationErrorType.EmptyTargetText;
             }

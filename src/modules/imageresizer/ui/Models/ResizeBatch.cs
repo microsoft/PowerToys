@@ -1,8 +1,8 @@
-﻿#pragma warning disable IDE0073
+#pragma warning disable IDE0073, SA1636
 // Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
-#pragma warning restore IDE0073
+#pragma warning restore IDE0073, SA1636
 
 using System;
 using System.Collections.Concurrent;
@@ -10,11 +10,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Pipes;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
 using ImageResizer.Properties;
 using ImageResizer.Services;
 
@@ -40,6 +38,12 @@ namespace ImageResizer.Models
             _aiSuperResolutionService = null;
         }
 
+        private static readonly HashSet<string> ValidImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".bmp", ".dib", ".gif", ".jfif", ".jpe", ".jpeg", ".jpg",
+            ".jxr", ".png", ".rle", ".tif", ".tiff", ".wdp",
+        };
+
         /// <summary>
         /// Validates if a file path is a supported image format.
         /// </summary>
@@ -57,14 +61,8 @@ namespace ImageResizer.Models
                 return false;
             }
 
-            var ext = Path.GetExtension(path)?.ToLowerInvariant();
-            var validExtensions = new[]
-            {
-                ".bmp", ".dib", ".gif", ".jfif", ".jpe", ".jpeg", ".jpg",
-                ".jxr", ".png", ".rle", ".tif", ".tiff", ".wdp",
-            };
-
-            return validExtensions.Contains(ext);
+            var ext = Path.GetExtension(path);
+            return ValidImageExtensions.Contains(ext);
         }
 
         /// <summary>
@@ -120,7 +118,7 @@ namespace ImageResizer.Models
                     {
                         string file;
 
-                        // Display the read text to the console
+                        // Read file paths from the named pipe
                         while ((file = sr.ReadLine()) != null)
                         {
                             if (IsValidImagePath(file))
@@ -141,37 +139,35 @@ namespace ImageResizer.Models
             return FromCliOptions(standardInput, options);
         }
 
-        public IEnumerable<ResizeError> Process(Action<int, double> reportProgress, CancellationToken cancellationToken)
+        public Task<IEnumerable<ResizeError>> ProcessAsync(Action<int, double> reportProgress, CancellationToken cancellationToken)
         {
             // NOTE: Settings.Default is captured once before parallel processing.
             // Any changes to settings on disk during this batch will NOT be reflected until the next batch.
             // This improves performance and predictability by avoiding repeated mutex acquisition and behaviour change results in a batch.
-            return Process(reportProgress, Settings.Default, cancellationToken);
+            return ProcessAsync(reportProgress, Settings.Default, cancellationToken);
         }
 
-        public IEnumerable<ResizeError> Process(Action<int, double> reportProgress, Settings settings, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ResizeError>> ProcessAsync(Action<int, double> reportProgress, Settings settings, CancellationToken cancellationToken)
         {
             double total = Files.Count;
             int completed = 0;
             var errors = new ConcurrentBag<ResizeError>();
 
-            // TODO: If we ever switch to Windows.Graphics.Imaging, we can get a lot more throughput by using the async
-            //       APIs and a custom SynchronizationContext
-            Parallel.ForEach(
+            await Parallel.ForEachAsync(
                 Files,
                 new ParallelOptions
                 {
                     CancellationToken = cancellationToken,
                 },
-                (file, state, i) =>
+                async (file, ct) =>
                 {
                     try
                     {
-                        Execute(file, settings);
+                        await ExecuteAsync(file, settings);
                     }
                     catch (Exception ex)
                     {
-                        errors.Add(new ResizeError { File = _fileSystem.Path.GetFileName(file), Error = ex.Message });
+                        errors.Add(new ResizeError(_fileSystem.Path.GetFileName(file), ex.Message));
                     }
 
                     Interlocked.Increment(ref completed);
@@ -181,10 +177,10 @@ namespace ImageResizer.Models
             return errors;
         }
 
-        protected virtual void Execute(string file, Settings settings)
+        protected virtual async Task ExecuteAsync(string file, Settings settings)
         {
             var aiService = _aiSuperResolutionService ?? NoOpAiSuperResolutionService.Instance;
-            new ResizeOperation(file, DestinationDirectory, settings, aiService).Execute();
+            await new ResizeOperation(file, DestinationDirectory, settings, aiService).ExecuteAsync();
         }
     }
 }
