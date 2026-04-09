@@ -302,6 +302,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="ConfirmationDialog_CancelButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="ParameterInputDialog_RunButtonText" xml:space="preserve">
+    <value>Run</value>
+  </data>
+  <data name="ParameterInputDialog_CancelButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
   <data name="Settings_ExtensionPage_GlobalHotkey_SettingsCard.Header" xml:space="preserve">
     <value>Global hotkey</value>
   </data>
