@@ -310,8 +310,8 @@ namespace Helpers
     }
 
     // Sends text input directly via SendInput, handling newlines by sending
-    // Shift+Enter. Each character is sent individually to
-    // avoid key-down/key-up desynchronization that causes repeated or dropped characters
+    // Shift+Enter. Each character is sent individually to avoid a synchronization
+    // error across key-down and key-up events that causes repeated or dropped characters
     // when large batches of KEYEVENTF_UNICODE events are sent at once.
     void SendTextInput(const std::wstring& text)
     {
