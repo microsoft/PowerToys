@@ -149,8 +149,6 @@ jobs:
       - name: comment
         uses: check-spelling/check-spelling@cfb6f7e75bbfc89c71eaa30366d0c166f1bd9c8c # v0.0.26
         with:
-          config: .github/actions/spell-check
-          checkout: true
           spell_check_this: microsoft/PowerToys@main
           task: ${{ needs.spelling.outputs.followup }}
 
@@ -168,8 +166,6 @@ jobs:
       - name: comment
         uses: check-spelling/check-spelling@cfb6f7e75bbfc89c71eaa30366d0c166f1bd9c8c # v0.0.26
         with:
-          config: .github/actions/spell-check
-          checkout: true
           spell_check_this: check-spelling/spell-check-this@prerelease
           task: ${{ needs.spelling.outputs.followup }}
           experimental_apply_changes_via_bot: ${{ github.repository_owner != 'microsoft' && 1 }}
