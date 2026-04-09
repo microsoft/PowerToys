@@ -221,6 +221,7 @@
             "WinUI3Apps\\PowerToys.PowerDisplay.dll",
             "WinUI3Apps\\PowerToys.PowerDisplay.exe",
             "PowerDisplay.Lib.dll",
+            "PowerDisplay.Models.dll",
 
             "WinUI3Apps\\PowerToys.PowerRenameExt.dll",
             "WinUI3Apps\\PowerToys.PowerRename.exe",
