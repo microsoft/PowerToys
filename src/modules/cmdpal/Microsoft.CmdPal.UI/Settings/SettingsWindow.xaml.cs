@@ -15,7 +15,9 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
 using WinUIEx;
@@ -27,6 +29,7 @@ namespace Microsoft.CmdPal.UI.Settings;
 public sealed partial class SettingsWindow : WindowEx,
     IDisposable,
     IRecipient<NavigateToExtensionSettingsMessage>,
+    IRecipient<OpenExtensionGalleryScreenshotViewerMessage>,
     IRecipient<QuitMessage>
 {
     private readonly LocalKeyboardListener _localKeyboardListener;
@@ -34,11 +37,26 @@ public sealed partial class SettingsWindow : WindowEx,
     private readonly NavigationViewItem? _internalNavItem;
 
     private Storyboard? _breadcrumbStoryboard;
+    private IReadOnlyList<ExtensionGalleryScreenshotViewModel> _currentScreenshotSet = [];
+    private ExtensionGalleryScreenshotViewModel? _currentScreenshot;
+    private ImageSource? _currentScreenshotViewerSource;
 
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
     // Gets or sets optional action invoked after NavigationView is loaded.
     public Action? NavigationViewLoaded { get; set; }
+
+    public Visibility ScreenshotViewerNavigationVisibility =>
+        _currentScreenshotSet.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
+
+    public ImageSource? CurrentScreenshotViewerSource => _currentScreenshotViewerSource;
+
+    public string CurrentScreenshotDisplayName => _currentScreenshot?.DisplayName ?? string.Empty;
+
+    public string CurrentScreenshotPositionText =>
+        _currentScreenshot is null || _currentScreenshotSet.Count == 0
+            ? string.Empty
+            : $"{GetCurrentScreenshotIndex() + 1} / {_currentScreenshotSet.Count}";
 
     public SettingsWindow()
     {
@@ -51,12 +69,14 @@ public sealed partial class SettingsWindow : WindowEx,
         PositionCentered();
 
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
+        WeakReferenceMessenger.Default.Register<OpenExtensionGalleryScreenshotViewerMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
         _localKeyboardListener = new LocalKeyboardListener();
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
         _localKeyboardListener.Start();
         Closed += SettingsWindow_Closed;
+        RootElement.SizeChanged += RootElement_SizeChanged;
         RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
 
         if (!BuildInfo.IsCiBuild)
@@ -185,6 +205,16 @@ public sealed partial class SettingsWindow : WindowEx,
 
     public void Receive(NavigateToExtensionSettingsMessage message) => Navigate(message.ProviderSettingsVM);
 
+    public void Receive(OpenExtensionGalleryScreenshotViewerMessage message)
+    {
+        if (message.Screenshots.Count == 0)
+        {
+            return;
+        }
+
+        OpenScreenshotViewer(message.Screenshot, message.Screenshots, startConnectedAnimation: true);
+    }
+
     private void NavigationBreadcrumbBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
     {
         if (args.Item is Crumb crumb)
@@ -236,6 +266,12 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void TryGoBack()
     {
+        if (ScreenshotViewerPopup.IsOpen)
+        {
+            CloseScreenshotViewer();
+            return;
+        }
+
         if (NavFrame.CanGoBack)
         {
             NavFrame.GoBack();
@@ -283,6 +319,11 @@ public sealed partial class SettingsWindow : WindowEx,
         {
             Logger.LogError("Error handling mouse button press event", ex);
         }
+    }
+
+    private void RootElement_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        UpdateScreenshotViewerPopupSize();
     }
 
     private void HideBreadcrumb()
@@ -341,6 +382,7 @@ public sealed partial class SettingsWindow : WindowEx,
 
     public void Dispose()
     {
+        CloseScreenshotViewer();
         WinGetOperationsButtonControl?.Dispose();
         _localKeyboardListener?.Dispose();
     }
@@ -406,6 +448,173 @@ public sealed partial class SettingsWindow : WindowEx,
             BreadCrumbs.Add(new($"[{e.SourcePageType?.Name}]", string.Empty));
             Logger.LogError($"Unknown breadcrumb for page type '{e.SourcePageType}'");
         }
+    }
+
+    private void CloseScreenshotViewerButton_Click(object sender, RoutedEventArgs e)
+    {
+        CloseScreenshotViewer();
+    }
+
+    private void PreviousScreenshotButton_Click(object sender, RoutedEventArgs e)
+    {
+        ChangeScreenshot(-1);
+    }
+
+    private void NextScreenshotButton_Click(object sender, RoutedEventArgs e)
+    {
+        ChangeScreenshot(1);
+    }
+
+    private void ScreenshotViewerOverlay_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+    {
+        if (!ScreenshotViewerPopup.IsOpen || _currentScreenshotSet.Count <= 1)
+        {
+            return;
+        }
+
+        var delta = e.GetCurrentPoint(ScreenshotViewerOverlay).Properties.MouseWheelDelta;
+        if (delta > 0)
+        {
+            ChangeScreenshot(-1);
+            e.Handled = true;
+        }
+        else if (delta < 0)
+        {
+            ChangeScreenshot(1);
+            e.Handled = true;
+        }
+    }
+
+    private void ScreenshotViewerOverlay_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (!ScreenshotViewerPopup.IsOpen)
+        {
+            return;
+        }
+
+        switch (e.Key)
+        {
+            case VirtualKey.Escape:
+                CloseScreenshotViewer();
+                e.Handled = true;
+                break;
+            case VirtualKey.Left:
+                ChangeScreenshot(-1);
+                e.Handled = true;
+                break;
+            case VirtualKey.Right:
+                ChangeScreenshot(1);
+                e.Handled = true;
+                break;
+        }
+    }
+
+    private void OpenScreenshotViewer(
+        ExtensionGalleryScreenshotViewModel screenshot,
+        IReadOnlyList<ExtensionGalleryScreenshotViewModel> screenshots,
+        bool startConnectedAnimation)
+    {
+        _currentScreenshotSet = screenshots;
+        _currentScreenshot = screenshot;
+        _currentScreenshotViewerSource = CreateViewerImageSource(screenshot.Uri);
+        UpdateScreenshotViewerBindings();
+        UpdateScreenshotViewerPopupSize();
+        ScreenshotViewerPopup.IsOpen = true;
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            ScreenshotViewerOverlay.UpdateLayout();
+
+            if (startConnectedAnimation)
+            {
+                var animation = ConnectedAnimationService.GetForCurrentView().GetAnimation(OpenExtensionGalleryScreenshotViewerMessage.ConnectedAnimationKey);
+                animation?.TryStart(ScreenshotViewerImageHost);
+            }
+
+            ScreenshotViewerOverlay.Focus(FocusState.Programmatic);
+        });
+    }
+
+    private void CloseScreenshotViewer()
+    {
+        if (ScreenshotViewerPopup.IsOpen)
+        {
+            ScreenshotViewerPopup.IsOpen = false;
+        }
+
+        _currentScreenshotSet = [];
+        _currentScreenshot = null;
+        _currentScreenshotViewerSource = null;
+        UpdateScreenshotViewerBindings();
+        RootElement.Focus(FocusState.Programmatic);
+    }
+
+    private void ChangeScreenshot(int delta)
+    {
+        if (_currentScreenshot is null || _currentScreenshotSet.Count <= 1)
+        {
+            return;
+        }
+
+        var currentIndex = GetCurrentScreenshotIndex();
+        if (currentIndex < 0)
+        {
+            return;
+        }
+
+        var nextIndex = (currentIndex + delta) % _currentScreenshotSet.Count;
+        if (nextIndex < 0)
+        {
+            nextIndex += _currentScreenshotSet.Count;
+        }
+
+        OpenScreenshotViewer(_currentScreenshotSet[nextIndex], _currentScreenshotSet, startConnectedAnimation: false);
+    }
+
+    private int GetCurrentScreenshotIndex()
+    {
+        if (_currentScreenshot is null)
+        {
+            return -1;
+        }
+
+        for (var i = 0; i < _currentScreenshotSet.Count; i++)
+        {
+            if (ReferenceEquals(_currentScreenshotSet[i], _currentScreenshot))
+            {
+                return i;
+            }
+        }
+
+        return Math.Clamp(_currentScreenshot.Index, 0, _currentScreenshotSet.Count - 1);
+    }
+
+    private void UpdateScreenshotViewerPopupSize()
+    {
+        if (RootElement.ActualWidth <= 0 || RootElement.ActualHeight <= 0)
+        {
+            return;
+        }
+
+        ScreenshotViewerOverlay.Width = RootElement.ActualWidth;
+        ScreenshotViewerOverlay.Height = RootElement.ActualHeight;
+    }
+
+    private void UpdateScreenshotViewerBindings()
+    {
+        Bindings.Update();
+    }
+
+    private static ImageSource? CreateViewerImageSource(Uri? screenshotUri)
+    {
+        if (screenshotUri is null)
+        {
+            return null;
+        }
+
+        BitmapImage bitmap = new();
+        bitmap.UriSource = screenshotUri;
+        return bitmap;
     }
 }
 
