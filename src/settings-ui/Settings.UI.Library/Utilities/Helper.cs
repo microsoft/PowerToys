@@ -114,9 +114,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
 
         public static string GetPowerToysInstallationFolder()
         {
-            // PowerToys.exe is in the parent folder relative to Settings.
-            var settingsPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            return Directory.GetParent(settingsPath).FullName;
+            return Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         }
 
         public static string GetPowerToysInstallationAssetsFolder()

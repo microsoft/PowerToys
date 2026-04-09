@@ -238,11 +238,11 @@ public:
 #ifdef _M_ARM64
                 archSubdir = L"ARM64";
 #endif
-                auto msix = package::FindMsixFile(installationFolder + L"\\CmdPal\\\\AppPackages\\Microsoft.CmdPal.UI_0.0.1.0_Debug_Test\\", false);
-                auto dependencies = package::FindMsixFile(installationFolder + L"\\CmdPal\\\\AppPackages\\Microsoft.CmdPal.UI_0.0.1.0_Debug_Test\\Dependencies\\" + archSubdir + L"\\", true);
+                auto msix = package::FindMsixFile(installationFolder + L"\\CmdPal\\AppPackages\\Microsoft.CmdPal.UI_0.0.1.0_Debug_Test\\", false);
+                auto dependencies = package::FindMsixFile(installationFolder + L"\\CmdPal\\AppPackages\\Microsoft.CmdPal.UI_0.0.1.0_Debug_Test\\Dependencies\\" + archSubdir + L"\\", true);
 #else
-                auto msix = package::FindMsixFile(installationFolder + L"\\CmdPal\\\\", false);
-                auto dependencies = package::FindMsixFile(installationFolder + L"\\CmdPal\\\\Dependencies\\", true);
+                auto msix = package::FindMsixFile(installationFolder + L"\\CmdPal\\", false);
+                auto dependencies = package::FindMsixFile(installationFolder + L"\\CmdPal\\Dependencies\\", true);
 #endif
 
                 if (!msix.empty())

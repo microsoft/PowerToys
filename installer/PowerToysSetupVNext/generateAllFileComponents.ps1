@@ -30,6 +30,10 @@ Function Generate-FileList() {
 
     $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri")
 
+    # MFC DLLs leak into the output via WindowsAppSDKSelfContained but no PowerToys binary imports them.
+    # Verified with dumpbin /dependents across all binaries — zero consumers.
+    $fileExclusionList += @("mfc140.dll", "mfc140u.dll", "mfcm140.dll", "mfcm140u.dll")
+
     $dllsToIgnore = @("System.CodeDom.dll", "WindowsBase.dll")
 
     if ($fileDepsJson -eq [string]::Empty) {
@@ -135,7 +139,7 @@ if ($platform -ceq "arm64") {
 # ImageResizerCLI (Exe, SelfContained) has a ProjectReference to ImageResizerUI (WinExe, SelfContained).
 # MSBuild copies the referenced WinExe's apphost (.exe, .deps.json, .runtimeconfig.json) to the root
 # output directory as a side effect. These files are incomplete (missing the managed .dll) and should
-# not be included in the installer. The complete ImageResizer files are in WinUI3Apps/ and are handled
+# not be included in the installer. The complete ImageResizer files are handled
 # by WinUI3ApplicationsFiles. TODO: Refactor ImageResizer to use a shared Library project instead.
 Generate-FileList -fileDepsJson "" -fileListName BaseApplicationsFiles -wxsFilePath $PSScriptRoot\BaseApplications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release"
 
@@ -213,7 +217,7 @@ Generate-FileList -fileDepsJson "" -fileListName PowerRenameAssetsFiles -wxsFile
 Generate-FileComponents -fileListName "PowerRenameAssetsFiles" -wxsFilePath $PSScriptRoot\PowerRename.wxs
 
 #PowerDisplay
-Generate-FileList -fileDepsJson "" -fileListName PowerDisplayAssetsFiles -wxsFilePath $PSScriptRoot\PowerDisplay.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\PowerDisplay\"
+Generate-FileList -fileDepsJson "" -fileListName PowerDisplayAssetsFiles -wxsFilePath $PSScriptRoot\PowerDisplay.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\PowerDisplay\"
 Generate-FileComponents -fileListName "PowerDisplayAssetsFiles" -wxsFilePath $PSScriptRoot\PowerDisplay.wxs
 
 #RegistryPreview

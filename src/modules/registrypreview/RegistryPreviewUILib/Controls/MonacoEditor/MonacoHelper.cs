@@ -22,16 +22,7 @@ namespace RegistryPreviewUILib
         public static string GetRuntimeMonacoDirectory()
         {
             string codeBase = Assembly.GetExecutingAssembly().Location;
-            string path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase) ?? string.Empty, "Assets", "Monaco"));
-            if (Path.Exists(path))
-            {
-                return path;
-            }
-            else
-            {
-                // Fall back to relative path from the code base directory.
-                return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase) ?? string.Empty, "Assets", "Monaco"));
-            }
+            return Path.GetFullPath(Path.Combine(Path.GetDirectoryName(codeBase) ?? string.Empty, "Assets", "Monaco"));
         }
 
         public static string MonacoDirectory

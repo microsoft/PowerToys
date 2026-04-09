@@ -464,8 +464,8 @@ function Test-CoreFiles {
         'CmdPalKeyboardService.dll'
     )
     
-    # Signed files (in  subdirectory)
-    $winUI3SignedFiles = @(
+    # Additional signed files
+    $additionalSignedFiles = @(
         'PowerToys.Settings.dll',
         'PowerToys.Settings.exe',
         'PowerToys.AdvancedPaste.exe',
@@ -557,8 +557,8 @@ function Test-CoreFiles {
     }
     
     # Check Signed files
-    Write-StatusMessage "Checking Signed files..." -Level Info
-    foreach ($file in $winUI3SignedFiles) {
+    Write-StatusMessage "Checking signed files..." -Level Info
+    foreach ($file in $additionalSignedFiles) {
         $filePath = Join-Path $InstallPath "$file"
         $exists = Test-Path $filePath
         $status = if ($exists) { 'Pass' } else { 'Warning' }
@@ -730,24 +730,18 @@ function Test-ContextMenuPackages {
     )
     
     # Context menu packages are installed as sparse packages
-    # These MSIX packages should be present in the installation
+    # These MSIX packages should be present in the installation root
     $contextMenuPackages = @{
-        "ImageResizerContextMenuPackage.msix" = @{ Name = "Image Resizer context menu package"; Location = "Root" }
-        "FileLocksmithContextMenuPackage.msix" = @{ Name = "File Locksmith context menu package"; Location = "" }
-        "PowerRenameContextMenuPackage.msix" = @{ Name = "PowerRename context menu package"; Location = "" }
-        "NewPlusPackage.msix" = @{ Name = "New+ context menu package"; Location = "" }
+        "ImageResizerContextMenuPackage.msix" = @{ Name = "Image Resizer context menu package" }
+        "FileLocksmithContextMenuPackage.msix" = @{ Name = "File Locksmith context menu package" }
+        "PowerRenameContextMenuPackage.msix" = @{ Name = "PowerRename context menu package" }
+        "NewPlusPackage.msix" = @{ Name = "New+ context menu package" }
     }
     
-    # Check for packages based on their expected location
+    # Check for packages in the install root
     foreach ($packageFile in $contextMenuPackages.Keys) {
         $packageInfo = $contextMenuPackages[$packageFile]
-        
-        if ($packageInfo.Location -eq "Root") {
-            $packagePath = Join-Path $InstallPath $packageFile
-        }
-        else {
-            $packagePath = Join-Path $InstallPath "$packageFile"
-        }
+        $packagePath = Join-Path $InstallPath $packageFile
         
         if (Test-Path $packagePath) {
             Add-CheckResult -Category "Context Menu Packages" -CheckName $packageInfo.Name -Status 'Pass' -Message "Context menu package found: $packagePath"
