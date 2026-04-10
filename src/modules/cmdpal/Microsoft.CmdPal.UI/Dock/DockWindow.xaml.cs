@@ -428,12 +428,48 @@ public sealed partial class DockWindow : WindowEx,
         //   PInvoke.SHAppBarMessage(ABM_SETSTATE, ref _appBarData);
         //   PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAR, ref _appBarData);
 
-        // Account for system borders when moving the window
-        // Adjust position to account for window frame/border
-        var adjustedLeft = _appBarData.rc.left - frameWidth;
-        var adjustedTop = _appBarData.rc.top - frameWidth;
-        var adjustedWidth = (_appBarData.rc.right - _appBarData.rc.left) + (2 * frameWidth);
-        var adjustedHeight = (_appBarData.rc.bottom - _appBarData.rc.top) + (2 * frameWidth);
+        // Expand the window by the invisible DWM frame on the sides that face
+        // away from the work area (off-screen or the screen edge). The edge
+        // that faces the work area must stay exactly at _appBarData.rc so that
+        // snapped windows do not overlap the visible dock surface.
+        int adjustedLeft, adjustedTop, adjustedWidth, adjustedHeight;
+        switch (_settings.Side)
+        {
+            case DockSide.Top:
+                // Bottom edge faces the work area — do not extend it.
+                adjustedLeft = _appBarData.rc.left - frameWidth;
+                adjustedTop = _appBarData.rc.top - frameWidth;
+                adjustedWidth = (_appBarData.rc.right - _appBarData.rc.left) + (2 * frameWidth);
+                adjustedHeight = (_appBarData.rc.bottom - _appBarData.rc.top) + frameWidth;
+                break;
+            case DockSide.Bottom:
+                // Top edge faces the work area — do not extend it.
+                adjustedLeft = _appBarData.rc.left - frameWidth;
+                adjustedTop = _appBarData.rc.top;
+                adjustedWidth = (_appBarData.rc.right - _appBarData.rc.left) + (2 * frameWidth);
+                adjustedHeight = (_appBarData.rc.bottom - _appBarData.rc.top) + frameWidth;
+                break;
+            case DockSide.Left:
+                // Right edge faces the work area — do not extend it.
+                adjustedLeft = _appBarData.rc.left - frameWidth;
+                adjustedTop = _appBarData.rc.top - frameWidth;
+                adjustedWidth = (_appBarData.rc.right - _appBarData.rc.left) + frameWidth;
+                adjustedHeight = (_appBarData.rc.bottom - _appBarData.rc.top) + (2 * frameWidth);
+                break;
+            case DockSide.Right:
+                // Left edge faces the work area — do not extend it.
+                adjustedLeft = _appBarData.rc.left;
+                adjustedTop = _appBarData.rc.top - frameWidth;
+                adjustedWidth = (_appBarData.rc.right - _appBarData.rc.left) + frameWidth;
+                adjustedHeight = (_appBarData.rc.bottom - _appBarData.rc.top) + (2 * frameWidth);
+                break;
+            default:
+                adjustedLeft = _appBarData.rc.left - frameWidth;
+                adjustedTop = _appBarData.rc.top - frameWidth;
+                adjustedWidth = (_appBarData.rc.right - _appBarData.rc.left) + (2 * frameWidth);
+                adjustedHeight = (_appBarData.rc.bottom - _appBarData.rc.top) + (2 * frameWidth);
+                break;
+        }
 
         // Move the actual window
         PInvoke.MoveWindow(
