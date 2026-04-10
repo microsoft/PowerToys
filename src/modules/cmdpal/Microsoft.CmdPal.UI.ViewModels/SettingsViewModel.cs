@@ -226,6 +226,15 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool Dock_AlwaysOnTop
+    {
+        get => _settingsService.Settings.DockSettings.AlwaysOnTop;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { AlwaysOnTop = value } });
+        }
+    }
+
     public bool EnableDock
     {
         get => _settingsService.Settings.EnableDock;

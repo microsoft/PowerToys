@@ -464,6 +464,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_EnableDock_SettingsCard.Description" xml:space="preserve">
     <value>Enable a toolbar with quick access to commands</value>
   </data>
+  <data name="DockBehavior_AlwaysOnTop_SettingsCard.Header" xml:space="preserve">
+    <value>Always stay on top</value>
+  </data>
+  <data name="DockBehavior_AlwaysOnTop_SettingsCard.Description" xml:space="preserve">
+    <value>Keep the dock above other windows, except while an app is fullscreen</value>
+  </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
   </data>
