@@ -126,6 +126,7 @@ boxmodel
 BPBF
 bpmf
 bpp
+brb
 Browsable
 BROWSEINFO
 bsd
@@ -750,6 +751,7 @@ KILLFOCUS
 killrunner
 kmph
 Kybd
+Laf
 lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
@@ -941,6 +943,7 @@ mstsc
 msvcp
 MT
 MTND
+Mtnhu
 multimonitor
 MULTIPLEUSE
 multizone
@@ -1472,6 +1475,7 @@ SIZENWSE
 SIZEWE
 SKEXP
 SKIPOWNPROCESS
+skm
 sku
 SLGP
 sln
@@ -1610,6 +1614,7 @@ templatenamespace
 testprocess
 TEXCOORD
 TEXTINCLUDE
+textinputmethod
 tfopen
 tgz
 themeresources
@@ -1718,6 +1723,7 @@ vcruntime
 vcvars
 VDesktop
 vdupq
+VEb
 VERBSONLY
 VERBW
 VERIFYCONTEXT
@@ -1795,6 +1801,7 @@ windowssearch
 windowssettings
 WINDOWSTYLES
 WINDOWSTYLESICON
+windowsupdate
 winerror
 WINEVENT
 winget
@@ -2059,6 +2066,7 @@ framechanged
 FRestore
 fsanitize
 ftps
+FTt
 fuzzingtesting
 fxf
 gameid
