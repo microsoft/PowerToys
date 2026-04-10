@@ -98,16 +98,16 @@ namespace Awake
             {
                 // Awake is already running - there is no need for us to process
                 // anything further
-                Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1);
                 LogCLITelemetry(successful: false);
+                Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1);
                 return 1;
             }
             else
             {
                 if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
                 {
-                    Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1);
                     LogCLITelemetry(successful: false);
+                    Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1);
                     return 1;
                 }
                 else

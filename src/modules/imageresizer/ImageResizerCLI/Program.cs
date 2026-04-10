@@ -40,7 +40,7 @@ internal static class Program
         {
             var executor = new ImageResizerCliExecutor();
             int result = executor.Run(args);
-            LogCLITelemetry(result == 0);
+            LogCLITelemetry(executor.CommandName, result == 0);
             return result;
         }
         catch (Exception ex)
@@ -48,18 +48,18 @@ internal static class Program
             CliLogger.Error($"Unhandled exception: {ex.Message}");
             CliLogger.Error($"Stack trace: {ex.StackTrace}");
             Console.Error.WriteLine($"Fatal error: {ex.Message}");
-            LogCLITelemetry(successful: false);
+            LogCLITelemetry("resize", successful: false);
             return 1;
         }
     }
 
-    private static void LogCLITelemetry(bool successful)
+    private static void LogCLITelemetry(string commandName, bool successful)
     {
         try
         {
             PowerToysTelemetry.Log.WriteEvent(new ImageResizerCLICommandEvent
             {
-                CommandName = "resize",
+                CommandName = commandName,
                 Successful = successful,
             });
         }
