@@ -1037,9 +1037,7 @@ NORMALDISPLAY
 NORMALUSER
 NOSEARCH
 NOSENDCHANGING
-NOSIZE
 notdefault
-Nosize
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
@@ -1694,6 +1692,7 @@ UOI
 UPDATENOW
 updown
 UPGRADINGPRODUCTCODE
+upserts
 Uptool
 urld
 Usb
@@ -1779,7 +1778,6 @@ webpage
 websites
 wekyb
 wgpocpl
-WIC
 wic
 wifi
 winapi
@@ -2177,7 +2175,7 @@ nodiscard
 nologo
 nomove
 nosize
-notopmost
+NOTOPMOST
 Notupdated
 notwindows
 nowarn
