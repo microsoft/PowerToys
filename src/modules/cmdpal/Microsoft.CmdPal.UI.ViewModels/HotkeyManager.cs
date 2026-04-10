@@ -10,12 +10,10 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class HotkeyManager : ObservableObject
 {
-    private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly ISettingsService _settingsService;
 
-    public HotkeyManager(TopLevelCommandManager tlcManager, ISettingsService settingsService)
+    public HotkeyManager(ISettingsService settingsService)
     {
-        _topLevelCommandManager = tlcManager;
         _settingsService = settingsService;
     }
 

@@ -920,8 +920,11 @@ public sealed partial class MainWindow : WindowEx,
             }
         }
 
-        var extensionService = serviceProvider.GetService<IExtensionService>()!;
-        extensionService.SignalStopExtensionsAsync();
+        var extensionServices = serviceProvider.GetServices<IExtensionService>();
+        foreach (var svc in extensionServices)
+        {
+            svc.SignalStopExtensionsAsync();
+        }
 
         App.Current.Services.GetService<TrayIconService>()!.Destroy();
 

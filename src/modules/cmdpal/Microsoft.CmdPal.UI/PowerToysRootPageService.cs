@@ -24,7 +24,12 @@ internal sealed class PowerToysRootPageService : IRootPageService
     private IExtensionWrapper? _activeExtension;
     private Lazy<MainListPage> _mainListPage;
 
-    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, AliasManager aliasManager, IFuzzyMatcherProvider fuzzyMatcherProvider, ISettingsService settingsService, IAppStateService appStateService)
+    public PowerToysRootPageService(
+        TopLevelCommandManager topLevelCommandManager,
+        AliasManager aliasManager,
+        IFuzzyMatcherProvider fuzzyMatcherProvider,
+        ISettingsService settingsService,
+        IAppStateService appStateService)
     {
         _tlcManager = topLevelCommandManager;
 
@@ -36,7 +41,10 @@ internal sealed class PowerToysRootPageService : IRootPageService
 
     public async Task PreLoadAsync()
     {
-        await _tlcManager.LoadBuiltinsAsync();
+        // LoadExtensionsAsync signals all IExtensionService implementations
+        // (built-in + WinRT). Each service fires events as commands become ready.
+        _tlcManager.LoadExtensionsCommand.Execute(null);
+        await Task.CompletedTask;
     }
 
     public Microsoft.CommandPalette.Extensions.IPage GetRootPage()
@@ -46,13 +54,10 @@ internal sealed class PowerToysRootPageService : IRootPageService
 
     public async Task PostLoadRootPageAsync()
     {
-        // After loading built-ins, and starting navigation, kick off a thread to load extensions.
-        _tlcManager.LoadExtensionsCommand.Execute(null);
-
-        await _tlcManager.LoadExtensionsCommand.ExecutionTask!;
-        if (_tlcManager.LoadExtensionsCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+        // Wait for the extension-load task launched in PreLoadAsync to finish.
+        if (_tlcManager.LoadExtensionsCommand.ExecutionTask is { } task)
         {
-            // TODO: Handle failure case
+            await task;
         }
     }
 

@@ -18,7 +18,7 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
     private readonly FallbackLogItem _fallbackLogItem = new();
     private readonly NewExtensionPage _newExtension = new();
 
-    private readonly IRootPageService _rootPageService;
+    private readonly Func<IPage> _rootPageFactory;
 
     public override ICommandItem[] TopLevelCommands() =>
         [
@@ -39,22 +39,19 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
             _fallbackLogItem,
         ];
 
-    public BuiltInsCommandProvider(IRootPageService rootPageService)
+    public BuiltInsCommandProvider(Func<IPage> rootPageFactory)
     {
         Id = "com.microsoft.cmdpal.builtin.core";
         DisplayName = Properties.Resources.builtin_display_name;
         Icon = IconHelpers.FromRelativePath("Assets\\Square44x44Logo.altform-unplated_targetsize-256.png");
 
-        _rootPageService = rootPageService;
+        _rootPageFactory = rootPageFactory;
     }
 
     public override ICommandItem[]? GetDockBands()
     {
-        var rootPage = _rootPageService.GetRootPage();
-        List<ICommandItem> bandItems = new();
-        bandItems.Add(new WrappedDockItem(rootPage, Properties.Resources.builtin_command_palette_title));
-
-        return bandItems.ToArray();
+        var rootPage = _rootPageFactory();
+        return [new WrappedDockItem(rootPage, Properties.Resources.builtin_command_palette_title)];
     }
 
     public override void InitializeWithHost(IExtensionHost host) => BuiltinsExtensionHost.Instance.Initialize(host);
