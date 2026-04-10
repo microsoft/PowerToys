@@ -394,26 +394,7 @@ static void StopResizing()
     DestroyOverlay();
 }
 
-static void ClearAltStickyState()
-{
-    const bool isAltPhysicallyDown = (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
-
-    // In remote sessions key-up can be lost; synthesize one only when Alt is physically up.
-    if (!isAltPhysicallyDown)
-    {
-        INPUT altUp{};
-        altUp.type = INPUT_KEYBOARD;
-        altUp.ki.wVk = VK_MENU;
-        altUp.ki.dwFlags = KEYEVENTF_KEYUP;
-        SendInput(1, &altUp, sizeof(INPUT));
-    }
-
-    g_altPressed = isAltPhysicallyDown;
-    g_altAbsorbed = false;
-    g_dragConsumedAlt = false;
-}
-
-static void EndInteraction(bool endDrag, bool endResize, bool clearAltState)
+static void EndInteraction(bool endDrag, bool endResize)
 {
     bool endedDrag = false;
     bool endedResize = false;
@@ -428,11 +409,6 @@ static void EndInteraction(bool endDrag, bool endResize, bool clearAltState)
     {
         StopResizing();
         endedResize = true;
-    }
-
-    if (clearAltState && (endedDrag || endedResize))
-    {
-        ClearAltStickyState();
     }
 }
 
@@ -547,7 +523,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 g_altPressed = false;
                 bool wasDragging = g_dragging;
                 bool wasResizing = g_resizing;
-                EndInteraction(true, true, false);
+                EndInteraction(true, true);
                 if (g_altAbsorbed) {
                     g_altAbsorbed = false;
                     if (wasDragging || wasResizing || g_dragConsumedAlt) {
@@ -622,6 +598,7 @@ static HWND ResolveTargetWindow(POINT pt)
 
     return hwnd;
 }
+
 static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode >= 0) {
         auto* ms = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
@@ -633,7 +610,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
         // Recovery path: if a non-modifier click occurs while stale drag/resize state exists, clear it.
         if ((wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN) && !IsActivationModifierPressed())
         {
-            EndInteraction(true, true, true);
+            EndInteraction(true, true);
         }
 
         if (!g_dragging && !g_resizing && g_hOverlay)
@@ -742,7 +719,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
             int h    = g_dragWndRect.bottom - g_dragWndRect.top;
             SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
                          SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-            EndInteraction(true, false, true);
+            EndInteraction(true, false);
             return 1;  // swallow the release
         }
 
@@ -884,7 +861,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
             int h = nr.bottom - nr.top;
             SetWindowPos(g_resizeTarget, nullptr, nr.left, nr.top, w, h,
                          SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-            EndInteraction(false, true, true);
+            EndInteraction(false, true);
             return 1;   // swallow the right button release
         }
     }
