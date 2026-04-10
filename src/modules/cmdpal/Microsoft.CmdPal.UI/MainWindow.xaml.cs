@@ -99,6 +99,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private bool _preventHideWhenDeactivated;
     private bool _isLoadedFromDock;
+    private int _pendingPreferredWidth;
 
     private DevRibbon? _devRibbon;
 
@@ -732,6 +733,27 @@ public sealed partial class MainWindow : WindowEx,
         // a dock window will adhere to, but alas, that's the future.
         RestoreWindowPositionFromMemory();
 
+        // Apply preferred width BEFORE ShowHwnd so that anchor-based
+        // positioning (GetWindowRect) uses the correct window size.
+        // We use SetWindowPos (PInvoke) instead of AppWindow.Resize so
+        // the change is immediately visible to GetWindowRect in ShowHwnd.
+        if (_pendingPreferredWidth > 0)
+        {
+            var dpi = (double)this.GetDpiForWindow();
+            var scale = dpi / 96.0;
+            var widthPixels = (int)(_pendingPreferredWidth * scale);
+            PInvoke.GetWindowRect(_hwnd, out var currentRect);
+            PInvoke.SetWindowPos(
+                _hwnd,
+                HWND.HWND_TOP,
+                currentRect.X,
+                currentRect.Y,
+                widthPixels,
+                currentRect.Height,
+                SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER);
+            _pendingPreferredWidth = 0;
+        }
+
         ShowHwnd(HWND.Null, message.PosPixels, message.Anchor);
     }
 
@@ -770,6 +792,11 @@ public sealed partial class MainWindow : WindowEx,
     public void Receive(NavigateToPageMessage message)
     {
         _sessionPagesVisited++;
+
+        if (message.TransientPage && message.Page.PreferredWidth > 0)
+        {
+            _pendingPreferredWidth = message.Page.PreferredWidth;
+        }
     }
 
     public void Receive(NavigationDepthMessage message)

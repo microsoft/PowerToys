@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.CmdPal.UI.ControlsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <StackLayout
+                x:Key="SectionsLayout"
+                Orientation="Vertical"
+                Spacing="0" />
+            <StackLayout
+                x:Key="ControlItemsLayout"
+                Orientation="Vertical"
+                Spacing="2" />
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid>
+        <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
+            <ItemsRepeater
+                Margin="0,4,4,4"
+                ItemsSource="{x:Bind ViewModel.Sections, Mode=OneWay}"
+                Layout="{StaticResource SectionsLayout}">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:ControlsSectionViewModel">
+                        <StackPanel>
+                            <!--  Section title  -->
+                            <TextBlock
+                                Margin="16,12,16,8"
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{x:Bind Title}" />
+
+                            <!--  Control items  -->
+                            <ItemsRepeater
+                                ItemsSource="{x:Bind Items}"
+                                Layout="{StaticResource ControlItemsLayout}">
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="viewModels:ControlItemViewModel">
+                                        <Grid
+                                            Padding="16,6,16,6"
+                                            ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Text="{x:Bind Name, Mode=OneWay}"
+                                                TextTrimming="CharacterEllipsis" />
+
+                                            <!--  Toggle switch  -->
+                                            <ToggleSwitch
+                                                Grid.Column="1"
+                                                MinWidth="0"
+                                                IsOn="{x:Bind IsOn, Mode=TwoWay}"
+                                                Visibility="{x:Bind IsToggle}" />
+
+                                            <!--  Slider  -->
+                                            <Slider
+                                                Grid.Column="1"
+                                                MinWidth="160"
+                                                Maximum="{x:Bind Maximum}"
+                                                Minimum="{x:Bind Minimum}"
+                                                StepFrequency="{x:Bind StepValue}"
+                                                Value="{x:Bind Value, Mode=TwoWay}"
+                                                Visibility="{x:Bind IsSlider}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+
+                            <!--  Divider  -->
+                            <Border
+                                Height="1"
+                                Margin="16,8,16,0"
+                                Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollView>
+    </Grid>
+
+</Page>

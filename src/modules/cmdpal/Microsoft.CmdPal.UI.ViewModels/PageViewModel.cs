@@ -89,6 +89,12 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public bool HasSearchBox { get; protected set; } = true;
 
+    /// <summary>
+    /// Gets the preferred width in DIPs for this page when shown as a
+    /// transient dock popup. 0 means use the default window size.
+    /// </summary>
+    public int PreferredWidth { get; protected set; }
+
     public bool HasFilters { get; protected set; }
 
     public IconInfoViewModel Icon { get; protected set; }

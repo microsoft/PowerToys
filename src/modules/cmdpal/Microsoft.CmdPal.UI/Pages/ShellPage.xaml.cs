@@ -171,6 +171,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 {
                     ListViewModel => typeof(ListPage),
                     ContentPageViewModel => typeof(ContentPage),
+                    ControlsPageViewModel => typeof(ControlsPage),
                     _ => throw new NotSupportedException(),
                 },
                 new AsyncNavigationRequest(message.Page, message.CancellationToken),
@@ -638,7 +639,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         var shouldSearchBoxBeVisible = ViewModel.CurrentPage?.HasSearchBox ?? false;
 
-        if (shouldSearchBoxBeVisible || page is not ContentPage)
+        if (shouldSearchBoxBeVisible || (page is not ContentPage and not ControlsPage))
         {
             ViewModel.IsSearchBoxVisible = shouldSearchBoxBeVisible;
 
@@ -722,6 +723,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             ListPage listPage => listPage.ViewModel?.Title,
             ContentPage contentPage => contentPage.ViewModel?.Title,
+            ControlsPage controlsPage => controlsPage.ViewModel?.Title,
             _ => null,
         };
 
