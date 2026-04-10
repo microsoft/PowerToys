@@ -29,7 +29,7 @@ namespace ManagedCommon
         /// </summary>
         public static bool IsTsf4Supported()
         {
-            return Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= 99999;
+            return Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= 10000;
         }
     }
 }
