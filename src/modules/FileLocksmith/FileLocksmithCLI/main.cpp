@@ -67,7 +67,7 @@ int wmain(int argc, wchar_t* argv[])
         Logger::info("Command succeeded");
     }
 
-    Trace::CLICommand(L"filelocksmith", result.exit_code == 0);
+    Trace::CLICommand(result.command_name.c_str(), result.exit_code == 0);
 
     std::wcout << result.output;
     Trace::UnregisterProvider();

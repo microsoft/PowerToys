@@ -598,7 +598,7 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
   <tr>
     <td>Microsoft.PowerToys.FileLocksmith_CLICommand</td>
-    <td>Triggered when a File Locksmith CLI command is executed, logging the command name and success status.</td>
+    <td>Triggered when a File Locksmith CLI command is executed, logging the operation mode (query, kill, query-wait, query-json, or help) and success status.</td>
   </tr>
 </table>
 

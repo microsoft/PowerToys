@@ -19,6 +19,7 @@ namespace ImageResizer.Cli.Telemetry
         public ImageResizerCLICommandEvent()
         {
             EventName = "ImageResizer_CLICommand";
+            CommandName = string.Empty;
         }
 
         /// <summary>
