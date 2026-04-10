@@ -15,9 +15,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
 using WinUIEx;
@@ -39,17 +37,11 @@ public sealed partial class SettingsWindow : WindowEx,
     private Storyboard? _breadcrumbStoryboard;
     private IReadOnlyList<ExtensionGalleryScreenshotViewModel> _currentScreenshotSet = [];
     private ExtensionGalleryScreenshotViewModel? _currentScreenshot;
-    private ImageSource? _currentScreenshotViewerSource;
 
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
     // Gets or sets optional action invoked after NavigationView is loaded.
     public Action? NavigationViewLoaded { get; set; }
-
-    public Visibility ScreenshotViewerNavigationVisibility =>
-        _currentScreenshotSet.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
-
-    public ImageSource? CurrentScreenshotViewerSource => _currentScreenshotViewerSource;
 
     public string CurrentScreenshotDisplayName => _currentScreenshot?.DisplayName ?? string.Empty;
 
@@ -455,16 +447,6 @@ public sealed partial class SettingsWindow : WindowEx,
         CloseScreenshotViewer();
     }
 
-    private void PreviousScreenshotButton_Click(object sender, RoutedEventArgs e)
-    {
-        ChangeScreenshot(-1);
-    }
-
-    private void NextScreenshotButton_Click(object sender, RoutedEventArgs e)
-    {
-        ChangeScreenshot(1);
-    }
-
     private void ScreenshotViewerOverlay_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
     {
         if (!ScreenshotViewerPopup.IsOpen || _currentScreenshotSet.Count <= 1)
@@ -509,6 +491,12 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
+    private void ScreenshotViewerFlipView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _currentScreenshot = ScreenshotViewerFlipView.SelectedItem as ExtensionGalleryScreenshotViewModel;
+        UpdateScreenshotViewerBindings();
+    }
+
     private void OpenScreenshotViewer(
         ExtensionGalleryScreenshotViewModel screenshot,
         IReadOnlyList<ExtensionGalleryScreenshotViewModel> screenshots,
@@ -516,9 +504,10 @@ public sealed partial class SettingsWindow : WindowEx,
     {
         _currentScreenshotSet = screenshots;
         _currentScreenshot = screenshot;
-        _currentScreenshotViewerSource = CreateViewerImageSource(screenshot.Uri);
         UpdateScreenshotViewerBindings();
         UpdateScreenshotViewerPopupSize();
+        ScreenshotViewerFlipView.ItemsSource = screenshots;
+        ScreenshotViewerFlipView.SelectedIndex = GetCurrentScreenshotIndex();
         ScreenshotViewerPopup.IsOpen = true;
 
         DispatcherQueue.TryEnqueue(() =>
@@ -542,33 +531,28 @@ public sealed partial class SettingsWindow : WindowEx,
             ScreenshotViewerPopup.IsOpen = false;
         }
 
+        ScreenshotViewerFlipView.ItemsSource = null;
+        ScreenshotViewerFlipView.SelectedIndex = -1;
         _currentScreenshotSet = [];
         _currentScreenshot = null;
-        _currentScreenshotViewerSource = null;
         UpdateScreenshotViewerBindings();
         RootElement.Focus(FocusState.Programmatic);
     }
 
     private void ChangeScreenshot(int delta)
     {
-        if (_currentScreenshot is null || _currentScreenshotSet.Count <= 1)
+        if (_currentScreenshotSet.Count <= 1 || ScreenshotViewerFlipView.SelectedIndex < 0)
         {
             return;
         }
 
-        var currentIndex = GetCurrentScreenshotIndex();
-        if (currentIndex < 0)
-        {
-            return;
-        }
-
-        var nextIndex = (currentIndex + delta) % _currentScreenshotSet.Count;
+        var nextIndex = (ScreenshotViewerFlipView.SelectedIndex + delta) % _currentScreenshotSet.Count;
         if (nextIndex < 0)
         {
             nextIndex += _currentScreenshotSet.Count;
         }
 
-        OpenScreenshotViewer(_currentScreenshotSet[nextIndex], _currentScreenshotSet, startConnectedAnimation: false);
+        ScreenshotViewerFlipView.SelectedIndex = nextIndex;
     }
 
     private int GetCurrentScreenshotIndex()
@@ -603,18 +587,6 @@ public sealed partial class SettingsWindow : WindowEx,
     private void UpdateScreenshotViewerBindings()
     {
         Bindings.Update();
-    }
-
-    private static ImageSource? CreateViewerImageSource(Uri? screenshotUri)
-    {
-        if (screenshotUri is null)
-        {
-            return null;
-        }
-
-        BitmapImage bitmap = new();
-        bitmap.UriSource = screenshotUri;
-        return bitmap;
     }
 }
 

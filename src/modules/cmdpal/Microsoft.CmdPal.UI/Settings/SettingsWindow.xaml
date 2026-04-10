@@ -9,6 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:text="using:Windows.UI.Text"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels.Gallery"
     xmlns:winuiex="using:WinUIEx"
     Title="SettingsWindow"
     Width="1280"
@@ -159,47 +160,28 @@
                     <FontIcon FontSize="18" Glyph="&#xE711;" />
                 </Button>
 
-                <Grid Grid.Row="1" Margin="24,16,32,24">
-                    <Button
-                        Width="36"
-                        Height="36"
-                        Padding="0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Click="PreviousScreenshotButton_Click"
-                        CornerRadius="24"
-                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                        Style="{StaticResource ScrollContainerScrollButtonStyle}"
-                        ToolTipService.ToolTip="Previous screenshot"
-                        Visibility="{x:Bind ScreenshotViewerNavigationVisibility, Mode=OneWay}">
-                        <FontIcon FontSize="8" Glyph="&#xEDD9;" />
-                    </Button>
-
+                <Grid Grid.Row="1" Margin="24,16,24,24">
                     <Border
                         x:Name="ScreenshotViewerImageHost"
-                        Margin="72,0"
                         Padding="16">
-                        <Image
-                            x:Name="ScreenshotViewerImage"
-                            AutomationProperties.Name="{x:Bind CurrentScreenshotDisplayName, Mode=OneWay}"
-                            Source="{x:Bind CurrentScreenshotViewerSource, Mode=OneWay}"
-                            Stretch="Uniform" />
+                        <FlipView
+                            x:Name="ScreenshotViewerFlipView"
+                            Background="Transparent"
+                            SelectionChanged="ScreenshotViewerFlipView_SelectionChanged">
+                            <FlipView.ItemTemplate>
+                                <DataTemplate x:DataType="viewModels:ExtensionGalleryScreenshotViewModel">
+                                    <Grid MinHeight="360">
+                                        <Image
+                                            AutomationProperties.Name="{x:Bind DisplayName}"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            Source="{x:Bind ImageSource}"
+                                            Stretch="Uniform" />
+                                    </Grid>
+                                </DataTemplate>
+                            </FlipView.ItemTemplate>
+                        </FlipView>
                     </Border>
-
-                    <Button
-                        Width="36"
-                        Height="36"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        BorderThickness="1"
-                        Click="NextScreenshotButton_Click"
-                        CornerRadius="24"
-                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                        Style="{StaticResource ScrollContainerScrollButtonStyle}"
-                        ToolTipService.ToolTip="Next screenshot"
-                        Visibility="{x:Bind ScreenshotViewerNavigationVisibility, Mode=OneWay}">
-                        <FontIcon FontSize="8" Glyph="&#xEDDA;" />
-                    </Button>
                 </Grid>
 
                 <Border
