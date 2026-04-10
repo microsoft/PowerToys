@@ -160,6 +160,61 @@ public class ExtensionGalleryItemViewModelTests
     }
 
     [TestMethod]
+    public void Constructor_ExposesScreenshots_WhenUrisAreValid()
+    {
+        var firstScreenshotUri = "https://example.com/screenshots/1.png";
+        var secondScreenshotUri = "file:///C:/extensions/sample/screenshots/2.png";
+        var entry = new GalleryExtensionEntry
+        {
+            Id = "screenshots-extension",
+            Title = "Screenshots extension",
+            Description = "Screenshots extension description",
+            Author = new GalleryAuthor { Name = "Author" },
+            ScreenshotUrls =
+            [
+                firstScreenshotUri,
+                secondScreenshotUri,
+            ],
+            InstallSources = [],
+        };
+
+        var viewModel = CreateViewModel(entry);
+
+        Assert.IsTrue(viewModel.HasScreenshots);
+        Assert.AreEqual(2, viewModel.Screenshots.Count);
+        Assert.AreEqual(new Uri(firstScreenshotUri), viewModel.Screenshots[0].Uri);
+        Assert.AreEqual("Screenshot 1", viewModel.Screenshots[0].DisplayName);
+        Assert.AreEqual(new Uri(secondScreenshotUri), viewModel.Screenshots[1].Uri);
+        Assert.AreEqual("Screenshot 2", viewModel.Screenshots[1].DisplayName);
+    }
+
+    [TestMethod]
+    public void Constructor_IgnoresInvalidScreenshotUris()
+    {
+        var entry = new GalleryExtensionEntry
+        {
+            Id = "invalid-screenshots-extension",
+            Title = "Invalid screenshots extension",
+            Description = "Invalid screenshots extension description",
+            Author = new GalleryAuthor { Name = "Author" },
+            ScreenshotUrls =
+            [
+                "not-a-uri",
+                "relative/path.png",
+                "https://example.com/screenshots/valid.png",
+                "https://example.com/screenshots/valid.png",
+            ],
+            InstallSources = [],
+        };
+
+        var viewModel = CreateViewModel(entry);
+
+        Assert.IsTrue(viewModel.HasScreenshots);
+        Assert.AreEqual(1, viewModel.Screenshots.Count);
+        Assert.AreEqual(new Uri("https://example.com/screenshots/valid.png"), viewModel.Screenshots[0].Uri);
+    }
+
+    [TestMethod]
     public void ApplyWinGetPackageInfo_UpdatesStatus_WhenDetailsAreMissing()
     {
         var entry = new GalleryExtensionEntry

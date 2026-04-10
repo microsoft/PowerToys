@@ -9,6 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:text="using:Windows.UI.Text"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels.Gallery"
     xmlns:winuiex="using:WinUIEx"
     Title="SettingsWindow"
     Width="1280"
@@ -135,5 +136,76 @@
                 </Grid>
             </Grid>
         </NavigationView>
+
+        <Popup x:Name="ScreenshotViewerPopup" IsLightDismissEnabled="False">
+            <Grid
+                x:Name="ScreenshotViewerOverlay"
+                Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                IsTabStop="True"
+                KeyDown="ScreenshotViewerOverlay_KeyDown"
+                PointerWheelChanged="ScreenshotViewerOverlay_PointerWheelChanged">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Button
+                    Width="48"
+                    Height="48"
+                    Margin="16,48,32,0"
+                    HorizontalAlignment="Right"
+                    Click="CloseScreenshotViewerButton_Click"
+                    Style="{StaticResource SubtleButtonStyle}"
+                    ToolTipService.ToolTip="Close screenshot viewer">
+                    <FontIcon FontSize="18" Glyph="&#xE711;" />
+                </Button>
+
+                <Grid Grid.Row="1" Margin="24,16,24,24">
+                    <Border
+                        x:Name="ScreenshotViewerImageHost"
+                        Padding="16">
+                        <FlipView
+                            x:Name="ScreenshotViewerFlipView"
+                            Background="Transparent"
+                            SelectionChanged="ScreenshotViewerFlipView_SelectionChanged">
+                            <FlipView.ItemTemplate>
+                                <DataTemplate x:DataType="viewModels:ExtensionGalleryScreenshotViewModel">
+                                    <Grid MinHeight="360">
+                                        <Image
+                                            AutomationProperties.Name="{x:Bind DisplayName}"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            Source="{x:Bind ImageSource}"
+                                            Stretch="Uniform" />
+                                    </Grid>
+                                </DataTemplate>
+                            </FlipView.ItemTemplate>
+                        </FlipView>
+                    </Border>
+                </Grid>
+
+                <Border
+                    Grid.Row="2"
+                    Margin="0,0,0,24"
+                    Padding="20,12"
+                    HorizontalAlignment="Center"
+                    Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}"
+                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12">
+                    <StackPanel HorizontalAlignment="Center" Spacing="2">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="{x:Bind CurrentScreenshotDisplayName, Mode=OneWay}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind CurrentScreenshotPositionText, Mode=OneWay}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Popup>
     </Grid>
 </winuiex:WindowEx>

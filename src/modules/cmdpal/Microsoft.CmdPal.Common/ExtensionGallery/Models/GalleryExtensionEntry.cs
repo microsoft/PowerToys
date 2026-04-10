@@ -22,6 +22,8 @@ public sealed class GalleryExtensionEntry
 
     public string? IconUrl { get; set; }
 
+    public List<string> ScreenshotUrls { get; set; } = [];
+
     public List<GalleryInstallSource> InstallSources { get; set; } = [];
 
     public GalleryDetection? Detection { get; set; }
