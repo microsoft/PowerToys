@@ -98,9 +98,23 @@ public:
 
     virtual void enable()
     {
-        m_enabled = true;
         Logger::info(L"Enabling WinPos module...");
-        Trace::Enable(true);
+
+        if (m_process && WaitForSingleObject(m_process, 0) == WAIT_TIMEOUT)
+        {
+            m_enabled = true;
+            Trace::Enable(true);
+            Logger::debug(L"WinPos process already running.");
+            return;
+        }
+
+        if (m_process)
+        {
+            CloseHandle(m_process);
+            m_process = nullptr;
+        }
+
+        m_enabled = false;
 
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring args = L"--pid " + std::to_wstring(powertoys_pid);
@@ -150,6 +164,8 @@ public:
 
         Logger::info(L"WinPos process launched successfully (PID: {}).", pi.dwProcessId);
         m_process = pi.hProcess;
+        m_enabled = true;
+        Trace::Enable(true);
         CloseHandle(pi.hThread);
     }
 

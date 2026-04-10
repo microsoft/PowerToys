@@ -8,15 +8,25 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <commctrl.h>
+#include <TraceLoggingProvider.h>
 #include <string>
 #include <thread>
 
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
+#include <common/Telemetry/ProjectTelemetry.h>
 #include <common/utils/process_path.h>
 #include <common/utils/excluded_apps.h>
+#include <common/utils/game_mode.h>
 
 #include "resource.h"
+
+TRACELOGGING_DEFINE_PROVIDER(
+    g_hProvider,
+    "Microsoft.PowerToys",
+    // {38e8889b-9731-53f5-e901-e8a7c1753074}
+    (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
+    TraceLoggingOptionProjectTelemetry());
 
 // ---------------------------------------------------------------------------
 // Globals
@@ -46,6 +56,7 @@ static DWORD     g_absorbedScanCode = 0;    // scan code for replay
 static DWORD     g_absorbedFlags   = 0;     // flags for replay (extended key, etc.)
 
 static bool      g_showGeometry = true; // true if we want to draw the X, Y, W and H on the overlay on move and resize
+static bool      g_doNotActivateOnGameMode = true; // true if WinPos is suppressed when Windows Game Mode is active
 
 // Resize handle identifiers
 enum ResizeHandle {
@@ -96,6 +107,45 @@ static HANDLE g_hReloadSettingsEvent = nullptr;
 static std::thread g_settingsThread;
 static bool g_running = true;
 
+static void StopDragging();
+static void StopResizing();
+
+static bool IsSuppressedByGameMode()
+{
+    // Remote sessions can report fullscreen notification states that are not actual games.
+    if (GetSystemMetrics(SM_REMOTESESSION))
+    {
+        return false;
+    }
+
+    return g_doNotActivateOnGameMode && detect_game_mode();
+}
+
+static bool IsActivationModifierPressed()
+{
+    return g_altPressed || ((GetAsyncKeyState(VK_MENU) & 0x8000) != 0);
+}
+
+enum class WinPosShortcutAction
+{
+    Move,
+    Resize,
+};
+
+static void TraceShortcutUse(bool successful, WinPosShortcutAction action, const wchar_t* reason) noexcept
+{
+    const wchar_t* actionName = action == WinPosShortcutAction::Move ? L"move" : L"resize";
+
+    TraceLoggingWrite(
+        g_hProvider,
+        "WinPos_ShortcutUse",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(successful, "Successful"),
+        TraceLoggingWideString(actionName, "Action"),
+        TraceLoggingWideString(reason, "Reason"));
+}
+
 // ---------------------------------------------------------------------------
 // Settings file helpers
 // ---------------------------------------------------------------------------
@@ -113,6 +163,11 @@ static void LoadSettingsFromFile() {
         if (auto v = values.get_bool_value(L"showGeometry"))
         {
             g_showGeometry = *v;
+        }
+
+        if (auto v = values.get_bool_value(L"doNotActivateOnGameMode"))
+        {
+            g_doNotActivateOnGameMode = *v;
         }
 
         if (auto v = values.get_string_value(L"excluded_apps"))
@@ -286,6 +341,7 @@ static void DestroyOverlay() {
 static void StopDragging()
 {
     g_dragging = false;
+    g_dragFirstMove = false;
     g_dragTarget = nullptr;
     DestroyOverlay();
 }
@@ -332,9 +388,52 @@ static LPCWSTR CursorForHandle(ResizeHandle handle) {
 static void StopResizing()
 {
     g_resizing = false;
+    g_resizeFirstMove = false;
     g_resizeTarget = nullptr;
     g_currentHandle = RESIZE_NONE;
     DestroyOverlay();
+}
+
+static void ClearAltStickyState()
+{
+    const bool isAltPhysicallyDown = (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+
+    // In remote sessions key-up can be lost; synthesize one only when Alt is physically up.
+    if (!isAltPhysicallyDown)
+    {
+        INPUT altUp{};
+        altUp.type = INPUT_KEYBOARD;
+        altUp.ki.wVk = VK_MENU;
+        altUp.ki.dwFlags = KEYEVENTF_KEYUP;
+        SendInput(1, &altUp, sizeof(INPUT));
+    }
+
+    g_altPressed = isAltPhysicallyDown;
+    g_altAbsorbed = false;
+    g_dragConsumedAlt = false;
+}
+
+static void EndInteraction(bool endDrag, bool endResize, bool clearAltState)
+{
+    bool endedDrag = false;
+    bool endedResize = false;
+
+    if (endDrag && g_dragging)
+    {
+        StopDragging();
+        endedDrag = true;
+    }
+
+    if (endResize && g_resizing)
+    {
+        StopResizing();
+        endedResize = true;
+    }
+
+    if (clearAltState && (endedDrag || endedResize))
+    {
+        ClearAltStickyState();
+    }
 }
 
 static void ReplayAbsorbedAlt() {
@@ -430,6 +529,9 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
         if (isAltKey) {
             if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
+                if (IsSuppressedByGameMode()) {
+                    goto forward;
+                }
                 g_altPressed = true;
                 if (g_shouldAbsorbAlt) {
                     if (!g_altAbsorbed) {
@@ -445,12 +547,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 g_altPressed = false;
                 bool wasDragging = g_dragging;
                 bool wasResizing = g_resizing;
-                if (g_dragging) {
-                    StopDragging();
-                }
-                if (g_resizing) {
-                    StopResizing();
-                }
+                EndInteraction(true, true, false);
                 if (g_altAbsorbed) {
                     g_altAbsorbed = false;
                     if (wasDragging || wasResizing || g_dragConsumedAlt) {
@@ -475,6 +572,56 @@ forward:
     return CallNextHookEx(g_hhkKeyboard, nCode, wParam, lParam);
 }
 
+static HWND ResolveTargetWindow(POINT pt)
+{
+    auto normalizeTarget = [](HWND candidate) -> HWND
+    {
+        if (!candidate)
+        {
+            return nullptr;
+        }
+
+        if (HWND root = GetAncestor(candidate, GA_ROOT))
+        {
+            candidate = root;
+        }
+
+        if (!candidate || candidate == g_hOverlay || candidate == g_hMsgWnd || IsSystemClass(candidate))
+        {
+            return nullptr;
+        }
+
+        return candidate;
+    };
+
+    // Remote sessions can produce unstable hit-testing for topmost windows.
+    // Prefer the actual foreground top-level window there.
+    if (GetSystemMetrics(SM_REMOTESESSION))
+    {
+        if (HWND foreground = normalizeTarget(GetForegroundWindow()))
+        {
+            return foreground;
+        }
+    }
+
+    HWND hwnd = WindowFromPoint(pt);
+    hwnd = normalizeTarget(hwnd);
+
+    if (!hwnd)
+    {
+        HWND foreground = GetForegroundWindow();
+        if (HWND normalizedForeground = normalizeTarget(foreground))
+        {
+            RECT foregroundRect{};
+            if (GetWindowRect(normalizedForeground, &foregroundRect) && PtInRect(&foregroundRect, pt))
+            {
+                hwnd = normalizedForeground;
+            }
+        }
+    }
+
+    return hwnd;
+}
 static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode >= 0) {
         auto* ms = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
@@ -483,18 +630,31 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
         if (ms->flags & LLMHF_INJECTED)
             goto forward;
 
-        // ----- Alt + Left Button Down: start drag -----
-        if (wParam == WM_LBUTTONDOWN && g_altPressed) {
-            POINT pt = ms->pt;
-            HWND hwnd = WindowFromPoint(pt);
-            if (hwnd) {
-                // Walk up to the top-level owner window
-                HWND root = GetAncestor(hwnd, GA_ROOT);
-                if (root) hwnd = root;
+        // Recovery path: if a non-modifier click occurs while stale drag/resize state exists, clear it.
+        if ((wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN) && !IsActivationModifierPressed())
+        {
+            EndInteraction(true, true, true);
+        }
 
+        if (!g_dragging && !g_resizing && g_hOverlay)
+        {
+            DestroyOverlay();
+        }
+
+        // ----- Alt + Left Button Down: start drag -----
+        if (wParam == WM_LBUTTONDOWN && IsActivationModifierPressed()) {
+            if (IsSuppressedByGameMode()) {
+                TraceShortcutUse(false, WinPosShortcutAction::Move, L"game_mode");
+                goto forward;
+            }
+            POINT pt = ms->pt;
+            HWND hwnd = ResolveTargetWindow(pt);
+            if (hwnd) {
                 // Don't drag excluded windows (desktop, taskbar, user-excluded apps)
                 if (IsExcluded(hwnd))
+                {
                     goto forward;
+                }
 
                 g_dragging      = true;
                 g_dragFirstMove = true;
@@ -507,6 +667,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 CreateOverlay(g_dragWndRect, IDC_SIZEALL);
 
                 // Swallow the click so the target window doesn't get it
+                TraceShortcutUse(true, WinPosShortcutAction::Move, L"started");
                 return 1;
             }
         }
@@ -581,24 +742,29 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
             int h    = g_dragWndRect.bottom - g_dragWndRect.top;
             SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
                          SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-            StopDragging();
+            EndInteraction(true, false, true);
             return 1;  // swallow the release
         }
 
         // ----- Alt + Right Button Down: start resize -----
-        if (wParam == WM_RBUTTONDOWN && g_altPressed) {
+        if (wParam == WM_RBUTTONDOWN && IsActivationModifierPressed()) {
+            if (IsSuppressedByGameMode()) {
+                TraceShortcutUse(false, WinPosShortcutAction::Resize, L"game_mode");
+                goto forward;
+            }
             POINT pt = ms->pt;
-            HWND hwnd = WindowFromPoint(pt);
+            HWND hwnd = ResolveTargetWindow(pt);
             if (hwnd) {
-                HWND root = GetAncestor(hwnd, GA_ROOT);
-                if (root) hwnd = root;
-
                 if (IsExcluded(hwnd))
+                {
                     goto forward;
+                }
 
                 // Only allow resize if the window style permits resizing
                 if (!(GetWindowLongW(hwnd, GWL_STYLE) & WS_THICKFRAME))
+                {
                     goto forward;
+                }
 
                 g_resizing        = true;
                 g_resizeFirstMove = true;
@@ -610,6 +776,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
                 CreateOverlay(g_resizeWndRect, CursorForHandle(g_currentHandle));
 
+                TraceShortcutUse(true, WinPosShortcutAction::Resize, L"started");
                 return 1;   // swallow the right button press
             }
         }
@@ -717,7 +884,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
             int h = nr.bottom - nr.top;
             SetWindowPos(g_resizeTarget, nullptr, nr.left, nr.top, w, h,
                          SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-            StopResizing();
+            EndInteraction(false, true, true);
             return 1;   // swallow the right button release
         }
     }
@@ -757,6 +924,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 // ---------------------------------------------------------------------------
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     g_hInstance = hInstance;
+    TraceLoggingRegister(g_hProvider);
 
     // Load initial settings from JSON before anything else
     LoadSettingsFromFile();
@@ -777,7 +945,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     wc.lpfnWndProc   = WndProc;
     wc.hInstance      = hInstance;
     wc.lpszClassName  = CLASS_NAME;
-    if (!RegisterClassExW(&wc)) return 1;
+    if (!RegisterClassExW(&wc))
+    {
+        TraceLoggingUnregister(g_hProvider);
+        return 1;
+    }
 
     // Register the overlay window class (white background, ARROW cursor)
     WNDCLASSEXW owc = {};
@@ -787,13 +959,21 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     owc.hCursor        = LoadCursorW(nullptr, IDC_ARROW);
     owc.hbrBackground  = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
     owc.lpszClassName  = OVERLAY_CLASS_NAME;
-    if (!RegisterClassExW(&owc)) return 1;
+    if (!RegisterClassExW(&owc))
+    {
+        TraceLoggingUnregister(g_hProvider);
+        return 1;
+    }
 
     // Create a message-only window (invisible)
     g_hMsgWnd = CreateWindowExW(0, CLASS_NAME, APP_TITLE,
                                 0, 0, 0, 0, 0,
                                 HWND_MESSAGE, nullptr, hInstance, nullptr);
-    if (!g_hMsgWnd) return 1;
+    if (!g_hMsgWnd)
+    {
+        TraceLoggingUnregister(g_hProvider);
+        return 1;
+    }
 
     // Install global low-level hooks
     g_hhkKeyboard = SetWindowsHookExW(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
@@ -806,6 +986,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
                     APP_TITLE, MB_ICONERROR | MB_OK);
         if (g_hhkKeyboard) UnhookWindowsHookEx(g_hhkKeyboard);
         if (g_hhkMouse)    UnhookWindowsHookEx(g_hhkMouse);
+        TraceLoggingUnregister(g_hProvider);
         return 1;
     }
 
@@ -833,6 +1014,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     UnhookWindowsHookEx(g_hhkKeyboard);
     UnhookWindowsHookEx(g_hhkMouse);
     RemoveTrayIcon();
+    TraceLoggingUnregister(g_hProvider);
 
     return static_cast<int>(msg.wParam);
 }

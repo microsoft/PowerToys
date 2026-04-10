@@ -5943,6 +5943,10 @@ Text uses the current drawing color.</value>
   <data name="WinPos_ShouldAbsorbAlt.Description" xml:space="preserve">
     <value>Prevent Alt from activating the window menu after a drag or resize operation</value>
   </data>
+  <data name="WinPos_DoNotActivateOnGameMode.Header" xml:space="preserve">
+    <value>Do not activate when Game Mode is on</value>
+    <comment>Game Mode is a Windows feature</comment>
+  </data>
   <data name="WinPos_ShowGeometry.Header" xml:space="preserve">
     <value>Show window geometry</value>
     <comment>When enabled, WinPos displays the window position (X, Y) and size (W, H) on the overlay during move and resize.</comment>
