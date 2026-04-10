@@ -9,7 +9,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-	<Project Path="src/common/Common.UI/Common.UI.csproj">
+    <Project Path="src/common/Common.UI/Common.UI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -719,7 +719,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-	<!-- TEMPORARILY_DISABLED: PowerDisplay
+    <!-- TEMPORARILY_DISABLED: PowerDisplay
     <Project Path="src/modules/powerdisplay/PowerDisplay/PowerDisplay.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
