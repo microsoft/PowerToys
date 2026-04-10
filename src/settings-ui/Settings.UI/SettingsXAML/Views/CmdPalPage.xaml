@@ -39,9 +39,9 @@
                             <Rectangle>
                                 <Rectangle.Fill>
                                     <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                        <GradientStop Offset="0.50" Color="Black" />
-                                        <GradientStop Offset="0.75" Color="#80000000" />
-                                        <GradientStop Offset="0.95" Color="Transparent" />
+                                        <GradientStop Offset="0.80" Color="Black" />
+                                        <GradientStop Offset="0.90" Color="#80000000" />
+                                        <GradientStop Offset="0.99" Color="Transparent" />
                                     </LinearGradientBrush>
                                 </Rectangle.Fill>
                             </Rectangle>
@@ -50,36 +50,35 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <!--  Top-left: light cyan/blue  -->
-                                    <GradientStop Offset="0.0" Color="#5FAFC9" />
+                                <ImageBrush ImageSource="C:\\Users\\nielslaute\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\TranscodedWallpaper" />
 
-                                    <!--  Mid transition  -->
-                                    <GradientStop Offset="0.45" Color="#3E7FB0" />
-
-                                    <!--  Bottom-right: deep blue  -->
-                                    <GradientStop Offset="1.0" Color="#2C3E8F" />
-                                </LinearGradientBrush>
                             </Grid.Background>
+                            <Grid
+                                Height="32"
+                                Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                                RequestedTheme="Dark" />
                             <TextBlock
                                 x:Uid="CmdPal_HeroTitle"
+                                Grid.Row="1"
                                 Margin="0,24,0,12"
                                 HorizontalAlignment="Center"
                                 FontSize="36"
-                                FontWeight="Bold">
-                                <TextBlock.Foreground>
+                                FontWeight="Bold"
+                                Foreground="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
+                                <!--<TextBlock.Foreground>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                         <GradientStop Offset="0.0" Color="#FFB9EBFF" />
                                         <GradientStop Offset="0.49" Color="#FF86CBFF" />
                                         <GradientStop Offset="1.0" Color="#FFA1E7FF" />
                                     </LinearGradientBrush>
-                                </TextBlock.Foreground>
+                                </TextBlock.Foreground>-->
                             </TextBlock>
                             <TextBlock
-                                Grid.Row="1"
+                                Grid.Row="2"
                                 HorizontalAlignment="Center"
                                 Foreground="White"
                                 TextAlignment="Center"
@@ -90,7 +89,7 @@
                                 </Hyperlink>
                             </TextBlock>
                             <Image
-                                Grid.Row="2"
+                                Grid.Row="3"
                                 Margin="0,16,0,0"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Top"
