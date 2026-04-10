@@ -67,6 +67,18 @@
        on the Target element still override the default targets even when condition is false. -->
 
   <!--
+    When multiple CppWinRT component projects share the same OutDir, mdmerge's
+    metadata-dir scan can find a stale copy of the project's own WinMD produced
+    by a previous build, causing "Duplicate type" errors and empty merge output.
+    Delete the stale WinMD before mdmerge runs so the fresh merge succeeds.
+  -->
+  <Target Name="CleanStaleProjectWinMD"
+          BeforeTargets="CppWinRTMergeProjectWinMDInputs"
+          Condition="'$(CppWinRTProjectWinMD)' != ''">
+    <Delete Files="$(CppWinRTProjectWinMD)" Condition="Exists('$(CppWinRTProjectWinMD)')" />
+  </Target>
+
+  <!--
     Remove unused VC runtime DLLs that leak from the VC++ Redistributable tree
     (MFC, C++ AMP, OpenMP) via CopyCppRuntimeToOutputDir.
     No PowerToys binary imports these — verified across all built binaries.
