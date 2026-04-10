@@ -691,6 +691,19 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void HandleShortcutDelete(IToggleableShortcut shortcut)
         {
+            if (shortcut is ExpandMapping)
+            {
+                ShortcutKeyMapping skm = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
+                if (shortcut.IsActive)
+                {
+                    _mappingService!.DeleteExpandMapping(skm.OriginalKeys, skm.TargetApp);
+                    _mappingService.SaveSettings();
+                }
+
+                SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
+                return;
+            }
+
             bool deleted = shortcut.Shortcut.Count == 1
                 ? DeleteSingleKeyToTextMapping(shortcut.Shortcut[0]) // Remapping has its own handler, single key will always be text mapping
                 : DeleteMultiKeyShortcut(shortcut);
@@ -747,14 +760,34 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            if (shortcut is ExpandMapping expandMapping)
+            {
+                ShortcutKeyMapping skm = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
+                int triggerKeyVk = KeyboardManagerInterop.GetKeyCodeFromName(skm.TargetKeys);
+                if (triggerKeyVk == 0)
+                {
+                    triggerKeyVk = 0x20;
+                }
+
+                bool saved = _mappingService!.AddExpandMapping(skm.OriginalKeys, triggerKeyVk, skm.TargetText, skm.TargetApp);
+                if (saved)
+                {
+                    shortcut.IsActive = true;
+                    SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                    _mappingService.SaveSettings();
+                }
+
+                return;
+            }
+
             ShortcutKeyMapping shortcutKeyMapping = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
-            bool saved = shortcut.Shortcut.Count == 1
+            bool saved2 = shortcut.Shortcut.Count == 1
                 ? _mappingService!.AddSingleKeyToTextMapping(_mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]), shortcutKeyMapping.TargetText)
                 : shortcutKeyMapping.OperationType == ShortcutOperationType.RemapText
                     ? _mappingService!.AddShortcutMapping(shortcutKeyMapping.OriginalKeys, shortcutKeyMapping.TargetText, operationType: ShortcutOperationType.RemapText)
                     : _mappingService!.AddShortcutMapping(shortcutKeyMapping);
 
-            if (saved)
+            if (saved2)
             {
                 shortcut.IsActive = true;
                 SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
@@ -772,11 +805,25 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            bool deleted = shortcut.Shortcut.Count == 1
+            if (shortcut is ExpandMapping expandMapping)
+            {
+                ShortcutKeyMapping skm = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
+                bool deleted = _mappingService!.DeleteExpandMapping(skm.OriginalKeys, skm.TargetApp);
+                if (deleted)
+                {
+                    shortcut.IsActive = false;
+                    SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                    _mappingService.SaveSettings();
+                }
+
+                return;
+            }
+
+            bool deleted2 = shortcut.Shortcut.Count == 1
                 ? DeleteSingleKeyToTextMapping(shortcut.Shortcut[0])
                 : DeleteMultiKeyMapping(shortcut.Shortcut, shortcut.AppName);
 
-            if (deleted)
+            if (deleted2)
             {
                 shortcut.IsActive = false;
                 SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
