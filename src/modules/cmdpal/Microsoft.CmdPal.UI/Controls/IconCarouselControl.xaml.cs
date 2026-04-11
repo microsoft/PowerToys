@@ -9,7 +9,10 @@ using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -56,6 +59,7 @@ public sealed partial class IconCarouselControl : UserControl
     private readonly List<LoadedImageSurface> _surfaces = [];
     private readonly List<CompositionColorBrush> _cardFillBrushes = [];
     private readonly List<CompositionColorBrush> _cardStrokeBrushes = [];
+    private int[] _displaySlots = [];
     private Compositor? _compositor;
     private ContainerVisual? _container;
     private DispatcherTimer? _timer;
@@ -75,6 +79,8 @@ public sealed partial class IconCarouselControl : UserControl
         get => (IReadOnlyList<Uri>?)GetValue(IconUrisProperty);
         set => SetValue(IconUrisProperty, value);
     }
+
+    public event TypedEventHandler<IconCarouselControl, IconCarouselItemInvokedEventArgs>? ItemInvoked;
 
     private static void OnIconUrisChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -125,6 +131,7 @@ public sealed partial class IconCarouselControl : UserControl
         var uris = IconUris;
         if (uris == null || uris.Count == 0)
         {
+            _displaySlots = [];
             return;
         }
 
@@ -418,6 +425,8 @@ public sealed partial class IconCarouselControl : UserControl
 
     private void ApplyZOrder(IReadOnlyList<int> displaySlots)
     {
+        _displaySlots = [.. displaySlots];
+
         if (_container == null)
         {
             return;
@@ -490,6 +499,71 @@ public sealed partial class IconCarouselControl : UserControl
         }
 
         return HiddenSlot;
+    }
+
+    private void RootGrid_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        var uris = IconUris;
+        if (uris is null || uris.Count == 0)
+        {
+            return;
+        }
+
+        var hitCardIndex = HitTestCardIndex(e.GetPosition(RootGrid));
+        if (hitCardIndex < 0 || hitCardIndex >= uris.Count)
+        {
+            return;
+        }
+
+        ItemInvoked?.Invoke(this, new IconCarouselItemInvokedEventArgs(hitCardIndex, uris[hitCardIndex]));
+        e.Handled = true;
+    }
+
+    private int HitTestCardIndex(Point point)
+    {
+        if (_cards.Count == 0 || _displaySlots.Length != _cards.Count)
+        {
+            return -1;
+        }
+
+        var centerSlot = SlotCount / 2;
+        List<(int DistFromCenter, int SlotIndex, int CardIndex)> ordered = [];
+
+        for (var i = 0; i < _cards.Count; i++)
+        {
+            var slotIndex = _displaySlots[i];
+            if (slotIndex == HiddenSlot || !_cards[i].IsVisible)
+            {
+                continue;
+            }
+
+            ordered.Add((Math.Abs(slotIndex - centerSlot), slotIndex, i));
+        }
+
+        ordered.Sort((a, b) =>
+        {
+            var distanceOrder = a.DistFromCenter.CompareTo(b.DistFromCenter);
+            return distanceOrder != 0 ? distanceOrder : b.SlotIndex.CompareTo(a.SlotIndex);
+        });
+
+        foreach (var item in ordered)
+        {
+            if (IsPointOverCard(_cards[item.CardIndex], point))
+            {
+                return item.CardIndex;
+            }
+        }
+
+        return -1;
+    }
+
+    private static bool IsPointOverCard(ContainerVisual card, Point point)
+    {
+        var halfExtent = (CardSize * card.Scale.X) / 2f;
+        return point.X >= card.Offset.X - halfExtent
+            && point.X <= card.Offset.X + halfExtent
+            && point.Y >= card.Offset.Y - halfExtent
+            && point.Y <= card.Offset.Y + halfExtent;
     }
 
     private void PrepareArrival(ContainerVisual card, int slotIndex, bool enteringFromLeft)
@@ -598,6 +672,7 @@ public sealed partial class IconCarouselControl : UserControl
         }
 
         _cards.Clear();
+        _displaySlots = [];
         _cardFillBrushes.Clear();
         _cardStrokeBrushes.Clear();
 

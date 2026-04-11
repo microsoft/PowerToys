@@ -66,7 +66,11 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
     public ObservableCollection<ExtensionGalleryItemViewModel> FilteredEntries { get; } = [];
 
     [ObservableProperty]
-    public partial IReadOnlyList<Uri> CarouselIconUris { get; set; } = [];
+    public partial IReadOnlyList<ExtensionGalleryItemViewModel> CarouselEntries { get; set; } = [];
+
+    public IReadOnlyList<Uri> CarouselIconUris => CarouselEntries.Count == 0
+        ? []
+        : CarouselEntries.Select(static entry => entry.IconUri).ToList();
 
     private string _searchText = string.Empty;
 
@@ -287,22 +291,22 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
 
     private void UpdateCarouselIcons()
     {
-        List<Uri> candidates;
+        List<ExtensionGalleryItemViewModel> candidates;
         lock (_entriesLock)
         {
-            candidates = new List<Uri>(_allEntries.Count);
+            candidates = new List<ExtensionGalleryItemViewModel>(_allEntries.Count);
             foreach (var entry in _allEntries)
             {
                 if (entry.IconUri.Scheme != "ms-appx")
                 {
-                    candidates.Add(entry.IconUri);
+                    candidates.Add(entry);
                 }
             }
         }
 
         if (candidates.Count == 0)
         {
-            CarouselIconUris = [];
+            CarouselEntries = [];
             return;
         }
 
@@ -316,7 +320,12 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
 
         // Take up to VisibleCount + buffer for smooth wrapping
         var count = Math.Min(candidates.Count, 12);
-        CarouselIconUris = candidates.GetRange(0, count);
+        CarouselEntries = candidates.GetRange(0, count);
+    }
+
+    partial void OnCarouselEntriesChanged(IReadOnlyList<ExtensionGalleryItemViewModel> value)
+    {
+        OnPropertyChanged(nameof(CarouselIconUris));
     }
 
     private void StartBackgroundRefresh(

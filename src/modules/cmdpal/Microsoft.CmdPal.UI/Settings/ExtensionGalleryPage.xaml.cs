@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
@@ -39,6 +40,16 @@ public sealed partial class ExtensionGalleryPage : Page, IDisposable
         if (args.InvokedItem is ExtensionGalleryItemViewModel vm)
         {
             NavigateToDetails(vm);
+        }
+    }
+
+    private void Carousel_ItemInvoked(Controls.IconCarouselControl sender, Controls.IconCarouselItemInvokedEventArgs args)
+    {
+        if (args.Index >= 0
+            && args.Index < ViewModel.CarouselEntries.Count
+            && ViewModel.CarouselEntries[args.Index] is ExtensionGalleryItemViewModel vm)
+        {
+            Frame?.Navigate(typeof(ExtensionGalleryItemPage), vm);
         }
     }
 

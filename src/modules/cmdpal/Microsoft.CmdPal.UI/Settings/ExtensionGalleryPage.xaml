@@ -113,6 +113,7 @@
                             Height="160"
                             Margin="0,12,0,0"
                             HorizontalAlignment="Stretch"
+                            ItemInvoked="Carousel_ItemInvoked"
                             IconUris="{x:Bind ViewModel.CarouselIconUris, Mode=OneWay}" />
                     </StackPanel>
                 </Grid>
