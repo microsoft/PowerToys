@@ -24,6 +24,7 @@ public sealed partial class IconCarouselControl : UserControl
     private const float CardCornerRadius = 20f;
     private const float IconPadding = 14f;
     private const float Stride = CardSize * 0.50f;
+    private const float IconDecodeScaleFactor = 1.5f;
     private const float TransitionScaleFactor = 0.92f;
     private const float TransitionOpacityFactor = 0.20f;
     private const float ArrivalFadeHoldProgress = 0.40f;
@@ -203,15 +204,19 @@ public sealed partial class IconCarouselControl : UserControl
         bgVisual.Shapes.Add(bgShape);
         card.Children.InsertAbove(bgVisual, shadowVisual);
 
-        // Icon image
-        var surface = LoadedImageSurface.StartLoadFromUri(iconUri);
+        var iconSize = CardSize - (IconPadding * 2);
+
+        // Request a slightly larger surface so the smaller carousel slots can
+        // downsample from a cleaner source instead of revealing raster edges.
+        var surface = LoadedImageSurface.StartLoadFromUri(iconUri, GetDesiredIconSurfaceSize(iconSize));
         _surfaces.Add(surface);
 
         var surfaceBrush = _compositor.CreateSurfaceBrush(surface);
         surfaceBrush.Stretch = CompositionStretch.Uniform;
-        surfaceBrush.BitmapInterpolationMode = CompositionBitmapInterpolationMode.Linear;
+        surfaceBrush.BitmapInterpolationMode = CompositionBitmapInterpolationMode.MagLinearMinLinearMipLinear;
+        surfaceBrush.HorizontalAlignmentRatio = 0.5f;
+        surfaceBrush.VerticalAlignmentRatio = 0.5f;
 
-        var iconSize = CardSize - (IconPadding * 2);
         var iconVisual = _compositor.CreateSpriteVisual();
         iconVisual.Size = new Vector2(iconSize, iconSize);
         iconVisual.Offset = new Vector3(shadowPad + IconPadding, shadowPad + IconPadding, 0);
@@ -506,6 +511,12 @@ public sealed partial class IconCarouselControl : UserControl
         var edgeSlot = toLeft ? Slots[0] : Slots[^1];
         var direction = toLeft ? -1f : 1f;
         return GetSlotOffset(edgeSlot) + new Vector3(direction * Stride, 0f, 0f);
+    }
+
+    private static global::Windows.Foundation.Size GetDesiredIconSurfaceSize(float iconSize)
+    {
+        var desiredSize = Math.Ceiling(iconSize * IconDecodeScaleFactor);
+        return new global::Windows.Foundation.Size(desiredSize, desiredSize);
     }
 
     private void StartTimer()
