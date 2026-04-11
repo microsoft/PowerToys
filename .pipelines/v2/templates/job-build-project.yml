@@ -451,9 +451,8 @@ jobs:
       & '.pipelines/verifyPossibleAssetConflicts.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
     displayName: Audit base applications path asset conflicts
 
-  - pwsh: |-
-      & '.pipelines/verifyPossibleAssetConflicts.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\CmdPal'
-    displayName: Audit CmdPal path asset conflicts
+  # WinUI3Apps directory no longer exists after layout flattening.
+  # CmdPal is the only remaining subfolder and doesn't need multi-app conflict checks.
 
   # To streamline the pipeline and prevent errors, skip this step during compatibility tests with the latest WinAppSDK.
   - ${{ if eq(parameters.useLatestWinAppSDK, false) }}:
