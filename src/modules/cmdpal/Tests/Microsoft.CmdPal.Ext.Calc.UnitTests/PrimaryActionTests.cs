@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.CmdPal.Ext.Calc.Helper;
 using Microsoft.CmdPal.Ext.Calc.Pages;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Foundation;
@@ -49,5 +50,49 @@ public class PrimaryActionTests
 
         Assert.IsNotNull(historyItem);
         Assert.IsInstanceOfType(historyItem.Command, typeof(CalculatorPasteCommand));
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void FallbackItemsUseCalculatorCommandsForCopyAndPaste(bool saveFallbackResultsToHistory)
+    {
+        var settings = new Settings(saveFallbackResultsToHistory: saveFallbackResultsToHistory);
+        var page = new CalculatorListPage(settings);
+        var item = new FallbackCalculatorItem(settings, page);
+
+        item.UpdateQuery("2+2");
+
+        Assert.IsInstanceOfType(item.Command, typeof(CalculatorCopyCommand));
+        Assert.IsInstanceOfType(GetFallbackSecondaryCommand(item), typeof(CalculatorPasteCommand));
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void FallbackItemsRespectPrimaryActionWhenHistorySavingToggles(bool saveFallbackResultsToHistory)
+    {
+        var settings = new Settings(
+            primaryAction: PrimaryAction.Paste,
+            saveFallbackResultsToHistory: saveFallbackResultsToHistory);
+        var page = new CalculatorListPage(settings);
+        var item = new FallbackCalculatorItem(settings, page);
+
+        item.UpdateQuery("2+2");
+
+        Assert.IsInstanceOfType(item.Command, typeof(CalculatorPasteCommand));
+        Assert.IsInstanceOfType(GetFallbackSecondaryCommand(item), typeof(CalculatorCopyCommand));
+    }
+
+    private static ICommand GetFallbackSecondaryCommand(FallbackCalculatorItem item)
+    {
+        var secondaryCommand = item.MoreCommands
+            .OfType<CommandContextItem>()
+            .Skip(1)
+            .Select(contextItem => ((CommandItem)contextItem).Command)
+            .FirstOrDefault();
+
+        Assert.IsNotNull(secondaryCommand);
+        return secondaryCommand;
     }
 }

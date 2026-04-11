@@ -80,7 +80,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Namespaced(nameof(SaveFallbackResultsToHistory)),
         Properties.Resources.calculator_settings_fallback_history,
         Properties.Resources.calculator_settings_fallback_history_description,
-        false);
+        true);
 
     private readonly ToggleSetting _confirmDelete = new(
         Namespaced(nameof(DeleteHistoryRequiresConfirmation)),

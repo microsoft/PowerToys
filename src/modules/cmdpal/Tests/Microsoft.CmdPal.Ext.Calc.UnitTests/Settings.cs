@@ -21,6 +21,7 @@ public class Settings : ISettingsInterface
     private readonly PrimaryAction primaryAction;
     private readonly bool inputNormalization;
     private readonly List<HistoryItem> historyItems = [];
+    private readonly bool replaceQueryOnEnter;
 
     public Settings(
         CalculateEngine.TrigMode trigUnit = CalculateEngine.TrigMode.Radians,
@@ -32,7 +33,8 @@ public class Settings : ISettingsInterface
         bool saveFallbackResultsToHistory = false,
         bool deleteHistoryRequiresConfirmation = true,
         PrimaryAction primaryAction = PrimaryAction.Default,
-        bool inputNormalization = true)
+        bool inputNormalization = true,
+        bool replaceQueryOnEnter = true)
     {
         this.trigUnit = trigUnit;
         this.inputUseEnglishFormat = inputUseEnglishFormat;
@@ -44,6 +46,7 @@ public class Settings : ISettingsInterface
         this.deleteHistoryRequiresConfirmation = deleteHistoryRequiresConfirmation;
         this.primaryAction = primaryAction;
         this.inputNormalization = inputNormalization;
+        this.replaceQueryOnEnter = replaceQueryOnEnter;
     }
 
     public CalculateEngine.TrigMode TrigUnit => trigUnit;
@@ -68,9 +71,13 @@ public class Settings : ISettingsInterface
 
     public event EventHandler HistoryChanged;
 
+#pragma warning disable CS0067 // Event is never used
     public event EventHandler SettingsChanged;
+#pragma warning restore CS0067 // Event is never used
 
     public IReadOnlyList<HistoryItem> HistoryItems => historyItems;
+
+    public bool ReplaceQueryOnEnter => replaceQueryOnEnter;
 
     public void AddHistoryItem(HistoryItem historyItem)
     {

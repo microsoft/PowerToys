@@ -14,13 +14,19 @@ public sealed partial class CalculatorCopyCommand : CopyTextCommand
     public event TypedEventHandler<object, object> ReplaceRequested;
 
     private readonly ISettingsInterface _settings;
-    private readonly bool _canStoreHistory;
+    private readonly Func<bool> _canStoreHistory;
     private string _query;
 
     public CalculatorCopyCommand(string result, string query, ISettingsInterface settings, bool canStoreHistory = true)
+        : this(result, query, settings, () => canStoreHistory)
+    {
+    }
+
+    public CalculatorCopyCommand(string result, string query, ISettingsInterface settings, Func<bool> canStoreHistory)
         : base(result)
     {
         ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(canStoreHistory);
 
         _settings = settings;
         _canStoreHistory = canStoreHistory;
@@ -38,7 +44,7 @@ public sealed partial class CalculatorCopyCommand : CopyTextCommand
     public override ICommandResult Invoke()
     {
         ClipboardHelper.SetText(Text);
-        if (_canStoreHistory)
+        if (_canStoreHistory())
         {
             _settings.AddHistoryItem(new HistoryItem(_query, Text, DateTime.UtcNow));
         }

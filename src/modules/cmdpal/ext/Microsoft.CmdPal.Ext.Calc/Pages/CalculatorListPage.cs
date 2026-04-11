@@ -177,6 +177,16 @@ public sealed partial class CalculatorListPage : DynamicListPage
         var primaryCommand = _settingsManager.PrimaryAction == PrimaryAction.Paste ? (ICommand)pasteCommand : copyCommand;
         var secondaryCommand = _settingsManager.PrimaryAction == PrimaryAction.Paste ? (ICommand)copyCommand : pasteCommand;
 
+        var replaceResultCommand = new ReplaceQueryCommand();
+        replaceResultCommand.ReplaceRequested += (_, _) =>
+        {
+            _skipQuerySearchText = SearchText = historyItem.Result;
+
+            // LOAD BEARING: The SearchText setter does not raise a PropertyChanged notification,
+            // so we must raise it explicitly to ensure the UI updates correctly.
+            OnPropertyChanged(nameof(SearchText));
+        };
+
         var deleteConfirmationCommand = new ConfirmableCommand
         {
             Command = new DeleteHistoryItemCommand(_settingsManager, historyItem.Id),
@@ -202,6 +212,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
             MoreCommands =
             [
                 new CommandContextItem(secondaryCommand),
+                new CommandContextItem(replaceResultCommand),
                 new Separator(),
                 new CommandContextItem(deleteConfirmationCommand) { IsCritical = true, RequestedShortcut = KeyChords.DeleteItemFromHistory, },
                 new CommandContextItem(deleteAllConfirmationCommand) { IsCritical = true, RequestedShortcut = KeyChords.ClearHistory, },

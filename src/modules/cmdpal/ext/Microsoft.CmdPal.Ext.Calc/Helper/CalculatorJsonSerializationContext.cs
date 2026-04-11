@@ -14,4 +14,4 @@ namespace Microsoft.CmdPal.Ext.Calc.Helper;
 [JsonSerializable(typeof(HistoryItem))]
 [JsonSerializable(typeof(List<HistoryItem>), TypeInfoPropertyName = "HistoryItemList")]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
-internal sealed partial class CalcJsonSerializationContext : JsonSerializerContext;
+internal sealed partial class CalculatorJsonSerializationContext : JsonSerializerContext;

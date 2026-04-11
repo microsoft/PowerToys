@@ -144,7 +144,7 @@ internal sealed class HistoryStore
             }
 
             var fileContent = File.ReadAllText(_filePath);
-            var historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(fileContent, CalcJsonSerializationContext.Default.HistoryItemList) ?? [];
+            var historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(fileContent, CalculatorJsonSerializationContext.Default.HistoryItemList) ?? [];
             return historyItems;
         }
         catch (Exception ex)
@@ -156,7 +156,7 @@ internal sealed class HistoryStore
 
     private void SaveNoLock()
     {
-        var json = JsonSerializer.Serialize(_items, CalcJsonSerializationContext.Default.HistoryItemList);
+        var json = JsonSerializer.Serialize(_items, CalculatorJsonSerializationContext.Default.HistoryItemList);
         File.WriteAllText(_filePath, json);
     }
 }

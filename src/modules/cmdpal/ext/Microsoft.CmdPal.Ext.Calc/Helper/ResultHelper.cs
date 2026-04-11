@@ -105,47 +105,52 @@ public static class ResultHelper
 
                 var i = (BigInteger)decimalValue;
 
-            // hexadecimal
-            try
+                // hexadecimal
+                try
                 {
                     var hexResult = BaseConverter.Convert(i, 16);
                     context.Add(new CommandContextItem(CreateCopyCommand(hexResult, Properties.Resources.calculator_copy_hex, hideOnCopy))
+                    {
+                        Title = hexResult,
+                    });
+                }
+                catch (Exception ex)
                 {
-                    Title = hexResult,
-                });
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Error converting to hex format", ex);
-            }
+                    Logger.LogError("Error converting to hex format", ex);
+                }
 
-            // binary
-            try
+                // binary
+                try
                 {
                     var binaryResult = BaseConverter.Convert(i, 2);
                     context.Add(new CommandContextItem(CreateCopyCommand(binaryResult, Properties.Resources.calculator_copy_binary, hideOnCopy))
+                    {
+                        Title = binaryResult,
+                    });
+                }
+                catch (Exception ex)
                 {
-                    Title = binaryResult,
-                });
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Error converting to binary format", ex);
-            }
+                    Logger.LogError("Error converting to binary format", ex);
+                }
 
-            // octal
-            try
-            {
-                var octalResult = BaseConverter.Convert(i, 8);
-                context.Add(new CommandContextItem(CreateCopyCommand(octalResult, Properties.Resources.calculator_copy_octal, hideOnCopy))
+                // octal
+                try
                 {
-                    Title = octalResult,
-                });
+                    var octalResult = BaseConverter.Convert(i, 8);
+                    context.Add(new CommandContextItem(CreateCopyCommand(octalResult, Properties.Resources.calculator_copy_octal, hideOnCopy))
+                    {
+                        Title = octalResult,
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Error converting to octal format", ex);
+                }
             }
-            catch (Exception ex)
-            {
-                Logger.LogError("Error converting to octal format", ex);
-            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error creating integer context items", ex);
         }
 
         return new ListItem(copyCommand)

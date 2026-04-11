@@ -15,10 +15,8 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
     private const string _id = "com.microsoft.cmdpal.builtin.calculator.fallback";
 
     private readonly NoOpCommand _noOpCommand = new();
-    private readonly CopyTextCommand _copyCommand = new(string.Empty);
-    private readonly CalculatorCopyCommand _historyCopyCommand;
+    private readonly CalculatorCopyCommand _copyCommand;
     private readonly CalculatorPasteCommand _pasteCommand;
-    private readonly CalculatorPasteCommand _historyPasteCommand;
     private readonly ISettingsInterface _settings;
     private readonly CalculatorListPage _calculatorListPage;
     private readonly CommandContextItem _openCalculatorPageContextItem;
@@ -26,10 +24,8 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
     public FallbackCalculatorItem(ISettingsInterface settings, CalculatorListPage calculatorListPage)
         : base(new NoOpCommand(), Resources.calculator_title, _id)
     {
-        _copyCommand.Result = ResultHelper.CreateCopyCommandResult(settings.CloseOnEnter);
-        _historyCopyCommand = new CalculatorCopyCommand(string.Empty, string.Empty, settings);
-        _pasteCommand = new CalculatorPasteCommand(string.Empty, string.Empty, settings);
-        _historyPasteCommand = new CalculatorPasteCommand(string.Empty, string.Empty, settings);
+        _copyCommand = new CalculatorCopyCommand(string.Empty, string.Empty, settings, () => settings.SaveFallbackResultsToHistory);
+        _pasteCommand = new CalculatorPasteCommand(string.Empty, string.Empty, settings, () => settings.SaveFallbackResultsToHistory);
 
         Command = _noOpCommand;
         Title = string.Empty;
@@ -57,16 +53,8 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
         }
 
         var pasteIsPrimary = _settings.PrimaryAction == PrimaryAction.Paste;
-        var saveToHistory = _settings.SaveFallbackResultsToHistory;
-
-        // Select the appropriate pre-existing command instances based on settings
-        var (primaryCommand, secondaryCommand) = (pasteIsPrimary, saveToHistory) switch
-        {
-            (true, true) => ((IInvokableCommand)_historyPasteCommand, (IInvokableCommand)_historyCopyCommand),
-            (true, false) => (_pasteCommand, _copyCommand),
-            (false, true) => (_historyCopyCommand, _historyPasteCommand),
-            (false, false) => (_copyCommand, _pasteCommand),
-        };
+        var primaryCommand = pasteIsPrimary ? (IInvokableCommand)_pasteCommand : _copyCommand;
+        var secondaryCommand = pasteIsPrimary ? (IInvokableCommand)_copyCommand : _pasteCommand;
 
         // Update the selected commands with current query/result
         UpdateCommand(primaryCommand, query, result);
@@ -89,7 +77,6 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
             new CommandContextItem(secondaryCommand),
         };
 
-        fallbackCommands.AddRange(result.MoreCommands);
         MoreCommands = [.. fallbackCommands, .. result.MoreCommands];
     }
 
@@ -100,11 +87,8 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
             case CalculatorPasteCommand pasteCommand:
                 pasteCommand.Update(result.Title, query);
                 break;
-            case CalculatorCopyCommand historyCopyCommand:
-                historyCopyCommand.Update(result.Title, query);
-                break;
-            case CopyTextCommand copyCommand:
-                copyCommand.Text = result.Title;
+            case CalculatorCopyCommand copyCommand:
+                copyCommand.Update(result.Title, query);
                 break;
         }
     }

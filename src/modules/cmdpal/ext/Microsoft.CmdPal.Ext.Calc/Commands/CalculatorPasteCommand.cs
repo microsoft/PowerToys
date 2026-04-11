@@ -5,7 +5,7 @@
 using System;
 using System.Threading;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.Common.Messages;
+using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Ext.Calc.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -18,13 +18,19 @@ public sealed partial class CalculatorPasteCommand : InvokableCommand
     public event TypedEventHandler<object, object> ReplaceRequested;
 
     private readonly ISettingsInterface _settings;
-    private readonly bool _canStoreHistory;
+    private readonly Func<bool> _canStoreHistory;
     private string _query;
     private string _text;
 
     public CalculatorPasteCommand(string result, string query, ISettingsInterface settings, bool canStoreHistory = true)
+        : this(result, query, settings, () => canStoreHistory)
+    {
+    }
+
+    public CalculatorPasteCommand(string result, string query, ISettingsInterface settings, Func<bool> canStoreHistory)
     {
         ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(canStoreHistory);
 
         _settings = settings;
         _canStoreHistory = canStoreHistory;
@@ -52,7 +58,7 @@ public sealed partial class CalculatorPasteCommand : InvokableCommand
     public override ICommandResult Invoke()
     {
         ClipboardHelper.SetText(_text);
-        if (_canStoreHistory)
+        if (_canStoreHistory())
         {
             _settings.AddHistoryItem(new HistoryItem(_query, _text, DateTime.UtcNow));
         }
