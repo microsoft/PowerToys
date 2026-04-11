@@ -194,7 +194,6 @@ namespace Peek.FilePreviewer
                 Previewer = null;
                 ImagePreview.Visibility = Visibility.Collapsed;
                 VideoPreview.Visibility = Visibility.Collapsed;
-
                 AudioPreview.Visibility = Visibility.Collapsed;
                 BrowserPreview.Visibility = Visibility.Collapsed;
                 ArchivePreview.Visibility = Visibility.Collapsed;
@@ -279,6 +278,12 @@ namespace Peek.FilePreviewer
             {
                 value.PropertyChanged += Previewer_PropertyChanged;
             }
+        }
+
+        partial void OnPreviewerChanged(IPreviewer? value)
+        {
+            // Ensure the media transport controls are only present when viewing video media.
+            VideoPreview.MediaPlayer.CommandManager.IsEnabled = value is IVideoPreviewer;
         }
 
         private void BrowserPreview_DOMContentLoaded(Microsoft.Web.WebView2.Core.CoreWebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2DOMContentLoadedEventArgs args)
