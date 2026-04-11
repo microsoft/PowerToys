@@ -156,9 +156,9 @@ $baseAppWxs = $baseAppWxs -replace ';"', '"'
 Set-Content -Path $baseAppWxsPath -Value $baseAppWxs
 Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSScriptRoot\BaseApplications.wxs
 
-#WinUI3Applications
-Generate-FileList -fileDepsJson "" -fileListName WinUI3ApplicationsFiles -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release"
-Generate-FileComponents -fileListName "WinUI3ApplicationsFiles" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs
+#WinUI3Applications — no longer generated; files are now in BaseApplications
+# after flattening the output layout. WinUI3ApplicationsComponentGroup remains
+# empty in WinUI3Applications.wxs for upgrade compatibility.
 
 #AdvancedPaste
 Generate-FileList -fileDepsJson "" -fileListName AdvancedPasteAssetsFiles -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\AdvancedPaste"
