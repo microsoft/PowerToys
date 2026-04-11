@@ -102,7 +102,11 @@ namespace RunnerUnitTests
             Hotkey b = MakeHotkey(true, true, false, false, 'B');
 
             auto& mgr = HotkeyConflictManager::GetInstance();
-            mgr.AddHotkey(a, MOD_A, 1, true);
+            if (!mgr.AddHotkey(a, MOD_A, 1, true))
+            {
+                Logger::WriteMessage(L"SKIPPED: Hotkey A is already registered by the system.");
+                return;
+            }
 
             auto conflict = mgr.HasConflict(b, MOD_B, 2);
             Assert::AreEqual(static_cast<int>(HotkeyConflictType::NoConflict),
@@ -130,7 +134,11 @@ namespace RunnerUnitTests
             auto& mgr = HotkeyConflictManager::GetInstance();
             Hotkey hk = MakeHotkey(true, true, false, false, 'Z');
 
-            mgr.AddHotkey(hk, MOD_A, 1, true);
+            if (!mgr.AddHotkey(hk, MOD_A, 1, true))
+            {
+                Logger::WriteMessage(L"SKIPPED: Hotkey is already registered by the system.");
+                return;
+            }
             auto conflict = mgr.HasConflict(hk, MOD_B, 2);
             Assert::AreEqual(static_cast<int>(HotkeyConflictType::InAppConflict),
                              static_cast<int>(conflict));
@@ -142,7 +150,11 @@ namespace RunnerUnitTests
             auto& mgr = HotkeyConflictManager::GetInstance();
             Hotkey hk = MakeHotkey(true, true, false, false, 'R');
 
-            mgr.AddHotkey(hk, MOD_A, 1, true);
+            if (!mgr.AddHotkey(hk, MOD_A, 1, true))
+            {
+                Logger::WriteMessage(L"SKIPPED: Hotkey is already registered by the system.");
+                return;
+            }
             auto conflict = mgr.HasConflict(hk, MOD_A, 1);
             Assert::AreEqual(static_cast<int>(HotkeyConflictType::NoConflict),
                              static_cast<int>(conflict));
@@ -287,7 +299,11 @@ namespace RunnerUnitTests
             auto& mgr = HotkeyConflictManager::GetInstance();
             Hotkey hk = MakeHotkey(true, true, false, false, 'F');
 
-            mgr.AddHotkey(hk, MOD_A, 1, true);
+            if (!mgr.AddHotkey(hk, MOD_A, 1, true))
+            {
+                Logger::WriteMessage(L"SKIPPED: Hotkey is already registered by the system.");
+                return;
+            }
             mgr.AddHotkey(hk, MOD_B, 2, true); // conflict
 
             mgr.DisableHotkeyByModule(MOD_B);

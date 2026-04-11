@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
 // Tests ported from the Rust FancyZones implementation.
 // Each TEST_METHOD here corresponds to a Rust #[test] that had no existing C++ equivalent.
 // Rust sources: fancyzones-core/src/{layout,zone,keyboard_snap,data,util}.rs
@@ -949,7 +953,7 @@ namespace FancyZonesUnitTests
         TEST_METHOD(DeviceIdInvalidDecimals)
         {
             Assert::IsFalse(BackwardsCompatibility::DeviceIdData::IsValidDeviceId(
-                L"AOC2460#4&fe3a015&0&UID65793_aaaa_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}"));
+                L"AOC2460#4&fe3a015&0&UID65793_xxxx_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}"));
         }
 
         // data.rs: device_id_invalid_decimals2
@@ -1191,15 +1195,25 @@ namespace FancyZonesUnitTests
     // ========================================================================
     TEST_CLASS(RustPortedMonitorOrderingTests)
     {
-        void TestPermutationsWithOffsets(const std::vector<std::pair<HMONITOR, RECT>>& monitors)
+        void TestPermutationsWithOffsets(const std::vector<std::pair<HMONITOR, RECT>>& expected)
         {
-            auto copy = monitors;
-            FancyZonesUtils::OrderMonitors(copy);
-            // Verify that ordered result matches expected
-            for (size_t i = 0; i < monitors.size(); i++)
+            // Generate all permutations and verify OrderMonitors produces the
+            // expected ordering regardless of input order.
+            auto permuted = expected;
+            std::sort(permuted.begin(), permuted.end(),
+                [](const auto& a, const auto& b) { return a.first < b.first; });
+
+            do
             {
-                Assert::IsTrue(monitors[i].first == copy[i].first);
-            }
+                auto copy = permuted;
+                FancyZonesUtils::OrderMonitors(copy);
+                for (size_t i = 0; i < expected.size(); i++)
+                {
+                    Assert::IsTrue(expected[i].first == copy[i].first,
+                                   L"OrderMonitors produced wrong order for a permutation");
+                }
+            } while (std::next_permutation(permuted.begin(), permuted.end(),
+                [](const auto& a, const auto& b) { return a.first < b.first; }));
         }
 
     public:
