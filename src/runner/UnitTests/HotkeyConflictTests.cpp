@@ -82,11 +82,12 @@ namespace RunnerUnitTests
             auto& mgr = HotkeyConflictManager::GetInstance();
             bool first = mgr.AddHotkey(a, MOD_A, 1, true);
             // AddHotkey may return false when the OS already owns Ctrl+Win+A
-            // (RegisterHotKey(nullptr,...) check).  Skip the rest of the test
-            // in that environment-dependent case to avoid flakiness.
+            // (RegisterHotKey(nullptr,...) check).  Mark the test inconclusive
+            // in that environment-dependent case so it does not silently pass
+            // without asserting anything.
             if (!first)
             {
-                return;
+                Assert::Inconclusive(L"Test cannot validate hotkey handle equality because Ctrl+Win+A is already registered by the system in this environment.");
             }
 
             auto conflict = mgr.HasConflict(b, MOD_B, 2);
@@ -178,7 +179,10 @@ namespace RunnerUnitTests
             Hotkey hk = MakeHotkey(true, true, false, false, 'X');
 
             bool first = mgr.AddHotkey(hk, MOD_A, 1, true);
-            Assert::IsTrue(first);
+            if (!first)
+            {
+                Assert::Inconclusive(L"Cannot test conflict return value because the hotkey is already registered by the system in this environment.");
+            }
 
             bool second = mgr.AddHotkey(hk, MOD_B, 2, true);
             Assert::IsFalse(second);
@@ -192,7 +196,10 @@ namespace RunnerUnitTests
             Hotkey hk = MakeHotkey(true, true, false, false, 'D');
 
             bool first = mgr.AddHotkey(hk, MOD_A, 1, true);
-            Assert::IsTrue(first);
+            if (!first)
+            {
+                Assert::Inconclusive(L"Cannot test disabled hotkey behavior because the hotkey is already registered by the system in this environment.");
+            }
 
             bool disabled = mgr.AddHotkey(hk, MOD_B, 2, false);
             Assert::IsTrue(disabled);
@@ -343,7 +350,11 @@ namespace RunnerUnitTests
                                  static_cast<int>(type));
             }
             // If RegisterHotKey succeeded (unlikely for Win+L), we can't
-            // force a system conflict in a unit test, so just pass.
+            // force a system conflict in a unit test, so mark inconclusive.
+            else
+            {
+                Assert::Inconclusive(L"Win+L was not detected as a system conflict in this environment, so the system-conflict priority behavior could not be validated.");
+            }
         }
 
         // ── GetHotkeyConflictsAsJson ────────────────────────────────────
@@ -354,7 +365,11 @@ namespace RunnerUnitTests
             auto& mgr = HotkeyConflictManager::GetInstance();
             Hotkey hk = MakeHotkey(true, true, false, false, 'J');
 
-            mgr.AddHotkey(hk, MOD_A, 1, true);
+            bool first = mgr.AddHotkey(hk, MOD_A, 1, true);
+            if (!first)
+            {
+                Assert::Inconclusive(L"Cannot test JSON output with in-app conflicts because the hotkey is already registered by the system in this environment.");
+            }
             mgr.AddHotkey(hk, MOD_B, 2, true);
 
             auto json = mgr.GetHotkeyConflictsAsJson();
