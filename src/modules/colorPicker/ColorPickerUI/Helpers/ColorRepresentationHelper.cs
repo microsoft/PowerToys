@@ -107,8 +107,8 @@ namespace ColorPicker.Helpers
         private static string ColorToFloat(Color color)
         {
             var (red, green, blue) = ColorHelper.ConvertToDouble(color);
-            const int precision = 2;
-            const string floatFormat = "0.##";
+            const int precision = 4;
+            const string floatFormat = "0.####";
 
             return $"({Math.Round(red, precision).ToString(floatFormat, CultureInfo.InvariantCulture)}f"
                  + $", {Math.Round(green, precision).ToString(floatFormat, CultureInfo.InvariantCulture)}f"

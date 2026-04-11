@@ -394,8 +394,8 @@ namespace ManagedCommon
             { 'H', "X1" },      // hex uppercase one digit
             { 'x', "x2" },      // hex lowercase two digits
             { 'X', "X2" },      // hex uppercase two digits
-            { 'f', "0.##" },    // float with leading zero, 2 digits
-            { 'F', ".##" },     // float without leading zero, 2 digits
+            { 'f', "0.####" },  // float with leading zero, 4 digits
+            { 'F', ".####" },   // float without leading zero, 4 digits
             { 'p', "%" },       // percent value
             { 'i', "i" },       // int value
             { 's', "s" },       // string value

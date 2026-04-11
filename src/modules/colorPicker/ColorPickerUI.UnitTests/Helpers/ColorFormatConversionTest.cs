@@ -419,6 +419,16 @@ namespace ColorPicker.UnitTests.Helpers
         }
 
         [TestMethod]
+        public void GetStringRepresentation_VEC4_NonTrivialColor_HasSufficientPrecision()
+        {
+            // Color (237, 41, 57) should produce float values that round-trip back to the original byte values.
+            // With only 2 decimal places, 57/255 = 0.22 and 0.22*255 = 56.1, which is wrong.
+            // With 4 decimal places, 57/255 = 0.2235 and 0.2235*255 = 56.9925, which rounds to 57 correctly.
+            var result = ColorRepresentationHelper.GetStringRepresentation(Color.FromArgb(255, 237, 41, 57), "VEC4", ColorFormatHelper.GetDefaultFormat("VEC4"));
+            Assert.AreEqual("(0.9294f, 0.1608f, 0.2235f, 1f)", result);
+        }
+
+        [TestMethod]
         public void GetStringRepresentation_EmptyFormat_ReturnsHex()
         {
             // When colorFormat is null or empty, should return hex
