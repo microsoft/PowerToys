@@ -49,8 +49,8 @@ namespace FancyZonesUnitTests
         TEST_METHOD(ZoneAreaInverted)
         {
             Zone zone({ 100, 100, 50, 50 }, 0);
-            // Inverted rect: right < left, so area should be 0 or treated as invalid
-            Assert::IsTrue(zone.GetZoneArea() <= 0);
+            // Inverted rect: right < left, so area should clamp to 0
+            Assert::AreEqual(0L, zone.GetZoneArea());
         }
 
         // zone.rs: bitmask_from_index_set_test
@@ -523,7 +523,7 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(0L, result.bottom);
         }
 
-        // util.rs: hex_to_rgb with #RGB format
+        // util.rs: hex_to_rgb with #RRGGBB format
         TEST_METHOD(HexToRGB_RGBFormat)
         {
             auto color = FancyZonesUtils::HexToRGB(L"#A3F6FF");

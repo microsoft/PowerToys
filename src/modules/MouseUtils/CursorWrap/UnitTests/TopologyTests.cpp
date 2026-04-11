@@ -83,21 +83,20 @@ namespace CursorWrapUnitTests
             };
             topo.Initialize(monitors);
 
-            // Cursor at the left edge. IsOnOuterEdge should be true but
-            // GetWrapDestination should just return the same position since
-            // there's only one monitor.
+            // Cursor at the left edge. IsOnOuterEdge should be true and
+            // GetWrapDestination should wrap to the opposite edge of the same
+            // monitor when no opposite monitor exists.
             EdgeType edgeType{};
             POINT cursor = { 0, 540 };
             bool isOuter = topo.IsOnOuterEdge(HandleForIndex(0), cursor, edgeType, WrapMode::Both);
 
-            if (isOuter)
-            {
-                POINT dest = topo.GetWrapDestination(HandleForIndex(0), cursor, edgeType);
-                // With no opposite monitor, wrap destination falls back to same
-                // monitor's opposite edge.
-                Assert::IsTrue(dest.x != cursor.x || dest.y != cursor.y,
-                               L"Wrap destination should differ from source on a self-wrap");
-            }
+            Assert::IsTrue(isOuter, L"Left edge of a single monitor should be detected as an outer edge");
+
+            POINT dest = topo.GetWrapDestination(HandleForIndex(0), cursor, edgeType);
+            // With no opposite monitor, wrap destination falls back to same
+            // monitor's opposite edge.
+            Assert::IsTrue(dest.x != cursor.x || dest.y != cursor.y,
+                           L"Wrap destination should differ from source on a self-wrap");
         }
 
         // ── Two side-by-side monitors ───────────────────────────────────
@@ -173,8 +172,8 @@ namespace CursorWrapUnitTests
             // All other edges are outer.
             // Total: 12 - 4 = 8 outer edges.
             int outerCount = static_cast<int>(topo.GetOuterEdges().size());
-            Assert::IsTrue(outerCount >= 7 && outerCount <= 9,
-                           L"L-shaped layout should have ~8 outer edges");
+            Assert::AreEqual(8, outerCount,
+                             L"Expected 8 outer edges for L-shaped layout");
         }
 
         // ── Edge adjacency within tolerance ─────────────────────────────
@@ -230,12 +229,13 @@ namespace CursorWrapUnitTests
             EdgeType edgeType{};
             bool isOuter = topo.IsOnOuterEdge(HandleForIndex(0), cursor, edgeType, WrapMode::Both);
 
-            if (isOuter && edgeType == EdgeType::Left)
-            {
-                POINT dest = topo.GetWrapDestination(HandleForIndex(0), cursor, edgeType);
-                Assert::AreEqual(static_cast<LONG>(540), dest.y,
-                                 L"Horizontal wrap should preserve Y coordinate");
-            }
+            Assert::IsTrue(isOuter, L"Left edge of Mon0 should be detected as an outer edge");
+            Assert::AreEqual(static_cast<int>(EdgeType::Left), static_cast<int>(edgeType),
+                             L"Edge type should be Left for cursor at x=0");
+
+            POINT dest = topo.GetWrapDestination(HandleForIndex(0), cursor, edgeType);
+            Assert::AreEqual(static_cast<LONG>(540), dest.y,
+                             L"Horizontal wrap should preserve Y coordinate");
         }
 
         // ── Wrap destination: vertical preserves X ──────────────────────
@@ -253,12 +253,13 @@ namespace CursorWrapUnitTests
             EdgeType edgeType{};
             bool isOuter = topo.IsOnOuterEdge(HandleForIndex(0), cursor, edgeType, WrapMode::Both);
 
-            if (isOuter && edgeType == EdgeType::Top)
-            {
-                POINT dest = topo.GetWrapDestination(HandleForIndex(0), cursor, edgeType);
-                Assert::AreEqual(static_cast<LONG>(960), dest.x,
-                                 L"Vertical wrap should preserve X coordinate");
-            }
+            Assert::IsTrue(isOuter, L"Top edge of Mon0 should be detected as an outer edge");
+            Assert::AreEqual(static_cast<int>(EdgeType::Top), static_cast<int>(edgeType),
+                             L"Edge type should be Top for cursor at y=0");
+
+            POINT dest = topo.GetWrapDestination(HandleForIndex(0), cursor, edgeType);
+            Assert::AreEqual(static_cast<LONG>(960), dest.x,
+                             L"Vertical wrap should preserve X coordinate");
         }
 
         // ── WrapMode filtering: HorizontalOnly ─────────────────────────
