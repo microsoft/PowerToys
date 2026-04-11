@@ -405,6 +405,7 @@ public sealed partial class SettingsWindow : WindowEx,
         else if (e.SourcePageType == typeof(ExtensionGalleryPage))
         {
             NavView.SelectedItem = GalleryPageNavItem;
+            HideBreadcrumb();
             var pageType = RS_.GetString("Settings_PageTitles_GalleryPage");
             BreadCrumbs.Add(new(pageType, pageType));
         }

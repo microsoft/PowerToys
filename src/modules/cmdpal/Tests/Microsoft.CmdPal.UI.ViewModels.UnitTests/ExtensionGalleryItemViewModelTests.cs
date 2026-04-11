@@ -433,6 +433,84 @@ public class ExtensionGalleryItemViewModelTests
         tracker.Verify(t => t.TryCancelOperation(operation.OperationId), Times.Once);
     }
 
+    [TestMethod]
+    public void ShowInstallButton_IsTrue_WhenNotInstalled()
+    {
+        var entry = CreateEntry(iconUrl: null);
+        var viewModel = CreateViewModel(entry);
+
+        Assert.IsTrue(viewModel.ShowInstallButton);
+        Assert.IsFalse(viewModel.ShowInstalledBadge);
+    }
+
+    [TestMethod]
+    public void ShowInstallButton_IsFalse_WhenInstalledWithNoUpdate()
+    {
+        var entry = new GalleryExtensionEntry
+        {
+            Id = "installed-extension",
+            Title = "Installed extension",
+            Description = "Installed extension description",
+            Author = new GalleryAuthor { Name = "Author" },
+            InstallSources =
+            [
+                new GalleryInstallSource { Type = "winget", Id = "Contoso.Extension" },
+            ],
+        };
+
+        var viewModel = CreateViewModel(entry);
+        viewModel.ApplyWinGetPackageInfo(
+            new WinGetPackageInfo(
+                new WinGetPackageStatus(
+                    IsInstalled: true,
+                    IsInstalledStateKnown: true,
+                    IsUpdateAvailable: false,
+                    IsUpdateStateKnown: true),
+                Details: null));
+
+        Assert.IsFalse(viewModel.ShowInstallButton);
+        Assert.IsTrue(viewModel.ShowInstalledBadge);
+    }
+
+    [TestMethod]
+    public void ShowInstallButton_IsTrue_WhenInstalledWithUpdateAvailable()
+    {
+        var entry = new GalleryExtensionEntry
+        {
+            Id = "update-extension",
+            Title = "Update extension",
+            Description = "Update extension description",
+            Author = new GalleryAuthor { Name = "Author" },
+            InstallSources =
+            [
+                new GalleryInstallSource { Type = "winget", Id = "Contoso.Extension" },
+            ],
+        };
+
+        var viewModel = CreateViewModel(entry);
+        viewModel.ApplyWinGetPackageInfo(
+            new WinGetPackageInfo(
+                new WinGetPackageStatus(
+                    IsInstalled: true,
+                    IsInstalledStateKnown: true,
+                    IsUpdateAvailable: true,
+                    IsUpdateStateKnown: true),
+                Details: null));
+
+        Assert.IsTrue(viewModel.ShowInstallButton);
+        Assert.IsFalse(viewModel.ShowInstalledBadge);
+    }
+
+    [TestMethod]
+    public void OpenInstalledAppsCommand_IsNotNull()
+    {
+        var entry = CreateEntry(iconUrl: null);
+        var viewModel = CreateViewModel(entry);
+
+        Assert.IsNotNull(viewModel.OpenInstalledAppsCommand);
+        Assert.IsTrue(viewModel.OpenInstalledAppsCommand.CanExecute(null));
+    }
+
     private static GalleryExtensionEntry CreateEntry(string? iconUrl)
     {
         return new GalleryExtensionEntry

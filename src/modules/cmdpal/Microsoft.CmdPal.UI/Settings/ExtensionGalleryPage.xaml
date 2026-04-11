@@ -8,6 +8,7 @@
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels.Gallery"
     mc:Ignorable="d">
@@ -20,6 +21,11 @@
                         <GradientStop Offset="0" Color="#38C8AEC4" />
                         <GradientStop Offset="1" Color="#383286EE" />
                     </LinearGradientBrush>
+                    <LinearGradientBrush x:Key="GalleryTitleBrush" StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Offset="0.0" Color="#FFB9EBFF" />
+                        <GradientStop Offset="0.5" Color="#FF86CBFF" />
+                        <GradientStop Offset="1.0" Color="#FFA1E7FF" />
+                    </LinearGradientBrush>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Light">
                     <LinearGradientBrush x:Key="GalleryBannerBrush" StartPoint="0,0" EndPoint="1, 1">
@@ -28,9 +34,15 @@
                         <GradientStop Offset="0.7" Color="#FFF7FAFD" />
                         <GradientStop Offset="1.0" Color="#FFF5F8FA" />
                     </LinearGradientBrush>
+                    <LinearGradientBrush x:Key="GalleryTitleBrush" StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Offset="0.0" Color="#FF1462B8" />
+                        <GradientStop Offset="0.5" Color="#FF3B7FD9" />
+                        <GradientStop Offset="1.0" Color="#FF1462B8" />
+                    </LinearGradientBrush>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
                     <SolidColorBrush x:Key="GalleryBannerBrush" Color="Transparent" />
+                    <SolidColorBrush x:Key="GalleryTitleBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
@@ -43,52 +55,74 @@
         </Grid.RowDefinitions>
 
         <ScrollViewer x:Name="RootScrollViewer" Grid.Row="1">
-            <Grid Padding="16,16,16,16">
+            <StackPanel>
+
+                <!--  Custom feed InfoBar  -->
+                <InfoBar
+                    x:Name="CustomFeedInfoBar"
+                    x:Uid="Settings_GalleryPage_CustomFeed_InfoBar"
+                    Margin="16,0"
+                    x:Load="{x:Bind ViewModel.IsCustomFeed}"
+                    IsClosable="False"
+                    IsOpen="True"
+                    Message="{x:Bind ViewModel.CustomFeedUrl}"
+                    Severity="Informational" />
+
+                <!--  Hero section (fullbleed, no MaxWidth)  -->
+                <Grid>
+
+                    <!--  Gradient background with opacity mask fade-out  -->
+                    <controls:OpacityMaskView HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <controls:OpacityMaskView.OpacityMask>
+                            <Rectangle RadiusX="8" RadiusY="8">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                        <GradientStop Offset="0.50" Color="Black" />
+                                        <GradientStop Offset="0.80" Color="#80000000" />
+                                        <GradientStop Offset="1.0" Color="Transparent" />
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                        </controls:OpacityMaskView.OpacityMask>
+                        <Grid Height="320" Background="{ThemeResource GalleryBannerBrush}" />
+                    </controls:OpacityMaskView>
+
+                    <!--  Content on top of the gradient (not masked)  -->
+                    <StackPanel
+                        Margin="0,24,0,0"
+                        HorizontalAlignment="Center"
+                        Spacing="8">
+                        <TextBlock
+                            x:Uid="Settings_GalleryPage_Banner_Header"
+                            HorizontalAlignment="Center"
+                            FontSize="32"
+                            FontWeight="Bold"
+                            Foreground="{ThemeResource GalleryTitleBrush}" />
+                        <TextBlock
+                            x:Uid="Settings_GalleryPage_Hero_Subtitle"
+                            HorizontalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource BodyTextBlockStyle}"
+                            TextAlignment="Center" />
+                        <HyperlinkButton
+                            x:Uid="Settings_GalleryPage_Hero_CreateLink"
+                            Padding="0"
+                            HorizontalAlignment="Center"
+                            NavigateUri="https://aka.ms/building-cmdpal-extensions" />
+                        <ptControls:IconCarouselControl
+                            Height="160"
+                            Margin="0,12,0,0"
+                            HorizontalAlignment="Stretch"
+                            IconUris="{x:Bind ViewModel.CarouselIconUris, Mode=OneWay}" />
+                    </StackPanel>
+                </Grid>
+
+                <!--  Content area (MaxWidth-constrained)  -->
                 <StackPanel
                     MaxWidth="1200"
+                    Padding="16,0,16,16"
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
-
-                    <!--  Custom feed InfoBar  -->
-                    <InfoBar
-                        x:Name="CustomFeedInfoBar"
-                        x:Uid="Settings_GalleryPage_CustomFeed_InfoBar"
-                        x:Load="{x:Bind ViewModel.IsCustomFeed}"
-                        IsClosable="False"
-                        IsOpen="True"
-                        Message="{x:Bind ViewModel.CustomFeedUrl}"
-                        Severity="Informational" />
-
-                    <!--  Banner  -->
-                    <Grid
-                        Padding="16"
-                        Background="{ThemeResource GalleryBannerBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="8">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel x:Name="BannerDescriptionPanel" Orientation="Vertical">
-                            <TextBlock x:Uid="Settings_GalleryPage_Banner_Header" FontWeight="SemiBold" />
-                            <TextBlock
-                                x:Uid="Settings_GalleryPage_Banner_Description"
-                                Grid.Row="1"
-                                MaxWidth="520"
-                                HorizontalAlignment="Left"
-                                TextWrapping="Wrap" />
-                            <HyperlinkButton
-                                x:Uid="Settings_GalleryPage_Banner_SubmitLink"
-                                Padding="0"
-                                Content="Submit your extension"
-                                NavigateUri="https://github.com/microsoft/CmdPal-Extensions" />
-                        </StackPanel>
-                    </Grid>
 
                     <!--  Search + Counter + Refresh  -->
                     <Grid Padding="0,24,0,8" ColumnSpacing="8">
@@ -119,10 +153,6 @@
                             VerticalAlignment="Center"
                             Orientation="Horizontal"
                             Spacing="8">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Style="{StaticResource BodyTextBlockStyle}"
-                                Text="{x:Bind ViewModel.ItemCounterText, Mode=OneWay}" />
                             <Button
                                 x:Uid="Settings_GalleryPage_Refresh_Button"
                                 Command="{x:Bind ViewModel.RefreshCommand}"
@@ -269,8 +299,8 @@
                                     VerticalContentAlignment="Stretch"
                                     AutomationProperties.Name="{x:Bind DisplayTitle}">
                                     <Grid
-                                        Width="364"
-                                        Height="162"
+                                        Width="280"
+                                        Height="150"
                                         Padding="12"
                                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -373,7 +403,7 @@
                         </ItemsView.ItemTemplate>
                     </ItemsView>
                 </StackPanel>
-            </Grid>
+            </StackPanel>
         </ScrollViewer>
 
         <VisualStateManager.VisualStateGroups>
@@ -387,9 +417,7 @@
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="BannerDescriptionPanel.(Grid.ColumnSpan)" Value="2" />
-                    </VisualState.Setters>
+                    <VisualState.Setters />
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
