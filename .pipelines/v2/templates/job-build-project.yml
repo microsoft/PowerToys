@@ -350,8 +350,8 @@ jobs:
     displayName: Stage SDK/lib
     inputs:
       contents: |-
-        "**/Microsoft.CommandPalette.Extensions.Toolkit/$(BuildPlatform)/release/WinUI3Apps/CmdPal/Microsoft.CommandPalette.Extensions.Toolkit.dll"
-        "**/Microsoft.CommandPalette.Extensions.Toolkit/$(BuildPlatform)/release/WinUI3Apps/CmdPal/Microsoft.CommandPalette.Extensions.Toolkit.deps.json"
+        "**/Microsoft.CommandPalette.Extensions.Toolkit/$(BuildPlatform)/release/CmdPal/Microsoft.CommandPalette.Extensions.Toolkit.dll"
+        "**/Microsoft.CommandPalette.Extensions.Toolkit/$(BuildPlatform)/release/CmdPal/Microsoft.CommandPalette.Extensions.Toolkit.deps.json"
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)/sdk/lib/net8.0-windows10.0.19041.0
 
@@ -432,7 +432,7 @@ jobs:
     condition: and(succeeded(), eq(variables['BuildPlatform'], 'arm64'))
     inputs:
       contents: packages/Microsoft.Web.WebView2.1.0.2903.40/runtimes/win-ARM64/native_uap/Microsoft.Web.WebView2.Core.dll
-      targetFolder: $(Build.SourcesDirectory)/ARM64/Release/WinUI3Apps/
+      targetFolder: $(Build.SourcesDirectory)/ARM64/Release/
       flattenFolders: True
       OverWrite: True
 
@@ -452,8 +452,8 @@ jobs:
     displayName: Audit base applications path asset conflicts
 
   - pwsh: |-
-      & '.pipelines/verifyPossibleAssetConflicts.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
-    displayName: Audit WinAppSDK applications path asset conflicts
+      & '.pipelines/verifyPossibleAssetConflicts.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\CmdPal'
+    displayName: Audit CmdPal path asset conflicts
 
   # To streamline the pipeline and prevent errors, skip this step during compatibility tests with the latest WinAppSDK.
   - ${{ if eq(parameters.useLatestWinAppSDK, false) }}:
