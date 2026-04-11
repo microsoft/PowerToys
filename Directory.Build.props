@@ -85,6 +85,14 @@
     <ForceImportBeforeCppProps>$(RepoRoot)Cpp.Build.props</ForceImportBeforeCppProps>
   </PropertyGroup>
 
+  <!-- Force all C# projects to reference these packages from NuGet so their 10.x versions
+       take precedence over the 9.x versions bundled in the .NET 9 runtime. Without this,
+       projects that don't transitively depend on these packages would get the runtime 9.x
+       version, causing deps.json version conflicts with projects that do. -->
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <PackageReference Include="System.Diagnostics.EventLog" />
+    <PackageReference Include="System.Threading.Channels" />
+  </ItemGroup>
 
   <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(_IsSkippedTestProject)' != 'true'">
     <PackageReference Include="StyleCop.Analyzers">

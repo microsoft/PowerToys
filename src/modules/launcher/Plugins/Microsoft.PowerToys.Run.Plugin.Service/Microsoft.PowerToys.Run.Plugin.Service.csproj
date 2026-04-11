@@ -20,9 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.ServiceProcess.ServiceController" />
-    <PackageReference Include="System.Diagnostics.EventLog">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
+    <!-- System.Diagnostics.EventLog is now provided to all C# projects via Directory.Build.props -->
   </ItemGroup>
 
   <ItemGroup>
