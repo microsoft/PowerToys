@@ -7,9 +7,6 @@
       "src\\common\\ManagedCommon\\ManagedCommon.csproj",
       "src\\common\\ManagedCsWin32\\ManagedCsWin32.csproj",
       "src\\common\\ManagedTelemetry\\Telemetry\\ManagedTelemetry.csproj",
-      "src\\common\\SettingsAPI\\SettingsAPI.vcxproj",
-      "src\\common\\UITestAutomation\\UITestAutomation.csproj",
-      "src\\common\\interop\\PowerToys.Interop.vcxproj",
       "src\\common\\logger\\logger.vcxproj",
       "src\\common\\version\\version.vcxproj",
       "src\\logging\\logging.vcxproj",
@@ -57,9 +54,7 @@
       "src\\modules\\cmdpal\\ext\\ProcessMonitorExtension\\ProcessMonitorExtension.csproj",
       "src\\modules\\cmdpal\\ext\\SamplePagesExtension\\SamplePagesExtension.csproj",
       "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions.Toolkit\\Microsoft.CommandPalette.Extensions.Toolkit.csproj",
-      "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions\\Microsoft.CommandPalette.Extensions.vcxproj",
-      "src\\modules\\powerdisplay\\PowerDisplay.Models\\PowerDisplay.Models.csproj",
-      "src\\settings-ui\\Settings.UI.Library\\Settings.UI.Library.csproj"
+      "src\\modules\\cmdpal\\extensionsdk\\Microsoft.CommandPalette.Extensions\\Microsoft.CommandPalette.Extensions.vcxproj"
     ]
   }
 }
