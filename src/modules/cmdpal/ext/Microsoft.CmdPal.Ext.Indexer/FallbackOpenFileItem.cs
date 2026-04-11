@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Helpers;
+using Microsoft.CmdPal.Ext.Indexer.Indexer;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -120,12 +121,19 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
             ct.ThrowIfCancellationRequested();
 
             // We only need to know whether there are 0, 1, or more than one result
-            var results = searchEngine.FetchItems(0, 2, queryCookie: HardQueryCookie, out _, noIcons: true);
+            var results = searchEngine.FetchItems(0, 2, queryCookie: HardQueryCookie, out _, out var notice, noIcons: true);
             var count = results.Count;
 
             if (count == 0)
             {
-                ClearResultForCurrentQuery(ct);
+                if (notice is { } searchNotice)
+                {
+                    UpdateSearchNoticeForCurrentQuery(query, searchNotice, ct);
+                }
+                else
+                {
+                    ClearResultForCurrentQuery(ct);
+                }
             }
             else if (count == 1)
             {
@@ -231,6 +239,29 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
             Command = command;
             return true;
         }
+    }
+
+    private bool UpdateSearchNoticeForCurrentQuery(string query, SearchNoticeInfo notice, CancellationToken ct)
+    {
+        var indexerPage = new IndexerPage(query);
+        var set = UpdateResultForCurrentQuery(
+            notice.Title,
+            notice.Subtitle,
+            Icons.FileExplorerIcon,
+            indexerPage,
+            [
+                new CommandContextItem(new OpenUrlCommand("ms-settings:search") { Name = Resources.Indexer_Command_OpenIndexerSettings! }),
+            ],
+            null,
+            skipIcon: false,
+            ct);
+
+        if (!set)
+        {
+            indexerPage.Dispose();
+        }
+
+        return set;
     }
 
     private void UpdateIconForCurrentQuery(IIconInfo icon, CancellationToken ct)

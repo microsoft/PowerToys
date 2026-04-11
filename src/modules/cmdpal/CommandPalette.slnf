@@ -20,6 +20,7 @@
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests\\Microsoft.CmdPal.Ext.Bookmarks.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Calc.UnitTests\\Microsoft.CmdPal.Ext.Calc.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests\\Microsoft.CmdPal.Ext.ClipboardHistory.UnitTests.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Indexer.UnitTests\\Microsoft.CmdPal.Ext.Indexer.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Registry.UnitTests\\Microsoft.CmdPal.Ext.Registry.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests\\Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.Shell.UnitTests\\Microsoft.CmdPal.Ext.Shell.UnitTests.csproj",
