@@ -17,13 +17,22 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class IconCarouselControl : UserControl
 {
     private const int SlotCount = 7;
+    private const int TransitionSlotBeforeFirst = -1;
+    private const int TransitionSlotAfterLast = SlotCount;
+    private const int HiddenSlot = int.MinValue;
     private const float CardSize = 108f;
     private const float CardCornerRadius = 20f;
     private const float IconPadding = 14f;
     private const float Stride = CardSize * 0.50f;
+    private const float IconDecodeScaleFactor = 1.5f;
+    private const float TransitionScaleFactor = 0.92f;
+    private const float TransitionOpacityFactor = 0.20f;
+    private const float ArrivalFadeHoldProgress = 0.40f;
+    private const float ArrivalFadeMidpointProgress = 0.78f;
+    private const float ArrivalFadeMidpointFactor = 0.72f;
 
     private static readonly TimeSpan RotateInterval = TimeSpan.FromSeconds(3);
-    private static readonly TimeSpan AnimationDuration = TimeSpan.FromMilliseconds(250);
+    private static readonly TimeSpan AnimationDuration = TimeSpan.FromMilliseconds(400);
 
     private static readonly SlotLayout[] Slots =
     [
@@ -195,15 +204,19 @@ public sealed partial class IconCarouselControl : UserControl
         bgVisual.Shapes.Add(bgShape);
         card.Children.InsertAbove(bgVisual, shadowVisual);
 
-        // Icon image
-        var surface = LoadedImageSurface.StartLoadFromUri(iconUri);
+        var iconSize = CardSize - (IconPadding * 2);
+
+        // Request a slightly larger surface so the smaller carousel slots can
+        // downsample from a cleaner source instead of revealing raster edges.
+        var surface = LoadedImageSurface.StartLoadFromUri(iconUri, GetDesiredIconSurfaceSize(iconSize));
         _surfaces.Add(surface);
 
         var surfaceBrush = _compositor.CreateSurfaceBrush(surface);
         surfaceBrush.Stretch = CompositionStretch.Uniform;
-        surfaceBrush.BitmapInterpolationMode = CompositionBitmapInterpolationMode.Linear;
+        surfaceBrush.BitmapInterpolationMode = CompositionBitmapInterpolationMode.MagLinearMinLinearMipLinear;
+        surfaceBrush.HorizontalAlignmentRatio = 0.5f;
+        surfaceBrush.VerticalAlignmentRatio = 0.5f;
 
-        var iconSize = CardSize - (IconPadding * 2);
         var iconVisual = _compositor.CreateSpriteVisual();
         iconVisual.Size = new Vector2(iconSize, iconSize);
         iconVisual.Offset = new Vector3(shadowPad + IconPadding, shadowPad + IconPadding, 0);
@@ -259,133 +272,151 @@ public sealed partial class IconCarouselControl : UserControl
             return;
         }
 
-        // Find the card that is about to depart (currently at slot 0, will go to slot -1)
-        // and the card about to arrive (currently at slot SlotCount, will enter slot SlotCount-1)
-        var departingCardIndex = -1;
-        var arrivingCardIndex = -1;
+        var previousRotationIndex = _rotationIndex;
+        var nextRotationIndex = (previousRotationIndex + 1) % _cards.Count;
+        var displaySlots = new int[_cards.Count];
+
+        // Prep start states before reordering children so edge cards can glide in/out
+        // instead of popping as they cross the visible bounds.
         for (var i = 0; i < _cards.Count; i++)
         {
-            var slot = GetSlotForCard(i);
-            if (slot == 0)
+            var currentSlot = GetSlotForCard(i, previousRotationIndex);
+            var nextSlot = GetSlotForCard(i, nextRotationIndex);
+            var card = _cards[i];
+
+            displaySlots[i] = GetDisplaySlot(currentSlot, nextSlot);
+
+            if (!IsVisibleSlot(currentSlot) && IsVisibleSlot(nextSlot))
             {
-                departingCardIndex = i;
+                PrepareArrival(card, nextSlot, currentSlot < 0);
             }
-            else if (slot == SlotCount)
+            else if (!IsVisibleSlot(currentSlot) && !IsVisibleSlot(nextSlot))
             {
-                arrivingCardIndex = i;
+                card.IsVisible = false;
+            }
+            else
+            {
+                card.IsVisible = true;
             }
         }
 
-        // Advance rotation
-        _rotationIndex = (_rotationIndex + 1) % _cards.Count;
+        _rotationIndex = nextRotationIndex;
 
         // Set z-order BEFORE animating. The departing card goes to the back,
         // the arriving card also starts at the back. Since they're behind
         // everything, the z-order change is invisible.
-        ApplyZOrder();
+        ApplyZOrder(displaySlots);
 
         var easing = _compositor.CreateCubicBezierEasingFunction(
-            new Vector2(0.25f, 0.1f), new Vector2(0.25f, 1f));
+            new Vector2(0.37f, 0f), new Vector2(0.63f, 1f));
 
-        // Animate all currently visible cards to their new slots
         for (var i = 0; i < _cards.Count; i++)
         {
-            var slotIndex = GetSlotForCard(i);
+            var currentSlot = GetSlotForCard(i, previousRotationIndex);
+            var nextSlot = GetSlotForCard(i, nextRotationIndex);
             var card = _cards[i];
 
-            if (i == departingCardIndex)
+            if (IsVisibleSlot(currentSlot) && !IsVisibleSlot(nextSlot))
             {
-                // Departing: animate off-screen left, then teleport to right
-                AnimateDeparture(card, easing);
+                AnimateDeparture(card, nextSlot < 0, easing);
                 continue;
             }
 
-            if (i == arrivingCardIndex)
+            if (!IsVisibleSlot(currentSlot) && IsVisibleSlot(nextSlot))
             {
-                // Arriving: teleport to right of visible area, animate slide-in
-                AnimateArrival(card, slotIndex, easing);
+                AnimateArrival(card, nextSlot, easing);
                 continue;
             }
 
-            if (slotIndex < 0 || slotIndex >= SlotCount)
+            if (!IsVisibleSlot(nextSlot))
             {
                 card.IsVisible = false;
                 continue;
             }
 
-            // Normal cards: animate to new position
-            card.IsVisible = true;
-            var slot = Slots[slotIndex];
+            var slot = Slots[nextSlot];
             AnimateCardTo(card, GetSlotOffset(slot), slot.Scale, slot.Opacity, easing);
         }
     }
 
-    private void AnimateDeparture(ContainerVisual card, CompositionEasingFunction easing)
+    private void AnimateDeparture(ContainerVisual card, bool exitingLeft, CompositionEasingFunction easing)
     {
-        // Slide off to the left and fade out
-        var leftEdge = Slots[0];
-        var departTarget = GetSlotOffset(leftEdge) - new Vector3(Stride * 1.5f, 0, 0);
-
-        var offsetAnim = _compositor!.CreateVector3KeyFrameAnimation();
-        offsetAnim.InsertKeyFrame(1f, departTarget, easing);
-        offsetAnim.Duration = AnimationDuration;
-        card.StartAnimation(nameof(card.Offset), offsetAnim);
-
-        var opacityAnim = _compositor.CreateScalarKeyFrameAnimation();
-        opacityAnim.InsertKeyFrame(1f, 0f, easing);
-        opacityAnim.Duration = AnimationDuration;
-        card.StartAnimation(nameof(card.Opacity), opacityAnim);
-
-        var scaleVal = leftEdge.Scale * 0.8f;
-        var scaleAnim = _compositor.CreateVector3KeyFrameAnimation();
-        scaleAnim.InsertKeyFrame(1f, new Vector3(scaleVal, scaleVal, 1f), easing);
-        scaleAnim.Duration = AnimationDuration;
-        card.StartAnimation(nameof(card.Scale), scaleAnim);
+        var edgeSlot = exitingLeft ? Slots[0] : Slots[^1];
+        var targetScale = edgeSlot.Scale * TransitionScaleFactor;
+        AnimateCardTo(card, GetTransitionOffset(exitingLeft), targetScale, 0f, easing);
     }
 
     private void AnimateArrival(ContainerVisual card, int slotIndex, CompositionEasingFunction easing)
     {
-        if (slotIndex < 0 || slotIndex >= SlotCount)
+        if (!IsVisibleSlot(slotIndex))
         {
             card.IsVisible = false;
             return;
         }
 
         var slot = Slots[slotIndex];
-        var targetOffset = GetSlotOffset(slot);
-
-        // Start off-screen to the right
-        card.StopAnimation(nameof(card.Offset));
-        card.StopAnimation(nameof(card.Scale));
-        card.StopAnimation(nameof(card.Opacity));
-        card.Offset = targetOffset + new Vector3(Stride * 1.5f, 0, 0);
-        card.Scale = new Vector3(slot.Scale * 0.8f, slot.Scale * 0.8f, 1f);
-        card.Opacity = 0f;
-        card.IsVisible = true;
-
-        // Animate slide-in from the right
-        AnimateCardTo(card, targetOffset, slot.Scale, slot.Opacity, easing);
+        StartOffsetAnimation(card, GetSlotOffset(slot), easing);
+        StartScaleAnimation(card, slot.Scale, easing);
+        StartArrivalOpacityAnimation(card, slot.Opacity, easing);
     }
 
     private void AnimateCardTo(ContainerVisual card, Vector3 offset, float scale, float opacity, CompositionEasingFunction easing)
+    {
+        StartOffsetAnimation(card, offset, easing);
+        StartScaleAnimation(card, scale, easing);
+        StartOpacityAnimation(card, opacity, easing);
+    }
+
+    private void StartOffsetAnimation(ContainerVisual card, Vector3 offset, CompositionEasingFunction easing)
     {
         var offsetAnim = _compositor!.CreateVector3KeyFrameAnimation();
         offsetAnim.InsertKeyFrame(1f, offset, easing);
         offsetAnim.Duration = AnimationDuration;
         card.StartAnimation(nameof(card.Offset), offsetAnim);
+    }
 
-        var scaleAnim = _compositor.CreateVector3KeyFrameAnimation();
+    private void StartScaleAnimation(ContainerVisual card, float scale, CompositionEasingFunction easing)
+    {
+        var scaleAnim = _compositor!.CreateVector3KeyFrameAnimation();
         scaleAnim.InsertKeyFrame(1f, new Vector3(scale, scale, 1f), easing);
         scaleAnim.Duration = AnimationDuration;
         card.StartAnimation(nameof(card.Scale), scaleAnim);
+    }
 
-        var opacityAnim = _compositor.CreateScalarKeyFrameAnimation();
+    private void StartOpacityAnimation(ContainerVisual card, float opacity, CompositionEasingFunction easing)
+    {
+        var opacityAnim = _compositor!.CreateScalarKeyFrameAnimation();
         opacityAnim.InsertKeyFrame(1f, opacity, easing);
         opacityAnim.Duration = AnimationDuration;
         card.StartAnimation(nameof(card.Opacity), opacityAnim);
     }
 
+    private void StartArrivalOpacityAnimation(ContainerVisual card, float targetOpacity, CompositionEasingFunction easing)
+    {
+        var startOpacity = targetOpacity * TransitionOpacityFactor;
+        var midpointOpacity = MathF.Max(startOpacity, targetOpacity * ArrivalFadeMidpointFactor);
+
+        var opacityAnim = _compositor!.CreateScalarKeyFrameAnimation();
+        opacityAnim.InsertKeyFrame(ArrivalFadeHoldProgress, startOpacity);
+        opacityAnim.InsertKeyFrame(ArrivalFadeMidpointProgress, midpointOpacity, easing);
+        opacityAnim.InsertKeyFrame(1f, targetOpacity, easing);
+        opacityAnim.Duration = AnimationDuration;
+        card.StartAnimation(nameof(card.Opacity), opacityAnim);
+    }
+
     private void ApplyZOrder()
+    {
+        var displaySlots = new int[_cards.Count];
+        for (var i = 0; i < _cards.Count; i++)
+        {
+            var slotIndex = GetSlotForCard(i);
+            displaySlots[i] = IsVisibleSlot(slotIndex) ? slotIndex : HiddenSlot;
+        }
+
+        ApplyZOrder(displaySlots);
+    }
+
+    private void ApplyZOrder(IReadOnlyList<int> displaySlots)
     {
         if (_container == null)
         {
@@ -395,18 +426,23 @@ public sealed partial class IconCarouselControl : UserControl
         var centerSlot = SlotCount / 2;
 
         _container.Children.RemoveAll();
-        var ordered = new List<(int DistFromCenter, ContainerVisual Card)>();
+        var ordered = new List<(int DistFromCenter, int SlotIndex, ContainerVisual Card)>();
         for (var i = 0; i < _cards.Count; i++)
         {
-            var slotIndex = GetSlotForCard(i);
-            if (slotIndex >= 0 && slotIndex < SlotCount)
+            var slotIndex = displaySlots[i];
+            if (slotIndex != HiddenSlot)
             {
-                ordered.Add((Math.Abs(slotIndex - centerSlot), _cards[i]));
+                ordered.Add((Math.Abs(slotIndex - centerSlot), slotIndex, _cards[i]));
             }
         }
 
         // Farthest from center first (bottom), closest last (top)
-        ordered.Sort((a, b) => b.DistFromCenter.CompareTo(a.DistFromCenter));
+        ordered.Sort((a, b) =>
+        {
+            var distanceOrder = b.DistFromCenter.CompareTo(a.DistFromCenter);
+            return distanceOrder != 0 ? distanceOrder : a.SlotIndex.CompareTo(b.SlotIndex);
+        });
+
         foreach (var item in ordered)
         {
             _container.Children.InsertAtTop(item.Card);
@@ -415,9 +451,14 @@ public sealed partial class IconCarouselControl : UserControl
 
     private int GetSlotForCard(int cardIndex)
     {
+        return GetSlotForCard(cardIndex, _rotationIndex);
+    }
+
+    private int GetSlotForCard(int cardIndex, int rotationIndex)
+    {
         var totalCards = _cards.Count;
         var centerSlot = SlotCount / 2;
-        var diff = cardIndex - _rotationIndex;
+        var diff = cardIndex - rotationIndex;
 
         if (diff > totalCards / 2)
         {
@@ -429,6 +470,53 @@ public sealed partial class IconCarouselControl : UserControl
         }
 
         return centerSlot + diff;
+    }
+
+    private static bool IsVisibleSlot(int slotIndex)
+    {
+        return slotIndex >= 0 && slotIndex < SlotCount;
+    }
+
+    private static int GetDisplaySlot(int currentSlot, int nextSlot)
+    {
+        if (IsVisibleSlot(nextSlot))
+        {
+            return IsVisibleSlot(currentSlot) ? nextSlot : (currentSlot < 0 ? TransitionSlotBeforeFirst : TransitionSlotAfterLast);
+        }
+
+        if (IsVisibleSlot(currentSlot))
+        {
+            return nextSlot < 0 ? TransitionSlotBeforeFirst : TransitionSlotAfterLast;
+        }
+
+        return HiddenSlot;
+    }
+
+    private void PrepareArrival(ContainerVisual card, int slotIndex, bool enteringFromLeft)
+    {
+        var slot = Slots[slotIndex];
+        var startScale = slot.Scale * TransitionScaleFactor;
+
+        card.StopAnimation(nameof(card.Offset));
+        card.StopAnimation(nameof(card.Scale));
+        card.StopAnimation(nameof(card.Opacity));
+        card.Offset = GetTransitionOffset(enteringFromLeft);
+        card.Scale = new Vector3(startScale, startScale, 1f);
+        card.Opacity = slot.Opacity * TransitionOpacityFactor;
+        card.IsVisible = true;
+    }
+
+    private Vector3 GetTransitionOffset(bool toLeft)
+    {
+        var edgeSlot = toLeft ? Slots[0] : Slots[^1];
+        var direction = toLeft ? -1f : 1f;
+        return GetSlotOffset(edgeSlot) + new Vector3(direction * Stride, 0f, 0f);
+    }
+
+    private static global::Windows.Foundation.Size GetDesiredIconSurfaceSize(float iconSize)
+    {
+        var desiredSize = Math.Ceiling(iconSize * IconDecodeScaleFactor);
+        return new global::Windows.Foundation.Size(desiredSize, desiredSize);
     }
 
     private void StartTimer()
