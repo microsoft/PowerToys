@@ -1170,6 +1170,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GalleryPage_Banner_Description.Text" xml:space="preserve">
     <value>Discover extensions for Command Palette built by the community.</value>
   </data>
+  <data name="Settings_GalleryPage_Hero_Subtitle.Text" xml:space="preserve">
+    <value>Discover, install and manage community-built extensions</value>
+  </data>
+  <data name="Settings_GalleryPage_Hero_CreateLink.Content" xml:space="preserve">
+    <value>Learn how to create your own extension</value>
+  </data>
   <data name="Settings_GalleryPage_Banner_SubmitLink.Content" xml:space="preserve">
     <value>Submit your extension</value>
   </data>
@@ -1229,6 +1235,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Settings_GalleryPage_Update_Badge.Text" xml:space="preserve">
     <value>Update</value>
+  </data>
+  <data name="Settings_GalleryItemPage_Installed_Badge.Text" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="Settings_GalleryItemPage_Uninstall_Link.Content" xml:space="preserve">
+    <value>Uninstall</value>
   </data>
   <data name="Settings_GalleryPage_StoreButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Install from Microsoft Store</value>

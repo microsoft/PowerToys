@@ -35,22 +35,18 @@
             <StackPanel MinWidth="360" Spacing="8">
                 <Grid ColumnSpacing="8" Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowWinGetActionControls), Mode=OneWay, FallbackValue=Collapsed}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Button
+                    <Button Margin="0,12,0,0"
+                        HorizontalAlignment="Stretch"
                         Command="{x:Bind ViewModel.InstallViaWinGetCommand, Mode=OneWay}"
                         Content="{x:Bind ViewModel.InstallViaWinGetText, Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.CanInstallViaWinGet, Mode=OneWay}"
+                        Style="{StaticResource AccentButtonStyle}"
                         Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowInstallViaWinGetButton), Mode=OneWay, FallbackValue=Collapsed}" />
-                    <ProgressRing
-                        Grid.Column="1"
-                        Width="20"
-                        Height="20"
-                        IsActive="{x:Bind ViewModel.IsWinGetActionInProgress, Mode=OneWay}"
-                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.IsWinGetActionInProgress), Mode=OneWay, FallbackValue=Collapsed}" />
-                    <Button
+                  <Button
                         Grid.Column="2"
                         Width="32"
                         Height="32"
@@ -62,13 +58,25 @@
                         <FontIcon FontSize="12" Glyph="&#xE711;" />
                     </Button>
                 </Grid>
-                <Grid ColumnSpacing="8">
+
+                <TextBlock
+                    Margin="0,8,0,8"
+                    HorizontalAlignment="Center"
+                    Text="or"
+                    TextAlignment="Center" />
+                <Grid
+                    Padding="8,4,0,4"
+                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                    ColumnSpacing="8"
+                    CornerRadius="{StaticResource ControlCornerRadius}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock
+                        VerticalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsTextSelectionEnabled="True"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind ViewModel.WinGetInstallCommand, Mode=OneWay}"
                         TextWrapping="WrapWholeWords" />
@@ -80,14 +88,12 @@
                         VerticalAlignment="Center"
                         Command="{x:Bind ViewModel.CopyWinGetInstallCommand, Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.CanCopyWinGetInstallCommand, Mode=OneWay}"
+                        Style="{StaticResource SubtleButtonStyle}"
                         ToolTipService.ToolTip="Copy install command">
                         <FontIcon FontSize="12" Glyph="&#xE8C8;" />
                     </Button>
                 </Grid>
-                <TextBlock
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{x:Bind ViewModel.WinGetStatusText, Mode=OneWay}" />
+                
                 <TextBlock
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{StaticResource CaptionTextBlockStyle}"
@@ -251,15 +257,16 @@
                     Grid.Row="2"
                     Margin="0,0,0,24"
                     Orientation="Horizontal"
-                    Spacing="16">
+                    Spacing="12">
 
-                    <!--  TO DO: We probably want to hide the Get button and instead show a "Installed" tag and a button that opens the ExtensionPage?  -->
                     <DropDownButton
                         x:Name="InstallBtn"
                         MinWidth="172"
+                        Padding="12"
                         HorizontalContentAlignment="Left"
                         Content="Install"
                         FontWeight="SemiBold"
+                        IsEnabled="{x:Bind ViewModel.ShowInstallButton, Mode=OneWay}"
                         Style="{StaticResource AccentDropDownButtonStyle}">
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
@@ -290,17 +297,26 @@
                             </MenuFlyout>
                         </DropDownButton.Flyout>
                     </DropDownButton>
-                    <StackPanel Spacing="4">
+
+                    <Border
+                        Padding="8,4"
+                        VerticalAlignment="Center"
+                        Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
+                        CornerRadius="{StaticResource OverlayCornerRadius}"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowInstalledBadge), Mode=OneWay, FallbackValue=Collapsed}">
                         <TextBlock
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind ViewModel.InstallStatusText, Mode=OneWay}" />
-                        <TextBlock
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind ViewModel.WinGetStatusText, Mode=OneWay}"
-                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowWinGetStatusDetails), Mode=OneWay, FallbackValue=Collapsed}" />
-                    </StackPanel>
+                            x:Uid="Settings_GalleryItemPage_Installed_Badge"
+                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}" />
+                    </Border>
+
+                    <HyperlinkButton
+                        x:Uid="Settings_GalleryItemPage_Uninstall_Link"
+                        Padding="0"
+                        VerticalAlignment="Center"
+                        Command="{x:Bind ViewModel.OpenInstalledAppsCommand}"
+                        FontSize="12"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowInstalledBadge), Mode=OneWay, FallbackValue=Collapsed}" />
 
                 </StackPanel>
                 <ScrollViewer Grid.Row="4">
@@ -341,6 +357,11 @@
                                 <ItemsView.ItemTemplate>
                                     <DataTemplate x:DataType="viewModels:ExtensionGalleryScreenshotViewModel">
                                         <ItemContainer AutomationProperties.Name="{x:Bind DisplayName}" ToolTipService.ToolTip="{x:Bind DisplayName}">
+                                            <ItemContainer.Resources>
+                                                <SolidColorBrush x:Key="ItemContainerBackground" Color="Transparent" />
+                                                <SolidColorBrush x:Key="ItemContainerBackgroundPointerOver" Color="Transparent" />
+                                                <SolidColorBrush x:Key="ItemContainerBackgroundPressed" Color="Transparent" />
+                                            </ItemContainer.Resources>
                                             <Border
                                                 Height="200"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"

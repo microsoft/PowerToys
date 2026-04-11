@@ -65,6 +65,9 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
 
     public ObservableCollection<ExtensionGalleryItemViewModel> FilteredEntries { get; } = [];
 
+    [ObservableProperty]
+    public partial IReadOnlyList<Uri> CarouselIconUris { get; set; } = [];
+
     private string _searchText = string.Empty;
 
     public string SearchText
@@ -279,6 +282,41 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         }
 
         ApplyCurrentWinGetOperations();
+        UpdateCarouselIcons();
+    }
+
+    private void UpdateCarouselIcons()
+    {
+        List<Uri> candidates;
+        lock (_entriesLock)
+        {
+            candidates = new List<Uri>(_allEntries.Count);
+            foreach (var entry in _allEntries)
+            {
+                if (entry.IconUri.Scheme != "ms-appx")
+                {
+                    candidates.Add(entry.IconUri);
+                }
+            }
+        }
+
+        if (candidates.Count == 0)
+        {
+            CarouselIconUris = [];
+            return;
+        }
+
+        // Fisher-Yates shuffle for random selection
+        var rng = Random.Shared;
+        for (var i = candidates.Count - 1; i > 0; i--)
+        {
+            var j = rng.Next(i + 1);
+            (candidates[i], candidates[j]) = (candidates[j], candidates[i]);
+        }
+
+        // Take up to VisibleCount + buffer for smooth wrapping
+        var count = Math.Min(candidates.Count, 12);
+        CarouselIconUris = candidates.GetRange(0, count);
     }
 
     private void StartBackgroundRefresh(

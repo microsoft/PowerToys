@@ -200,7 +200,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public bool CanInstallViaWinGet => ShowInstallViaWinGetButton && IsWinGetAvailable && !IsWinGetActionInProgress;
 
-    public string InstallViaWinGetText => IsUpdateAvailable ? "Update with WinGet" : "Install with WinGet";
+    public string InstallViaWinGetText => IsUpdateAvailable ? "Update" : "Install";
 
     public bool ShowCancelWinGetActionButton => IsWinGetActionInProgress && CanCancelWinGetAction;
 
@@ -234,6 +234,8 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     public partial double WinGetActionProgressValue { get; set; }
 
     public bool ShowInstalledBadge => IsInstalled && !IsUpdateAvailable;
+
+    public bool ShowInstallButton => !ShowInstalledBadge;
 
     public bool ShowUpdateBadge => IsUpdateAvailable;
 
@@ -314,6 +316,12 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         {
             ShellHelpers.OpenInShell(InstallUrl);
         }
+    }
+
+    [RelayCommand]
+    private static void OpenInstalledApps()
+    {
+        ShellHelpers.OpenInShell("ms-settings:appsfeatures");
     }
 
     [RelayCommand]
@@ -881,6 +889,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     partial void OnIsInstalledChanged(bool value)
     {
         OnPropertyChanged(nameof(ShowInstalledBadge));
+        OnPropertyChanged(nameof(ShowInstallButton));
         OnPropertyChanged(nameof(InstallStatusText));
         OnPropertyChanged(nameof(WinGetStatusText));
         OnPropertyChanged(nameof(ShowWinGetStatusDetails));
@@ -901,6 +910,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     partial void OnIsUpdateAvailableChanged(bool value)
     {
         OnPropertyChanged(nameof(ShowInstalledBadge));
+        OnPropertyChanged(nameof(ShowInstallButton));
         OnPropertyChanged(nameof(ShowUpdateBadge));
         OnPropertyChanged(nameof(InstallStatusText));
         OnPropertyChanged(nameof(WinGetStatusText));
