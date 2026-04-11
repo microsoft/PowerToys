@@ -68,7 +68,7 @@
                     Message="{x:Bind ViewModel.CustomFeedUrl}"
                     Severity="Informational" />
 
-                <!--  Hero section (fullbleed, no MaxWidth)  -->
+                <!--  Hero section (full bleed, no MaxWidth)  -->
                 <Grid>
 
                     <!--  Gradient background with opacity mask fade-out  -->
