@@ -35,7 +35,7 @@ public class SettingsManagerTests
         Assert.IsFalse(settings.InputUseEnglishFormat);
         Assert.IsFalse(settings.OutputUseEnglishFormat);
         Assert.IsTrue(settings.CloseOnEnter);
-        Assert.IsFalse(settings.SaveFallbackResultsToHistory);
+        Assert.IsTrue(settings.SaveFallbackResultsToHistory);
         Assert.IsTrue(settings.DeleteHistoryRequiresConfirmation);
         Assert.AreEqual(PrimaryAction.Default, settings.PrimaryAction);
     }

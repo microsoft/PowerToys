@@ -164,6 +164,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_inputUseEnNumberFormat);
         Settings.Add(_outputUseEnNumberFormat);
         Settings.Add(_closeOnEnter);
+        Settings.Add(_replaceQueryOnEnter);
         Settings.Add(_copyResultToSearchBarIfQueryEndsWithEqualSign);
         Settings.Add(_autoFixQuery);
         Settings.Add(_saveFallbackResultsToHistory);
