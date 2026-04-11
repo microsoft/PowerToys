@@ -439,6 +439,7 @@
   </Folder>
   <Folder Name="/modules/FileLocksmith/Tests/">
     <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/tests/FileLocksmithCLIUnitTests.vcxproj" Id="a1b2c3d4-e5f6-7890-1234-567890abcdef" />
+    <Project Path="src/modules/FileLocksmith/UnitTests/UnitTests-FileLocksmith.vcxproj" Id="d3e4f5a6-3333-4444-5555-666677778888" />
   </Folder>
   <Folder Name="/modules/Hosts/">
     <Project Path="src/modules/Hosts/Hosts/Hosts.csproj">
@@ -710,6 +711,7 @@
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
     </Project>
+    <Project Path="src/modules/LightSwitch/UnitTests/UnitTests-LightSwitch.vcxproj" Id="b1a2c3d4-1111-2222-3333-444455556666" />
   </Folder>
   <Folder Name="/modules/PowerDisplay/">
     <Project Path="src/modules/powerdisplay/PowerDisplay.Models/PowerDisplay.Models.csproj">
@@ -806,6 +808,9 @@
     </Project>
     <Project Path="src/modules/poweraccent/PowerAccentKeyboardService/PowerAccentKeyboardService.vcxproj" Id="c97d9a5d-206c-454e-997e-009e227d7f02" />
     <Project Path="src/modules/poweraccent/PowerAccentModuleInterface/PowerAccentModuleInterface.vcxproj" Id="34a354c5-23c7-4343-916c-c52daf4fc39d" />
+  </Folder>
+  <Folder Name="/modules/PowerAccent/Tests/">
+    <Project Path="src/modules/poweraccent/UnitTests/UnitTests-PowerAccent.vcxproj" Id="c2b3d4e5-2222-3333-4444-555566667777" />
   </Folder>
   <Folder Name="/modules/PowerOCR/">
     <Project Path="src/modules/PowerOCR/PowerOCR/PowerOCR.csproj">
