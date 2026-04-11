@@ -47,7 +47,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<GoHomeMessage>,
     IRecipient<GoBackMessage>,
     IRecipient<ShowConfirmationMessage>,
-    IRecipient<ShowParameterInputMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
     IRecipient<ShowHideDockMessage>,
@@ -100,7 +99,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<GoBackMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(this);
-        WeakReferenceMessenger.Default.Register<ShowParameterInputMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
 
@@ -198,21 +196,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             try
             {
                 await HandleConfirmArgsOnUiThread(message.Args);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex.ToString());
-            }
-        });
-    }
-
-    public void Receive(ShowParameterInputMessage message)
-    {
-        DispatcherQueue.TryEnqueue(async () =>
-        {
-            try
-            {
-                await HandleParameterInputOnUiThread(message);
             }
             catch (Exception ex)
             {
@@ -320,86 +303,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     }
 
     private void InitializeConfirmationDialog(ConfirmResultViewModel vm) => vm.SafeInitializePropertiesSynchronous();
-
-    private async Task HandleParameterInputOnUiThread(ShowParameterInputMessage message)
-    {
-        var command = message.Command.Unsafe;
-        if (command is null)
-        {
-            return;
-        }
-
-        ICommandParameterInputItem[] parameters;
-        try
-        {
-            parameters = command.Parameters;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex.ToString());
-            return;
-        }
-
-        if (parameters is null || parameters.Length == 0)
-        {
-            WeakReferenceMessenger.Default.Send(new PerformParameterizedCommandMessage(
-                message.Command, message.Context, message.Host));
-            return;
-        }
-
-        var panel = new StackPanel { Spacing = 8 };
-        var textBoxes = new Dictionary<string, TextBox>();
-
-        foreach (var param in parameters)
-        {
-            if (param.ParameterType == ParameterType.Text)
-            {
-                var label = param.Label ?? param.ParameterName;
-                if (!string.IsNullOrEmpty(label))
-                {
-                    panel.Children.Add(new TextBlock { Text = label });
-                }
-
-                var textBox = new TextBox
-                {
-                    PlaceholderText = label,
-                    Text = param.Value ?? string.Empty,
-                };
-                textBoxes[param.ParameterName] = textBox;
-                panel.Children.Add(textBox);
-            }
-        }
-
-        var resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
-        var runText = resourceLoader.GetString("ParameterInputDialog_RunButtonText");
-        var cancelText = resourceLoader.GetString("ParameterInputDialog_CancelButtonText");
-
-        ContentDialog dialog = new()
-        {
-            Title = command.Name,
-            Content = panel,
-            PrimaryButtonText = runText,
-            CloseButtonText = cancelText,
-            DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = this.XamlRoot,
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
-        {
-            foreach (var param in parameters)
-            {
-                if (param.ParameterType == ParameterType.Text &&
-                    textBoxes.TryGetValue(param.ParameterName, out var textBox))
-                {
-                    param.Value = textBox.Text;
-                }
-            }
-
-            WeakReferenceMessenger.Default.Send(new PerformParameterizedCommandMessage(
-                message.Command, message.Context, message.Host));
-        }
-    }
 
     public void Receive(OpenSettingsMessage message)
     {

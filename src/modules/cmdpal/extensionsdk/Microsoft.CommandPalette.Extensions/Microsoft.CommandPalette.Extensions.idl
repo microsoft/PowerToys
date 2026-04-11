@@ -438,27 +438,4 @@ namespace Microsoft.CommandPalette.Extensions
         ICommandItem GetCommandItem(String id);
     };
 
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    enum ParameterType {
-        Text = 0,
-        Enum = 1,
-        Custom = 2,
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface ICommandParameterInputItem requires INotifyPropChanged {
-        ParameterType ParameterType { get; };
-        String ParameterName { get; };
-        Boolean IsRequired { get; };
-        String Value { get; set; };
-        String Label { get; };
-        IIconInfo Icon { get; };
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IInvokableCommandWithParameters requires ICommand {
-        ICommandParameterInputItem[] Parameters { get; };
-        ICommandResult InvokeWithArgs(Object sender);
-    };
-
 }

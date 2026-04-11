@@ -18,7 +18,6 @@ public partial class ShellViewModel : ObservableObject,
     IDisposable,
     IRecipient<PerformCommandMessage>,
     IRecipient<HandleCommandResultMessage>,
-    IRecipient<PerformParameterizedCommandMessage>,
     IRecipient<WindowHiddenMessage>
 {
     private readonly IRootPageService _rootPageService;
@@ -105,7 +104,6 @@ public partial class ShellViewModel : ObservableObject,
         // Register to receive messages
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
         WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
-        WeakReferenceMessenger.Default.Register<PerformParameterizedCommandMessage>(this);
         WeakReferenceMessenger.Default.Register<WindowHiddenMessage>(this);
     }
 
@@ -335,16 +333,6 @@ public partial class ShellViewModel : ObservableObject,
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
                 // See RootFrame_Navigated event handler.
             }
-            else if (command is IInvokableCommandWithParameters commandWithParams)
-            {
-                CoreLogger.LogDebug($"Invoking command with parameters");
-
-                var showParamMessage = new ShowParameterInputMessage(
-                    new ExtensionObject<IInvokableCommandWithParameters>(commandWithParams),
-                    message.Context,
-                    host);
-                OnUIThread(() => WeakReferenceMessenger.Default.Send(showParamMessage));
-            }
             else if (command is IInvokableCommand invokable)
             {
                 CoreLogger.LogDebug($"Invoking command");
@@ -509,51 +497,6 @@ public partial class ShellViewModel : ObservableObject,
     public void Receive(HandleCommandResultMessage message)
     {
         UnsafeHandleCommandResult(message.Result.Unsafe);
-    }
-
-    public void Receive(PerformParameterizedCommandMessage message)
-    {
-        lock (_invokeLock)
-        {
-            if (_handleInvokeTask is null)
-            {
-                _handleInvokeTask = Task.Run(() => SafeHandleInvokeParameterizedCommandSynchronous(message));
-            }
-        }
-    }
-
-    private void SafeHandleInvokeParameterizedCommandSynchronous(PerformParameterizedCommandMessage message)
-    {
-        var command = message.Command.Unsafe;
-        if (command is null)
-        {
-            _handleInvokeTask = null;
-            return;
-        }
-
-        var success = false;
-        try
-        {
-            var result = command.InvokeWithArgs(message.Context);
-            UnsafeHandleCommandResult(result);
-            success = true;
-            _handleInvokeTask = null;
-        }
-        catch (Exception ex)
-        {
-            success = false;
-            _handleInvokeTask = null;
-            WeakReferenceMessenger.Default.Send<ErrorOccurredMessage>(new());
-            message.Host?.Log(ex.Message);
-        }
-        finally
-        {
-            var extensionId = message.Host?.GetExtensionDisplayName() ?? "builtin";
-            var commandId = command.Id ?? "unknown";
-            var commandName = command.Name ?? "unknown";
-            WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
-                new(extensionId, commandId, commandName, success, 0));
-        }
     }
 
     public void Receive(WindowHiddenMessage message)
