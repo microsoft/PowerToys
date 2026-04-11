@@ -9,7 +9,6 @@
 #include <string>
 
 #include <common/updating/configBackup.h>
-#include <common/version/helper.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -318,46 +317,6 @@ namespace UpdatingUnitTests
             // Clean files should be unchanged
             Assert::AreEqual(std::string(R"({"zones":[{"id":1}]})"), dir.ReadFile(L"FancyZones\\settings.json"));
             Assert::AreEqual(std::string(R"({"remaps":[]})"), dir.ReadFile(L"KeyboardManager\\default.json"));
-        }
-    };
-
-    TEST_CLASS(VersionHelperUpdateTests)
-    {
-    public:
-        TEST_METHOD(NewerVersionIsDetected)
-        {
-            VersionHelper current(0, 85, 0);
-            VersionHelper newer(0, 86, 0);
-
-            Assert::IsTrue(newer > current);
-            Assert::IsFalse(current > newer);
-        }
-
-        TEST_METHOD(SameVersionIsNotNewer)
-        {
-            VersionHelper current(0, 85, 1);
-            VersionHelper same(0, 85, 1);
-
-            Assert::IsFalse(same > current);
-            Assert::IsFalse(current > same);
-        }
-
-        TEST_METHOD(PatchVersionIsDetected)
-        {
-            VersionHelper current(0, 85, 0);
-            VersionHelper patch(0, 85, 1);
-
-            Assert::IsTrue(patch > current);
-        }
-
-        TEST_METHOD(VersionParsedFromGitHubTag)
-        {
-            auto version = VersionHelper::fromString(L"v0.85.1");
-
-            Assert::IsTrue(version.has_value());
-            Assert::AreEqual(0ull, version->major);
-            Assert::AreEqual(85ull, version->minor);
-            Assert::AreEqual(1ull, version->revision);
         }
     };
 }

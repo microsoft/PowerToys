@@ -6,9 +6,6 @@
 #define PCH_H
 
 #include <Windows.h>
-#include <winrt/base.h>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Foundation.Collections.h>
 
 // Suppressing 26466 - Don't use static_cast downcasts - in CppUnitTest.h
 #pragma warning(push)
