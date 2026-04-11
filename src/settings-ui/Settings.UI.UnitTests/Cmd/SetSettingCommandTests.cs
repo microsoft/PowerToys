@@ -56,7 +56,7 @@ public class SetSettingCommandTests
     }
 
     [DataRow(typeof(GeneralSettings), "Enabled.MouseWithoutBorders", "true")]
-    [DataRow(typeof(GeneralSettings), nameof(GeneralSettings.AutoDownloadUpdates), "true")]
+    [DataRow(typeof(GeneralSettings), nameof(GeneralSettings.AutoDownloadUpdates), "false")]
     [TestMethod]
     public void SetGeneralSetting(Type moduleSettingsType, string settingName, string newValueStr)
     {

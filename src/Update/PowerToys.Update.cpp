@@ -208,7 +208,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     if (action == UPDATE_NOW_LAUNCH_STAGE1)
     {
         // Backup config files before the update to protect against corruption
-        updating::BackupConfigFiles();
+        Logger::info("Backing up config files before update");
+        updating::BackupConfigFiles(fs::path(PTSettingsHelper::get_root_save_folder_location()));
 
         bool isUpToDate = false;
         auto installerPath = ObtainInstaller(isUpToDate);
@@ -239,7 +240,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         else
         {
             // Validate configs and restore any that were corrupted during update
-            updating::RestoreCorruptedConfigs();
+            Logger::info("Checking for corrupted config files after update");
+            updating::RestoreCorruptedConfigs(fs::path(PTSettingsHelper::get_root_save_folder_location()));
 
             // Relaunch PowerToys from the install directory
             if (nArgs >= 4)

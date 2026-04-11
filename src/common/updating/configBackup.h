@@ -8,9 +8,6 @@
 #include <fstream>
 #include <string>
 
-#include <common/logger/logger.h>
-#include <common/SettingsAPI/settings_helpers.h>
-
 namespace updating
 {
     namespace fs = std::filesystem;
@@ -60,7 +57,6 @@ namespace updating
             fs::create_directories(backupDir, ec);
             if (ec)
             {
-                Logger::warn("Failed to create config backup directory");
                 return;
             }
 
@@ -101,19 +97,10 @@ namespace updating
                     }
                 }
             }
-
-            Logger::info("Config files backed up successfully before update");
         }
         catch (...)
         {
-            Logger::warn("Failed to backup config files before update");
         }
-    }
-
-    // Overload that uses the default PT settings root path
-    inline void BackupConfigFiles()
-    {
-        BackupConfigFiles(fs::path(PTSettingsHelper::get_root_save_folder_location()));
     }
 
     // Restore JSON configs from backup if corruption is detected after update
@@ -142,7 +129,6 @@ namespace updating
                     if (fs::exists(originalPath) && IsJsonFileCorrupted(originalPath))
                     {
                         fs::copy_file(backupEntry.path(), originalPath, fs::copy_options::overwrite_existing, ec);
-                        Logger::info(L"Restored corrupted config file: {}", originalPath.native());
                     }
                 }
                 else if (backupEntry.is_directory())
@@ -163,7 +149,6 @@ namespace updating
                             if (fs::exists(originalModulePath) && IsJsonFileCorrupted(originalModulePath))
                             {
                                 fs::copy_file(moduleBackupEntry.path(), originalModulePath, fs::copy_options::overwrite_existing, moduleEc);
-                                Logger::info(L"Restored corrupted module config: {}", originalModulePath.native());
                             }
                         }
                     }
@@ -172,13 +157,6 @@ namespace updating
         }
         catch (...)
         {
-            Logger::warn("Failed to restore corrupted config files after update");
         }
-    }
-
-    // Overload that uses the default PT settings root path
-    inline void RestoreCorruptedConfigs()
-    {
-        RestoreCorruptedConfigs(fs::path(PTSettingsHelper::get_root_save_folder_location()));
     }
 }

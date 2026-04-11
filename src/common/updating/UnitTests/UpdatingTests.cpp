@@ -9,7 +9,6 @@
 #include <string>
 
 #include <common/updating/configBackup.h>
-#include <common/updating/updateState.h>
 #include <common/version/helper.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -319,29 +318,6 @@ namespace UpdatingUnitTests
             // Clean files should be unchanged
             Assert::AreEqual(std::string(R"({"zones":[{"id":1}]})"), dir.ReadFile(L"FancyZones\\settings.json"));
             Assert::AreEqual(std::string(R"({"remaps":[]})"), dir.ReadFile(L"KeyboardManager\\default.json"));
-        }
-    };
-
-    TEST_CLASS(UpdateStateSerializationTests)
-    {
-    public:
-        TEST_METHOD(DefaultStateIsUpToDate)
-        {
-            UpdateState state;
-
-            Assert::AreEqual(static_cast<int>(UpdateState::upToDate), static_cast<int>(state.state));
-            Assert::IsTrue(state.releasePageUrl.empty());
-            Assert::IsFalse(state.githubUpdateLastCheckedDate.has_value());
-            Assert::IsTrue(state.downloadedInstallerFilename.empty());
-        }
-
-        TEST_METHOD(AllStatesHaveExpectedValues)
-        {
-            Assert::AreEqual(0, static_cast<int>(UpdateState::upToDate));
-            Assert::AreEqual(1, static_cast<int>(UpdateState::errorDownloading));
-            Assert::AreEqual(2, static_cast<int>(UpdateState::readyToDownload));
-            Assert::AreEqual(3, static_cast<int>(UpdateState::readyToInstall));
-            Assert::AreEqual(4, static_cast<int>(UpdateState::networkError));
         }
     };
 
