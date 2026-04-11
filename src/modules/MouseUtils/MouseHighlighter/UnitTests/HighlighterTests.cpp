@@ -17,7 +17,7 @@
 #include "CppUnitTest.h"
 #pragma warning(pop)
 
-#include "MouseHighlighter.h"
+#include "../MouseHighlighter.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -93,7 +93,7 @@ namespace MouseHighlighterUnitTests
             //   clamped to [0.0, 1.0]
             // At elapsed == delay + duration: 1.0 - duration/duration = 0.0
             int elapsed = settings.fadeDelayMs + settings.fadeDurationMs;
-            double opacity = 1.0 - static_cast<double>(elapsed - settings.fadeDelayMs) / settings.fadeDurationMs;
+            double opacity = 1.0 - (static_cast<double>(elapsed) - static_cast<double>(settings.fadeDelayMs)) / static_cast<double>(settings.fadeDurationMs);
             Assert::AreEqual(0.0, opacity, 1e-10,
                              L"Opacity should be 0.0 at delay+duration");
         }

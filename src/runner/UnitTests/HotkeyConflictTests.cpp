@@ -26,7 +26,7 @@ namespace RunnerUnitTests
     // ── helpers ──────────────────────────────────────────────────────────────
 
     // Build a Hotkey from modifier flags and a virtual-key code.
-    static Hotkey MakeHotkey(bool win, bool ctrl, bool shift, bool alt, unsigned char key)
+    static constexpr Hotkey MakeHotkey(bool win, bool ctrl, bool shift, bool alt, unsigned char key)
     {
         Hotkey hk{};
         hk.win = win;
@@ -221,7 +221,7 @@ namespace RunnerUnitTests
             mgr.RemoveHotkeyByModule(MOD_A);
 
             // B and C still share the same hotkey → InAppConflict.
-            auto conflictB = mgr.HasConflict(hk, MOD_B, 2);
+            (void)mgr.HasConflict(hk, MOD_B, 2);
             // B re-checking itself → NoConflict OR InAppConflict depending on
             // whether it ended up in the conflict map or got promoted.
             // But a *new* module should see a conflict:

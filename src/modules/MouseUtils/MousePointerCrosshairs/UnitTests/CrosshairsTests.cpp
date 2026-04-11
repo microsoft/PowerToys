@@ -17,7 +17,7 @@
 #include "CppUnitTest.h"
 #pragma warning(pop)
 
-#include "InclusiveCrosshairs.h"
+#include "../InclusiveCrosshairs.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -43,10 +43,10 @@ namespace CrosshairsUnitTests
         double hpa = (thickness % 2 == 1) ? 0.5 : 0.0;
         double r = static_cast<double>(radius);
 
-        double leftFull  = cx - scr.left - r + hpa * 2.0;
-        double rightFull = scr.right - cx - r;
-        double topFull   = cy - scr.top - r + hpa * 2.0;
-        double bottomFull= scr.bottom - cy - r;
+        double leftFull  = static_cast<double>(cx) - static_cast<double>(scr.left) - r + hpa * 2.0;
+        double rightFull = static_cast<double>(scr.right) - static_cast<double>(cx) - r;
+        double topFull   = static_cast<double>(cy) - static_cast<double>(scr.top) - r + hpa * 2.0;
+        double bottomFull= static_cast<double>(scr.bottom) - static_cast<double>(cy) - r;
 
         if (fixedLen)
         {
@@ -183,28 +183,28 @@ namespace CrosshairsUnitTests
             // With cursor at 500, radius=20: left arm right edge = 500-20 = 480
             ScreenBounds scr = { 0, 0, 1000, 1000 };
             int cx = 500, radius = 20;
-            double leftRightEdge = cx - radius; // where left arm ends
+            double leftRightEdge = static_cast<double>(cx) - static_cast<double>(radius); // where left arm ends
             Assert::AreEqual(480.0, leftRightEdge, 1e-10);
         }
 
         TEST_METHOD(RadiusGap_RightArmStartsAfterCursor)
         {
             int cx = 500, radius = 20;
-            double rightLeftEdge = cx + radius; // where right arm starts
+            double rightLeftEdge = static_cast<double>(cx) + static_cast<double>(radius); // where right arm starts
             Assert::AreEqual(520.0, rightLeftEdge, 1e-10);
         }
 
         TEST_METHOD(RadiusGap_TopArmEndsBeforeCursor)
         {
             int cy = 500, radius = 20;
-            double topBottomEdge = cy - radius;
+            double topBottomEdge = static_cast<double>(cy) - static_cast<double>(radius);
             Assert::AreEqual(480.0, topBottomEdge, 1e-10);
         }
 
         TEST_METHOD(RadiusGap_BottomArmStartsAfterCursor)
         {
             int cy = 500, radius = 20;
-            double bottomTopEdge = cy + radius;
+            double bottomTopEdge = static_cast<double>(cy) + static_cast<double>(radius);
             Assert::AreEqual(520.0, bottomTopEdge, 1e-10);
         }
 

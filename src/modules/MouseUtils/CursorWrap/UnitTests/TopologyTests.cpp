@@ -29,7 +29,7 @@ namespace CursorWrapUnitTests
     static MonitorInfo MakeMonitor(int index, LONG left, LONG top, LONG right, LONG bottom, bool primary = false)
     {
         MonitorInfo mi{};
-        mi.hMonitor = reinterpret_cast<HMONITOR>(static_cast<uintptr_t>(index + 1));
+        mi.hMonitor = reinterpret_cast<HMONITOR>(static_cast<uintptr_t>(index) + 1u);
         mi.rect = { left, top, right, bottom };
         mi.isPrimary = primary;
         mi.monitorId = index;
@@ -38,19 +38,7 @@ namespace CursorWrapUnitTests
 
     static HMONITOR HandleForIndex(int index)
     {
-        return reinterpret_cast<HMONITOR>(static_cast<uintptr_t>(index + 1));
-    }
-
-    // Count outer edges of a specific type.
-    static int CountOuterEdges(const MonitorTopology& topo, EdgeType type)
-    {
-        int count = 0;
-        for (const auto& e : topo.GetOuterEdges())
-        {
-            if (e.type == type)
-                ++count;
-        }
-        return count;
+        return reinterpret_cast<HMONITOR>(static_cast<uintptr_t>(index) + 1u);
     }
 
     // Count outer edges belonging to a specific monitor.
