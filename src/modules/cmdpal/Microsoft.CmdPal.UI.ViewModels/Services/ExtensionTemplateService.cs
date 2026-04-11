@@ -31,6 +31,7 @@ internal sealed class ExtensionTemplateService : IExtensionTemplateService
 
     private static readonly HashSet<string> _copyAsIsTemplateExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
+        ".md",
         ".png",
     };
 
