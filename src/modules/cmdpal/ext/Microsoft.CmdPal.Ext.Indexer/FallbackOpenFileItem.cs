@@ -243,10 +243,11 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
 
     private bool UpdateSearchNoticeForCurrentQuery(string query, SearchNoticeInfo notice, CancellationToken ct)
     {
+        var (title, subtitle) = GetFallbackNoticeText(notice);
         var indexerPage = new IndexerPage(query);
         var set = UpdateResultForCurrentQuery(
-            notice.Title,
-            notice.Subtitle,
+            title,
+            subtitle,
             Icons.FileExplorerIcon,
             indexerPage,
             [
@@ -262,6 +263,11 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
         }
 
         return set;
+    }
+
+    internal static (string Title, string Subtitle) GetFallbackNoticeText(SearchNoticeInfo notice)
+    {
+        return (Resources.IndexerCommandsProvider_DisplayName!, notice.Title);
     }
 
     private void UpdateIconForCurrentQuery(IIconInfo icon, CancellationToken ct)
