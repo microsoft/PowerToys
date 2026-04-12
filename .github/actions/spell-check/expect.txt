@@ -2341,3 +2341,10 @@ YTimer
 zamora
 zonability
 Zorder
+ADEF
+FFFFFF
+MIXEDCASE
+napp
+nchrome
+nfirefox
+Uppercased
