@@ -69,6 +69,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private SettingsWindow? _settingsWindow;
     private DockWindow? _dockWindow;
+    private Dock.DockWindowManager? _dockWindowManager;
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
@@ -116,8 +117,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (App.Current.Services.GetRequiredService<ISettingsService>().Settings.EnableDock)
         {
-            _dockWindow = new DockWindow();
-            _dockWindow.Show();
+            _dockWindowManager = App.Current.Services.GetService<Dock.DockWindowManager>();
+            _dockWindowManager?.ShowDocks();
         }
     }
 
@@ -234,7 +235,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             message.Title,
             message.Subtitle,
             message.Icon,
-            message.DockSide);
+            message.DockSide,
+            message.AvailableMonitors);
 
         if (result == ContentDialogResult.Primary)
         {
@@ -244,7 +246,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 Pin: true,
                 Side: content.SelectedSide,
                 ShowTitles: content.ShowTitles,
-                ShowSubtitles: content.ShowSubtitles);
+                ShowSubtitles: content.ShowSubtitles,
+                MonitorDeviceId: content.SelectedMonitorDeviceId);
             WeakReferenceMessenger.Default.Send(pinMessage);
         }
     }
@@ -543,17 +546,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             if (message.ShowDock)
             {
-                if (_dockWindow is null)
+                if (_dockWindowManager is null)
                 {
-                    _dockWindow = new DockWindow();
+                    _dockWindowManager = App.Current.Services.GetService<Dock.DockWindowManager>();
                 }
 
-                _dockWindow.Show();
+                _dockWindowManager?.ShowDocks();
             }
-            else if (_dockWindow is not null)
+            else
             {
-                _dockWindow.Close();
-                _dockWindow = null;
+                _dockWindowManager?.HideDocks();
             }
         });
     }
@@ -853,6 +855,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _focusAfterLoadedCts?.Cancel();
         _focusAfterLoadedCts?.Dispose();
         _focusAfterLoadedCts = null;
+
+        var dockWindowManager = _dockWindowManager;
+        _dockWindowManager = null;
+        dockWindowManager?.Dispose();
 
         var dockWindow = _dockWindow;
         _dockWindow = null;

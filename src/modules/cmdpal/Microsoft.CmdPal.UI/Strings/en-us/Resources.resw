@@ -1106,6 +1106,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Choose where to pin this command</value>
     <comment>Header for the dock section selector in the pin to dock dialog</comment>
   </data>
+  <data name="PinToDock_MonitorHeader.Text" xml:space="preserve">
+    <value>Choose which monitor</value>
+    <comment>Header for the monitor selector in the pin to dock dialog</comment>
+  </data>
   <data name="PinToDock_Start.Content" xml:space="preserve">
     <value>Start</value>
     <comment>Start section option in pin to dock dialog</comment>

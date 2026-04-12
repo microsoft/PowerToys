@@ -107,6 +107,20 @@
                 </tkcontrols:Segmented>
             </StackPanel>
 
+            <!--  Monitor Selector (hidden when only one monitor)  -->
+            <StackPanel
+                x:Name="MonitorSelectorPanel"
+                Spacing="8"
+                Visibility="Collapsed">
+                <TextBlock
+                    x:Uid="PinToDock_MonitorHeader"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <ComboBox
+                    x:Name="MonitorComboBox"
+                    HorizontalAlignment="Stretch" />
+            </StackPanel>
+
             <!--  Label Options  -->
             <StackPanel Spacing="4">
                 <CheckBox
