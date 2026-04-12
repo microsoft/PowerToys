@@ -2,8 +2,6 @@
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
-  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
-
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -12,6 +10,11 @@
     <RootNamespace>Peek.Common.UnitTests</RootNamespace>
     <AssemblyName>PowerToys.Peek.Common.UnitTests</AssemblyName>
     <OutputType>Exe</OutputType>
+    <!-- Pull in the WindowsDesktop shared framework so that runtime DLLs (System.CodeDom,
+         Microsoft.VisualBasic, WindowsBase, etc.) resolve to the same version as all other
+         projects in the solution. Without this, transitive NuGet packages provide older
+         versions that fail the verifyDepsJsonLibraryVersions CI check. -->
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>
