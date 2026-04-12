@@ -2021,6 +2021,7 @@ DPMS
 DString
 DSVG
 dto
+dumpbin
 dutil
 dwflags
 Dxva
@@ -2143,6 +2144,8 @@ maximizebox
 mber
 Mbuttondown
 mccs
+mdmerge
+mfcm
 mcp
 Metacharacter
 metadatamatters
