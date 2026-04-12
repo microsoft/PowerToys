@@ -10,7 +10,6 @@
     <PackageVersion Include="AdaptiveCards.Templating" Version="2.0.5" />
     <PackageVersion Include="boost" Version="1.87.0" TargetFramework="native" />
     <PackageVersion Include="boost_regex-vc143" Version="1.87.0" TargetFramework="native" />
-    <PackageVersion Include="BenchmarkDotNet" Version="0.14.0" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" Version="0.1.251101-build.2372" />
     <PackageVersion Include="Microsoft.Bot.AdaptiveExpressions.Core" Version="4.23.0" />
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
