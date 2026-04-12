@@ -707,6 +707,7 @@
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
     </Project>
+    <Project Path="src/modules/LightSwitch/UnitTests/UnitTests-LightSwitch.vcxproj" Id="b1a2c3d4-1111-2222-3333-444455556666" />
   </Folder>
   <Folder Name="/modules/PowerDisplay/">
     <Project Path="src/modules/powerdisplay/PowerDisplay.Models/PowerDisplay.Models.csproj">
