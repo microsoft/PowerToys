@@ -413,7 +413,7 @@ namespace FindMyMouseUnitTests
             Assert::IsTrue(result == ActivationCheck::BlockedByExcludedApp, L"Should block excluded app");
         }
 
-        // ── Excluded app case insensitive ──
+        // ── Excluded app case-insensitive ──
 
         TEST_METHOD(ExcludedAppCaseInsensitive)
         {
