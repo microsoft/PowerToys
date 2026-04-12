@@ -43,9 +43,11 @@
                     <tkcontrols:SettingsCard
                         Name="ImageResizerPresets"
                         x:Uid="ImageResizer_Presets"
+                        AutomationProperties.Name="Presets"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
                         <Button
                             x:Uid="ImageResizer_AddSizeButton"
+                            AutomationProperties.Name="Add a new preset"
                             Click="AddSizeButton_Click"
                             Style="{ThemeResource AccentButtonStyle}" />
                     </tkcontrols:SettingsCard>
