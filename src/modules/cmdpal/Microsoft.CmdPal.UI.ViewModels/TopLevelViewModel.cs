@@ -507,6 +507,18 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
         return item;
     }
+
+    /// <summary>
+    /// Unsubscribes from the underlying <see cref="CommandItemViewModel"/> event
+    /// and cleans up its resources so the TopLevelViewModel can be garbage
+    /// collected after it is removed from the owning collections.
+    /// </summary>
+    internal void Cleanup()
+    {
+        _commandItemViewModel.PropertyChangedBackground -= Item_PropertyChanged;
+        _commandItemViewModel.SafeCleanup();
+        _initialIcon = null;
+    }
 }
 
 public enum TopLevelType
