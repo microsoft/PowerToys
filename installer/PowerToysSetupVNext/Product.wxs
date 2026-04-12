@@ -42,7 +42,7 @@
     <Feature Id="CoreFeature" Title="PowerToys" AllowAdvertise="no" TypicalDefault="install" Description="Contains all PowerToys features." AllowAbsent="no">
       <ComponentGroupRef Id="CoreComponents" />
       <ComponentGroupRef Id="BaseApplicationsComponentGroup" />
-      <ComponentGroupRef Id="WinUI3ApplicationsComponentGroup" />
+
       <ComponentGroupRef Id="AwakeComponentGroup" />
       <ComponentGroupRef Id="ColorPickerComponentGroup" />
       <ComponentGroupRef Id="FileExplorerPreviewComponentGroup" />

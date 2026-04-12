@@ -139,8 +139,7 @@ if ($platform -ceq "arm64") {
 # ImageResizerCLI (Exe, SelfContained) has a ProjectReference to ImageResizerUI (WinExe, SelfContained).
 # MSBuild copies the referenced WinExe's apphost (.exe, .deps.json, .runtimeconfig.json) to the root
 # output directory as a side effect. These files are incomplete (missing the managed .dll) and should
-# not be included in the installer. The complete ImageResizer files are handled
-# by WinUI3ApplicationsFiles. TODO: Refactor ImageResizer to use a shared Library project instead.
+# not be included in the installer. TODO: Refactor ImageResizer to use a shared Library project instead.
 Generate-FileList -fileDepsJson "" -fileListName BaseApplicationsFiles -wxsFilePath $PSScriptRoot\BaseApplications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release"
 
 # Remove leaked ImageResizer artifacts from BaseApplications
@@ -155,10 +154,6 @@ $baseAppWxs = $baseAppWxs -replace '=;', '='
 $baseAppWxs = $baseAppWxs -replace ';"', '"'
 Set-Content -Path $baseAppWxsPath -Value $baseAppWxs
 Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSScriptRoot\BaseApplications.wxs
-
-#WinUI3Applications — no longer generated; files are now in BaseApplications
-# after flattening the output layout. WinUI3ApplicationsComponentGroup remains
-# empty in WinUI3Applications.wxs for upgrade compatibility.
 
 #AdvancedPaste
 Generate-FileList -fileDepsJson "" -fileListName AdvancedPasteAssetsFiles -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\AdvancedPaste"
