@@ -521,6 +521,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/MouseUtils/CursorWrap/UnitTests/UnitTests-CursorWrap.vcxproj" Id="c1f0fe89-a695-472e-9df5-f793b88ee220" />
+    <Project Path="src/modules/MouseUtils/MouseHighlighter/UnitTests/UnitTests-MouseHighlighter.vcxproj" Id="753db0e7-1670-4cdf-90c9-cc8316593410" />
+    <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/UnitTests/UnitTests-Crosshairs.vcxproj" Id="9f01b331-8518-4d02-b8c2-8f7415c7742f" />
+    <Project Path="src/modules/MouseUtils/FindMyMouse/UnitTests/UnitTests-FindMyMouse.vcxproj" Id="a3e7b4d1-92f6-4c8a-b5d3-1f0e2a9c6b78" />
   </Folder>
   <Folder Name="/modules/keyboardmanager/Tests/">
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorTest/KeyboardManagerEditorTest.vcxproj" Id="62173d9a-6724-4c00-a1c8-fb646480a9ec" />
