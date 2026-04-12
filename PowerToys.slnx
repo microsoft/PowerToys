@@ -286,6 +286,12 @@
     </Project>
     <Project Path="src/modules/cmdpal/extensionsdk/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.vcxproj" Id="305dd37e-c85d-4b08-aafe-7381fa890463" />
   </Folder>
+  <Folder Name="/modules/CommandPalette/Labs/">
+    <Project Path="src/modules/cmdpal/Labs/Microsoft.CmdPal.Labs.FontIconGlyphClassifier.Benchmarks/Microsoft.CmdPal.Labs.FontIconGlyphClassifier.Benchmarks.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/modules/CommandPalette/Sample Extensions/">
     <Project Path="src/modules/cmdpal/ext/ProcessMonitorExtension/ProcessMonitorExtension.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />

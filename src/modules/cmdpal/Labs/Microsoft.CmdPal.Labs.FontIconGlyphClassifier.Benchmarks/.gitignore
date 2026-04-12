@@ -1,0 +1,3 @@
+bin/
+obj/
+BenchmarkDotNet.Artifacts/

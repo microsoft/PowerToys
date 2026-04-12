@@ -364,6 +364,7 @@
                     Height="20"
                     AutomationProperties.AccessibilityView="Raw"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    LoadingSourceKey="{x:Bind PlaceholderIconViewModel, Mode=OneTime}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
 
@@ -475,6 +476,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorPrimary}"
+                    LoadingSourceKey="{x:Bind PlaceholderIconViewModel, Mode=OneTime}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconProvider.SourceRequested32}" />
             </StackPanel>
@@ -502,6 +504,7 @@
                     CharacterSpacing="12"
                     FontSize="14"
                     Foreground="{ThemeResource TextFillColorPrimary}"
+                    LoadingSourceKey="{x:Bind PlaceholderIconViewModel, Mode=OneTime}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconProvider.SourceRequested64}" />
                 <TextBlock
@@ -547,6 +550,7 @@
                         <cpcontrols:IconBox
                             CornerRadius="4"
                             Foreground="{ThemeResource TextFillColorPrimary}"
+                            LoadingSourceKey="{x:Bind PlaceholderIconViewModel, Mode=OneTime}"
                             SourceKey="{x:Bind Icon, Mode=OneWay}"
                             SourceRequested="{x:Bind help:IconProvider.SourceRequested256}" />
                     </Viewbox>

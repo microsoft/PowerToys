@@ -60,6 +60,7 @@
                                         Width="20"
                                         Height="20"
                                         AutomationProperties.AccessibilityView="Raw"
+                                        FallbackSourceKey="{x:Bind ViewModel.PlaceholderIconViewModel, Mode=OneTime}"
                                         SourceKey="{x:Bind ViewModel.Icon, Mode=OneWay}"
                                         SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                 </cpcontrols:ContentIcon.Content>
@@ -94,6 +95,7 @@
                                                                 Width="20"
                                                                 Height="20"
                                                                 AutomationProperties.AccessibilityView="Raw"
+                                                                FallbackSourceKey="{x:Bind PlaceholderIconViewModel, Mode=OneTime}"
                                                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
                                                                 SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                                         </cpcontrols:ContentIcon.Content>
@@ -166,6 +168,7 @@
                                                                 Width="20"
                                                                 Height="20"
                                                                 AutomationProperties.AccessibilityView="Raw"
+                                                                FallbackSourceKey="{x:Bind PlaceholderIconViewModel, Mode=OneTime}"
                                                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
                                                                 SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                                         </cpcontrols:ContentIcon.Content>

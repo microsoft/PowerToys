@@ -24,5 +24,11 @@ internal static class Icons
 
     public static IconInfo UninstallApplicationIcon { get; } = new("\uE74D"); // Uninstall icon
 
-    public static IconInfo GenericAppIcon { get; } = new("\uE737"); // Favicon
+    public static IconInfo GenericAppIcon { get; } = IconHelpers.FromRelativePath("Assets\\GenericIconPlaceholder.png");
+
+    // This placeholder lives in the UI package assets, so resolve it the same
+    // way the rest of the extension toolkit does: from the app base directory.
+    public static IconInfo AppIconPlaceholder { get; } = IconHelpers.FromRelativePath("Assets\\Icons\\AppIconPlaceholder.png");
+
+    public static string AppIconPlaceholderPath { get; } = AppIconPlaceholder.Light.Icon ?? string.Empty;
 }

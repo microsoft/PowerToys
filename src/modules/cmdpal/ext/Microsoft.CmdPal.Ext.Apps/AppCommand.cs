@@ -25,7 +25,7 @@ internal sealed partial class AppCommand : InvokableCommand
         _app = app;
         Name = Resources.run_command_action!;
         Id = GenerateId();
-        Icon = Icons.GenericAppIcon;
+        Icon = Icons.AppIconPlaceholder;
     }
 
     private static async Task StartApp(string aumid)

@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -61,6 +62,8 @@ public partial class ProviderSettingsViewModel : ObservableObject
     public string ExtensionVersion => IsFromExtension ? $"{Extension.Version.Major}.{Extension.Version.Minor}.{Extension.Version.Build}.{Extension.Version.Revision}" : string.Empty;
 
     public IconInfoViewModel Icon => IsEnabled ? _provider.Icon : EmptyIcon;
+
+    public IconInfoViewModel PlaceholderIconViewModel => PlaceholderIconViewModels.ExtensionIcon;
 
     [ObservableProperty]
     public partial bool LoadingSettings { get; set; }
