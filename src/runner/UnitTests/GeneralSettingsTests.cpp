@@ -298,7 +298,7 @@ namespace RunnerUnitTests
         TEST_METHOD(ModuleNotInMap_DefaultInsertedAsFalse)
         {
             std::map<std::wstring, bool> moduleMap;
-            // Accessing a non-existent key default-inserts bool as false
+            // Accessing a nonexistent key default-inserts bool as false
             bool val = moduleMap[L"NonExistent"];
             Assert::IsFalse(val);
         }
