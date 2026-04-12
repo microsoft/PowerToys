@@ -319,4 +319,134 @@ namespace UpdatingUnitTests
             Assert::AreEqual(std::string(R"({"remaps":[]})"), dir.ReadFile(L"KeyboardManager\\default.json"));
         }
     };
+
+    // Simulates what actually happens during a PowerToys upgrade:
+    // 1. User has settings from normal use
+    // 2. Updater backs up before install (Stage 1)
+    // 3. Installer runs and corrupts some files (simulated)
+    // 4. Updater restores corrupted files (Stage 2)
+    // 5. PT relaunches and finds working configs
+    TEST_CLASS(UpgradeSimulationTests)
+    {
+    public:
+        TEST_METHOD(SimulateUpgradeWithCorruption)
+        {
+            TempDir dir;
+
+            // === User's real config state before upgrade ===
+            dir.WriteFile(L"settings.json",
+                R"({"startup":true,"theme":"dark","run_elevated":false,"download_updates_automatically":true})");
+            dir.WriteFile(L"FancyZones\\settings.json",
+                R"({"zones":[{"id":1,"rect":{"x":0,"y":0,"w":960,"h":1080}}]})");
+            dir.WriteFile(L"Workspaces\\workspaces.json",
+                R"({"workspaces":[{"name":"dev","apps":["code","terminal"]}]})");
+            dir.WriteFile(L"KeyboardManager\\default.json",
+                R"({"remapKeys":{"inProcess":[{"original":"0x41","new":"0x42"}]}})");
+            dir.WriteFile(L"MouseWithoutBorders\\settings.json",
+                R"({"machineKey":"abc123","connectToAll":true})");
+
+            // Non-JSON files that should be left alone
+            dir.WriteFile(L"update.log", "2026-04-11 update started");
+
+            // === Stage 1: Backup before killing PT ===
+            updating::BackupConfigFiles(dir.path());
+
+            // Verify backup was created correctly
+            Assert::IsTrue(dir.FileExists(L"ConfigBackup\\settings.json"));
+            Assert::IsTrue(dir.FileExists(L"ConfigBackup\\FancyZones\\settings.json"));
+            Assert::IsTrue(dir.FileExists(L"ConfigBackup\\Workspaces\\workspaces.json"));
+            Assert::IsTrue(dir.FileExists(L"ConfigBackup\\KeyboardManager\\default.json"));
+            Assert::IsTrue(dir.FileExists(L"ConfigBackup\\MouseWithoutBorders\\settings.json"));
+            Assert::IsFalse(dir.FileExists(L"ConfigBackup\\update.log"));
+
+            // === Installer runs: some files get corrupted (the #46179 scenario) ===
+            // Workspaces JSON filled with null bytes
+            dir.WriteFileBytes(L"Workspaces\\workspaces.json", std::vector<char>(512, '\0'));
+            // Main settings partially corrupted (null bytes injected)
+            std::vector<char> partialCorrupt = { '{', '"', 's', '\0', '\0', '\0', '\0', '}' };
+            dir.WriteFileBytes(L"settings.json", partialCorrupt);
+
+            // FancyZones, KBM, and MWB survive the install fine
+            // (this is realistic - not all files get corrupted)
+
+            // === Stage 2: Restore after install completes ===
+            updating::RestoreCorruptedConfigs(dir.path());
+
+            // === Verify: PT relaunches and finds working configs ===
+
+            // Corrupted files should be restored from backup
+            Assert::IsFalse(updating::IsJsonFileCorrupted(dir.path() / L"settings.json"));
+            Assert::IsFalse(updating::IsJsonFileCorrupted(dir.path() / L"Workspaces\\workspaces.json"));
+            Assert::AreEqual(
+                std::string(R"({"startup":true,"theme":"dark","run_elevated":false,"download_updates_automatically":true})"),
+                dir.ReadFile(L"settings.json"));
+            Assert::AreEqual(
+                std::string(R"({"workspaces":[{"name":"dev","apps":["code","terminal"]}]})"),
+                dir.ReadFile(L"Workspaces\\workspaces.json"));
+
+            // Clean files should be untouched (not overwritten with backup)
+            Assert::AreEqual(
+                std::string(R"({"zones":[{"id":1,"rect":{"x":0,"y":0,"w":960,"h":1080}}]})"),
+                dir.ReadFile(L"FancyZones\\settings.json"));
+            Assert::AreEqual(
+                std::string(R"({"remapKeys":{"inProcess":[{"original":"0x41","new":"0x42"}]}})"),
+                dir.ReadFile(L"KeyboardManager\\default.json"));
+            Assert::AreEqual(
+                std::string(R"({"machineKey":"abc123","connectToAll":true})"),
+                dir.ReadFile(L"MouseWithoutBorders\\settings.json"));
+        }
+
+        TEST_METHOD(SimulateUpgradeWithNoCorruption)
+        {
+            TempDir dir;
+
+            // User configs
+            dir.WriteFile(L"settings.json", R"({"theme":"light"})");
+            dir.WriteFile(L"FancyZones\\settings.json", R"({"zones":[]})");
+
+            // Backup
+            updating::BackupConfigFiles(dir.path());
+
+            // Install succeeds cleanly - no corruption
+            // (Maybe user updated a setting between backup and restore)
+            dir.WriteFile(L"settings.json", R"({"theme":"dark"})");
+
+            // Restore should NOT overwrite clean files
+            updating::RestoreCorruptedConfigs(dir.path());
+
+            // User's post-install change should be preserved
+            Assert::AreEqual(std::string(R"({"theme":"dark"})"), dir.ReadFile(L"settings.json"));
+            Assert::AreEqual(std::string(R"({"zones":[]})"), dir.ReadFile(L"FancyZones\\settings.json"));
+        }
+
+        TEST_METHOD(SimulateUpgradeFromVeryOldVersion)
+        {
+            TempDir dir;
+
+            // Old version had fewer modules - only settings.json
+            dir.WriteFile(L"settings.json", R"({"theme":"dark","powertoys_version":"v0.60.0"})");
+
+            // Backup
+            updating::BackupConfigFiles(dir.path());
+
+            // New installer creates new module dirs that didn't exist before
+            dir.WriteFile(L"NewModule\\settings.json", R"({"enabled":true})");
+
+            // Old settings get corrupted during upgrade
+            dir.WriteFileBytes(L"settings.json", std::vector<char>(100, '\0'));
+
+            // Restore
+            updating::RestoreCorruptedConfigs(dir.path());
+
+            // Old settings restored
+            Assert::AreEqual(
+                std::string(R"({"theme":"dark","powertoys_version":"v0.60.0"})"),
+                dir.ReadFile(L"settings.json"));
+
+            // New module settings untouched (no backup existed for them)
+            Assert::AreEqual(
+                std::string(R"({"enabled":true})"),
+                dir.ReadFile(L"NewModule\\settings.json"));
+        }
+    };
 }
