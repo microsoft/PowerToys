@@ -1,0 +1,23 @@
+{
+  "name": "AltDragMove",
+  "version": "1.0",
+  "description": "Alt+Drag to move windows by grabbing anywhere in the window.",
+  "properties": {
+    "enabled": {
+      "display_name": "Enable AltDragMove",
+      "editor_type": "bool_toggle",
+      "value": true,
+      "order": 1
+    },
+    "modifier": {
+      "display_name": "Modifier key",
+      "editor_type": "int_spinner",
+      "value": 0,
+      "min": 0,
+      "max": 2,
+      "step": 1,
+      "order": 2,
+      "description": "0 = Alt, 1 = Ctrl, 2 = Shift"
+    }
+  }
+}
