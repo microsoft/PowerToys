@@ -541,6 +541,42 @@ namespace PowerAccentUnitTests
             Assert::AreEqual(2, sm.showCount);
             Assert::AreEqual(2, sm.hideCount);
         }
+
+        // https://github.com/microsoft/PowerToys/issues/36853
+        // On-screen keyboard sends WM_KEYDOWN continuously while key held.
+        // Repeated letter keys must be suppressed while accent picker is visible.
+        TEST_METHOD(OSK_RepeatedLetterSuppressed_Issue36853)
+        {
+            KeyStateMachine sm;
+            sm.OnKeyDown(0x41); // 'A'
+            sm.OnKeyDown(VK_SPACE);
+            Assert::IsTrue(sm.toolbarVisible);
+
+            // Simulate OSK repeating the same letter 5 times
+            for (int i = 0; i < 5; ++i)
+            {
+                bool suppressed = sm.OnKeyDown(0x41);
+                Assert::IsTrue(suppressed,
+                               L"OSK repeat must be suppressed while accent picker visible");
+            }
+            // Toolbar should still be visible, not corrupted by repeats
+            Assert::IsTrue(sm.toolbarVisible);
+            Assert::AreEqual(1, sm.showCount, L"Show count must not increase from repeats");
+        }
+
+        TEST_METHOD(DifferentLetterWhileActive_ResetsTracking)
+        {
+            KeyStateMachine sm;
+            sm.OnKeyDown(0x45); // 'E'
+            sm.OnKeyDown(VK_SPACE);
+            Assert::IsTrue(sm.toolbarVisible);
+
+            // Different letter pressed while accent picker is active
+            // C++ does NOT suppress — it passes through and resets letterPressed
+            bool suppressed = sm.OnKeyDown(0x41); // 'A'
+            Assert::IsFalse(suppressed,
+                           L"Different letter should pass through (only SAME letter is suppressed)");
+        }
     };
 
     // ========================================================================
