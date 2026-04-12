@@ -2379,6 +2379,14 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Remove the {0} preset</value>
     <comment>Expands to the AutomationProperties.Name value for the Remove button. Example: "Remove the Large preset".</comment>
   </data>
+  <data name="ImageResizer_Presets_Accessibility_Name" xml:space="preserve">
+    <value>ImageResizer presets</value>
+    <comment>AutomationProperties.Name for the Image Resizer Presets settings card</comment>
+  </data>
+  <data name="ImageResizer_AddSizeButton_Accessibility_Name" xml:space="preserve">
+    <value>Add a new preset</value>
+    <comment>AutomationProperties.Name for the Add new size button</comment>
+  </data>
   <data name="No" xml:space="preserve">
     <value>No</value>
     <comment>Label of a cancel button</comment>

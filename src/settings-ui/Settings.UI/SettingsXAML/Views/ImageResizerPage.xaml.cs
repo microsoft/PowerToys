@@ -10,6 +10,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -27,6 +28,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             ViewModel = new ImageResizerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, loader);
             DataContext = ViewModel;
+
+            AutomationProperties.SetName(ImageResizerPresets, resourceLoader.GetString("ImageResizer_Presets_Accessibility_Name"));
+            AutomationProperties.SetName(AddSizeButton, resourceLoader.GetString("ImageResizer_AddSizeButton_Accessibility_Name"));
         }
 
         public async void DeleteCustomSize(object sender, RoutedEventArgs e)
