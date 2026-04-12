@@ -178,7 +178,9 @@ Taras
 TBM
 Teutsch
 tilovell
+traies
 Triet
+udit
 urnotdfs
 vednig
 waaverecords
@@ -223,6 +225,7 @@ Moq
 mozilla
 mspaint
 Newtonsoft
+NVIDIA
 onenote
 openai
 Quickime

@@ -38,7 +38,6 @@ namespace
     const wchar_t JSON_KEY_CTRL[] = L"ctrl";
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
-    const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ToggleShortcut";
     const wchar_t JSON_KEY_EDITOR_SHORTCUT[] = L"EditorShortcut";
     const wchar_t JSON_KEY_USE_NEW_EDITOR[] = L"useNewEditor";
 }
@@ -57,25 +56,21 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key = KeyboardManagerConstants::ModuleName;
 
-    // Hotkey for toggling the module
-    Hotkey m_hotkey = { .key = 0 };
-
     // Hotkey for opening the editor
     Hotkey m_editorHotkey = { .key = 0 };
 
     // Whether to use the new WinUI3 editor
     bool m_useNewEditor = false;
 
-    ULONGLONG m_lastHotkeyToggleTime = 0;
+    ULONGLONG m_lastHotkeyTime = 0;
 
     HANDLE m_hProcess = nullptr;
     HANDLE m_hEditorProcess = nullptr;
 
     HANDLE m_hTerminateEngineEvent = nullptr;
     HANDLE m_open_new_editor_event_handle{ nullptr };
-    HANDLE m_toggle_active_event_handle{ nullptr };
-    std::thread m_toggle_thread;
-    std::atomic<bool> m_toggle_thread_running{ false };
+    std::thread m_editor_listener_thread;
+    std::atomic<bool> m_editor_listener_running{ false };
 
 
     void refresh_process_state()
@@ -85,19 +80,6 @@ private:
             CloseHandle(m_hProcess);
             m_hProcess = nullptr;
             m_active = false;
-        }
-    }
-
-    void toggle_engine()
-    {
-        refresh_process_state();
-        if (m_active)
-        {
-            stop_engine();
-        }
-        else
-        {
-            start_engine();
         }
     }
 
@@ -176,35 +158,9 @@ private:
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
     {
         auto settingsObject = settings.get_raw_json();
-        if (settingsObject.GetView().Size())
-        {
-            try
-            {
-                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES)
-                                            .GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
-                m_hotkey.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
-                m_hotkey.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
-                m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
-                m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-                m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
-            }
-            catch (...)
-            {
-                Logger::error("Failed to initialize Keyboard Manager toggle shortcut");
-            }
-        }
-
-        if (!m_hotkey.key)
-        {
-            // Set default: Win+Shift+K
-            m_hotkey.win = true;
-            m_hotkey.shift = true;
-            m_hotkey.ctrl = false;
-            m_hotkey.alt = false;
-            m_hotkey.key = 'K';
-        }
 
         // Parse editor shortcut
+        bool editorShortcutParsed = false;
         if (settingsObject.GetView().Size())
         {
             try
@@ -216,6 +172,7 @@ private:
                 m_editorHotkey.shift = jsonEditorHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
                 m_editorHotkey.ctrl = jsonEditorHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
                 m_editorHotkey.key = static_cast<unsigned char>(jsonEditorHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                editorShortcutParsed = true;
             }
             catch (...)
             {
@@ -223,9 +180,9 @@ private:
             }
         }
 
-        if (!m_editorHotkey.key)
+        if (!editorShortcutParsed && !m_editorHotkey.key)
         {
-            // Set default: Win+Shift+Q
+            // Set default: Win+Shift+Q (only when no setting exists)
             m_editorHotkey.win = true;
             m_editorHotkey.shift = true;
             m_editorHotkey.ctrl = false;
@@ -287,7 +244,6 @@ public:
         }
 
         m_open_new_editor_event_handle = CreateDefaultEvent(CommonSharedConstants::OPEN_NEW_KEYBOARD_MANAGER_EVENT);
-        m_toggle_active_event_handle = CreateDefaultEvent(CommonSharedConstants::TOGGLE_KEYBOARD_MANAGER_ACTIVE_EVENT);
 
         init_settings();
     };
@@ -305,11 +261,6 @@ public:
         {
             CloseHandle(m_open_new_editor_event_handle);
             m_open_new_editor_event_handle = nullptr;
-        }
-        if (m_toggle_active_event_handle)
-        {
-            CloseHandle(m_toggle_active_event_handle);
-            m_toggle_active_event_handle = nullptr;
         }
         if (m_hEditorProcess)
         {
@@ -412,22 +363,12 @@ public:
         return false;
     }
 
-    // Return the invocation hotkeys for toggling and opening the editor
+    // Return the invocation hotkey for opening the editor
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
         size_t count = 0;
 
-        // Hotkey 0: toggle engine
-        if (m_hotkey.key)
-        {
-            if (hotkeys && buffer_size > count)
-            {
-                hotkeys[count] = m_hotkey;
-            }
-            count++;
-        }
-
-        // Hotkey 1: open editor (only when using new editor)
+        // Hotkey 0: open editor (only when using new editor)
         if (m_useNewEditor && m_editorHotkey.key)
         {
             if (hotkeys && buffer_size > count)
@@ -442,45 +383,24 @@ public:
 
     void StartOpenEditorListener()
     {
-        if (m_toggle_thread_running || (!m_open_new_editor_event_handle && !m_toggle_active_event_handle))
+        if (m_editor_listener_running || !m_open_new_editor_event_handle)
         {
             return;
         }
 
-        m_toggle_thread_running = true;
-        m_toggle_thread = std::thread([this]() {
-            HANDLE handles[2]{};
-            DWORD handle_count = 0;
-            DWORD open_editor_index = MAXDWORD;
-            DWORD toggle_active_index = MAXDWORD;
-
-            if (m_open_new_editor_event_handle)
+        m_editor_listener_running = true;
+        m_editor_listener_thread = std::thread([this]() {
+            while (m_editor_listener_running)
             {
-                open_editor_index = handle_count;
-                handles[handle_count++] = m_open_new_editor_event_handle;
-            }
-
-            if (m_toggle_active_event_handle)
-            {
-                toggle_active_index = handle_count;
-                handles[handle_count++] = m_toggle_active_event_handle;
-            }
-
-            while (m_toggle_thread_running)
-            {
-                const DWORD wait_result = WaitForMultipleObjects(handle_count, handles, FALSE, 500);
-                if (!m_toggle_thread_running)
+                const DWORD wait_result = WaitForSingleObject(m_open_new_editor_event_handle, 500);
+                if (!m_editor_listener_running)
                 {
                     break;
                 }
 
-                if (open_editor_index != MAXDWORD && wait_result == (WAIT_OBJECT_0 + open_editor_index))
+                if (wait_result == WAIT_OBJECT_0)
                 {
                     launch_editor();
-                }
-                else if (toggle_active_index != MAXDWORD && wait_result == (WAIT_OBJECT_0 + toggle_active_index))
-                {
-                    toggle_engine();
                 }
             }
         });
@@ -488,23 +408,19 @@ public:
 
     void StopOpenEditorListener()
     {
-        if (!m_toggle_thread_running)
+        if (!m_editor_listener_running)
         {
             return;
         }
 
-        m_toggle_thread_running = false;
+        m_editor_listener_running = false;
         if (m_open_new_editor_event_handle)
         {
             SetEvent(m_open_new_editor_event_handle);
         }
-        if (m_toggle_active_event_handle)
+        if (m_editor_listener_thread.joinable())
         {
-            SetEvent(m_toggle_active_event_handle);
-        }
-        if (m_toggle_thread.joinable())
-        {
-            m_toggle_thread.join();
+            m_editor_listener_thread.join();
         }
     }
 
@@ -584,22 +500,17 @@ public:
             return false;
         }
 
-        constexpr ULONGLONG hotkeyToggleDebounceMs = 500;
+        constexpr ULONGLONG hotkeyDebounceMs = 500;
         const auto now = GetTickCount64();
-        if (now - m_lastHotkeyToggleTime < hotkeyToggleDebounceMs)
+        if (now - m_lastHotkeyTime < hotkeyDebounceMs)
         {
             return true;
         }
-        m_lastHotkeyToggleTime = now;
+        m_lastHotkeyTime = now;
 
         if (hotkeyId == 0)
         {
-            // Toggle engine on/off
-            toggle_engine();
-        }
-        else if (hotkeyId == 1)
-        {
-            // Open the new editor (only in new editor mode)
+            // Open the editor
             launch_editor();
         }
 

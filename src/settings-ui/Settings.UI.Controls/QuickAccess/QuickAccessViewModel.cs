@@ -77,8 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AddFlyoutMenuItem(ModuleType.KeyboardManager);
             AddFlyoutMenuItem(ModuleType.LightSwitch);
             AddFlyoutMenuItem(ModuleType.MouseWithoutBorders);
-
-            // AddFlyoutMenuItem(ModuleType.PowerDisplay); // TEMPORARILY_DISABLED: PowerDisplay
+            AddFlyoutMenuItem(ModuleType.PowerDisplay);
             AddFlyoutMenuItem(ModuleType.PowerLauncher);
             AddFlyoutMenuItem(ModuleType.PowerOCR);
             AddFlyoutMenuItem(ModuleType.RegistryPreview);

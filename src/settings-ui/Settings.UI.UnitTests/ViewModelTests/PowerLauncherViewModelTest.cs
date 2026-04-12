@@ -125,7 +125,7 @@ namespace ViewModelTests
             viewModel.SearchResultPreference = "SearchOptionsAreNotValidated";
             viewModel.SearchTypePreference = "SearchOptionsAreNotValidated";
 
-            Assert.AreEqual(sendCallbackMock.TimesSent, 2);
+            Assert.AreEqual(2, sendCallbackMock.TimesSent);
             Assert.IsTrue(mockSettings.Properties.SearchResultPreference == "SearchOptionsAreNotValidated");
             Assert.IsTrue(mockSettings.Properties.SearchTypePreference == "SearchOptionsAreNotValidated");
         }

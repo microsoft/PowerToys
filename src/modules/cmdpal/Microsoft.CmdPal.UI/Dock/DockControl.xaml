@@ -53,7 +53,7 @@
                                         AutomationProperties.AccessibilityView="Raw"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested16}" />
+                                        SourceRequested="{x:Bind help:IconProvider.SourceRequested16}" />
                                 </local:DockItemControl.Icon>
                             </local:DockItemControl>
                         </DataTemplate>
@@ -103,7 +103,7 @@
                 Opened="ContextMenuFlyout_Opened"
                 ShouldConstrainToRootBounds="False"
                 SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
-                <cpcontrols:ContextMenu x:Name="ContextControl" />
+                <cpcontrols:ContextMenu x:Name="ContextControl" SubscribeToCommandBar="False" />
             </Flyout>
 
             <!--  Edit mode context menu for dock bands  -->
@@ -139,15 +139,18 @@
                 ShouldConstrainToRootBounds="False">
                 <StackPanel Width="320">
                     <TextBlock
+                        x:Uid="Dock_Bands_Header"
+                        Margin="8,8,8,12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock
                         x:Name="NoAvailableBandsText"
                         x:Uid="Dock_AddBand_NoCommandsAvailable"
-                        Padding="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextAlignment="Center"
+                        Margin="8,0,0,0"
                         Visibility="Collapsed" />
                     <ListView
                         x:Name="AddBandListView"
                         MaxHeight="300"
+                        Margin="-12,0,-12,0"
                         HorizontalAlignment="Stretch"
                         IsItemClickEnabled="True"
                         ItemClick="AddBandListView_ItemClick"
@@ -165,7 +168,7 @@
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         SourceKey="{x:Bind IconViewModel, Mode=OneWay}"
-                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
+                                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                                     <TextBlock
                                         Grid.Column="1"
                                         VerticalAlignment="Center"
@@ -175,6 +178,30 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+                    <Rectangle
+                        Height="1"
+                        Margin="-16,24,-16,0"
+                        HorizontalAlignment="Stretch"
+                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    <Grid Margin="8,24,0,0" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            Margin="0,4,0,0"
+                            VerticalAlignment="Top"
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xE946;" />
+                        <TextBlock
+                            x:Uid="Dock_Pin_Instruction"
+                            Grid.Column="1"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            TextWrapping="Wrap" />
+                    </Grid>
                 </StackPanel>
             </Flyout>
         </ResourceDictionary>

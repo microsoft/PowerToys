@@ -14,11 +14,6 @@ internal static class PowerToysResourcesHelper
 
     internal static IconInfo IconFromSettingsIcon(string fileName) => IconHelpers.FromRelativePath($"{SettingsIconRoot}{fileName}");
 
-    internal static IconInfo KeyboardManagerListeningIcon(bool isListening) => IconHelpers.FromRelativePath(
-        isListening
-            ? $"{AssetsRoot}KeyboardManager\\KeyboardManagerListeningOn.svg"
-            : $"{AssetsRoot}KeyboardManager\\KeyboardManagerListeningOff.svg");
-
 #if DEBUG
     public static IconInfo ProviderIcon() => IconFromSettingsIcon("PowerToys.dark.png");
 #else

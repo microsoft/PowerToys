@@ -23,7 +23,7 @@ namespace Microsoft.Plugin.WindowsTerminal.UnitTests
         public void ArgumentsTest(string profile, bool openNewTab, bool openQuake, string expectedArguments)
         {
             var arguments = TerminalHelper.GetArguments(profile, openNewTab, openQuake);
-            Assert.AreEqual(arguments, expectedArguments);
+            Assert.AreEqual(expectedArguments, arguments);
         }
 
         [DataTestMethod]
@@ -37,7 +37,7 @@ namespace Microsoft.Plugin.WindowsTerminal.UnitTests
             var settings = File.ReadAllText(settingsPath);
             var profiles = TerminalHelper.ParseSettings(terminal, settings);
 
-            Assert.AreEqual(profiles.Count, 4);
+            Assert.AreEqual(4, profiles.Count);
         }
 
         [DataTestMethod]
@@ -59,7 +59,7 @@ namespace Microsoft.Plugin.WindowsTerminal.UnitTests
 
             var expectedIdentifier = identifier != null ? new Guid(identifier) : null as Guid?;
             Assert.AreEqual(profile.Terminal, terminal);
-            Assert.AreEqual(profile.Identifier, expectedIdentifier);
+            Assert.AreEqual(expectedIdentifier, profile.Identifier);
             Assert.AreEqual(profile.Name, name);
             Assert.AreEqual(profile.Hidden, hidden);
         }

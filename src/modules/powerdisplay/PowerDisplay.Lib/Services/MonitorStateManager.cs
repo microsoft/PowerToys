@@ -156,7 +156,7 @@ namespace PowerDisplay.Common.Services
                 }
 
                 var json = File.ReadAllText(_stateFilePath);
-                var stateFile = JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.MonitorStateFile);
+                var stateFile = JsonSerializer.Deserialize(json, MonitorStateSerializationContext.Default.MonitorStateFile);
 
                 if (stateFile?.Monitors != null)
                 {
@@ -257,7 +257,7 @@ namespace PowerDisplay.Common.Services
                 };
             }
 
-            return JsonSerializer.Serialize(stateFile, ProfileSerializationContext.Default.MonitorStateFile);
+            return JsonSerializer.Serialize(stateFile, MonitorStateSerializationContext.Default.MonitorStateFile);
         }
 
         /// <summary>

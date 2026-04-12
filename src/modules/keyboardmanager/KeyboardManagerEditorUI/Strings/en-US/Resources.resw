@@ -1,5 +1,64 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
@@ -112,6 +171,9 @@
   <data name="RemappingDialog.Title" xml:space="preserve">
     <value>Add new remapping</value>
   </data>
+  <data name="RemappingDialog_TitleEdit" xml:space="preserve">
+    <value>Edit remapping</value>
+  </data>
   <data name="RemappingDialog.PrimaryButtonText" xml:space="preserve">
     <value>Save</value>
   </data>
@@ -150,6 +212,12 @@
   </data>
   <data name="AllowChordsCheckBox.Content" xml:space="preserve">
     <value>Allow chords</value>
+  </data>
+  <data name="TriggerKeyPlaceholder.Text" xml:space="preserve">
+    <value>Press to start recording keys</value>
+  </data>
+  <data name="ActionKeyPlaceholder.Text" xml:space="preserve">
+    <value>Press to start recording keys</value>
   </data>
   <data name="ExactMatchCheckBox.Content" xml:space="preserve">
     <value>Exact match</value>
@@ -208,6 +276,18 @@
   <data name="ActionType_MouseClick_Text.Text" xml:space="preserve">
     <value>Remap to mouse click</value>
   </data>
+  <data name="ActionType_Disable.AutomationProperties.Name" xml:space="preserve">
+    <value>Disable key or shortcut</value>
+  </data>
+  <data name="ActionType_Disable_Text.Text" xml:space="preserve">
+    <value>Disable key or shortcut</value>
+  </data>
+  <data name="DisableDescription.Text" xml:space="preserve">
+    <value>This key or shortcut will be disabled.</value>
+  </data>
+  <data name="DisabledHeader.Text" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
   <data name="TextContentBox.Header" xml:space="preserve">
     <value>Text to type</value>
   </data>
@@ -229,6 +309,9 @@
   <data name="ProgramPathSelectButton.AutomationProperties.Name" xml:space="preserve">
     <value>Select program path</value>
   </data>
+  <data name="ProgramPathSelectButtonTooltip.Text" xml:space="preserve">
+    <value>Select program path</value>
+  </data>	
   <data name="ProgramArgsInput.Header" xml:space="preserve">
     <value>Arguments (optional)</value>
   </data>
@@ -242,6 +325,9 @@
     <value>C:\Users\...</value>
   </data>
   <data name="StartInSelectButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Select start directory</value>
+  </data>
+	<data name="StartInSelectButtonTooltip.Text" xml:space="preserve">
     <value>Select start directory</value>
   </data>
   <data name="ElevationComboBox.Header" xml:space="preserve">
@@ -291,5 +377,128 @@
   </data>
   <data name="MouseClickPlaceholder.Text" xml:space="preserve">
     <value>Mouse click action - coming soon</value>
+  </data>
+  <data name="Validation_EmptyOriginalKeys_Title" xml:space="preserve">
+    <value>Missing original keys</value>
+  </data>
+  <data name="Validation_EmptyOriginalKeys_Message" xml:space="preserve">
+    <value>Please enter at least one original key to create a remapping.</value>
+  </data>
+  <data name="Validation_EmptyRemappedKeys_Title" xml:space="preserve">
+    <value>Missing target keys</value>
+  </data>
+  <data name="Validation_EmptyRemappedKeys_Message" xml:space="preserve">
+    <value>Please enter at least one target key to create a remapping.</value>
+  </data>
+  <data name="Validation_ModifierOnly_Title" xml:space="preserve">
+    <value>Invalid shortcut</value>
+  </data>
+  <data name="Validation_ModifierOnly_Message" xml:space="preserve">
+    <value>Shortcuts must contain at least one action key in addition to modifier keys (Ctrl, Alt, Shift, Win).</value>
+  </data>
+  <data name="Validation_EmptyAppName_Title" xml:space="preserve">
+    <value>Missing application name</value>
+  </data>
+  <data name="Validation_EmptyAppName_Message" xml:space="preserve">
+    <value>You've selected app-specific remapping but haven't specified an application name. Please enter the application name.</value>
+  </data>
+  <data name="Validation_IllegalShortcut_Title" xml:space="preserve">
+    <value>Reserved system shortcut</value>
+  </data>
+  <data name="Validation_IllegalShortcut_Message" xml:space="preserve">
+    <value>Win+L and Ctrl+Alt+Delete are reserved system shortcuts and cannot be remapped.</value>
+  </data>
+  <data name="Validation_DuplicateMapping_Title" xml:space="preserve">
+    <value>Duplicate remapping</value>
+  </data>
+  <data name="Validation_DuplicateMapping_Message" xml:space="preserve">
+    <value>This key or shortcut is already remapped.</value>
+  </data>
+  <data name="Validation_ConflictingModifier_Title" xml:space="preserve">
+    <value>Conflicting modifier</value>
+  </data>
+  <data name="Validation_ConflictingModifier_Message" xml:space="preserve">
+    <value>This key conflicts with an existing remapping that uses a related modifier variant (e.g., Ctrl vs Left Ctrl).</value>
+  </data>
+  <data name="Validation_SelfMapping_Title" xml:space="preserve">
+    <value>Invalid remapping</value>
+  </data>
+  <data name="Validation_SelfMapping_Message" xml:space="preserve">
+    <value>A key or shortcut cannot be remapped to itself. Please choose a different target.</value>
+  </data>
+  <data name="Validation_EmptyTargetText_Title" xml:space="preserve">
+    <value>Missing target text</value>
+  </data>
+  <data name="Validation_EmptyTargetText_Message" xml:space="preserve">
+    <value>Please enter the text to be inserted when the shortcut is pressed.</value>
+  </data>
+  <data name="Validation_EmptyUrl_Title" xml:space="preserve">
+    <value>Missing URL</value>
+  </data>
+  <data name="Validation_EmptyUrl_Message" xml:space="preserve">
+    <value>Please enter the URL to open when the shortcut is pressed.</value>
+  </data>
+  <data name="Validation_EmptyProgramPath_Title" xml:space="preserve">
+    <value>Missing program path</value>
+  </data>
+  <data name="Validation_EmptyProgramPath_Message" xml:space="preserve">
+    <value>Please enter the program path to launch when the shortcut is pressed.</value>
+  </data>
+  <data name="Validation_OneKeyMapping_Title" xml:space="preserve">
+    <value>Invalid remapping</value>
+  </data>
+  <data name="Validation_OneKeyMapping_Message" xml:space="preserve">
+    <value>A single key cannot be remapped to a Program or URL shortcut. Please choose a combination of keys.</value>
+  </data>
+  <data name="Warning_ShortcutStartWithModifier" xml:space="preserve">
+    <value>Shortcuts must start with a modifier key (Ctrl, Alt, Shift, or Win).</value>
+  </data>
+  <data name="Warning_RepeatedModifier" xml:space="preserve">
+    <value>This shortcut already contains a modifier of the same type.</value>
+  </data>
+  <data name="Warning_MaxShortcutSize" xml:space="preserve">
+    <value>Maximum shortcut size reached (4 modifiers + 1 action key).</value>
+  </data>
+  <data name="Warning_InputLimitReached" xml:space="preserve">
+    <value>Shortcuts can only have up to 4 modifier keys.</value>
+  </data>
+  <data name="Error_MappingServiceUnavailable_Title" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Error_MappingServiceUnavailable_Message" xml:space="preserve">
+    <value>Mapping service is not available.</value>
+  </data>
+  <data name="Error_SaveFailed_Title" xml:space="preserve">
+    <value>Save failed</value>
+  </data>
+  <data name="Error_SaveFailed_Message" xml:space="preserve">
+    <value>Failed to save the remapping. Please try again.</value>
+  </data>
+  <data name="Error_NotImplemented_Title" xml:space="preserve">
+    <value>Not implemented</value>
+  </data>
+  <data name="Error_Generic_Title" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Error_Generic_Message" xml:space="preserve">
+    <value>An error occurred while saving: </value>
+  </data>
+  <data name="Warning_Title" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="Error_UnknownValidation_Title" xml:space="preserve">
+    <value>Validation error</value>
+  </data>
+  <data name="Error_UnknownValidation_Message" xml:space="preserve">
+    <value>An unknown validation error occurred.</value>
+  </data>
+  <data name="ServiceDownBanner.Title" xml:space="preserve">
+    <value>Keyboard Manager service is down</value>
+  </data>
+  <data name="ServiceDownBanner.Message" xml:space="preserve">
+    <value>Remappings will not function and you will be unable to edit any entries until the service is restored.</value>
+  </data>
+  <data name="CheckServiceBtn.Content" xml:space="preserve">
+    <value>Check service status</value>
   </data>
 </root>

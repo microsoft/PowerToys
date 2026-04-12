@@ -130,13 +130,13 @@
     <value>Copied to clipboard</value>
   </data>
   <data name="list_item_title" xml:space="preserve">
-    <value>Clipboard History</value>
+    <value>Clipboard history</value>
   </data>
   <data name="list_item_subtitle" xml:space="preserve">
     <value>Copy, paste, and search items on the clipboard</value>
   </data>
   <data name="provider_display_name" xml:space="preserve">
-    <value>Clipboard History</value>
+    <value>Clipboard history</value>
   </data>
   <data name="clipboard_history_page_name" xml:space="preserve">
     <value>Open</value>

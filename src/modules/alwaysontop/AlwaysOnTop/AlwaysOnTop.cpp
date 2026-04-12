@@ -76,7 +76,7 @@ bool isExcluded(HWND window)
 }
 
 AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
-    SettingsObserver({SettingId::FrameEnabled, SettingId::Hotkey, SettingId::ExcludeApps, SettingId::ShowInSystemMenu}),
+    SettingsObserver({ SettingId::FrameEnabled, SettingId::Hotkey, SettingId::IncreaseOpacityHotkey, SettingId::DecreaseOpacityHotkey, SettingId::ExcludeApps, SettingId::ShowInSystemMenu }),
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
     m_useCentralizedLLKH(useLLKH),
     m_mainThreadId(mainThreadId),
@@ -150,6 +150,8 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
     switch (id)
     {
     case SettingId::Hotkey:
+    case SettingId::IncreaseOpacityHotkey:
+    case SettingId::DecreaseOpacityHotkey:
     {
         RegisterHotkey();
     }
@@ -360,10 +362,8 @@ void AlwaysOnTop::RegisterHotkey() const
     // Register pin hotkey
     RegisterHotKey(m_window, static_cast<int>(HotkeyId::Pin), settings->hotkey.get_modifiers(), settings->hotkey.get_code());
 
-    // Register transparency hotkeys using the same modifiers as the pin hotkey
-    UINT modifiers = settings->hotkey.get_modifiers();
-    RegisterHotKey(m_window, static_cast<int>(HotkeyId::IncreaseOpacity), modifiers, VK_OEM_PLUS);
-    RegisterHotKey(m_window, static_cast<int>(HotkeyId::DecreaseOpacity), modifiers, VK_OEM_MINUS);
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::IncreaseOpacity), settings->increaseOpacityHotkey.get_modifiers(), settings->increaseOpacityHotkey.get_code());
+    RegisterHotKey(m_window, static_cast<int>(HotkeyId::DecreaseOpacity), settings->decreaseOpacityHotkey.get_modifiers(), settings->decreaseOpacityHotkey.get_code());
 }
 
 void AlwaysOnTop::RegisterLLKH()

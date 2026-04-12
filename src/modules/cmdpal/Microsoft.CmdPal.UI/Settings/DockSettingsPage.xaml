@@ -212,8 +212,15 @@
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
 
+                    <!--  Behavior Section  -->
+                    <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsCard x:Uid="DockBehavior_AlwaysOnTop_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE840;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.Dock_AlwaysOnTop, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  Bands Section  -->
-                    <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <!--  <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <ItemsRepeater ItemsSource="{x:Bind AllDockBandItems}">
                         <ItemsRepeater.Layout>
@@ -233,7 +240,7 @@
                                                     Height="20"
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                    SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
+                                                    SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                             </cpControls:ContentIcon.Content>
                                         </cpControls:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>
@@ -241,7 +248,7 @@
                                 </controls:SettingsCard>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
+                    </ItemsRepeater>-->
                 </StackPanel>
             </Grid>
         </ScrollViewer>

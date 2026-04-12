@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using global::PowerToys.GPOWrapper;
@@ -50,6 +49,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Settings = moduleSettingsRepository.SettingsConfig;
 
             _hotkey = Settings.Properties.Hotkey.Value;
+            _increaseOpacityHotkey = Settings.Properties.IncreaseOpacityHotkey.Value;
+            _decreaseOpacityHotkey = Settings.Properties.DecreaseOpacityHotkey.Value;
             _showInSystemMenu = Settings.Properties.ShowInSystemMenu.Value;
             _frameEnabled = Settings.Properties.FrameEnabled.Value;
             _frameThickness = Settings.Properties.FrameThickness.Value;
@@ -85,7 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                [ModuleName] = [Hotkey],
+                [ModuleName] = [Hotkey, IncreaseOpacityHotkey, DecreaseOpacityHotkey],
             };
 
             return hotkeysDict;
@@ -135,11 +136,53 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Settings.Properties.Hotkey.Value = _hotkey;
                     NotifyPropertyChanged();
 
-                    // Also notify that transparency shortcut strings have changed
-                    OnPropertyChanged(nameof(IncreaseOpacityShortcut));
-                    OnPropertyChanged(nameof(DecreaseOpacityShortcut));
-
                     // Using InvariantCulture as this is an IPC message
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            AlwaysOnTopSettings.ModuleName,
+                            JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.AlwaysOnTopSettings)));
+                }
+            }
+        }
+
+        public HotkeySettings IncreaseOpacityHotkey
+        {
+            get => _increaseOpacityHotkey;
+
+            set
+            {
+                if (value != _increaseOpacityHotkey)
+                {
+                    _increaseOpacityHotkey = value ?? AlwaysOnTopProperties.DefaultIncreaseOpacityHotkeyValue;
+
+                    Settings.Properties.IncreaseOpacityHotkey.Value = _increaseOpacityHotkey;
+                    NotifyPropertyChanged();
+
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            AlwaysOnTopSettings.ModuleName,
+                            JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.AlwaysOnTopSettings)));
+                }
+            }
+        }
+
+        public HotkeySettings DecreaseOpacityHotkey
+        {
+            get => _decreaseOpacityHotkey;
+
+            set
+            {
+                if (value != _decreaseOpacityHotkey)
+                {
+                    _decreaseOpacityHotkey = value ?? AlwaysOnTopProperties.DefaultDecreaseOpacityHotkeyValue;
+
+                    Settings.Properties.DecreaseOpacityHotkey.Value = _decreaseOpacityHotkey;
+                    NotifyPropertyChanged();
+
                     SendConfigMSG(
                         string.Format(
                             CultureInfo.InvariantCulture,
@@ -310,32 +353,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        /// <summary>
-        /// Gets the formatted shortcut string for increasing window opacity (modifier keys + "+").
-        /// </summary>
-        public string IncreaseOpacityShortcut
-        {
-            get
-            {
-                var modifiers = new HotkeySettings(_hotkey.Win, _hotkey.Ctrl, _hotkey.Alt, _hotkey.Shift, 0).ToString();
-                var shortcut = string.IsNullOrEmpty(modifiers) ? "+" : modifiers + " + +";
-                return string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("AlwaysOnTop_IncreaseOpacity"), shortcut);
-            }
-        }
-
-        /// <summary>
-        /// Gets the formatted shortcut string for decreasing window opacity (modifier keys + "-").
-        /// </summary>
-        public string DecreaseOpacityShortcut
-        {
-            get
-            {
-                var modifiers = new HotkeySettings(_hotkey.Win, _hotkey.Ctrl, _hotkey.Alt, _hotkey.Shift, 0).ToString();
-                var shortcut = string.IsNullOrEmpty(modifiers) ? "-" : modifiers + " + -";
-                return string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("AlwaysOnTop_DecreaseOpacity"), shortcut);
-            }
-        }
-
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -352,6 +369,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private HotkeySettings _hotkey;
+        private HotkeySettings _increaseOpacityHotkey;
+        private HotkeySettings _decreaseOpacityHotkey;
         private bool _showInSystemMenu;
         private bool _frameEnabled;
         private int _frameThickness;
