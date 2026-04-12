@@ -139,6 +139,17 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         UpdateProperty(propertyName);
     }
 
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+
+        var model = _formModel.Unsafe;
+        if (model is not null)
+        {
+            model.PropChanged -= Model_PropChanged;
+        }
+    }
+
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveOpenUrlAction))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveSubmitAction))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveExecuteAction))]

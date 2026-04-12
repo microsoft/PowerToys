@@ -76,6 +76,7 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
                 break;
             case nameof(Progress):
                 var modelProgress = model.Progress;
+                var oldProgress = Progress;
                 if (modelProgress is not null)
                 {
                     Progress = new(modelProgress, this.PageContext);
@@ -86,10 +87,25 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
                     Progress = null;
                 }
 
+                oldProgress?.SafeCleanup();
                 UpdateProperty(nameof(HasProgress));
                 break;
         }
 
         UpdateProperty(propertyName);
+    }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+
+        Progress?.SafeCleanup();
+        Progress = null;
+
+        var model = Model.Unsafe;
+        if (model is not null)
+        {
+            model.PropChanged -= Model_PropChanged;
+        }
     }
 }

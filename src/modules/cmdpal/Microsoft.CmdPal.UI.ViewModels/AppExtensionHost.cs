@@ -95,6 +95,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
                     if (vm is not null)
                     {
                         StatusMessages.Remove(vm);
+                        vm.SafeCleanup();
                     }
                 }
                 catch
