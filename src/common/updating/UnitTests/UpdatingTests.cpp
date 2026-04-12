@@ -9,6 +9,7 @@
 #include <string>
 
 #include <common/updating/configBackup.h>
+#include <common/updating/updateLifecycle.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -447,6 +448,96 @@ namespace UpdatingUnitTests
             Assert::AreEqual(
                 std::string(R"({"enabled":true})"),
                 dir.ReadFile(L"NewModule\\settings.json"));
+        }
+    };
+
+    // Tests for the update lifecycle: argument passing between Stage 1 and Stage 2,
+    // relaunch path construction, and the handoff that was broken in #42004/#43011/#44071.
+    TEST_CLASS(UpdateLifecycleTests)
+    {
+    public:
+        TEST_METHOD(BuildStage2ArgumentsContainsInstallerAndInstallDir)
+        {
+            const auto args = updating::BuildStage2Arguments(
+                L"-update_now_stage_2",
+                L"C:\\Users\\test\\AppData\\Local\\PowerToys\\Updates\\powertoyssetup-x64.exe",
+                L"C:\\Program Files\\PowerToys");
+
+            // Must contain the stage 2 flag
+            Assert::IsTrue(args.find(L"-update_now_stage_2") != std::wstring::npos);
+            // Must contain the installer path (quoted)
+            Assert::IsTrue(args.find(L"powertoyssetup-x64.exe") != std::wstring::npos);
+            // Must contain the install directory (quoted) — this was MISSING before our fix
+            Assert::IsTrue(args.find(L"C:\\Program Files\\PowerToys") != std::wstring::npos);
+        }
+
+        TEST_METHOD(BuildStage2ArgumentsQuotesBothPaths)
+        {
+            const auto args = updating::BuildStage2Arguments(
+                L"-update_now_stage_2",
+                L"C:\\path with spaces\\installer.exe",
+                L"C:\\Program Files\\PowerToys");
+
+            // Count quotes — should have 4 (open/close for each path)
+            size_t quoteCount = std::count(args.begin(), args.end(), L'"');
+            Assert::AreEqual(size_t{ 4 }, quoteCount);
+        }
+
+        TEST_METHOD(BuildPowerToysExePathAppendsExeName)
+        {
+            const auto path = updating::BuildPowerToysExePath(L"C:\\Program Files\\PowerToys");
+            Assert::AreEqual(std::wstring(L"C:\\Program Files\\PowerToys\\PowerToys.exe"), path);
+        }
+
+        TEST_METHOD(BuildPowerToysExePathHandlesTrailingBackslash)
+        {
+            const auto path = updating::BuildPowerToysExePath(L"C:\\Program Files\\PowerToys\\");
+            Assert::AreEqual(std::wstring(L"C:\\Program Files\\PowerToys\\PowerToys.exe"), path);
+        }
+
+        TEST_METHOD(BuildPowerToysExePathHandlesEmptyString)
+        {
+            const auto path = updating::BuildPowerToysExePath(L"");
+            Assert::AreEqual(std::wstring(L"PowerToys.exe"), path);
+        }
+
+        TEST_METHOD(CanRelaunchReturnsTrueWithFourArgs)
+        {
+            // args[0]=exe, [1]=action, [2]=installer, [3]=installDir
+            Assert::IsTrue(updating::CanRelaunchAfterUpdate(4));
+            Assert::IsTrue(updating::CanRelaunchAfterUpdate(5));
+        }
+
+        TEST_METHOD(CanRelaunchReturnsFalseWithThreeArgs)
+        {
+            // Old Stage 1 that didn't pass install dir — the pre-fix behavior
+            Assert::IsFalse(updating::CanRelaunchAfterUpdate(3));
+            Assert::IsFalse(updating::CanRelaunchAfterUpdate(2));
+            Assert::IsFalse(updating::CanRelaunchAfterUpdate(1));
+            Assert::IsFalse(updating::CanRelaunchAfterUpdate(0));
+        }
+
+        TEST_METHOD(Stage2ArgumentsCanBeRoundTrippedThroughCommandLineToArgvW)
+        {
+            // This tests the EXACT scenario: Stage 1 builds args, Windows parses them
+            // in Stage 2 via CommandLineToArgvW. If quoting is wrong, args get mangled.
+            const std::wstring installerPath = L"C:\\Users\\test user\\AppData\\Local\\PowerToys\\Updates\\powertoyssetup-0.86.0-x64.exe";
+            const std::wstring installDir = L"C:\\Program Files\\PowerToys";
+
+            const auto args = updating::BuildStage2Arguments(L"-update_now_stage_2", installerPath, installDir);
+
+            // Simulate what Windows does: prepend a fake exe name and parse
+            std::wstring commandLine = L"PowerToys.Update.exe " + args;
+
+            int argc = 0;
+            LPWSTR* argv = CommandLineToArgvW(commandLine.c_str(), &argc);
+            Assert::IsNotNull(argv);
+            Assert::AreEqual(4, argc);
+            Assert::AreEqual(std::wstring(L"-update_now_stage_2"), std::wstring(argv[1]));
+            Assert::AreEqual(installerPath, std::wstring(argv[2]));
+            Assert::AreEqual(installDir, std::wstring(argv[3]));
+
+            LocalFree(argv);
         }
     };
 }

@@ -15,6 +15,7 @@
 #include <common/updating/updateState.h>
 #include <common/updating/installer.h>
 #include <common/updating/configBackup.h>
+#include <common/updating/updateLifecycle.h>
 
 #include <common/utils/elevation.h>
 #include <common/utils/HttpClient.h>
@@ -123,12 +124,8 @@ bool InstallNewVersionStage1(fs::path installer)
         // Pass the install directory so Stage 2 can relaunch PowerToys after install
         const std::wstring installDir = get_module_folderpath();
 
-        std::wstring arguments{ UPDATE_NOW_LAUNCH_STAGE2 };
-        arguments += L" \"";
-        arguments += installer.c_str();
-        arguments += L"\" \"";
-        arguments += installDir;
-        arguments += L"\"";
+        std::wstring arguments = updating::BuildStage2Arguments(
+            UPDATE_NOW_LAUNCH_STAGE2, installer, fs::path(installDir));
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
         sei.lpFile = copy_in_temp->c_str();
@@ -244,10 +241,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             updating::RestoreCorruptedConfigs(fs::path(PTSettingsHelper::get_root_save_folder_location()));
 
             // Relaunch PowerToys from the install directory
-            if (nArgs >= 4)
+            if (updating::CanRelaunchAfterUpdate(nArgs))
             {
-                std::wstring ptExePath{ args[3] };
-                ptExePath += L"\\PowerToys.exe";
+                std::wstring ptExePath = updating::BuildPowerToysExePath(args[3]);
 
                 Logger::info(L"Relaunching PowerToys after update: {}", ptExePath);
 
