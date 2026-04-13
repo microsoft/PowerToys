@@ -20,6 +20,9 @@
     <ClCompile Include="..\MeasureToolCore\EdgeDetection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MeasurementForTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -29,6 +32,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\MeasureToolCore\EdgeDetection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeasurementForTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\MeasureToolCore\constants.h">
