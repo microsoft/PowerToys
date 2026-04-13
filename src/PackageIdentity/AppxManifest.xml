@@ -48,7 +48,7 @@
         AppListEntry="none">
       </uap:VisualElements>
     </Application>
-    <Application Id="PowerToys.SettingsUI" Executable="WinUI3Apps\PowerToys.Settings.exe" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="PowerToys.SettingsUI" Executable="PowerToys.Settings.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys.SettingsUI"
         Description="PowerToys Settings UI"
@@ -58,7 +58,7 @@
         AppListEntry="none">
       </uap:VisualElements>
     </Application>
-    <Application Id="PowerToys.ImageResizerUI" Executable="WinUI3Apps\PowerToys.ImageResizer.exe" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="PowerToys.ImageResizerUI" Executable="PowerToys.ImageResizer.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys.ImageResizer"
         Description="PowerToys Image Resizer UI"
