@@ -217,6 +217,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     else if (action == UPDATE_NOW_LAUNCH_STAGE2)
     {
+        if (nArgs < 3)
+        {
+            Logger::error("Stage 2 invoked without installer path argument");
+            return 1;
+        }
+
         using namespace std::string_view_literals;
         const bool failed = !InstallNewVersionStage2(args[2]);
         if (failed)
