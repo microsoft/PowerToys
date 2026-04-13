@@ -439,7 +439,6 @@
   </Folder>
   <Folder Name="/modules/FileLocksmith/Tests/">
     <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/tests/FileLocksmithCLIUnitTests.vcxproj" Id="a1b2c3d4-e5f6-7890-1234-567890abcdef" />
-    <Project Path="src/modules/FileLocksmith/UnitTests/UnitTests-FileLocksmith.vcxproj" Id="d3e4f5a6-3333-4444-5555-666677778888" />
   </Folder>
   <Folder Name="/modules/Hosts/">
     <Project Path="src/modules/Hosts/Hosts/Hosts.csproj">
