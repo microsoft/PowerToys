@@ -27,13 +27,17 @@ namespace PowerDisplay
         private Window? _mainWindow;
         private int _powerToysRunnerPid;
         private string? _pipeName;
+        private readonly int? _showAtX;
+        private readonly int? _showAtY;
         private TrayIconService? _trayIconService;
 
-        public App(int runnerPid, string? pipeName)
+        public App(int runnerPid, string? pipeName, int? showAtX = null, int? showAtY = null)
         {
-            Logger.LogInfo($"App constructor: Starting with runnerPid={runnerPid}, pipeName={pipeName ?? "null"}");
+            Logger.LogInfo($"App constructor: Starting with runnerPid={runnerPid}, pipeName={pipeName ?? "null"}, showAt=({showAtX}, {showAtY})");
             _powerToysRunnerPid = runnerPid;
             _pipeName = pipeName;
+            _showAtX = showAtX;
+            _showAtY = showAtY;
 
             Logger.LogTrace("App constructor: Calling InitializeComponent");
             this.InitializeComponent();
@@ -163,7 +167,13 @@ namespace PowerDisplay
                 bool isStandaloneMode = _powerToysRunnerPid <= 0;
                 Logger.LogInfo($"OnLaunched: isStandaloneMode={isStandaloneMode}");
 
-                if (isStandaloneMode)
+                if (_showAtX.HasValue && _showAtY.HasValue)
+                {
+                    // CLI show-at mode - show window at specified position
+                    Logger.LogInfo($"OnLaunched: Showing window at ({_showAtX.Value}, {_showAtY.Value})");
+                    _mainWindow.ShowWindowAt(_showAtX.Value, _showAtY.Value);
+                }
+                else if (isStandaloneMode)
                 {
                     // Standalone mode - activate and show window immediately
                     Logger.LogInfo("OnLaunched: Activating window (standalone mode)");
@@ -173,7 +183,6 @@ namespace PowerDisplay
                 else
                 {
                     // PowerToys mode - window remains hidden until show event received
-                    // Background initialization runs automatically via MainWindow constructor
                     Logger.LogInfo("OnLaunched: Window created but hidden, waiting for show/toggle event (PowerToys mode)");
                 }
 
