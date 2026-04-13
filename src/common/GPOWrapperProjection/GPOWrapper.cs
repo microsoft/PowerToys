@@ -72,9 +72,9 @@ namespace PowerToys.GPOWrapperProjection
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredLightSwitchEnabledValue();
         }
 
-        public static GpoRuleConfigured GetConfiguredWinPosEnabledValue()
+        public static GpoRuleConfigured GetConfiguredGrabAndMoveEnabledValue()
         {
-            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredWinPosEnabledValue();
+            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredGrabAndMoveEnabledValue();
         }
     }
 }

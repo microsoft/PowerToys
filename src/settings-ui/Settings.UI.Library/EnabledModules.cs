@@ -563,18 +563,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool winPos;
+        private bool grabAndMove;
 
-        [JsonPropertyName("WinPos")]
-        public bool WinPos
+        [JsonPropertyName("GrabAndMove")]
+        public bool GrabAndMove
         {
-            get => winPos;
+            get => grabAndMove;
             set
             {
-                if (winPos != value)
+                if (grabAndMove != value)
                 {
                     LogTelemetryEvent(value);
-                    winPos = value;
+                    grabAndMove = value;
                     NotifyChange();
                 }
             }

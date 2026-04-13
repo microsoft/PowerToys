@@ -7,16 +7,16 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class SndWinPosSettings
+    public class SndGrabAndMoveSettings
     {
-        [JsonPropertyName("WinPos")]
-        public WinPosSettings Settings { get; set; }
+        [JsonPropertyName("GrabAndMove")]
+        public GrabAndMoveSettings Settings { get; set; }
 
-        public SndWinPosSettings()
+        public SndGrabAndMoveSettings()
         {
         }
 
-        public SndWinPosSettings(WinPosSettings settings)
+        public SndGrabAndMoveSettings(GrabAndMoveSettings settings)
         {
             Settings = settings;
         }

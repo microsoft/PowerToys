@@ -59,7 +59,7 @@ static DWORD g_absorbedScanCode = 0;   // scan code for replay
 static DWORD g_absorbedFlags = 0;      // flags for replay (extended key, etc.)
 
 static bool g_showGeometry = true;            // true if we want to draw the X, Y, W and H on the overlay on move and resize
-static bool g_doNotActivateOnGameMode = true; // true if WinPos is suppressed when Windows Game Mode is active
+static bool g_doNotActivateOnGameMode = true; // true if GrabAndMove is suppressed when Windows Game Mode is active
 
 // Resize handle identifiers
 enum ResizeHandle
@@ -99,13 +99,13 @@ static ULONGLONG QpcMs()
     return static_cast<ULONGLONG>(now.QuadPart * 1000 / freq.QuadPart);
 }
 
-static const wchar_t* const CLASS_NAME = L"WinPos_MsgWnd";
-static const wchar_t* const OVERLAY_CLASS_NAME = L"WinPos_Overlay";
-static const wchar_t* const APP_TITLE = L"WinPos";
+static const wchar_t* const CLASS_NAME = L"GrabAndMove_MsgWnd";
+static const wchar_t* const OVERLAY_CLASS_NAME = L"GrabAndMove_Overlay";
+static const wchar_t* const APP_TITLE = L"GrabAndMove";
 
-// Must match CommonSharedConstants::WINPOS_REFRESH_SETTINGS_EVENT in shared_constants.h
-static const wchar_t* const WINPOS_REFRESH_SETTINGS_EVENT =
-    L"Local\\PowerToysWinPos-RefreshSettingsEvent-a7b3c1d2-4e5f-6a7b-8c9d-0e1f2a3b4c5d";
+// Must match CommonSharedConstants::GRABANDMOVE_REFRESH_SETTINGS_EVENT in shared_constants.h
+static const wchar_t* const GRABANDMOVE_REFRESH_SETTINGS_EVENT =
+    L"Local\\PowerToysGrabAndMove-RefreshSettingsEvent-a7b3c1d2-4e5f-6a7b-8c9d-0e1f2a3b4c5d";
 
 static std::vector<std::wstring> g_excludedApps;
 
@@ -132,19 +132,19 @@ static bool IsActivationModifierPressed()
     return g_altPressed || ((GetAsyncKeyState(VK_MENU) & 0x8000) != 0);
 }
 
-enum class WinPosShortcutAction
+enum class GrabAndMoveShortcutAction
 {
     Move,
     Resize,
 };
 
-static void TraceShortcutUse(bool successful, WinPosShortcutAction action, const wchar_t* reason) noexcept
+static void TraceShortcutUse(bool successful, GrabAndMoveShortcutAction action, const wchar_t* reason) noexcept
 {
-    const wchar_t* actionName = action == WinPosShortcutAction::Move ? L"move" : L"resize";
+    const wchar_t* actionName = action == GrabAndMoveShortcutAction::Move ? L"move" : L"resize";
 
     TraceLoggingWrite(
         g_hProvider,
-        "WinPos_ShortcutUse",
+        "GrabAndMove_ShortcutUse",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(successful, "Successful"),
@@ -159,7 +159,7 @@ static void LoadSettingsFromFile()
 {
     try
     {
-        PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::load_from_settings_file(L"WinPos");
+        PowerToysSettings::PowerToyValues values = PowerToysSettings::PowerToyValues::load_from_settings_file(L"GrabAndMove");
 
         if (auto v = values.get_bool_value(L"shouldAbsorbAlt"))
         {
@@ -683,7 +683,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         {
             if (IsSuppressedByGameMode())
             {
-                TraceShortcutUse(false, WinPosShortcutAction::Move, L"game_mode");
+                TraceShortcutUse(false, GrabAndMoveShortcutAction::Move, L"game_mode");
                 goto forward;
             }
             POINT pt = ms->pt;
@@ -707,7 +707,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                 CreateOverlay(g_dragWndRect, IDC_SIZEALL);
 
                 // Swallow the click so the target window doesn't get it
-                TraceShortcutUse(true, WinPosShortcutAction::Move, L"started");
+                TraceShortcutUse(true, GrabAndMoveShortcutAction::Move, L"started");
                 return 1;
             }
         }
@@ -790,7 +790,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         {
             if (IsSuppressedByGameMode())
             {
-                TraceShortcutUse(false, WinPosShortcutAction::Resize, L"game_mode");
+                TraceShortcutUse(false, GrabAndMoveShortcutAction::Resize, L"game_mode");
                 goto forward;
             }
             POINT pt = ms->pt;
@@ -818,7 +818,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                 g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
                 CreateOverlay(g_resizeWndRect, CursorForHandle(g_currentHandle));
 
-                TraceShortcutUse(true, WinPosShortcutAction::Resize, L"started");
+                TraceShortcutUse(true, GrabAndMoveShortcutAction::Resize, L"started");
                 return 1; // swallow the right button press
             }
         }
@@ -996,7 +996,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 // ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
-const std::wstring instanceMutexName = L"Local\\PowerToys_WinPos_InstanceMutex";
+const std::wstring instanceMutexName = L"Local\\PowerToys_GrabAndMove_InstanceMutex";
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 {
@@ -1015,7 +1015,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     std::wstring pid = std::wstring(lpCmdLine);
     if (pid.empty())
     {
-        MessageBoxW(nullptr, L"WinPos can't run as a standalone. Start it from PowerToys.", L"WinPos", MB_ICONERROR);
+        MessageBoxW(nullptr, L"GrabAndMove can't run as a standalone. Start it from PowerToys.", L"GrabAndMove", MB_ICONERROR);
         TraceLoggingUnregister(g_hProvider);
         return 1;
     }
@@ -1033,7 +1033,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     LoadSettingsFromFile();
 
     // Open the named event for settings reload notifications
-    g_hReloadSettingsEvent = CreateEventW(nullptr, FALSE, FALSE, WINPOS_REFRESH_SETTINGS_EVENT);
+    g_hReloadSettingsEvent = CreateEventW(nullptr, FALSE, FALSE, GRABANDMOVE_REFRESH_SETTINGS_EVENT);
     if (g_hReloadSettingsEvent)
     {
         g_settingsThread = std::thread(SettingsWatcherThread);

@@ -36,9 +36,9 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredPowerDisplayEnabledValue());
     }
-    GpoRuleConfigured GPOWrapper::GetConfiguredWinPosEnabledValue()
+    GpoRuleConfigured GPOWrapper::GetConfiguredGrabAndMoveEnabledValue()
     {
-        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredWinPosEnabledValue());
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredGrabAndMoveEnabledValue());
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredFancyZonesEnabledValue()
     {

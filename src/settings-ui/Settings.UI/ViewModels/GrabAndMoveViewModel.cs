@@ -14,9 +14,9 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class WinPosViewModel : PageViewModelBase
+    public partial class GrabAndMoveViewModel : PageViewModelBase
     {
-        protected override string ModuleName => WinPosSettings.ModuleName;
+        protected override string ModuleName => GrabAndMoveSettings.ModuleName;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -26,16 +26,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
 
-        private WinPosSettings _moduleSettings;
+        private GrabAndMoveSettings _moduleSettings;
 
-        public WinPosSettings ModuleSettings => _moduleSettings;
+        public GrabAndMoveSettings ModuleSettings => _moduleSettings;
 
-        public WinPosViewModel(ISettingsRepository<GeneralSettings> settingsRepository, WinPosSettings moduleSettings, Func<string, int> ipcMSGCallBackFunc)
+        public GrabAndMoveViewModel(ISettingsRepository<GeneralSettings> settingsRepository, GrabAndMoveSettings moduleSettings, Func<string, int> ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
-            _moduleSettings = moduleSettings ?? new WinPosSettings();
+            _moduleSettings = moduleSettings ?? new GrabAndMoveSettings();
 
             InitializeEnabledValue();
 
@@ -44,7 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void InitializeEnabledValue()
         {
-            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredWinPosEnabledValue();
+            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredGrabAndMoveEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
                 _enabledStateIsGPOConfigured = true;
@@ -52,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else
             {
-                _isEnabled = GeneralSettingsConfig.Enabled.WinPos;
+                _isEnabled = GeneralSettingsConfig.Enabled.GrabAndMove;
             }
         }
 
@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _isEnabled)
                 {
                     _isEnabled = value;
-                    GeneralSettingsConfig.Enabled.WinPos = value;
+                    GeneralSettingsConfig.Enabled.GrabAndMove = value;
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged(nameof(IsEnabled));
@@ -145,8 +145,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void NotifyModuleSettingsChanged()
         {
-            SndWinPosSettings outSettings = new(_moduleSettings);
-            SndModuleSettings<SndWinPosSettings> outIpcMessage = new(outSettings);
+            SndGrabAndMoveSettings outSettings = new(_moduleSettings);
+            SndModuleSettings<SndGrabAndMoveSettings> outIpcMessage = new(outSettings);
             SendConfigMSG(outIpcMessage.ToJsonString());
         }
 

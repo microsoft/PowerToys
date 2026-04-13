@@ -4,9 +4,9 @@
 //////////////////////////////
 // Non-localizable
 
-#define FILE_DESCRIPTION "WinPos Module"
-#define INTERNAL_NAME "WinPos"
-#define ORIGINAL_FILENAME "PowerToys.WinPosModuleInterface.dll"
+#define FILE_DESCRIPTION "GrabAndMove Module"
+#define INTERNAL_NAME "GrabAndMove"
+#define ORIGINAL_FILENAME "PowerToys.GrabAndMoveModuleInterface.dll"
 
 // Non-localizable
 //////////////////////////////

@@ -9,24 +9,24 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class WinPosSettings : BasePTModuleSettings, ISettingsConfig
+    public class GrabAndMoveSettings : BasePTModuleSettings, ISettingsConfig
     {
-        public const string ModuleName = "WinPos";
+        public const string ModuleName = "GrabAndMove";
 
-        public WinPosSettings()
+        public GrabAndMoveSettings()
         {
             Name = ModuleName;
             Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            Properties = new WinPosProperties();
+            Properties = new GrabAndMoveProperties();
         }
 
         [JsonPropertyName("properties")]
-        public WinPosProperties Properties { get; set; }
+        public GrabAndMoveProperties Properties { get; set; }
 
         public string GetModuleName() => Name;
 
         public bool UpgradeSettingsConfiguration() => false;
 
-        public ModuleType GetModuleType() => ModuleType.WinPos;
+        public ModuleType GetModuleType() => ModuleType.GrabAndMove;
     }
 }
