@@ -194,6 +194,60 @@ namespace PowerDisplay
             }
         }
 
+        /// <summary>
+        /// Show the window positioned near a specific screen coordinate.
+        /// Used when PowerDisplay is invoked from a dock band with position info.
+        /// </summary>
+        /// <param name="screenXPixels">Target X screen coordinate in physical pixels</param>
+        /// <param name="screenYPixels">Target Y screen coordinate in physical pixels</param>
+        public void ShowWindowAt(int screenXPixels, int screenYPixels)
+        {
+            Logger.LogInfo($"ShowWindowAt: Called with position ({screenXPixels}, {screenYPixels})");
+            _isShowingWindow = true;
+            try
+            {
+                if (!_hasInitialized)
+                {
+                    Logger.LogWarning("ShowWindowAt: Window not fully initialized yet, showing anyway");
+                }
+
+                // Measure content height
+                RootGrid?.UpdateLayout();
+                MainContainer?.Measure(new Windows.Foundation.Size(AppConstants.UI.WindowWidthDip, double.PositiveInfinity));
+                var contentHeight = (int)Math.Ceiling(MainContainer?.DesiredSize.Height ?? 0);
+                var maxHeightDip = GetAdaptiveWindowMaxHeightDip();
+                var finalHeightDip = Math.Min(contentHeight, maxHeightDip);
+
+                // Position near the anchor point
+                using (_dpiSuppressor?.Suppress() ?? default)
+                {
+                    WindowHelper.PositionWindowNear(
+                        this,
+                        screenXPixels,
+                        screenYPixels,
+                        AppConstants.UI.WindowWidthDip,
+                        finalHeightDip);
+                }
+
+                this.Activate();
+                this.Show();
+                this.IsAlwaysOnTop = true;
+                this.BringToFront();
+                RootGrid.Focus(FocusState.Programmatic);
+
+                Logger.LogInfo($"ShowWindowAt: Window shown at ({screenXPixels}, {screenYPixels})");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"ShowWindowAt: Failed: {ex.Message}\n{ex.StackTrace}");
+                throw;
+            }
+            finally
+            {
+                _isShowingWindow = false;
+            }
+        }
+
         public void HideWindow()
         {
             Logger.LogInfo("HideWindow: Hiding window");
