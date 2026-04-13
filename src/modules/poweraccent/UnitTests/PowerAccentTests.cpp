@@ -235,11 +235,11 @@ namespace PowerAccentUnitTests
             Assert::AreEqual(std::wstring(L"CMD.EXE"), result[2]);
         }
 
-        // What: Verifies lowercase input is uppercased via CharUpperBuffW.
-        // Why: UpdateExcludedApps uppercases all names so that
+        // What: Verifies lowercase input is uppercase via CharUpperBuffW.
+        // Why: UpdateExcludedApps uppercase all names so that
         //      IsForegroundAppExcluded can do case-insensitive matching
-        //      (it also uppercases the process path before comparing).
-        TEST_METHOD(ParseExcludedApps_UppercasesAppNames)
+        //      (it also uppercase the process path before comparing).
+        TEST_METHOD(ParseExcludedApps_UppercaseAppNames)
         {
             auto result = ParseExcludedApps(L"MyApp.exe");
             Assert::AreEqual(static_cast<size_t>(1), result.size());
