@@ -9,6 +9,7 @@
 #include <shellapi.h>
 #include <commctrl.h>
 #include <TraceLoggingProvider.h>
+#include <limits>
 #include <string>
 #include <thread>
 
@@ -252,7 +253,7 @@ static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
         FillRect(memDC, &clientRect, static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
 
         wchar_t text[128];
-        wsprintfW(text, L"X: %d  Y: %d\nW: %d  H: %d", g_overlayInfoX, g_overlayInfoY, g_overlayInfoW, g_overlayInfoH);
+        swprintf_s(text, L"X: %d  Y: %d\nW: %d  H: %d", g_overlayInfoX, g_overlayInfoY, g_overlayInfoW, g_overlayInfoH);
 
         HFONT hFont = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
         HFONT hOldFont = static_cast<HFONT>(SelectObject(memDC, hFont));
@@ -385,7 +386,7 @@ static ResizeHandle GetClosestHandle(POINT pt, const RECT& rc)
     };
 
     ResizeHandle closest = RESIZE_BOTTOM_RIGHT;
-    LONG minDist = MAXLONG;
+    LONG minDist = (std::numeric_limits<LONG>::max)();
     for (auto& e : handles)
     {
         LONG dx = pt.x - e.x;
@@ -450,12 +451,12 @@ static void EndInteraction(bool endDrag, bool endResize)
 
 static void ReplayAbsorbedAlt()
 {
-    INPUT inp = {};
-    inp.type = INPUT_KEYBOARD;
-    inp.ki.wVk = static_cast<WORD>(g_absorbedVk);
-    inp.ki.wScan = static_cast<WORD>(g_absorbedScanCode);
-    inp.ki.dwFlags = (g_absorbedFlags & LLKHF_EXTENDED) ? KEYEVENTF_EXTENDEDKEY : 0;
-    SendInput(1, &inp, sizeof(INPUT));
+    INPUT keyboardInput = {};
+    keyboardInput.type = INPUT_KEYBOARD;
+    keyboardInput.ki.wVk = static_cast<WORD>(g_absorbedVk);
+    keyboardInput.ki.wScan = static_cast<WORD>(g_absorbedScanCode);
+    keyboardInput.ki.dwFlags = (g_absorbedFlags & LLKHF_EXTENDED) ? KEYEVENTF_EXTENDEDKEY : 0;
+    SendInput(1, &keyboardInput, sizeof(INPUT));
 }
 
 // ---------------------------------------------------------------------------
@@ -469,7 +470,7 @@ static void AddTrayIcon(HWND hwnd)
     g_nid.hWnd = hwnd;
     g_nid.uID = 1;
     g_nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-    g_nid.uCallbackMessage = WM_TRAYICON;
+    g_nid.uCallbackMessage = WM_TRAY_ICON;
     g_nid.hIcon = LoadIconW(g_hInstance, MAKEINTRESOURCEW(IDI_APP_ICON));
     wcscpy_s(g_nid.szTip, APP_TITLE);
     Shell_NotifyIconW(NIM_ADD, &g_nid);
@@ -968,7 +969,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 {
     switch (msg)
     {
-    case WM_TRAYICON:
+    case WM_TRAY_ICON:
         if (LOWORD(lParam) == WM_RBUTTONUP)
         {
             ShowTrayMenu(hwnd);
@@ -1010,8 +1011,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int)
     }
 
     // Ensure common controls are initialised (for Shell_NotifyIcon)
-    INITCOMMONCONTROLSEX icc = {sizeof(icc), ICC_STANDARD_CLASSES};
-    InitCommonControlsEx(&icc);
+    INITCOMMONCONTROLSEX commonControls = { sizeof(commonControls), ICC_STANDARD_CLASSES };
+    InitCommonControlsEx(&commonControls);
 
     // Register a message-only window class
     WNDCLASSEXW wc = {};
@@ -1026,14 +1027,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int)
     }
 
     // Register the overlay window class (white background, ARROW cursor)
-    WNDCLASSEXW owc = {};
-    owc.cbSize = sizeof(owc);
-    owc.lpfnWndProc = OverlayWndProc;
-    owc.hInstance = hInstance;
-    owc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    owc.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
-    owc.lpszClassName = OVERLAY_CLASS_NAME;
-    if (!RegisterClassExW(&owc))
+    WNDCLASSEXW overlayWindowClass = {};
+    overlayWindowClass.cbSize = sizeof(overlayWindowClass);
+    overlayWindowClass.lpfnWndProc = OverlayWndProc;
+    overlayWindowClass.hInstance = hInstance;
+    overlayWindowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+    overlayWindowClass.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+    overlayWindowClass.lpszClassName = OVERLAY_CLASS_NAME;
+    if (!RegisterClassExW(&overlayWindowClass))
     {
         TraceLoggingUnregister(g_hProvider);
         return 1;
